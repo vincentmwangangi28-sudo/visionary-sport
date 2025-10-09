@@ -14,16 +14,259 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contest_entries: {
+        Row: {
+          contest_id: string
+          created_at: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          id?: string
+          score?: number
+          user_id: string
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_entries_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contests: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          entry_fee: number
+          id: string
+          name: string
+          prize_pool: number
+          start_date: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          entry_fee?: number
+          id?: string
+          name: string
+          prize_pool?: number
+          start_date: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          entry_fee?: number
+          id?: string
+          name?: string
+          prize_pool?: number
+          start_date?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      predictions: {
+        Row: {
+          ai_model: string | null
+          away_team: string
+          confidence: number
+          created_at: string
+          home_team: string
+          id: string
+          is_premium: boolean | null
+          league: string
+          match_date: string
+          match_id: string
+          prediction: string
+          reasoning: string
+          result: string | null
+        }
+        Insert: {
+          ai_model?: string | null
+          away_team: string
+          confidence: number
+          created_at?: string
+          home_team: string
+          id?: string
+          is_premium?: boolean | null
+          league: string
+          match_date: string
+          match_id: string
+          prediction: string
+          reasoning: string
+          result?: string | null
+        }
+        Update: {
+          ai_model?: string | null
+          away_team?: string
+          confidence?: number
+          created_at?: string
+          home_team?: string
+          id?: string
+          is_premium?: boolean | null
+          league?: string
+          match_date?: string
+          match_id?: string
+          prediction?: string
+          reasoning?: string
+          result?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          coins: number
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          coins?: number
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          coins?: number
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          metadata: Json | null
+          payment_method: string | null
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_method?: string | null
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_method?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_predictions: {
+        Row: {
+          coins_wagered: number | null
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          prediction_id: string
+          user_choice: string
+          user_id: string
+        }
+        Insert: {
+          coins_wagered?: number | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          prediction_id: string
+          user_choice: string
+          user_id: string
+        }
+        Update: {
+          coins_wagered?: number | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          prediction_id?: string
+          user_choice?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_predictions_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +393,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user", "premium"],
+    },
   },
 } as const
