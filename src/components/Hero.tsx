@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import heroStadium from "@/assets/hero-stadium.jpg";
+import { GeneratePredictionDialog } from "./GeneratePredictionDialog";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Hero = () => {
+  const { user } = useAuth();
+
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -38,11 +43,21 @@ export const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button variant="hero" size="lg" className="group">
-              Get Started Free
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="outline" size="lg">
+            {user ? (
+              <GeneratePredictionDialog />
+            ) : (
+              <Link to="/auth">
+                <Button variant="hero" size="lg" className="group">
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            )}
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => document.getElementById('predictions')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               View Today's Predictions
             </Button>
           </div>
