@@ -28,7 +28,7 @@ export default function Leaderboard() {
         .select(`
           user_id,
           score,
-          profiles (
+          profiles!inner (
             full_name,
             email
           )
@@ -38,7 +38,7 @@ export default function Leaderboard() {
 
       if (error) throw error;
       
-      setLeaders(data || []);
+      setLeaders((data as any) || []);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
     } finally {
