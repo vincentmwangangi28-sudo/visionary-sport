@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtimePredictions } from './useRealtimePredictions';
 
 export interface Prediction {
   id: string;
@@ -18,6 +19,12 @@ export interface Prediction {
 export const usePredictions = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleNewPrediction = useCallback((prediction: Prediction) => {
+    setPredictions(prev => [prediction, ...prev.slice(0, 9)]);
+  }, []);
+
+  useRealtimePredictions(handleNewPrediction);
 
   useEffect(() => {
     loadPredictions();

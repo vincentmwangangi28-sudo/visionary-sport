@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { TodaysPredictions } from "@/components/TodaysPredictions";
 import { Features } from "@/components/Features";
+import { ActiveContests } from "@/components/ActiveContests";
 
 const Index = () => {
   return (
@@ -11,6 +12,7 @@ const Index = () => {
       <div id="predictions">
         <TodaysPredictions />
       </div>
+      <ActiveContests />
       <Features />
     </div>
   );
