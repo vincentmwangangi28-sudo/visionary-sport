@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
+import { toast } from 'sonner';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -22,7 +23,7 @@ export default function Leaderboard() {
 
     // Real-time updates for leaderboard
     const channel = supabase
-      .channel('leaderboard-updates')
+      .channel('leaderboard-realtime')
       .on(
         'postgres_changes',
         {
@@ -30,12 +31,17 @@ export default function Leaderboard() {
           schema: 'public',
           table: 'contest_entries'
         },
-        () => {
-          console.log('Leaderboard updated');
+        (payload) => {
+          console.log('🏆 Leaderboard updated:', payload);
           loadLeaderboard();
+          toast.success('Leaderboard updated! 📊');
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time leaderboard connected');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

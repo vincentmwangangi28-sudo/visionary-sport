@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Coins } from 'lucide-react';
 import { Card } from './ui/card';
+import { toast } from 'sonner';
 
 export const CoinBalance = () => {
   const { user } = useAuth();
@@ -16,7 +17,7 @@ export const CoinBalance = () => {
 
     // Subscribe to real-time coin updates
     const channel = supabase
-      .channel('coin-updates')
+      .channel(`coin-updates-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -26,11 +27,24 @@ export const CoinBalance = () => {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Coin balance updated:', payload);
-          setCoins(payload.new.coins);
+          console.log('💰 Coin balance updated:', payload);
+          const newCoins = payload.new.coins;
+          const oldCoins = coins;
+          setCoins(newCoins);
+          
+          // Show toast for coin changes
+          if (newCoins > oldCoins) {
+            toast.success(`+${newCoins - oldCoins} coins earned! 🎉`);
+          } else if (newCoins < oldCoins) {
+            toast.info(`${oldCoins - newCoins} coins spent`);
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time coin updates connected');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

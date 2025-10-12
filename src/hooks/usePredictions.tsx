@@ -21,10 +21,21 @@ export const usePredictions = () => {
   const [loading, setLoading] = useState(true);
 
   const handleNewPrediction = useCallback((prediction: Prediction) => {
-    setPredictions(prev => [prediction, ...prev.slice(0, 9)]);
+    setPredictions(prev => {
+      // Check if prediction already exists to avoid duplicates
+      const exists = prev.some(p => p.id === prediction.id);
+      if (exists) return prev;
+      return [prediction, ...prev.slice(0, 9)];
+    });
   }, []);
 
-  useRealtimePredictions(handleNewPrediction);
+  const handleUpdatePrediction = useCallback((prediction: Prediction) => {
+    setPredictions(prev => 
+      prev.map(p => p.id === prediction.id ? prediction : p)
+    );
+  }, []);
+
+  useRealtimePredictions(handleNewPrediction, handleUpdatePrediction);
 
   useEffect(() => {
     loadPredictions();
