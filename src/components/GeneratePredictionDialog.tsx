@@ -49,8 +49,8 @@ export const GeneratePredictionDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="hero" size="lg" className="gap-2">
-          <Sparkles className="h-5 w-5" />
+        <Button variant="hero" size="lg" className="gap-2 animate-pulse-glow">
+          <Sparkles className="h-5 w-5 animate-pulse" />
           Generate AI Prediction
         </Button>
       </DialogTrigger>

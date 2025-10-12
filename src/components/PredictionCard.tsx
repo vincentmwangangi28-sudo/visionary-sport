@@ -39,7 +39,7 @@ export const PredictionCard = ({
   const badge = getConfidenceBadge(confidence);
 
   return (
-    <Card className="p-6 hover:shadow-card transition-all duration-300 bg-gradient-prediction border-primary/10">
+    <Card className="p-6 hover-lift hover-glow transition-all duration-300 bg-gradient-prediction border-primary/10 animate-fade-in">
       {/* League Badge */}
       <div className="flex items-center justify-between mb-4">
         <Badge variant="outline" className="text-xs">

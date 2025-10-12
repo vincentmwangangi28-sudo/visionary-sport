@@ -2,34 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Menu, Coins, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { CoinBalance } from "./CoinBalance";
 import aiIcon from "@/assets/ai-prediction-icon.png";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
-  const [coins, setCoins] = useState(0);
-
-  useEffect(() => {
-    if (user) {
-      loadUserCoins();
-    }
-  }, [user]);
-
-  const loadUserCoins = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', user!.id)
-        .single();
-
-      if (error) throw error;
-      setCoins(data?.coins || 0);
-    } catch (error) {
-      console.error('Error loading coins:', error);
-    }
-  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -57,11 +34,8 @@ export const Navbar = () => {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Coins className="h-4 w-4 text-yellow-500" />
-                  <span className="hidden sm:inline font-semibold">{coins}</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
+                <CoinBalance />
+                <Button variant="outline" size="sm" onClick={signOut} className="gap-2 hover:scale-105 transition-transform">
                   <LogOut className="h-4 w-4" />
                   <span className="hidden sm:inline">Sign Out</span>
                 </Button>

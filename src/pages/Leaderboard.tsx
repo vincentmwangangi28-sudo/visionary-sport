@@ -19,6 +19,27 @@ export default function Leaderboard() {
 
   useEffect(() => {
     loadLeaderboard();
+
+    // Real-time updates for leaderboard
+    const channel = supabase
+      .channel('leaderboard-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contest_entries'
+        },
+        () => {
+          console.log('Leaderboard updated');
+          loadLeaderboard();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadLeaderboard = async () => {
@@ -87,11 +108,12 @@ export default function Leaderboard() {
                   {leaders.map((entry, index) => (
                     <div
                       key={entry.user_id}
-                      className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
+                      className={`flex items-center justify-between p-4 rounded-lg transition-all duration-300 hover-lift animate-fade-in ${
                         index < 3 
-                          ? 'bg-gradient-to-r from-primary/10 to-transparent border border-primary/20' 
+                          ? 'bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 hover:shadow-glow' 
                           : 'bg-muted/30 hover:bg-muted/50'
                       }`}
+                      style={{ animationDelay: `${index * 0.05}s` }}
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-12 flex justify-center">
@@ -107,7 +129,7 @@ export default function Leaderboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-primary">
+                        <p className="text-2xl font-bold bg-gradient-victory bg-clip-text text-transparent animate-counter">
                           {entry.score}
                         </p>
                         <p className="text-xs text-muted-foreground">points</p>
