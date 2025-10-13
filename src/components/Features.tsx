@@ -4,33 +4,33 @@ import { Brain, Shield, TrendingUp, Zap, Award, BarChart3 } from "lucide-react";
 const features = [
   {
     icon: Brain,
-    title: "AI-Powered Analysis",
-    description: "Advanced machine learning models analyze team form, player stats, and historical data",
+    title: "Transform Data into Winning Strategies",
+    description: "Advanced AI processes thousands of data points—team form, player injuries, weather conditions—to deliver predictions you can trust",
   },
   {
     icon: TrendingUp,
-    title: "High Accuracy",
-    description: "Consistently achieving 87% prediction accuracy across multiple sports",
+    title: "87% Win Rate You Can Count On",
+    description: "Join thousands of users who have increased their betting success by leveraging our consistently accurate AI predictions",
   },
   {
     icon: Zap,
-    title: "Real-Time Updates",
-    description: "Predictions updated instantly as match conditions and team news change",
+    title: "Stay Ahead with Live Intelligence",
+    description: "Never miss a beat—predictions update in real-time as team news breaks and match conditions evolve",
   },
   {
     icon: Shield,
-    title: "Transparent Reasoning",
-    description: "See exactly why the AI made each prediction with detailed explanations",
+    title: "Full Transparency, Zero Guesswork",
+    description: "Every prediction comes with detailed AI reasoning so you understand exactly why we recommend each outcome",
   },
   {
     icon: Award,
-    title: "Leaderboard Contests",
-    description: "Compete with other users and win prizes based on prediction accuracy",
+    title: "Compete and Win Big",
+    description: "Climb the leaderboard, prove your prediction skills, and earn exclusive rewards in weekly contests",
   },
   {
     icon: BarChart3,
-    title: "Detailed Analytics",
-    description: "Track your prediction history and performance with comprehensive stats",
+    title: "Track Your Journey to Success",
+    description: "Monitor your prediction performance, identify winning patterns, and continuously improve your betting strategy",
   },
 ];
 

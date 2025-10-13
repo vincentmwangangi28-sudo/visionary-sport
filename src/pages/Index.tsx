@@ -3,6 +3,9 @@ import { Hero } from "@/components/Hero";
 import { TodaysPredictions } from "@/components/TodaysPredictions";
 import { Features } from "@/components/Features";
 import { ActiveContests } from "@/components/ActiveContests";
+import { HowItWorks } from "@/components/HowItWorks";
+import { Testimonials } from "@/components/Testimonials";
+import { Footer } from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -12,8 +15,17 @@ const Index = () => {
       <div id="predictions">
         <TodaysPredictions />
       </div>
+      <div id="how-it-works">
+        <HowItWorks />
+      </div>
       <ActiveContests />
-      <Features />
+      <div id="features">
+        <Features />
+      </div>
+      <div id="testimonials">
+        <Testimonials />
+      </div>
+      <Footer />
     </div>
   );
 };
