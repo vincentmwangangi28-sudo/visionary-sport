@@ -2,3 +2,6 @@ project_id = "yofhrfahhzsxbtuhuwqf"
 
 [functions.generate-prediction]
 verify_jwt = false
+
+[functions.fetch-live-matches]
+verify_jwt = false
