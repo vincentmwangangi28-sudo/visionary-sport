@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { LiveMatches } from "@/components/LiveMatches";
-import { TodaysPredictions } from "@/components/TodaysPredictions";
+import { PredictionsDashboard } from "@/components/PredictionsDashboard";
 import { Features } from "@/components/Features";
 import { ActiveContests } from "@/components/ActiveContests";
 import { HowItWorks } from "@/components/HowItWorks";
@@ -15,7 +15,7 @@ const Index = () => {
       <Hero />
       <LiveMatches />
       <div id="predictions">
-        <TodaysPredictions />
+        <PredictionsDashboard />
       </div>
       <div id="how-it-works">
         <HowItWorks />

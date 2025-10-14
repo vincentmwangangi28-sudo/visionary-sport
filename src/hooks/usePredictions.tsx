@@ -14,6 +14,8 @@ export interface Prediction {
   reasoning: string;
   is_premium: boolean;
   created_at: string;
+  result: string | null;
+  ai_model: string;
 }
 
 export const usePredictions = () => {
