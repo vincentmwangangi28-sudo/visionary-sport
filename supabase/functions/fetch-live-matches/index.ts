@@ -49,26 +49,25 @@ async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
   }
 }
 
-// Fetch from API-Football (RapidAPI - requires API key)
-async function fetchFromAPIFootball(apiKey?: string): Promise<LiveMatch[]> {
+// Fetch from API-Sports (requires API key)
+async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
   if (!apiKey) {
-    console.log('⏭️ Skipping API-Football: No API key');
+    console.log('⏭️ Skipping API-Sports: No API key');
     return [];
   }
 
-  console.log('🔄 Trying API-Football...');
+  console.log('🔄 Trying API-Sports...');
   try {
-    const response = await fetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
+    const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
       headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
+        'x-apisports-key': apiKey
       }
     });
 
     const data = await response.json();
     
     if (!data.response || data.response.length === 0) {
-      console.log('⚠️ API-Football: No live matches');
+      console.log('⚠️ API-Sports: No live matches');
       return [];
     }
 
@@ -84,10 +83,10 @@ async function fetchFromAPIFootball(apiKey?: string): Promise<LiveMatch[]> {
       date: fixture.fixture.date.split('T')[0],
     }));
 
-    console.log(`✅ API-Football: Found ${matches.length} live matches`);
+    console.log(`✅ API-Sports: Found ${matches.length} live matches`);
     return matches;
   } catch (error) {
-    console.error('❌ API-Football error:', error);
+    console.error('❌ API-Sports error:', error);
     return [];
   }
 }
@@ -143,18 +142,20 @@ serve(async (req) => {
   try {
     console.log('📡 Fetching live matches...');
     
-    // Get API key from environment (optional)
-    const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
+    // Get API key from environment
+    const apiSportsKey = Deno.env.get('API_SPORTS_KEY');
     
     let matches: LiveMatch[] = [];
 
     // Try multiple sources with fallback
-    // 1. Try TheSportsDB first (free, no key required)
-    matches = await fetchFromTheSportsDB();
+    // 1. Try API-Sports first (if key is available)
+    if (apiSportsKey) {
+      matches = await fetchFromAPISports(apiSportsKey);
+    }
 
-    // 2. If no matches, try API-Football (if key is available)
-    if (matches.length === 0 && rapidApiKey) {
-      matches = await fetchFromAPIFootball(rapidApiKey);
+    // 2. If no matches, try TheSportsDB (free, no key required)
+    if (matches.length === 0) {
+      matches = await fetchFromTheSportsDB();
     }
 
     // 3. If still no matches, use mock data for demo
