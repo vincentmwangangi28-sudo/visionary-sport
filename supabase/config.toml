@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.fetch-live-matches]
 verify_jwt = false
+
+[functions.generate-daily-predictions]
+verify_jwt = false
