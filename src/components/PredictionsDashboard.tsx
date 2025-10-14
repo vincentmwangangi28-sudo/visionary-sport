@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { RealtimeIndicator } from "./RealtimeIndicator";
 import { PredictionCard } from "./PredictionCard";
 import { usePredictions } from "@/hooks/usePredictions";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,10 +18,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const PredictionsDashboard = () => {
-  const { predictions, loading, refreshPredictions } = usePredictions();
+  const { 
+    predictions, 
+    loading, 
+    refreshPredictions, 
+    realtimeConnected,
+    updateCount 
+  } = usePredictions();
   const [generating, setGenerating] = useState(false);
   const [filterLeague, setFilterLeague] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "confidence">("date");
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+  // Track when predictions update
+  useEffect(() => {
+    if (predictions.length > 0) {
+      setLastUpdate(new Date());
+    }
+  }, [predictions.length, updateCount]);
 
   // Generate daily predictions
   const handleGeneratePredictions = async () => {
@@ -129,10 +144,15 @@ export const PredictionsDashboard = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Real-time AI predictions powered by advanced machine learning
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse-glow"></div>
-            <span className="text-sm font-medium text-primary">Live Updates Enabled</span>
-          </div>
+        </div>
+
+        {/* Realtime Status Indicator */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <RealtimeIndicator 
+            isConnected={realtimeConnected}
+            lastUpdate={lastUpdate}
+            updateCount={updateCount}
+          />
         </div>
 
         {/* Stats Cards */}

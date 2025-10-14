@@ -21,12 +21,15 @@ export interface Prediction {
 export const usePredictions = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
+  const [updateCount, setUpdateCount] = useState(0);
 
   const handleNewPrediction = useCallback((prediction: Prediction) => {
     setPredictions(prev => {
       // Check if prediction already exists to avoid duplicates
       const exists = prev.some(p => p.id === prediction.id);
       if (exists) return prev;
+      setUpdateCount(c => c + 1);
       return [prediction, ...prev.slice(0, 9)];
     });
   }, []);
@@ -35,6 +38,19 @@ export const usePredictions = () => {
     setPredictions(prev => 
       prev.map(p => p.id === prediction.id ? prediction : p)
     );
+    setUpdateCount(c => c + 1);
+  }, []);
+
+  // Track realtime connection status
+  useEffect(() => {
+    const channel = supabase.channel('predictions-status-check');
+    channel.subscribe((status) => {
+      setRealtimeConnected(status === 'SUBSCRIBED');
+    });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useRealtimePredictions(handleNewPrediction, handleUpdatePrediction);
@@ -85,5 +101,12 @@ export const usePredictions = () => {
     }
   };
 
-  return { predictions, loading, generatePrediction, refreshPredictions: loadPredictions };
+  return { 
+    predictions, 
+    loading, 
+    generatePrediction, 
+    refreshPredictions: loadPredictions,
+    realtimeConnected,
+    updateCount
+  };
 };
