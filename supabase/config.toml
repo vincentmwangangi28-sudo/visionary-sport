@@ -1,10 +1,10 @@
 project_id = "yofhrfahhzsxbtuhuwqf"
 
 [functions.generate-prediction]
-verify_jwt = false
+verify_jwt = true
 
 [functions.fetch-live-matches]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-daily-predictions]
-verify_jwt = false
+verify_jwt = true

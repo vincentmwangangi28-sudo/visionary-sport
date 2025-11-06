@@ -265,6 +265,10 @@ export type Database = {
       }
     }
     Functions: {
+      enter_contest_atomic: {
+        Args: { _contest_id: string; _entry_fee: number }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

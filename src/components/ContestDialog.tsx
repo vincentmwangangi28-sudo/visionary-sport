@@ -17,6 +17,14 @@ interface Contest {
   end_date: string;
 }
 
+interface ContestEntryResult {
+  success: boolean;
+  error?: string;
+  current_coins?: number;
+  new_balance?: number;
+  message?: string;
+}
+
 export const ContestDialog = ({ contest }: { contest: Contest }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -29,61 +37,41 @@ export const ContestDialog = ({ contest }: { contest: Contest }) => {
     }
 
     setLoading(true);
+    
     try {
-      // Check if user has enough coins
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      if (profile.coins < contest.entry_fee) {
-        toast.error('Insufficient coins. Please purchase more coins.');
-        return;
-      }
-
-      // Deduct coins and create contest entry
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ coins: profile.coins - contest.entry_fee })
-        .eq('id', user.id);
-
-      if (updateError) throw updateError;
-
-      const { error: entryError } = await supabase
-        .from('contest_entries')
-        .insert({
-          contest_id: contest.id,
-          user_id: user.id,
-          score: 0
-        });
-
-      if (entryError) {
-        if (entryError.code === '23505') {
-          toast.error('You have already entered this contest');
-        } else {
-          throw entryError;
-        }
-        return;
-      }
-
-      // Record transaction
-      await supabase.from('transactions').insert({
-        user_id: user.id,
-        type: 'contest_entry',
-        amount: -contest.entry_fee,
-        payment_method: 'coins',
-        status: 'completed',
-        metadata: { contest_id: contest.id, contest_name: contest.name }
+      // Use atomic function to prevent race conditions
+      const { data, error } = await supabase.rpc('enter_contest_atomic', {
+        _contest_id: contest.id,
+        _entry_fee: contest.entry_fee
       });
 
-      toast.success('Successfully entered contest!');
+      if (error) throw error;
+
+      const result = data as unknown as ContestEntryResult;
+
+      if (!result.success) {
+        switch (result.error) {
+          case 'insufficient_coins':
+            toast.error(`Insufficient coins. You have ${result.current_coins} coins but need ${contest.entry_fee}.`);
+            break;
+          case 'already_entered':
+            toast.error('You have already entered this contest');
+            break;
+          case 'unauthorized':
+            toast.error('Please sign in to enter contests');
+            break;
+          default:
+            toast.error('Failed to enter contest. Please try again.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      toast.success(`Successfully entered contest! New balance: ${result.new_balance} coins`);
       setOpen(false);
     } catch (error) {
       console.error('Error entering contest:', error);
-      toast.error('Failed to enter contest');
+      toast.error('Failed to enter contest. Please try again.');
     } finally {
       setLoading(false);
     }

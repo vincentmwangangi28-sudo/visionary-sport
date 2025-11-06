@@ -7,6 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
+import { z } from 'zod';
+import { toast } from 'sonner';
+
+const signInSchema = z.object({
+  email: z.string().trim().email('Invalid email format').max(255),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(100)
+});
+
+const signUpSchema = z.object({
+  email: z.string().trim().email('Invalid email format').max(255),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(100),
+  fullName: z.string().trim().min(2, 'Name must be at least 2 characters').max(100).regex(/^[a-zA-Z\s-]+$/, 'Name can only contain letters, spaces, and hyphens')
+});
 
 export default function Auth() {
   const { user, signIn, signUp } = useAuth();
@@ -24,9 +37,16 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const validation = signInSchema.safeParse(signInData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+    
     setLoading(true);
     try {
-      await signIn(signInData.email, signInData.password);
+      await signIn(validation.data.email, validation.data.password);
     } finally {
       setLoading(false);
     }
@@ -34,9 +54,16 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const validation = signUpSchema.safeParse(signUpData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+    
     setLoading(true);
     try {
-      await signUp(signUpData.email, signUpData.password, signUpData.fullName);
+      await signUp(validation.data.email, validation.data.password, validation.data.fullName);
     } finally {
       setLoading(false);
     }

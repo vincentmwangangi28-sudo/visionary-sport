@@ -7,6 +7,26 @@ import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useAuth } from '@/hooks/useAuth';
+import { z } from 'zod';
+
+const matchDataSchema = z.object({
+  homeTeam: z.string()
+    .trim()
+    .min(2, 'Team name must be at least 2 characters')
+    .max(50, 'Team name must be less than 50 characters')
+    .regex(/^[a-zA-Z0-9\s-]+$/, 'Team name can only contain letters, numbers, spaces, and hyphens'),
+  awayTeam: z.string()
+    .trim()
+    .min(2, 'Team name must be at least 2 characters')
+    .max(50, 'Team name must be less than 50 characters')
+    .regex(/^[a-zA-Z0-9\s-]+$/, 'Team name can only contain letters, numbers, spaces, and hyphens'),
+  league: z.string()
+    .trim()
+    .min(3, 'League name must be at least 3 characters')
+    .max(50, 'League name must be less than 50 characters'),
+  matchDate: z.string()
+    .refine((date) => !isNaN(Date.parse(date)), 'Invalid date format')
+});
 
 export const GeneratePredictionDialog = () => {
   const { user } = useAuth();
@@ -28,9 +48,21 @@ export const GeneratePredictionDialog = () => {
       return;
     }
 
+    const validation = matchDataSchema.safeParse(formData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+
     setLoading(true);
     try {
-      await generatePrediction(formData);
+      const validatedData = {
+        homeTeam: validation.data.homeTeam,
+        awayTeam: validation.data.awayTeam,
+        league: validation.data.league,
+        matchDate: validation.data.matchDate
+      };
+      await generatePrediction(validatedData);
       toast.success('Prediction generated successfully!');
       setOpen(false);
       setFormData({
