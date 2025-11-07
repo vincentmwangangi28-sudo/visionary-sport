@@ -6,5 +6,8 @@ verify_jwt = true
 [functions.fetch-live-matches]
 verify_jwt = true
 
+[functions.fetch-upcoming-matches]
+verify_jwt = true
+
 [functions.generate-daily-predictions]
 verify_jwt = true
