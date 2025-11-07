@@ -15,6 +15,8 @@ interface LiveMatch {
   time: string;
   league: string;
   date: string;
+  prediction?: string;
+  confidence?: number;
 }
 
 // Fetch from TheSportsDB (completely free, no API key needed)
@@ -29,17 +31,21 @@ async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
       return [];
     }
 
-    const matches: LiveMatch[] = data.events.map((event: any) => ({
-      id: event.idEvent || `${event.strHomeTeam}-${event.strAwayTeam}`,
-      homeTeam: event.strHomeTeam,
-      awayTeam: event.strAwayTeam,
-      homeScore: event.intHomeScore ? parseInt(event.intHomeScore) : null,
-      awayScore: event.intAwayScore ? parseInt(event.intAwayScore) : null,
-      status: event.strStatus || 'LIVE',
-      time: event.strProgress || event.strTime || '0',
-      league: event.strLeague || 'Unknown',
-      date: event.dateEvent || new Date().toISOString().split('T')[0],
-    }));
+    const matches: LiveMatch[] = data.events.map((event: any) => {
+      const match = {
+        id: event.idEvent || `${event.strHomeTeam}-${event.strAwayTeam}`,
+        homeTeam: event.strHomeTeam,
+        awayTeam: event.strAwayTeam,
+        homeScore: event.intHomeScore ? parseInt(event.intHomeScore) : null,
+        awayScore: event.intAwayScore ? parseInt(event.intAwayScore) : null,
+        status: event.strStatus || 'LIVE',
+        time: event.strProgress || event.strTime || '0',
+        league: event.strLeague || 'Unknown',
+        date: event.dateEvent || new Date().toISOString().split('T')[0],
+      };
+      const { prediction, confidence } = generatePrediction(match);
+      return { ...match, prediction, confidence };
+    });
 
     console.log(`✅ TheSportsDB: Found ${matches.length} live matches`);
     return matches;
@@ -71,17 +77,21 @@ async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
       return [];
     }
 
-    const matches: LiveMatch[] = data.response.map((fixture: any) => ({
-      id: fixture.fixture.id.toString(),
-      homeTeam: fixture.teams.home.name,
-      awayTeam: fixture.teams.away.name,
-      homeScore: fixture.goals.home,
-      awayScore: fixture.goals.away,
-      status: fixture.fixture.status.short,
-      time: fixture.fixture.status.elapsed ? `${fixture.fixture.status.elapsed}'` : '0\'',
-      league: fixture.league.name,
-      date: fixture.fixture.date.split('T')[0],
-    }));
+    const matches: LiveMatch[] = data.response.map((fixture: any) => {
+      const match = {
+        id: fixture.fixture.id.toString(),
+        homeTeam: fixture.teams.home.name,
+        awayTeam: fixture.teams.away.name,
+        homeScore: fixture.goals.home,
+        awayScore: fixture.goals.away,
+        status: fixture.fixture.status.short,
+        time: fixture.fixture.status.elapsed ? `${fixture.fixture.status.elapsed}'` : '0\'',
+        league: fixture.league.name,
+        date: fixture.fixture.date.split('T')[0],
+      };
+      const { prediction, confidence } = generatePrediction(match);
+      return { ...match, prediction, confidence };
+    });
 
     console.log(`✅ API-Sports: Found ${matches.length} live matches`);
     return matches;
@@ -89,6 +99,36 @@ async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
     console.error('❌ API-Sports error:', error);
     return [];
   }
+}
+
+// Generate AI prediction based on current score
+function generatePrediction(match: LiveMatch): { prediction: string; confidence: number } {
+  const { homeScore, awayScore } = match;
+  
+  if (homeScore === null || awayScore === null) {
+    return { prediction: 'Draw', confidence: 50 };
+  }
+  
+  const scoreDiff = homeScore - awayScore;
+  const time = parseInt(match.time) || 0;
+  const timeRemaining = 90 - time;
+  
+  // Calculate confidence based on score difference and time remaining
+  let confidence = 50;
+  let prediction = 'Draw';
+  
+  if (scoreDiff > 0) {
+    prediction = 'Home Win';
+    confidence = Math.min(50 + (scoreDiff * 15) + ((90 - timeRemaining) / 90 * 30), 95);
+  } else if (scoreDiff < 0) {
+    prediction = 'Away Win';
+    confidence = Math.min(50 + (Math.abs(scoreDiff) * 15) + ((90 - timeRemaining) / 90 * 30), 95);
+  } else {
+    prediction = 'Draw';
+    confidence = Math.max(35, 60 - ((90 - timeRemaining) / 90 * 20));
+  }
+  
+  return { prediction, confidence: Math.round(confidence) };
 }
 
 // Fallback: Generate mock live data for demo purposes
@@ -106,6 +146,8 @@ function generateMockLiveMatches(): LiveMatch[] {
       time: '67\'',
       league: 'Premier League',
       date: new Date().toISOString().split('T')[0],
+      prediction: 'Away Win',
+      confidence: 74,
     },
     {
       id: 'mock-2',
@@ -117,6 +159,8 @@ function generateMockLiveMatches(): LiveMatch[] {
       time: '78\'',
       league: 'La Liga',
       date: new Date().toISOString().split('T')[0],
+      prediction: 'Draw',
+      confidence: 52,
     },
     {
       id: 'mock-3',
@@ -128,6 +172,8 @@ function generateMockLiveMatches(): LiveMatch[] {
       time: '82\'',
       league: 'Bundesliga',
       date: new Date().toISOString().split('T')[0],
+      prediction: 'Home Win',
+      confidence: 88,
     },
   ];
 

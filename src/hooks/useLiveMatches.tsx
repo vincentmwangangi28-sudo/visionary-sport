@@ -11,6 +11,8 @@ export interface LiveMatch {
   time: string;
   league: string;
   date: string;
+  prediction?: string;
+  confidence?: number;
 }
 
 interface LiveMatchesResponse {

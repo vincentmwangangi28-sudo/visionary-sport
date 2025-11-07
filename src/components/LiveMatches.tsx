@@ -137,8 +137,34 @@ export const LiveMatches = () => {
                   </div>
                 </div>
 
+                {/* AI Prediction */}
+                {match.prediction && match.confidence && (
+                  <div className="mt-4 pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <span className="text-2xl">🔮</span>
+                      <span className="text-sm font-semibold text-foreground">AI Prediction</span>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-base font-bold text-primary mb-1">
+                        {match.prediction}
+                      </p>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="flex-1 max-w-[120px] h-2 bg-secondary rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-primary to-primary-glow transition-all duration-500"
+                            style={{ width: `${match.confidence}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-bold text-primary">
+                          {match.confidence}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Status */}
-                <div className="text-center">
+                <div className="text-center mt-3">
                   <Badge variant="secondary" className="text-xs">
                     {match.status}
                   </Badge>
