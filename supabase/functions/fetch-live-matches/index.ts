@@ -19,6 +19,93 @@ interface LiveMatch {
   confidence?: number;
 }
 
+// Fetch from Football Data API
+async function fetchFromFootballDataAPI(apiToken?: string): Promise<LiveMatch[]> {
+  if (!apiToken) {
+    console.log('⏭️ Skipping Football Data API: No API token');
+    return [];
+  }
+
+  console.log('🔄 Trying Football Data API...');
+  try {
+    const response = await fetch('https://api.football-data.org/v4/matches?status=LIVE', {
+      headers: {
+        'X-Auth-Token': apiToken
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Football Data API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    
+    if (!data.matches || data.matches.length === 0) {
+      console.log('⚠️ Football Data API: No live matches');
+      return [];
+    }
+
+    const matches: LiveMatch[] = data.matches.map((match: any) => ({
+      id: match.id.toString(),
+      homeTeam: match.homeTeam.name,
+      awayTeam: match.awayTeam.name,
+      homeScore: match.score.fullTime.home,
+      awayScore: match.score.fullTime.away,
+      status: 'LIVE',
+      time: `${match.minute || 0}'`,
+      league: match.competition.name,
+      date: match.utcDate.split('T')[0],
+    }));
+
+    console.log(`✅ Football Data API: Found ${matches.length} live matches`);
+    return matches;
+  } catch (error) {
+    console.error('❌ Football Data API error:', error);
+    return [];
+  }
+}
+
+// Fetch predictions from PredictPro API
+async function fetchPredictions(apiKey?: string): Promise<Map<string, { prediction: string; confidence: number }>> {
+  const predictionsMap = new Map();
+  
+  if (!apiKey) {
+    console.log('⏭️ Skipping PredictPro API: No API key');
+    return predictionsMap;
+  }
+
+  console.log('🔄 Fetching predictions from PredictPro...');
+  try {
+    const response = await fetch('https://predictpro.ai/api/live-predictions', {
+      headers: {
+        'x-api-key': apiKey
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`❌ PredictPro API error: ${response.status}`);
+      return predictionsMap;
+    }
+
+    const data = await response.json();
+    
+    if (data.predictions && Array.isArray(data.predictions)) {
+      data.predictions.forEach((pred: any) => {
+        predictionsMap.set(pred.match_id, {
+          prediction: pred.prediction,
+          confidence: pred.confidence
+        });
+      });
+      console.log(`✅ PredictPro: Loaded ${predictionsMap.size} predictions`);
+    }
+  } catch (error) {
+    console.error('❌ PredictPro API error:', error);
+  }
+
+  return predictionsMap;
+}
+
 // Fetch from TheSportsDB (completely free, no API key needed)
 async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
   console.log('🔄 Trying TheSportsDB...');
@@ -188,23 +275,52 @@ serve(async (req) => {
   try {
     console.log('📡 Fetching live matches...');
     
-    // Get API key from environment
+    // Get API keys from environment
+    const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN');
+    const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
     const apiSportsKey = Deno.env.get('API_SPORTS_KEY');
     
     let matches: LiveMatch[] = [];
 
     // Try multiple sources with fallback
-    // 1. Try API-Sports first (if key is available)
-    if (apiSportsKey) {
+    // 1. Try Football Data API first (primary source)
+    if (footballDataToken) {
+      matches = await fetchFromFootballDataAPI(footballDataToken);
+    }
+
+    // 2. If no matches, try API-Sports
+    if (matches.length === 0 && apiSportsKey) {
       matches = await fetchFromAPISports(apiSportsKey);
     }
 
-    // 2. If no matches, try TheSportsDB (free, no key required)
+    // 3. If no matches, try TheSportsDB (free, no key required)
     if (matches.length === 0) {
       matches = await fetchFromTheSportsDB();
     }
 
-    // 3. If still no matches, use mock data for demo
+    // 4. Fetch AI predictions from PredictPro and merge with matches
+    if (matches.length > 0 && predictProApiKey) {
+      const predictions = await fetchPredictions(predictProApiKey);
+      
+      // Merge predictions with matches
+      matches = matches.map(match => {
+        const pred = predictions.get(match.id);
+        if (pred) {
+          return { ...match, prediction: pred.prediction, confidence: pred.confidence };
+        }
+        // Fallback to generated predictions if API doesn't have data
+        const { prediction, confidence } = generatePrediction(match);
+        return { ...match, prediction, confidence };
+      });
+    } else if (matches.length > 0) {
+      // Generate predictions if no API key available
+      matches = matches.map(match => {
+        const { prediction, confidence } = generatePrediction(match);
+        return { ...match, prediction, confidence };
+      });
+    }
+
+    // 5. If still no matches, use mock data for demo
     if (matches.length === 0) {
       matches = generateMockLiveMatches();
     }
