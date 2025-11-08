@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.generate-daily-predictions]
 verify_jwt = true
+
+[functions.fetch-user-performance]
+verify_jwt = true
