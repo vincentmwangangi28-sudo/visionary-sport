@@ -16,7 +16,13 @@ serve(async (req) => {
     const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
     const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
     
-    const results = {
+    const results: {
+      timestamp: string;
+      liveMatches: any[];
+      upcomingFixtures: any[];
+      userPerformance: any;
+      errors: string[];
+    } = {
       timestamp: new Date().toISOString(),
       liveMatches: [],
       upcomingFixtures: [],
