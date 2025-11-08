@@ -276,9 +276,9 @@ serve(async (req) => {
     console.log('📡 Fetching live matches...');
     
     // Get API keys from environment
-    const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN');
+    const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
     const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
-    const apiSportsKey = Deno.env.get('API_SPORTS_KEY');
+    const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
     
     let matches: LiveMatch[] = [];
 
@@ -289,8 +289,8 @@ serve(async (req) => {
     }
 
     // 2. If no matches, try API-Sports
-    if (matches.length === 0 && apiSportsKey) {
-      matches = await fetchFromAPISports(apiSportsKey);
+    if (matches.length === 0 && rapidApiKey) {
+      matches = await fetchFromAPISports(rapidApiKey);
     }
 
     // 3. If no matches, try TheSportsDB (free, no key required)
