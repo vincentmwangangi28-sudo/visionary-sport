@@ -130,6 +130,51 @@ export type Database = {
         }
         Relationships: []
       }
+      predictions_history: {
+        Row: {
+          actual_result: string | null
+          away_team: string
+          competition: string | null
+          confidence: number
+          created_at: string
+          home_team: string
+          id: string
+          is_correct: boolean | null
+          match_date: string
+          match_id: string
+          prediction: string
+          user_id: string
+        }
+        Insert: {
+          actual_result?: string | null
+          away_team: string
+          competition?: string | null
+          confidence: number
+          created_at?: string
+          home_team: string
+          id?: string
+          is_correct?: boolean | null
+          match_date: string
+          match_id: string
+          prediction: string
+          user_id: string
+        }
+        Update: {
+          actual_result?: string | null
+          away_team?: string
+          competition?: string | null
+          confidence?: number
+          created_at?: string
+          home_team?: string
+          id?: string
+          is_correct?: boolean | null
+          match_date?: string
+          match_id?: string
+          prediction?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
