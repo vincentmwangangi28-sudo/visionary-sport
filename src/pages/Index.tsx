@@ -11,8 +11,11 @@ import { ActiveContests } from "@/components/ActiveContests";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const Index = () => {
+  useNotifications();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

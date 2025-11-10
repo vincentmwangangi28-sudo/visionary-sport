@@ -21,12 +21,21 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
               Predictions
             </Link>
+            <Link to="/performance" className="text-sm font-medium hover:text-primary transition-colors">
+              Performance
+            </Link>
             <Link to="/leaderboard" className="text-sm font-medium hover:text-primary transition-colors">
               Leaderboard
+            </Link>
+            <Link to="/insights" className="text-sm font-medium hover:text-primary transition-colors">
+              Insights
+            </Link>
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+              About
             </Link>
           </nav>
 
