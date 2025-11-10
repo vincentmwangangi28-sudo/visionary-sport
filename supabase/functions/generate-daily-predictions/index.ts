@@ -138,8 +138,8 @@ Keep your response concise and focused on the most important factors.`;
         const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 65;
         const reasoning = reasoningMatch ? reasoningMatch[1].trim() : aiContent.substring(0, 200);
 
-        // Save to database
-        const { error: insertError } = await supabase
+        // Save to predictions table
+        const { data: insertedPrediction, error: insertError } = await supabase
           .from('predictions')
           .insert({
             match_id: matchId,
@@ -152,7 +152,9 @@ Keep your response concise and focused on the most important factors.`;
             reasoning: reasoning,
             ai_model: 'google/gemini-2.5-flash',
             is_premium: false
-          });
+          })
+          .select()
+          .single();
 
         if (insertError) {
           console.error(`❌ Database error for ${homeTeam} vs ${awayTeam}:`, insertError);

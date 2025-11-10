@@ -107,10 +107,12 @@ Provide prediction with confidence and reasoning.`;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl!, supabaseKey!);
 
+    const matchId = `${matchData.homeTeam}-${matchData.awayTeam}-${matchData.matchDate}`;
+
     const { data: savedPrediction, error: dbError } = await supabase
       .from('predictions')
       .insert({
-        match_id: `${matchData.homeTeam}-${matchData.awayTeam}-${matchData.matchDate}`,
+        match_id: matchId,
         home_team: matchData.homeTeam,
         away_team: matchData.awayTeam,
         league: matchData.league,
@@ -126,6 +128,30 @@ Provide prediction with confidence and reasoning.`;
     if (dbError) {
       console.error("Database error:", dbError);
       throw dbError;
+    }
+
+    // Get authenticated user if available
+    const authHeader = req.headers.get('authorization');
+    let userId = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id;
+    }
+
+    // Save to predictions_history if user is authenticated
+    if (userId) {
+      await supabase.from('predictions_history').insert({
+        user_id: userId,
+        match_id: matchId,
+        home_team: matchData.homeTeam,
+        away_team: matchData.awayTeam,
+        competition: matchData.league,
+        match_date: matchData.matchDate,
+        prediction: predictionData.prediction,
+        confidence: predictionData.confidence
+      });
     }
 
     return new Response(JSON.stringify({ 
