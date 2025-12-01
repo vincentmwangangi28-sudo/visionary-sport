@@ -20,6 +20,16 @@ export const useRealtimePredictions = (
         (payload) => {
           console.log('🎯 New prediction received:', payload);
           onNewPrediction(payload.new as Prediction);
+          
+          // GA4 event tracking for new predictions
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'new_prediction_received', {
+              'event_category': 'Realtime',
+              'event_label': `${payload.new.home_team} vs ${payload.new.away_team}`,
+              'confidence': payload.new.confidence
+            });
+          }
+          
           toast.success('🔥 New AI prediction available!', {
             description: `${payload.new.home_team} vs ${payload.new.away_team}`,
             duration: 4000,

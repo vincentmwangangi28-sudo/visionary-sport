@@ -91,19 +91,33 @@ export default function Leaderboard() {
     }
   };
 
-  // Structured data for leaderboard
+  // Enhanced structured data for leaderboard (ItemList)
   const leaderboardStructuredData = {
     "@context": "https://schema.org",
-    "@type": "SportsOrganization",
+    "@type": "ItemList",
     "name": "PredictPro Leaderboard",
-    "member": leaders.slice(0, 3).map(entry => ({
-      "@type": "Person",
-      "name": entry.profiles?.full_name || "Anonymous User",
-      "description": `Top bettor with ${entry.score} points`,
-      "additionalProperty": {
-        "@type": "PropertyValue",
-        "name": "Score",
-        "value": entry.score.toString()
+    "description": "Top predictors ranked by accuracy and performance",
+    "itemListOrder": "https://schema.org/ItemListOrderDescending",
+    "numberOfItems": leaders.length,
+    "itemListElement": leaders.slice(0, 10).map((entry, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Person",
+        "name": entry.profiles?.full_name || "Anonymous User",
+        "description": `Rank #${index + 1} • ${entry.score} points`,
+        "additionalProperty": [
+          {
+            "@type": "PropertyValue",
+            "name": "Score",
+            "value": entry.score.toString()
+          },
+          {
+            "@type": "PropertyValue",
+            "name": "Rank",
+            "value": (index + 1).toString()
+          }
+        ]
       }
     }))
   };
@@ -114,6 +128,9 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      {/* Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(leaderboardStructuredData) }} />
+      
       <Navbar />
       <div className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto">
