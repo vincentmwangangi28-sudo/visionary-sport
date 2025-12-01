@@ -80,6 +80,38 @@ export default function Leaderboard() {
     return <span className="text-lg font-bold text-muted-foreground">#{index + 1}</span>;
   };
 
+  // GA4 Event Tracking
+  const trackLeaderboardView = () => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'leaderboard_click', {
+        'event_category': 'Engagement',
+        'event_label': 'Leaderboard',
+        'value': 1
+      });
+    }
+  };
+
+  // Structured data for leaderboard
+  const leaderboardStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "SportsOrganization",
+    "name": "PredictPro Leaderboard",
+    "member": leaders.slice(0, 3).map(entry => ({
+      "@type": "Person",
+      "name": entry.profiles?.full_name || "Anonymous User",
+      "description": `Top bettor with ${entry.score} points`,
+      "additionalProperty": {
+        "@type": "PropertyValue",
+        "name": "Score",
+        "value": entry.score.toString()
+      }
+    }))
+  };
+
+  useEffect(() => {
+    trackLeaderboardView();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <Navbar />
