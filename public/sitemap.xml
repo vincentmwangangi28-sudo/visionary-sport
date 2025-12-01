@@ -2,44 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://visionary-sport.lovable.app/</loc>
-    <lastmod>2025-11-10</lastmod>
+    <lastmod>2025-12-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://visionary-sport.lovable.app/daily-predictions</loc>
-    <lastmod>2025-11-10</lastmod>
+    <loc>https://visionary-sport.lovable.app/leaderboard</loc>
+    <lastmod>2025-12-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://visionary-sport.lovable.app/performance</loc>
-    <lastmod>2025-11-10</lastmod>
+    <lastmod>2025-12-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://visionary-sport.lovable.app/leaderboard</loc>
-    <lastmod>2025-11-10</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://visionary-sport.lovable.app/insights</loc>
+    <lastmod>2025-12-01</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://visionary-sport.lovable.app/insights</loc>
-    <lastmod>2025-11-10</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://visionary-sport.lovable.app/about</loc>
+    <lastmod>2025-12-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://visionary-sport.lovable.app/about</loc>
-    <lastmod>2025-11-10</lastmod>
+    <loc>https://visionary-sport.lovable.app/auth</loc>
+    <lastmod>2025-12-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://visionary-sport.lovable.app/auth</loc>
-    <lastmod>2025-11-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
 </urlset>

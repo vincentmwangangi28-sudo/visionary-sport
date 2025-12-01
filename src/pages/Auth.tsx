@@ -64,6 +64,20 @@ export default function Auth() {
     setLoading(true);
     try {
       await signUp(validation.data.email, validation.data.password, validation.data.fullName);
+      
+      // GA4 Event Tracking for trial start
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'trial_start', {
+          'event_category': 'Onboarding',
+          'event_label': 'Free Trial',
+          'value': 1
+        });
+        (window as any).gtag('event', 'signup_start', {
+          'event_category': 'Onboarding',
+          'event_label': 'User Signup',
+          'value': 1
+        });
+      }
     } finally {
       setLoading(false);
     }
