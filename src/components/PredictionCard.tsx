@@ -49,21 +49,42 @@ export const PredictionCard = ({
 
   const badge = getConfidenceBadge(confidence);
 
-  // Structured data for SportsEvent
+  // Enhanced structured data for SportsEvent
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     "name": `${homeTeam} vs ${awayTeam}`,
-    "startDate": matchDate,
+    "startDate": `${matchDate}T${matchTime}:00+03:00`,
     "homeTeam": { "@type": "SportsTeam", "name": homeTeam },
     "awayTeam": { "@type": "SportsTeam", "name": awayTeam },
     "sport": "Football",
-    "location": { "@type": "Place", "name": league },
-    "prediction": {
-      "@type": "Thing",
-      "name": prediction,
-      "confidenceScore": `${confidence}%`
-    }
+    "location": { 
+      "@type": "Place", 
+      "name": league 
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "additionalProperty": [
+      { 
+        "@type": "PropertyValue", 
+        "name": "Recommended Outcome", 
+        "value": prediction 
+      },
+      { 
+        "@type": "PropertyValue", 
+        "name": "Confidence Score", 
+        "value": `${confidence}%` 
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "AI Reasoning",
+        "value": reasoning
+      }
+    ]
   };
 
   return (
