@@ -14,3 +14,12 @@ verify_jwt = true
 
 [functions.fetch-user-performance]
 verify_jwt = true
+
+[functions.mpesa-stk-push]
+verify_jwt = true
+
+[functions.mpesa-webhook]
+verify_jwt = false
+
+[functions.generate-sitemap]
+verify_jwt = false

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { LiveMatches } from "@/components/LiveMatches";
@@ -12,9 +13,15 @@ import { HowItWorks } from "@/components/HowItWorks";
 import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
 import { useNotifications } from "@/hooks/useNotifications";
+import { PremiumUpgradeCard } from "@/components/PremiumUpgradeCard";
+import { initAnalytics } from "@/lib/analytics";
 
 const Index = () => {
   useNotifications();
+  
+  useEffect(() => {
+    initAnalytics();
+  }, []);
   
   return (
     <div className="min-h-screen bg-background">
@@ -49,6 +56,14 @@ const Index = () => {
         <HowItWorks />
       </div>
       <ActiveContests />
+      
+      {/* Premium Upgrade Section */}
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-md">
+          <PremiumUpgradeCard />
+        </div>
+      </section>
+
       <div id="features">
         <Features />
       </div>
