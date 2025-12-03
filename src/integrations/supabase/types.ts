@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      coin_packages: {
+        Row: {
+          bonus_coins: number | null
+          coins: number
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          name: string
+          price_kes: number
+        }
+        Insert: {
+          bonus_coins?: number | null
+          coins: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          name: string
+          price_kes: number
+        }
+        Update: {
+          bonus_coins?: number | null
+          coins?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          name?: string
+          price_kes?: number
+        }
+        Relationships: []
+      }
       contest_entries: {
         Row: {
           contest_id: string
@@ -175,6 +211,38 @@ export type Database = {
         }
         Relationships: []
       }
+      predictions_unlocked: {
+        Row: {
+          coins_spent: number
+          created_at: string
+          id: string
+          prediction_id: string
+          user_id: string
+        }
+        Insert: {
+          coins_spent?: number
+          created_at?: string
+          id?: string
+          prediction_id: string
+          user_id: string
+        }
+        Update: {
+          coins_spent?: number
+          created_at?: string
+          id?: string
+          prediction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_unlocked_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -320,6 +388,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      unlock_prediction: {
+        Args: { _coin_cost?: number; _prediction_id: string }
+        Returns: Json
       }
     }
     Enums: {
