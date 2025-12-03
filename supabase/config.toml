@@ -4,10 +4,10 @@ project_id = "yofhrfahhzsxbtuhuwqf"
 verify_jwt = true
 
 [functions.fetch-live-matches]
-verify_jwt = true
+verify_jwt = false
 
 [functions.fetch-upcoming-matches]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-daily-predictions]
 verify_jwt = true
@@ -22,4 +22,16 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.generate-sitemap]
+verify_jwt = false
+
+[functions.fetch-api-football]
+verify_jwt = false
+
+[functions.cron-hourly-fixtures]
+verify_jwt = false
+
+[functions.cron-daily-predictions]
+verify_jwt = false
+
+[functions.daily-predictions-automation]
 verify_jwt = false
