@@ -8,8 +8,8 @@ interface AdBannerProps {
   responsive?: boolean;
 }
 
-// Replace with your actual AdSense client ID after approval
-const ADSENSE_CLIENT_ID = "ca-pub-XXXXXXXXXXXXXXXX";
+// Your AdSense client ID
+const ADSENSE_CLIENT_ID = "ca-pub-1375386376692976";
 
 export const AdBanner = ({ 
   slot, 
