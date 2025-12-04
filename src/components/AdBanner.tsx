@@ -52,36 +52,17 @@ export const AdBanner = ({
         className
       )}
     >
-      {/* Placeholder for development - shows ad dimensions */}
-      <div className="text-center p-4 text-muted-foreground text-sm">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="px-2 py-1 bg-muted rounded text-xs font-medium">
-            Ad Space
-          </span>
-        </div>
-        <p className="text-xs">
-          {format === "horizontal" && "728x90 Leaderboard"}
-          {format === "vertical" && "160x600 Skyscraper"}
-          {format === "rectangle" && "300x250 Medium Rectangle"}
-          {format === "auto" && "Responsive Ad Unit"}
-        </p>
-      </div>
-
-      {/* 
-        Uncomment this when AdSense is approved:
-        
-        <ins
-          className="adsbygoogle"
-          style={{ 
-            display: "block",
-            ...(!responsive && getAdStyles())
-          }}
-          data-ad-client={ADSENSE_CLIENT_ID}
-          data-ad-slot={slot}
-          data-ad-format={responsive ? "auto" : undefined}
-          data-full-width-responsive={responsive ? "true" : undefined}
-        />
-      */}
+      <ins
+        className="adsbygoogle"
+        style={{ 
+          display: "block",
+          ...(!responsive && getAdStyles())
+        }}
+        data-ad-client={ADSENSE_CLIENT_ID}
+        data-ad-slot={slot}
+        data-ad-format={responsive ? "auto" : undefined}
+        data-full-width-responsive={responsive ? "true" : undefined}
+      />
     </div>
   );
 };
