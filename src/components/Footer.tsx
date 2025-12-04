@@ -1,9 +1,14 @@
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
+import { FooterAd } from "./AdBanner";
 
 export const Footer = () => {
   return (
     <footer className="bg-muted/30 border-t">
+      {/* Footer Banner Ad */}
+      <div className="container mx-auto px-4 pt-8">
+        <FooterAd />
+      </div>
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}

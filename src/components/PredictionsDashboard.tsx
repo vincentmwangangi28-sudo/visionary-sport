@@ -16,6 +16,7 @@ import {
 import { Trophy, Zap, RefreshCw, Filter, TrendingUp, Target, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { InContentAd, SidebarAd } from "./AdBanner";
 
 export const PredictionsDashboard = () => {
   const { 
@@ -274,34 +275,47 @@ export const PredictionsDashboard = () => {
             </Button>
           </div>
         ) : (
-          <div className="max-w-5xl mx-auto space-y-6">
-            {filteredPredictions.map((prediction, index) => (
-              <div
-                key={prediction.id}
-                className="animate-slide-up hover-lift transition-all duration-500"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <PredictionCard
-                  homeTeam={prediction.home_team}
-                  awayTeam={prediction.away_team}
-                  league={prediction.league}
-                  prediction={prediction.prediction}
-                  confidence={prediction.confidence}
-                  reasoning={prediction.reasoning}
-                  matchDate={new Date(prediction.match_date).toLocaleDateString()}
-                  matchTime={new Date(prediction.match_date).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                />
-              </div>
-            ))}
+          <div className="max-w-6xl mx-auto flex gap-6">
+            {/* Main predictions content */}
+            <div className="flex-1 space-y-6">
+              {filteredPredictions.map((prediction, index) => (
+                <div key={prediction.id}>
+                  <div
+                    className="animate-slide-up hover-lift transition-all duration-500"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <PredictionCard
+                      homeTeam={prediction.home_team}
+                      awayTeam={prediction.away_team}
+                      league={prediction.league}
+                      prediction={prediction.prediction}
+                      confidence={prediction.confidence}
+                      reasoning={prediction.reasoning}
+                      matchDate={new Date(prediction.match_date).toLocaleDateString()}
+                      matchTime={new Date(prediction.match_date).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    />
+                  </div>
+                  {/* Insert ad after every 3rd prediction */}
+                  {(index + 1) % 3 === 0 && index < filteredPredictions.length - 1 && (
+                    <InContentAd className="mt-6" />
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {/* Sidebar Ad - Hidden on mobile */}
+            <aside className="hidden lg:block w-[300px] shrink-0">
+              <SidebarAd />
+            </aside>
           </div>
         )}
 
         {/* Info Banner */}
         {filteredPredictions.length > 0 && (
-          <div className="max-w-5xl mx-auto mt-8">
+          <div className="max-w-6xl mx-auto mt-8">
             <Card className="p-4 bg-muted/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
