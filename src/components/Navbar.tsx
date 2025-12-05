@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trophy, Menu, Coins, LogOut, ShoppingBag } from "lucide-react";
+import { Trophy, Menu, Coins, LogOut, ShoppingBag, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
@@ -34,6 +34,10 @@ export const Navbar = () => {
             <Link to="/shop" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               <ShoppingBag className="h-4 w-4" />
               Shop
+            </Link>
+            <Link to="/rewards" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+              <Gift className="h-4 w-4" />
+              Rewards
             </Link>
             <Link to="/insights" className="text-sm font-medium hover:text-primary transition-colors">
               Insights
