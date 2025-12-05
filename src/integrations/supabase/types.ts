@@ -118,6 +118,74 @@ export type Database = {
         }
         Relationships: []
       }
+      prediction_bundles: {
+        Row: {
+          created_at: string
+          discount_percent: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          predictions_count: number
+          price_kes: number
+        }
+        Insert: {
+          created_at?: string
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          predictions_count: number
+          price_kes: number
+        }
+        Update: {
+          created_at?: string
+          discount_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          predictions_count?: number
+          price_kes?: number
+        }
+        Relationships: []
+      }
+      prediction_insurance: {
+        Row: {
+          created_at: string
+          id: string
+          insurance_cost: number
+          prediction_id: string
+          refund_percent: number | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          insurance_cost: number
+          prediction_id: string
+          refund_percent?: number | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          insurance_cost?: number
+          prediction_id?: string
+          refund_percent?: number | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_insurance_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       predictions: {
         Row: {
           ai_model: string | null
@@ -273,6 +341,117 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+          uses_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+          uses_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          uses_count?: number | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          coins_earned: number | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          status: string | null
+        }
+        Insert: {
+          coins_earned?: number | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          status?: string | null
+        }
+        Update: {
+          coins_earned?: number | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      spin_wheel_entries: {
+        Row: {
+          id: string
+          prize_amount: number | null
+          prize_type: string
+          spun_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          prize_amount?: number | null
+          prize_type: string
+          spun_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          prize_amount?: number | null
+          prize_type?: string
+          spun_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          plan: string
+          price_kes: number
+          starts_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          plan: string
+          price_kes: number
+          starts_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          plan?: string
+          price_kes?: number
+          starts_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -378,6 +557,7 @@ export type Database = {
       }
     }
     Functions: {
+      can_spin_today: { Args: { _user_id: string }; Returns: boolean }
       enter_contest_atomic: {
         Args: { _contest_id: string; _entry_fee: number }
         Returns: Json
