@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,84 +14,55 @@ serve(async (req) => {
   try {
     console.log('🔄 Starting daily predictions automation...');
     
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
-    const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
+    
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
     const results: {
       timestamp: string;
       liveMatches: any[];
       upcomingFixtures: any[];
-      userPerformance: any;
+      predictionsGenerated: number;
       errors: string[];
     } = {
       timestamp: new Date().toISOString(),
       liveMatches: [],
       upcomingFixtures: [],
-      userPerformance: null,
+      predictionsGenerated: 0,
       errors: []
     };
 
-    // 1. Fetch Live Matches
+    // 1. Fetch Live Matches from Football-Data.org
     try {
-      console.log('📡 Fetching live matches...');
+      console.log('📡 Fetching live matches from Football-Data.org...');
       const liveResponse = await fetch('https://api.football-data.org/v4/matches?status=LIVE', {
-        headers: {
-          'X-Auth-Token': footballDataToken || ''
-        }
+        headers: { 'X-Auth-Token': footballDataToken || '' }
       });
 
       if (liveResponse.ok) {
         const liveData = await liveResponse.json();
         results.liveMatches = liveData.matches?.slice(0, 10) || [];
         console.log(`✅ Fetched ${results.liveMatches.length} live matches`);
+      } else {
+        console.log(`⚠️ Football-Data API returned ${liveResponse.status}`);
       }
     } catch (error) {
       console.error('❌ Error fetching live matches:', error);
       results.errors.push('Failed to fetch live matches');
     }
 
-    // 2. Fetch Live Predictions
-    if (predictProApiKey) {
-      try {
-        console.log('🔮 Fetching live predictions...');
-        const predictionsResponse = await fetch('https://predictpro.ai/api/live-predictions', {
-          headers: {
-            'x-api-key': predictProApiKey
-          }
-        });
-
-        if (predictionsResponse.ok) {
-          const predictionsData = await predictionsResponse.json();
-          console.log('✅ Fetched live predictions');
-          
-          // Merge predictions with live matches
-          if (results.liveMatches.length > 0 && predictionsData.predictions) {
-            results.liveMatches = results.liveMatches.map((match: any) => {
-              const prediction = predictionsData.predictions.find((p: any) => 
-                p.match_id === match.id.toString()
-              );
-              return prediction ? { ...match, prediction: prediction.prediction, confidence: prediction.confidence } : match;
-            });
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error fetching live predictions:', error);
-        results.errors.push('Failed to fetch live predictions');
-      }
-    }
-
-    // 3. Fetch Upcoming Fixtures
+    // 2. Fetch Upcoming Fixtures
     try {
       console.log('📅 Fetching upcoming fixtures...');
       const upcomingResponse = await fetch('https://api.football-data.org/v4/matches?status=SCHEDULED', {
-        headers: {
-          'X-Auth-Token': footballDataToken || ''
-        }
+        headers: { 'X-Auth-Token': footballDataToken || '' }
       });
 
       if (upcomingResponse.ok) {
         const upcomingData = await upcomingResponse.json();
-        results.upcomingFixtures = upcomingData.matches?.slice(0, 10) || [];
+        results.upcomingFixtures = upcomingData.matches?.slice(0, 20) || [];
         console.log(`✅ Fetched ${results.upcomingFixtures.length} upcoming fixtures`);
       }
     } catch (error) {
@@ -98,54 +70,58 @@ serve(async (req) => {
       results.errors.push('Failed to fetch upcoming fixtures');
     }
 
-    // 4. Fetch Upcoming Predictions
-    if (predictProApiKey) {
-      try {
-        console.log('🔮 Fetching upcoming predictions...');
-        const upcomingPredictionsResponse = await fetch('https://predictpro.ai/api/upcoming-predictions', {
-          headers: {
-            'x-api-key': predictProApiKey
-          }
+    // 3. Get existing predictions from database and merge
+    try {
+      console.log('🔮 Fetching predictions from database...');
+      const { data: predictions, error } = await supabase
+        .from('predictions')
+        .select('*')
+        .gte('match_date', new Date().toISOString().split('T')[0])
+        .order('match_date', { ascending: true })
+        .limit(50);
+
+      if (!error && predictions) {
+        console.log(`✅ Found ${predictions.length} predictions in database`);
+        
+        // Merge predictions with live matches
+        results.liveMatches = results.liveMatches.map((match: any) => {
+          const prediction = predictions.find((p: any) => 
+            p.match_id === match.id?.toString() ||
+            (p.home_team.toLowerCase().includes(match.homeTeam?.name?.toLowerCase()) &&
+             p.away_team.toLowerCase().includes(match.awayTeam?.name?.toLowerCase()))
+          );
+          return prediction ? { ...match, prediction: prediction.prediction, confidence: prediction.confidence, reasoning: prediction.reasoning } : match;
         });
 
-        if (upcomingPredictionsResponse.ok) {
-          const upcomingPredictionsData = await upcomingPredictionsResponse.json();
-          console.log('✅ Fetched upcoming predictions');
-          
-          // Merge predictions with upcoming fixtures
-          if (results.upcomingFixtures.length > 0 && upcomingPredictionsData.predictions) {
-            results.upcomingFixtures = results.upcomingFixtures.map((match: any) => {
-              const prediction = upcomingPredictionsData.predictions.find((p: any) => 
-                p.match_id === match.id.toString()
-              );
-              return prediction ? { ...match, prediction: prediction.prediction, confidence: prediction.confidence } : match;
-            });
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error fetching upcoming predictions:', error);
-        results.errors.push('Failed to fetch upcoming predictions');
+        // Merge predictions with upcoming fixtures
+        results.upcomingFixtures = results.upcomingFixtures.map((match: any) => {
+          const prediction = predictions.find((p: any) => 
+            p.match_id === match.id?.toString() ||
+            (p.home_team.toLowerCase().includes(match.homeTeam?.name?.toLowerCase()) &&
+             p.away_team.toLowerCase().includes(match.awayTeam?.name?.toLowerCase()))
+          );
+          return prediction ? { ...match, prediction: prediction.prediction, confidence: prediction.confidence, reasoning: prediction.reasoning } : match;
+        });
       }
+    } catch (error) {
+      console.error('❌ Error fetching predictions:', error);
+      results.errors.push('Failed to fetch predictions from database');
     }
 
-    // 5. Fetch User Performance
-    if (predictProApiKey) {
-      try {
-        console.log('📈 Fetching user performance...');
-        const performanceResponse = await fetch('https://predictpro.ai/api/user-performance', {
-          headers: {
-            'x-api-key': predictProApiKey
-          }
-        });
+    // 4. Calculate accuracy stats from predictions history
+    try {
+      const { data: historyStats } = await supabase
+        .from('predictions_history')
+        .select('is_correct, confidence')
+        .not('is_correct', 'is', null);
 
-        if (performanceResponse.ok) {
-          results.userPerformance = await performanceResponse.json();
-          console.log('✅ Fetched user performance');
-        }
-      } catch (error) {
-        console.error('❌ Error fetching user performance:', error);
-        results.errors.push('Failed to fetch user performance');
+      if (historyStats && historyStats.length > 0) {
+        const correct = historyStats.filter(h => h.is_correct).length;
+        const accuracy = Math.round((correct / historyStats.length) * 100);
+        console.log(`📊 Platform accuracy: ${accuracy}% (${correct}/${historyStats.length})`);
       }
+    } catch (error) {
+      console.error('❌ Error calculating stats:', error);
     }
 
     console.log('✅ Daily automation completed successfully');
