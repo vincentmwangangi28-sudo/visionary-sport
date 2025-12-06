@@ -3,6 +3,7 @@ import { Trophy, Menu, Coins, LogOut, ShoppingBag, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
+import { RealtimeStatus } from "./RealtimeStatus";
 import aiIcon from "@/assets/ai-prediction-icon.png";
 
 export const Navbar = () => {
@@ -18,6 +19,7 @@ export const Navbar = () => {
             <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
               PredictPro
             </span>
+            <RealtimeStatus />
           </Link>
 
           {/* Desktop Navigation */}
