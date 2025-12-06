@@ -1,6 +1,13 @@
+# PredictPro - AI Sports Predictions Platform
+# https://visionary-sport.lovable.app
+
 # Allow all major search engines
 User-agent: Googlebot
 Allow: /
+Allow: /leaderboard
+Allow: /insights
+Allow: /about
+Allow: /performance
 
 User-agent: Bingbot
 Allow: /
@@ -14,12 +21,24 @@ Allow: /
 # General crawlers
 User-agent: *
 Allow: /
+Allow: /assets/
+Allow: /src/assets/
+
+# Disallow API endpoints and private areas
 Disallow: /api/
 Disallow: /admin/
+Disallow: /auth
+Disallow: /shop
+Disallow: /rewards
 Disallow: /*.json$
+Disallow: /*?*
 
-# Crawl delay (optional, helps with server load)
+# Crawl delay (helps with server load)
 Crawl-delay: 1
 
-# Sitemap
+# Sitemaps
 Sitemap: https://visionary-sport.lovable.app/sitemap.xml
+Sitemap: https://yofhrfahhzsxbtuhuwqf.supabase.co/functions/v1/generate-sitemap
+
+# Host
+Host: visionary-sport.lovable.app
