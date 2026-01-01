@@ -37,16 +37,28 @@
     <meta name="twitter:description" content="Real-time match analysis with confidence scores and transparent reasoning. 87% accuracy rate." />
     <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/fp7lfnnDDBhSO6m3wG9agqDBD3M2/social-images/social-1763835453284-Copilot_20251122_211655.png" />
 
-    <!-- Google Analytics -->
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GT-5MC6X53B');</script>
+
+    <!-- Google Analytics (GA4) + Google Ads -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      
+      // GA4 Property
       gtag('config', 'G-M0VE8D3XLZ', {
         'page_path': window.location.pathname,
         'send_page_view': true
       });
+      
+      // Google Ads Conversion Tracking
+      gtag('config', 'AW-17798939655');
     </script>
 
     <!-- Google AdSense -->
@@ -113,6 +125,10 @@
 </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GT-5MC6X53B"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
