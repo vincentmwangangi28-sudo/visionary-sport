@@ -15,6 +15,7 @@ import { Footer } from "@/components/Footer";
 import { useNotifications } from "@/hooks/useNotifications";
 import { PremiumUpgradeCard } from "@/components/PremiumUpgradeCard";
 import { initAnalytics } from "@/lib/analytics";
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const Index = () => {
   useNotifications();
@@ -28,10 +29,22 @@ const Index = () => {
       <Navbar />
       <Hero />
       <LiveMatches />
+      
+      {/* Ad between sections */}
+      <div className="container mx-auto px-4">
+        <InContentAd />
+      </div>
+      
       <UpcomingMatches />
       <div id="predictions">
         <PredictionsDashboard />
       </div>
+      
+      {/* Ad after predictions */}
+      <div className="container mx-auto px-4">
+        <InContentAd />
+      </div>
+      
       <PredictionPerformance />
       
       {/* Streak Challenges & Accuracy Tracker */}
@@ -70,6 +83,12 @@ const Index = () => {
       <div id="testimonials">
         <Testimonials />
       </div>
+      
+      {/* Footer Ad */}
+      <div className="container mx-auto px-4 py-8">
+        <FooterAd />
+      </div>
+      
       <Footer />
     </div>
   );

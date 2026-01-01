@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { PredictionPerformance } from "@/components/PredictionPerformance";
 import { AccuracyTracker } from "@/components/AccuracyTracker";
 import { StreakDisplay } from "@/components/StreakDisplay";
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const Performance = () => {
   return (
@@ -22,6 +23,11 @@ const Performance = () => {
         </div>
 
         <PredictionPerformance />
+
+        {/* Ad Section */}
+        <div className="container mx-auto px-4 py-6">
+          <InContentAd />
+        </div>
         
         <section className="py-12 px-4">
           <div className="container mx-auto max-w-6xl">
@@ -39,6 +45,11 @@ const Performance = () => {
             </div>
           </div>
         </section>
+
+        {/* Footer Ad */}
+        <div className="container mx-auto px-4 py-6">
+          <FooterAd />
+        </div>
       </main>
 
       <Footer />

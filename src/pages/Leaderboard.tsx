@@ -3,7 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -195,8 +197,20 @@ export default function Leaderboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* Ad Section */}
+          <div className="mt-8">
+            <InContentAd />
+          </div>
         </div>
       </div>
+
+      {/* Footer Ad */}
+      <div className="container mx-auto px-4 py-8">
+        <FooterAd />
+      </div>
+
+      <Footer />
     </div>
   );
 }

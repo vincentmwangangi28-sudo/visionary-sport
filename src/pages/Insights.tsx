@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, TrendingUp, Target, BarChart } from "lucide-react";
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const Insights = () => {
   const insights = [
@@ -101,6 +102,11 @@ const Insights = () => {
             })}
           </div>
 
+          {/* Ad Section */}
+          <div className="mt-8">
+            <InContentAd />
+          </div>
+
           {/* CTA Section */}
           <Card className="mt-12 p-8 bg-gradient-prediction text-center">
             <h3 className="text-2xl font-bold mb-3 text-foreground">
@@ -120,6 +126,11 @@ const Insights = () => {
               </button>
             </div>
           </Card>
+
+          {/* Footer Ad */}
+          <div className="mt-8">
+            <FooterAd />
+          </div>
         </div>
       </main>
 
