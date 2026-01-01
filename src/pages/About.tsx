@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Target, Zap, Shield, Users, Brain, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const About = () => {
   const [stats, setStats] = useState({
@@ -110,6 +111,13 @@ const About = () => {
           </div>
         </section>
 
+        {/* Ad Section */}
+        <section className="px-4 mb-16">
+          <div className="container mx-auto max-w-4xl">
+            <InContentAd />
+          </div>
+        </section>
+
         {/* Features Section */}
         <section className="px-4 mb-16">
           <div className="container mx-auto max-w-6xl">
@@ -150,6 +158,13 @@ const About = () => {
                 transparent, and reliable predictions that level the playing field.
               </p>
             </Card>
+          </div>
+        </section>
+
+        {/* Footer Ad */}
+        <section className="px-4">
+          <div className="container mx-auto max-w-4xl">
+            <FooterAd />
           </div>
         </section>
       </main>

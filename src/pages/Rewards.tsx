@@ -10,6 +10,7 @@ import { CoinBalance } from '@/components/CoinBalance';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Gift, Users, Crown, Package, Shield } from 'lucide-react';
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const Rewards = () => {
   const { user } = useAuth();
@@ -94,6 +95,16 @@ const Rewards = () => {
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* Ad Section */}
+          <div className="mt-8">
+            <InContentAd />
+          </div>
+
+          {/* Footer Ad */}
+          <div className="mt-8">
+            <FooterAd />
+          </div>
         </main>
 
         <Footer />

@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
+import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const Shop = () => {
   const { user } = useAuth();
@@ -46,6 +47,16 @@ const Shop = () => {
 
           {/* Coin Shop */}
           <CoinShop />
+
+          {/* Ad Section */}
+          <div className="mt-8">
+            <InContentAd />
+          </div>
+
+          {/* Footer Ad */}
+          <div className="mt-8">
+            <FooterAd />
+          </div>
         </main>
 
         <Footer />
