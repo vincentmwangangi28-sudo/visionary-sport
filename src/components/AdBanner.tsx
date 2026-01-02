@@ -67,10 +67,15 @@ export const AdBanner = ({
   );
 };
 
+// Ad Slot IDs
+const AD_SLOTS = {
+  visionary: "1755837661", // Main responsive ad unit
+};
+
 // Sidebar Ad Component
 export const SidebarAd = ({ className }: { className?: string }) => (
   <AdBanner 
-    slot="sidebar-1" 
+    slot={AD_SLOTS.visionary}
     format="rectangle" 
     className={cn("sticky top-4", className)} 
   />
@@ -79,7 +84,7 @@ export const SidebarAd = ({ className }: { className?: string }) => (
 // Footer Banner Ad
 export const FooterAd = ({ className }: { className?: string }) => (
   <AdBanner 
-    slot="footer-banner" 
+    slot={AD_SLOTS.visionary}
     format="horizontal" 
     className={cn("w-full max-w-4xl mx-auto", className)} 
   />
@@ -88,7 +93,7 @@ export const FooterAd = ({ className }: { className?: string }) => (
 // In-Content Ad (between cards)
 export const InContentAd = ({ className }: { className?: string }) => (
   <AdBanner 
-    slot="in-content" 
+    slot={AD_SLOTS.visionary}
     format="auto" 
     className={cn("my-6", className)} 
     responsive={true}
