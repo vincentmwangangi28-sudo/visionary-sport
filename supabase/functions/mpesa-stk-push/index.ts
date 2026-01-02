@@ -82,7 +82,41 @@ serve(async (req) => {
       }),
     });
 
-    const lipanaData = await lipanaResponse.json();
+    // Check if response is JSON before parsing
+    const contentType = lipanaResponse.headers.get('content-type') || '';
+    const responseText = await lipanaResponse.text();
+    
+    console.log('Lipana response status:', lipanaResponse.status);
+    console.log('Lipana content-type:', contentType);
+    console.log('Lipana response body:', responseText.substring(0, 500));
+
+    // Handle non-JSON responses (API errors, HTML pages, etc.)
+    if (!contentType.includes('application/json')) {
+      console.error('Lipana API returned non-JSON response:', responseText.substring(0, 200));
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Payment service temporarily unavailable. Please try again later.',
+          details: `API returned ${lipanaResponse.status}: ${contentType}` 
+        }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let lipanaData;
+    try {
+      lipanaData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse Lipana response:', parseError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid response from payment service' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Lipana response:', JSON.stringify(lipanaData));
 
     if (!lipanaResponse.ok || !lipanaData.success) {
