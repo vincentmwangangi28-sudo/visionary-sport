@@ -1,23 +1,16 @@
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Coins, Gift, Sparkles, Zap, Crown, Star } from 'lucide-react';
 import { useCoinPackages, CoinPackage } from '@/hooks/useCoinPackages';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+
+const LIPANA_PAYMENT_LINK = 'https://lipana.dev/pay/visionary-sport-bet';
 
 export const CoinShop = () => {
   const { packages, loading } = useCoinPackages();
   const { user } = useAuth();
-  const [selectedPackage, setSelectedPackage] = useState<CoinPackage | null>(null);
-  const [phone, setPhone] = useState('');
-  const [isPurchasing, setIsPurchasing] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const getPackageIcon = (name: string) => {
     switch (name.toLowerCase()) {
@@ -34,7 +27,7 @@ export const CoinShop = () => {
     }
   };
 
-  const handlePurchase = async () => {
+  const handlePurchase = (pkg: CoinPackage) => {
     if (!user) {
       toast({
         title: "Login Required",
@@ -44,55 +37,13 @@ export const CoinShop = () => {
       return;
     }
 
-    if (!selectedPackage || !phone) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter your M-Pesa phone number",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsPurchasing(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('mpesa-stk-push', {
-        body: {
-          phone,
-          amount: selectedPackage.price_kes,
-          purpose: 'coin_purchase',
-          metadata: {
-            package_id: selectedPackage.id,
-            package_name: selectedPackage.name,
-            coins: selectedPackage.coins + selectedPackage.bonus_coins,
-          },
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.success) {
-        toast({
-          title: "Payment Initiated! 📱",
-          description: "Check your phone to complete the M-Pesa payment",
-        });
-        setIsDialogOpen(false);
-        setPhone('');
-      } else {
-        throw new Error(data?.error || 'Payment failed');
-      }
-    } catch (error: any) {
-      console.error('Purchase error:', error);
-      toast({
-        title: "Purchase Failed",
-        description: error.message || "Failed to initiate payment",
-        variant: "destructive",
-      });
-    } finally {
-      setIsPurchasing(false);
-    }
+    // Open Lipana payment page in new tab
+    window.open(LIPANA_PAYMENT_LINK, '_blank');
+    
+    toast({
+      title: "Payment Page Opened!",
+      description: `Complete your KES ${pkg.price_kes} payment for ${pkg.coins + pkg.bonus_coins} coins`,
+    });
   };
 
   if (loading) {
@@ -162,87 +113,21 @@ export const CoinShop = () => {
                 KES {pkg.price_kes.toLocaleString()}
               </div>
 
-              <Dialog open={isDialogOpen && selectedPackage?.id === pkg.id} onOpenChange={(open) => {
-                setIsDialogOpen(open);
-                if (!open) setSelectedPackage(null);
-              }}>
-                <DialogTrigger asChild>
-                  <Button 
-                    className="w-full" 
-                    variant={pkg.is_popular ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedPackage(pkg);
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    Buy Now
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Coins className="h-5 w-5 text-amber-500" />
-                      Purchase {pkg.name}
-                    </DialogTitle>
-                    <DialogDescription>
-                      Get {pkg.coins + pkg.bonus_coins} coins for KES {pkg.price_kes}
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">M-Pesa Phone Number</Label>
-                      <Input
-                        id="phone"
-                        placeholder="0712345678"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        type="tel"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Enter the phone number registered with M-Pesa
-                      </p>
-                    </div>
-
-                    <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Base Coins</span>
-                        <span>{pkg.coins}</span>
-                      </div>
-                      {pkg.bonus_coins > 0 && (
-                        <div className="flex justify-between text-sm text-green-500">
-                          <span>Bonus Coins</span>
-                          <span>+{pkg.bonus_coins}</span>
-                        </div>
-                      )}
-                      <div className="border-t pt-2 flex justify-between font-bold">
-                        <span>Total Coins</span>
-                        <span>{pkg.coins + pkg.bonus_coins}</span>
-                      </div>
-                      <div className="flex justify-between font-bold text-primary">
-                        <span>Amount</span>
-                        <span>KES {pkg.price_kes}</span>
-                      </div>
-                    </div>
-
-                    <Button 
-                      className="w-full" 
-                      onClick={handlePurchase}
-                      disabled={isPurchasing || !phone}
-                    >
-                      {isPurchasing ? 'Processing...' : 'Pay with M-Pesa'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                className="w-full" 
+                variant={pkg.is_popular ? "default" : "outline"}
+                onClick={() => handlePurchase(pkg)}
+              >
+                Buy Now
+              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
-        <p>💡 Coins can be used to unlock premium predictions and enter contests</p>
-        <p>🔒 Secure payments via M-Pesa</p>
+        <p>Coins can be used to unlock premium predictions and enter contests</p>
+        <p>Secure payments via M-Pesa</p>
       </div>
     </div>
   );
