@@ -111,7 +111,35 @@ async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
   console.log('🔄 Trying TheSportsDB...');
   try {
     const response = await fetch('https://www.thesportsdb.com/api/v2/json/60130162/livescore.php?s=Soccer');
-    const data = await response.json();
+    
+    // Check if response is OK
+    if (!response.ok) {
+      console.log(`⚠️ TheSportsDB: HTTP error ${response.status}`);
+      return [];
+    }
+    
+    // Check content type to avoid parsing HTML as JSON
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.log(`⚠️ TheSportsDB: Invalid content type (${contentType}), expected JSON`);
+      return [];
+    }
+    
+    // Get response text first to validate it's JSON
+    const text = await response.text();
+    if (!text || text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<')) {
+      console.log('⚠️ TheSportsDB: Received HTML response instead of JSON');
+      return [];
+    }
+    
+    // Parse JSON safely
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.log('⚠️ TheSportsDB: Failed to parse JSON response');
+      return [];
+    }
     
     if (!data.events || data.events.length === 0) {
       console.log('⚠️ TheSportsDB: No live matches');
