@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.daily-predictions-automation]
 verify_jwt = false
+
+[functions.cache-upcoming-matches]
+verify_jwt = false
