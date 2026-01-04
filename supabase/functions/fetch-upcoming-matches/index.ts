@@ -75,18 +75,45 @@ async function fetchPredictions(apiKey?: string): Promise<Map<string, { predicti
 
   console.log('🔄 Fetching predictions from PredictPro...');
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
     const response = await fetch('https://predictpro.ai/api/upcoming-predictions', {
       headers: {
         'x-api-key': apiKey
-      }
+      },
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.error(`❌ PredictPro API error: ${response.status}`);
+      console.log(`⚠️ PredictPro API: HTTP error ${response.status}`);
       return predictionsMap;
     }
 
-    const data = await response.json();
+    // Check content type to avoid parsing HTML as JSON
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.log(`⚠️ PredictPro API: Invalid content type (${contentType}), expected JSON`);
+      return predictionsMap;
+    }
+
+    // Get response text first to validate it's JSON
+    const text = await response.text();
+    if (!text || text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<')) {
+      console.log('⚠️ PredictPro API: Received HTML response instead of JSON');
+      return predictionsMap;
+    }
+
+    // Parse JSON safely
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.log('⚠️ PredictPro API: Failed to parse JSON response');
+      return predictionsMap;
+    }
     
     if (data.predictions && Array.isArray(data.predictions)) {
       data.predictions.forEach((pred: any) => {
@@ -98,7 +125,11 @@ async function fetchPredictions(apiKey?: string): Promise<Map<string, { predicti
       console.log(`✅ PredictPro: Loaded ${predictionsMap.size} predictions`);
     }
   } catch (error) {
-    console.error('❌ PredictPro API error:', error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log('⚠️ PredictPro API: Request timed out');
+    } else {
+      console.error('❌ PredictPro API error:', error);
+    }
   }
 
   return predictionsMap;
