@@ -10,13 +10,17 @@ export const Hero = () => {
 
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroStadium})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background"></div>
-      </div>
+      {/* Background Image - Optimized for LCP */}
+      <img 
+        src={heroStadium}
+        alt="Football stadium background"
+        fetchPriority="high"
+        loading="eager"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background"></div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-20">

@@ -102,9 +102,9 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
   
-  /* Smooth page transitions */
+  /* Smooth page transitions - exclude layout properties to prevent forced reflows */
   * {
-    @apply transition-colors duration-200;
+    transition: color 0.2s, background-color 0.2s, border-color 0.2s, fill 0.2s, stroke 0.2s;
   }
   
   /* Hover effects */
