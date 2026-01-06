@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, Calendar, Clock } from "lucide-react";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 
 interface PredictionCardProps {
   homeTeam: string;
@@ -134,7 +135,7 @@ export const PredictionCard = ({
         </div>
 
         {/* Confidence Bar */}
-        <div className="space-y-2">
+        <div className="space-y-2 mb-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Confidence Level</span>
             <span className={`font-bold ${getConfidenceColor(confidence)}`}>
@@ -142,6 +143,16 @@ export const PredictionCard = ({
             </span>
           </div>
           <Progress value={confidence} className="h-2" />
+        </div>
+
+        {/* Social Share */}
+        <div className="pt-4 border-t border-border/50">
+          <SocialShareButtons 
+            title={`${homeTeam} vs ${awayTeam}`}
+            text={`AI Prediction for ${league}`}
+            prediction={prediction}
+            confidence={confidence}
+          />
         </div>
       </Card>
     </>

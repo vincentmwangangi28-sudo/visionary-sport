@@ -156,6 +156,40 @@ export const trackFeatureEngagement = (featureName: string, action: string) => {
   });
 };
 
+// Track subscription start
+export const trackSubscriptionStart = (plan: string, price: number) => {
+  if (!isGtagAvailable()) return;
+  
+  gtag('event', 'subscription_start', {
+    event_category: 'Monetization',
+    event_label: plan,
+    value: price,
+    currency: 'KES',
+  });
+};
+
+// Track social shares
+export const trackSocialShare = (platform: string, contentType: string) => {
+  if (!isGtagAvailable()) return;
+  
+  gtag('event', 'share', {
+    method: platform,
+    content_type: contentType,
+    event_category: 'Social',
+  });
+};
+
+// Track leaderboard entry
+export const trackLeaderboardEntry = (position: number) => {
+  if (!isGtagAvailable()) return;
+  
+  gtag('event', 'leaderboard_entry', {
+    event_category: 'Engagement',
+    event_label: `Position ${position}`,
+    position: position,
+  });
+};
+
 // Initialize tracking on page load
 export const initAnalytics = () => {
   if (!isGtagAvailable()) return;
