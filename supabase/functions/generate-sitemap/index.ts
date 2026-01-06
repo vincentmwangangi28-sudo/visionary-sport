@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BASE_URL = 'https://visionary-sport.lovable.app';
+const BASE_URL = 'https://www.predictpro.guru';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -26,9 +26,11 @@ serve(async (req) => {
       { loc: '/', priority: '1.0', changefreq: 'hourly' },
       { loc: '/leaderboard', priority: '0.9', changefreq: 'hourly' },
       { loc: '/performance', priority: '0.85', changefreq: 'daily' },
+      { loc: '/shop', priority: '0.85', changefreq: 'weekly' },
+      { loc: '/rewards', priority: '0.8', changefreq: 'weekly' },
+      { loc: '/news', priority: '0.85', changefreq: 'daily' },
       { loc: '/insights', priority: '0.8', changefreq: 'weekly' },
       { loc: '/about', priority: '0.7', changefreq: 'monthly' },
-      { loc: '/auth', priority: '0.5', changefreq: 'monthly' },
     ];
 
     // Fetch recent predictions for dynamic URLs

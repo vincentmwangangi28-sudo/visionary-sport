@@ -1,26 +1,35 @@
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PredictionPerformance } from "@/components/PredictionPerformance";
 import { AccuracyTracker } from "@/components/AccuracyTracker";
 import { StreakDisplay } from "@/components/StreakDisplay";
+import { GamifiedBadges } from "@/components/GamifiedBadges";
 import { InContentAd, FooterAd } from "@/components/AdBanner";
 
 const Performance = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Performance Dashboard | PredictPro Guru Kenya</title>
+        <meta name="description" content="Track your prediction accuracy, winning streaks, and overall performance. Gamified badges and detailed analytics for sports betting in Kenya." />
+        <link rel="canonical" href="https://www.predictpro.guru/performance" />
+      </Helmet>
       
-      <main className="pt-24 pb-16">
-        <div className="container mx-auto px-4 max-w-6xl mb-12">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-hero bg-clip-text text-transparent">
-              Performance Dashboard
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Track your prediction accuracy, streaks, and overall performance
-            </p>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4 max-w-6xl mb-12">
+            <div className="text-center">
+              <h1 className="text-5xl font-bold mb-4 bg-gradient-hero bg-clip-text text-transparent">
+                Performance Dashboard
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Track your prediction accuracy, streaks, and overall performance
+              </p>
+            </div>
           </div>
-        </div>
 
         <PredictionPerformance />
 
@@ -44,16 +53,24 @@ const Performance = () => {
               <AccuracyTracker />
             </div>
           </div>
-        </section>
+          </section>
 
-        {/* Footer Ad */}
-        <div className="container mx-auto px-4 py-6">
-          <FooterAd />
-        </div>
-      </main>
+          {/* Gamified Badges */}
+          <section className="py-12 px-4">
+            <div className="container mx-auto max-w-6xl">
+              <GamifiedBadges />
+            </div>
+          </section>
 
-      <Footer />
-    </div>
+          {/* Footer Ad */}
+          <div className="container mx-auto px-4 py-6">
+            <FooterAd />
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    </>
   );
 };
 

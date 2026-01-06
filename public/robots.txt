@@ -8,6 +8,9 @@ Allow: /leaderboard
 Allow: /insights
 Allow: /about
 Allow: /performance
+Allow: /news
+Allow: /rewards
+Allow: /shop
 
 User-agent: Bingbot
 Allow: /

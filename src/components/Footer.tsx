@@ -56,18 +56,23 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#contact" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors">
+                  News & Insights
+                </Link>
+              </li>
+              <li>
+                <Link to="/insights" className="text-muted-foreground hover:text-primary transition-colors">
+                  Betting Tips
+                </Link>
+              </li>
+              <li>
+                <a href="mailto:support@predictpro.guru" className="text-muted-foreground hover:text-primary transition-colors">
                   Contact
-                </a>
-              </li>
-              <li>
-                <a href="#testimonials" className="text-muted-foreground hover:text-primary transition-colors">
-                  Testimonials
                 </a>
               </li>
             </ul>
@@ -78,19 +83,19 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#privacy" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#terms" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#responsible-gaming" className="text-muted-foreground hover:text-primary transition-colors">
-                  Responsible Gaming
-                </a>
+                <span className="text-muted-foreground">
+                  🔞 18+ Responsible Gaming
+                </span>
               </li>
             </ul>
           </div>

@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Trophy, Menu, Coins, LogOut, ShoppingBag, Gift } from "lucide-react";
+import { Trophy, Menu, LogOut, ShoppingBag, Gift, Newspaper } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
 import { RealtimeStatus } from "./RealtimeStatus";
+import { LanguageToggle } from "./LanguageToggle";
+import { NotificationBell } from "./NotificationBell";
 import aiIcon from "@/assets/ai-prediction-icon.png";
 
 export const Navbar = () => {
@@ -15,7 +17,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <img src={aiIcon} alt="PredictPro" className="w-10 h-10" width="40" height="40" loading="eager" />
+            <img src={aiIcon} alt="PredictPro Guru - AI Sports Predictions" className="w-10 h-10" width="40" height="40" loading="eager" />
             <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
               PredictPro
             </span>
@@ -32,6 +34,10 @@ export const Navbar = () => {
             </Link>
             <Link to="/leaderboard" className="text-sm font-medium hover:text-primary transition-colors">
               Leaderboard
+            </Link>
+            <Link to="/news" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+              <Newspaper className="h-4 w-4" />
+              News
             </Link>
             <Link to="/shop" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               <ShoppingBag className="h-4 w-4" />
@@ -50,7 +56,10 @@ export const Navbar = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <NotificationBell />
+            
             {user ? (
               <>
                 <CoinBalance />
