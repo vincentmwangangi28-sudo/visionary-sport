@@ -485,6 +485,48 @@ export type Database = {
         }
         Relationships: []
       }
+      upcoming_matches_cache: {
+        Row: {
+          away_team: string
+          confidence: number | null
+          created_at: string
+          home_team: string
+          id: string
+          league: string
+          match_date: string
+          match_id: string
+          match_time: string
+          prediction: string | null
+          updated_at: string
+        }
+        Insert: {
+          away_team: string
+          confidence?: number | null
+          created_at?: string
+          home_team: string
+          id?: string
+          league: string
+          match_date: string
+          match_id: string
+          match_time: string
+          prediction?: string | null
+          updated_at?: string
+        }
+        Update: {
+          away_team?: string
+          confidence?: number | null
+          created_at?: string
+          home_team?: string
+          id?: string
+          league?: string
+          match_date?: string
+          match_id?: string
+          match_time?: string
+          prediction?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_predictions: {
         Row: {
           coins_wagered: number | null
