@@ -35,3 +35,15 @@ verify_jwt = false
 
 [functions.daily-predictions-automation]
 verify_jwt = false
+
+[functions.generate-news-articles]
+verify_jwt = false
+
+[functions.generate-polls]
+verify_jwt = false
+
+[functions.update-accuracy-stats]
+verify_jwt = false
+
+[functions.fetch-transfer-rumors]
+verify_jwt = false

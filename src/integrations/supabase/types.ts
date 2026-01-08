@@ -118,6 +118,146 @@ export type Database = {
         }
         Relationships: []
       }
+      news_articles: {
+        Row: {
+          author: string | null
+          category: string
+          content: string
+          created_at: string | null
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_published: boolean | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          author?: string | null
+          category?: string
+          content: string
+          created_at?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      platform_accuracy: {
+        Row: {
+          accuracy_percent: number | null
+          by_league: Json | null
+          correct_predictions: number | null
+          created_at: string | null
+          date: string
+          id: string
+          total_predictions: number | null
+        }
+        Insert: {
+          accuracy_percent?: number | null
+          by_league?: Json | null
+          correct_predictions?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          total_predictions?: number | null
+        }
+        Update: {
+          accuracy_percent?: number | null
+          by_league?: Json | null
+          correct_predictions?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          total_predictions?: number | null
+        }
+        Relationships: []
+      }
+      poll_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          created_at: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean | null
+          match_id: string | null
+          options: Json
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          match_id?: string | null
+          options?: Json
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          match_id?: string | null
+          options?: Json
+          question?: string
+        }
+        Relationships: []
+      }
       prediction_bundles: {
         Row: {
           created_at: string
@@ -482,6 +622,51 @@ export type Database = {
           status?: string | null
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      transfer_rumors: {
+        Row: {
+          created_at: string | null
+          current_club: string | null
+          details: string | null
+          headline: string
+          id: string
+          is_confirmed: boolean | null
+          player_name: string
+          probability: number | null
+          source: string | null
+          target_club: string | null
+          transfer_fee: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_club?: string | null
+          details?: string | null
+          headline: string
+          id?: string
+          is_confirmed?: boolean | null
+          player_name: string
+          probability?: number | null
+          source?: string | null
+          target_club?: string | null
+          transfer_fee?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_club?: string | null
+          details?: string | null
+          headline?: string
+          id?: string
+          is_confirmed?: boolean | null
+          player_name?: string
+          probability?: number | null
+          source?: string | null
+          target_club?: string | null
+          transfer_fee?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
