@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BASE_URL = 'https://visionary-sport.lovable.app';
+const BASE_URL = 'https://predictpro.guru';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
