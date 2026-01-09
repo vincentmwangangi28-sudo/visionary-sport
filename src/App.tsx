@@ -13,6 +13,7 @@ import Performance from "./pages/Performance";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
 import Rewards from "./pages/Rewards";
+import News from "./pages/News";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/performance" element={<Performance />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/rewards" element={<Rewards />} />
+            <Route path="/news" element={<News />} />
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

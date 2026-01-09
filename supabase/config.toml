@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.fetch-transfer-rumors]
 verify_jwt = false
+
+[functions.fetch-real-news]
+verify_jwt = false
+
+[functions.daily-automation]
+verify_jwt = false
