@@ -1,5 +1,5 @@
 # PredictPro - AI Sports Predictions Platform
-# https://visionary-sport.lovable.app
+# https://predictpro.vercel.app
 
 # Allow all major search engines
 User-agent: Googlebot
@@ -8,6 +8,7 @@ Allow: /leaderboard
 Allow: /insights
 Allow: /about
 Allow: /performance
+Allow: /news
 
 User-agent: Bingbot
 Allow: /
@@ -37,8 +38,7 @@ Disallow: /*?*
 Crawl-delay: 1
 
 # Sitemaps
-Sitemap: https://visionary-sport.lovable.app/sitemap.xml
-Sitemap: https://yofhrfahhzsxbtuhuwqf.supabase.co/functions/v1/generate-sitemap
+Sitemap: https://predictpro.vercel.app/sitemap.xml
 
 # Host
-Host: visionary-sport.lovable.app
+Host: predictpro.vercel.app
