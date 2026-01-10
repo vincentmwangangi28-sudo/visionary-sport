@@ -6,17 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Major leagues to generate predictions for
-const MAJOR_LEAGUES = [
-  { id: 39, name: 'Premier League' },
-  { id: 140, name: 'La Liga' },
-  { id: 135, name: 'Serie A' },
-  { id: 78, name: 'Bundesliga' },
-  { id: 61, name: 'Ligue 1' },
-  { id: 2, name: 'Champions League' },
-  { id: 3, name: 'Europa League' },
-];
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -27,47 +16,44 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const X_RAPIDAPI_KEY = Deno.env.get('X_RAPIDAPI_KEY');
+    const FOOTBALL_DATA_TOKEN = Deno.env.get('FOOTBALL_DATA_TOKEN') || Deno.env.get('FOOTBALL_DATA_API_TOKEN');
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     let predictionsGenerated = 0;
     let matchesProcessed = 0;
+    const errors: string[] = [];
 
-    // Fetch upcoming matches for the next 3 days
-    if (X_RAPIDAPI_KEY) {
-      const today = new Date().toISOString().split('T')[0];
-      const threeDaysLater = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-      for (const league of MAJOR_LEAGUES) {
-        try {
-          console.log(`Fetching matches for ${league.name}...`);
-          
-          const response = await fetch(
-            `https://api-football-v1.p.rapidapi.com/v3/fixtures?league=${league.id}&from=${today}&to=${threeDaysLater}&season=${new Date().getFullYear()}&status=NS`,
-            {
-              headers: {
-                'X-RapidAPI-Key': X_RAPIDAPI_KEY,
-                'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
-              },
-            }
-          );
-
-          if (!response.ok) {
-            console.error(`Failed to fetch ${league.name} matches`);
-            continue;
+    // Use Football-Data.org API (free tier: 10 requests/minute)
+    if (FOOTBALL_DATA_TOKEN) {
+      console.log('Using Football-Data.org API...');
+      
+      try {
+        // Fetch scheduled matches for upcoming days
+        const response = await fetch(
+          `https://api.football-data.org/v4/matches?status=SCHEDULED`,
+          {
+            headers: {
+              'X-Auth-Token': FOOTBALL_DATA_TOKEN,
+            },
           }
+        );
 
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Football-Data API error: ${response.status} - ${errorText}`);
+          errors.push(`API error: ${response.status}`);
+        } else {
           const data = await response.json();
-          const matches = data.response || [];
-          matchesProcessed += matches.length;
-
-          console.log(`Found ${matches.length} upcoming matches in ${league.name}`);
-
-          // Generate predictions for each match
-          for (const match of matches.slice(0, 5)) { // Limit to 5 matches per league
-            const matchId = `api-football-${match.fixture.id}`;
+          const matches = data.matches || [];
+          
+          console.log(`Found ${matches.length} scheduled matches`);
+          
+          // Process up to 10 matches to avoid rate limits
+          for (const match of matches.slice(0, 10)) {
+            matchesProcessed++;
+            const matchId = `fd-${match.id}`;
             
             // Check if prediction already exists
             const { data: existing } = await supabase
@@ -103,7 +89,7 @@ serve(async (req) => {
                       },
                       {
                         role: 'user',
-                        content: `Predict the outcome of this ${league.name} match: ${match.teams.home.name} vs ${match.teams.away.name} on ${match.fixture.date}`
+                        content: `Predict the outcome of this ${match.competition?.name || 'football'} match: ${match.homeTeam?.name} vs ${match.awayTeam?.name} on ${match.utcDate}`
                       }
                     ],
                   }),
@@ -114,7 +100,9 @@ serve(async (req) => {
                   const content = aiData.choices?.[0]?.message?.content || '';
                   
                   try {
-                    const parsed = JSON.parse(content);
+                    // Clean the response - remove markdown code blocks if present
+                    const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
+                    const parsed = JSON.parse(cleanContent);
                     prediction = parsed.prediction || prediction;
                     confidence = parsed.confidence || confidence;
                     reasoning = parsed.reasoning || reasoning;
@@ -130,31 +118,36 @@ serve(async (req) => {
             // Insert prediction
             const { error: insertError } = await supabase.from('predictions').insert({
               match_id: matchId,
-              home_team: match.teams.home.name,
-              away_team: match.teams.away.name,
-              league: league.name,
-              match_date: match.fixture.date,
+              home_team: match.homeTeam?.name || 'Home Team',
+              away_team: match.awayTeam?.name || 'Away Team',
+              league: match.competition?.name || 'Football',
+              match_date: match.utcDate,
               prediction: prediction,
               confidence: confidence,
               reasoning: reasoning,
               ai_model: 'google/gemini-2.5-flash',
-              is_premium: confidence >= 80, // High confidence predictions are premium
+              is_premium: confidence >= 80,
             });
 
             if (insertError) {
               console.error('Error inserting prediction:', insertError);
+              errors.push(`Insert error: ${insertError.message}`);
             } else {
               predictionsGenerated++;
-              console.log(`Generated prediction for ${match.teams.home.name} vs ${match.teams.away.name}`);
+              console.log(`Generated prediction for ${match.homeTeam?.name} vs ${match.awayTeam?.name}`);
             }
 
-            // Small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Small delay to avoid AI rate limiting
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
-        } catch (leagueError) {
-          console.error(`Error processing ${league.name}:`, leagueError);
         }
+      } catch (fetchError) {
+        console.error('Fetch error:', fetchError);
+        errors.push(`Fetch error: ${fetchError instanceof Error ? fetchError.message : 'Unknown'}`);
       }
+    } else {
+      console.log('No Football Data API token configured');
+      errors.push('No API token configured');
     }
 
     const summary = {
@@ -162,6 +155,7 @@ serve(async (req) => {
       timestamp: new Date().toISOString(),
       matches_processed: matchesProcessed,
       predictions_generated: predictionsGenerated,
+      errors: errors.length > 0 ? errors : undefined,
     };
 
     console.log('Cron: Daily predictions completed', summary);
@@ -174,7 +168,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Cron error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: 'Cron job failed' }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Cron job failed' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
