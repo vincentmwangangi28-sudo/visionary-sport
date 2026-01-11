@@ -2,13 +2,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLiveMatches } from "@/hooks/useLiveMatches";
-import { RefreshCw, Radio, Clock } from "lucide-react";
+import { RefreshCw, Radio, Clock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const LiveMatches = () => {
   const { matches, loading, source, lastUpdated, refresh } = useLiveMatches();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const navigate = useNavigate();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -97,7 +99,8 @@ export const LiveMatches = () => {
             {matches.map((match) => (
               <Card 
                 key={match.id} 
-                className="p-6 hover-lift transition-all duration-300 bg-gradient-prediction border-primary/10 relative overflow-hidden"
+                className="p-6 hover-lift transition-all duration-300 bg-gradient-prediction border-primary/10 relative overflow-hidden cursor-pointer group"
+                onClick={() => navigate(`/match/${match.id}`)}
               >
                 {/* Live indicator */}
                 <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground px-3 py-1 text-xs font-bold flex items-center gap-1 rounded-bl-lg">
@@ -163,11 +166,19 @@ export const LiveMatches = () => {
                   </div>
                 )}
 
-                {/* Status */}
-                <div className="text-center mt-3">
+                {/* Status & View Details */}
+                <div className="flex items-center justify-between mt-3">
                   <Badge variant="secondary" className="text-xs">
                     {match.status}
                   </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="opacity-0 group-hover:opacity-100 transition-opacity gap-1"
+                  >
+                    View Details
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
                 </div>
               </Card>
             ))}

@@ -15,6 +15,7 @@ import Shop from "./pages/Shop";
 import Rewards from "./pages/Rewards";
 import News from "./pages/News";
 import NotFound from "./pages/NotFound";
+import MatchDetail from "./pages/MatchDetail";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/news" element={<News />} />
             <Route path="/about" element={<About />} />
+            <Route path="/match/:matchId" element={<MatchDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
