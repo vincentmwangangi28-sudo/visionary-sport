@@ -15,6 +15,8 @@ import { Footer } from "@/components/Footer";
 import { useNotifications } from "@/hooks/useNotifications";
 import { PremiumUpgradeCard } from "@/components/PremiumUpgradeCard";
 import { initAnalytics } from "@/lib/analytics";
+import { BettingTipsHistory } from "@/components/BettingTipsHistory";
+import { PushNotifications } from "@/components/PushNotifications";
 
 const Index = () => {
   useNotifications();
@@ -45,9 +47,13 @@ const Index = () => {
               Build winning streaks and see our transparent accuracy stats
             </p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <StreakDisplay />
             <AccuracyTracker />
+            <div className="space-y-4">
+              <PushNotifications />
+              <BettingTipsHistory />
+            </div>
           </div>
         </div>
       </section>
