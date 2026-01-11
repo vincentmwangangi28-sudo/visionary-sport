@@ -118,6 +118,74 @@ export type Database = {
         }
         Relationships: []
       }
+      expert_analysis: {
+        Row: {
+          betting_tips: string[] | null
+          created_at: string
+          form_analysis: string | null
+          head_to_head: Json | null
+          id: string
+          injury_report: Json | null
+          key_stats: Json | null
+          match_id: string
+          prediction_id: string | null
+        }
+        Insert: {
+          betting_tips?: string[] | null
+          created_at?: string
+          form_analysis?: string | null
+          head_to_head?: Json | null
+          id?: string
+          injury_report?: Json | null
+          key_stats?: Json | null
+          match_id: string
+          prediction_id?: string | null
+        }
+        Update: {
+          betting_tips?: string[] | null
+          created_at?: string
+          form_analysis?: string | null
+          head_to_head?: Json | null
+          id?: string
+          injury_report?: Json | null
+          key_stats?: Json | null
+          match_id?: string
+          prediction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_analysis_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       news_articles: {
         Row: {
           author: string | null
@@ -478,6 +546,33 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }

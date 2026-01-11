@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, Calendar, Clock } from "lucide-react";
+import { SocialShare } from "@/components/SocialShare";
 
 interface PredictionCardProps {
   homeTeam: string;
@@ -142,6 +143,18 @@ export const PredictionCard = ({
             </span>
           </div>
           <Progress value={confidence} className="h-2" />
+        </div>
+
+        {/* Social Share */}
+        <div className="mt-4 flex justify-end">
+          <SocialShare
+            title={`${homeTeam} vs ${awayTeam}`}
+            prediction={prediction}
+            confidence={confidence}
+            homeTeam={homeTeam}
+            awayTeam={awayTeam}
+            league={league}
+          />
         </div>
       </Card>
     </>
