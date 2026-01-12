@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.generate-match-preview]
 verify_jwt = false
+
+[functions.generate-ai-news]
+verify_jwt = false
