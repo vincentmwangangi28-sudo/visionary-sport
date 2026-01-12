@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.generate-expert-analysis]
 verify_jwt = false
+
+[functions.generate-match-preview]
+verify_jwt = false

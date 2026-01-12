@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Clock, Trophy, MessageSquare, BarChart3, Brain } from 'lucide-react';
+import { ArrowLeft, Clock, Trophy, MessageSquare, BarChart3, Brain, FileText } from 'lucide-react';
 import { ExpertAnalysis } from '@/components/ExpertAnalysis';
 import { FormAnalysisChart } from '@/components/FormAnalysisChart';
 import { LiveMatchChat } from '@/components/LiveMatchChat';
 import { SocialShare } from '@/components/SocialShare';
+import { MatchPreviewWriter } from '@/components/MatchPreviewWriter';
 import { useLiveMatches } from '@/hooks/useLiveMatches';
 import { usePredictions } from '@/hooks/usePredictions';
 
@@ -152,8 +153,13 @@ export default function MatchDetail() {
           </Card>
 
           {/* Tabs for different sections */}
-          <Tabs defaultValue="analysis" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex">
+          <Tabs defaultValue="preview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+              <TabsTrigger value="preview" className="gap-2">
+                <FileText className="w-4 h-4" />
+                <span className="hidden sm:inline">Match Preview</span>
+                <span className="sm:hidden">Preview</span>
+              </TabsTrigger>
               <TabsTrigger value="analysis" className="gap-2">
                 <Brain className="w-4 h-4" />
                 <span className="hidden sm:inline">Expert Analysis</span>
@@ -170,6 +176,15 @@ export default function MatchDetail() {
                 <span className="sm:hidden">Chat</span>
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="preview" className="space-y-6">
+              <MatchPreviewWriter 
+                homeTeam={match?.homeTeam || prediction?.home_team || ''} 
+                awayTeam={match?.awayTeam || prediction?.away_team || ''}
+                league={league}
+                matchDate={prediction?.match_date || new Date().toISOString()}
+              />
+            </TabsContent>
 
             <TabsContent value="analysis" className="space-y-6">
               <ExpertAnalysis 
