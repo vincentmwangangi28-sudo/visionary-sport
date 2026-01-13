@@ -17,6 +17,11 @@ import { PremiumUpgradeCard } from "@/components/PremiumUpgradeCard";
 import { initAnalytics } from "@/lib/analytics";
 import { BettingTipsHistory } from "@/components/BettingTipsHistory";
 import { PushNotifications } from "@/components/PushNotifications";
+import { SmartSlipBuilder } from "@/components/SmartSlipBuilder";
+import { ConfidenceHeatmap } from "@/components/ConfidenceHeatmap";
+import { UpsetAlerts } from "@/components/UpsetAlerts";
+import { UserBadges } from "@/components/UserBadges";
+import { SEOHead } from "@/components/SEOHead";
 
 const Index = () => {
   useNotifications();
@@ -27,8 +32,25 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="AI Sports Predictions - Football, Basketball, Tennis | PredictPro"
+        description="Get AI-powered sports predictions with 85%+ accuracy. Multi-sport predictions for football, basketball, tennis with confidence scores, upset alerts, and smart accumulators."
+        keywords={["AI predictions", "football predictions", "basketball predictions", "betting tips", "sports analysis", "Kenya predictions"]}
+      />
       <Navbar />
       <Hero />
+      
+      {/* Smart Tools Section */}
+      <section className="py-8 px-4 bg-muted/20">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <SmartSlipBuilder />
+            <ConfidenceHeatmap />
+            <UpsetAlerts />
+          </div>
+        </div>
+      </section>
+
       <LiveMatches />
       <UpcomingMatches />
       <div id="predictions">
@@ -47,9 +69,10 @@ const Index = () => {
               Build winning streaks and see our transparent accuracy stats
             </p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <StreakDisplay />
             <AccuracyTracker />
+            <UserBadges />
             <div className="space-y-4">
               <PushNotifications />
               <BettingTipsHistory />

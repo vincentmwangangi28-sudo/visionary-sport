@@ -62,3 +62,24 @@ verify_jwt = false
 
 [functions.generate-ai-news]
 verify_jwt = false
+
+[functions.master-automation]
+verify_jwt = false
+
+[functions.generate-multi-sport-predictions]
+verify_jwt = false
+
+[functions.generate-match-faqs]
+verify_jwt = false
+
+[functions.award-badges]
+verify_jwt = false
+
+[functions.detect-upset-alerts]
+verify_jwt = false
+
+[functions.smart-slip-builder]
+verify_jwt = false
+
+[functions.auto-sitemap]
+verify_jwt = false
