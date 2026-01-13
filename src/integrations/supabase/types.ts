@@ -186,6 +186,30 @@ export type Database = {
         }
         Relationships: []
       }
+      match_faqs: {
+        Row: {
+          answer: string
+          created_at: string | null
+          id: string
+          match_id: string
+          question: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string | null
+          id?: string
+          match_id: string
+          question: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string | null
+          id?: string
+          match_id?: string
+          question?: string
+        }
+        Relationships: []
+      }
       news_articles: {
         Row: {
           author: string | null
@@ -403,12 +427,15 @@ export type Database = {
           home_team: string
           id: string
           is_premium: boolean | null
+          is_upset_alert: boolean | null
           league: string
           match_date: string
           match_id: string
+          odds_value: number | null
           prediction: string
           reasoning: string
           result: string | null
+          sport: string | null
         }
         Insert: {
           ai_model?: string | null
@@ -418,12 +445,15 @@ export type Database = {
           home_team: string
           id?: string
           is_premium?: boolean | null
+          is_upset_alert?: boolean | null
           league: string
           match_date: string
           match_id: string
+          odds_value?: number | null
           prediction: string
           reasoning: string
           result?: string | null
+          sport?: string | null
         }
         Update: {
           ai_model?: string | null
@@ -433,12 +463,15 @@ export type Database = {
           home_team?: string
           id?: string
           is_premium?: boolean | null
+          is_upset_alert?: boolean | null
           league?: string
           match_date?: string
           match_id?: string
+          odds_value?: number | null
           prediction?: string
           reasoning?: string
           result?: string | null
+          sport?: string | null
         }
         Relationships: []
       }
@@ -630,6 +663,78 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_metadata: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          keywords: string[] | null
+          og_image: string | null
+          page_path: string
+          structured_data: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          keywords?: string[] | null
+          og_image?: string | null
+          page_path: string
+          structured_data?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          keywords?: string[] | null
+          og_image?: string | null
+          page_path?: string
+          structured_data?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      smart_slips: {
+        Row: {
+          combined_confidence: number | null
+          created_at: string | null
+          id: string
+          is_public: boolean | null
+          potential_return: number | null
+          predictions: Json
+          stake_suggestion: number | null
+          total_odds: number | null
+          user_id: string | null
+        }
+        Insert: {
+          combined_confidence?: number | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          potential_return?: number | null
+          predictions?: Json
+          stake_suggestion?: number | null
+          total_odds?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          combined_confidence?: number | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          potential_return?: number | null
+          predictions?: Json
+          stake_suggestion?: number | null
+          total_odds?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       spin_wheel_entries: {
         Row: {
           id: string
@@ -777,6 +882,7 @@ export type Database = {
           match_id: string
           match_time: string
           prediction: string | null
+          sport: string | null
           updated_at: string
         }
         Insert: {
@@ -790,6 +896,7 @@ export type Database = {
           match_id: string
           match_time: string
           prediction?: string | null
+          sport?: string | null
           updated_at?: string
         }
         Update: {
@@ -803,7 +910,35 @@ export type Database = {
           match_id?: string
           match_time?: string
           prediction?: string | null
+          sport?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_name: string
+          badge_type: string
+          description: string | null
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_name: string
+          badge_type: string
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_name?: string
+          badge_type?: string
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -862,6 +997,39 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_prediction_date: string | null
+          longest_streak: number | null
+          total_correct: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_prediction_date?: string | null
+          longest_streak?: number | null
+          total_correct?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_prediction_date?: string | null
+          longest_streak?: number | null
+          total_correct?: number | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
