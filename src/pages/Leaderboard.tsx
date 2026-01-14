@@ -142,11 +142,14 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <Helmet>
-        <title>Leaderboard - Top Predictors | PredictPro Guru Kenya</title>
-        <meta name="description" content="See the top AI sports predictors in Kenya. Compete on our leaderboard and track your prediction accuracy with PredictPro Guru." />
-        <meta property="og:title" content="Leaderboard - Top Predictors | PredictPro Guru" />
+        <title>Prediction Leaderboard Kenya | PredictPro</title>
+        <meta name="description" content="See top sports predictors in Kenya. Compete on our leaderboard, track prediction accuracy, and win prizes. Join PredictPro's prediction contests." />
+        <meta property="og:title" content="Prediction Leaderboard Kenya | PredictPro" />
         <meta property="og:description" content="Compete with thousands of users. See who's making the best AI-powered sports predictions in Kenya." />
-        <link rel="canonical" href="https://www.predictpro.guru/leaderboard" />
+        <meta property="og:image" content="https://predictpro.guru/og-leaderboard.jpg" />
+        <meta name="keywords" content="prediction leaderboard Kenya, sports prediction contest, betting competition Nairobi, prediction accuracy ranking" />
+        <link rel="canonical" href="https://predictpro.guru/leaderboard" />
+        <meta name="robots" content="index, follow" />
       </Helmet>
 
       {/* Structured Data */}
