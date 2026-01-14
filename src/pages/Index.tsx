@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { LiveMatches } from "@/components/LiveMatches";
+import { LiveMatchTracker } from "@/components/LiveMatchTracker";
 import { UpcomingMatches } from "@/components/UpcomingMatches";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
 import { PredictionPerformance } from "@/components/PredictionPerformance";
@@ -22,6 +23,8 @@ import { ConfidenceHeatmap } from "@/components/ConfidenceHeatmap";
 import { UpsetAlerts } from "@/components/UpsetAlerts";
 import { UserBadges } from "@/components/UserBadges";
 import { SEOHead } from "@/components/SEOHead";
+import { InteractivePolls } from "@/components/InteractivePolls";
+import { TransferRumorsFeed } from "@/components/TransferRumorsFeed";
 
 const Index = () => {
   useNotifications();
@@ -47,6 +50,21 @@ const Index = () => {
             <SmartSlipBuilder />
             <ConfidenceHeatmap />
             <UpsetAlerts />
+          </div>
+        </div>
+      </section>
+
+      {/* Live Match Tracker & Transfer Rumors */}
+      <section className="py-8 px-4">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <LiveMatchTracker />
+            </div>
+            <div className="space-y-6">
+              <TransferRumorsFeed />
+              <InteractivePolls />
+            </div>
           </div>
         </div>
       </section>

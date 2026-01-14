@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Clock, Trophy, MessageSquare, BarChart3, Brain, FileText } from 'lucide-react';
+import { ArrowLeft, Clock, Trophy, MessageSquare, BarChart3, Brain, FileText, Share2 } from 'lucide-react';
 import { ExpertAnalysis } from '@/components/ExpertAnalysis';
 import { FormAnalysisChart } from '@/components/FormAnalysisChart';
 import { LiveMatchChat } from '@/components/LiveMatchChat';
 import { SocialShare } from '@/components/SocialShare';
+import { ShareableCard } from '@/components/ShareableCard';
 import { MatchPreviewWriter } from '@/components/MatchPreviewWriter';
 import { useLiveMatches } from '@/hooks/useLiveMatches';
 import { usePredictions } from '@/hooks/usePredictions';
@@ -60,6 +61,30 @@ export default function MatchDetail() {
   const matchTitle = `${match?.homeTeam || prediction?.home_team} vs ${match?.awayTeam || prediction?.away_team}`;
   const league = match?.league || prediction?.league || 'Football';
 
+  // Structured data for SEO
+  const sportsEventSchema = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": matchTitle,
+    "description": `AI predictions and expert analysis for ${matchTitle} in ${league}`,
+    "startDate": prediction?.match_date || new Date().toISOString(),
+    "location": {
+      "@type": "Place",
+      "name": league
+    },
+    "competitor": [
+      {
+        "@type": "SportsTeam",
+        "name": match?.homeTeam || prediction?.home_team
+      },
+      {
+        "@type": "SportsTeam",
+        "name": match?.awayTeam || prediction?.away_team
+      }
+    ],
+    "eventStatus": liveMatch ? "https://schema.org/EventScheduled" : "https://schema.org/EventScheduled"
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -67,6 +92,13 @@ export default function MatchDetail() {
         <meta name="description" content={`Get AI predictions, expert analysis, and live chat for ${matchTitle}. ${league} match details and betting tips.`} />
         <meta property="og:title" content={`${matchTitle} - AI Prediction | PredictPro Guru`} />
         <meta property="og:description" content={`Expert analysis and AI predictions for ${matchTitle}`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${matchTitle} - AI Prediction`} />
+        <link rel="canonical" href={`https://www.predictpro.guru/match/${matchId}`} />
+        <script type="application/ld+json">
+          {JSON.stringify(sportsEventSchema)}
+        </script>
       </Helmet>
 
       <Navbar />
@@ -146,6 +178,15 @@ export default function MatchDetail() {
                     awayTeam={match?.awayTeam || prediction?.away_team || ''}
                     league={league}
                     confidence={match?.confidence || prediction?.confidence || 0}
+                  />
+                  <ShareableCard
+                    homeTeam={match?.homeTeam || prediction?.home_team || ''}
+                    awayTeam={match?.awayTeam || prediction?.away_team || ''}
+                    league={league}
+                    prediction={match?.prediction || prediction?.prediction || ''}
+                    confidence={match?.confidence || prediction?.confidence || 0}
+                    matchDate={prediction?.match_date}
+                    variant="full"
                   />
                 </div>
               )}
