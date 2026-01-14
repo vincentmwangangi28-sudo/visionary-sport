@@ -57,13 +57,16 @@ export default function News() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <Helmet>
-        <title>Sports News & Analysis | PredictPro Guru Kenya</title>
-        <meta name="description" content="Latest football news, match previews, expert analysis, and transfer rumors. AI-powered sports insights from Kenya's top prediction platform." />
-        <meta property="og:title" content="Sports News & Analysis | PredictPro Guru" />
-        <meta property="og:description" content="Get the latest football news, match previews, and transfer updates from PredictPro Guru." />
+        <title>Football News & Betting Tips Kenya | PredictPro</title>
+        <meta name="description" content="Latest football news, match previews, expert analysis, and transfer rumors. AI-powered sports insights from Kenya's #1 prediction platform. Daily betting tips." />
+        <meta property="og:title" content="Football News & Betting Tips Kenya | PredictPro" />
+        <meta property="og:description" content="Get the latest football news, match previews, and transfer updates. Free betting tips for Kenya sports fans." />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://predictpro.guru/og-news.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <link rel="canonical" href="https://www.predictpro.guru/news" />
+        <meta name="keywords" content="football news Kenya, betting tips Nairobi, Premier League news, transfer rumors, match previews Kenya" />
+        <link rel="canonical" href="https://predictpro.guru/news" />
+        <meta name="robots" content="index, follow" />
       </Helmet>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(newsStructuredData) }} />

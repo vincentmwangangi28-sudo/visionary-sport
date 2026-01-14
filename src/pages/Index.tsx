@@ -36,9 +36,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="AI Sports Predictions - Football, Basketball, Tennis | PredictPro"
-        description="Get AI-powered sports predictions with 85%+ accuracy. Multi-sport predictions for football, basketball, tennis with confidence scores, upset alerts, and smart accumulators."
-        keywords={["AI predictions", "football predictions", "basketball predictions", "betting tips", "sports analysis", "Kenya predictions"]}
+        title="AI Football Predictions Kenya - 85% Accuracy"
+        description="Get AI-powered football predictions with 85%+ accuracy in Kenya. Daily betting tips, match analysis, upset alerts, and smart accumulators for Premier League, La Liga, Champions League."
+        keywords={["AI predictions Kenya", "football predictions Nairobi", "betting tips Kenya", "Premier League predictions", "sports analysis Kenya", "accurate football tips"]}
+        canonicalUrl="https://predictpro.guru"
+        breadcrumbs={[
+          { name: "Home", url: "https://predictpro.guru" }
+        ]}
+        faqs={[
+          { question: "What is PredictPro?", answer: "PredictPro is an AI-powered sports prediction platform in Kenya offering 85%+ accuracy on football, basketball, and tennis predictions." },
+          { question: "How accurate are the predictions?", answer: "Our AI model achieves 85%+ accuracy across major leagues including Premier League, La Liga, and Champions League." },
+          { question: "How do I get predictions?", answer: "Sign up for free to access daily predictions. Premium members get unlimited predictions with higher confidence levels." }
+        ]}
       />
       <Navbar />
       <Hero />
