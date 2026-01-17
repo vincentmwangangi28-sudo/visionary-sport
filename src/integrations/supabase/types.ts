@@ -1034,6 +1034,48 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_subscriptions: {
+        Row: {
+          country_code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_message_sent_at: string | null
+          message_count: number | null
+          phone_number: string
+          subscribed_at: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_message_sent_at?: string | null
+          message_count?: number | null
+          phone_number: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_message_sent_at?: string | null
+          message_count?: number | null
+          phone_number?: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       leaderboard_view: {
