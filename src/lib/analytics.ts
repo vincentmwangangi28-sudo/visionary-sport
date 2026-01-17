@@ -378,6 +378,16 @@ export const trackScrollDepth = (percentage: number, pagePath: string) => {
   });
 };
 
+// Generic track event for custom events
+export const trackEvent = (eventName: string, params?: Record<string, unknown>) => {
+  if (!isGtagAvailable()) return;
+  
+  gtag('event', eventName, {
+    event_category: 'Custom',
+    ...params,
+  });
+};
+
 // Initialize tracking on page load
 export const initAnalytics = () => {
   if (!isGtagAvailable()) return;

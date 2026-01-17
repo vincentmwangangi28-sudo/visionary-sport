@@ -23,6 +23,7 @@ serve(async (req) => {
       sitemap: { success: false },
       badges: { success: false, count: 0 },
       upsetAlerts: { success: false, count: 0 },
+      whatsappBroadcast: { success: false, sent: 0, failed: 0 },
       timestamp: new Date().toISOString()
     };
 
@@ -123,6 +124,27 @@ serve(async (req) => {
       }
     } catch (e) {
       console.error('Upset alerts error:', e);
+    }
+
+    // 7. Send WhatsApp broadcast (daily predictions)
+    try {
+      const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-broadcast`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (whatsappResponse.ok) {
+        const data = await whatsappResponse.json();
+        results.whatsappBroadcast = { 
+          success: true, 
+          sent: data.sent || 0,
+          failed: data.failed || 0
+        };
+      }
+    } catch (e) {
+      console.error('WhatsApp broadcast error:', e);
     }
 
     // Log automation run

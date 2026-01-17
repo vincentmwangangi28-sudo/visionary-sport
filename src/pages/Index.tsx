@@ -25,6 +25,7 @@ import { UserBadges } from "@/components/UserBadges";
 import { SEOHead } from "@/components/SEOHead";
 import { InteractivePolls } from "@/components/InteractivePolls";
 import { TransferRumorsFeed } from "@/components/TransferRumorsFeed";
+import { WhatsAppSubscription } from "@/components/WhatsAppSubscription";
 
 const Index = () => {
   useNotifications();
@@ -102,6 +103,7 @@ const Index = () => {
             <UserBadges />
             <div className="space-y-4">
               <PushNotifications />
+              <WhatsAppSubscription />
               <BettingTipsHistory />
             </div>
           </div>
