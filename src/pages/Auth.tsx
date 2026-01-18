@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { Trophy } from 'lucide-react';
+import { Trophy, Eye, EyeOff, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 import { toast } from 'sonner';
 
@@ -22,11 +22,20 @@ const signUpSchema = z.object({
   fullName: z.string().trim().min(2, 'Name must be at least 2 characters').max(100).regex(/^[a-zA-Z\s-]+$/, 'Name can only contain letters, spaces, and hyphens')
 });
 
+const resetPasswordSchema = z.object({
+  email: z.string().trim().email('Invalid email format').max(255)
+});
+
 export default function Auth() {
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -101,6 +110,32 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const validation = resetPasswordSchema.safeParse({ email: resetEmail });
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(validation.data.email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`
+      });
+      
+      if (error) throw error;
+      
+      setResetEmailSent(true);
+      toast.success('Password reset email sent!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24">
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -109,6 +144,107 @@ export default function Auth() {
       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
     </svg>
   );
+
+  // Forgot Password View
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Trophy className="h-10 w-10 text-primary" />
+              <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                PredictPro
+              </h1>
+            </div>
+            <p className="text-muted-foreground">AI-Powered Sports Predictions</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-fit -ml-2 mb-2"
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setResetEmailSent(false);
+                  setResetEmail('');
+                }}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Sign In
+              </Button>
+              <CardTitle className="flex items-center gap-2">
+                {resetEmailSent ? (
+                  <>
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                    Check Your Email
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-6 w-6" />
+                    Reset Password
+                  </>
+                )}
+              </CardTitle>
+              <CardDescription>
+                {resetEmailSent 
+                  ? `We've sent a password reset link to ${resetEmail}` 
+                  : "Enter your email and we'll send you a reset link"
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {resetEmailSent ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Didn't receive the email? Check your spam folder or try again.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setResetEmailSent(false)}
+                    >
+                      Try Again
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setResetEmailSent(false);
+                        setResetEmail('');
+                      }}
+                    >
+                      Back to Sign In
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'Sending...' : 'Send Reset Link'}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
@@ -170,15 +306,41 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signInData.password}
-                      onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
-                      required
-                    />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="px-0 h-auto font-normal text-sm text-primary"
+                        onClick={() => setShowForgotPassword(true)}
+                      >
+                        Forgot password?
+                      </Button>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="signin-password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={signInData.password}
+                        onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                        required
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign In'}
@@ -241,15 +403,34 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={signUpData.password}
-                      onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                      required
-                      minLength={6}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showSignUpPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={signUpData.password}
+                        onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                        required
+                        minLength={8}
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                      >
+                        {showSignUpPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Must be at least 8 characters
+                    </p>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Creating account...' : 'Sign Up'}
