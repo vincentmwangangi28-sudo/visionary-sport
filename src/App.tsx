@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Leaderboard from "./pages/Leaderboard";
 import Insights from "./pages/Insights";
 import Performance from "./pages/Performance";
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/performance" element={<Performance />} />
