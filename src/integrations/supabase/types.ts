@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      accuracy_reports: {
+        Row: {
+          accuracy_percent: number | null
+          by_confidence_range: Json | null
+          by_league: Json | null
+          by_sport: Json | null
+          correct_predictions: number | null
+          created_at: string | null
+          id: string
+          period_type: string
+          report_date: string
+          top_performing_leagues: string[] | null
+          total_predictions: number | null
+        }
+        Insert: {
+          accuracy_percent?: number | null
+          by_confidence_range?: Json | null
+          by_league?: Json | null
+          by_sport?: Json | null
+          correct_predictions?: number | null
+          created_at?: string | null
+          id?: string
+          period_type: string
+          report_date: string
+          top_performing_leagues?: string[] | null
+          total_predictions?: number | null
+        }
+        Update: {
+          accuracy_percent?: number | null
+          by_confidence_range?: Json | null
+          by_league?: Json | null
+          by_sport?: Json | null
+          correct_predictions?: number | null
+          created_at?: string | null
+          id?: string
+          period_type?: string
+          report_date?: string
+          top_performing_leagues?: string[] | null
+          total_predictions?: number | null
+        }
+        Relationships: []
+      }
       coin_packages: {
         Row: {
           bonus_coins: number | null
@@ -118,6 +160,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_subscriptions: {
+        Row: {
+          created_at: string | null
+          email: string
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_sent_at: string | null
+          preferences: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_sent_at?: string | null
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_sent_at?: string | null
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       expert_analysis: {
         Row: {
           betting_tips: string[] | null
@@ -209,6 +287,50 @@ export type Database = {
           question?: string
         }
         Relationships: []
+      }
+      match_verifications: {
+        Row: {
+          actual_result: string | null
+          away_score: number | null
+          home_score: number | null
+          id: string
+          is_correct: boolean | null
+          match_id: string
+          prediction_id: string
+          source: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          actual_result?: string | null
+          away_score?: number | null
+          home_score?: number | null
+          id?: string
+          is_correct?: boolean | null
+          match_id: string
+          prediction_id: string
+          source?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          actual_result?: string | null
+          away_score?: number | null
+          home_score?: number | null
+          id?: string
+          is_correct?: boolean | null
+          match_id?: string
+          prediction_id?: string
+          source?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_verifications_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: true
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       news_articles: {
         Row: {
@@ -379,6 +501,41 @@ export type Database = {
           price_kes?: number
         }
         Relationships: []
+      }
+      prediction_cards: {
+        Row: {
+          created_at: string | null
+          id: string
+          prediction_id: string | null
+          public_url: string | null
+          storage_path: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          prediction_id?: string | null
+          public_url?: string | null
+          storage_path: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          prediction_id?: string | null
+          public_url?: string | null
+          storage_path?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_cards_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prediction_insurance: {
         Row: {
@@ -732,6 +889,39 @@ export type Database = {
           stake_suggestion?: number | null
           total_odds?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      sms_subscriptions: {
+        Row: {
+          alerts_enabled: boolean | null
+          country_code: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          phone_number: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alerts_enabled?: boolean | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone_number: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alerts_enabled?: boolean | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone_number?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
