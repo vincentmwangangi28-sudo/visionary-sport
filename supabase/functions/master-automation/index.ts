@@ -24,6 +24,11 @@ serve(async (req) => {
       badges: { success: false, count: 0 },
       upsetAlerts: { success: false, count: 0 },
       whatsappBroadcast: { success: false, sent: 0, failed: 0 },
+      emailDigest: { success: false, sent: 0, failed: 0 },
+      smsAlerts: { success: false, sent: 0, failed: 0 },
+      matchVerification: { success: false, verified: 0 },
+      accuracyReports: { success: false },
+      scheduledPredictions: { success: false, count: 0 },
       timestamp: new Date().toISOString()
     };
 
@@ -126,7 +131,7 @@ serve(async (req) => {
       console.error('Upset alerts error:', e);
     }
 
-    // 7. Send WhatsApp broadcast (daily predictions)
+    // 7. Send WhatsApp broadcast
     try {
       const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-broadcast`, {
         method: 'POST',
@@ -145,6 +150,102 @@ serve(async (req) => {
       }
     } catch (e) {
       console.error('WhatsApp broadcast error:', e);
+    }
+
+    // 8. Send Email Digest
+    try {
+      const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email-digest`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (emailResponse.ok) {
+        const data = await emailResponse.json();
+        results.emailDigest = { 
+          success: true, 
+          sent: data.sent || 0,
+          failed: data.failed || 0
+        };
+      }
+    } catch (e) {
+      console.error('Email digest error:', e);
+    }
+
+    // 9. Send SMS Alerts
+    try {
+      const smsResponse = await fetch(`${supabaseUrl}/functions/v1/send-sms-alerts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (smsResponse.ok) {
+        const data = await smsResponse.json();
+        results.smsAlerts = { 
+          success: true, 
+          sent: data.sent || 0,
+          failed: data.failed || 0
+        };
+      }
+    } catch (e) {
+      console.error('SMS alerts error:', e);
+    }
+
+    // 10. Verify Match Results
+    try {
+      const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/verify-match-results`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (verifyResponse.ok) {
+        const data = await verifyResponse.json();
+        results.matchVerification = { 
+          success: true, 
+          verified: data.verified || 0
+        };
+      }
+    } catch (e) {
+      console.error('Match verification error:', e);
+    }
+
+    // 11. Generate Accuracy Reports
+    try {
+      const reportResponse = await fetch(`${supabaseUrl}/functions/v1/generate-accuracy-reports`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      results.accuracyReports = { success: reportResponse.ok };
+    } catch (e) {
+      console.error('Accuracy reports error:', e);
+    }
+
+    // 12. Scheduled Predictions
+    try {
+      const scheduledResponse = await fetch(`${supabaseUrl}/functions/v1/scheduled-predictions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (scheduledResponse.ok) {
+        const data = await scheduledResponse.json();
+        results.scheduledPredictions = { 
+          success: true, 
+          count: data.predictionsGenerated || 0
+        };
+      }
+    } catch (e) {
+      console.error('Scheduled predictions error:', e);
     }
 
     // Log automation run
