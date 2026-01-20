@@ -29,6 +29,9 @@ serve(async (req) => {
       matchVerification: { success: false, verified: 0 },
       accuracyReports: { success: false },
       scheduledPredictions: { success: false, count: 0 },
+      backlinkContent: { success: false },
+      responsibleGaming: { success: false },
+      bettingGuides: { success: false, count: 0 },
       timestamp: new Date().toISOString()
     };
 
@@ -246,6 +249,56 @@ serve(async (req) => {
       }
     } catch (e) {
       console.error('Scheduled predictions error:', e);
+    }
+
+    // 13. Generate Backlink Content
+    try {
+      const backlinkResponse = await fetch(`${supabaseUrl}/functions/v1/generate-backlink-content`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      results.backlinkContent = { success: backlinkResponse.ok };
+    } catch (e) {
+      console.error('Backlink content error:', e);
+    }
+
+    // 14. Generate Responsible Gaming Article (weekly)
+    const dayOfWeek = new Date().getDay();
+    if (dayOfWeek === 1) { // Monday only
+      try {
+        const rgResponse = await fetch(`${supabaseUrl}/functions/v1/generate-responsible-gaming`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        results.responsibleGaming = { success: rgResponse.ok };
+      } catch (e) {
+        console.error('Responsible gaming error:', e);
+      }
+    }
+
+    // 15. Generate Betting Strategy Guides (twice weekly)
+    if (dayOfWeek === 2 || dayOfWeek === 5) { // Tuesday & Friday
+      try {
+        const guidesResponse = await fetch(`${supabaseUrl}/functions/v1/generate-betting-guides`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (guidesResponse.ok) {
+          const data = await guidesResponse.json();
+          results.bettingGuides = { success: true, count: data.generated?.length || 0 };
+        }
+      } catch (e) {
+        console.error('Betting guides error:', e);
+      }
     }
 
     // Log automation run

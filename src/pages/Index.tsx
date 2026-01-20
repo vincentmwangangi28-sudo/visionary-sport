@@ -29,6 +29,8 @@ import { WhatsAppSubscription } from "@/components/WhatsAppSubscription";
 import { EmailSubscription } from "@/components/EmailSubscription";
 import { SmsSubscription } from "@/components/SmsSubscription";
 import { AccuracyReportsCard } from "@/components/AccuracyReportsCard";
+import { ReferralLeaderboard } from "@/components/ReferralLeaderboard";
+import { PublicAccuracyDashboard } from "@/components/PublicAccuracyDashboard";
 
 const Index = () => {
   useNotifications();
@@ -116,6 +118,12 @@ const Index = () => {
             <EmailSubscription />
             <SmsSubscription />
             <AccuracyReportsCard />
+          </div>
+          
+          {/* Referral & Trust Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <ReferralLeaderboard />
+            <PublicAccuracyDashboard />
           </div>
         </div>
       </section>

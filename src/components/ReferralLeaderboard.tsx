@@ -1,0 +1,159 @@
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Crown, Medal, Award, Users, TrendingUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ReferralLeader {
+  user_id: string;
+  uses_count: number;
+  profile: {
+    full_name: string | null;
+    email: string;
+  } | null;
+}
+
+export const ReferralLeaderboard = () => {
+  const [leaders, setLeaders] = useState<ReferralLeader[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadLeaderboard();
+  }, []);
+
+  const loadLeaderboard = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('referral_codes')
+        .select(`
+          user_id,
+          uses_count,
+          profiles!referral_codes_user_id_fkey (
+            full_name,
+            email
+          )
+        `)
+        .order('uses_count', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error loading referral leaderboard:', error);
+        // Fallback query without join
+        const { data: fallbackData } = await supabase
+          .from('referral_codes')
+          .select('user_id, uses_count')
+          .order('uses_count', { ascending: false })
+          .limit(10);
+        
+        if (fallbackData) {
+          setLeaders(fallbackData.map(d => ({
+            user_id: d.user_id,
+            uses_count: d.uses_count || 0,
+            profile: null,
+          })));
+        }
+      } else {
+        setLeaders((data as any) || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRankIcon = (index: number) => {
+    if (index === 0) return <Crown className="h-5 w-5 text-yellow-500" />;
+    if (index === 1) return <Medal className="h-5 w-5 text-gray-400" />;
+    if (index === 2) return <Award className="h-5 w-5 text-orange-600" />;
+    return <span className="font-bold text-muted-foreground">#{index + 1}</span>;
+  };
+
+  const getRankStyle = (index: number) => {
+    if (index === 0) return 'bg-gradient-to-r from-yellow-500/20 to-transparent border-yellow-500/30';
+    if (index === 1) return 'bg-gradient-to-r from-gray-400/20 to-transparent border-gray-400/30';
+    if (index === 2) return 'bg-gradient-to-r from-orange-500/20 to-transparent border-orange-500/30';
+    return 'bg-muted/30';
+  };
+
+  const maskEmail = (email: string) => {
+    if (!email) return 'Anonymous';
+    return email.replace(/(.{2}).*(@.*)/, '$1***$2');
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center p-8">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-primary/20">
+      <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              Referral Champions
+            </CardTitle>
+            <CardDescription>Top referrers earning the most coins</CardDescription>
+          </div>
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            Live
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
+        {leaders.length === 0 ? (
+          <div className="text-center py-8">
+            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">No referrals yet. Be the first!</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {leaders.map((leader, index) => (
+              <div
+                key={leader.user_id}
+                className={`flex items-center justify-between p-3 rounded-lg border transition-all hover:scale-[1.02] ${getRankStyle(index)}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 flex justify-center">
+                    {getRankIcon(index)}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">
+                      {leader.profile?.full_name || maskEmail(leader.profile?.email || '')}
+                    </p>
+                    {index < 3 && (
+                      <Badge variant="outline" className="text-xs mt-1">
+                        {index === 0 ? '👑 Champion' : index === 1 ? '🥈 Elite' : '🥉 Rising Star'}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-green-500">
+                    {leader.uses_count || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">referrals</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Motivational message */}
+        <div className="mt-4 p-3 bg-primary/5 rounded-lg text-center">
+          <p className="text-sm text-muted-foreground">
+            🎯 Invite friends and climb the leaderboard! Each referral = 50 coins
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

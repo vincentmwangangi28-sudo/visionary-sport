@@ -88,9 +88,9 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#responsible-gaming" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/responsible-gaming" className="text-muted-foreground hover:text-primary transition-colors">
                   Responsible Gaming
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

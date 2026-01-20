@@ -101,3 +101,12 @@ verify_jwt = false
 
 [functions.scheduled-predictions]
 verify_jwt = false
+
+[functions.generate-backlink-content]
+verify_jwt = false
+
+[functions.generate-responsible-gaming]
+verify_jwt = false
+
+[functions.generate-betting-guides]
+verify_jwt = false
