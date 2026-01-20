@@ -26,6 +26,9 @@ import { SEOHead } from "@/components/SEOHead";
 import { InteractivePolls } from "@/components/InteractivePolls";
 import { TransferRumorsFeed } from "@/components/TransferRumorsFeed";
 import { WhatsAppSubscription } from "@/components/WhatsAppSubscription";
+import { EmailSubscription } from "@/components/EmailSubscription";
+import { SmsSubscription } from "@/components/SmsSubscription";
+import { AccuracyReportsCard } from "@/components/AccuracyReportsCard";
 
 const Index = () => {
   useNotifications();
@@ -106,6 +109,13 @@ const Index = () => {
               <WhatsAppSubscription />
               <BettingTipsHistory />
             </div>
+          </div>
+          
+          {/* Subscription & Reports Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            <EmailSubscription />
+            <SmsSubscription />
+            <AccuracyReportsCard />
           </div>
         </div>
       </section>
