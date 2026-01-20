@@ -17,6 +17,7 @@ import Rewards from "./pages/Rewards";
 import News from "./pages/News";
 import NotFound from "./pages/NotFound";
 import MatchDetail from "./pages/MatchDetail";
+import ResponsibleGaming from "./pages/ResponsibleGaming";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/news" element={<News />} />
             <Route path="/about" element={<About />} />
             <Route path="/match/:matchId" element={<MatchDetail />} />
+            <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
