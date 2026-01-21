@@ -23,38 +23,40 @@ export const ReferralLeaderboard = () => {
 
   const loadLeaderboard = async () => {
     try {
-      const { data, error } = await supabase
+      // Get referral codes first
+      const { data: referralData, error: referralError } = await supabase
         .from('referral_codes')
-        .select(`
-          user_id,
-          uses_count,
-          profiles!referral_codes_user_id_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('user_id, uses_count')
         .order('uses_count', { ascending: false })
         .limit(10);
 
-      if (error) {
-        console.error('Error loading referral leaderboard:', error);
-        // Fallback query without join
-        const { data: fallbackData } = await supabase
-          .from('referral_codes')
-          .select('user_id, uses_count')
-          .order('uses_count', { ascending: false })
-          .limit(10);
-        
-        if (fallbackData) {
-          setLeaders(fallbackData.map(d => ({
-            user_id: d.user_id,
-            uses_count: d.uses_count || 0,
-            profile: null,
-          })));
-        }
-      } else {
-        setLeaders((data as any) || []);
+      if (referralError) {
+        console.error('Error loading referral codes:', referralError);
+        setLoading(false);
+        return;
       }
+
+      if (!referralData || referralData.length === 0) {
+        setLeaders([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get profiles for these users
+      const userIds = referralData.map(r => r.user_id);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      // Map profiles to referral data
+      const profileMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+      
+      setLeaders(referralData.map(r => ({
+        user_id: r.user_id,
+        uses_count: r.uses_count || 0,
+        profile: profileMap.get(r.user_id) || null,
+      })));
     } catch (error) {
       console.error('Error:', error);
     } finally {
