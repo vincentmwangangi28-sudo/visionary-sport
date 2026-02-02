@@ -1,27 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useNewsArticles } from '@/hooks/useNewsArticles';
 import { TransferRumorsFeed } from '@/components/TransferRumorsFeed';
 import { InteractivePolls } from '@/components/InteractivePolls';
-import { Newspaper, TrendingUp, Clock, User, ArrowRight } from 'lucide-react';
-import { format } from 'date-fns';
+import { FeaturedNewsHero } from '@/components/FeaturedNewsHero';
+import { NewsMatchCard } from '@/components/NewsMatchCard';
+import { NewsArticleModal } from '@/components/NewsArticleModal';
+import { TeamLogo } from '@/components/TeamLogo';
+import { Newspaper, TrendingUp, Sparkles, RefreshCw, Zap, Calendar, Trophy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface NewsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string | null;
+  category: string;
+  tags: string[];
+  featured_image: string | null;
+  author: string;
+  is_published: boolean;
+  view_count: number;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function News() {
   const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
-  const { articles, loading } = useNewsArticles(activeCategory);
+  const { articles, loading, refetch } = useNewsArticles(activeCategory);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const categories = [
-    { id: undefined, label: 'All' },
-    { id: 'preview', label: 'Match Previews' },
-    { id: 'analysis', label: 'Analysis' },
-    { id: 'transfer', label: 'Transfers' },
-    { id: 'trending', label: 'Trending' },
+    { id: undefined, label: 'All', icon: Newspaper },
+    { id: 'Match Preview', label: 'Match Previews', icon: Calendar },
+    { id: 'League Roundup', label: 'Roundups', icon: Trophy },
+    { id: 'analysis', label: 'Analysis', icon: TrendingUp },
+    { id: 'trending', label: 'Trending', icon: Zap },
   ];
+
+  // Get featured article (first one with most views or most recent)
+  const featuredArticle = articles[0];
+  const remainingArticles = articles.slice(1);
+
+  const handleGenerateNews = async () => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-all-games-news');
+      
+      if (error) throw error;
+      
+      toast.success(`Generated ${data.articlesGenerated} new articles!`);
+      refetch();
+    } catch (error) {
+      console.error('Error generating news:', error);
+      toast.error('Failed to generate news. Try again later.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const newsStructuredData = {
     "@context": "https://schema.org",
@@ -74,122 +119,145 @@ export default function News() {
       <Navbar />
 
       <main className="container mx-auto px-4 py-24">
-        <div className="text-center mb-12">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">AI-Powered Sports News</span>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
             Sports News Hub
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Stay updated with the latest football news, expert analysis, and transfer rumors
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
+            Real-time match previews, AI analysis, and transfer news - updated automatically every day
           </p>
+          
+          <Button 
+            variant="outline" 
+            onClick={handleGenerateNews}
+            disabled={isGenerating}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+            {isGenerating ? 'Generating...' : 'Generate Latest News'}
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main News Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Newspaper className="h-5 w-5 text-primary" />
-                  Latest Articles
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Category Tabs */}
-                <Tabs defaultValue="all" className="mb-6">
-                  <TabsList className="grid grid-cols-5 w-full">
-                    {categories.map(cat => (
-                      <TabsTrigger
-                        key={cat.id || 'all'}
-                        value={cat.id || 'all'}
-                        onClick={() => setActiveCategory(cat.id)}
-                      >
-                        {cat.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-
-                {loading ? (
-                  <div className="animate-pulse space-y-4">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="h-32 bg-muted rounded-lg" />
-                    ))}
-                  </div>
-                ) : articles.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">No articles in this category yet.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {articles.map(article => (
-                      <article
-                        key={article.id}
-                        className="border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer group"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="capitalize">
-                                {article.category}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {format(new Date(article.created_at), 'MMM d, yyyy')}
-                              </span>
-                            </div>
-
-                            <h3 className="font-semibold group-hover:text-primary transition-colors">
-                              {article.title}
-                            </h3>
-
-                            {article.excerpt && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {article.excerpt}
-                              </p>
-                            )}
-
-                            <div className="flex items-center justify-between pt-2">
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                {article.author}
-                              </span>
-                              <span className="text-xs text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-                                Read more <ArrowRight className="h-3 w-3" />
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {article.tags && article.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {article.tags.slice(0, 3).map(tag => (
-                              <span
-                                key={tag}
-                                className="text-xs bg-muted px-2 py-0.5 rounded-full"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <InteractivePolls />
-            <TransferRumorsFeed />
-          </div>
+        {/* Category Tabs */}
+        <div className="mb-8">
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid grid-cols-5 w-full max-w-2xl mx-auto">
+              {categories.map(cat => (
+                <TabsTrigger
+                  key={cat.id || 'all'}
+                  value={cat.id || 'all'}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className="gap-1"
+                >
+                  <cat.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{cat.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
+
+        {loading ? (
+          <div className="animate-pulse space-y-6">
+            <div className="h-64 bg-muted rounded-2xl" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="h-48 bg-muted rounded-lg" />
+              ))}
+            </div>
+          </div>
+        ) : articles.length === 0 ? (
+          <Card className="py-16">
+            <CardContent className="text-center">
+              <Newspaper className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-xl font-semibold mb-2">No articles yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Click the button above to generate AI-powered news for today's matches
+              </p>
+              <Button onClick={handleGenerateNews} disabled={isGenerating}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate News Now
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-8">
+            {/* Featured Article */}
+            {featuredArticle && (
+              <FeaturedNewsHero 
+                article={featuredArticle} 
+                onClick={() => setSelectedArticle(featuredArticle)}
+              />
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main News Grid */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Latest Articles
+                  </h2>
+                  <Badge variant="outline">
+                    {articles.length} articles
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {remainingArticles.map(article => (
+                    <NewsMatchCard 
+                      key={article.id} 
+                      article={article}
+                      onClick={() => setSelectedArticle(article)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Top Teams Section */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-primary" />
+                      Popular Teams
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {[
+                      'Arsenal', 'Liverpool', 'Manchester City', 
+                      'Real Madrid', 'Barcelona', 'Bayern Munich'
+                    ].map(team => (
+                      <div key={team} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                        <TeamLogo teamName={team} size="sm" />
+                        <span className="text-sm font-medium">{team}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <InteractivePolls />
+                <TransferRumorsFeed />
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />
+
+      {/* Article Modal */}
+      <NewsArticleModal
+        article={selectedArticle}
+        open={!!selectedArticle}
+        onOpenChange={(open) => !open && setSelectedArticle(null)}
+      />
     </div>
   );
 }
