@@ -160,6 +160,99 @@ export type Database = {
         }
         Relationships: []
       }
+      dns_audit_log: {
+        Row: {
+          action: string
+          changed_at: string | null
+          comment: string | null
+          id: number
+          priority: number | null
+          record_name: string | null
+          record_type: string | null
+          record_value: string | null
+          ttl: number | null
+        }
+        Insert: {
+          action: string
+          changed_at?: string | null
+          comment?: string | null
+          id?: number
+          priority?: number | null
+          record_name?: string | null
+          record_type?: string | null
+          record_value?: string | null
+          ttl?: number | null
+        }
+        Update: {
+          action?: string
+          changed_at?: string | null
+          comment?: string | null
+          id?: number
+          priority?: number | null
+          record_name?: string | null
+          record_type?: string | null
+          record_value?: string | null
+          ttl?: number | null
+        }
+        Relationships: []
+      }
+      dns_records: {
+        Row: {
+          comment: string | null
+          id: number
+          name: string
+          priority: number | null
+          ttl: number | null
+          type: string
+          value: string
+        }
+        Insert: {
+          comment?: string | null
+          id?: number
+          name: string
+          priority?: number | null
+          ttl?: number | null
+          type: string
+          value: string
+        }
+        Update: {
+          comment?: string | null
+          id?: number
+          name?: string
+          priority?: number | null
+          ttl?: number | null
+          type?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      edge_function_stats: {
+        Row: {
+          function_name: string
+          id: number
+          invocations: number | null
+          last_updated: string | null
+          status: string
+          success_rate: number | null
+        }
+        Insert: {
+          function_name: string
+          id?: number
+          invocations?: number | null
+          last_updated?: string | null
+          status: string
+          success_rate?: number | null
+        }
+        Update: {
+          function_name?: string
+          id?: number
+          invocations?: number | null
+          last_updated?: string | null
+          status?: string
+          success_rate?: number | null
+        }
+        Relationships: []
+      }
       email_subscriptions: {
         Row: {
           created_at: string | null
@@ -239,6 +332,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      games_news: {
+        Row: {
+          author: string | null
+          category: string | null
+          content: string
+          created_at: string | null
+          id: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author?: string | null
+          category?: string | null
+          content: string
+          created_at?: string | null
+          id?: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author?: string | null
+          category?: string | null
+          content?: string
+          created_at?: string | null
+          id?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      games_news_archive: {
+        Row: {
+          archived_at: string | null
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: number
+          title: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: number
+          title?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: number
+          title?: string | null
+        }
+        Relationships: []
       }
       match_chat_messages: {
         Row: {
@@ -766,6 +919,27 @@ export type Database = {
         }
         Relationships: []
       }
+      query_performance_log: {
+        Row: {
+          duration_ms: number | null
+          id: number
+          logged_at: string | null
+          query_name: string | null
+        }
+        Insert: {
+          duration_ms?: number | null
+          id?: number
+          logged_at?: string | null
+          query_name?: string | null
+        }
+        Update: {
+          duration_ms?: number | null
+          id?: number
+          logged_at?: string | null
+          query_name?: string | null
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -1268,12 +1442,82 @@ export type Database = {
       }
     }
     Views: {
+      dns_summary: {
+        Row: {
+          notes: string | null
+          record_type: string | null
+          subdomain: string | null
+          target: string | null
+          ttl: number | null
+        }
+        Insert: {
+          notes?: never
+          record_type?: string | null
+          subdomain?: string | null
+          target?: string | null
+          ttl?: number | null
+        }
+        Update: {
+          notes?: never
+          record_type?: string | null
+          subdomain?: string | null
+          target?: string | null
+          ttl?: number | null
+        }
+        Relationships: []
+      }
+      games_news_categories: {
+        Row: {
+          category: string | null
+        }
+        Relationships: []
+      }
+      games_news_featured: {
+        Row: {
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: number | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      games_news_recent: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: number | null
+          title: string | null
+        }
+        Relationships: []
+      }
       leaderboard_view: {
         Row: {
           full_name: string | null
           rank: number | null
           score: number | null
           user_id: string | null
+        }
+        Relationships: []
+      }
+      mv_featured_article: {
+        Row: {
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: number | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      mv_recent_articles: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: number | null
+          title: string | null
         }
         Relationships: []
       }
@@ -1284,6 +1528,7 @@ export type Database = {
         Args: { _contest_id: string; _entry_fee: number }
         Returns: Json
       }
+      generate_ai_games_news: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1291,6 +1536,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_ai_generated_news: { Args: never; Returns: undefined }
       unlock_prediction: {
         Args: { _coin_cost?: number; _prediction_id: string }
         Returns: Json

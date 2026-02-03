@@ -41,6 +41,9 @@ export const Navbar = () => {
               <Gift className="h-4 w-4" />
               Rewards
             </Link>
+            <Link to="/news" className="text-sm font-medium hover:text-primary transition-colors">
+              News
+            </Link>
             <Link to="/insights" className="text-sm font-medium hover:text-primary transition-colors">
               Insights
             </Link>
