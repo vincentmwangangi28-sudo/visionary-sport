@@ -16,33 +16,34 @@
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cross-Origin-Resource-Policy: cross-origin
   
-  # Default cache
+  # Default cache for HTML pages
   Cache-Control: public, max-age=0, must-revalidate
 
-# Cache static assets
-/assets/*
+# Vite build assets with content hashes - aggressive caching
+/assets/*.js
   Cache-Control: public, max-age=31536000, immutable
 
-/*.js
+/assets/*.css
   Cache-Control: public, max-age=31536000, immutable
 
-/*.css
+/assets/*.jpg
   Cache-Control: public, max-age=31536000, immutable
 
-/*.png
-  Cache-Control: public, max-age=604800
+/assets/*.png
+  Cache-Control: public, max-age=31536000, immutable
 
-/*.jpg
-  Cache-Control: public, max-age=604800
+/assets/*.webp
+  Cache-Control: public, max-age=31536000, immutable
 
+/assets/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Root-level static files
 /*.svg
   Cache-Control: public, max-age=604800
 
 /*.ico
   Cache-Control: public, max-age=604800
-
-/index.html
-  Cache-Control: public, max-age=0, must-revalidate
 
 /sitemap.xml
   Cache-Control: public, max-age=3600
