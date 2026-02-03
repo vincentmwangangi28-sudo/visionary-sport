@@ -19,12 +19,16 @@ export const Hero = () => {
 
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay - Lazy loaded */}
-      <div 
-        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
-        style={{ backgroundImage: `url(${heroStadium})` }}
-        aria-hidden="true"
-      >
+      {/* Background Image with Overlay - LCP optimized */}
+      <div className="absolute inset-0" aria-hidden="true">
+        <img 
+          src={heroStadium}
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          className={`w-full h-full object-cover transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => setBgLoaded(true)}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background"></div>
       </div>
       
