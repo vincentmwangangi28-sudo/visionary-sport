@@ -142,7 +142,7 @@ export const PredictionCard = ({
               {confidence}%
             </span>
           </div>
-          <Progress value={confidence} className="h-2" />
+          <Progress value={confidence} className="h-2" aria-label={`Prediction confidence: ${confidence}%`} />
         </div>
 
         {/* Social Share */}

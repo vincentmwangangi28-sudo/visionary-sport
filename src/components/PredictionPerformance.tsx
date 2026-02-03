@@ -78,7 +78,7 @@ export const PredictionPerformance = () => {
         <Card className="p-8 bg-gradient-prediction border-border">
           <div className="mb-6">
             <h3 className="text-xl font-semibold mb-2 text-foreground">Win Rate Progress</h3>
-            <Progress value={performance.win_rate} className="h-3" />
+            <Progress value={performance.win_rate} className="h-3" aria-label={`Win rate: ${performance.win_rate}%`} />
             <p className="text-sm text-muted-foreground mt-2">
               You're performing {performance.win_rate >= 70 ? 'excellently' : 'well'}! Keep it up.
             </p>

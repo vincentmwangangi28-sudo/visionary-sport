@@ -53,7 +53,7 @@ export const PublicAccuracyDashboard = () => {
                 {accuracy.toFixed(1)}%
               </div>
               <p className="text-muted-foreground mt-2">Overall Win Rate</p>
-              <Progress value={accuracy} className="mt-4 h-3" />
+              <Progress value={accuracy} className="mt-4 h-3" aria-label={`Overall win rate: ${accuracy.toFixed(1)}%`} />
             </div>
 
             {/* Total Predictions */}

@@ -55,7 +55,7 @@ export const AccuracyReportsCard = () => {
           <div className="text-sm text-muted-foreground">
             {latestReport.correct_predictions} / {latestReport.total_predictions} correct
           </div>
-          <Progress value={accuracyPercent} className="mt-3" />
+          <Progress value={accuracyPercent} className="mt-3" aria-label={`Accuracy: ${accuracyPercent.toFixed(1)}%`} />
         </div>
 
         {/* Confidence Range Performance */}
