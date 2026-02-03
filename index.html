@@ -37,21 +37,42 @@
     
     <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/fp7lfnnDDBhSO6m3wG9agqDBD3M2/social-images/social-1767951466682-Screenshot 2025-11-22 211134.png">
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ"></script>
+    <!-- Google Analytics - deferred to reduce main-thread blocking -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-M0VE8D3XLZ', {
-        'page_path': window.location.pathname,
-        'send_page_view': true
+      // Defer Google Analytics loading until after page load
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var script = document.createElement('script');
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+          script.async = true;
+          document.head.appendChild(script);
+          
+          script.onload = function() {
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-M0VE8D3XLZ', {
+              'page_path': window.location.pathname,
+              'send_page_view': true
+            });
+          };
+        }, 2000);
       });
     </script>
 
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976" crossorigin="anonymous"></script>
-
+    <!-- Google AdSense - deferred to reduce main-thread blocking -->
+    <script>
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var script = document.createElement('script');
+          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+          script.async = true;
+          script.crossOrigin = 'anonymous';
+          document.head.appendChild(script);
+        }, 3000);
+      });
+    </script>
     <!-- Structured Data: WebSite -->
     <script type="application/ld+json">
     {
