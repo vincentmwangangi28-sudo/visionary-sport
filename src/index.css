@@ -27,7 +27,7 @@ All colors MUST be HSL.
     --secondary-foreground: 0 0% 0%;
 
     --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted-foreground: 240 5% 34%;
 
     /* Kenyan Red - Accent color */
     --accent: 0 84% 60%;
@@ -70,7 +70,7 @@ All colors MUST be HSL.
     --secondary-foreground: 0 0% 0%;
 
     --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted-foreground: 240 5% 72%;
 
     --accent: 0 84% 60%;
     --accent-foreground: 0 0% 100%;
