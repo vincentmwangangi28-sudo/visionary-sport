@@ -19,13 +19,14 @@ export const Hero = () => {
 
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay - LCP optimized */}
+      {/* Background Image with Overlay - LCP optimized with responsive sizes */}
       <div className="absolute inset-0" aria-hidden="true">
         <img 
           src={heroStadium}
           alt=""
           fetchPriority="high"
           decoding="async"
+          sizes="100vw"
           className={`w-full h-full object-cover transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setBgLoaded(true)}
         />
