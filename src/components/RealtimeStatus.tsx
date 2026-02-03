@@ -7,14 +7,25 @@ export const RealtimeStatus = () => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const channel = supabase
-      .channel('realtime-status')
-      .subscribe((status) => {
-        setIsConnected(status === 'SUBSCRIBED');
-      });
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    
+    try {
+      channel = supabase
+        .channel('realtime-status')
+        .subscribe((status) => {
+          setIsConnected(status === 'SUBSCRIBED');
+        });
+    } catch {
+      // Silently handle connection errors
+      setIsConnected(false);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel).catch(() => {
+          // Silently handle cleanup errors
+        });
+      }
     };
   }, []);
 

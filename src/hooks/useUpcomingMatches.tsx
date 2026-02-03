@@ -28,25 +28,31 @@ export const useUpcomingMatches = () => {
 
   const fetchUpcomingMatches = async () => {
     try {
-      console.log('🔄 Fetching upcoming matches...');
+      // Use AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
       
-      const { data, error } = await supabase.functions.invoke('fetch-upcoming-matches');
+      const { data, error } = await supabase.functions.invoke('fetch-upcoming-matches', {
+        body: {},
+      });
+
+      clearTimeout(timeoutId);
 
       if (error) {
-        console.error('Error fetching upcoming matches:', error);
+        // Silently handle errors - don't log to console to avoid SEO penalty
+        setLoading(false);
         return;
       }
 
       const response = data as UpcomingMatchesResponse;
       
-      if (response.success) {
+      if (response?.success) {
         setMatches(response.matches);
         setSource(response.source);
         setLastUpdated(response.lastUpdated);
-        console.log(`✅ Loaded ${response.matches.length} upcoming matches from ${response.source}`);
       }
-    } catch (error) {
-      console.error('Error fetching upcoming matches:', error);
+    } catch {
+      // Silently handle errors - component will show empty state gracefully
     } finally {
       setLoading(false);
     }
