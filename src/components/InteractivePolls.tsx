@@ -121,7 +121,7 @@ export function InteractivePolls() {
                             </span>
                             <span>{percentage}%</span>
                           </div>
-                          <Progress value={percentage} className="h-2" />
+                          <Progress value={percentage} className="h-2" aria-label={`${option.label}: ${percentage}%`} />
                         </div>
                       ) : (
                         <Button

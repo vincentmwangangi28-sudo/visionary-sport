@@ -56,7 +56,7 @@ export const AccuracyTracker = () => {
                     {league.accuracy.toFixed(1)}% ({league.total} predictions)
                   </span>
                 </div>
-                <Progress value={league.accuracy} className="h-2" />
+                <Progress value={league.accuracy} className="h-2" aria-label={`${league.league} accuracy: ${league.accuracy.toFixed(1)}%`} />
               </div>
             ))}
           </div>
@@ -77,7 +77,7 @@ export const AccuracyTracker = () => {
                     {conf.accuracy.toFixed(1)}% ({conf.total} predictions)
                   </span>
                 </div>
-                <Progress value={conf.accuracy} className="h-2" />
+                <Progress value={conf.accuracy} className="h-2" aria-label={`${conf.range} accuracy: ${conf.accuracy.toFixed(1)}%`} />
               </div>
             ))}
           </div>

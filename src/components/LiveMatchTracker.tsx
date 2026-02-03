@@ -190,7 +190,7 @@ export const LiveMatchTracker = () => {
                   <span>45' HT</span>
                   <span>90'</span>
                 </div>
-                <Progress value={getMinuteProgress(selectedMatch.time)} className="h-2" />
+                <Progress value={getMinuteProgress(selectedMatch.time)} className="h-2" aria-label={`Match progress: ${selectedMatch.time}`} />
               </div>
             </div>
 
