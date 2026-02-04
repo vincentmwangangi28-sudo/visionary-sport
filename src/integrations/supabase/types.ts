@@ -1451,14 +1451,14 @@ export type Database = {
           ttl: number | null
         }
         Insert: {
-          notes?: never
+          notes?: string | null
           record_type?: string | null
           subdomain?: string | null
           target?: string | null
           ttl?: number | null
         }
         Update: {
-          notes?: never
+          notes?: string | null
           record_type?: string | null
           subdomain?: string | null
           target?: string | null
