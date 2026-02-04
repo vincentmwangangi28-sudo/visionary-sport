@@ -6,6 +6,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-lipana-signature',
 };
 
+// Helper function to compare signatures securely (constant-time comparison)
+function secureCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+// Helper function to convert ArrayBuffer to hex string
+function bufferToHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,14 +31,54 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const LIPANA_WEBHOOK_SECRET = Deno.env.get('LIPANA_WEBHOOK_SECRET');
+    
+    // Get the raw body for signature verification
+    const rawBody = await req.text();
+    
+    // Verify webhook signature
+    const signature = req.headers.get('x-lipana-signature');
+    
+    if (!LIPANA_WEBHOOK_SECRET) {
+      console.error('LIPANA_WEBHOOK_SECRET not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!signature) {
+      console.error('Missing x-lipana-signature header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - missing signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Compute expected signature
+    const encoder = new TextEncoder();
+    const data = encoder.encode(rawBody + LIPANA_WEBHOOK_SECRET);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const expectedSignature = bufferToHex(hashBuffer);
+    
+    // Securely compare signatures
+    if (!secureCompare(signature.toLowerCase(), expectedSignature.toLowerCase())) {
+      console.error('Invalid webhook signature');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - invalid signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('Webhook signature verified successfully');
     
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
-    const payload = await req.json();
+    const payload = JSON.parse(rawBody);
     console.log('Received M-Pesa webhook:', JSON.stringify(payload));
 
-    const { event, data } = payload;
-    const { transactionId, checkoutRequestID, status, amount } = data || {};
+    const { event, data: payloadData } = payload;
+    const { transactionId, checkoutRequestID, status, amount } = payloadData || {};
 
     if (!transactionId && !checkoutRequestID) {
       console.log('No transaction identifier in webhook payload');
@@ -97,7 +154,7 @@ serve(async (req) => {
             ...transaction.metadata,
             webhook_event: event,
             webhook_received_at: new Date().toISOString(),
-            mpesa_receipt: data?.mpesaReceiptNumber,
+            mpesa_receipt: payloadData?.mpesaReceiptNumber,
           },
         })
         .eq('id', transaction.id);
