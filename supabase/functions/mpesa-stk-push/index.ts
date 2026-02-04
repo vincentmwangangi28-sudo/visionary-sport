@@ -6,11 +6,53 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Valid payment purposes
+const VALID_PURPOSES = ['premium_subscription', 'coin_purchase', 'tip'] as const;
+type PaymentPurpose = typeof VALID_PURPOSES[number];
+
+// Payment limits
+const MIN_AMOUNT = 10;
+const MAX_AMOUNT = 100000;
+const MAX_METADATA_FIELDS = 10;
+
+// Phone number validation regex (Kenyan format)
+const PHONE_REGEX = /^(?:\+?254|0)?[17]\d{8}$/;
+
 interface STKPushRequest {
   phone: string;
   amount: number;
-  purpose: 'premium_subscription' | 'coin_purchase' | 'tip';
-  metadata?: Record<string, any>;
+  purpose: string;
+  metadata?: Record<string, unknown>;
+}
+
+// Sanitize metadata to prevent injection
+function sanitizeMetadata(metadata: Record<string, unknown> | undefined): Record<string, string> | undefined {
+  if (!metadata) return undefined;
+  
+  const sanitized: Record<string, string> = {};
+  const keys = Object.keys(metadata);
+  
+  // Limit number of fields
+  if (keys.length > MAX_METADATA_FIELDS) {
+    throw new Error(`Too many metadata fields. Maximum is ${MAX_METADATA_FIELDS}`);
+  }
+  
+  for (const key of keys) {
+    // Only allow alphanumeric keys
+    if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+      continue; // Skip invalid keys
+    }
+    
+    const value = metadata[key];
+    // Only allow primitive values, convert to string
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      // Limit value length
+      const strValue = String(value).slice(0, 500);
+      sanitized[key] = strValue;
+    }
+  }
+  
+  return Object.keys(sanitized).length > 0 ? sanitized : undefined;
 }
 
 serve(async (req) => {
@@ -45,24 +87,68 @@ serve(async (req) => {
     const body: STKPushRequest = await req.json();
     const { phone, amount, purpose, metadata } = body;
 
-    // Validate inputs
-    if (!phone || !amount || !purpose) {
+    // Validate required fields
+    if (!phone || amount === undefined || amount === null || !purpose) {
       return new Response(
         JSON.stringify({ success: false, error: 'Missing required fields: phone, amount, purpose' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Minimum amount is KES 10
-    if (amount < 10) {
+    // Validate amount is a number
+    if (typeof amount !== 'number' || isNaN(amount)) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Minimum amount is KES 10' }),
+        JSON.stringify({ success: false, error: 'Amount must be a valid number' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate minimum amount
+    if (amount < MIN_AMOUNT) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Minimum amount is KES ${MIN_AMOUNT}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate maximum amount
+    if (amount > MAX_AMOUNT) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Maximum amount is KES ${MAX_AMOUNT.toLocaleString()}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate purpose
+    if (!VALID_PURPOSES.includes(purpose as PaymentPurpose)) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Invalid purpose. Must be one of: ${VALID_PURPOSES.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate phone number format
+    const cleanPhone = phone.replace(/\s+/g, '');
+    if (!PHONE_REGEX.test(cleanPhone)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid phone number format. Use Kenyan format (e.g., 0712345678 or 254712345678)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sanitize metadata
+    let sanitizedMetadata: Record<string, string> | undefined;
+    try {
+      sanitizedMetadata = sanitizeMetadata(metadata);
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ success: false, error: (err as Error).message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Format phone number (ensure it starts with 254)
-    let formattedPhone = phone.replace(/\s+/g, '').replace(/^0/, '254');
+    let formattedPhone = cleanPhone.replace(/^0/, '254');
     if (!formattedPhone.startsWith('+')) {
       formattedPhone = '+' + formattedPhone;
     }
@@ -108,7 +194,7 @@ serve(async (req) => {
           transaction_id: lipanaData.data?.transactionId,
           checkout_request_id: lipanaData.data?.checkoutRequestID,
           phone: formattedPhone,
-          ...metadata,
+          ...sanitizedMetadata,
         },
       });
 
