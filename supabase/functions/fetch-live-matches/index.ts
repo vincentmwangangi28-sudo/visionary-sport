@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,9 +30,7 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<LiveMatch[]>
   console.log('🔄 Trying Football Data API...');
   try {
     const response = await fetch('https://api.football-data.org/v4/matches?status=LIVE', {
-      headers: {
-        'X-Auth-Token': apiToken
-      }
+      headers: { 'X-Auth-Token': apiToken }
     });
 
     if (!response.ok) {
@@ -66,46 +65,6 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<LiveMatch[]>
   }
 }
 
-// Fetch predictions from PredictPro API
-async function fetchPredictions(apiKey?: string): Promise<Map<string, { prediction: string; confidence: number }>> {
-  const predictionsMap = new Map();
-  
-  if (!apiKey) {
-    console.log('⏭️ Skipping PredictPro API: No API key');
-    return predictionsMap;
-  }
-
-  console.log('🔄 Fetching predictions from PredictPro...');
-  try {
-    const response = await fetch('https://predictpro.ai/api/live-predictions', {
-      headers: {
-        'x-api-key': apiKey
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`❌ PredictPro API error: ${response.status}`);
-      return predictionsMap;
-    }
-
-    const data = await response.json();
-    
-    if (data.predictions && Array.isArray(data.predictions)) {
-      data.predictions.forEach((pred: any) => {
-        predictionsMap.set(pred.match_id, {
-          prediction: pred.prediction,
-          confidence: pred.confidence
-        });
-      });
-      console.log(`✅ PredictPro: Loaded ${predictionsMap.size} predictions`);
-    }
-  } catch (error) {
-    console.error('❌ PredictPro API error:', error);
-  }
-
-  return predictionsMap;
-}
-
 // Fetch from TheSportsDB (completely free, no API key needed)
 async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
   console.log('🔄 Trying TheSportsDB...');
@@ -118,21 +77,17 @@ async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
       return [];
     }
 
-    const matches: LiveMatch[] = data.events.map((event: any) => {
-      const match = {
-        id: event.idEvent || `${event.strHomeTeam}-${event.strAwayTeam}`,
-        homeTeam: event.strHomeTeam,
-        awayTeam: event.strAwayTeam,
-        homeScore: event.intHomeScore ? parseInt(event.intHomeScore) : null,
-        awayScore: event.intAwayScore ? parseInt(event.intAwayScore) : null,
-        status: event.strStatus || 'LIVE',
-        time: event.strProgress || event.strTime || '0',
-        league: event.strLeague || 'Unknown',
-        date: event.dateEvent || new Date().toISOString().split('T')[0],
-      };
-      const { prediction, confidence } = generatePrediction(match);
-      return { ...match, prediction, confidence };
-    });
+    const matches: LiveMatch[] = data.events.map((event: any) => ({
+      id: event.idEvent || `${event.strHomeTeam}-${event.strAwayTeam}`,
+      homeTeam: event.strHomeTeam,
+      awayTeam: event.strAwayTeam,
+      homeScore: event.intHomeScore ? parseInt(event.intHomeScore) : null,
+      awayScore: event.intAwayScore ? parseInt(event.intAwayScore) : null,
+      status: event.strStatus || 'LIVE',
+      time: event.strProgress || event.strTime || '0',
+      league: event.strLeague || 'Unknown',
+      date: event.dateEvent || new Date().toISOString().split('T')[0],
+    }));
 
     console.log(`✅ TheSportsDB: Found ${matches.length} live matches`);
     return matches;
@@ -152,9 +107,7 @@ async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
   console.log('🔄 Trying API-Sports...');
   try {
     const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
-      headers: {
-        'x-apisports-key': apiKey
-      }
+      headers: { 'x-apisports-key': apiKey }
     });
 
     const data = await response.json();
@@ -164,21 +117,17 @@ async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
       return [];
     }
 
-    const matches: LiveMatch[] = data.response.map((fixture: any) => {
-      const match = {
-        id: fixture.fixture.id.toString(),
-        homeTeam: fixture.teams.home.name,
-        awayTeam: fixture.teams.away.name,
-        homeScore: fixture.goals.home,
-        awayScore: fixture.goals.away,
-        status: fixture.fixture.status.short,
-        time: fixture.fixture.status.elapsed ? `${fixture.fixture.status.elapsed}'` : '0\'',
-        league: fixture.league.name,
-        date: fixture.fixture.date.split('T')[0],
-      };
-      const { prediction, confidence } = generatePrediction(match);
-      return { ...match, prediction, confidence };
-    });
+    const matches: LiveMatch[] = data.response.map((fixture: any) => ({
+      id: fixture.fixture.id.toString(),
+      homeTeam: fixture.teams.home.name,
+      awayTeam: fixture.teams.away.name,
+      homeScore: fixture.goals.home,
+      awayScore: fixture.goals.away,
+      status: fixture.fixture.status.short,
+      time: fixture.fixture.status.elapsed ? `${fixture.fixture.status.elapsed}'` : '0\'',
+      league: fixture.league.name,
+      date: fixture.fixture.date.split('T')[0],
+    }));
 
     console.log(`✅ API-Sports: Found ${matches.length} live matches`);
     return matches;
@@ -188,7 +137,50 @@ async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
   }
 }
 
-// Generate AI prediction based on current score
+// Fetch AI predictions from the database
+async function fetchDBPredictions(supabase: any, matches: LiveMatch[]): Promise<Map<string, { prediction: string; confidence: number }>> {
+  const predictionsMap = new Map();
+
+  if (matches.length === 0) return predictionsMap;
+
+  try {
+    // Match by match_id (fd-{id} format used by our prediction system)
+    const matchIds = matches.map(m => `fd-${m.id}`);
+
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('match_id, prediction, confidence')
+      .in('match_id', matchIds)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ DB predictions error:', error.message);
+      return predictionsMap;
+    }
+
+    if (data && data.length > 0) {
+      // Use the most recent prediction per match
+      for (const pred of data) {
+        const rawId = pred.match_id.replace('fd-', '');
+        if (!predictionsMap.has(rawId)) {
+          predictionsMap.set(rawId, {
+            prediction: pred.prediction,
+            confidence: pred.confidence,
+          });
+        }
+      }
+      console.log(`✅ DB predictions: Found ${predictionsMap.size} predictions for live matches`);
+    } else {
+      console.log('⚠️ DB predictions: No matching predictions found');
+    }
+  } catch (error) {
+    console.error('❌ DB predictions fetch error:', error);
+  }
+
+  return predictionsMap;
+}
+
+// Generate prediction based on current score (fallback)
 function generatePrediction(match: LiveMatch): { prediction: string; confidence: number } {
   const { homeScore, awayScore } = match;
   
@@ -200,7 +192,6 @@ function generatePrediction(match: LiveMatch): { prediction: string; confidence:
   const time = parseInt(match.time) || 0;
   const timeRemaining = 90 - time;
   
-  // Calculate confidence based on score difference and time remaining
   let confidence = 50;
   let prediction = 'Draw';
   
@@ -221,50 +212,26 @@ function generatePrediction(match: LiveMatch): { prediction: string; confidence:
 // Fallback: Generate mock live data for demo purposes
 function generateMockLiveMatches(): LiveMatch[] {
   console.log('🎭 Generating mock live matches for demo');
-  
-  const mockMatches = [
+  return [
     {
-      id: 'mock-1',
-      homeTeam: 'Manchester United',
-      awayTeam: 'Liverpool',
-      homeScore: 1,
-      awayScore: 2,
-      status: 'LIVE',
-      time: '67\'',
-      league: 'Premier League',
-      date: new Date().toISOString().split('T')[0],
-      prediction: 'Away Win',
-      confidence: 74,
+      id: 'mock-1', homeTeam: 'Manchester United', awayTeam: 'Liverpool',
+      homeScore: 1, awayScore: 2, status: 'LIVE', time: '67\'',
+      league: 'Premier League', date: new Date().toISOString().split('T')[0],
+      prediction: 'Away Win', confidence: 74,
     },
     {
-      id: 'mock-2',
-      homeTeam: 'Barcelona',
-      awayTeam: 'Real Madrid',
-      homeScore: 2,
-      awayScore: 2,
-      status: 'LIVE',
-      time: '78\'',
-      league: 'La Liga',
-      date: new Date().toISOString().split('T')[0],
-      prediction: 'Draw',
-      confidence: 52,
+      id: 'mock-2', homeTeam: 'Barcelona', awayTeam: 'Real Madrid',
+      homeScore: 2, awayScore: 2, status: 'LIVE', time: '78\'',
+      league: 'La Liga', date: new Date().toISOString().split('T')[0],
+      prediction: 'Draw', confidence: 52,
     },
     {
-      id: 'mock-3',
-      homeTeam: 'Bayern Munich',
-      awayTeam: 'Borussia Dortmund',
-      homeScore: 3,
-      awayScore: 1,
-      status: 'LIVE',
-      time: '82\'',
-      league: 'Bundesliga',
-      date: new Date().toISOString().split('T')[0],
-      prediction: 'Home Win',
-      confidence: 88,
+      id: 'mock-3', homeTeam: 'Bayern Munich', awayTeam: 'Borussia Dortmund',
+      homeScore: 3, awayScore: 1, status: 'LIVE', time: '82\'',
+      league: 'Bundesliga', date: new Date().toISOString().split('T')[0],
+      prediction: 'Home Win', confidence: 88,
     },
   ];
-
-  return mockMatches;
 }
 
 serve(async (req) => {
@@ -275,15 +242,15 @@ serve(async (req) => {
   try {
     console.log('📡 Fetching live matches...');
     
-    // Get API keys from environment
     const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
-    const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
     let matches: LiveMatch[] = [];
 
-    // Try multiple sources with fallback
-    // 1. Try Football Data API first (primary source)
+    // 1. Try Football Data API first
     if (footballDataToken) {
       matches = await fetchFromFootballDataAPI(footballDataToken);
     }
@@ -293,34 +260,27 @@ serve(async (req) => {
       matches = await fetchFromAPISports(rapidApiKey);
     }
 
-    // 3. If no matches, try TheSportsDB (free, no key required)
+    // 3. If no matches, try TheSportsDB (free)
     if (matches.length === 0) {
       matches = await fetchFromTheSportsDB();
     }
 
-    // 4. Fetch AI predictions from PredictPro and merge with matches
-    if (matches.length > 0 && predictProApiKey) {
-      const predictions = await fetchPredictions(predictProApiKey);
+    // 4. Merge with AI predictions from our database
+    if (matches.length > 0) {
+      const dbPredictions = await fetchDBPredictions(supabase, matches);
       
-      // Merge predictions with matches
       matches = matches.map(match => {
-        const pred = predictions.get(match.id);
-        if (pred) {
-          return { ...match, prediction: pred.prediction, confidence: pred.confidence };
+        const dbPred = dbPredictions.get(match.id);
+        if (dbPred) {
+          return { ...match, prediction: dbPred.prediction, confidence: dbPred.confidence };
         }
-        // Fallback to generated predictions if API doesn't have data
-        const { prediction, confidence } = generatePrediction(match);
-        return { ...match, prediction, confidence };
-      });
-    } else if (matches.length > 0) {
-      // Generate predictions if no API key available
-      matches = matches.map(match => {
+        // Fallback to score-based prediction
         const { prediction, confidence } = generatePrediction(match);
         return { ...match, prediction, confidence };
       });
     }
 
-    // 5. If still no matches, use mock data for demo
+    // 5. If still no matches, use mock data
     if (matches.length === 0) {
       matches = generateMockLiveMatches();
     }
@@ -345,7 +305,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error fetching live matches:', error);
     
-    // Return mock data on error for better UX
     const mockMatches = generateMockLiveMatches();
     
     return new Response(

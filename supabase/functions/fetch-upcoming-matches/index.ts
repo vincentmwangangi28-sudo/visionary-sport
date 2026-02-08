@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,9 +27,7 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatc
   console.log('🔄 Fetching scheduled matches from Football Data API...');
   try {
     const response = await fetch('https://api.football-data.org/v4/matches?status=SCHEDULED', {
-      headers: {
-        'X-Auth-Token': apiToken
-      }
+      headers: { 'X-Auth-Token': apiToken }
     });
 
     if (!response.ok) {
@@ -43,7 +42,6 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatc
       return [];
     }
 
-    // Get next 10 upcoming matches
     const matches: UpcomingMatch[] = data.matches.slice(0, 10).map((match: any) => {
       const matchDate = new Date(match.utcDate);
       return {
@@ -64,49 +62,49 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatc
   }
 }
 
-// Fetch predictions from PredictPro API
-async function fetchPredictions(apiKey?: string): Promise<Map<string, { prediction: string; confidence: number }>> {
+// Fetch AI predictions from the database
+async function fetchDBPredictions(supabase: any, matches: UpcomingMatch[]): Promise<Map<string, { prediction: string; confidence: number }>> {
   const predictionsMap = new Map();
-  
-  if (!apiKey) {
-    console.log('⏭️ Skipping PredictPro API: No API key');
-    return predictionsMap;
-  }
 
-  console.log('🔄 Fetching predictions from PredictPro...');
+  if (matches.length === 0) return predictionsMap;
+
   try {
-    const response = await fetch('https://predictpro.ai/api/upcoming-predictions', {
-      headers: {
-        'x-api-key': apiKey
-      }
-    });
+    const matchIds = matches.map(m => `fd-${m.id}`);
 
-    if (!response.ok) {
-      console.error(`❌ PredictPro API error: ${response.status}`);
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('match_id, prediction, confidence')
+      .in('match_id', matchIds)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ DB predictions error:', error.message);
       return predictionsMap;
     }
 
-    const data = await response.json();
-    
-    if (data.predictions && Array.isArray(data.predictions)) {
-      data.predictions.forEach((pred: any) => {
-        predictionsMap.set(pred.match_id, {
-          prediction: pred.prediction,
-          confidence: pred.confidence
-        });
-      });
-      console.log(`✅ PredictPro: Loaded ${predictionsMap.size} predictions`);
+    if (data && data.length > 0) {
+      for (const pred of data) {
+        const rawId = pred.match_id.replace('fd-', '');
+        if (!predictionsMap.has(rawId)) {
+          predictionsMap.set(rawId, {
+            prediction: pred.prediction,
+            confidence: pred.confidence,
+          });
+        }
+      }
+      console.log(`✅ DB predictions: Found ${predictionsMap.size} predictions for upcoming matches`);
+    } else {
+      console.log('⚠️ DB predictions: No matching predictions found');
     }
   } catch (error) {
-    console.error('❌ PredictPro API error:', error);
+    console.error('❌ DB predictions fetch error:', error);
   }
 
   return predictionsMap;
 }
 
 // Generate AI prediction based on team statistics (fallback)
-function generatePrediction(match: UpcomingMatch): { prediction: string; confidence: number } {
-  // Simple heuristic for demo - in production this would use real ML models
+function generatePrediction(): { prediction: string; confidence: number } {
   const homeAdvantage = 5;
   const randomFactor = Math.random() * 20;
   const confidence = Math.round(50 + homeAdvantage + randomFactor);
@@ -128,40 +126,23 @@ function generateMockUpcomingMatches(): UpcomingMatch[] {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  const mockMatches = [
+  return [
     {
-      id: 'upcoming-1',
-      homeTeam: 'Arsenal',
-      awayTeam: 'Manchester City',
-      league: 'Premier League',
-      date: tomorrow.toISOString().split('T')[0],
-      time: '15:00',
-      prediction: 'Home Win',
-      confidence: 68,
+      id: 'upcoming-1', homeTeam: 'Arsenal', awayTeam: 'Manchester City',
+      league: 'Premier League', date: tomorrow.toISOString().split('T')[0],
+      time: '15:00', prediction: 'Home Win', confidence: 68,
     },
     {
-      id: 'upcoming-2',
-      homeTeam: 'PSG',
-      awayTeam: 'Monaco',
-      league: 'Ligue 1',
-      date: tomorrow.toISOString().split('T')[0],
-      time: '18:00',
-      prediction: 'Home Win',
-      confidence: 72,
+      id: 'upcoming-2', homeTeam: 'PSG', awayTeam: 'Monaco',
+      league: 'Ligue 1', date: tomorrow.toISOString().split('T')[0],
+      time: '18:00', prediction: 'Home Win', confidence: 72,
     },
     {
-      id: 'upcoming-3',
-      homeTeam: 'Juventus',
-      awayTeam: 'Inter Milan',
-      league: 'Serie A',
-      date: tomorrow.toISOString().split('T')[0],
-      time: '20:00',
-      prediction: 'Draw',
-      confidence: 55,
+      id: 'upcoming-3', homeTeam: 'Juventus', awayTeam: 'Inter Milan',
+      league: 'Serie A', date: tomorrow.toISOString().split('T')[0],
+      time: '20:00', prediction: 'Draw', confidence: 55,
     },
   ];
-
-  return mockMatches;
 }
 
 serve(async (req) => {
@@ -172,9 +153,10 @@ serve(async (req) => {
   try {
     console.log('📡 Fetching upcoming matches...');
     
-    // Get API keys from environment
     const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN');
-    const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
     let matches: UpcomingMatch[] = [];
 
@@ -183,24 +165,17 @@ serve(async (req) => {
       matches = await fetchFromFootballDataAPI(footballDataToken);
     }
 
-    // 2. Fetch AI predictions from PredictPro and merge
-    if (matches.length > 0 && predictProApiKey) {
-      const predictions = await fetchPredictions(predictProApiKey);
+    // 2. Merge with AI predictions from our database
+    if (matches.length > 0) {
+      const dbPredictions = await fetchDBPredictions(supabase, matches);
       
-      // Merge predictions with matches
       matches = matches.map(match => {
-        const pred = predictions.get(match.id);
-        if (pred) {
-          return { ...match, prediction: pred.prediction, confidence: pred.confidence };
+        const dbPred = dbPredictions.get(match.id);
+        if (dbPred) {
+          return { ...match, prediction: dbPred.prediction, confidence: dbPred.confidence };
         }
-        // Fallback to generated predictions if API doesn't have data
-        const { prediction, confidence } = generatePrediction(match);
-        return { ...match, prediction, confidence };
-      });
-    } else if (matches.length > 0) {
-      // Generate predictions if no API key available
-      matches = matches.map(match => {
-        const { prediction, confidence } = generatePrediction(match);
+        // Fallback to generated prediction
+        const { prediction, confidence } = generatePrediction();
         return { ...match, prediction, confidence };
       });
     }
@@ -230,7 +205,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error fetching upcoming matches:', error);
     
-    // Return mock data on error for better UX
     const mockMatches = generateMockUpcomingMatches();
     
     return new Response(
