@@ -5,6 +5,46 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function callAIWithRetry(lovableApiKey: string, messages: unknown[], maxRetries = 3): Promise<string | null> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages,
+          temperature: 0.7,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+      }
+
+      if (response.status === 429 || response.status === 402) {
+        const delay = Math.pow(2, attempt) * 3000 + Math.random() * 2000;
+        console.log(`AI rate limited (${response.status}), retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      console.error(`AI API error: ${response.status}`);
+      return null;
+    } catch (e) {
+      console.error(`AI call error attempt ${attempt + 1}:`, e);
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+      }
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -57,30 +97,10 @@ Focus on financial safety and responsible behavior.`,
 
     const selectedTopic = topics[weekNumber % topics.length];
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [{ role: 'user', content: selectedTopic.prompt }],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-
+    // Check if article already exists for today
     const dateStr = new Date().toISOString().split('T')[0];
     const slug = `responsible-gaming-${dateStr}`;
 
-    // Check if article already exists for today
     const { data: existing } = await supabase
       .from('news_articles')
       .select('id')
@@ -93,6 +113,17 @@ Focus on financial safety and responsible behavior.`,
         message: 'Responsible gaming article already exists for today',
         slug,
       }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const content = await callAIWithRetry(lovableApiKey, [
+      { role: 'user', content: selectedTopic.prompt }
+    ]);
+
+    if (!content) {
+      return new Response(JSON.stringify({ success: false, error: 'AI unavailable after retries' }), {
+        status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

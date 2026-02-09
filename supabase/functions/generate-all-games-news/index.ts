@@ -1,6 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +13,45 @@ interface Match {
   competition: string;
   match_date: string;
   status?: string;
+}
+
+async function callAIWithRetry(lovableApiKey: string, messages: unknown[], maxRetries = 3): Promise<string | null> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+      }
+
+      if (response.status === 429 || response.status === 402) {
+        const delay = Math.pow(2, attempt) * 3000 + Math.random() * 2000;
+        console.log(`AI rate limited (${response.status}), retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      console.error('AI error:', response.status);
+      return null;
+    } catch (e) {
+      console.error(`AI call error attempt ${attempt + 1}:`, e);
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+      }
+    }
+  }
+  return null;
 }
 
 serve(async (req) => {
@@ -34,12 +72,11 @@ serve(async (req) => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     
-    // Fetch today's and tomorrow's matches from multiple sources
     const matches: Match[] = [];
     
-    // 1. Get matches from our database (upcoming_matches table)
+    // 1. Get matches from upcoming_matches_cache table
     const { data: dbMatches } = await supabase
-      .from('upcoming_matches')
+      .from('upcoming_matches_cache')
       .select('*')
       .gte('match_date', new Date().toISOString().split('T')[0])
       .lte('match_date', new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
@@ -47,17 +84,17 @@ serve(async (req) => {
 
     if (dbMatches) {
       matches.push(...dbMatches.map(m => ({
-        id: m.id,
+        id: m.match_id,
         home_team: m.home_team,
         away_team: m.away_team,
-        competition: m.competition || 'Football',
+        competition: m.league || 'Football',
         match_date: m.match_date,
-        status: m.status
+        status: 'SCHEDULED'
       })));
     }
 
     // 2. Fetch from Football-Data.org API
-    if (footballDataToken) {
+    if (footballDataToken && matches.length < 6) {
       try {
         const today = new Date().toISOString().split('T')[0];
         const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -70,7 +107,9 @@ serve(async (req) => {
         if (response.ok) {
           const data = await response.json();
           if (data.matches) {
-            for (const m of data.matches.slice(0, 15)) {
+            for (const m of data.matches.slice(0, 10)) {
+              const matchKey = `${m.homeTeam?.name}-${m.awayTeam?.name}`;
+              if (matches.some(existing => `${existing.home_team}-${existing.away_team}` === matchKey)) continue;
               matches.push({
                 id: String(m.id),
                 home_team: m.homeTeam?.name || 'Home Team',
@@ -87,25 +126,18 @@ serve(async (req) => {
       }
     }
 
-    // 3. Add popular leagues for comprehensive coverage
-    const majorLeagues = [
-      'Premier League', 'La Liga', 'Bundesliga', 'Serie A', 'Ligue 1',
-      'Champions League', 'Europa League', 'MLS', 'Saudi Pro League'
-    ];
-
     console.log(`Found ${matches.length} matches to cover`);
 
     const generatedArticles: { title: string; category: string; match?: string }[] = [];
     const processedMatches = new Set<string>();
 
-    // Generate match-specific news for unique matches
-    for (const match of matches.slice(0, 8)) {
+    // Generate match-specific news (limit to 4 to stay within rate limits)
+    for (const match of matches.slice(0, 4)) {
       const matchKey = `${match.home_team}-${match.away_team}`;
       if (processedMatches.has(matchKey)) continue;
       processedMatches.add(matchKey);
 
       try {
-        // Check if we already have an article for this match today
         const { data: existing } = await supabase
           .from('news_articles')
           .select('id')
@@ -121,62 +153,25 @@ serve(async (req) => {
 
         console.log(`Generating article for: ${match.home_team} vs ${match.away_team}`);
 
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [
-              { 
-                role: 'system', 
-                content: `You are a professional sports journalist for PredictPro Guru. Generate engaging match preview and betting analysis articles.
+        const content = await callAIWithRetry(lovableApiKey, [
+          { 
+            role: 'system', 
+            content: `You are a professional sports journalist for PredictPro Guru. Generate engaging match preview articles.
 
 RESPOND WITH VALID JSON ONLY:
 {
   "title": "SEO-optimized headline mentioning both teams (max 80 chars)",
   "excerpt": "Compelling preview summary (max 160 chars)",
   "content": "Detailed article with: team form, key players, H2H stats, injury news, prediction, betting tips (600-900 words)",
-  "tags": ["team1", "team2", "competition", "predictions", "betting-tips"],
-  "prediction": "Match prediction (e.g., Home Win, Draw, Away Win)",
-  "confidence": 75
+  "tags": ["team1", "team2", "competition", "predictions", "betting-tips"]
 }`
-              },
-              { 
-                role: 'user', 
-                content: `Write a comprehensive match preview for:
-${match.home_team} vs ${match.away_team}
-Competition: ${match.competition}
-Date: ${new Date(match.match_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-
-Include:
-1. Both teams' current form and league position
-2. Head-to-head history and recent meetings
-3. Key players and potential match-winners
-4. Injury/suspension updates
-5. Tactical analysis and expected formations
-6. Expert prediction with reasoning
-7. Betting tips with recommended markets`
-              }
-            ],
-          }),
-        });
-
-        if (!aiResponse.ok) {
-          if (aiResponse.status === 429) {
-            console.log('Rate limited, waiting...');
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            continue;
+          },
+          { 
+            role: 'user', 
+            content: `Write a match preview for ${match.home_team} vs ${match.away_team} in ${match.competition} on ${new Date(match.match_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.`
           }
-          console.error('AI error:', aiResponse.status);
-          continue;
-        }
+        ]);
 
-        const aiData = await aiResponse.json();
-        const content = aiData.choices?.[0]?.message?.content;
-        
         if (!content) continue;
 
         let articleData;
@@ -191,11 +186,9 @@ Include:
         } catch {
           articleData = {
             title: `${match.home_team} vs ${match.away_team}: Match Preview & Prediction`,
-            excerpt: `Complete preview and betting analysis for ${match.home_team} vs ${match.away_team} in ${match.competition}`,
+            excerpt: `Complete preview for ${match.home_team} vs ${match.away_team} in ${match.competition}`,
             content: content.replace(/```json\n?/g, '').replace(/```\n?/g, ''),
-            tags: [match.home_team.toLowerCase().replace(/\s+/g, '-'), match.away_team.toLowerCase().replace(/\s+/g, '-'), 'predictions'],
-            prediction: 'See article',
-            confidence: 70
+            tags: ['predictions', 'match-preview'],
           };
         }
 
@@ -218,121 +211,76 @@ Include:
           console.error('Insert error:', insertError);
         } else {
           console.log(`Created article: ${articleData.title}`);
-          generatedArticles.push({
-            title: articleData.title,
-            category: 'Match Preview',
-            match: matchKey
-          });
+          generatedArticles.push({ title: articleData.title, category: 'Match Preview', match: matchKey });
         }
 
-        // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2500));
       } catch (err) {
         console.error(`Error for ${matchKey}:`, err);
       }
     }
 
-    // Generate league roundup articles
-    const leagueRoundups = ['Premier League', 'Champions League', 'La Liga'];
-    for (const league of leagueRoundups.slice(0, 1)) {
-      try {
-        // Check for existing roundup today
-        const { data: existingRoundup } = await supabase
-          .from('news_articles')
-          .select('id')
-          .ilike('title', `%${league}%`)
-          .ilike('title', `%roundup%`)
-          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-          .limit(1);
+    // Generate one league roundup
+    try {
+      const { data: existingRoundup } = await supabase
+        .from('news_articles')
+        .select('id')
+        .ilike('title', '%roundup%')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1);
 
-        if (existingRoundup && existingRoundup.length > 0) {
-          console.log(`${league} roundup exists, skipping...`);
-          continue;
-        }
+      if (!existingRoundup || existingRoundup.length === 0) {
+        console.log('Generating league roundup...');
 
-        console.log(`Generating ${league} roundup...`);
-
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [
-              { 
-                role: 'system', 
-                content: `You are a sports journalist. Generate a comprehensive league roundup article.
+        const roundupContent = await callAIWithRetry(lovableApiKey, [
+          { 
+            role: 'system', 
+            content: `You are a sports journalist. Generate a league roundup article.
 
 RESPOND WITH VALID JSON:
 {
   "title": "Catchy roundup headline (max 80 chars)",
   "excerpt": "Summary of key developments (max 160 chars)",
-  "content": "Full roundup covering all major matches, standings updates, talking points (800-1000 words)",
-  "tags": ["league-name", "roundup", "football", "analysis"]
+  "content": "Full roundup covering matches, standings, talking points (800-1000 words)",
+  "tags": ["premier-league", "roundup", "football", "analysis"]
 }`
-              },
-              { 
-                role: 'user', 
-                content: `Write a ${league} matchday roundup for ${dateStr}. Cover:
-1. All major matches and results
-2. Standout performances
-3. Updated league standings implications
-4. Key talking points and controversies
-5. Best goals and saves
-6. What to watch next matchday
-7. Betting insights for upcoming fixtures`
-              }
-            ],
-          }),
-        });
+          },
+          { role: 'user', content: `Write a Premier League matchday roundup for ${dateStr}.` }
+        ]);
 
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          const content = aiData.choices?.[0]?.message?.content;
-          
-          if (content) {
-            let articleData;
-            try {
-              const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-              const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-              articleData = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-            } catch {
-              articleData = {
-                title: `${league} Matchday Roundup: ${dateStr}`,
-                excerpt: `Complete roundup of all ${league} action`,
-                content: content,
-                tags: [league.toLowerCase().replace(/\s+/g, '-'), 'roundup', 'football']
-              };
-            }
+        if (roundupContent) {
+          let articleData;
+          try {
+            const cleanContent = roundupContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+            articleData = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+          } catch {
+            articleData = {
+              title: `Premier League Matchday Roundup: ${dateStr}`,
+              excerpt: 'Complete roundup of all Premier League action',
+              content: roundupContent,
+              tags: ['premier-league', 'roundup', 'football']
+            };
+          }
 
-            if (articleData) {
-              const slug = `${league.toLowerCase().replace(/\s+/g, '-')}-roundup-${Date.now()}`;
-              
-              await supabase
-                .from('news_articles')
-                .insert({
-                  title: articleData.title,
-                  slug,
-                  content: articleData.content,
-                  excerpt: articleData.excerpt,
-                  category: 'League Roundup',
-                  tags: articleData.tags || [],
-                  author: 'PredictPro AI',
-                  is_published: true,
-                });
-
-              generatedArticles.push({
-                title: articleData.title,
-                category: 'League Roundup'
-              });
-            }
+          if (articleData) {
+            const slug = `premier-league-roundup-${Date.now()}`;
+            await supabase.from('news_articles').insert({
+              title: articleData.title,
+              slug,
+              content: articleData.content,
+              excerpt: articleData.excerpt,
+              category: 'League Roundup',
+              tags: articleData.tags || [],
+              author: 'PredictPro AI',
+              is_published: true,
+            });
+            generatedArticles.push({ title: articleData.title, category: 'League Roundup' });
           }
         }
-      } catch (err) {
-        console.error(`Error generating ${league} roundup:`, err);
       }
+    } catch (err) {
+      console.error('Error generating roundup:', err);
     }
 
     console.log(`All-games news generation complete. Created ${generatedArticles.length} articles.`);
@@ -349,6 +297,7 @@ RESPOND WITH VALID JSON:
   } catch (error: unknown) {
     console.error('Error in generate-all-games-news:', error);
     return new Response(JSON.stringify({ 
+      success: false,
       error: error instanceof Error ? error.message : 'Unknown error' 
     }), {
       status: 500,

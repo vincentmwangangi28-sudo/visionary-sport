@@ -5,6 +5,46 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function callAIWithRetry(lovableApiKey: string, messages: unknown[], maxRetries = 3): Promise<string | null> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages,
+          temperature: 0.7,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+      }
+
+      if (response.status === 429 || response.status === 402) {
+        const delay = Math.pow(2, attempt) * 3000 + Math.random() * 2000;
+        console.log(`AI rate limited (${response.status}), retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      console.error(`AI API error: ${response.status}`);
+      return null;
+    } catch (e) {
+      console.error(`AI call error attempt ${attempt + 1}:`, e);
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+      }
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -19,7 +59,6 @@ Deno.serve(async (req) => {
 
     console.log('🔗 Generating backlink-optimized content...');
 
-    // Fetch recent predictions for content
     const { data: predictions } = await supabase
       .from('predictions')
       .select('*')
@@ -27,14 +66,13 @@ Deno.serve(async (req) => {
       .limit(5);
 
     if (!predictions || predictions.length === 0) {
-      return new Response(JSON.stringify({ success: false, message: 'No predictions found' }), {
+      return new Response(JSON.stringify({ success: true, message: 'No predictions found to base content on' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const dateStr = new Date().toISOString().split('T')[0];
     
-    // Generate guest post content for sports blogs
     const guestPostPrompt = `Write a professional guest post article (600-800 words) for sports betting blogs about AI-powered football predictions. Include:
 
 1. Title: Catchy, SEO-optimized headline about AI predictions
@@ -48,27 +86,17 @@ Deno.serve(async (req) => {
 
 Format as JSON with fields: title, content, excerpt, metaDescription, keywords[]`;
 
-    const guestPostResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [{ role: 'user', content: guestPostPrompt }],
-        temperature: 0.7,
-      }),
-    });
+    const guestPostContent = await callAIWithRetry(lovableApiKey, [
+      { role: 'user', content: guestPostPrompt }
+    ]);
 
-    if (!guestPostResponse.ok) {
-      throw new Error(`AI API error: ${guestPostResponse.status}`);
+    if (!guestPostContent) {
+      return new Response(JSON.stringify({ success: false, error: 'AI unavailable after retries' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const guestPostData = await guestPostResponse.json();
-    let guestPostContent = guestPostData.choices?.[0]?.message?.content || '';
-    
-    // Parse JSON from response
     let parsedContent;
     try {
       const jsonMatch = guestPostContent.match(/\{[\s\S]*\}/);
@@ -77,6 +105,9 @@ Format as JSON with fields: title, content, excerpt, metaDescription, keywords[]
       }
     } catch (e) {
       console.error('Failed to parse guest post JSON:', e);
+    }
+    
+    if (!parsedContent) {
       parsedContent = {
         title: 'AI-Powered Football Predictions: The Future of Sports Betting',
         content: guestPostContent,
@@ -86,7 +117,6 @@ Format as JSON with fields: title, content, excerpt, metaDescription, keywords[]
       };
     }
 
-    // Store as syndication-ready article
     const slug = `guest-post-${dateStr}-${Math.random().toString(36).substring(7)}`;
     
     const { error: insertError } = await supabase
