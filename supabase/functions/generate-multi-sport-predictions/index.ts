@@ -24,6 +24,45 @@ const SPORTS_CONFIG = [
   }
 ];
 
+async function callAIWithRetry(lovableApiKey: string, messages: unknown[], maxRetries = 3): Promise<unknown | null> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || null;
+      }
+
+      if (response.status === 429 || response.status === 402) {
+        const delay = Math.pow(2, attempt) * 3000 + Math.random() * 2000;
+        console.log(`AI rate limited (${response.status}), retry ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      console.error(`AI API error: ${response.status}`);
+      return null;
+    } catch (e) {
+      console.error(`AI call error attempt ${attempt + 1}:`, e);
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+      }
+    }
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -43,7 +82,6 @@ serve(async (req) => {
         const league = sportConfig.leagues[i % sportConfig.leagues.length];
         
         try {
-          // Generate prediction using AI
           const prompt = `Generate a realistic ${sportConfig.sport} match prediction for ${league}.
           
 Return a JSON object with:
@@ -60,35 +98,20 @@ Return a JSON object with:
 
 Make it realistic with actual team naming conventions for ${sportConfig.sport}.`;
 
-          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${lovableApiKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: 'google/gemini-3-flash-preview',
-              messages: [
-                { role: 'system', content: 'You are a sports prediction AI. Return only valid JSON.' },
-                { role: 'user', content: prompt }
-              ]
-            })
-          });
+          const content = await callAIWithRetry(lovableApiKey, [
+            { role: 'system', content: 'You are a sports prediction AI. Return only valid JSON.' },
+            { role: 'user', content: prompt }
+          ]);
 
-          if (!response.ok) {
-            throw new Error(`AI API error: ${response.status}`);
+          if (!content) {
+            errors.push(`${sportConfig.sport} prediction ${i}: AI unavailable after retries`);
+            continue;
           }
 
-          const aiData = await response.json();
-          const content = aiData.choices[0]?.message?.content || '';
-          
-          // Parse JSON from response
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          const jsonMatch = String(content).match(/\{[\s\S]*\}/);
           if (!jsonMatch) continue;
           
           const prediction = JSON.parse(jsonMatch[0]);
-          
-          // Generate unique match ID
           const matchId = `${sportConfig.sport}_${Date.now()}_${i}`;
           
           // Check for duplicates
@@ -102,7 +125,6 @@ Make it realistic with actual team naming conventions for ${sportConfig.sport}.`
 
           if (existing) continue;
 
-          // Insert prediction
           const { error: insertError } = await supabase
             .from('predictions')
             .insert({
@@ -118,7 +140,7 @@ Make it realistic with actual team naming conventions for ${sportConfig.sport}.`
               is_upset_alert: prediction.isUpsetAlert || false,
               odds_value: prediction.oddsValue || null,
               is_premium: prediction.confidence > 85,
-              ai_model: 'google/gemini-3-flash-preview'
+              ai_model: 'google/gemini-2.5-flash'
             });
 
           if (insertError) {
@@ -128,7 +150,7 @@ Make it realistic with actual team naming conventions for ${sportConfig.sport}.`
           }
 
           // Rate limiting delay
-          await new Promise(r => setTimeout(r, 1500));
+          await new Promise(r => setTimeout(r, 2000));
           
         } catch (e: unknown) {
           errors.push(`${sportConfig.sport} prediction ${i}: ${e instanceof Error ? e.message : 'Unknown error'}`);
