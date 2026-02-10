@@ -130,6 +130,7 @@ export const LiveMatchTracker = () => {
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
               className={soundEnabled ? 'text-primary' : 'text-muted-foreground'}
+              aria-label={soundEnabled ? 'Disable sound notifications' : 'Enable sound notifications'}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
             </Button>
