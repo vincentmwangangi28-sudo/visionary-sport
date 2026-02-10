@@ -104,7 +104,7 @@ export const SmartSlipBuilder = () => {
       <CardContent className="space-y-4">
         <div className="flex gap-3">
           <Select value={riskLevel} onValueChange={setRiskLevel}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32" aria-label="Select risk level">
               <SelectValue placeholder="Risk" />
             </SelectTrigger>
             <SelectContent>
@@ -115,7 +115,7 @@ export const SmartSlipBuilder = () => {
           </Select>
 
           <Select value={slipSize} onValueChange={setSlipSize}>
-            <SelectTrigger className="w-28">
+            <SelectTrigger className="w-28" aria-label="Select slip size">
               <SelectValue placeholder="Size" />
             </SelectTrigger>
             <SelectContent>

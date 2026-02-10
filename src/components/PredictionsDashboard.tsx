@@ -234,7 +234,7 @@ export const PredictionsDashboard = () => {
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={filterLeague} onValueChange={setFilterLeague}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px]" aria-label="Filter by league">
                   <SelectValue placeholder="Filter by league" />
                 </SelectTrigger>
                 <SelectContent>
@@ -249,7 +249,7 @@ export const PredictionsDashboard = () => {
             </div>
 
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as "date" | "confidence")}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" aria-label="Sort predictions">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
