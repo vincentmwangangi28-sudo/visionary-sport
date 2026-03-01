@@ -90,11 +90,24 @@ async function runAllTasks(supabaseUrl: string, supabaseKey: string) {
   results.accuracyReports = await callFunction(supabaseUrl, supabaseKey, 'generate-accuracy-reports');
   results.scheduledPredictions = await callFunction(supabaseUrl, supabaseKey, 'scheduled-predictions');
 
-  // Phase 5: Weekly content (conditional)
+  // Phase 5: Cleanup & maintenance (daily)
+  console.log('Phase 5: Cleanup & maintenance...');
+  const [cleanup, transferRumors] = await Promise.all([
+    callFunction(supabaseUrl, supabaseKey, 'auto-cleanup'),
+    callFunction(supabaseUrl, supabaseKey, 'fetch-transfer-rumors'),
+  ]);
+  results.autoCleanup = cleanup;
+  results.transferRumors = transferRumors;
+
+  // Phase 6: Weekly content (conditional)
   await new Promise(r => setTimeout(r, 2000));
 
-  console.log('Phase 5: Conditional content...');
+  console.log('Phase 6: Conditional content...');
   results.backlinkContent = await callFunction(supabaseUrl, supabaseKey, 'generate-backlink-content');
+
+  if (dayOfWeek === 0) { // Sunday - weekly performance digest
+    results.weeklyDigest = await callFunction(supabaseUrl, supabaseKey, 'weekly-performance-digest');
+  }
 
   if (dayOfWeek === 1) { // Monday
     results.responsibleGaming = await callFunction(supabaseUrl, supabaseKey, 'generate-responsible-gaming');

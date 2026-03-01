@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { SEOHead } from "@/components/SEOHead";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { useNotifications } from "@/hooks/useNotifications";
 import { initAnalytics } from "@/lib/analytics";
 
@@ -65,93 +66,154 @@ const Index = () => {
       
       <Suspense fallback={<SectionLoader />}>
         {/* Smart Tools Section */}
-        <section className="py-8 px-4 bg-muted/20">
+        <section className="py-10 px-4 bg-muted/20">
           <div className="container mx-auto">
+            <ScrollReveal>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Smart Betting Tools</h2>
+                <p className="text-muted-foreground mt-2">AI-powered tools to maximize your wins</p>
+              </div>
+            </ScrollReveal>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <SmartSlipBuilder />
-              <ConfidenceHeatmap />
-              <UpsetAlerts />
+              <ScrollReveal delay={0.1}>
+                <SmartSlipBuilder />
+              </ScrollReveal>
+              <ScrollReveal delay={0.2}>
+                <ConfidenceHeatmap />
+              </ScrollReveal>
+              <ScrollReveal delay={0.3}>
+                <UpsetAlerts />
+              </ScrollReveal>
             </div>
           </div>
         </section>
+
+        <div className="section-divider" />
 
         {/* Live Match Tracker & Transfer Rumors */}
-        <section className="py-8 px-4">
+        <section className="py-10 px-4">
           <div className="container mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+              <ScrollReveal className="lg:col-span-2">
                 <LiveMatchTracker />
-              </div>
+              </ScrollReveal>
               <div className="space-y-6">
-                <TransferRumorsFeed />
-                <InteractivePolls />
+                <ScrollReveal delay={0.15} direction="right">
+                  <TransferRumorsFeed />
+                </ScrollReveal>
+                <ScrollReveal delay={0.25} direction="right">
+                  <InteractivePolls />
+                </ScrollReveal>
               </div>
             </div>
           </div>
         </section>
 
-        <LiveMatches />
-        <UpcomingMatches />
-        <div id="predictions">
-          <PredictionsDashboard />
-        </div>
-        <PredictionPerformance />
+        <ScrollReveal>
+          <LiveMatches />
+        </ScrollReveal>
+        <ScrollReveal>
+          <UpcomingMatches />
+        </ScrollReveal>
+        
+        <div className="section-divider" />
+        
+        <ScrollReveal>
+          <div id="predictions">
+            <PredictionsDashboard />
+          </div>
+        </ScrollReveal>
+        <ScrollReveal>
+          <PredictionPerformance />
+        </ScrollReveal>
         
         {/* Streak Challenges & Accuracy Tracker */}
         <section className="py-12 px-4 bg-muted/30">
           <div className="container mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-2">
-                Track Your Progress
-              </h2>
-              <p className="text-muted-foreground">
-                Build winning streaks and see our transparent accuracy stats
-              </p>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <StreakDisplay />
-              <AccuracyTracker />
-              <UserBadges />
-              <div className="space-y-4">
-                <PushNotifications />
-                <WhatsAppSubscription />
-                <BettingTipsHistory />
+            <ScrollReveal>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-foreground mb-2">
+                  Track Your Progress
+                </h2>
+                <p className="text-muted-foreground">
+                  Build winning streaks and see our transparent accuracy stats
+                </p>
               </div>
+            </ScrollReveal>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <ScrollReveal delay={0.05}>
+                <StreakDisplay />
+              </ScrollReveal>
+              <ScrollReveal delay={0.1}>
+                <AccuracyTracker />
+              </ScrollReveal>
+              <ScrollReveal delay={0.15}>
+                <UserBadges />
+              </ScrollReveal>
+              <ScrollReveal delay={0.2}>
+                <div className="space-y-4">
+                  <PushNotifications />
+                  <WhatsAppSubscription />
+                  <BettingTipsHistory />
+                </div>
+              </ScrollReveal>
             </div>
             
             {/* Subscription & Reports Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              <EmailSubscription />
-              <SmsSubscription />
-              <AccuracyReportsCard />
+              <ScrollReveal delay={0.05}>
+                <EmailSubscription />
+              </ScrollReveal>
+              <ScrollReveal delay={0.1}>
+                <SmsSubscription />
+              </ScrollReveal>
+              <ScrollReveal delay={0.15}>
+                <AccuracyReportsCard />
+              </ScrollReveal>
             </div>
             
             {/* Referral & Trust Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-              <ReferralLeaderboard />
-              <PublicAccuracyDashboard />
+              <ScrollReveal direction="left">
+                <ReferralLeaderboard />
+              </ScrollReveal>
+              <ScrollReveal direction="right">
+                <PublicAccuracyDashboard />
+              </ScrollReveal>
             </div>
           </div>
         </section>
 
-        <div id="how-it-works">
-          <HowItWorks />
-        </div>
-        <ActiveContests />
+        <div className="section-divider" />
+
+        <ScrollReveal>
+          <div id="how-it-works">
+            <HowItWorks />
+          </div>
+        </ScrollReveal>
+        <ScrollReveal>
+          <ActiveContests />
+        </ScrollReveal>
         
         {/* Premium Upgrade Section */}
-        <section className="py-12 px-4">
-          <div className="container mx-auto max-w-md">
-            <PremiumUpgradeCard />
-          </div>
-        </section>
+        <ScrollReveal>
+          <section className="py-12 px-4">
+            <div className="container mx-auto max-w-md">
+              <PremiumUpgradeCard />
+            </div>
+          </section>
+        </ScrollReveal>
 
-        <div id="features">
-          <Features />
-        </div>
-        <div id="testimonials">
-          <Testimonials />
-        </div>
+        <ScrollReveal>
+          <div id="features">
+            <Features />
+          </div>
+        </ScrollReveal>
+        <ScrollReveal>
+          <div id="testimonials">
+            <Testimonials />
+          </div>
+        </ScrollReveal>
         <Footer />
       </Suspense>
     </div>
