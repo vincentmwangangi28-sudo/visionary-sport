@@ -109,11 +109,43 @@ All colors MUST be HSL.
   
   /* Hover effects */
   .hover-lift {
-    @apply transition-transform duration-300 hover:scale-105 hover:shadow-card;
+    @apply transition-all duration-300 hover:scale-105;
+    &:hover {
+      box-shadow: var(--shadow-card);
+    }
   }
   
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-glow;
+    @apply transition-all duration-300;
+    &:hover {
+      box-shadow: var(--shadow-glow);
+    }
+  }
+
+  /* Glass morphism card effect */
+  .glass-card {
+    @apply backdrop-blur-md border border-border/50;
+    background: hsl(var(--card) / 0.8);
+  }
+
+  /* Section divider gradient */
+  .section-divider {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+  }
+
+  /* Animated gradient text */
+  .gradient-text-animated {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--primary)));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
   }
   
   /* Animations */
@@ -130,5 +162,20 @@ All colors MUST be HSL.
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Improved scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.3);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
   }
 }
