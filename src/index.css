@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -17,19 +13,19 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Pitch Green - Primary brand color */
+    /* Pitch Green */
     --primary: 142 76% 36%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 142 76% 46%;
 
-    /* Victory Gold - Secondary accent */
+    /* Victory Gold */
     --secondary: 38 92% 50%;
     --secondary-foreground: 0 0% 0%;
 
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 5% 34%;
 
-    /* Kenyan Red - Accent color */
+    /* Kenyan Red */
     --accent: 0 84% 60%;
     --accent-foreground: 0 0% 100%;
 
@@ -45,22 +41,23 @@ All colors MUST be HSL.
     /* Gradients */
     --gradient-victory: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%), hsl(38 92% 50%));
-    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 36% / 0.1), hsl(142 76% 36% / 0));
+    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 36% / 0.08), hsl(142 76% 36% / 0));
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(142 76% 46% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(240 10% 3.9% / 0.1);
+    --shadow-glow: 0 0 30px hsl(142 76% 46% / 0.2);
+    --shadow-card: 0 4px 24px -6px hsl(240 10% 3.9% / 0.08);
+    --shadow-card-hover: 0 8px 32px -6px hsl(240 10% 3.9% / 0.14);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 222 14% 7%;
+    --foreground: 0 0% 96%;
 
-    --card: 240 6% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 12% 10%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 240 6% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 12% 10%;
+    --popover-foreground: 0 0% 96%;
 
     --primary: 142 76% 46%;
     --primary-foreground: 0 0% 0%;
@@ -69,8 +66,8 @@ All colors MUST be HSL.
     --secondary: 38 92% 50%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 72%;
+    --muted: 222 10% 14%;
+    --muted-foreground: 220 5% 60%;
 
     --accent: 0 84% 60%;
     --accent-foreground: 0 0% 100%;
@@ -78,18 +75,17 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 222 10% 16%;
+    --input: 222 10% 16%;
     --ring: 142 76% 46%;
 
-    /* Dark mode gradients */
     --gradient-victory: linear-gradient(135deg, hsl(142 76% 46%), hsl(142 76% 56%));
     --gradient-hero: linear-gradient(135deg, hsl(142 76% 46%), hsl(38 92% 50%));
-    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 46% / 0.15), hsl(142 76% 46% / 0));
+    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 46% / 0.1), hsl(142 76% 46% / 0));
     
-    /* Dark shadows */
-    --shadow-glow: 0 0 50px hsl(142 76% 46% / 0.4);
-    --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 40px hsl(142 76% 46% / 0.25);
+    --shadow-card: 0 4px 24px -6px hsl(0 0% 0% / 0.3);
+    --shadow-card-hover: 0 8px 36px -6px hsl(0 0% 0% / 0.45);
   }
 }
 
@@ -99,19 +95,15 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
-  }
-  
-  /* Smooth page transitions */
-  * {
-    @apply transition-colors duration-200;
+    @apply bg-background text-foreground antialiased;
   }
   
   /* Hover effects */
   .hover-lift {
-    @apply transition-all duration-300 hover:scale-105;
+    @apply transition-all duration-300 ease-out;
     &:hover {
-      box-shadow: var(--shadow-card);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card-hover);
     }
   }
   
@@ -122,16 +114,16 @@ All colors MUST be HSL.
     }
   }
 
-  /* Glass morphism card effect */
+  /* Glass morphism */
   .glass-card {
     @apply backdrop-blur-md border border-border/50;
-    background: hsl(var(--card) / 0.8);
+    background: hsl(var(--card) / 0.85);
   }
 
-  /* Section divider gradient */
+  /* Section divider */
   .section-divider {
-    @apply h-px w-full;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+    @apply h-px w-full my-2;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.2), transparent);
   }
 
   /* Animated gradient text */
@@ -140,7 +132,7 @@ All colors MUST be HSL.
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: gradient-shift 3s ease infinite;
+    animation: gradient-shift 4s ease infinite;
   }
 
   @keyframes gradient-shift {
@@ -148,34 +140,42 @@ All colors MUST be HSL.
     50% { background-position: 100% center; }
   }
   
-  /* Animations */
+  /* Fade-in */
   .animate-fade-in {
     animation: fade-in 0.5s ease-out;
   }
   
   @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Improved scrollbar */
+  /* Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 4px;
+    background: hsl(var(--primary) / 0.2);
+    border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+    background: hsl(var(--primary) / 0.4);
+  }
+}
+
+@layer utilities {
+  /* Gradient text helper */
+  .gradient-text {
+    @apply bg-gradient-hero bg-clip-text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* Subtle background pattern */
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, hsl(var(--primary) / 0.04) 1px, transparent 0);
+    background-size: 24px 24px;
   }
 }

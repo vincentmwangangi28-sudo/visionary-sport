@@ -6,7 +6,6 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { useNotifications } from "@/hooks/useNotifications";
 import { initAnalytics } from "@/lib/analytics";
 
-// Lazy load below-the-fold components to reduce main-thread work
 const LiveMatches = lazy(() => import("@/components/LiveMatches").then(m => ({ default: m.LiveMatches })));
 const LiveMatchTracker = lazy(() => import("@/components/LiveMatchTracker").then(m => ({ default: m.LiveMatchTracker })));
 const UpcomingMatches = lazy(() => import("@/components/UpcomingMatches").then(m => ({ default: m.UpcomingMatches })));
@@ -35,8 +34,7 @@ const AccuracyReportsCard = lazy(() => import("@/components/AccuracyReportsCard"
 const ReferralLeaderboard = lazy(() => import("@/components/ReferralLeaderboard").then(m => ({ default: m.ReferralLeaderboard })));
 const PublicAccuracyDashboard = lazy(() => import("@/components/PublicAccuracyDashboard").then(m => ({ default: m.PublicAccuracyDashboard })));
 
-// Minimal loading placeholder for lazy components
-const SectionLoader = () => <div className="min-h-[200px]" />;
+const SectionLoader = () => <div className="min-h-[180px]" />;
 
 const Index = () => {
   useNotifications();
@@ -52,9 +50,7 @@ const Index = () => {
         description="Get AI-powered football predictions with 85%+ accuracy in Kenya. Daily betting tips, match analysis, upset alerts, and smart accumulators for Premier League, La Liga, Champions League."
         keywords={["AI predictions Kenya", "football predictions Nairobi", "betting tips Kenya", "Premier League predictions", "sports analysis Kenya", "accurate football tips"]}
         canonicalUrl="https://predictpro.guru"
-        breadcrumbs={[
-          { name: "Home", url: "https://predictpro.guru" }
-        ]}
+        breadcrumbs={[{ name: "Home", url: "https://predictpro.guru" }]}
         faqs={[
           { question: "What is PredictPro?", answer: "PredictPro is an AI-powered sports prediction platform in Kenya offering 85%+ accuracy on football, basketball, and tennis predictions." },
           { question: "How accurate are the predictions?", answer: "Our AI model achieves 85%+ accuracy across major leagues including Premier League, La Liga, and Champions League." },
@@ -65,91 +61,63 @@ const Index = () => {
       <Hero />
       
       <Suspense fallback={<SectionLoader />}>
-        {/* Smart Tools Section */}
-        <section className="py-10 px-4 bg-muted/20">
+        {/* Smart Tools */}
+        <section className="py-10 px-4 bg-grid-pattern">
           <div className="container mx-auto">
             <ScrollReveal>
               <div className="text-center mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-foreground">Smart Betting Tools</h2>
-                <p className="text-muted-foreground mt-2">AI-powered tools to maximize your wins</p>
+                <p className="text-muted-foreground mt-1.5 text-sm md:text-base">AI-powered tools to maximize your wins</p>
               </div>
             </ScrollReveal>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <ScrollReveal delay={0.1}>
-                <SmartSlipBuilder />
-              </ScrollReveal>
-              <ScrollReveal delay={0.2}>
-                <ConfidenceHeatmap />
-              </ScrollReveal>
-              <ScrollReveal delay={0.3}>
-                <UpsetAlerts />
-              </ScrollReveal>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <ScrollReveal delay={0.05}><SmartSlipBuilder /></ScrollReveal>
+              <ScrollReveal delay={0.1}><ConfidenceHeatmap /></ScrollReveal>
+              <ScrollReveal delay={0.15}><UpsetAlerts /></ScrollReveal>
             </div>
           </div>
         </section>
 
         <div className="section-divider" />
 
-        {/* Live Match Tracker & Transfer Rumors */}
+        {/* Live Tracker & Sidebar */}
         <section className="py-10 px-4">
           <div className="container mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               <ScrollReveal className="lg:col-span-2">
                 <LiveMatchTracker />
               </ScrollReveal>
-              <div className="space-y-6">
-                <ScrollReveal delay={0.15} direction="right">
-                  <TransferRumorsFeed />
-                </ScrollReveal>
-                <ScrollReveal delay={0.25} direction="right">
-                  <InteractivePolls />
-                </ScrollReveal>
+              <div className="space-y-5">
+                <ScrollReveal delay={0.1} direction="right"><TransferRumorsFeed /></ScrollReveal>
+                <ScrollReveal delay={0.15} direction="right"><InteractivePolls /></ScrollReveal>
               </div>
             </div>
           </div>
         </section>
 
-        <ScrollReveal>
-          <LiveMatches />
-        </ScrollReveal>
-        <ScrollReveal>
-          <UpcomingMatches />
-        </ScrollReveal>
+        <ScrollReveal><LiveMatches /></ScrollReveal>
+        <ScrollReveal><UpcomingMatches /></ScrollReveal>
         
         <div className="section-divider" />
         
         <ScrollReveal>
-          <div id="predictions">
-            <PredictionsDashboard />
-          </div>
+          <div id="predictions"><PredictionsDashboard /></div>
         </ScrollReveal>
-        <ScrollReveal>
-          <PredictionPerformance />
-        </ScrollReveal>
+        <ScrollReveal><PredictionPerformance /></ScrollReveal>
         
-        {/* Streak Challenges & Accuracy Tracker */}
-        <section className="py-12 px-4 bg-muted/30">
+        {/* Progress Section */}
+        <section className="py-10 px-4 bg-muted/20 bg-grid-pattern">
           <div className="container mx-auto">
             <ScrollReveal>
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-foreground mb-2">
-                  Track Your Progress
-                </h2>
-                <p className="text-muted-foreground">
-                  Build winning streaks and see our transparent accuracy stats
-                </p>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">Track Your Progress</h2>
+                <p className="text-muted-foreground mt-1.5 text-sm md:text-base">Build winning streaks and see transparent accuracy stats</p>
               </div>
             </ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <ScrollReveal delay={0.05}>
-                <StreakDisplay />
-              </ScrollReveal>
-              <ScrollReveal delay={0.1}>
-                <AccuracyTracker />
-              </ScrollReveal>
-              <ScrollReveal delay={0.15}>
-                <UserBadges />
-              </ScrollReveal>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+              <ScrollReveal delay={0.05}><StreakDisplay /></ScrollReveal>
+              <ScrollReveal delay={0.1}><AccuracyTracker /></ScrollReveal>
+              <ScrollReveal delay={0.15}><UserBadges /></ScrollReveal>
               <ScrollReveal delay={0.2}>
                 <div className="space-y-4">
                   <PushNotifications />
@@ -159,61 +127,34 @@ const Index = () => {
               </ScrollReveal>
             </div>
             
-            {/* Subscription & Reports Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              <ScrollReveal delay={0.05}>
-                <EmailSubscription />
-              </ScrollReveal>
-              <ScrollReveal delay={0.1}>
-                <SmsSubscription />
-              </ScrollReveal>
-              <ScrollReveal delay={0.15}>
-                <AccuracyReportsCard />
-              </ScrollReveal>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 mt-6">
+              <ScrollReveal delay={0.05}><EmailSubscription /></ScrollReveal>
+              <ScrollReveal delay={0.1}><SmsSubscription /></ScrollReveal>
+              <ScrollReveal delay={0.15}><AccuracyReportsCard /></ScrollReveal>
             </div>
             
-            {/* Referral & Trust Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-              <ScrollReveal direction="left">
-                <ReferralLeaderboard />
-              </ScrollReveal>
-              <ScrollReveal direction="right">
-                <PublicAccuracyDashboard />
-              </ScrollReveal>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-6">
+              <ScrollReveal direction="left"><ReferralLeaderboard /></ScrollReveal>
+              <ScrollReveal direction="right"><PublicAccuracyDashboard /></ScrollReveal>
             </div>
           </div>
         </section>
 
         <div className="section-divider" />
 
-        <ScrollReveal>
-          <div id="how-it-works">
-            <HowItWorks />
-          </div>
-        </ScrollReveal>
-        <ScrollReveal>
-          <ActiveContests />
-        </ScrollReveal>
+        <ScrollReveal><div id="how-it-works"><HowItWorks /></div></ScrollReveal>
+        <ScrollReveal><ActiveContests /></ScrollReveal>
         
-        {/* Premium Upgrade Section */}
         <ScrollReveal>
-          <section className="py-12 px-4">
+          <section className="py-10 px-4">
             <div className="container mx-auto max-w-md">
               <PremiumUpgradeCard />
             </div>
           </section>
         </ScrollReveal>
 
-        <ScrollReveal>
-          <div id="features">
-            <Features />
-          </div>
-        </ScrollReveal>
-        <ScrollReveal>
-          <div id="testimonials">
-            <Testimonials />
-          </div>
-        </ScrollReveal>
+        <ScrollReveal><div id="features"><Features /></div></ScrollReveal>
+        <ScrollReveal><div id="testimonials"><Testimonials /></div></ScrollReveal>
         <Footer />
       </Suspense>
     </div>
