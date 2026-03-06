@@ -1,106 +1,90 @@
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Trophy, BarChart3, Newspaper, Shield, FileText, Heart } from "lucide-react";
 import { FooterAd } from "./AdBanner";
 
 export const Footer = () => {
   return (
-    <footer className="bg-muted/30 border-t">
-      {/* Footer Banner Ad */}
+    <footer className="relative bg-card/50 border-t border-border/60">
+      {/* Subtle top gradient */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
       <div className="container mx-auto px-4 pt-8">
         <FooterAd />
       </div>
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+
+      <div className="container mx-auto px-4 py-10 md:py-14">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
-          <div className="space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center shadow-glow">
+                <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">PredictPro</span>
+              <span className="text-lg font-bold">PredictPro</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              AI-powered sports predictions helping you make smarter betting decisions
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              AI-powered sports predictions helping you make smarter betting decisions with 85%+ accuracy.
             </p>
           </div>
 
           {/* Product */}
           <div>
-            <h3 className="font-semibold mb-4">Product</h3>
+            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Product</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                  Predictions
+                <Link to="/" className="text-foreground/70 hover:text-primary transition-colors flex items-center gap-1.5">
+                  <Trophy className="h-3.5 w-3.5" /> Predictions
                 </Link>
               </li>
               <li>
-                <Link to="/leaderboard" className="text-muted-foreground hover:text-primary transition-colors">
-                  Leaderboard
+                <Link to="/leaderboard" className="text-foreground/70 hover:text-primary transition-colors flex items-center gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5" /> Leaderboard
                 </Link>
               </li>
               <li>
-                <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">
-                  Features
-                </a>
+                <Link to="/news" className="text-foreground/70 hover:text-primary transition-colors flex items-center gap-1.5">
+                  <Newspaper className="h-3.5 w-3.5" /> News
+                </Link>
               </li>
               <li>
-                <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">
-                  How It Works
-                </a>
+                <Link to="/insights" className="text-foreground/70 hover:text-primary transition-colors">
+                  Insights
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Company</h3>
             <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
-                </a>
-              </li>
-              <li>
-                <a href="#testimonials" className="text-muted-foreground hover:text-primary transition-colors">
-                  Testimonials
-                </a>
-              </li>
+              <li><Link to="/about" className="text-foreground/70 hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link to="/performance" className="text-foreground/70 hover:text-primary transition-colors">Performance</Link></li>
+              <li><Link to="/shop" className="text-foreground/70 hover:text-primary transition-colors">Shop</Link></li>
+              <li><Link to="/rewards" className="text-foreground/70 hover:text-primary transition-colors">Rewards</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#terms" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <Link to="/responsible-gaming" className="text-muted-foreground hover:text-primary transition-colors">
-                  Responsible Gaming
+                <Link to="/responsible-gaming" className="text-foreground/70 hover:text-primary transition-colors flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5" /> Responsible Gaming
                 </Link>
               </li>
+              <li><a href="#privacy" className="text-foreground/70 hover:text-primary transition-colors">Privacy Policy</a></li>
+              <li><a href="#terms" className="text-foreground/70 hover:text-primary transition-colors">Terms of Service</a></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
+        <div className="mt-10 pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} PredictPro. All rights reserved.</p>
-          <p className="mt-2">
-            Bet responsibly. Must be 18+ to participate.
+          <p className="flex items-center gap-1">
+            Made with <Heart className="h-3 w-3 text-accent fill-accent" /> — Bet responsibly. 18+
           </p>
         </div>
       </div>
