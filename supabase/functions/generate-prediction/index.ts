@@ -6,17 +6,100 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Simple in-memory rate limiter: max 5 predictions per user per 10 minutes
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfterSecs: number } {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+
+  if (!entry || now >= entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfterSecs: 0 };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) {
+    const retryAfterSecs = Math.ceil((entry.resetAt - now) / 1000);
+    return { allowed: false, retryAfterSecs };
+  }
+
+  entry.count++;
+  return { allowed: true, retryAfterSecs: 0 };
+}
+
+// Periodically clean up expired entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of rateLimitMap) {
+    if (now >= val.resetAt) rateLimitMap.delete(key);
+  }
+}, 60_000);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+
+    // Allow anon key calls (from cron/internal) without rate limiting
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+    const isInternalCall = token === anonKey || token === supabaseServiceKey;
+
+    let userId: string | null = null;
+
+    if (!isInternalCall) {
+      if (claimsError || !claimsData?.claims?.sub) {
+        return new Response(JSON.stringify({ error: 'Invalid authentication token' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      userId = claimsData.claims.sub as string;
+
+      // Apply rate limiting for authenticated users
+      const { allowed, retryAfterSecs } = checkRateLimit(userId);
+      if (!allowed) {
+        return new Response(JSON.stringify({
+          error: 'Too many prediction requests. Please try again later.',
+          retry_after: retryAfterSecs,
+        }), {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfterSecs),
+          },
+        });
+      }
+    }
+
     const { matchData } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
+
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.error("LOVABLE_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: 'Prediction service temporarily unavailable' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const systemPrompt = `You are an expert sports prediction AI. Analyze match data and provide predictions with reasoning.
@@ -51,11 +134,11 @@ Provide prediction with confidence and reasoning.`;
               parameters: {
                 type: "object",
                 properties: {
-                  prediction: { 
+                  prediction: {
                     type: "string",
                     enum: ["Home Win", "Away Win", "Draw"]
                   },
-                  confidence: { 
+                  confidence: {
                     type: "number",
                     minimum: 0,
                     maximum: 100
@@ -73,39 +156,35 @@ Provide prediction with confidence and reasoning.`;
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("AI gateway error:", response.status, error);
-      
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required. Please add credits." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      // Log details server-side only
+      const errorBody = await response.text();
+      console.error("AI gateway error:", response.status, errorBody);
 
-      throw new Error("AI gateway error");
+      // Return generic error to client
+      return new Response(JSON.stringify({
+        error: 'Prediction generation failed. Please try again later.',
+        code: 'AI_UNAVAILABLE',
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
+
     if (!toolCall) {
-      throw new Error("No prediction generated");
+      console.error("No tool call in AI response");
+      return new Response(JSON.stringify({
+        error: 'Prediction generation failed. Please try again.',
+        code: 'AI_NO_RESULT',
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const predictionData = JSON.parse(toolCall.function.arguments);
-
-    // Save prediction to database
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
 
     const matchId = `${matchData.homeTeam}-${matchData.awayTeam}-${matchData.matchDate}`;
 
@@ -127,17 +206,13 @@ Provide prediction with confidence and reasoning.`;
 
     if (dbError) {
       console.error("Database error:", dbError);
-      throw dbError;
-    }
-
-    // Get authenticated user if available
-    const authHeader = req.headers.get('authorization');
-    let userId = null;
-    
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id;
+      return new Response(JSON.stringify({
+        error: 'Failed to save prediction. Please try again.',
+        code: 'DB_ERROR',
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Save to predictions_history if user is authenticated
@@ -154,7 +229,7 @@ Provide prediction with confidence and reasoning.`;
       });
     }
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       prediction: savedPrediction
     }), {
@@ -162,9 +237,10 @@ Provide prediction with confidence and reasoning.`;
     });
 
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    console.error("Unhandled error:", error);
+    return new Response(JSON.stringify({
+      error: 'An unexpected error occurred. Please try again.',
+      code: 'INTERNAL_ERROR',
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
