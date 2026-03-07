@@ -55,6 +55,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/match/:matchId" element={<MatchDetail />} />
               <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
