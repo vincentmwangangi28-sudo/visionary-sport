@@ -128,7 +128,7 @@ export const Navbar = () => {
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                {navLinks.map(link => {
+                {allLinks.map(link => {
                   const Icon = link.icon;
                   return (
                     <Link
