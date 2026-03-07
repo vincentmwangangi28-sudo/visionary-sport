@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, User } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+
+const MAX_MESSAGE_LENGTH = 500;
+const MIN_MESSAGE_LENGTH = 1;
+const RATE_LIMIT_MS = 2000; // 2 seconds between messages
+
+function sanitizeMessage(input: string): string {
+  return input
+    .trim()
+    .replace(/<[^>]*>/g, '') // strip HTML tags
+    .replace(/[^\p{L}\p{N}\p{P}\p{Z}\p{S}\p{M}]/gu, '') // allow only valid unicode chars
+    .slice(0, MAX_MESSAGE_LENGTH);
+}
 
 interface ChatMessage {
   id: string;
@@ -30,6 +42,7 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastSentRef = useRef<number>(0);
 
   useEffect(() => {
     // Fetch existing messages
@@ -77,6 +90,13 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
     }
   }, [messages]);
 
+  const handleMessageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_MESSAGE_LENGTH) {
+      setNewMessage(value);
+    }
+  }, []);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -85,18 +105,36 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
       return;
     }
 
-    if (!newMessage.trim()) return;
+    const sanitized = sanitizeMessage(newMessage);
+
+    if (sanitized.length < MIN_MESSAGE_LENGTH) {
+      toast.error("Message cannot be empty");
+      return;
+    }
+
+    if (sanitized.length > MAX_MESSAGE_LENGTH) {
+      toast.error(`Message must be under ${MAX_MESSAGE_LENGTH} characters`);
+      return;
+    }
+
+    // Client-side rate limiting
+    const now = Date.now();
+    if (now - lastSentRef.current < RATE_LIMIT_MS) {
+      toast.error("Please wait before sending another message");
+      return;
+    }
 
     setIsLoading(true);
     try {
       const { error } = await supabase.from("match_chat_messages").insert({
         match_id: matchId,
         user_id: user.id,
-        message: newMessage.trim(),
+        message: sanitized,
       });
 
       if (error) throw error;
       setNewMessage("");
+      lastSentRef.current = Date.now();
     } catch (error) {
       toast.error("Failed to send message");
     } finally {
@@ -148,17 +186,25 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
           </div>
         </ScrollArea>
 
-        <form onSubmit={handleSendMessage} className="flex gap-2 mt-3">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={user ? "Type a message..." : "Login to chat"}
-            disabled={!user || isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" size="icon" disabled={!user || isLoading}>
-            <Send className="h-4 w-4" />
-          </Button>
+        <form onSubmit={handleSendMessage} className="mt-3">
+          <div className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={handleMessageChange}
+              placeholder={user ? "Type a message..." : "Login to chat"}
+              disabled={!user || isLoading}
+              maxLength={MAX_MESSAGE_LENGTH}
+              className="flex-1"
+            />
+            <Button type="submit" size="icon" disabled={!user || isLoading || !newMessage.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          {newMessage.length > 0 && (
+            <p className={`text-[10px] mt-1 text-right ${newMessage.length > MAX_MESSAGE_LENGTH * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {newMessage.length}/{MAX_MESSAGE_LENGTH}
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>
