@@ -23,6 +23,7 @@ const News = lazy(() => import("./pages/News"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MatchDetail = lazy(() => import("./pages/MatchDetail"));
 const ResponsibleGaming = lazy(() => import("./pages/ResponsibleGaming"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/match/:matchId" element={<MatchDetail />} />
               <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
