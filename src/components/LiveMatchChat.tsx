@@ -186,17 +186,25 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
           </div>
         </ScrollArea>
 
-        <form onSubmit={handleSendMessage} className="flex gap-2 mt-3">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={user ? "Type a message..." : "Login to chat"}
-            disabled={!user || isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" size="icon" disabled={!user || isLoading}>
-            <Send className="h-4 w-4" />
-          </Button>
+        <form onSubmit={handleSendMessage} className="mt-3">
+          <div className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={handleMessageChange}
+              placeholder={user ? "Type a message..." : "Login to chat"}
+              disabled={!user || isLoading}
+              maxLength={MAX_MESSAGE_LENGTH}
+              className="flex-1"
+            />
+            <Button type="submit" size="icon" disabled={!user || isLoading || !newMessage.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          {newMessage.length > 0 && (
+            <p className={`text-[10px] mt-1 text-right ${newMessage.length > MAX_MESSAGE_LENGTH * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {newMessage.length}/{MAX_MESSAGE_LENGTH}
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>
