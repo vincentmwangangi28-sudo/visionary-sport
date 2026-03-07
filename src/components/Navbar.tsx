@@ -57,7 +57,7 @@ export const Navbar = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">
-              {navLinks.map(link => (
+              {allLinks.map(link => (
                 <Link
                   key={link.to}
                   to={link.to}
