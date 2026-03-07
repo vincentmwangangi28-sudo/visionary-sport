@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, User } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+
+const MAX_MESSAGE_LENGTH = 500;
+const MIN_MESSAGE_LENGTH = 1;
+const RATE_LIMIT_MS = 2000; // 2 seconds between messages
+
+function sanitizeMessage(input: string): string {
+  return input
+    .trim()
+    .replace(/<[^>]*>/g, '') // strip HTML tags
+    .replace(/[^\p{L}\p{N}\p{P}\p{Z}\p{S}\p{M}]/gu, '') // allow only valid unicode chars
+    .slice(0, MAX_MESSAGE_LENGTH);
+}
 
 interface ChatMessage {
   id: string;
