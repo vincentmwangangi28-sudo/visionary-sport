@@ -42,6 +42,7 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastSentRef = useRef<number>(0);
 
   useEffect(() => {
     // Fetch existing messages
