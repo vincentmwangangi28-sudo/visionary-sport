@@ -90,6 +90,13 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
     }
   }, [messages]);
 
+  const handleMessageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_MESSAGE_LENGTH) {
+      setNewMessage(value);
+    }
+  }, []);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -98,18 +105,36 @@ export const LiveMatchChat = ({ matchId, homeTeam, awayTeam }: LiveMatchChatProp
       return;
     }
 
-    if (!newMessage.trim()) return;
+    const sanitized = sanitizeMessage(newMessage);
+
+    if (sanitized.length < MIN_MESSAGE_LENGTH) {
+      toast.error("Message cannot be empty");
+      return;
+    }
+
+    if (sanitized.length > MAX_MESSAGE_LENGTH) {
+      toast.error(`Message must be under ${MAX_MESSAGE_LENGTH} characters`);
+      return;
+    }
+
+    // Client-side rate limiting
+    const now = Date.now();
+    if (now - lastSentRef.current < RATE_LIMIT_MS) {
+      toast.error("Please wait before sending another message");
+      return;
+    }
 
     setIsLoading(true);
     try {
       const { error } = await supabase.from("match_chat_messages").insert({
         match_id: matchId,
         user_id: user.id,
-        message: newMessage.trim(),
+        message: sanitized,
       });
 
       if (error) throw error;
       setNewMessage("");
+      lastSentRef.current = Date.now();
     } catch (error) {
       toast.error("Failed to send message");
     } finally {
