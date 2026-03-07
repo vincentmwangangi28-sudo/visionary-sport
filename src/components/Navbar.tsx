@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, ShoppingBag, Gift, BarChart3, Trophy, Newspaper, Lightbulb, Info, Home } from "lucide-react";
+import { Menu, X, LogOut, ShoppingBag, Gift, BarChart3, Trophy, Newspaper, Lightbulb, Info, Home, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { CoinBalance } from "./CoinBalance";
 import { RealtimeStatus } from "./RealtimeStatus";
 import aiIcon from "@/assets/ai-prediction-icon.png";
@@ -23,6 +24,22 @@ export const Navbar = () => {
   const { user, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
+
+  const allLinks = isAdmin
+    ? [...navLinks, { to: "/admin", label: "Admin", icon: Shield }]
+    : navLinks;
 
   return (
     <>
