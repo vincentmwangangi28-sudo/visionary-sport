@@ -23,6 +23,7 @@ const News = lazy(() => import("./pages/News"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MatchDetail = lazy(() => import("./pages/MatchDetail"));
 const ResponsibleGaming = lazy(() => import("./pages/ResponsibleGaming"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
