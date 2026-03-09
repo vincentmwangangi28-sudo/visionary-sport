@@ -135,13 +135,22 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch sitemap SEO data
+  const fetchSitemapData = async () => {
+    try {
+      const { data } = await supabase
+        .from("seo_metadata")
+        .select("page_path, title, structured_data")
+        .in("page_path", ["/sitemap.xml", "/sitemap-index.xml", "/image-sitemap.xml", "/video-sitemap.xml"]);
+      if (data) setSitemapData(data as SitemapMeta[]);
+    } catch (err) {
+      console.error("Failed to fetch sitemap data:", err);
+    }
+  };
+
   // Fetch cron jobs
   const fetchCronJobs = async () => {
     try {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user!.id,
-        _role: "admin",
-      });
       // We already verified admin, just load what we can from edge_function_stats
     } catch (err) {
       console.error("Failed to fetch cron jobs:", err);
@@ -151,6 +160,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isAdmin) {
       fetchStats();
+      fetchSitemapData();
     }
   }, [isAdmin]);
 
