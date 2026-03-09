@@ -22,6 +22,11 @@ import {
   BarChart3,
   Calendar,
   AlertTriangle,
+  Globe,
+  FileText,
+  Image as ImageIcon,
+  Video,
+  Search,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
