@@ -39,6 +39,16 @@ interface FunctionStat {
   last_updated: string;
 }
 
+interface SitemapMeta {
+  page_path: string;
+  title: string;
+  structured_data: {
+    generated_at?: string;
+    url_count?: number;
+    sitemap_count?: number;
+  } | null;
+}
+
 interface CronJob {
   jobname: string;
   schedule: string;
