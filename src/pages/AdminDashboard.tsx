@@ -166,7 +166,7 @@ export default function AdminDashboard() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchStats();
+    await Promise.all([fetchStats(), fetchSitemapData()]);
     setRefreshing(false);
     toast.success("Dashboard refreshed");
   };
