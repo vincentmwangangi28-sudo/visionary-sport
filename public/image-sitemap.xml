@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://predictpro.guru/</loc>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.png</image:loc>
+      <image:title>PredictPro - AI Sports Predictions Kenya</image:title>
+      <image:caption>AI-powered sports predictions platform for Kenya</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://predictpro.guru/favicon.png</image:loc>
+      <image:title>PredictPro Logo</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/about</loc>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.png</image:loc>
+      <image:title>About PredictPro</image:title>
+    </image:image>
+  </url>
+</urlset>

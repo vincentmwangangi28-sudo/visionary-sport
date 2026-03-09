@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://predictpro.guru/sitemap.xml</loc>
+    <lastmod>2026-03-09</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://predictpro.guru/image-sitemap.xml</loc>
+    <lastmod>2026-03-09</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://predictpro.guru/video-sitemap.xml</loc>
+    <lastmod>2026-03-09</lastmod>
+  </sitemap>
+</sitemapindex>
