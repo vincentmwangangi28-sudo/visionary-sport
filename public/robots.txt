@@ -18,6 +18,7 @@ Allow: /
 User-agent: *
 Allow: /
 Allow: /assets/
+Allow: /sitemap*.xml
 
 # Disallow private areas
 Disallow: /api/
@@ -30,7 +31,10 @@ Disallow: /rewards
 Crawl-delay: 1
 
 # Sitemaps
+Sitemap: https://predictpro.guru/sitemap-index.xml
 Sitemap: https://predictpro.guru/sitemap.xml
+Sitemap: https://predictpro.guru/image-sitemap.xml
+Sitemap: https://predictpro.guru/video-sitemap.xml
 
 # Host
 Host: predictpro.guru

@@ -22,6 +22,11 @@ import {
   BarChart3,
   Calendar,
   AlertTriangle,
+  Globe,
+  FileText,
+  Image as ImageIcon,
+  Video,
+  Search,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -32,6 +37,16 @@ interface FunctionStat {
   invocations: number;
   success_rate: number;
   last_updated: string;
+}
+
+interface SitemapMeta {
+  page_path: string;
+  title: string;
+  structured_data: {
+    generated_at?: string;
+    url_count?: number;
+    sitemap_count?: number;
+  } | null;
 }
 
 interface CronJob {
@@ -59,6 +74,7 @@ const AUTOMATION_FUNCTIONS = [
   { name: "send-whatsapp-broadcast", label: "WhatsApp Broadcast", icon: Zap, phase: "Communications" },
   { name: "fetch-transfer-rumors", label: "Transfer Rumors", icon: Activity, phase: "Content" },
   { name: "detect-upset-alerts", label: "Upset Alerts", icon: AlertTriangle, phase: "Analysis" },
+  { name: "auto-sitemap", label: "Auto Sitemap", icon: Globe, phase: "SEO" },
 ];
 
 export default function AdminDashboard() {
@@ -68,6 +84,7 @@ export default function AdminDashboard() {
   const [checkingRole, setCheckingRole] = useState(true);
   const [stats, setStats] = useState<FunctionStat[]>([]);
   const [cronJobs, setCronJobs] = useState<CronJob[]>([]);
+  const [sitemapData, setSitemapData] = useState<SitemapMeta[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -118,13 +135,22 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch sitemap SEO data
+  const fetchSitemapData = async () => {
+    try {
+      const { data } = await supabase
+        .from("seo_metadata")
+        .select("page_path, title, structured_data")
+        .in("page_path", ["/sitemap.xml", "/sitemap-index.xml", "/image-sitemap.xml", "/video-sitemap.xml"]);
+      if (data) setSitemapData(data as SitemapMeta[]);
+    } catch (err) {
+      console.error("Failed to fetch sitemap data:", err);
+    }
+  };
+
   // Fetch cron jobs
   const fetchCronJobs = async () => {
     try {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user!.id,
-        _role: "admin",
-      });
       // We already verified admin, just load what we can from edge_function_stats
     } catch (err) {
       console.error("Failed to fetch cron jobs:", err);
@@ -134,12 +160,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isAdmin) {
       fetchStats();
+      fetchSitemapData();
     }
   }, [isAdmin]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchStats();
+    await Promise.all([fetchStats(), fetchSitemapData()]);
     setRefreshing(false);
     toast.success("Dashboard refreshed");
   };
@@ -402,6 +429,69 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* SEO & Sitemap Analytics */}
+        <Card className="border-border/50 bg-card/80 backdrop-blur-sm mt-6">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" />
+              SEO & Sitemap Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border/40">
+              {[
+                { path: "/sitemap-index.xml", label: "Sitemap Index", icon: FileText },
+                { path: "/sitemap.xml", label: "Main Sitemap", icon: Search },
+                { path: "/image-sitemap.xml", label: "Image Sitemap", icon: ImageIcon },
+                { path: "/video-sitemap.xml", label: "Video Sitemap", icon: Video },
+              ].map((item) => {
+                const meta = sitemapData.find((s) => s.page_path === item.path);
+                const Icon = item.icon;
+                const urlCount = meta?.structured_data?.url_count ?? meta?.structured_data?.sitemap_count ?? 0;
+                const generatedAt = meta?.structured_data?.generated_at;
+
+                return (
+                  <div key={item.path} className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{item.label}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{item.path}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {meta ? (
+                        <>
+                          <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                            {urlCount} URLs
+                          </Badge>
+                          {generatedAt && (
+                            <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                              {formatDistanceToNow(new Date(generatedAt), { addSuffix: true })}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                          Not generated
+                        </Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => handleTriggerFunction("auto-sitemap")}
+                      >
+                        Regenerate
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </main>
       <Footer />
     </div>
