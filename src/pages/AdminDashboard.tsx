@@ -74,6 +74,7 @@ const AUTOMATION_FUNCTIONS = [
   { name: "send-whatsapp-broadcast", label: "WhatsApp Broadcast", icon: Zap, phase: "Communications" },
   { name: "fetch-transfer-rumors", label: "Transfer Rumors", icon: Activity, phase: "Content" },
   { name: "detect-upset-alerts", label: "Upset Alerts", icon: AlertTriangle, phase: "Analysis" },
+  { name: "auto-sitemap", label: "Auto Sitemap", icon: Globe, phase: "SEO" },
 ];
 
 export default function AdminDashboard() {
@@ -83,6 +84,7 @@ export default function AdminDashboard() {
   const [checkingRole, setCheckingRole] = useState(true);
   const [stats, setStats] = useState<FunctionStat[]>([]);
   const [cronJobs, setCronJobs] = useState<CronJob[]>([]);
+  const [sitemapData, setSitemapData] = useState<SitemapMeta[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
