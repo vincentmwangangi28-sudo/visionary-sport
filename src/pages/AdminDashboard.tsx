@@ -429,6 +429,69 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* SEO & Sitemap Analytics */}
+        <Card className="border-border/50 bg-card/80 backdrop-blur-sm mt-6">
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" />
+              SEO & Sitemap Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border/40">
+              {[
+                { path: "/sitemap-index.xml", label: "Sitemap Index", icon: FileText },
+                { path: "/sitemap.xml", label: "Main Sitemap", icon: Search },
+                { path: "/image-sitemap.xml", label: "Image Sitemap", icon: ImageIcon },
+                { path: "/video-sitemap.xml", label: "Video Sitemap", icon: Video },
+              ].map((item) => {
+                const meta = sitemapData.find((s) => s.page_path === item.path);
+                const Icon = item.icon;
+                const urlCount = meta?.structured_data?.url_count ?? meta?.structured_data?.sitemap_count ?? 0;
+                const generatedAt = meta?.structured_data?.generated_at;
+
+                return (
+                  <div key={item.path} className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{item.label}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{item.path}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {meta ? (
+                        <>
+                          <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                            {urlCount} URLs
+                          </Badge>
+                          {generatedAt && (
+                            <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                              {formatDistanceToNow(new Date(generatedAt), { addSuffix: true })}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                          Not generated
+                        </Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => handleTriggerFunction("auto-sitemap")}
+                      >
+                        Regenerate
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </main>
       <Footer />
     </div>
