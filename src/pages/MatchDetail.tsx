@@ -12,6 +12,7 @@ import { FormAnalysisChart } from '@/components/FormAnalysisChart';
 import { LiveMatchChat } from '@/components/LiveMatchChat';
 import { SocialShare } from '@/components/SocialShare';
 import { ShareableCard } from '@/components/ShareableCard';
+import { RelatedContent } from '@/components/RelatedContent';
 import { MatchPreviewWriter } from '@/components/MatchPreviewWriter';
 import { useLiveMatches } from '@/hooks/useLiveMatches';
 import { usePredictions } from '@/hooks/usePredictions';
