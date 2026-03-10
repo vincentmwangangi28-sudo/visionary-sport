@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, TrendingUp, Target, BarChart } from "lucide-react";
+import { RelatedContent } from "@/components/RelatedContent";
 
 const Insights = () => {
   const insights = [
