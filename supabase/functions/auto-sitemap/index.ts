@@ -8,18 +8,11 @@ const corsHeaders = {
 
 const BASE_URL = 'https://predictpro.guru';
 
-async function pingSearchEngines(sitemapUrl: string) {
-  const pings = [
-    `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`,
-    `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`,
-  ];
-  const results = await Promise.allSettled(
-    pings.map(async (url) => {
-      const res = await fetch(url);
-      return { url, status: res.status, ok: res.ok };
-    })
-  );
-  return results.map((r) => r.status === 'fulfilled' ? r.value : { ok: false });
+// Valid static routes that exist in the app
+const VALID_ROUTES = ['/', '/leaderboard', '/performance', '/news', '/insights', '/about', '/rewards', '/shop'];
+
+function escapeXml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 serve(async (req) => {
@@ -37,28 +30,23 @@ serve(async (req) => {
     // Fetch dynamic content in parallel
     const [predictionsResult, newsResult] = await Promise.all([
       supabase.from('predictions')
-        .select('match_id, home_team, away_team, created_at, sport, match_date')
+        .select('match_id, home_team, away_team, created_at, sport, match_date, league, prediction, confidence, reasoning')
         .gte('match_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false })
         .limit(100),
       supabase.from('news_articles')
-        .select('slug, updated_at, title, featured_image')
+        .select('slug, updated_at, title, featured_image, excerpt, category')
         .eq('is_published', true)
         .order('created_at', { ascending: false })
         .limit(50),
     ]);
 
-    // === 1. Main Sitemap (pages + matches + news) ===
-    const staticPages = [
-      { loc: '/', priority: '1.0', changefreq: 'hourly' },
-      { loc: '/leaderboard', priority: '0.9', changefreq: 'hourly' },
-      { loc: '/performance', priority: '0.85', changefreq: 'daily' },
-      { loc: '/news', priority: '0.9', changefreq: 'hourly' },
-      { loc: '/insights', priority: '0.8', changefreq: 'weekly' },
-      { loc: '/about', priority: '0.7', changefreq: 'monthly' },
-      { loc: '/rewards', priority: '0.75', changefreq: 'daily' },
-      { loc: '/shop', priority: '0.7', changefreq: 'weekly' },
-    ];
+    // === 1. Main Sitemap ===
+    const staticPages = VALID_ROUTES.map(route => ({
+      loc: route,
+      priority: route === '/' ? '1.0' : route === '/news' ? '0.9' : route === '/leaderboard' ? '0.9' : '0.7',
+      changefreq: ['/', '/news', '/leaderboard'].includes(route) ? 'hourly' : 'daily',
+    }));
 
     let mainXml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     mainXml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -67,21 +55,25 @@ serve(async (req) => {
       mainXml += `  <url>\n    <loc>${BASE_URL}${page.loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>\n`;
     }
 
-    // Match pages
+    // Match pages — deduplicate and only include valid match_ids
+    const uniqueMatches = new Map();
     if (predictionsResult.data) {
-      const uniqueMatches = new Map();
       for (const pred of predictionsResult.data) {
-        if (!uniqueMatches.has(pred.match_id)) uniqueMatches.set(pred.match_id, pred);
+        if (pred.match_id && !uniqueMatches.has(pred.match_id)) {
+          uniqueMatches.set(pred.match_id, pred);
+        }
       }
       for (const [matchId, pred] of uniqueMatches) {
         mainXml += `  <url>\n    <loc>${BASE_URL}/match/${matchId}</loc>\n    <lastmod>${pred.created_at?.split('T')[0] || today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
       }
     }
 
-    // News pages
+    // News pages — only published with valid slugs
     if (newsResult.data) {
       for (const article of newsResult.data) {
-        mainXml += `  <url>\n    <loc>${BASE_URL}/news/${article.slug}</loc>\n    <lastmod>${article.updated_at?.split('T')[0] || today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.75</priority>\n  </url>\n`;
+        if (article.slug && article.slug.length > 0) {
+          mainXml += `  <url>\n    <loc>${BASE_URL}/news/${article.slug}</loc>\n    <lastmod>${article.updated_at?.split('T')[0] || today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.75</priority>\n  </url>\n`;
+        }
       }
     }
     mainXml += '</urlset>';
@@ -91,21 +83,19 @@ serve(async (req) => {
     imageXml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n';
     imageXml += '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
 
-    // Static images
     imageXml += `  <url>\n    <loc>${BASE_URL}/</loc>\n    <image:image>\n      <image:loc>${BASE_URL}/og-image.png</image:loc>\n      <image:title>PredictPro - AI Sports Predictions Kenya</image:title>\n    </image:image>\n  </url>\n`;
 
-    // News article images
     if (newsResult.data) {
       for (const article of newsResult.data) {
-        if (article.featured_image) {
-          const safeTitle = (article.title || 'Sports News').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          imageXml += `  <url>\n    <loc>${BASE_URL}/news/${article.slug}</loc>\n    <image:image>\n      <image:loc>${article.featured_image}</image:loc>\n      <image:title>${safeTitle}</image:title>\n    </image:image>\n  </url>\n`;
+        if (article.featured_image && article.slug) {
+          const safeTitle = escapeXml(article.title || 'Sports News');
+          imageXml += `  <url>\n    <loc>${BASE_URL}/news/${article.slug}</loc>\n    <image:image>\n      <image:loc>${escapeXml(article.featured_image)}</image:loc>\n      <image:title>${safeTitle}</image:title>\n    </image:image>\n  </url>\n`;
         }
       }
     }
     imageXml += '</urlset>';
 
-    // === 3. Video Sitemap (placeholder structure) ===
+    // === 3. Video Sitemap (valid empty structure) ===
     let videoXml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     videoXml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n';
     videoXml += '        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n';
@@ -119,10 +109,10 @@ serve(async (req) => {
     indexXml += `  <sitemap>\n    <loc>${BASE_URL}/video-sitemap.xml</loc>\n    <lastmod>${today}</lastmod>\n  </sitemap>\n`;
     indexXml += '</sitemapindex>';
 
-    const mainUrlCount = staticPages.length + (predictionsResult.data?.length || 0) + (newsResult.data?.length || 0);
-    const imageUrlCount = 1 + (newsResult.data?.filter(a => a.featured_image).length || 0);
+    const mainUrlCount = staticPages.length + uniqueMatches.size + (newsResult.data?.filter(a => a.slug).length || 0);
+    const imageUrlCount = 1 + (newsResult.data?.filter(a => a.featured_image && a.slug).length || 0);
 
-    // Store all sitemaps in seo_metadata
+    // Store all sitemaps
     await Promise.all([
       supabase.from('seo_metadata').upsert({
         page_path: '/sitemap.xml',
@@ -150,13 +140,50 @@ serve(async (req) => {
       }, { onConflict: 'page_path' }),
     ]);
 
-    // Ping search engines for all sitemaps
-    const pingResults = await Promise.all([
-      pingSearchEngines(`${BASE_URL}/sitemap-index.xml`),
-      pingSearchEngines(`${BASE_URL}/sitemap.xml`),
-    ]);
+    // Generate SportsEvent schema for each match and store
+    if (predictionsResult.data) {
+      const schemaPromises = [];
+      for (const [matchId, pred] of uniqueMatches) {
+        const startDate = pred.match_date || new Date().toISOString();
+        const endDate = new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString();
+        
+        const schema = {
+          "@context": "https://schema.org",
+          "@type": "SportsEvent",
+          "name": `${pred.home_team} vs ${pred.away_team}`,
+          "description": `AI prediction: ${pred.prediction} (${pred.confidence}% confidence)`,
+          "startDate": startDate,
+          "endDate": endDate,
+          "eventStatus": "https://schema.org/EventScheduled",
+          "organizer": { "@type": "Organization", "name": pred.league },
+          "homeTeam": { "@type": "SportsTeam", "name": pred.home_team },
+          "awayTeam": { "@type": "SportsTeam", "name": pred.away_team },
+          "image": "https://predictpro.guru/og-image.png",
+          "offers": {
+            "@type": "Offer",
+            "url": `${BASE_URL}/match/${matchId}`,
+            "price": "0",
+            "priceCurrency": "KES"
+          },
+          "additionalProperty": [
+            { "@type": "PropertyValue", "name": "Recommended Outcome", "value": pred.prediction },
+            { "@type": "PropertyValue", "name": "Confidence Score", "value": `${pred.confidence}%` }
+          ]
+        };
 
-    console.log(`Sitemaps generated | Main: ${mainUrlCount} URLs | Images: ${imageUrlCount} | Pings sent`);
+        schemaPromises.push(
+          supabase.from('seo_metadata').upsert({
+            page_path: `/match/${matchId}`,
+            title: `${pred.home_team} vs ${pred.away_team}`,
+            description: `AI prediction: ${pred.prediction} (${pred.confidence}%)`,
+            structured_data: { sports_event_schema: schema, generated_at: new Date().toISOString() }
+          }, { onConflict: 'page_path' })
+        );
+      }
+      await Promise.all(schemaPromises);
+    }
+
+    console.log(`Sitemaps generated | Main: ${mainUrlCount} URLs | Images: ${imageUrlCount} | Schemas: ${uniqueMatches.size}`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -165,7 +192,7 @@ serve(async (req) => {
         image: { url_count: imageUrlCount },
         video: { url_count: 0 },
       },
-      pings: pingResults,
+      schemas_generated: uniqueMatches.size,
       generated_at: new Date().toISOString(),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

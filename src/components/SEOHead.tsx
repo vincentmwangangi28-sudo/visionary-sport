@@ -271,6 +271,16 @@ export const SEOHead = ({
       <meta name="googlebot" content={noIndex ? "noindex" : "index, follow"} />
       <link rel="canonical" href={url} />
 
+      {/* Hreflang Tags */}
+      <link rel="alternate" hrefLang="en-KE" href={url} />
+      <link rel="alternate" hrefLang="en" href={url} />
+      <link rel="alternate" hrefLang="sw" href={url} />
+      <link rel="alternate" hrefLang="x-default" href={url} />
+
+      {/* RSS Feeds */}
+      <link rel="alternate" type="application/rss+xml" title="PredictPro News" href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'osyygprivxbknsngclhr'}.supabase.co/functions/v1/generate-rss-feed?type=news`} />
+      <link rel="alternate" type="application/rss+xml" title="PredictPro Predictions" href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'osyygprivxbknsngclhr'}.supabase.co/functions/v1/generate-rss-feed?type=predictions`} />
+
       {/* Language & Region */}
       <meta httpEquiv="content-language" content="en-KE" />
       <meta name="geo.region" content="KE" />
