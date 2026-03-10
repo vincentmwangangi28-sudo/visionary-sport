@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RelatedContent } from '@/components/RelatedContent';
 import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -255,6 +256,18 @@ export default function News() {
             </div>
           </div>
         )}
+        <div className="max-w-4xl mx-auto mt-8">
+          <RelatedContent 
+            title="More from PredictPro"
+            items={[
+              { title: "Today's AI Predictions", href: "/", type: "prediction", badge: "Live" },
+              { title: "Leaderboard Rankings", href: "/leaderboard", type: "prediction", badge: "Top" },
+              { title: "Accuracy Insights", href: "/insights", type: "prediction", badge: "AI" },
+              { title: "Performance Tracker", href: "/performance", type: "prediction", badge: "Stats" },
+              { title: "Rewards & Shop", href: "/rewards", type: "article", badge: "Earn" },
+            ]}
+          />
+        </div>
       </main>
 
       <Footer />
