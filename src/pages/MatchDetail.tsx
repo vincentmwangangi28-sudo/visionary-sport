@@ -307,6 +307,17 @@ export default function MatchDetail() {
               />
             </TabsContent>
           </Tabs>
+
+          <RelatedContent 
+            title="Explore More"
+            items={[
+              { title: "Today's AI Predictions", href: "/", type: "prediction", badge: "Live" },
+              { title: "Latest Sports News", href: "/news", type: "article", badge: "News" },
+              { title: "Leaderboard Rankings", href: "/leaderboard", type: "prediction", badge: "Top" },
+              { title: "Accuracy Insights", href: "/insights", type: "prediction", badge: "AI" },
+              { title: "Performance Tracker", href: "/performance", type: "prediction", badge: "Stats" },
+            ]}
+          />
         </div>
       </main>
 

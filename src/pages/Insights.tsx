@@ -122,6 +122,17 @@ const Insights = () => {
             </div>
           </Card>
         </div>
+
+        <RelatedContent 
+          title="Keep Exploring"
+          items={[
+            { title: "Today's AI Predictions", href: "/", type: "prediction", badge: "Live" },
+            { title: "Latest Sports News", href: "/news", type: "article", badge: "News" },
+            { title: "Leaderboard Rankings", href: "/leaderboard", type: "prediction", badge: "Top" },
+            { title: "Performance Tracker", href: "/performance", type: "prediction", badge: "Stats" },
+            { title: "Rewards & Shop", href: "/rewards", type: "article", badge: "Earn" },
+          ]}
+        />
       </main>
 
       <Footer />
