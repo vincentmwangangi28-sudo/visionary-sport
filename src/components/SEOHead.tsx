@@ -182,21 +182,30 @@ export const SEOHead = ({
 
     // Sports Event schema with enhanced data
     if (match) {
-      schemas.push({
+      const startDate = match.date || new Date().toISOString();
+      const endDate = new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString();
+      
+      const sportsEvent: Record<string, unknown> = {
         "@context": "https://schema.org",
         "@type": "SportsEvent",
         "name": `${match.homeTeam} vs ${match.awayTeam}`,
         "description": `AI prediction for ${match.homeTeam} vs ${match.awayTeam}: ${match.prediction}${match.confidence ? ` (${match.confidence}% confidence)` : ''}`,
-        "startDate": match.date,
+        "startDate": startDate,
+        "endDate": endDate,
         "eventStatus": "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
         "location": {
           "@type": "Place",
-          "name": match.league,
+          "name": `${match.league} Venue`,
           "address": {
             "@type": "PostalAddress",
             "addressCountry": "GB"
           }
+        },
+        "organizer": {
+          "@type": "Organization",
+          "name": match.league,
+          "url": "https://predictpro.guru"
         },
         "homeTeam": {
           "@type": "SportsTeam",
@@ -206,11 +215,24 @@ export const SEOHead = ({
           "@type": "SportsTeam",
           "name": match.awayTeam
         },
-        "organizer": {
-          "@type": "Organization",
-          "name": match.league
+        "image": "https://predictpro.guru/og-image.png",
+        "offers": {
+          "@type": "Offer",
+          "url": url,
+          "price": "0",
+          "priceCurrency": "KES",
+          "availability": "https://schema.org/InStock"
         }
-      });
+      };
+
+      if (match.prediction) {
+        sportsEvent["additionalProperty"] = [
+          { "@type": "PropertyValue", "name": "Recommended Outcome", "value": match.prediction },
+          ...(match.confidence ? [{ "@type": "PropertyValue", "name": "Confidence Score", "value": `${match.confidence}%` }] : [])
+        ];
+      }
+
+      schemas.push(sportsEvent);
     }
 
     // FAQ schema
