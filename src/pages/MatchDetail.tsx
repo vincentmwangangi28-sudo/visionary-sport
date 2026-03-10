@@ -61,29 +61,82 @@ export default function MatchDetail() {
   const matchTitle = `${match?.homeTeam || prediction?.home_team} vs ${match?.awayTeam || prediction?.away_team}`;
   const league = match?.league || prediction?.league || 'Football';
 
-  // Structured data for SEO
-  const sportsEventSchema = {
+  // Structured data for SEO - Enhanced SportsEvent schema
+  const startDate = prediction?.match_date || new Date().toISOString();
+  const endDate = new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString();
+  
+  const sportsEventSchema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     "name": matchTitle,
-    "description": `AI predictions and expert analysis for ${matchTitle} in ${league}`,
-    "startDate": prediction?.match_date || new Date().toISOString(),
+    "description": prediction 
+      ? `AI prediction for ${matchTitle}: ${prediction.prediction} (${prediction.confidence}% confidence). ${prediction.reasoning?.substring(0, 150)}`
+      : `AI predictions and expert analysis for ${matchTitle} in ${league}`,
+    "startDate": startDate,
+    "endDate": endDate,
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
     "location": {
       "@type": "Place",
-      "name": league
+      "name": `${league} Venue`,
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "GB"
+      }
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": league,
+      "url": "https://predictpro.guru"
+    },
+    "homeTeam": {
+      "@type": "SportsTeam",
+      "name": match?.homeTeam || prediction?.home_team
+    },
+    "awayTeam": {
+      "@type": "SportsTeam",
+      "name": match?.awayTeam || prediction?.away_team
     },
     "competitor": [
+      { "@type": "SportsTeam", "name": match?.homeTeam || prediction?.home_team },
+      { "@type": "SportsTeam", "name": match?.awayTeam || prediction?.away_team }
+    ],
+    "image": "https://predictpro.guru/og-image.png",
+    "offers": {
+      "@type": "Offer",
+      "url": `https://predictpro.guru/match/${matchId}`,
+      "price": "0",
+      "priceCurrency": "KES",
+      "availability": "https://schema.org/InStock",
+      "validFrom": prediction?.created_at || new Date().toISOString()
+    }
+  };
+
+  // Add prediction-specific properties
+  if (prediction) {
+    sportsEventSchema["additionalProperty"] = [
       {
-        "@type": "SportsTeam",
-        "name": match?.homeTeam || prediction?.home_team
+        "@type": "PropertyValue",
+        "name": "Recommended Outcome",
+        "value": prediction.prediction
       },
       {
-        "@type": "SportsTeam",
-        "name": match?.awayTeam || prediction?.away_team
+        "@type": "PropertyValue",
+        "name": "Confidence Score",
+        "value": `${prediction.confidence}%`
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "AI Reasoning",
+        "value": prediction.reasoning?.substring(0, 300) || "Expert AI analysis"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "AI Model",
+        "value": prediction.ai_model || "google/gemini-2.5-flash"
       }
-    ],
-    "eventStatus": liveMatch ? "https://schema.org/EventScheduled" : "https://schema.org/EventScheduled"
-  };
+    ];
+  }
 
   return (
     <div className="min-h-screen bg-background">
