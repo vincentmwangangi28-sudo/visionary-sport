@@ -182,21 +182,30 @@ export const SEOHead = ({
 
     // Sports Event schema with enhanced data
     if (match) {
-      schemas.push({
+      const startDate = match.date || new Date().toISOString();
+      const endDate = new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString();
+      
+      const sportsEvent: Record<string, unknown> = {
         "@context": "https://schema.org",
         "@type": "SportsEvent",
         "name": `${match.homeTeam} vs ${match.awayTeam}`,
         "description": `AI prediction for ${match.homeTeam} vs ${match.awayTeam}: ${match.prediction}${match.confidence ? ` (${match.confidence}% confidence)` : ''}`,
-        "startDate": match.date,
+        "startDate": startDate,
+        "endDate": endDate,
         "eventStatus": "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
         "location": {
           "@type": "Place",
-          "name": match.league,
+          "name": `${match.league} Venue`,
           "address": {
             "@type": "PostalAddress",
             "addressCountry": "GB"
           }
+        },
+        "organizer": {
+          "@type": "Organization",
+          "name": match.league,
+          "url": "https://predictpro.guru"
         },
         "homeTeam": {
           "@type": "SportsTeam",
@@ -206,11 +215,24 @@ export const SEOHead = ({
           "@type": "SportsTeam",
           "name": match.awayTeam
         },
-        "organizer": {
-          "@type": "Organization",
-          "name": match.league
+        "image": "https://predictpro.guru/og-image.png",
+        "offers": {
+          "@type": "Offer",
+          "url": url,
+          "price": "0",
+          "priceCurrency": "KES",
+          "availability": "https://schema.org/InStock"
         }
-      });
+      };
+
+      if (match.prediction) {
+        sportsEvent["additionalProperty"] = [
+          { "@type": "PropertyValue", "name": "Recommended Outcome", "value": match.prediction },
+          ...(match.confidence ? [{ "@type": "PropertyValue", "name": "Confidence Score", "value": `${match.confidence}%` }] : [])
+        ];
+      }
+
+      schemas.push(sportsEvent);
     }
 
     // FAQ schema
@@ -270,6 +292,16 @@ export const SEOHead = ({
       <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />
       <meta name="googlebot" content={noIndex ? "noindex" : "index, follow"} />
       <link rel="canonical" href={url} />
+
+      {/* Hreflang Tags */}
+      <link rel="alternate" hrefLang="en-KE" href={url} />
+      <link rel="alternate" hrefLang="en" href={url} />
+      <link rel="alternate" hrefLang="sw" href={url} />
+      <link rel="alternate" hrefLang="x-default" href={url} />
+
+      {/* RSS Feeds */}
+      <link rel="alternate" type="application/rss+xml" title="PredictPro News" href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'osyygprivxbknsngclhr'}.supabase.co/functions/v1/generate-rss-feed?type=news`} />
+      <link rel="alternate" type="application/rss+xml" title="PredictPro Predictions" href={`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'osyygprivxbknsngclhr'}.supabase.co/functions/v1/generate-rss-feed?type=predictions`} />
 
       {/* Language & Region */}
       <meta httpEquiv="content-language" content="en-KE" />
