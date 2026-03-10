@@ -38,25 +38,42 @@
 
     <!-- Google Analytics - deferred to reduce main-thread blocking -->
     <script>
-      // Defer Google Analytics loading until after page load
       window.addEventListener('load', function() {
         setTimeout(function() {
-          var script = document.createElement('script');
-          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-          script.async = true;
-          document.head.appendChild(script);
-          
-          script.onload = function() {
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            window.gtag = gtag;
-            gtag('js', new Date());
-            gtag('config', 'G-M0VE8D3XLZ', {
-              'page_path': window.location.pathname,
-              'send_page_view': true
+          if (typeof requestIdleCallback === 'function') {
+            requestIdleCallback(function() {
+              var script = document.createElement('script');
+              script.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+              script.async = true;
+              document.head.appendChild(script);
+              script.onload = function() {
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', 'G-M0VE8D3XLZ', {
+                  'page_path': window.location.pathname,
+                  'send_page_view': true
+                });
+              };
             });
-          };
-        }, 2000);
+          } else {
+            var script = document.createElement('script');
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+            script.async = true;
+            document.head.appendChild(script);
+            script.onload = function() {
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              window.gtag = gtag;
+              gtag('js', new Date());
+              gtag('config', 'G-M0VE8D3XLZ', {
+                'page_path': window.location.pathname,
+                'send_page_view': true
+              });
+            };
+          }
+        }, 3500);
       });
     </script>
 
@@ -64,12 +81,22 @@
     <script>
       window.addEventListener('load', function() {
         setTimeout(function() {
-          var script = document.createElement('script');
-          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-          script.async = true;
-          script.crossOrigin = 'anonymous';
-          document.head.appendChild(script);
-        }, 3000);
+          if (typeof requestIdleCallback === 'function') {
+            requestIdleCallback(function() {
+              var script = document.createElement('script');
+              script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+              script.async = true;
+              script.crossOrigin = 'anonymous';
+              document.head.appendChild(script);
+            });
+          } else {
+            var script = document.createElement('script');
+            script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+            script.async = true;
+            script.crossOrigin = 'anonymous';
+            document.head.appendChild(script);
+          }
+        }, 5000);
       });
     </script>
     <!-- Structured Data: WebSite -->

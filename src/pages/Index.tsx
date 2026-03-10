@@ -60,8 +60,8 @@ const Index = () => {
       <Navbar />
       <Hero />
       
+      {/* Above-fold lazy sections */}
       <Suspense fallback={<SectionLoader />}>
-        {/* Smart Tools */}
         <section className="py-10 px-4 bg-grid-pattern">
           <div className="container mx-auto">
             <ScrollReveal>
@@ -80,7 +80,6 @@ const Index = () => {
 
         <div className="section-divider" />
 
-        {/* Live Tracker & Sidebar */}
         <section className="py-10 px-4">
           <div className="container mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -97,7 +96,10 @@ const Index = () => {
 
         <ScrollReveal><LiveMatches /></ScrollReveal>
         <ScrollReveal><UpcomingMatches /></ScrollReveal>
-        
+      </Suspense>
+
+      {/* Mid-page sections */}
+      <Suspense fallback={<SectionLoader />}>
         <div className="section-divider" />
         
         <ScrollReveal>
@@ -105,7 +107,6 @@ const Index = () => {
         </ScrollReveal>
         <ScrollReveal><PredictionPerformance /></ScrollReveal>
         
-        {/* Progress Section */}
         <section className="py-10 px-4 bg-muted/20 bg-grid-pattern">
           <div className="container mx-auto">
             <ScrollReveal>
@@ -139,7 +140,10 @@ const Index = () => {
             </div>
           </div>
         </section>
+      </Suspense>
 
+      {/* Below-fold sections */}
+      <Suspense fallback={<SectionLoader />}>
         <div className="section-divider" />
 
         <ScrollReveal><div id="how-it-works"><HowItWorks /></div></ScrollReveal>
