@@ -15,7 +15,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  css: {
+    lightningcss: {
+      drafts: {
+        customMedia: true,
+      },
+    },
+  },
   build: {
+    cssMinify: 'lightningcss',
     rollupOptions: {
       output: {
         manualChunks: {
