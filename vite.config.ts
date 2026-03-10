@@ -16,22 +16,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    cssMinify: 'lightningcss',
     rollupOptions: {
       output: {
         manualChunks: {
           // Vendor chunks for better caching
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-query': ['@tanstack/react-query'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-ui': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-          ],
-          'vendor-charts': ['recharts'],
         },
       },
     },
