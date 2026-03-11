@@ -43,68 +43,49 @@
     
     <meta name="twitter:image" content="https://predictpro.guru/og-image.png">
 
-    <!-- Google Analytics - deferred to reduce main-thread blocking -->
+    <!-- Google Analytics & AdSense - aggressively deferred to reduce unused JS -->
     <script>
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          if (typeof requestIdleCallback === 'function') {
-            requestIdleCallback(function() {
-              var script = document.createElement('script');
-              script.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-              script.async = true;
-              document.head.appendChild(script);
-              script.onload = function() {
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                window.gtag = gtag;
-                gtag('js', new Date());
-                gtag('config', 'G-M0VE8D3XLZ', {
-                  'page_path': window.location.pathname,
-                  'send_page_view': true
-                });
-              };
-            });
-          } else {
-            var script = document.createElement('script');
-            script.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-            script.async = true;
-            document.head.appendChild(script);
-            script.onload = function() {
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              window.gtag = gtag;
-              gtag('js', new Date());
-              gtag('config', 'G-M0VE8D3XLZ', {
-                'page_path': window.location.pathname,
-                'send_page_view': true
-              });
-            };
-          }
-        }, 3500);
-      });
-    </script>
-
-    <!-- Google AdSense - deferred to reduce main-thread blocking -->
-    <script>
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          if (typeof requestIdleCallback === 'function') {
-            requestIdleCallback(function() {
-              var script = document.createElement('script');
-              script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-              script.async = true;
-              script.crossOrigin = 'anonymous';
-              document.head.appendChild(script);
-            });
-          } else {
-            var script = document.createElement('script');
-            script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-            script.async = true;
-            script.crossOrigin = 'anonymous';
-            document.head.appendChild(script);
-          }
-        }, 5000);
-      });
+      (function() {
+        var gaLoaded = false, adLoaded = false;
+        function loadGA() {
+          if (gaLoaded) return;
+          gaLoaded = true;
+          var s = document.createElement('script');
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+          s.async = true;
+          document.head.appendChild(s);
+          s.onload = function() {
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-M0VE8D3XLZ', { page_path: location.pathname, send_page_view: true });
+          };
+        }
+        function loadAds() {
+          if (adLoaded) return;
+          adLoaded = true;
+          var s = document.createElement('script');
+          s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+          s.async = true;
+          s.crossOrigin = 'anonymous';
+          document.head.appendChild(s);
+        }
+        // Load GA on first user interaction or after 8s, whichever comes first
+        var events = ['scroll','click','touchstart','keydown'];
+        function onInteract() {
+          loadGA();
+          // Load ads 2s after first interaction
+          setTimeout(loadAds, 2000);
+          events.forEach(function(e){ removeEventListener(e, onInteract, {passive:true,capture:true}); });
+        }
+        events.forEach(function(e){ addEventListener(e, onInteract, {passive:true,capture:true}); });
+        // Fallback: load GA after 8s, ads after 12s if no interaction
+        addEventListener('load', function() {
+          setTimeout(loadGA, 8000);
+          setTimeout(loadAds, 12000);
+        });
+      })();
     </script>
     <!-- Structured Data: WebSite -->
     <script type="application/ld+json">
