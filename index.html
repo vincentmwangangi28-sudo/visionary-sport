@@ -7,7 +7,10 @@
     
     <!-- Preconnect to critical origins to reduce network chain latency -->
     <link rel="preconnect" href="https://cdn.gpteng.co" crossorigin />
-    <link rel="preconnect" href="https://osyygprivxbknsngclhr.supabase.co" crossorigin />
+    <!-- DNS prefetch for deferred origins (data fetched after JS loads, not critical path) -->
+    <link rel="dns-prefetch" href="https://osyygprivxbknsngclhr.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     
     <!-- Preload critical LCP image for performance -->
     <link rel="preload" as="image" href="/src/assets/hero-stadium.jpg" fetchpriority="high" imagesizes="100vw" />
