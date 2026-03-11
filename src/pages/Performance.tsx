@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { PredictionPerformance } from "@/components/PredictionPerformance";
 import { AccuracyTracker } from "@/components/AccuracyTracker";
 import { StreakDisplay } from "@/components/StreakDisplay";
+import { RelatedContent } from "@/components/RelatedContent";
 
 const Performance = () => {
   return (
@@ -37,6 +38,21 @@ const Performance = () => {
               <StreakDisplay />
               <AccuracyTracker />
             </div>
+          </div>
+        </section>
+
+        <section className="px-4 pb-12">
+          <div className="container mx-auto max-w-6xl">
+            <RelatedContent
+              title="Explore More"
+              items={[
+                { title: "Today's AI Predictions", href: "/", type: "prediction", badge: "Live" },
+                { title: "Latest Sports News", href: "/news", type: "article", badge: "News" },
+                { title: "Leaderboard Rankings", href: "/leaderboard", type: "prediction", badge: "Top" },
+                { title: "Accuracy Insights", href: "/insights", type: "prediction", badge: "AI" },
+                { title: "Rewards & Shop", href: "/rewards", type: "article", badge: "Earn" },
+              ]}
+            />
           </div>
         </section>
       </main>

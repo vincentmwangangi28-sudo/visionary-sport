@@ -9,6 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { AccuracyDashboard } from '@/components/AccuracyDashboard';
+import { RelatedContent } from '@/components/RelatedContent';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -246,6 +247,16 @@ export default function Leaderboard() {
               <AccuracyDashboard />
             </div>
           </div>
+          <RelatedContent
+            title="Explore More"
+            items={[
+              { title: "Today's AI Predictions", href: "/", type: "prediction", badge: "Live" },
+              { title: "Latest Sports News", href: "/news", type: "article", badge: "News" },
+              { title: "Performance Tracker", href: "/performance", type: "prediction", badge: "Stats" },
+              { title: "Accuracy Insights", href: "/insights", type: "prediction", badge: "AI" },
+              { title: "Rewards & Shop", href: "/rewards", type: "article", badge: "Earn" },
+            ]}
+          />
         </div>
       </main>
 
