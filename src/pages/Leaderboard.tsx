@@ -9,6 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { AccuracyDashboard } from '@/components/AccuracyDashboard';
+import { RelatedContent } from '@/components/RelatedContent';
 
 interface LeaderboardEntry {
   user_id: string;
