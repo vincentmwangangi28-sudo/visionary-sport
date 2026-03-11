@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { PredictionPerformance } from "@/components/PredictionPerformance";
 import { AccuracyTracker } from "@/components/AccuracyTracker";
 import { StreakDisplay } from "@/components/StreakDisplay";
+import { RelatedContent } from "@/components/RelatedContent";
 
 const Performance = () => {
   return (
