@@ -221,6 +221,7 @@ export const NewsArticleModal = ({ article, open, onOpenChange }: NewsArticleMod
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
