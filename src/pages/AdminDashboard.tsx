@@ -46,6 +46,12 @@ interface SitemapMeta {
     generated_at?: string;
     url_count?: number;
     sitemap_count?: number;
+    total_urls?: number;
+    total_images?: number;
+    total_schemas?: number;
+    total_faqs?: number;
+    indexnow_status?: { success: boolean; status?: number };
+    sitemaps?: Record<string, { url_count?: number; sitemap_count?: number; status?: string }>;
   } | null;
 }
 
