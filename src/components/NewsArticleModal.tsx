@@ -95,9 +95,32 @@ export const NewsArticleModal = ({ article, open, onOpenChange }: NewsArticleMod
     }
   };
 
+  // Article JSON-LD structured data
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": article.title,
+    "description": article.excerpt || article.title,
+    "image": article.featured_image || "https://predictpro.guru/og-image.png",
+    "datePublished": article.created_at,
+    "dateModified": article.updated_at || article.created_at,
+    "author": { "@type": "Organization", "name": "PredictPro Guru", "url": "https://predictpro.guru" },
+    "publisher": {
+      "@type": "Organization",
+      "name": "PredictPro Guru",
+      "url": "https://predictpro.guru",
+      "logo": { "@type": "ImageObject", "url": "https://predictpro.guru/og-image.png" }
+    },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `https://predictpro.guru/news#${article.slug}` },
+    "articleSection": article.category || "Sports News",
+    "keywords": (article.tags || []).join(', ')
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] p-0 overflow-hidden">
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[90vh] p-0 overflow-hidden">
         <DialogHeader className="sr-only">
           <DialogTitle>{article.title}</DialogTitle>
         </DialogHeader>

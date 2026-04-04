@@ -16,6 +16,8 @@ import { RelatedContent } from '@/components/RelatedContent';
 import { MatchPreviewWriter } from '@/components/MatchPreviewWriter';
 import { useLiveMatches } from '@/hooks/useLiveMatches';
 import { usePredictions } from '@/hooks/usePredictions';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 
 export default function MatchDetail() {
   const { matchId } = useParams<{ matchId: string }>();
