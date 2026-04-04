@@ -46,6 +46,12 @@ interface SitemapMeta {
     generated_at?: string;
     url_count?: number;
     sitemap_count?: number;
+    total_urls?: number;
+    total_images?: number;
+    total_schemas?: number;
+    total_faqs?: number;
+    indexnow_status?: { success: boolean; status?: number };
+    sitemaps?: Record<string, { url_count?: number; sitemap_count?: number; status?: string }>;
   } | null;
 }
 
@@ -141,7 +147,7 @@ export default function AdminDashboard() {
       const { data } = await supabase
         .from("seo_metadata")
         .select("page_path, title, structured_data")
-        .in("page_path", ["/sitemap.xml", "/sitemap-index.xml", "/image-sitemap.xml", "/video-sitemap.xml"]);
+        .in("page_path", ["/sitemap.xml", "/sitemap-index.xml", "/image-sitemap.xml", "/video-sitemap.xml", "/seo-health"]);
       if (data) setSitemapData(data as SitemapMeta[]);
     } catch (err) {
       console.error("Failed to fetch sitemap data:", err);
@@ -430,12 +436,68 @@ export default function AdminDashboard() {
           </Card>
         )}
 
-        {/* SEO & Sitemap Analytics */}
+        {/* SEO Health Dashboard */}
+        {(() => {
+          const healthData = sitemapData.find(s => s.page_path === '/seo-health');
+          const sd = healthData?.structured_data;
+          return (
+            <Card className="border-border/50 bg-card/80 backdrop-blur-sm mt-6">
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Search className="h-4 w-4 text-primary" />
+                  SEO Health Dashboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                {sd ? (
+                  <div className="space-y-4">
+                    {/* SEO Summary Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">Indexed URLs</p>
+                        <p className="text-xl font-bold text-primary">{sd.total_urls || 0}</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">Image URLs</p>
+                        <p className="text-xl font-bold">{sd.total_images || 0}</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">JSON-LD Schemas</p>
+                        <p className="text-xl font-bold">{sd.total_schemas || 0}</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">FAQ Entries</p>
+                        <p className="text-xl font-bold">{sd.total_faqs || 0}</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">IndexNow</p>
+                        <Badge variant={sd.indexnow_status?.success ? "default" : "outline"} className="text-[10px]">
+                          {sd.indexnow_status?.success ? '✓ Pinged' : '✗ Failed'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Last generated */}
+                    {sd.generated_at && (
+                      <p className="text-xs text-muted-foreground">
+                        Last generated: {formatDistanceToNow(new Date(sd.generated_at), { addSuffix: true })}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No SEO health data. Run the auto-sitemap function to generate.</p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {/* SEO & Sitemap Status */}
         <Card className="border-border/50 bg-card/80 backdrop-blur-sm mt-6">
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Globe className="h-4 w-4 text-primary" />
-              SEO & Sitemap Status
+              Sitemap Status
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

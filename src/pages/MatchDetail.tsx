@@ -16,12 +16,23 @@ import { RelatedContent } from '@/components/RelatedContent';
 import { MatchPreviewWriter } from '@/components/MatchPreviewWriter';
 import { useLiveMatches } from '@/hooks/useLiveMatches';
 import { usePredictions } from '@/hooks/usePredictions';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 
 export default function MatchDetail() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
   const { matches } = useLiveMatches();
   const { predictions } = usePredictions();
+  const [matchFaqs, setMatchFaqs] = useState<{ question: string; answer: string }[]>([]);
+
+  // Fetch FAQs for this match
+  useEffect(() => {
+    if (!matchId) return;
+    supabase.from('match_faqs').select('question, answer').eq('match_id', matchId).then(({ data }) => {
+      if (data) setMatchFaqs(data);
+    });
+  }, [matchId]);
 
   // Find the match from live matches or predictions
   const liveMatch = matches.find(m => m.id === matchId);
@@ -153,6 +164,19 @@ export default function MatchDetail() {
         <script type="application/ld+json">
           {JSON.stringify(sportsEventSchema)}
         </script>
+        {matchFaqs.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": matchFaqs.map(faq => ({
+                "@type": "Question",
+                "name": faq.question,
+                "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+              }))
+            })}
+          </script>
+        )}
       </Helmet>
 
       <Navbar />
