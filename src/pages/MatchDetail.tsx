@@ -164,6 +164,19 @@ export default function MatchDetail() {
         <script type="application/ld+json">
           {JSON.stringify(sportsEventSchema)}
         </script>
+        {matchFaqs.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": matchFaqs.map(faq => ({
+                "@type": "Question",
+                "name": faq.question,
+                "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+              }))
+            })}
+          </script>
+        )}
       </Helmet>
 
       <Navbar />
