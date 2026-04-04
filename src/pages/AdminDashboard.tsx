@@ -147,7 +147,7 @@ export default function AdminDashboard() {
       const { data } = await supabase
         .from("seo_metadata")
         .select("page_path, title, structured_data")
-        .in("page_path", ["/sitemap.xml", "/sitemap-index.xml", "/image-sitemap.xml", "/video-sitemap.xml"]);
+        .in("page_path", ["/sitemap.xml", "/sitemap-index.xml", "/image-sitemap.xml", "/video-sitemap.xml", "/seo-health"]);
       if (data) setSitemapData(data as SitemapMeta[]);
     } catch (err) {
       console.error("Failed to fetch sitemap data:", err);
