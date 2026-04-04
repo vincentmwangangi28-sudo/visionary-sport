@@ -24,6 +24,15 @@ export default function MatchDetail() {
   const navigate = useNavigate();
   const { matches } = useLiveMatches();
   const { predictions } = usePredictions();
+  const [matchFaqs, setMatchFaqs] = useState<{ question: string; answer: string }[]>([]);
+
+  // Fetch FAQs for this match
+  useEffect(() => {
+    if (!matchId) return;
+    supabase.from('match_faqs').select('question, answer').eq('match_id', matchId).then(({ data }) => {
+      if (data) setMatchFaqs(data);
+    });
+  }, [matchId]);
 
   // Find the match from live matches or predictions
   const liveMatch = matches.find(m => m.id === matchId);
