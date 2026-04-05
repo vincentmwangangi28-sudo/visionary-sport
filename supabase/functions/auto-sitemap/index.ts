@@ -112,7 +112,26 @@ async function pingIndexNow(urls: string[]) {
   }
 }
 
-serve(async (req) => {
+async function pingGoogleIndexing(supabaseUrl: string, urls: string[]) {
+  if (urls.length === 0) return { success: false, reason: 'no_urls' };
+  try {
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const resp = await fetch(`${supabaseUrl}/functions/v1/google-indexing`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+      body: JSON.stringify({ urls: urls.slice(0, 200), type: 'URL_UPDATED' }),
+    });
+    const data = await resp.json();
+    return { success: resp.ok, ...data };
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
