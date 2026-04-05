@@ -66,7 +66,7 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
     new TextEncoder().encode(unsignedToken)
   );
 
-  const signatureB64 = base64url(String.fromCharCode(...new Uint8Array(signature)));
+  const signatureB64 = base64url(new Uint8Array(signature));
   return `${unsignedToken}.${signatureB64}`;
 }
 
