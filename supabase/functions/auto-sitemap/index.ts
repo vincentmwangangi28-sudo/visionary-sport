@@ -282,8 +282,11 @@ serve(async (req) => {
 
     await Promise.all(schemaPromises);
 
-    // === Ping IndexNow for all URLs ===
-    const indexNowResult = await pingIndexNow(allUrls);
+    // === Ping IndexNow + Google Indexing API in parallel ===
+    const [indexNowResult, googleIndexResult] = await Promise.all([
+      pingIndexNow(allUrls),
+      pingGoogleIndexing(supabaseUrl, allUrls),
+    ]);
 
     // === Store SEO health summary ===
     await supabase.from('seo_metadata').upsert({
@@ -297,6 +300,7 @@ serve(async (req) => {
         total_schemas: uniqueMatches.size + (newsResult.data?.filter(a => a.slug).length || 0),
         total_faqs: faqsResult.data?.length || 0,
         indexnow_status: indexNowResult,
+        google_indexing_status: googleIndexResult,
         sitemaps: {
           main: { url_count: mainUrlCount, status: 'valid' },
           image: { url_count: imageUrlCount, status: 'valid' },
@@ -306,13 +310,14 @@ serve(async (req) => {
       }
     }, { onConflict: 'page_path' });
 
-    console.log(`Sitemaps generated | Main: ${mainUrlCount} | Images: ${imageUrlCount} | Schemas: ${uniqueMatches.size} | Articles: ${newsResult.data?.filter(a => a.slug).length || 0} | IndexNow: ${indexNowResult.success}`);
+    console.log(`Sitemaps generated | Main: ${mainUrlCount} | Images: ${imageUrlCount} | Schemas: ${uniqueMatches.size} | Articles: ${newsResult.data?.filter(a => a.slug).length || 0} | IndexNow: ${indexNowResult.success} | Google: ${googleIndexResult.success}`);
 
     return new Response(JSON.stringify({
       success: true,
       sitemaps: { main: { url_count: mainUrlCount }, image: { url_count: imageUrlCount }, video: { url_count: 0 } },
       schemas: { sports_events: uniqueMatches.size, articles: newsResult.data?.filter(a => a.slug).length || 0, faqs: faqsByMatch.size },
       indexnow: indexNowResult,
+      google_indexing: googleIndexResult,
       generated_at: new Date().toISOString(),
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
