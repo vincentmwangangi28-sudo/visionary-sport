@@ -121,7 +121,6 @@ serve(async (req) => {
       throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON secret not configured');
     }
     console.log('Secret length:', serviceAccountJson.length, 'First 20 chars:', serviceAccountJson.substring(0, 20));
-    }
 
     const serviceAccount: ServiceAccount = JSON.parse(serviceAccountJson);
     const accessToken = await getAccessToken(serviceAccount);
