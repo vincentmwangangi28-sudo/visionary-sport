@@ -204,7 +204,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Google Indexing error:', error);
     return new Response(JSON.stringify({
       success: false,
