@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { decode as base64Decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -16,8 +17,15 @@ interface ServiceAccount {
   token_uri?: string;
 }
 
-function base64url(data: string): string {
-  return btoa(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function base64url(input: Uint8Array | string): string {
+  const data = typeof input === 'string' ? new TextEncoder().encode(input) : input;
+  let result = '';
+  const bytes = data;
+  const len = bytes.length;
+  for (let i = 0; i < len; i++) {
+    result += String.fromCharCode(bytes[i]);
+  }
+  return btoa(result).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
@@ -35,13 +43,14 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
   const payloadB64 = base64url(JSON.stringify(payload));
   const unsignedToken = `${headerB64}.${payloadB64}`;
 
-  // Import the private key for signing
-  const pemContents = serviceAccount.private_key
-    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-    .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\n/g, '');
+  // Import the private key for signing - handle escaped newlines
+  const rawKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+  const pemContents = rawKey
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/[\n\r\s]/g, '');
 
-  const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  const binaryKey = base64Decode(pemContents);
 
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8',
@@ -57,7 +66,7 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
     new TextEncoder().encode(unsignedToken)
   );
 
-  const signatureB64 = base64url(String.fromCharCode(...new Uint8Array(signature)));
+  const signatureB64 = base64url(new Uint8Array(signature));
   return `${unsignedToken}.${signatureB64}`;
 }
 
@@ -106,10 +115,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Google Indexing v2 - starting');
     const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON');
     if (!serviceAccountJson) {
       throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON secret not configured');
     }
+    console.log('Secret length:', serviceAccountJson.length, 'First 20 chars:', serviceAccountJson.substring(0, 20));
 
     const serviceAccount: ServiceAccount = JSON.parse(serviceAccountJson);
     const accessToken = await getAccessToken(serviceAccount);
@@ -192,7 +203,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Google Indexing error:', error);
     return new Response(JSON.stringify({
       success: false,
