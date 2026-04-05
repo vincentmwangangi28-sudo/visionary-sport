@@ -43,18 +43,14 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
   const payloadB64 = base64url(JSON.stringify(payload));
   const unsignedToken = `${headerB64}.${payloadB64}`;
 
-  // Import the private key for signing
-  const pemContents = serviceAccount.private_key
+  // Import the private key for signing - handle escaped newlines
+  const rawKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+  const pemContents = rawKey
     .replace(/-----BEGIN PRIVATE KEY-----/g, '')
     .replace(/-----END PRIVATE KEY-----/g, '')
     .replace(/[\n\r\s]/g, '');
 
-  // Decode base64 to binary using a safe method
-  const binaryString = atob(pemContents);
-  const binaryKey = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    binaryKey[i] = binaryString.charCodeAt(i);
-  }
+  const binaryKey = base64Decode(pemContents);
 
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8',
