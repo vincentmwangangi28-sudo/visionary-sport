@@ -131,7 +131,7 @@ async function pingGoogleIndexing(supabaseUrl: string, urls: string[]) {
   }
 }
 
-
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
