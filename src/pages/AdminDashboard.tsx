@@ -476,6 +476,14 @@ export default function AdminDashboard() {
                           {sd.indexnow_status?.success ? '✓ Pinged' : '✗ Failed'}
                         </Badge>
                       </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">Google Indexing</p>
+                        <Badge variant={sd.google_indexing_status?.success ? "default" : "outline"} className="text-[10px]">
+                          {sd.google_indexing_status?.success 
+                            ? `✓ ${sd.google_indexing_status.succeeded || 0}/${sd.google_indexing_status.total || 0}` 
+                            : '✗ Failed'}
+                        </Badge>
+                      </div>
                     </div>
 
                     {/* Last generated */}
