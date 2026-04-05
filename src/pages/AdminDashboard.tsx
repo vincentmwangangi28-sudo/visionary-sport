@@ -51,6 +51,7 @@ interface SitemapMeta {
     total_schemas?: number;
     total_faqs?: number;
     indexnow_status?: { success: boolean; status?: number };
+    google_indexing_status?: { success: boolean; succeeded?: number; failed?: number; total?: number };
     sitemaps?: Record<string, { url_count?: number; sitemap_count?: number; status?: string }>;
   } | null;
 }
