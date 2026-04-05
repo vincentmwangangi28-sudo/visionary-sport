@@ -115,9 +115,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Google Indexing v2 - starting');
     const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON');
     if (!serviceAccountJson) {
       throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON secret not configured');
+    }
+    console.log('Secret length:', serviceAccountJson.length, 'First 20 chars:', serviceAccountJson.substring(0, 20));
     }
 
     const serviceAccount: ServiceAccount = JSON.parse(serviceAccountJson);
