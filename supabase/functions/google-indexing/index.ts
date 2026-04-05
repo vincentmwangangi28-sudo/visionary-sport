@@ -37,11 +37,16 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
 
   // Import the private key for signing
   const pemContents = serviceAccount.private_key
-    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-    .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\n/g, '');
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/[\n\r\s]/g, '');
 
-  const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  // Decode base64 to binary using a safe method
+  const binaryString = atob(pemContents);
+  const binaryKey = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    binaryKey[i] = binaryString.charCodeAt(i);
+  }
 
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8',
