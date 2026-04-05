@@ -51,6 +51,7 @@ interface SitemapMeta {
     total_schemas?: number;
     total_faqs?: number;
     indexnow_status?: { success: boolean; status?: number };
+    google_indexing_status?: { success: boolean; succeeded?: number; failed?: number; total?: number };
     sitemaps?: Record<string, { url_count?: number; sitemap_count?: number; status?: string }>;
   } | null;
 }
@@ -473,6 +474,14 @@ export default function AdminDashboard() {
                         <p className="text-xs text-muted-foreground">IndexNow</p>
                         <Badge variant={sd.indexnow_status?.success ? "default" : "outline"} className="text-[10px]">
                           {sd.indexnow_status?.success ? '✓ Pinged' : '✗ Failed'}
+                        </Badge>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <p className="text-xs text-muted-foreground">Google Indexing</p>
+                        <Badge variant={sd.google_indexing_status?.success ? "default" : "outline"} className="text-[10px]">
+                          {sd.google_indexing_status?.success 
+                            ? `✓ ${sd.google_indexing_status.succeeded || 0}/${sd.google_indexing_status.total || 0}` 
+                            : '✗ Failed'}
                         </Badge>
                       </div>
                     </div>
