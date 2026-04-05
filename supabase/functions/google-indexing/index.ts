@@ -17,8 +17,15 @@ interface ServiceAccount {
   token_uri?: string;
 }
 
-function base64url(data: string): string {
-  return btoa(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function base64url(input: Uint8Array | string): string {
+  const data = typeof input === 'string' ? new TextEncoder().encode(input) : input;
+  let result = '';
+  const bytes = data;
+  const len = bytes.length;
+  for (let i = 0; i < len; i++) {
+    result += String.fromCharCode(bytes[i]);
+  }
+  return btoa(result).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
