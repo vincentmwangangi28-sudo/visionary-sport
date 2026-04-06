@@ -50,6 +50,8 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
     .replace(/-----END PRIVATE KEY-----/g, '')
     .replace(/[\n\r\s]/g, '');
 
+  console.log('PEM length:', pemContents.length, 'First 20:', pemContents.substring(0, 20), 'Last 20:', pemContents.substring(pemContents.length - 20));
+
   const binaryKey = base64Decode(pemContents);
 
   const cryptoKey = await crypto.subtle.importKey(
