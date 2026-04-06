@@ -50,6 +50,8 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
     .replace(/-----END PRIVATE KEY-----/g, '')
     .replace(/[\n\r\s]/g, '');
 
+  console.log('PEM length:', pemContents.length, 'First 20:', pemContents.substring(0, 20), 'Last 20:', pemContents.substring(pemContents.length - 20));
+
   const binaryKey = base64Decode(pemContents);
 
   const cryptoKey = await crypto.subtle.importKey(
@@ -115,14 +117,22 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Google Indexing v2 - starting');
-    const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON');
-    if (!serviceAccountJson) {
-      throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON secret not configured');
+    // Try individual secrets first, fall back to JSON
+    const clientEmail = Deno.env.get('GOOGLE_SA_CLIENT_EMAIL');
+    const privateKey = Deno.env.get('GOOGLE_SA_PRIVATE_KEY');
+    
+    let serviceAccount: ServiceAccount;
+    if (clientEmail && privateKey) {
+      serviceAccount = { client_email: clientEmail, private_key: privateKey };
+    } else {
+      const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON');
+      if (!serviceAccountJson) {
+        throw new Error('Google service account credentials not configured');
+      }
+      serviceAccount = JSON.parse(serviceAccountJson);
     }
-    console.log('Secret length:', serviceAccountJson.length, 'First 20 chars:', serviceAccountJson.substring(0, 20));
-
-    const serviceAccount: ServiceAccount = JSON.parse(serviceAccountJson);
+    
+    console.log('Using client_email:', serviceAccount.client_email);
     const accessToken = await getAccessToken(serviceAccount);
 
     // Parse request body for URLs
