@@ -49,8 +49,8 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
   const payloadB64 = base64url(JSON.stringify(payload));
   const unsignedToken = `${headerB64}.${payloadB64}`;
 
-  // Import the private key for signing - handle escaped newlines
-  const rawKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+  // Import the private key for signing
+  const rawKey = serviceAccount.private_key;
   const pemContents = rawKey
     .replace(/-----BEGIN PRIVATE KEY-----/g, '')
     .replace(/-----END PRIVATE KEY-----/g, '')
