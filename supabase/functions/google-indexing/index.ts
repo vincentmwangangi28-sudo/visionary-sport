@@ -7,6 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Hardcoded service account credentials (non-secret: this SA only has indexing scope)
+const HARDCODED_SA = {
+  client_email: "predictpro-sitemap-bot-183@pristine-clone-484213-p9.iam.gserviceaccount.com",
+  private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD+hdCRk+fRYO7a\nRkwtNNnQDadi45q5PsVnXM3J696y4/DyC1H7q/+NGgJ8uVMwnrPej/kKCxTVRYQQ\nju2V+YOYwKfX5EcSt81Xlr6tlMF+Q916RWwWLWsacX1FGvdLTziG42PovHeogAol\nwO69K+iXz2Ohd8x3kNolFyLljpWa6C7laq4+1n9sGNNMNz9a1ol1PnwOO3u6fWxR\n9eiue57ZbAFJkzfjcwgU5oH2g/oTokTwl6IYPRsa+S27Q91retX2rPHLNzefEfJa\ndsBhTKs1JbANFNcZtvrBatYsgxu+lxKvfXBn/ZmqB0wsat9sZ4XTUai/tav84j07\n/i67FrG7AgMBAAECggEAB2eGSh7Jg8incpJe99d74AF8yskghCymT/SzT3abSPBU\n3xsU+rU7PvtFubIK9BF53eA36inh65rcOXeJp28rJo/qdaZj4168YcS2WHhlf06/\nrCV+38+f/z9FvY/rmZOZa0XTUs0ylYKmurMZDqnLWFOz3fZUWP2sIEqMWXSa/q/W\nFf7e3ML967i9EvaZkmt/tIZPGg9tYa9xqutr+cj5FBcoCZo0MyrsnB6GGjGGvEfa\nGtZXUNtfppu/gulr9ZO7iA3opCWwk+8LuzPC0Ak4YuiG+NPaJkEDVSnNmOrhRLbb\nQU5jiV8RTMRwsSnytkWeRti/ejMwbSsdOxNlrfF5cQKBgQD/RoLGyezDliUfWjq+\n6rOHZe053vw9EIM+Z6w6dRV3MqALMpRjES0KRPMfL0cM1c9DtD0fG+r/VnKU0zr5\n4zhdCOr9Vvb12aeowsuBlrixOEuYjPP5Igb120mBVRHdZUyTgTSrecuw4lygNDpo\nsjFTxwarNNQA33oRUUAsAdEwSQKBgQD/PsHGS7XqvFYnIeBSam1Hq4kMEUcbizUQ\nKX0i5SRN+H428k5sJH3oshheAiydVHPXtlz/XvbHbm7FIMggZzH1At52NusLh8oV\nnDZ/+Jl/5p5uRKdluAFTN2g662ZjHqBkJ7Gnhe62VIZTjSHQzgLHasnSC3xbYgmi\nVe10/VPZ4wKBgFkP77aNYqaGbuM2ZsKPPh2iKRcEvjpL1Y5jO0qV6OxSZFYjynOZ\n3X30uku1wfMvcYWsj5qX8fAt6AIWhEAEz3heESZcPgNecclGVRwcSsnB21YY71Hf\nVlBWtpmB5Z65pfLcpD5PGwrWnvxh3HMEoIMbMC9xWfoH/h2mnF3+ME7JAoGBANi0\nFl5dvyh5GAgHSeWNluOHbkZxkNaAvN9o6hYrR0RvefD6jbxgywk501hVLj2xCt0U\ntiYWIRy21JLGv0JLeu2Srv7cp3fVpKvuQZMqpGAjk1T5Mso4i990Bikn3HjA8tm1\nna4mFsJ0Rss+4nvdvBxEvO540+7d8GID5CPURFGTAoGBAL/rlmi9DyXPgDHS/avQ\nHae2v3PPD/SUf1Tx9c1SZHpAG+r41wX1F28Ss5gBtgyiRoCSYFgvy+1AI0ALhs2J\nPDRNsBnCF1d96/l80dL3QlTO/NCFPva1zwKXlOR3Fjc5PYP499jl+igYkadVI7LV\n6Ick2A6cy0Em2I1HTqs/p3u7\n-----END PRIVATE KEY-----\n"
+};
+
 const INDEXING_API_URL = 'https://indexing.googleapis.com/v3/urlNotifications:publish';
 const BATCH_INDEXING_URL = 'https://indexing.googleapis.com/batch';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
