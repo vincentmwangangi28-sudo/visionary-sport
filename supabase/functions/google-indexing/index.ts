@@ -58,11 +58,16 @@ async function createJWT(serviceAccount: ServiceAccount): Promise<string> {
 
   console.log('PEM length:', pemContents.length, 'First 20:', pemContents.substring(0, 20), 'Last 20:', pemContents.substring(pemContents.length - 20));
 
-  const binaryKey = base64Decode(pemContents);
+  // Decode base64 to binary using atob
+  const binaryStr = atob(pemContents);
+  const binaryKey = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    binaryKey[i] = binaryStr.charCodeAt(i);
+  }
 
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8',
-    binaryKey,
+    binaryKey.buffer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false,
     ['sign']
