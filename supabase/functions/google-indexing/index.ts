@@ -123,21 +123,7 @@ serve(async (req) => {
   }
 
   try {
-    // Try individual secrets first, fall back to JSON
-    const clientEmail = Deno.env.get('GOOGLE_SA_CLIENT_EMAIL');
-    const privateKey = Deno.env.get('GOOGLE_SA_PRIVATE_KEY');
-    
-    let serviceAccount: ServiceAccount;
-    if (clientEmail && privateKey) {
-      serviceAccount = { client_email: clientEmail, private_key: privateKey };
-    } else {
-      const serviceAccountJson = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON');
-      if (!serviceAccountJson) {
-        throw new Error('Google service account credentials not configured');
-      }
-      serviceAccount = JSON.parse(serviceAccountJson);
-    }
-    
+    const serviceAccount: ServiceAccount = HARDCODED_SA;
     console.log('Using client_email:', serviceAccount.client_email);
     const accessToken = await getAccessToken(serviceAccount);
 
