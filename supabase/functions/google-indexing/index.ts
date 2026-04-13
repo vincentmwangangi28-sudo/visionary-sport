@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { create, getNumericDate } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
+import { create } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,33 +9,31 @@ const corsHeaders = {
 
 const SA_EMAIL = "predictpro-sitemap-bot-183@pristine-clone-484213-p9.iam.gserviceaccount.com";
 
-const DER_B64 = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD+hdCRk+fRYO7aRkwtNNnQDadi45q5PsVnXM3J696y4/DyC1H7q/+NGgJ8uVMwnrPej/kKCxTVRYQQju2V+YOYwKfX5EcSt81Xlr6tlMF+Q916RWwWLWsacX1FGvdLTziG42PovHeogAolwO69K+iXz2Ohd8x3kNolFyLljpWa6C7laq4+1n9sGNNMNz9a1ol1PnwOO3u6fWxR9eiue57ZbAFJkzfjcwgU5oH2g/oTokTwl6IYPRsa+S27Q91retX2rPHLNzefEfJadsBhTKs1JbANFNcZtvrBatYsgxu+lxKvfXBn/ZmqB0wsat9sZ4XTUai/tav84j07/i67FrG7AgMBAAECggEAB2eGSh7Jg8incpJe99d74AF8yskghCymT/SzT3abSPBU3xsU+rU7PvtFubIK9BF53eA36inh65rcOXeJp28rJo/qdaZj4168YcS2WHhlf06/rCV+38+f/z9FvY/rmZOZa0XTUs0ylYKmurMZDqnLWFOz3fZUWP2sIEqMWXSa/q/WFf7e3ML967i9EvaZkmt/tIZPGg9tYa9xqutr+cj5FBcoCZo0MyrsnB6GGjGGvEfaGtZXUNtfppu/gulr9ZO7iA3opCWwk+8LuzPC0Ak4YuiG+NPaJkEDVSnNmOrhRLbbQU5jiV8RTMRwsSnytkWeRti/ejMwbSsdOxNlrfF5cQKBgQD/RoLGyezDliUfWjq+6rOHZe053vw9EIM+Z6w6dRV3MqALMpRjES0KRPMfL0cM1c9DtD0fG+r/VnKU0zr54zhdCOr9Vvb12aeowsuBlrixOEuYjPP5Igb120mBVRHdZUyTgTSrecuw4lygNDposjFTxwarNNQA33oRUUAsAdEwSQKBgQD/PsHGS7XqvFYnIeBSam1Hq4kMEUcbizUQKX0i5SRN+H428k5sJH3oshheAiydVHPXtlz/XvbHbm7FIMggZzH1At52NusLh8oVnDZ/+Jl/5p5uRKdluAFTN2g662ZjHqBkJ7Gnhe62VIZTjSHQzgLHasnSC3xbYgmiVe10/VPZ4wKBgFkP77aNYqaGbuM2ZsKPPh2iKRcEvjpL1Y5jO0qV6OxSZFYjynOZ3X30uku1wfMvcYWsj5qX8fAt6AIWhEAEz3heESZcPgNecclGVRwcSsnB21YY71HfVlBWtpmB5Z65pfLcpD5PGwrWnvxh3HMEoIMbMC9xWfoH/h2mnF3+ME7JAoGBANi0Fl5dvyh5GAgHSeWNluOHbkZxkNaAvN9o6hYrR0RvefD6jbxgywk501hVLj2xCt0UtiYWIRy21JLGv0JLeu2Srv7cp3fVpKvuQZMqpGAjk1T5Mso4i990Bikn3HjA8tm1na4mFsJ0Rss+4nvdvBxEvO540+7d8GID5CPURFGTAoGBAL/rlmi9DyXPgDHS/avQHae2v3PPD/SUf1Tx9c1SZHpAG+r41wX1F28Ss5gBtgyiRoCSYFgvy+1AI0ALhs2JPDRNsBnCF1d96/l80dL3QlTO/NCFPva1zwKXlOR3Fjc5PYP499jl+igYkadVI7LV6Ick2A6cy0Em2I1HTqs/p3u7";
+const RSA_JWK = {
+  kty: "RSA",
+  n: "_oXQkZPn0WKO2kZMLTTZ0A2nYuOauT7FZ1zNyevesuPw8gtR-6v_jRoCfLlTMJ6z3o_5CgsU1UWEEI7tlfmDmMCn1-RHErfNV5a-rZTBfkPdekVsFi1rGnF9RRr3S084huNj6Lx3qIAKJcCevSvol89joXfMd5DaJRci5Y6Vmugu5WquPtZ_bBjTTDc_WtaJdT58Djt7un1sUfXornue2WwBSZM343MIFOaB9oP6E6JE8JeiGD0bGvktu0Pda3rV9qzxyzc3nxHyWnbAYUyrNSWwDRTXGbb6wWrWLIMbvpcSr31wZ_2ZqgdMLGrfbGeF01Gov7Wr_OI9O_4uuxaxuw",
+  e: "AQAB",
+  d: "B2eGSh7Jg8incpJe99d74AF8yskghCymT_SzT3abSPBU3xsU-rU7PvtFubIK9BF53eA36inh65rcOXeJp28rJo_qdaZj4168YcS2WHhlf06_rCV-38-f_z9FvY_rmZOZa0XTUs0ylYKmurMZDqnLWFOz3fZUWP2sIEqMWXSa_q_WFf7e3ML967i9EvaZkmt_tIZPGg9tYa9xqutr-cj5FBcoCZo0MyrsnB6GGjGGvEfaGtZXUNtfppu_gulr9ZO7iA3opCWwk-8LuzPC0Ak4YuiG-NPaJkEDVSnNmOrhRLbbQU5jiV8RTMRwsSnytKWeRti_ejMwbSsdOxNlrfF5cQ",
+  p: "_0aCxsnsw5YlH1o6vuqzh2XtOd78PRCDPmesOnUVdzKgCzKUYxEtCkTy3y9HDNXPQ7Q9Hxvq_1ZylNM6-eM4XQjq_Vb29dmnqMLLgZa4sThLmIzz-SIG9dtJgVUR3WVMk4E0a3nLsOJcoDQ6aLIxU8cGqzTUAN96EVFALAHRMEk",
+  q: "_z7Bxku16rxWJyHgUmjNR6uJDBFHG4s1ECl9IuUkTfh-NvJObCR96LIYXgIsnVRz17Zc_172x25uxSDIIGcx9QLedjbrC4fKFZw2f_iZf-aebkSnZbgBUzdoOutmYx6gZCexp4XutlSGU40h0M4Cx2rJ0gt8W2IJolXtdP1T2eM",
+  dp: "WQ_vto1ipoZu4zZmwo8-HaIpFwS-OkvVjmM7SpXo7FJkViPKc5ndffS6S7XB8y9xhayPmpfx8C3oAhaEQATPeF4RJlw-A15xyUZVHBxKycHbVhjvUd9WUFa2mYHlnrml8tykPk8bCtae_GHccwSggxswL3FZ-gf-HaacXf4wTsk",
+  dq: "2LQWXl2_KHkYCAdJ5Y2W44duRnGQ1oC832jqFitHRG958PqNvGDLCTnTWFUuPbEK3RS2JhYhHLbUksa_Qkt67ZKu_tynd9Wkq-5BkyqkYCOTVPkyyjiL33QGKSfceMDy2bWdriYWwnRGyz7ie928HES87njT7t3wYgPkI9REUZM",
+  qi: "v-uWaL0PJc-AMdL9q9Adp7a_c88P9JR_VPH1zVJkekAb6vjXBfUXbxKzmAG2DKJGgJJgWC_L7UAjQAuGzYk8NE2wGcIXV33r-XzR0vdCVM780IU-9rXPApeU5HcWNzk9g_j32OX6KBiRp1UjstXohyTYDpzLQSbYjUdOqz-ne7s",
+  alg: "RS256",
+  use: "sig",
+};
 
 const INDEXING_API_URL = 'https://indexing.googleapis.com/v3/urlNotifications:publish';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
-function base64ToArrayBuffer(b64: string): ArrayBuffer {
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
 async function getAccessToken(): Promise<string> {
-  // Import key using Web Crypto API
-  const keyData = base64ToArrayBuffer(DER_B64);
-  console.log('Key data bytes:', keyData.byteLength);
-  
   const privateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    keyData,
+    'jwk',
+    RSA_JWK,
     { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } },
     false,
     ['sign']
   );
-  console.log('Key imported successfully');
 
   const now = Math.floor(Date.now() / 1000);
   const jwt = await create(
@@ -49,7 +47,6 @@ async function getAccessToken(): Promise<string> {
     },
     privateKey
   );
-  console.log('JWT created successfully');
 
   const resp = await fetch(TOKEN_URL, {
     method: 'POST',
@@ -91,7 +88,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Google Indexing: Starting with crypto.subtle approach');
+    console.log('Google Indexing: Starting with JWK approach');
     const accessToken = await getAccessToken();
     console.log('Google Indexing: Got access token successfully');
 
