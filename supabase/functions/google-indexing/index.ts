@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { importPKCS8, SignJWT } from "https://esm.sh/jose@5.2.0";
+import { create, getNumericDate } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,34 +9,47 @@ const corsHeaders = {
 
 const SA_EMAIL = "predictpro-sitemap-bot-183@pristine-clone-484213-p9.iam.gserviceaccount.com";
 
-// Raw DER base64 - reconstruct PEM at runtime to avoid any formatting corruption
 const DER_B64 = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD+hdCRk+fRYO7aRkwtNNnQDadi45q5PsVnXM3J696y4/DyC1H7q/+NGgJ8uVMwnrPej/kKCxTVRYQQju2V+YOYwKfX5EcSt81Xlr6tlMF+Q916RWwWLWsacX1FGvdLTziG42PovHeogAolwO69K+iXz2Ohd8x3kNolFyLljpWa6C7laq4+1n9sGNNMNz9a1ol1PnwOO3u6fWxR9eiue57ZbAFJkzfjcwgU5oH2g/oTokTwl6IYPRsa+S27Q91retX2rPHLNzefEfJadsBhTKs1JbANFNcZtvrBatYsgxu+lxKvfXBn/ZmqB0wsat9sZ4XTUai/tav84j07/i67FrG7AgMBAAECggEAB2eGSh7Jg8incpJe99d74AF8yskghCymT/SzT3abSPBU3xsU+rU7PvtFubIK9BF53eA36inh65rcOXeJp28rJo/qdaZj4168YcS2WHhlf06/rCV+38+f/z9FvY/rmZOZa0XTUs0ylYKmurMZDqnLWFOz3fZUWP2sIEqMWXSa/q/WFf7e3ML967i9EvaZkmt/tIZPGg9tYa9xqutr+cj5FBcoCZo0MyrsnB6GGjGGvEfaGtZXUNtfppu/gulr9ZO7iA3opCWwk+8LuzPC0Ak4YuiG+NPaJkEDVSnNmOrhRLbbQU5jiV8RTMRwsSnytkWeRti/ejMwbSsdOxNlrfF5cQKBgQD/RoLGyezDliUfWjq+6rOHZe053vw9EIM+Z6w6dRV3MqALMpRjES0KRPMfL0cM1c9DtD0fG+r/VnKU0zr54zhdCOr9Vvb12aeowsuBlrixOEuYjPP5Igb120mBVRHdZUyTgTSrecuw4lygNDposjFTxwarNNQA33oRUUAsAdEwSQKBgQD/PsHGS7XqvFYnIeBSam1Hq4kMEUcbizUQKX0i5SRN+H428k5sJH3oshheAiydVHPXtlz/XvbHbm7FIMggZzH1At52NusLh8oVnDZ/+Jl/5p5uRKdluAFTN2g662ZjHqBkJ7Gnhe62VIZTjSHQzgLHasnSC3xbYgmiVe10/VPZ4wKBgFkP77aNYqaGbuM2ZsKPPh2iKRcEvjpL1Y5jO0qV6OxSZFYjynOZ3X30uku1wfMvcYWsj5qX8fAt6AIWhEAEz3heESZcPgNecclGVRwcSsnB21YY71HfVlBWtpmB5Z65pfLcpD5PGwrWnvxh3HMEoIMbMC9xWfoH/h2mnF3+ME7JAoGBANi0Fl5dvyh5GAgHSeWNluOHbkZxkNaAvN9o6hYrR0RvefD6jbxgywk501hVLj2xCt0UtiYWIRy21JLGv0JLeu2Srv7cp3fVpKvuQZMqpGAjk1T5Mso4i990Bikn3HjA8tm1na4mFsJ0Rss+4nvdvBxEvO540+7d8GID5CPURFGTAoGBAL/rlmi9DyXPgDHS/avQHae2v3PPD/SUf1Tx9c1SZHpAG+r41wX1F28Ss5gBtgyiRoCSYFgvy+1AI0ALhs2JPDRNsBnCF1d96/l80dL3QlTO/NCFPva1zwKXlOR3Fjc5PYP499jl+igYkadVI7LV6Ick2A6cy0Em2I1HTqs/p3u7";
 
 const INDEXING_API_URL = 'https://indexing.googleapis.com/v3/urlNotifications:publish';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
-function buildPem(derB64: string): string {
-  // Split into 64-char lines and wrap with PEM headers
-  const lines: string[] = [];
-  for (let i = 0; i < derB64.length; i += 64) {
-    lines.push(derB64.substring(i, i + 64));
+function base64ToArrayBuffer(b64: string): ArrayBuffer {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
   }
-  return `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+  return bytes.buffer;
 }
 
 async function getAccessToken(): Promise<string> {
-  const pem = buildPem(DER_B64);
-  const privateKey = await importPKCS8(pem, 'RS256');
+  // Import key using Web Crypto API
+  const keyData = base64ToArrayBuffer(DER_B64);
+  console.log('Key data bytes:', keyData.byteLength);
+  
+  const privateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    keyData,
+    { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } },
+    false,
+    ['sign']
+  );
+  console.log('Key imported successfully');
 
-  const jwt = await new SignJWT({
-    scope: 'https://www.googleapis.com/auth/indexing',
-  })
-    .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
-    .setIssuer(SA_EMAIL)
-    .setAudience(TOKEN_URL)
-    .setIssuedAt()
-    .setExpirationTime('1h')
-    .sign(privateKey);
+  const now = Math.floor(Date.now() / 1000);
+  const jwt = await create(
+    { alg: 'RS256', typ: 'JWT' },
+    {
+      iss: SA_EMAIL,
+      scope: 'https://www.googleapis.com/auth/indexing',
+      aud: TOKEN_URL,
+      iat: now,
+      exp: now + 3600,
+    },
+    privateKey
+  );
+  console.log('JWT created successfully');
 
   const resp = await fetch(TOKEN_URL, {
     method: 'POST',
