@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
-import heroStadium from "@/assets/hero-stadium.webp";
+const heroStadium = "/hero-stadium.webp";
 import { GeneratePredictionDialog } from "./GeneratePredictionDialog";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
