@@ -43,7 +43,7 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/60">
+      <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/60">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
@@ -56,7 +56,7 @@ export const Navbar = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-1" role="navigation" aria-label="Site pages">
               {allLinks.map(link => (
                 <Link
                   key={link.to}
@@ -70,7 +70,7 @@ export const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-            </nav>
+            </div>
 
             {/* Actions */}
             <div className="flex items-center gap-2">
