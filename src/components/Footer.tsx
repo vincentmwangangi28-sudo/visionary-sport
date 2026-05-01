@@ -74,8 +74,8 @@ export const Footer = () => {
                   <Shield className="h-3.5 w-3.5" /> Responsible Gaming
                 </Link>
               </li>
-              <li><a href="#privacy" className="text-foreground/70 hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#terms" className="text-foreground/70 hover:text-primary transition-colors">Terms of Service</a></li>
+              <li><Link to="/privacy-policy" className="text-foreground/70 hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms-of-service" className="text-foreground/70 hover:text-primary transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
