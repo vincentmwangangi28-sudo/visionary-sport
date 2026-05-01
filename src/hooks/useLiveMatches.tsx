@@ -73,15 +73,15 @@ export const useLiveMatches = () => {
       });
 
       clearTimeout(timeout);
-      if (error) { console.error('Error fetching live matches:', error); return; }
+      if (error) { console.warn('Live matches unavailable:', error?.message || error); return; }
 
       const response = data as LiveMatchesResponse;
       if (response.success) {
         applyData(response.matches, response.source, response.lastUpdated);
         setCache({ matches: response.matches, source: response.source, lastUpdated: response.lastUpdated });
       }
-    } catch (error) {
-      console.error('Error fetching live matches:', error);
+    } catch (error: any) {
+      console.warn('Live matches unavailable:', error?.message || error);
     } finally {
       if (mounted.current) setLoading(false);
     }
