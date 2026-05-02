@@ -26,6 +26,7 @@ const ResponsibleGaming = lazy(() => import("./pages/ResponsibleGaming"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Today = lazy(() => import("./pages/Today"));
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/today" element={<Today />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
