@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface PredictionMarket {
+  id: string;
+  market_key: string;
+  market_label: string;
+  market_value: string;
+  confidence: number;
+  is_premium: boolean;
+  reasoning?: string | null;
+  locked?: boolean;
+}
+
 export interface TodayPrediction {
   id: string;
   match_id: string;
@@ -16,6 +27,7 @@ export interface TodayPrediction {
   is_premium: boolean;
   result?: string | null;
   locked?: boolean;
+  markets?: PredictionMarket[];
 }
 
 interface State {
@@ -25,6 +37,7 @@ interface State {
   isPremium: boolean;
   isAdmin: boolean;
   refresh: () => Promise<void>;
+  generateMarkets: () => Promise<void>;
 }
 
 export const useTodayPredictions = (): State => {
@@ -54,18 +67,42 @@ export const useTodayPredictions = (): State => {
     setLoading(true);
     setError(null);
     try {
-      // supabase.functions.invoke automatically attaches the user's bearer token
       const { data, error: fnErr } = await supabase.functions.invoke("predict/today", {
         method: "GET",
       });
       if (fnErr) throw fnErr;
-      setPredictions(data?.predictions ?? []);
+      const preds: TodayPrediction[] = data?.predictions ?? [];
+
+      // Fetch markets for these predictions (RLS will hide premium ones for non-premium users)
+      const ids = preds.map((p) => p.id);
+      let marketsByPred: Record<string, PredictionMarket[]> = {};
+      if (ids.length > 0) {
+        const { data: markets } = await supabase
+          .from("prediction_markets")
+          .select("id, prediction_id, market_key, market_label, market_value, confidence, is_premium, reasoning")
+          .in("prediction_id", ids);
+        for (const m of (markets ?? []) as any[]) {
+          (marketsByPred[m.prediction_id] ||= []).push(m);
+        }
+      }
+
+      setPredictions(
+        preds.map((p) => ({
+          ...p,
+          markets: marketsByPred[p.id] ?? [],
+        })),
+      );
     } catch (e: any) {
       setError(e?.message ?? "Failed to load predictions");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const generateMarkets = useCallback(async () => {
+    await supabase.functions.invoke("generate-prediction-markets", { method: "POST", body: {} });
+    await fetchToday();
+  }, [fetchToday]);
 
   useEffect(() => {
     checkRole();
@@ -84,5 +121,6 @@ export const useTodayPredictions = (): State => {
     isPremium,
     isAdmin,
     refresh: fetchToday,
+    generateMarkets,
   };
 };

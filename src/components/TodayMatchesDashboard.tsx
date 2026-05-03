@@ -61,22 +61,38 @@ const confidenceFill = (c: number) => {
   return "hsl(var(--muted-foreground))";
 };
 
-/** Deterministic pseudo-derived markets so every match shows a richer set of options
- *  without needing schema changes. Values are stable per match id. */
-const seededMarkets = (p: TodayPrediction) => {
-  const seed = (p.id || p.match_id || `${p.home_team}${p.away_team}`)
-    .split("")
-    .reduce((a, c) => a + c.charCodeAt(0), 0);
-  const base = (p.confidence ?? 60) - 10;
-  const r = (offset: number, span = 18) =>
-    Math.max(35, Math.min(95, base + ((seed + offset) % span)));
+const MARKET_ICONS: Record<string, any> = {
+  "1x2": Trophy,
+  btts: Goal,
+  clean_sheet_home: Shield,
+  clean_sheet_away: Shield,
+  both_win_corners: Flame,
+  ou_2_5: Activity,
+  ou_corners_9_5: Flame,
+  double_chance: Shield,
+  ht_result: Target,
+  score_range: Target,
+  first_goal: Goal,
+};
+
+/** Build market chips from real DB markets, with locked placeholders as a fallback. */
+const buildMarkets = (p: TodayPrediction) => {
+  const real = (p.markets ?? []).map((m) => ({
+    key: m.market_key,
+    label: m.market_label,
+    value: m.market_value,
+    confidence: m.confidence,
+    locked: false,
+    icon: MARKET_ICONS[m.market_key] ?? Activity,
+  }));
+  if (real.length > 0) return real;
   return [
-    { key: "1x2", label: "Match Result", value: p.prediction?.replace(/_/g, " ") ?? "Home Win", confidence: p.confidence ?? r(1), icon: Trophy },
-    { key: "btts", label: "Both Teams To Score", value: r(2) > 60 ? "Yes" : "No", confidence: r(2), icon: Goal },
-    { key: "ou25", label: "Over / Under 2.5", value: r(3) > 55 ? "Over 2.5" : "Under 2.5", confidence: r(3), icon: Activity },
-    { key: "dc", label: "Double Chance", value: r(4) > 50 ? `${p.home_team.split(" ")[0]} or Draw` : `Draw or ${p.away_team.split(" ")[0]}`, confidence: r(4, 14) + 5, icon: Shield },
-    { key: "corners", label: "Corners 9.5", value: r(5) > 60 ? "Over 9.5" : "Under 9.5", confidence: r(5), icon: Flame },
-    { key: "ht", label: "Half-Time Result", value: r(6) > 55 ? "Draw HT" : `${p.home_team.split(" ")[0]} HT`, confidence: r(6), icon: Target },
+    { key: "btts", label: "Both Teams To Score", value: "—", confidence: 0, locked: true, icon: Goal },
+    { key: "clean_sheet_home", label: "Home Clean Sheet", value: "—", confidence: 0, locked: true, icon: Shield },
+    { key: "both_win_corners", label: "Both Teams 4+ Corners", value: "—", confidence: 0, locked: true, icon: Flame },
+    { key: "ou_2_5", label: "Over / Under 2.5", value: "—", confidence: 0, locked: true, icon: Activity },
+    { key: "score_range", label: "Forecasted Score Range", value: "—", confidence: 0, locked: true, icon: Target },
+    { key: "ht_result", label: "Half-Time Result", value: "—", confidence: 0, locked: true, icon: Target },
   ];
 };
 
@@ -177,7 +193,7 @@ const LockedInsights = ({ user }: { user: any }) => (
 const PredictionCard = ({ p, user }: { p: TodayPrediction; user: any }) => {
   const kickoff = new Date(p.match_date);
   const isLocked = !!p.locked;
-  const markets = useMemo(() => seededMarkets(p), [p]);
+  const markets = useMemo(() => buildMarkets(p), [p]);
 
   return (
     <motion.div
@@ -257,7 +273,7 @@ const PredictionCard = ({ p, user }: { p: TodayPrediction; user: any }) => {
                 label={m.label}
                 value={m.value}
                 confidence={m.confidence}
-                locked={isLocked && idx >= 2}
+                locked={m.locked || (isLocked && idx >= 2)}
               />
             ))}
           </div>
@@ -379,7 +395,8 @@ const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
 /* ---------------- main ---------------- */
 
 export const TodayMatchesDashboard = () => {
-  const { predictions, loading, error, isPremium, isAdmin, refresh } = useTodayPredictions();
+  const { predictions, loading, error, isPremium, isAdmin, refresh, generateMarkets } = useTodayPredictions();
+  const [generating, setGenerating] = useState(false);
   const { user } = useAuth();
 
   const [query, setQuery] = useState("");
@@ -437,6 +454,21 @@ export const TodayMatchesDashboard = () => {
             <Badge variant="outline" className="gap-1">
               <Crown className="h-3 w-3" /> Admin
             </Badge>
+          )}
+          {isAdmin && (
+            <Button
+              onClick={async () => {
+                setGenerating(true);
+                try { await generateMarkets(); } finally { setGenerating(false); }
+              }}
+              variant="premium"
+              size="sm"
+              className="gap-2"
+              disabled={generating}
+            >
+              <Sparkles className={`h-4 w-4 ${generating ? "animate-spin" : ""}`} />
+              {generating ? "Generating…" : "Generate Markets"}
+            </Button>
           )}
           <Button onClick={refresh} variant="outline" size="sm" className="gap-2" disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />

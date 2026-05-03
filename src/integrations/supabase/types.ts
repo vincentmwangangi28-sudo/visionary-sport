@@ -728,6 +728,48 @@ export type Database = {
           },
         ]
       }
+      prediction_markets: {
+        Row: {
+          confidence: number
+          created_at: string
+          id: string
+          is_premium: boolean
+          market_key: string
+          market_label: string
+          market_value: string
+          match_id: string
+          prediction_id: string
+          reasoning: string | null
+          updated_at: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          id?: string
+          is_premium?: boolean
+          market_key: string
+          market_label: string
+          market_value: string
+          match_id: string
+          prediction_id: string
+          reasoning?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          is_premium?: boolean
+          market_key?: string
+          market_label?: string
+          market_value?: string
+          match_id?: string
+          prediction_id?: string
+          reasoning?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           ai_model: string | null
