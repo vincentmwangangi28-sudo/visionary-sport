@@ -395,7 +395,8 @@ const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
 /* ---------------- main ---------------- */
 
 export const TodayMatchesDashboard = () => {
-  const { predictions, loading, error, isPremium, isAdmin, refresh } = useTodayPredictions();
+  const { predictions, loading, error, isPremium, isAdmin, refresh, generateMarkets } = useTodayPredictions();
+  const [generating, setGenerating] = useState(false);
   const { user } = useAuth();
 
   const [query, setQuery] = useState("");
