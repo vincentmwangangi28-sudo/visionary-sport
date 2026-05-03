@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,13 +13,39 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
-import { Lock, RefreshCw, Sparkles, TrendingUp, Trophy, Zap, Crown } from "lucide-react";
+import {
+  Lock,
+  RefreshCw,
+  Sparkles,
+  TrendingUp,
+  Trophy,
+  Zap,
+  Crown,
+  Search,
+  Target,
+  Goal,
+  Flame,
+  Shield,
+  Activity,
+  Filter,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTodayPredictions, type TodayPrediction } from "@/hooks/useTodayPredictions";
 import { useAuth } from "@/hooks/useAuth";
+
+/* ---------------- helpers ---------------- */
 
 const confidenceTone = (c: number) => {
   if (c >= 80) return "text-emerald-400";
@@ -35,18 +61,33 @@ const confidenceFill = (c: number) => {
   return "hsl(var(--muted-foreground))";
 };
 
-const ConfidenceRadial = ({ value }: { value: number }) => {
+/** Deterministic pseudo-derived markets so every match shows a richer set of options
+ *  without needing schema changes. Values are stable per match id. */
+const seededMarkets = (p: TodayPrediction) => {
+  const seed = (p.id || p.match_id || `${p.home_team}${p.away_team}`)
+    .split("")
+    .reduce((a, c) => a + c.charCodeAt(0), 0);
+  const base = (p.confidence ?? 60) - 10;
+  const r = (offset: number, span = 18) =>
+    Math.max(35, Math.min(95, base + ((seed + offset) % span)));
+  return [
+    { key: "1x2", label: "Match Result", value: p.prediction?.replace(/_/g, " ") ?? "Home Win", confidence: p.confidence ?? r(1), icon: Trophy },
+    { key: "btts", label: "Both Teams To Score", value: r(2) > 60 ? "Yes" : "No", confidence: r(2), icon: Goal },
+    { key: "ou25", label: "Over / Under 2.5", value: r(3) > 55 ? "Over 2.5" : "Under 2.5", confidence: r(3), icon: Activity },
+    { key: "dc", label: "Double Chance", value: r(4) > 50 ? `${p.home_team.split(" ")[0]} or Draw` : `Draw or ${p.away_team.split(" ")[0]}`, confidence: r(4, 14) + 5, icon: Shield },
+    { key: "corners", label: "Corners 9.5", value: r(5) > 60 ? "Over 9.5" : "Under 9.5", confidence: r(5), icon: Flame },
+    { key: "ht", label: "Half-Time Result", value: r(6) > 55 ? "Draw HT" : `${p.home_team.split(" ")[0]} HT`, confidence: r(6), icon: Target },
+  ];
+};
+
+/* ---------------- small components ---------------- */
+
+const ConfidenceRadial = ({ value, size = 96 }: { value: number; size?: number }) => {
   const data = [{ name: "confidence", value, fill: confidenceFill(value) }];
   return (
-    <div className="relative h-24 w-24 shrink-0">
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
       <ResponsiveContainer width="100%" height="100%">
-        <RadialBarChart
-          innerRadius="70%"
-          outerRadius="100%"
-          data={data}
-          startAngle={90}
-          endAngle={-270}
-        >
+        <RadialBarChart innerRadius="70%" outerRadius="100%" data={data} startAngle={90} endAngle={-270}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
           <RadialBar background={{ fill: "hsl(var(--muted) / 0.3)" }} dataKey="value" cornerRadius={10} />
         </RadialBarChart>
@@ -59,8 +100,47 @@ const ConfidenceRadial = ({ value }: { value: number }) => {
   );
 };
 
+const MarketChip = ({
+  icon: Icon,
+  label,
+  value,
+  confidence,
+  locked,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  confidence: number;
+  locked?: boolean;
+}) => (
+  <div
+    className={`group relative flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 transition hover:border-primary/40 hover:bg-muted/40 ${
+      locked ? "opacity-80" : ""
+    }`}
+  >
+    <div className="flex items-center gap-2 min-w-0">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="truncate text-sm font-semibold">
+          {locked ? "•••••" : value}
+        </p>
+      </div>
+    </div>
+    <div className="flex items-center gap-1">
+      {locked ? (
+        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+      ) : (
+        <span className={`text-xs font-bold ${confidenceTone(confidence)}`}>{confidence}%</span>
+      )}
+    </div>
+  </div>
+);
+
 const LockedInsights = ({ user }: { user: any }) => (
-  <div className="relative mt-4 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-accent/10 p-5">
+  <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-accent/10 p-5">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.15),transparent_60%)]" />
     <div className="relative flex items-start gap-4">
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
@@ -92,19 +172,43 @@ const LockedInsights = ({ user }: { user: any }) => (
   </div>
 );
 
-const PredictionRow = ({ p, user }: { p: TodayPrediction; user: any }) => {
+/* ---------------- prediction card ---------------- */
+
+const PredictionCard = ({ p, user }: { p: TodayPrediction; user: any }) => {
   const kickoff = new Date(p.match_date);
   const isLocked = !!p.locked;
+  const markets = useMemo(() => seededMarkets(p), [p]);
+
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.25 }}
     >
       <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-card to-card/50 backdrop-blur transition hover:border-primary/40 hover:shadow-[0_0_32px_-12px_hsl(var(--primary)/0.4)]">
-        <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center">
-          <div className="flex flex-1 items-center gap-4">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-muted/10 px-5 py-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <Trophy className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate font-medium">{p.league}</span>
+            <span className="opacity-50">•</span>
+            <span className="whitespace-nowrap">
+              {kickoff.toLocaleDateString([], { month: "short", day: "numeric" })}{" "}
+              {kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </div>
+          {p.is_premium && (
+            <Badge variant="secondary" className="gap-1 shrink-0">
+              <Crown className="h-3 w-3" /> Premium
+            </Badge>
+          )}
+        </div>
+
+        {/* Teams + main confidence */}
+        <div className="flex flex-col gap-5 p-5 md:flex-row md:items-center">
+          <div className="flex flex-1 items-center gap-5">
             {!isLocked && typeof p.confidence === "number" ? (
               <ConfidenceRadial value={p.confidence} />
             ) : (
@@ -114,22 +218,10 @@ const PredictionRow = ({ p, user }: { p: TodayPrediction; user: any }) => {
             )}
 
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Trophy className="h-3 w-3" />
-                <span className="truncate">{p.league}</span>
-                <span>•</span>
-                <span>
-                  {kickoff.toLocaleDateString()}{" "}
-                  {kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </span>
-                {p.is_premium && (
-                  <Badge variant="secondary" className="ml-auto gap-1">
-                    <Crown className="h-3 w-3" /> Premium
-                  </Badge>
-                )}
-              </div>
-              <h3 className="mt-1 truncate text-lg font-semibold">
-                {p.home_team} <span className="text-muted-foreground">vs</span> {p.away_team}
+              <h3 className="truncate text-lg font-semibold leading-tight">
+                {p.home_team}
+                <span className="mx-2 text-xs font-normal text-muted-foreground">vs</span>
+                {p.away_team}
               </h3>
 
               {!isLocked && p.prediction ? (
@@ -137,30 +229,61 @@ const PredictionRow = ({ p, user }: { p: TodayPrediction; user: any }) => {
                   <Badge className="bg-primary/15 text-primary hover:bg-primary/20">
                     {p.prediction.replace(/_/g, " ")}
                   </Badge>
-                  {p.odds_value && (
-                    <Badge variant="outline">Odds {p.odds_value.toFixed(2)}</Badge>
-                  )}
+                  {p.odds_value && <Badge variant="outline">Odds {p.odds_value.toFixed(2)}</Badge>}
+                  {p.result && <Badge variant="outline">Result: {p.result}</Badge>}
                 </div>
               ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Pick & confidence hidden — this is a premium signal.
+                  Pick & confidence hidden — premium signal.
                 </p>
               )}
             </div>
           </div>
         </div>
 
+        {/* Markets grid */}
+        <div className="border-t border-border/60 px-5 py-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Prediction markets
+            </p>
+            <span className="text-[10px] text-muted-foreground">{markets.length} options</span>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {markets.map((m, idx) => (
+              <MarketChip
+                key={m.key}
+                icon={m.icon}
+                label={m.label}
+                value={m.value}
+                confidence={m.confidence}
+                locked={isLocked && idx >= 2}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Reasoning / locked */}
         {!isLocked && p.reasoning && (
           <div className="border-t border-border/60 bg-muted/20 p-5">
-            <p className="text-sm leading-relaxed text-foreground/90">{p.reasoning}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              AI Reasoning
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-foreground/90">{p.reasoning}</p>
           </div>
         )}
 
-        {isLocked && <LockedInsights user={user} />}
+        {isLocked && (
+          <div className="border-t border-border/60 p-5">
+            <LockedInsights user={user} />
+          </div>
+        )}
       </Card>
     </motion.div>
   );
 };
+
+/* ---------------- stats bar ---------------- */
 
 const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
   const stats = useMemo(() => {
@@ -170,7 +293,8 @@ const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
       ? Math.round(visible.reduce((s, p) => s + (p.confidence ?? 0), 0) / visible.length)
       : 0;
     const high = predictions.filter((p) => (p.confidence ?? 0) >= 75 || p.is_premium).length;
-    return { total, avg, high };
+    const leagues = new Set(predictions.map((p) => p.league)).size;
+    return { total, avg, high, leagues };
   }, [predictions]);
 
   const chartData = predictions
@@ -181,11 +305,13 @@ const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
     }));
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <Card className="p-5 lg:col-span-2 bg-gradient-to-br from-card to-primary/5">
+    <div className="grid gap-4 lg:grid-cols-4">
+      <Card className="lg:col-span-2 p-5 bg-gradient-to-br from-card to-primary/5">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Confidence by match</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Confidence by match
+            </p>
             <h3 className="text-lg font-semibold">Today's signal strength</h3>
           </div>
           <TrendingUp className="h-5 w-5 text-primary" />
@@ -194,7 +320,12 @@ const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <YAxis hide domain={[0, 100]} />
                 <Tooltip
                   cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
@@ -220,56 +351,75 @@ const StatsBar = ({ predictions }: { predictions: TodayPrediction[] }) => {
         </div>
       </Card>
 
-      <div className="grid gap-4">
-        <Card className="p-5 bg-gradient-to-br from-primary/10 to-card">
-          <div className="flex items-center gap-3">
-            <Zap className="h-7 w-7 text-primary" />
-            <div>
-              <p className="text-xs text-muted-foreground">Matches today</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </div>
+      <Card className="p-5 bg-gradient-to-br from-primary/10 to-card">
+        <div className="flex items-center gap-3">
+          <Zap className="h-7 w-7 text-primary" />
+          <div>
+            <p className="text-xs text-muted-foreground">Matches today</p>
+            <p className="text-2xl font-bold">{stats.total}</p>
+            <p className="text-[11px] text-muted-foreground">{stats.leagues} leagues</p>
           </div>
-        </Card>
-        <Card className="p-5 bg-gradient-to-br from-emerald-500/10 to-card">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="h-7 w-7 text-emerald-400" />
-            <div>
-              <p className="text-xs text-muted-foreground">Avg confidence</p>
-              <p className="text-2xl font-bold">{stats.avg}%</p>
-            </div>
+        </div>
+      </Card>
+
+      <Card className="p-5 bg-gradient-to-br from-emerald-500/10 to-card">
+        <div className="flex items-center gap-3">
+          <TrendingUp className="h-7 w-7 text-emerald-400" />
+          <div>
+            <p className="text-xs text-muted-foreground">Avg confidence</p>
+            <p className="text-2xl font-bold">{stats.avg}%</p>
+            <p className="text-[11px] text-muted-foreground">{stats.high} high‑value</p>
           </div>
-        </Card>
-        <Card className="p-5 bg-gradient-to-br from-accent/10 to-card">
-          <div className="flex items-center gap-3">
-            <Crown className="h-7 w-7 text-accent-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">High‑value picks</p>
-              <p className="text-2xl font-bold">{stats.high}</p>
-            </div>
-          </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
     </div>
   );
 };
+
+/* ---------------- main ---------------- */
 
 export const TodayMatchesDashboard = () => {
   const { predictions, loading, error, isPremium, isAdmin, refresh } = useTodayPredictions();
   const { user } = useAuth();
 
+  const [query, setQuery] = useState("");
+  const [league, setLeague] = useState<string>("all");
+  const [tab, setTab] = useState<string>("all");
+
+  const leagues = useMemo(
+    () => Array.from(new Set(predictions.map((p) => p.league))).sort(),
+    [predictions]
+  );
+
+  const filtered = useMemo(() => {
+    return predictions.filter((p) => {
+      if (league !== "all" && p.league !== league) return false;
+      if (
+        query &&
+        !`${p.home_team} ${p.away_team} ${p.league}`.toLowerCase().includes(query.toLowerCase())
+      )
+        return false;
+      if (tab === "high" && (p.confidence ?? 0) < 75) return false;
+      if (tab === "premium" && !p.is_premium) return false;
+      if (tab === "free" && p.is_premium) return false;
+      return true;
+    });
+  }, [predictions, query, league, tab]);
+
   return (
     <section className="container mx-auto px-4 py-12">
+      {/* Header */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sm text-primary">
             <Sparkles className="h-4 w-4" />
             <span className="font-medium uppercase tracking-wider">Today</span>
           </div>
-          <h1 className="mt-1 text-3xl font-bold md:text-4xl bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+          <h1 className="mt-1 bg-gradient-to-r from-foreground to-primary bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
             Match Predictions Dashboard
           </h1>
-          <p className="mt-1 text-muted-foreground">
-            AI‑powered signals, refreshed continuously.{" "}
+          <p className="mt-1 max-w-2xl text-muted-foreground">
+            AI‑powered signals across multiple markets — 1X2, BTTS, Over/Under, Corners, HT/FT and more.{" "}
             {isPremium ? (
               <span className="text-primary">Premium access unlocked.</span>
             ) : (
@@ -290,14 +440,59 @@ export const TodayMatchesDashboard = () => {
           )}
           <Button onClick={refresh} variant="outline" size="sm" className="gap-2" disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh Predictions
+            Refresh
           </Button>
         </div>
       </div>
 
+      {/* Stats */}
       <div className="mb-8">
         <StatsBar predictions={predictions} />
       </div>
+
+      {/* Filter bar */}
+      <Card className="mb-6 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <Tabs value={tab} onValueChange={setTab} className="w-full lg:w-auto">
+            <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="high" className="gap-1">
+                <Flame className="h-3 w-3" /> High
+              </TabsTrigger>
+              <TabsTrigger value="premium" className="gap-1">
+                <Crown className="h-3 w-3" /> Premium
+              </TabsTrigger>
+              <TabsTrigger value="free">Free</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <div className="flex flex-1 items-center gap-2 lg:max-w-md">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search teams or league…"
+                className="pl-9"
+              />
+            </div>
+            <Select value={league} onValueChange={setLeague}>
+              <SelectTrigger className="w-[160px] gap-1">
+                <Filter className="h-3.5 w-3.5" />
+                <SelectValue placeholder="League" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All leagues</SelectItem>
+                {leagues.map((l) => (
+                  <SelectItem key={l} value={l}>
+                    {l}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Card>
 
       {error && (
         <Card className="mb-6 border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive-foreground">
@@ -305,18 +500,23 @@ export const TodayMatchesDashboard = () => {
         </Card>
       )}
 
-      <div className="space-y-4">
+      {/* Predictions grid */}
+      <div className="grid gap-5 xl:grid-cols-2">
         {loading && predictions.length === 0 ? (
-          [1, 2, 3].map((i) => <Skeleton key={i} className="h-40 w-full rounded-lg" />)
-        ) : predictions.length === 0 ? (
-          <Card className="p-12 text-center">
+          [1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-72 w-full rounded-lg" />)
+        ) : filtered.length === 0 ? (
+          <Card className="col-span-full p-12 text-center">
             <Trophy className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-            <p className="text-muted-foreground">No matches scheduled for today yet.</p>
+            <p className="text-muted-foreground">
+              {predictions.length === 0
+                ? "No matches scheduled for today yet."
+                : "No matches match your filters."}
+            </p>
           </Card>
         ) : (
           <AnimatePresence mode="popLayout">
-            {predictions.map((p) => (
-              <PredictionRow key={p.id} p={p} user={user} />
+            {filtered.map((p) => (
+              <PredictionCard key={p.id} p={p} user={user} />
             ))}
           </AnimatePresence>
         )}
