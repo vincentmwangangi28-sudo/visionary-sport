@@ -273,7 +273,7 @@ const PredictionCard = ({ p, user }: { p: TodayPrediction; user: any }) => {
                 label={m.label}
                 value={m.value}
                 confidence={m.confidence}
-                locked={isLocked && idx >= 2}
+                locked={m.locked || (isLocked && idx >= 2)}
               />
             ))}
           </div>
