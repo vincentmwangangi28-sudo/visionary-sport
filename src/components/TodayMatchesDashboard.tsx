@@ -193,7 +193,7 @@ const LockedInsights = ({ user }: { user: any }) => (
 const PredictionCard = ({ p, user }: { p: TodayPrediction; user: any }) => {
   const kickoff = new Date(p.match_date);
   const isLocked = !!p.locked;
-  const markets = useMemo(() => seededMarkets(p), [p]);
+  const markets = useMemo(() => buildMarkets(p), [p]);
 
   return (
     <motion.div
