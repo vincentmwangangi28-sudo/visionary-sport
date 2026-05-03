@@ -455,6 +455,21 @@ export const TodayMatchesDashboard = () => {
               <Crown className="h-3 w-3" /> Admin
             </Badge>
           )}
+          {isAdmin && (
+            <Button
+              onClick={async () => {
+                setGenerating(true);
+                try { await generateMarkets(); } finally { setGenerating(false); }
+              }}
+              variant="premium"
+              size="sm"
+              className="gap-2"
+              disabled={generating}
+            >
+              <Sparkles className={`h-4 w-4 ${generating ? "animate-spin" : ""}`} />
+              {generating ? "Generating…" : "Generate Markets"}
+            </Button>
+          )}
           <Button onClick={refresh} variant="outline" size="sm" className="gap-2" disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
