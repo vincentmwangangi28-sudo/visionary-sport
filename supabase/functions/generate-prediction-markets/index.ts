@@ -113,13 +113,48 @@ Return ONLY the JSON array, no prose, no code fences.`;
   return rows.length;
 }
 
+const JOB_NAME = "generate-prediction-markets-daily";
+
+// EAT = UTC+3, no DST. Compute current EAT date independent of server tz.
+function eatDate(d = new Date()): string {
+  const eatMs = d.getTime() + 3 * 60 * 60 * 1000;
+  return new Date(eatMs).toISOString().slice(0, 10); // YYYY-MM-DD in EAT
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const url = new URL(req.url);
+  const mode = url.searchParams.get("mode"); // "catchup" | null
+  const today_eat = eatDate();
+  const startedAt = new Date().toISOString();
 
   try {
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+
+    // Catch-up safety net: skip if today's run already succeeded.
+    if (mode === "catchup" && !body?.prediction_id) {
+      const { data: prior } = await supabase
+        .from("job_runs")
+        .select("id, status")
+        .eq("job_name", JOB_NAME)
+        .eq("eat_date", today_eat)
+        .in("status", ["success", "partial"])
+        .limit(1);
+      if (prior && prior.length > 0) {
+        await supabase.from("job_runs").insert({
+          job_name: JOB_NAME,
+          status: "skipped",
+          eat_date: today_eat,
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          metadata: { reason: "already_ran_today_eat", mode },
+        });
+        return json({ ok: true, skipped: true, reason: "already_ran_today_eat", eat_date: today_eat });
+      }
+    }
+
     let predictions: any[] = [];
 
     if (body?.prediction_id) {
@@ -131,10 +166,11 @@ Deno.serve(async (req) => {
       if (error) throw error;
       predictions = data ?? [];
     } else {
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
-      const end = new Date();
-      end.setHours(23, 59, 59, 999);
+      // EAT day window (UTC+3): [today 00:00 EAT, today 23:59:59.999 EAT)
+      // In UTC that's [today-1 21:00 UTC, today 20:59:59.999 UTC) for the same EAT date.
+      const eatMidnightUtcMs = Date.parse(`${today_eat}T00:00:00Z`) - 3 * 60 * 60 * 1000;
+      const start = new Date(eatMidnightUtcMs);
+      const end = new Date(eatMidnightUtcMs + 24 * 60 * 60 * 1000 - 1);
       const { data, error } = await supabase
         .from("predictions")
         .select("id, match_id, home_team, away_team, league, match_date")
@@ -157,8 +193,40 @@ Deno.serve(async (req) => {
       }
     }
 
-    return json({ ok: true, processed, totalMarkets, errors });
+    // Log run (skip for single-prediction ad-hoc invocations)
+    if (!body?.prediction_id) {
+      const status =
+        predictions.length === 0
+          ? "success"
+          : errors.length === 0
+            ? "success"
+            : processed > 0
+              ? "partial"
+              : "failed";
+      await supabase.from("job_runs").insert({
+        job_name: JOB_NAME,
+        status,
+        eat_date: today_eat,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        processed,
+        total_markets: totalMarkets,
+        error: errors.length ? errors.slice(0, 10).join(" | ").slice(0, 2000) : null,
+        metadata: { mode: mode ?? "manual", predictions_found: predictions.length },
+      });
+    }
+
+    return json({ ok: true, processed, totalMarkets, errors, eat_date: today_eat, mode: mode ?? "manual" });
   } catch (e: any) {
+    await supabase.from("job_runs").insert({
+      job_name: JOB_NAME,
+      status: "failed",
+      eat_date: today_eat,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      error: (e?.message ?? String(e)).slice(0, 2000),
+      metadata: { mode: mode ?? "manual" },
+    }).then(() => {}, () => {});
     return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
 });

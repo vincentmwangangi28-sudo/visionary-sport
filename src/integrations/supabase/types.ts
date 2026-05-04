@@ -393,6 +393,45 @@ export type Database = {
         }
         Relationships: []
       }
+      job_runs: {
+        Row: {
+          eat_date: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          job_name: string
+          metadata: Json | null
+          processed: number | null
+          started_at: string
+          status: string
+          total_markets: number | null
+        }
+        Insert: {
+          eat_date: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name: string
+          metadata?: Json | null
+          processed?: number | null
+          started_at?: string
+          status: string
+          total_markets?: number | null
+        }
+        Update: {
+          eat_date?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name?: string
+          metadata?: Json | null
+          processed?: number | null
+          started_at?: string
+          status?: string
+          total_markets?: number | null
+        }
+        Relationships: []
+      }
       match_chat_messages: {
         Row: {
           created_at: string
