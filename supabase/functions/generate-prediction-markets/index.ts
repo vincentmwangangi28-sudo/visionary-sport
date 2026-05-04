@@ -166,10 +166,11 @@ Deno.serve(async (req) => {
       if (error) throw error;
       predictions = data ?? [];
     } else {
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
-      const end = new Date();
-      end.setHours(23, 59, 59, 999);
+      // EAT day window (UTC+3): [today 00:00 EAT, today 23:59:59.999 EAT)
+      // In UTC that's [today-1 21:00 UTC, today 20:59:59.999 UTC) for the same EAT date.
+      const eatMidnightUtcMs = Date.parse(`${today_eat}T00:00:00Z`) - 3 * 60 * 60 * 1000;
+      const start = new Date(eatMidnightUtcMs);
+      const end = new Date(eatMidnightUtcMs + 24 * 60 * 60 * 1000 - 1);
       const { data, error } = await supabase
         .from("predictions")
         .select("id, match_id, home_team, away_team, league, match_date")
@@ -192,8 +193,40 @@ Deno.serve(async (req) => {
       }
     }
 
-    return json({ ok: true, processed, totalMarkets, errors });
+    // Log run (skip for single-prediction ad-hoc invocations)
+    if (!body?.prediction_id) {
+      const status =
+        predictions.length === 0
+          ? "success"
+          : errors.length === 0
+            ? "success"
+            : processed > 0
+              ? "partial"
+              : "failed";
+      await supabase.from("job_runs").insert({
+        job_name: JOB_NAME,
+        status,
+        eat_date: today_eat,
+        started_at: startedAt,
+        finished_at: new Date().toISOString(),
+        processed,
+        total_markets: totalMarkets,
+        error: errors.length ? errors.slice(0, 10).join(" | ").slice(0, 2000) : null,
+        metadata: { mode: mode ?? "manual", predictions_found: predictions.length },
+      });
+    }
+
+    return json({ ok: true, processed, totalMarkets, errors, eat_date: today_eat, mode: mode ?? "manual" });
   } catch (e: any) {
+    await supabase.from("job_runs").insert({
+      job_name: JOB_NAME,
+      status: "failed",
+      eat_date: today_eat,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      error: (e?.message ?? String(e)).slice(0, 2000),
+      metadata: { mode: mode ?? "manual" },
+    }).then(() => {}, () => {});
     return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
 });
