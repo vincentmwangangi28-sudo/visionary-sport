@@ -97,6 +97,53 @@ async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
   }
 }
 
+// Fetch from SportAPI7 (RapidAPI) - multi-sport fallback
+async function fetchFromSportAPI7(apiKey?: string): Promise<LiveMatch[]> {
+  if (!apiKey) {
+    console.log('⏭️ Skipping SportAPI7: No API key');
+    return [];
+  }
+  console.log('🔄 Trying SportAPI7...');
+  try {
+    const response = await fetch('https://sportapi7.p.rapidapi.com/api/v1/sport/football/events/live', {
+      headers: {
+        'x-rapidapi-host': 'sportapi7.p.rapidapi.com',
+        'x-rapidapi-key': apiKey,
+      },
+    });
+    if (!response.ok) {
+      console.error(`❌ SportAPI7 error: ${response.status}`);
+      return [];
+    }
+    const data = await response.json();
+    const events = data?.events || [];
+    if (events.length === 0) {
+      console.log('⚠️ SportAPI7: No live matches');
+      return [];
+    }
+    const matches: LiveMatch[] = events.map((e: any) => ({
+      id: `sportapi7-${e.id}`,
+      homeTeam: e.homeTeam?.name || 'Home',
+      awayTeam: e.awayTeam?.name || 'Away',
+      homeScore: e.homeScore?.current ?? null,
+      awayScore: e.awayScore?.current ?? null,
+      status: e.status?.description || 'LIVE',
+      time: e.time?.currentPeriodStartTimestamp
+        ? `${Math.max(0, Math.floor((Date.now() / 1000 - e.time.currentPeriodStartTimestamp) / 60))}'`
+        : '0\'',
+      league: e.tournament?.name || 'Unknown',
+      date: e.startTimestamp
+        ? new Date(e.startTimestamp * 1000).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
+    }));
+    console.log(`✅ SportAPI7: Found ${matches.length} live matches`);
+    return matches;
+  } catch (error) {
+    console.error('❌ SportAPI7 error:', error);
+    return [];
+  }
+}
+
 // Fetch from API-Sports (requires API key)
 async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
   if (!apiKey) {
