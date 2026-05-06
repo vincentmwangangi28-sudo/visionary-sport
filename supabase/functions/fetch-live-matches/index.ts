@@ -291,6 +291,7 @@ serve(async (req) => {
     
     const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
+    const sportApi7Key = Deno.env.get('SPORTAPI7_RAPIDAPI_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -307,7 +308,12 @@ serve(async (req) => {
       matches = await fetchFromAPISports(rapidApiKey);
     }
 
-    // 3. If no matches, try TheSportsDB (free)
+    // 3. If no matches, try SportAPI7 (RapidAPI)
+    if (matches.length === 0 && sportApi7Key) {
+      matches = await fetchFromSportAPI7(sportApi7Key);
+    }
+
+    // 4. If no matches, try TheSportsDB (free)
     if (matches.length === 0) {
       matches = await fetchFromTheSportsDB();
     }
