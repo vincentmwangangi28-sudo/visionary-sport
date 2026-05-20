@@ -25,7 +25,8 @@ const Index = () => {
   }, []);
   
   return (
-    <SEO />
+    <>
+      <SEO />
       <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
@@ -74,6 +75,7 @@ const Index = () => {
       </div>
       <Footer />
     </div>
+    </>
   );
 };
 
