@@ -4,146 +4,70 @@ import { Progress } from "@/components/ui/progress";
 import { TrendingUp, Calendar, Clock } from "lucide-react";
 
 interface PredictionCardProps {
-  homeTeam: string;
-  awayTeam: string;
-  league: string;
-  prediction: string;
-  confidence: number;
-  reasoning: string;
-  matchTime: string;
-  matchDate: string;
+  homeTeam: string; awayTeam: string; league: string; prediction: string;
+  confidence: number; reasoning: string; matchTime: string; matchDate: string;
 }
-
-export const PredictionCard = ({
-  homeTeam,
-  awayTeam,
-  league,
-  prediction,
-  confidence,
-  reasoning,
-  matchTime,
-  matchDate,
-}: PredictionCardProps) => {
-  // GA4 Event Tracking
-  const trackPredictionView = () => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'prediction_view', {
-        'event_category': 'Predictions',
-        'event_label': `${homeTeam} vs ${awayTeam}`,
-        'value': confidence
-      });
-    }
-  };
-
-  const getConfidenceColor = (conf: number) => {
-    if (conf >= 75) return "text-primary";
-    if (conf >= 50) return "text-secondary";
-    return "text-muted-foreground";
-  };
-
-  const getConfidenceBadge = (conf: number) => {
-    if (conf >= 75) return { label: "High", variant: "default" as const };
-    if (conf >= 50) return { label: "Medium", variant: "secondary" as const };
-    return { label: "Low", variant: "outline" as const };
-  };
-
-  const badge = getConfidenceBadge(confidence);
-
-  // Enhanced structured data for SportsEvent
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "SportsEvent",
-    "name": `${homeTeam} vs ${awayTeam}`,
-    "startDate": `${matchDate}T${matchTime}:00+03:00`,
-    "homeTeam": { "@type": "SportsTeam", "name": homeTeam },
-    "awayTeam": { "@type": "SportsTeam", "name": awayTeam },
-    "sport": "Football",
-    "location": { 
-      "@type": "Place", 
-      "name": league 
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock"
-    },
-    "additionalProperty": [
-      { 
-        "@type": "PropertyValue", 
-        "name": "Recommended Outcome", 
-        "value": prediction 
-      },
-      { 
-        "@type": "PropertyValue", 
-        "name": "Confidence Score", 
-        "value": `${confidence}%` 
-      },
-      {
-        "@type": "PropertyValue",
-        "name": "AI Reasoning",
-        "value": reasoning
-      }
-    ]
-  };
-
+function getConfidenceTier(conf: number) {
+  if (conf >= 75) return { color: 'text-green-500', dot: '🟢', label: 'High', variant: 'default' as const };
+  if (conf >= 50) return { color: 'text-yellow-500', dot: '🟡', label: 'Medium', variant: 'secondary' as const };
+  return { color: 'text-red-500', dot: '🔴', label: 'Low', variant: 'outline' as const };
+}
+function ConfidenceGauge({ value }: { value: number }) {
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+  const tier = getConfidenceTier(value);
   return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <Card 
-        className="p-6 hover-lift hover-glow transition-all duration-300 bg-gradient-prediction border-primary/10 animate-fade-in"
-        onClick={trackPredictionView}
-      >
-        {/* League Badge */}
-        <div className="flex items-center justify-between mb-4">
-          <Badge variant="outline" className="text-xs">
-            {league}
-          </Badge>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>{matchDate}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span>{matchTime}</span>
-            </div>
-          </div>
+    <div className="relative w-16 h-16 flex-shrink-0">
+      <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="currentColor" strokeWidth="6" className="text-muted/30" />
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset} className={tier.color}
+          style={{ transition: 'stroke-dashoffset 0.6s ease' }} />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className={`text-xs font-bold ${tier.color}`}>{value}%</span>
+      </div>
+    </div>
+  );
+}
+export const PredictionCard = ({ homeTeam, awayTeam, league, prediction, confidence, reasoning, matchTime, matchDate }: PredictionCardProps) => {
+  const tier = getConfidenceTier(confidence);
+  const trackView = () => {
+    if (typeof window !== 'undefined' && (window as any).gtag)
+      (window as any).gtag('event', 'prediction_view', { event_category: 'Predictions', event_label: `${homeTeam} vs ${awayTeam}`, value: confidence });
+  };
+  return (
+    <Card className="p-6 hover-lift hover-glow transition-all duration-300 bg-gradient-prediction border-primary/10 animate-fade-in cursor-pointer" onClick={trackView}>
+      <div className="flex items-center justify-between mb-4">
+        <Badge variant="outline" className="text-xs">{league}</Badge>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /><span>{matchDate}</span></div>
+          <div className="flex items-center gap-1"><Clock className="w-4 h-4" /><span>{matchTime}</span></div>
         </div>
-
-        {/* Teams */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-bold">{homeTeam}</h3>
-            <span className="text-muted-foreground">vs</span>
-            <h3 className="text-xl font-bold">{awayTeam}</h3>
+      </div>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold">{homeTeam}</h3>
+        <span className="text-muted-foreground font-medium">vs</span>
+        <h3 className="text-xl font-bold">{awayTeam}</h3>
+      </div>
+      <div className="flex items-start gap-4 mb-4">
+        <ConfidenceGauge value={confidence} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary" /><span className="font-semibold text-sm">AI Prediction</span></div>
+            <Badge variant={tier.variant} className="text-xs gap-1">{tier.dot} {tier.label}</Badge>
           </div>
+          <p className="text-lg font-bold text-primary mb-1">{prediction}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{reasoning}</p>
         </div>
-
-        {/* Prediction */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              <span className="font-semibold">AI Prediction:</span>
-            </div>
-            <Badge variant={badge.variant}>{badge.label} Confidence</Badge>
-          </div>
-          <p className="text-lg font-bold text-primary mb-2">{prediction}</p>
-          <p className="text-sm text-muted-foreground">{reasoning}</p>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>Confidence</span><span className={`font-bold ${tier.color}`}>{confidence}%</span>
         </div>
-
-        {/* Confidence Bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Confidence Level</span>
-            <span className={`font-bold ${getConfidenceColor(confidence)}`}>
-              {confidence}%
-            </span>
-          </div>
-          <Progress value={confidence} className="h-2" />
-        </div>
-      </Card>
-    </>
+        <Progress value={confidence} className="h-1.5" />
+      </div>
+    </Card>
   );
 };

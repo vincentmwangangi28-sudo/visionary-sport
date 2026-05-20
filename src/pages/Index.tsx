@@ -12,6 +12,7 @@ import { ActiveContests } from "@/components/ActiveContests";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import { PremiumUpgradeCard } from "@/components/PremiumUpgradeCard";
 import { initAnalytics } from "@/lib/analytics";
@@ -24,7 +25,8 @@ const Index = () => {
   }, []);
   
   return (
-    <div className="min-h-screen bg-background">
+    <SEO />
+      <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
       <LiveMatches />

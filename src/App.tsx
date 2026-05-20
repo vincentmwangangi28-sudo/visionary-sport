@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Leaderboard from "./pages/Leaderboard";
@@ -18,13 +19,14 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
+  <ErrorBoundary>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
@@ -35,10 +37,11 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </HelmetProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </HelmetProvider>
+  </ErrorBoundary>
 );
 
 export default App;

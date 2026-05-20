@@ -166,3 +166,61 @@ export const initAnalytics = () => {
   // Track page view
   trackPageView(window.location.pathname, document.title);
 };
+
+// ── New funnel events ───────────────────────────────────────────────────────
+
+/** Fired when a user successfully unlocks a prediction (coin spend) */
+export const trackPredictionUnlocked = (prediction: {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  confidence: number;
+  league: string;
+  isPremium: boolean;
+  coinsSpent: number;
+}) => {
+  if (!isGtagAvailable()) return;
+  gtag('event', 'prediction_unlocked', {
+    event_category: 'Predictions',
+    event_label: `${prediction.homeTeam} vs ${prediction.awayTeam}`,
+    match_id: prediction.matchId,
+    confidence_score: prediction.confidence,
+    league: prediction.league,
+    is_premium: prediction.isPremium,
+    coins_spent: prediction.coinsSpent,
+    currency: 'COINS',
+  });
+};
+
+/** Fired when a payment flow is completed successfully */
+export const trackPaymentSuccess = (params: {
+  purpose: 'premium_subscription' | 'coin_purchase' | 'tip';
+  amountKes: number;
+}) => {
+  if (!isGtagAvailable()) return;
+  gtag('event', 'purchase', {
+    event_category: 'Payments',
+    event_label: params.purpose,
+    value: params.amountKes,
+    currency: 'KES',
+    payment_method: 'mpesa',
+  });
+};
+
+/** Fired when a free tier user hits the daily prediction limit */
+export const trackFreeLimitHit = () => {
+  if (!isGtagAvailable()) return;
+  gtag('event', 'free_limit_hit', {
+    event_category: 'Conversion',
+    event_label: 'upgrade_prompt_shown',
+  });
+};
+
+/** Fired when user submits a referral */
+export const trackReferral = (params: { referralCode: string }) => {
+  if (!isGtagAvailable()) return;
+  gtag('event', 'referral_shared', {
+    event_category: 'Referrals',
+    event_label: params.referralCode,
+  });
+};
