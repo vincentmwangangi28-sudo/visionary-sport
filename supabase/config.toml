@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.update-prediction-results]
 verify_jwt = false
+
+[functions.cron-subscription-reminders]
+verify_jwt = false
+
+[functions.apply-referral-on-signup]
+verify_jwt = false

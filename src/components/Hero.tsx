@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import heroStadiumWebP from "@/assets/hero-stadium.webp";
 import heroStadium from "@/assets/hero-stadium.jpg";
 import { GeneratePredictionDialog } from "./GeneratePredictionDialog";
 import { Link } from "react-router-dom";
@@ -11,12 +12,11 @@ export const Hero = () => {
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroStadium})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background"></div>
-      </div>
+      <picture className="absolute inset-0">
+        <source srcSet={heroStadiumWebP} type="image/webp" />
+        <img src={heroStadium} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" fetchPriority="high" />
+      </picture>
+      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background" />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-20">

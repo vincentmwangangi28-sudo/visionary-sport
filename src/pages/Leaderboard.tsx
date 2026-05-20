@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Medal, Award } from 'lucide-react';
+import { EmptyState } from '@/components/EmptyState';
 import { Navbar } from '@/components/Navbar';
 import { toast } from 'sonner';
 
@@ -154,10 +155,7 @@ export default function Leaderboard() {
                   <p className="text-muted-foreground">Loading leaderboard...</p>
                 </div>
               ) : leaders.length === 0 ? (
-                <div className="text-center py-12">
-                  <Trophy className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">No entries yet. Be the first!</p>
-                </div>
+                <EmptyState icon={Trophy} title="No entries yet" description="Be the first to enter a contest and claim the top spot on the leaderboard!" actionLabel="View Predictions" actionTo="/" />
               ) : (
                 <div className="space-y-3">
                   {leaders.map((entry, index) => (

@@ -1,10 +1,15 @@
 import { Navbar } from "@/components/Navbar";
+import { EmptyState } from "@/components/EmptyState";
+import { useAuth } from "@/hooks/useAuth";
+import { BarChart2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { PredictionPerformance } from "@/components/PredictionPerformance";
 import { AccuracyTracker } from "@/components/AccuracyTracker";
 import { StreakDisplay } from "@/components/StreakDisplay";
 
 const Performance = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -21,7 +26,11 @@ const Performance = () => {
           </div>
         </div>
 
+        {!user ? (
+        <EmptyState icon={BarChart2} title="Sign in to track your performance" description="Log in to see your personal prediction accuracy, streaks, and detailed analytics." actionLabel="Sign In" actionTo="/auth" />
+      ) : (
         <PredictionPerformance />
+      )}
         
         <section className="py-12 px-4">
           <div className="container mx-auto max-w-6xl">

@@ -48,7 +48,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [signInData, setSignInData] = useState({ email: '', password: '' });
-  const [signUpData, setSignUpData] = useState({ email: '', password: '', fullName: '' });
+  const [signUpData, setSignUpData] = useState({ email: '', password: '', fullName: '', referralCode: '' });
 
   useEffect(() => { if (user) navigate('/'); }, [user, navigate]);
 
@@ -78,6 +78,17 @@ export default function Auth() {
     setLoading(true);
     try {
       await signUp(result.data.email, result.data.password, result.data.fullName);
+      // Apply referral code if provided
+      if (signUpData.referralCode.trim()) {
+        const { data: userData } = await (await import('@/integrations/supabase/client')).supabase.auth.getUser();
+        if (userData.user) {
+          const { supabase: sb } = await import('@/integrations/supabase/client');
+          await sb.functions.invoke('apply-referral-on-signup', {
+            body: { referralCode: signUpData.referralCode.trim(), userId: userData.user.id },
+          });
+          toast.success('Referral applied! You earned 50 coins 🎉');
+        }
+      }
       if (typeof window !== 'undefined' && (window as Window & { gtag?: (...a: unknown[]) => void }).gtag) {
         (window as Window & { gtag?: (...a: unknown[]) => void }).gtag?.('event', 'sign_up', { method: 'email' });
       }
@@ -184,6 +195,11 @@ export default function Auth() {
                       <Label htmlFor="signup-password">Password</Label>
                       <Input id="signup-password" type="password" placeholder="Min 8 characters" autoComplete="new-password"
                         value={signUpData.password} onChange={e => setSignUpData(d => ({ ...d, password: e.target.value }))} required minLength={8} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="signup-referral">Referral Code <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                      <Input id="signup-referral" type="text" placeholder="e.g. ABC123" autoComplete="off"
+                        value={signUpData.referralCode} onChange={e => setSignUpData(d => ({ ...d, referralCode: e.target.value }))} />
                     </div>
                     <Button type="submit" className="w-full h-11" disabled={loading}>
                       {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Creating account…</> : 'Create Account'}
