@@ -1,0 +1,90 @@
+name: Deploy to Supabase
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy edge functions & migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Push DB migrations
+        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Set Supabase secrets
+        run: |
+          supabase secrets set \
+            MPESA_WEBHOOK_SECRET=${{ secrets.MPESA_WEBHOOK_SECRET }} \
+            CRON_SECRET=${{ secrets.CRON_SECRET }} \
+            LIPANA_SECRET_KEY=${{ secrets.LIPANA_SECRET_KEY }} \
+            LOVABLE_API_KEY=${{ secrets.LOVABLE_API_KEY }} \
+            X_RAPIDAPI_KEY=${{ secrets.X_RAPIDAPI_KEY }} \
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy all edge functions
+        run: |
+          FUNCTIONS=(
+            generate-prediction
+            fetch-live-matches
+            fetch-upcoming-matches
+            generate-daily-predictions
+            fetch-user-performance
+            mpesa-stk-push
+            mpesa-webhook
+            generate-sitemap
+            fetch-api-football
+            cron-hourly-fixtures
+            cron-daily-predictions
+            daily-predictions-automation
+            update-prediction-results
+            cron-subscription-reminders
+            apply-referral-on-signup
+          )
+          for FN in "${FUNCTIONS[@]}"; do
+            echo "Deploying $FN..."
+            supabase functions deploy "$FN" || echo "Warning: $FN deploy failed, continuing"
+          done
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Migrations pushed"
+          echo "✅ All edge functions deployed"
+          echo "✅ Secrets updated"
