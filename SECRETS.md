@@ -45,3 +45,25 @@ Find your UUID: Supabase Dashboard → Auth → Users → click your email
 Old key was committed to git. Go to:
 **Supabase Dashboard → Project Settings → API → Reveal → Regenerate**
 Then update `VITE_SUPABASE_ANON_KEY` in GitHub secrets.
+
+## Vercel Secrets (add to GitHub Actions secrets)
+
+| Secret Name | How to get it |
+|---|---|
+| `VERCEL_TOKEN` | vercel.com → Settings → Tokens → Create |
+| `VERCEL_ORG_ID` | vercel.com → Settings → General → Team ID |
+| `VERCEL_PROJECT_ID` | vercel.com → Your Project → Settings → General → Project ID |
+
+### Vercel Setup Steps
+1. Go to **vercel.com** → Add New Project → Import from GitHub
+2. Select **vincentmwangangi28-sudo/visionary-sport**
+3. Set environment variables:
+   - `VITE_SUPABASE_URL` = `https://yofhrfahhzsxbtuhuwqf.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` = your anon key from Supabase
+4. Deploy — Vercel auto-detects Vite
+5. Copy Project ID + Team ID into GitHub secrets above
+
+### Vercel Environment Variables (set in Vercel Dashboard)
+Go to: **vercel.com → Project → Settings → Environment Variables**
+- `VITE_SUPABASE_URL` = `https://yofhrfahhzsxbtuhuwqf.supabase.co`
+- `VITE_SUPABASE_ANON_KEY` = _(from Supabase Dashboard → Settings → API)_
