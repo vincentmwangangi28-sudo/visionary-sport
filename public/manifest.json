@@ -1,18 +1,36 @@
 {
-  "name": "PredictPro — AI Football Predictions",
+  "name": "PredictPro \u2014 AI Football Predictions",
   "short_name": "PredictPro",
   "description": "AI-powered football predictions with M-Pesa payments",
-  "start_url": "/",
+  "start_url": "https://predictpro.guru/",
   "display": "standalone",
   "background_color": "#09090b",
   "theme_color": "#6d28d9",
   "orientation": "portrait-primary",
   "icons": [
-    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
   ],
-  "categories": ["sports", "entertainment"],
+  "categories": [
+    "sports",
+    "entertainment"
+  ],
   "screenshots": [],
-  "lang": "en-KE"
+  "lang": "en-KE",
+  "id": "https://predictpro.guru/"
 }
