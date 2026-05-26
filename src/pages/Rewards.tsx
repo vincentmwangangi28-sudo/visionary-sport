@@ -1,4 +1,6 @@
 import { Helmet } from 'react-helmet-async';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { Bell, BellOff } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { DailySpinWheel } from '@/components/DailySpinWheel';

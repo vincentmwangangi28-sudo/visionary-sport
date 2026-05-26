@@ -44,3 +44,9 @@ verify_jwt = false
 
 [functions.apply-referral-on-signup]
 verify_jwt = false
+
+[functions.spin-wheel]
+verify_jwt = false
+
+[functions.activate-subscription]
+verify_jwt = false

@@ -31,6 +31,16 @@ function ConfidenceGauge({ value }: { value: number }) {
     </div>
   );
 }
+
+const sharePrediction = async (prediction: Prediction) => {
+  const text = `🤖 AI Prediction: ${prediction.home_team} vs ${prediction.away_team}\n📊 ${prediction.prediction} (${prediction.confidence}% confidence)\n⚽ ${prediction.league}\n\nGet yours at predictpro.guru`;
+  if (navigator.share) {
+    await navigator.share({ title: 'PredictPro Prediction', text, url: 'https://predictpro.guru' });
+  } else {
+    await navigator.clipboard.writeText(text);
+  }
+};
+
 export const PredictionCard = ({ homeTeam, awayTeam, league, prediction, confidence, reasoning, matchTime, matchDate }: PredictionCardProps) => {
   const tier = getConfidenceTier(confidence);
   const trackView = () => {

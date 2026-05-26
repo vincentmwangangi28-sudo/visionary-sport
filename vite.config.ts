@@ -24,6 +24,8 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 600,
     // Enable CSS code splitting
     cssCodeSplit: true,
+    // Strip console.log/debugger in production (Vite 8 oxc)
+    oxc: { transform: { drops: ['console', 'debugger'] } },
     // Source maps for production debugging
     sourcemap: false,
     rollupOptions: {

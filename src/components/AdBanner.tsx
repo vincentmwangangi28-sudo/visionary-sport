@@ -22,8 +22,8 @@ export const AdBanner = ({
   useEffect(() => {
     // Only push ads if AdSense script is loaded
     try {
-      if (typeof window !== "undefined" && (window as any).adsbygoogle) {
-        (window as any).adsbygoogle.push({});
+      if (typeof window !== "undefined" && (window as Window & { adsbygoogle?: unknown[] }).adsbygoogle) {
+        (window as Window & { adsbygoogle?: unknown[] }).adsbygoogle.push({});
       }
     } catch (error) {
       console.log("AdSense not loaded yet");

@@ -1,3 +1,28 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+const useLiveStats = () => {
+  const [stats, setStats] = useState({ accuracy: 87, users: '10K+', predictions: '50K+' });
+  useEffect(() => {
+    const load = async () => {
+      const [{ count: users }, { count: total }, { count: correct }] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('predictions').select('*', { count: 'exact', head: true }).not('result', 'is', null),
+        supabase.from('predictions').select('*', { count: 'exact', head: true }).eq('result', 'correct'),
+      ]);
+      const accuracy = total && total > 0 ? Math.round(((correct ?? 0) / total) * 100) : 87;
+      const u = users ?? 0;
+      setStats({
+        accuracy,
+        users: u >= 1000 ? `${(u / 1000).toFixed(1)}K+` : `${u}+`,
+        predictions: total && total >= 1000 ? `${Math.round(total / 1000)}K+` : `${total ?? 50000}+`,
+      });
+    };
+    load();
+  }, []);
+  return stats;
+};
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import heroStadiumWebP from "@/assets/hero-stadium.webp";
@@ -7,6 +32,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Hero = () => {
+  const liveStats = useLiveStats();
   const { user } = useAuth();
 
   return (

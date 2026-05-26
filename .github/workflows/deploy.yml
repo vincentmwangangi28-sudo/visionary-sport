@@ -65,7 +65,7 @@ jobs:
             generate-daily-predictions fetch-user-performance mpesa-stk-push \
             mpesa-webhook generate-sitemap fetch-api-football cron-hourly-fixtures \
             cron-daily-predictions daily-predictions-automation update-prediction-results \
-            cron-subscription-reminders apply-referral-on-signup; do
+            cron-subscription-reminders apply-referral-on-signup spin-wheel activate-subscription; do
             echo "→ Deploying $FN"
             supabase functions deploy "$FN" || echo "⚠ $FN failed, continuing"
           done
