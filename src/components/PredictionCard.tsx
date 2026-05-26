@@ -1,6 +1,10 @@
+import { SharePrediction } from '@/components/SharePrediction';
 import { Card } from "@/components/ui/card";
+import { SharePrediction } from '@/components/SharePrediction';
 import { Badge } from "@/components/ui/badge";
+import { SharePrediction } from '@/components/SharePrediction';
 import { Progress } from "@/components/ui/progress";
+import { SharePrediction } from '@/components/SharePrediction';
 import { TrendingUp, Calendar, Clock } from "lucide-react";
 
 interface PredictionCardProps {

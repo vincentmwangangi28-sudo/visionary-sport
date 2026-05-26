@@ -20,10 +20,14 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Target modern browsers — smaller output
     target: "es2020",
+    // Strip console.log via rolldown transform in production
+    define: { 'import.meta.env.PROD': JSON.stringify(true) },
+
     // Warn at 600KB (we've already split routes)
     chunkSizeWarningLimit: 600,
     // Enable CSS code splitting
     cssCodeSplit: true,
+
     // Strip console.log/debugger in production (Vite 8 oxc)
     oxc: { transform: { drops: ['console', 'debugger'] } },
     // Source maps for production debugging

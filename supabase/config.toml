@@ -50,3 +50,9 @@ verify_jwt = false
 
 [functions.activate-subscription]
 verify_jwt = false
+
+[functions.spin-wheel]
+verify_jwt = true
+
+[functions.activate-subscription]
+verify_jwt = true

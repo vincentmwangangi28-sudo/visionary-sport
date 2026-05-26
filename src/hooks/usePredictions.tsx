@@ -1,83 +1,80 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
-import { useRealtimePredictions } from './useRealtimePredictions';
-import { useSubscription } from './useSubscription';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export interface Prediction {
-  id: string; match_id: string; home_team: string; away_team: string;
-  league: string; match_date: string; prediction: string; confidence: number;
-  reasoning: string; is_premium: boolean; created_at: string;
-  result: string | null; ai_model: string;
+  id: string;
+  home_team: string;
+  away_team: string;
+  match_date: string;
+  league: string;
+  predicted_outcome: string;
+  confidence_score: number;
+  is_premium: boolean;
+  status: string;
+  home_odds?: number;
+  away_odds?: number;
+  draw_odds?: number;
+  analysis?: string;
+  result?: string;
+  created_at: string;
 }
 
 const PAGE_SIZE = 10;
 
-const fetchPredictions = async (page: number, isPremium: boolean): Promise<Prediction[]> => {
-  const from = page * PAGE_SIZE;
-  let query = supabase.from('predictions').select('*').order('created_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
-  // Free users only see non-premium predictions
-  if (!isPremium) query = query.eq('is_premium', false);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data ?? [];
-};
-
-export const usePredictions = () => {
-  const [page, setPage] = useState(0);
-  const [realtimeConnected, setRealtimeConnected] = useState(false);
-  const [updateCount, setUpdateCount] = useState(0);
+export const usePredictions = (page = 1) => {
+  const { isPremium } = useSubscription();
   const queryClient = useQueryClient();
-  const { subscription } = useSubscription();
-  const isPremium = !!subscription;
 
-  const { data: predictions = [], isLoading: loading } = useQuery({
-    queryKey: [...queryKeys.predictions.list(page), isPremium],
-    queryFn: () => fetchPredictions(page, isPremium),
+  const query = useQuery({
+    queryKey: queryKeys.predictions.list(page),
+    queryFn: async () => {
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
+        .from('predictions')
+        .select('*', { count: 'exact' })
+        .order('match_date', { ascending: true })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      if (error) throw error;
+      return { predictions: data as Prediction[], total: count ?? 0 };
+    },
     staleTime: 60_000,
-    placeholderData: (prev) => prev,
   });
 
-  useEffect(() => {
-    queryClient.prefetchQuery({ queryKey: [...queryKeys.predictions.list(page + 1), isPremium], queryFn: () => fetchPredictions(page + 1, isPremium) });
-  }, [page, isPremium, queryClient]);
-
-  const handleNewPrediction = useCallback((prediction: Prediction) => {
-    if (prediction.is_premium && !isPremium) return; // Don't show premium to free users
-    queryClient.setQueryData<Prediction[]>([...queryKeys.predictions.list(0), isPremium], (old = []) => {
-      if (old.some((p) => p.id === prediction.id)) return old;
-      setUpdateCount((c) => c + 1);
-      return [prediction, ...old.slice(0, PAGE_SIZE - 1)];
+  // Prefetch next page
+  if (page < Math.ceil((query.data?.total ?? 0) / PAGE_SIZE)) {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.predictions.list(page + 1),
+      queryFn: async () => {
+        const from = page * PAGE_SIZE;
+        const { data, count } = await supabase.from('predictions')
+          .select('*', { count: 'exact' }).order('match_date', { ascending: true })
+          .range(from, from + PAGE_SIZE - 1);
+        return { predictions: data as Prediction[], total: count ?? 0 };
+      },
+      staleTime: 60_000,
     });
-  }, [queryClient, isPremium]);
+  }
 
-  const handleUpdatePrediction = useCallback((prediction: Prediction) => {
-    queryClient.setQueryData<Prediction[]>([...queryKeys.predictions.list(page), isPremium], (old = []) =>
-      old.map((p) => (p.id === prediction.id ? prediction : p))
-    );
-    setUpdateCount((c) => c + 1);
-  }, [queryClient, page, isPremium]);
+  // Gate premium predictions for non-subscribers
+  const gatedPredictions = (query.data?.predictions ?? []).map(p => {
+    if (p.is_premium && !isPremium()) {
+      return {
+        ...p,
+        predicted_outcome: '🔒 Premium',
+        analysis: 'Upgrade to see this prediction',
+        confidence_score: 0,
+        home_odds: undefined,
+        away_odds: undefined,
+        draw_odds: undefined,
+      };
+    }
+    return p;
+  });
 
-  useEffect(() => {
-    const channel = supabase.channel('predictions-status-check');
-    channel.subscribe((status) => setRealtimeConnected(status === 'SUBSCRIBED'));
-    return () => { supabase.removeChannel(channel); };
-  }, []);
-
-  useRealtimePredictions(handleNewPrediction, handleUpdatePrediction);
-
-  const generatePrediction = async (matchData: { homeTeam: string; awayTeam: string; league: string; matchDate: string; isPremium?: boolean }) => {
-    const { data, error } = await supabase.functions.invoke('generate-prediction', { body: { matchData } });
-    if (error) throw error;
-    if (data?.prediction) handleNewPrediction(data.prediction as Prediction);
-    return data;
-  };
-
-  return {
-    predictions, loading, isPremium, generatePrediction,
-    refreshPredictions: () => queryClient.invalidateQueries({ queryKey: queryKeys.predictions.all }),
-    realtimeConnected, updateCount,
-    page, nextPage: () => setPage((p) => p + 1), prevPage: () => setPage((p) => Math.max(0, p - 1)), pageSize: PAGE_SIZE,
-  };
+  const totalPages = Math.ceil((query.data?.total ?? 0) / PAGE_SIZE);
+  return { ...query, predictions: gatedPredictions, totalPages, pageSize: PAGE_SIZE };
 };

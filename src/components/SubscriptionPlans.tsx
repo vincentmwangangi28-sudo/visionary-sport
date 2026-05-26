@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 export const SubscriptionPlans = () => {
   const { user } = useAuth();
-  const { subscription, loading, subscribe } = useSubscription();
+  const { subscription, activateSubscription, loading, subscribe } = useSubscription();
   const [subscribing, setSubscribing] = useState<string | null>(null);
 
   const handleSubscribe = async (planId: string) => {
@@ -18,7 +18,7 @@ export const SubscriptionPlans = () => {
     if (!plan) return;
 
     setSubscribing(planId);
-    const result = await subscribe(plan);
+    const result = await activateSubscription(plan);
     if (result.success) {
       toast.success(result.message);
     } else {

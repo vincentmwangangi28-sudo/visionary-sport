@@ -1,33 +1,22 @@
+
+export const SUBSCRIPTION_PLANS = [
+  { id: 'basic', name: 'Basic',  price: 299, features: ['5 predictions/day', 'Basic stats', 'Email support'] },
+  { id: 'pro',   name: 'Pro',    price: 599, features: ['Unlimited predictions', 'Advanced stats', 'Priority support', 'Live match alerts'] },
+  { id: 'vip',   name: 'VIP',    price: 999, features: ['Everything in Pro', 'Expert analysis', '1-on-1 support', 'Early access', 'Ad-free'] },
+];
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export interface Subscription {
   id: string;
-  plan: 'basic' | 'pro' | 'vip';
-  priceKes: number;
-  startsAt: string;
-  expiresAt: string;
-  status: 'active' | 'expired' | 'cancelled';
+  plan: string;
+  status: string;
+  expires_at: string;
+  price_kes: number;
 }
-
-export interface SubscriptionPlan {
-  id: 'basic' | 'pro' | 'vip';
-  name: string;
-  price: number;
-  features: string[];
-  predictionsPerDay: number;
-  color: string;
-}
-
-export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
-  { id: 'basic', name: 'Basic', price: 299, predictionsPerDay: 5, color: 'from-blue-500 to-blue-600',
-    features: ['5 Premium predictions/day', 'Basic match analysis', 'Email support'] },
-  { id: 'pro', name: 'Pro', price: 599, predictionsPerDay: 15, color: 'from-purple-500 to-purple-600',
-    features: ['15 Premium predictions/day', 'Advanced AI analysis', 'Priority support', 'Performance tracking'] },
-  { id: 'vip', name: 'VIP', price: 999, predictionsPerDay: -1, color: 'from-amber-500 to-amber-600',
-    features: ['Unlimited predictions', 'VIP tipster insights', '24/7 Priority support', 'Exclusive contests', 'Early access features'] },
-];
 
 export const useSubscription = () => {
   const { user } = useAuth();
@@ -35,43 +24,41 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchSubscription = async () => {
-    if (!user) { setLoading(false); return; }
-    try {
-      const { data } = await supabase.from('subscriptions').select('*')
-        .eq('user_id', user.id).eq('status', 'active').gte('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false }).limit(1).single();
-      setSubscription(data ? { id: data.id, plan: data.plan as Subscription['plan'], priceKes: data.price_kes,
-        startsAt: data.starts_at, expiresAt: data.expires_at, status: data.status as Subscription['status'] } : null);
-    } catch { setSubscription(null); } finally { setLoading(false); }
+    if (!user) { setSubscription(null); setLoading(false); return; }
+    const { data } = await supabase.from('subscriptions').select('*')
+      .eq('user_id', user.id).eq('status', 'active')
+      .gte('expires_at', new Date().toISOString())
+      .order('expires_at', { ascending: false }).limit(1).maybeSingle();
+    setSubscription(data);
+    setLoading(false);
   };
 
-  // Activate via server-side edge function after confirmed M-Pesa payment
-  const activateAfterPayment = async (plan: SubscriptionPlan, transactionId: string): Promise<{ success: boolean; message: string }> => {
-    if (!user) return { success: false, message: 'Please login first' };
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const { data, error } = await supabase.functions.invoke('activate-subscription', {
-        body: { plan: plan.id, transactionId },
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-      });
-      if (error || !data?.success) throw new Error(data?.error || 'Activation failed');
-      await fetchSubscription();
-      return { success: true, message: `Successfully subscribed to ${plan.name} plan!` };
-    } catch (err: unknown) {
-      return { success: false, message: err instanceof Error ? err.message : 'Failed to subscribe' };
+  // Activate via edge function — requires completed transactionId
+  const activateSubscription = async (plan: string, transactionId: string) => {
+    if (!user) throw new Error('Not authenticated');
+    const session = (await supabase.auth.getSession()).data.session;
+    const { data, error } = await supabase.functions.invoke('activate-subscription', {
+      body: { plan, transactionId },
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
+    if (error || !data?.success) {
+      const msg = data?.error ?? 'Subscription activation failed';
+      toast.error(msg);
+      throw new Error(msg);
     }
+    toast.success(`${plan.toUpperCase()} plan activated! Enjoy premium predictions.`);
+    await fetchSubscription();
+    return data;
   };
 
-  const cancelSubscription = async (): Promise<{ success: boolean; message: string }> => {
-    if (!user || !subscription) return { success: false, message: 'No active subscription' };
-    try {
-      const { error } = await supabase.from('subscriptions').update({ status: 'cancelled' }).eq('id', subscription.id);
-      if (error) throw error;
-      setSubscription(null);
-      return { success: true, message: 'Subscription cancelled' };
-    } catch { return { success: false, message: 'Failed to cancel subscription' }; }
+  const isPremium = () => {
+    if (!subscription) return false;
+    return ['pro', 'vip', 'basic'].includes(subscription.plan) &&
+      new Date(subscription.expires_at) > new Date();
   };
+
+  const isVIP = () => subscription?.plan === 'vip' && isPremium();
 
   useEffect(() => { fetchSubscription(); }, [user]);
-  return { subscription, loading, plans: SUBSCRIPTION_PLANS, activateAfterPayment, cancelSubscription, refetch: fetchSubscription };
+  return { subscription, loading, activateSubscription, isPremium, isVIP, refetch: fetchSubscription };
 };

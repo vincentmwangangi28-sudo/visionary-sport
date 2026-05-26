@@ -1,11 +1,20 @@
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { useState, useMemo, useEffect } from "react";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { RealtimeIndicator } from "./RealtimeIndicator";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { PredictionCard } from "./PredictionCard";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { usePredictions } from "@/hooks/usePredictions";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Skeleton } from "@/components/ui/skeleton";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Button } from "@/components/ui/button";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Badge } from "@/components/ui/badge";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Card } from "@/components/ui/card";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import {
   Select,
   SelectContent,
@@ -13,9 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Trophy, Zap, RefreshCw, Filter, TrendingUp, Target, Sparkles } from "lucide-react";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { supabase } from "@/integrations/supabase/client";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { toast } from "sonner";
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { InContentAd, SidebarAd } from "./AdBanner";
 
 export const PredictionsDashboard = () => {

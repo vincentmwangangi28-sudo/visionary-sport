@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 export const usePushNotifications = () => {
@@ -19,36 +19,36 @@ export const usePushNotifications = () => {
       const reg = await navigator.serviceWorker.ready;
       const perm = await Notification.requestPermission();
       setPermission(perm);
-      if (perm !== 'granted') return;
-
-      const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-      if (!VAPID_PUBLIC_KEY) { toast.error('Push notifications not configured'); return; }
+      if (perm !== 'granted') { toast.error('Notifications blocked. Enable in browser settings.'); return; }
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: VAPID_PUBLIC_KEY,
+        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
       });
 
-      // Store subscription in DB
       await supabase.from('push_subscriptions').upsert({
         user_id: user.id,
         endpoint: sub.endpoint,
-        keys: JSON.stringify(sub.toJSON().keys),
+        keys: JSON.stringify({ p256dh: sub.toJSON().keys?.p256dh, auth: sub.toJSON().keys?.auth }),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
       setSubscribed(true);
-      toast.success('Push notifications enabled!');
+      toast.success('Push notifications enabled! You\'ll be notified of high-confidence predictions.');
     } catch (err) {
-      console.error('Push subscribe error:', err);
+      console.error('Push subscription failed:', err);
+      toast.error('Failed to enable notifications');
     }
   };
 
   const unsubscribe = async () => {
     if (!user) return;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) { await sub.unsubscribe(); }
     await supabase.from('push_subscriptions').delete().eq('user_id', user.id);
     setSubscribed(false);
-    toast.info('Push notifications disabled');
+    toast.success('Notifications disabled');
   };
 
   return { permission, subscribed, subscribe, unsubscribe };
