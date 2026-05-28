@@ -44,11 +44,5 @@
         }
       ]
     }
-  ],
-  "ignoreCommand": "exit 0",
-  "github": {
-    "autoAlias": true,
-    "enabled": true,
-    "silent": false
-  }
+  ]
 }
