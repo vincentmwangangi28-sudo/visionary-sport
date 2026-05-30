@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LogOut, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard } from "lucide-react";
+import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
@@ -20,16 +20,18 @@ const navLinks = [
   { to: "/performance",label: "Performance",  icon: BarChart2,  protected: true },
   { to: "/shop",       label: "Shop",         icon: ShoppingBag,protected: true },
   { to: "/rewards",    label: "Rewards",      icon: Gift,       protected: true },
+  { to: "/best-bets",  label: "Best Bets",    icon: Flame },
+  { to: "/predict",    label: "Predictor",    icon: Zap },
   { to: "/about",      label: "About",        icon: Info },
 ];
 
 const topNavLinks = [
   { to: "/",            label: "Predictions" },
   { to: "/live",        label: "Live" },
-  { to: "/news",        label: "News" },
+  { to: "/best-bets",   label: "Best Bets" },
+  { to: "/predict",     label: "Predictor" },
   { to: "/value-bets",  label: "Value Bets" },
-  { to: "/accumulator", label: "Acca" },
-  { to: "/tipsters",    label: "Tipsters" },
+  { to: "/news",        label: "News" },
 ];
 
 export const Navbar = () => {

@@ -1,51 +1,33 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Component, ReactNode, ErrorInfo } from 'react';
 
-interface Props { children: ReactNode; fallback?: ReactNode; }
-interface State { hasError: boolean; error: Error | null; }
+interface Props { children: ReactNode; }
+interface State { hasError: boolean; error?: Error; }
 
 export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+  state: State = { hasError: false };
+
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
+
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, info.componentStack);
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'exception', { description: error.message, fatal: false });
-    }
+    console.error('App error:', error, info);
   }
-  handleReset = () => this.setState({ hasError: false, error: null });
+
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback;
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <div className="max-w-md w-full text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="h-8 w-8 text-destructive" />
-              </div>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Something went wrong</h2>
-              <p className="text-muted-foreground text-sm mb-1">An unexpected error occurred. Our team has been notified.</p>
-              {this.state.error && (
-                <p className="text-xs text-muted-foreground font-mono bg-muted px-3 py-2 rounded mt-3 text-left break-all">
-                  {this.state.error.message}
-                </p>
-              )}
-            </div>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={this.handleReset} variant="default" className="gap-2">
-                <RefreshCw className="h-4 w-4" /> Try Again
-              </Button>
-              <Button onClick={() => window.location.href = '/'} variant="outline">Go Home</Button>
-            </div>
+        <div className="min-h-screen flex items-center justify-center bg-background p-6">
+          <div className="max-w-md text-center space-y-4">
+            <div className="text-6xl">⚽</div>
+            <h1 className="text-2xl font-bold">Something went wrong</h1>
+            <p className="text-muted-foreground text-sm">{this.state.error?.message}</p>
+            <button
+              onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Reload App
+            </button>
           </div>
         </div>
       );
