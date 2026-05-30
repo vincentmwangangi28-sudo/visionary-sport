@@ -29,6 +29,8 @@ const MatchPredictor    = lazy(() => import("./pages/MatchPredictor"));
 const BestBets          = lazy(() => import("./pages/BestBets"));
 const AdminDashboard    = lazy(() => import("./pages/AdminDashboard"));
 const NotFound          = lazy(() => import("./pages/NotFound"));
+const CorrectScore      = lazy(() => import("./pages/CorrectScore"));
+const BTTS              = lazy(() => import("./pages/BTTS"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -66,6 +68,8 @@ const App = () => (
                 <Route path="/shop"          element={<ProtectedRoute><Shop /></ProtectedRoute>} />
                 <Route path="/rewards"       element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
                 <Route path="/admin"         element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/correct-score" element={<CorrectScore />} />
+                <Route path="/btts"          element={<BTTS />} />
                 <Route path="*"             element={<NotFound />} />
               </Routes>
             </Suspense>
