@@ -2,79 +2,68 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { useSubscription } from '@/hooks/useSubscription';
+import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
 
-export interface Prediction {
-  id: string;
-  home_team: string;
-  away_team: string;
-  match_date: string;
-  league: string;
-  predicted_outcome: string;
-  confidence_score: number;
-  is_premium: boolean;
-  status: string;
-  home_odds?: number;
-  away_odds?: number;
-  draw_odds?: number;
-  analysis?: string;
-  result?: string;
-  created_at: string;
-}
+export type { Prediction };
+export { getPrediction, getConfidence };
 
 const PAGE_SIZE = 10;
 
-export const usePredictions = (page = 1) => {
+export const usePredictions = (page = 1, league?: string) => {
   const { isPremium } = useSubscription();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: queryKeys.predictions.list(page),
+    queryKey: [...queryKeys.predictions.list(page), league],
     queryFn: async () => {
-      const from = (page - 1) * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-      const { data, error, count } = await supabase
+      const today = new Date().toISOString().split('T')[0];
+      let q = supabase
         .from('predictions')
         .select('*', { count: 'exact' })
+        .gte('match_date', today)
         .order('match_date', { ascending: true })
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+      if (league) q = q.eq('league', league);
+      const { data, error, count } = await q;
       if (error) throw error;
-      return { predictions: data as Prediction[], total: count ?? 0 };
+      return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
     },
     staleTime: 60_000,
   });
 
   // Prefetch next page
-  if (page < Math.ceil((query.data?.total ?? 0) / PAGE_SIZE)) {
+  const total = query.data?.total ?? 0;
+  if (page < Math.ceil(total / PAGE_SIZE)) {
     queryClient.prefetchQuery({
-      queryKey: queryKeys.predictions.list(page + 1),
+      queryKey: [...queryKeys.predictions.list(page + 1), league],
       queryFn: async () => {
-        const from = page * PAGE_SIZE;
-        const { data, count } = await supabase.from('predictions')
-          .select('*', { count: 'exact' }).order('match_date', { ascending: true })
-          .range(from, from + PAGE_SIZE - 1);
-        return { predictions: data as Prediction[], total: count ?? 0 };
+        const today = new Date().toISOString().split('T')[0];
+        const { data, count } = await supabase.from('predictions').select('*', { count: 'exact' })
+          .gte('match_date', today).order('match_date', { ascending: true })
+          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+        return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
       },
       staleTime: 60_000,
     });
   }
 
-  // Gate premium predictions for non-subscribers
+  // Gate premium predictions for free users
   const gatedPredictions = (query.data?.predictions ?? []).map(p => {
     if (p.is_premium && !isPremium()) {
       return {
-        ...p,
-        predicted_outcome: '🔒 Premium',
-        analysis: 'Upgrade to see this prediction',
-        confidence_score: 0,
-        home_odds: undefined,
-        away_odds: undefined,
-        draw_odds: undefined,
+        ...p, prediction: '🔒 Premium', predicted_outcome: '🔒 Premium',
+        analysis: 'Upgrade to unlock this prediction', reasoning: 'Upgrade to unlock',
+        confidence: 0, confidence_score: 0,
+        home_odds: undefined, draw_odds: undefined, away_odds: undefined,
       };
     }
     return p;
   });
 
-  const totalPages = Math.ceil((query.data?.total ?? 0) / PAGE_SIZE);
-  return { ...query, predictions: gatedPredictions, totalPages, pageSize: PAGE_SIZE };
+  return {
+    ...query,
+    predictions: gatedPredictions,
+    totalPages: Math.ceil(total / PAGE_SIZE),
+    pageSize: PAGE_SIZE,
+  };
 };

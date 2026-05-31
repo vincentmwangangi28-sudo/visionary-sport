@@ -13,7 +13,7 @@ import { SharePrediction } from '@/components/SharePrediction';
 
 interface PredResult {
   home_team: string; away_team: string; match_date: string; league: string;
-  predicted_outcome: string; confidence_score: number; analysis: string;
+  predicted_outcome: string; confidence_score?: number; confidence?: number; analysis?: string; reasoning?: string;
   home_odds: number; draw_odds: number; away_odds: number;
   home_win_probability: number; draw_probability: number; away_win_probability: number;
   id: string; is_premium: boolean; status: string; created_at: string;
@@ -124,7 +124,7 @@ export default function MatchPredictor() {
                 <p className={`text-3xl font-black ${outcomeColor(result.predicted_outcome)}`}>{result.predicted_outcome}</p>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   <Target className="h-4 w-4 text-primary" />
-                  <span className="font-semibold text-primary">{result.confidence_score}% confidence</span>
+                  <span className="font-semibold text-primary">{(result.confidence_score ?? result.confidence ?? 0)}% confidence</span>
                 </div>
               </div>
 
@@ -152,10 +152,10 @@ export default function MatchPredictor() {
               </div>
 
               {/* Analysis */}
-              {result.analysis && (
+              {(result.analysis ?? result.reasoning ?? "") && (
                 <div className="bg-background/60 rounded-xl p-4">
                   <p className="text-sm font-medium flex items-center gap-2 mb-2"><TrendingUp className="h-4 w-4 text-primary" />AI Analysis</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{result.analysis}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{(result.analysis ?? result.reasoning ?? "")}</p>
                 </div>
               )}
             </CardContent>

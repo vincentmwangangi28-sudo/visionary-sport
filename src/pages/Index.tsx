@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { LiveLeagueTicker } from '@/components/LiveLeagueTicker';
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { LiveMatches } from "@/components/LiveMatches";
@@ -29,6 +30,7 @@ const Index = () => {
       <SEO />
       <div className="min-h-screen bg-background">
       <Navbar />
+      <LiveLeagueTicker />
       <Hero />
       <LiveMatches />
       <UpcomingMatches />

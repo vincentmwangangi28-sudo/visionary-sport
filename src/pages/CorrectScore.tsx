@@ -26,27 +26,27 @@ export default function CorrectScore() {
     setLoading(true);
     const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase.from('predictions')
-      .select('id, home_team, away_team, match_date, league, confidence, is_premium, metadata')
+      .select('id,home_team,away_team,match_date,league,confidence,confidence_score,is_premium,metadata')
       .gte('match_date', today).order('confidence', { ascending: false }).limit(15);
 
     // Extract or generate correct score from metadata/confidence
     const scores = (data ?? []).map(p => ({
       ...p,
-      predicted_score: (p as Record<string, unknown>).metadata?.correct_score as string || generateScore(p.confidence),
-      odds: generateScoreOdds(p.confidence),
+      predicted_score: generateScore(p.confidence_score ?? p.confidence ?? 60),
+      odds: generateScoreOdds(p.confidence_score ?? p.confidence ?? 60),
     }));
     setPredictions(scores as ScorePrediction[]);
     setLoading(false);
   };
 
-  const generateScore = (confidence: number) => {
+  const generateScore = (confidence: number | null | undefined) => {
     const scenarios = confidence > 75
       ? ['1-0','2-0','2-1'] : confidence > 60
       ? ['1-1','2-1','1-0','2-2'] : ['0-0','1-1','2-2','1-2','0-1'];
     return scenarios[Math.floor(Math.random() * scenarios.length)];
   };
 
-  const generateScoreOdds = (confidence: number) => {
+  const generateScoreOdds = (confidence: number | null | undefined) => {
     return Math.round((100 / Math.max(confidence * 0.4, 5)) * 100) / 100;
   };
 

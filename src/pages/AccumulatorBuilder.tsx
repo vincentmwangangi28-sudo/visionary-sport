@@ -30,7 +30,7 @@ export default function AccumulatorBuilder() {
     setSelections(prev => [...prev, {
       id: `${pred.id}-${market}`,
       match: `${pred.home_team} vs ${pred.away_team}`,
-      market, odds, confidence: pred.confidence_score ?? 60,
+      market, odds, confidence: pred.confidence_score ?? pred.confidence ?? 60,
     }]);
     toast.success(`Added: ${pred.home_team} vs ${pred.away_team} — ${market}`);
   };
@@ -65,13 +65,13 @@ export default function AccumulatorBuilder() {
                       <p className="font-semibold">{pred.home_team} vs {pred.away_team}</p>
                       <p className="text-xs text-muted-foreground">{pred.league} • {new Date(pred.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                     </div>
-                    <Badge variant="secondary">{pred.confidence_score ?? 60}%</Badge>
+                    <Badge variant="secondary">{pred.confidence_score ?? pred.confidence ?? 60}%</Badge>
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     {[
-                      { label: `1 Home Win`, odds: pred.home_odds ?? 2.0 },
-                      { label: `X Draw`, odds: pred.draw_odds ?? 3.2 },
-                      { label: `2 Away Win`, odds: pred.away_odds ?? 3.8 },
+                      { label: 'Home Win', odds: pred.home_odds ?? 2.0 },
+                      { label: 'Draw', odds: pred.draw_odds ?? 3.2 },
+                      { label: 'Away Win', odds: pred.away_odds ?? 3.8 },
                     ].map(({ label, odds }) => {
                       const isAdded = selections.some(s => s.id === `${pred.id}-${label}`);
                       return (

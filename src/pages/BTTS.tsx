@@ -18,14 +18,14 @@ export default function BTTS() {
     setLoading(true);
     const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase.from('predictions')
-      .select('id, home_team, away_team, match_date, league, confidence')
+      .select('id,home_team,away_team,match_date,league,confidence,confidence_score')
       .gte('match_date', today).limit(20);
 
     const enriched = (data ?? []).map(p => ({
       ...p,
-      btts: p.confidence > 55,
-      over25: p.confidence > 50,
-      over25Confidence: Math.min(95, p.confidence + Math.floor(Math.random() * 10)),
+      btts: (p.confidence_score ?? p.confidence) > 55,
+      over25: (p.confidence_score ?? p.confidence) > 50,
+      over25Confidence: Math.min(95, (p.confidence_score ?? p.confidence) + Math.floor(Math.random() * 10)),
     }));
     setPredictions(enriched);
     setLoading(false);
@@ -72,7 +72,7 @@ export default function BTTS() {
                     <div className={`rounded-lg p-3 text-center ${pred.btts ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
                       <p className="text-xs text-muted-foreground mb-1">BTTS</p>
                       <p className={`font-bold text-lg ${pred.btts ? 'text-green-600' : 'text-red-600'}`}>{pred.btts ? '✅ Yes' : '❌ No'}</p>
-                      <p className="text-xs text-muted-foreground">{pred.confidence}% confidence</p>
+                      <p className="text-xs text-muted-foreground">{pred.confidence_score ?? pred.confidence}% confidence</p>
                     </div>
                     <div className={`rounded-lg p-3 text-center ${pred.over25 ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-muted border'}`}>
                       <p className="text-xs text-muted-foreground mb-1">Over 2.5 Goals</p>

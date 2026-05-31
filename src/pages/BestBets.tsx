@@ -29,7 +29,7 @@ export default function BestBets() {
       const today = new Date().toISOString().split('T')[0];
       const { data } = await supabase
         .from('predictions')
-        .select('*')
+        .select('id,home_team,away_team,league,match_date,prediction,predicted_outcome,confidence,confidence_score,home_odds,draw_odds,away_odds,is_premium,result')
         .gte('match_date', today)
         .gte('confidence', 60)
         .order('confidence', { ascending: false })
@@ -97,8 +97,8 @@ export default function BestBets() {
         ) : (
           <div className="space-y-3">
             {bets.map((bet, i) => {
-              const conf = CONFIDENCE_LABEL(bet.confidence);
-              const outcomeOdds = bet.prediction === 'Home Win' ? bet.home_odds : bet.prediction === 'Away Win' ? bet.away_odds : bet.draw_odds;
+              const conf = CONFIDENCE_LABEL(bet.confidence_score ?? bet.confidence);
+              const outcomeOdds = (bet.predicted_outcome ?? bet.prediction) === 'Home Win' ? bet.home_odds : bet.prediction === 'Away Win' ? bet.away_odds : bet.draw_odds;
               return (
                 <Card key={bet.id} className={`${i === 0 ? 'border-orange-500/40 bg-orange-500/5' : ''} transition-all hover:border-primary/30`}>
                   <CardContent className="p-4">
@@ -114,13 +114,13 @@ export default function BestBets() {
                         </div>
                         <p className="font-bold">{bet.home_team} vs {bet.away_team}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <span className="text-sm font-semibold text-primary">{bet.prediction}</span>
+                          <span className="text-sm font-semibold text-primary">{bet.predicted_outcome ?? bet.prediction}</span>
                           {outcomeOdds && <span className="text-sm text-muted-foreground">@ <span className="font-bold text-foreground">{outcomeOdds.toFixed(2)}</span></span>}
                           <div className="ml-auto flex items-center gap-1">
                             <div className="h-1.5 w-16 bg-muted rounded-full overflow-hidden">
-                              <div className="h-full bg-primary rounded-full" style={{ width: `${bet.confidence}%` }} />
+                              <div className="h-full bg-primary rounded-full" style={{ width: `${(bet.confidence_score ?? bet.confidence)}%` }} />
                             </div>
-                            <span className="text-xs font-semibold">{bet.confidence}%</span>
+                            <span className="text-xs font-semibold">{(bet.confidence_score ?? bet.confidence)}%</span>
                           </div>
                         </div>
                       </div>
