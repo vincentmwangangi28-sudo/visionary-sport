@@ -56,3 +56,9 @@ verify_jwt = true
 
 [functions.activate-subscription]
 verify_jwt = true
+
+[functions.fetch-match-context]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false

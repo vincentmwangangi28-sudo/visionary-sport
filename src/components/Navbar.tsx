@@ -5,6 +5,7 @@ import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, N
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
+import { NotificationBell } from "./NotificationBell";
 import { RealtimeStatus } from "./RealtimeStatus";
 
 const navLinks = [
@@ -67,6 +68,7 @@ export const Navbar = () => {
             {user ? (
               <>
                 <CoinBalance />
+                <NotificationBell />
                 <Button variant="outline" size="sm" onClick={signOut} className="gap-1.5 hidden sm:flex">
                   <LogOut className="h-4 w-4" />Sign Out
                 </Button>

@@ -5,6 +5,8 @@ import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/p
 import { SharePrediction } from '@/components/SharePrediction';
 import { Lock, Clock, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { PredictionDetailModal } from '@/components/PredictionDetailModal';
 import { useSubscription } from '@/hooks/useSubscription';
 
 interface Props { prediction: Prediction; }
@@ -17,13 +19,15 @@ const OUTCOME_COLOR: Record<string, string> = {
 
 export const PredictionCard = ({ prediction: p }: Props) => {
   const { isPremium } = useSubscription();
+  const [showDetail, setShowDetail] = useState(false);
   const outcome = getPrediction(p);
   const confidence = getConfidence(p);
   const analysis = getAnalysis(p);
   const locked = p.is_premium && !isPremium() && outcome.includes('🔒');
 
   return (
-    <Card className={`overflow-hidden transition-all hover:shadow-md ${locked ? 'opacity-70' : ''} ${confidence >= 80 ? 'border-primary/30' : ''}`}>
+    <>
+    <Card onClick={() => !locked && setShowDetail(true)} className={`overflow-hidden cursor-pointer transition-all hover:shadow-md ${locked ? 'opacity-70' : ''} ${confidence >= 80 ? 'border-primary/30' : ''}`}>
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center gap-2 justify-between flex-wrap">
           <Badge variant="outline" className="text-xs">{p.league}</Badge>
@@ -85,5 +89,7 @@ export const PredictionCard = ({ prediction: p }: Props) => {
         </div>
       </CardContent>
     </Card>
+    <PredictionDetailModal prediction={p} open={showDetail} onClose={() => setShowDetail(false)} />
+    </>
   );
 };
