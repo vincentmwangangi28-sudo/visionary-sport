@@ -1121,7 +1121,7 @@ export type Database = {
           predictions: Json
           stake_suggestion: number | null
           total_odds: number | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           combined_confidence?: number | null
@@ -1132,7 +1132,7 @@ export type Database = {
           predictions?: Json
           stake_suggestion?: number | null
           total_odds?: number | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           combined_confidence?: number | null
@@ -1143,7 +1143,7 @@ export type Database = {
           predictions?: Json
           stake_suggestion?: number | null
           total_odds?: number | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
