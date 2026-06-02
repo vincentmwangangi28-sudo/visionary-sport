@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Settings, ArrowLeft, ExternalLink } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Sparkles, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { lovable } from '@/integrations/lovable/index';
+import { toast } from 'sonner';
 
 const KNOWN_ERRORS: Record<string, { title: string; description: string; fix: string }> = {
   redirect_uri_mismatch: {
@@ -25,6 +28,27 @@ const KNOWN_ERRORS: Record<string, { title: string; description: string; fix: st
 
 export default function AuthError() {
   const navigate = useNavigate();
+  const [switching, setSwitching] = useState(false);
+
+  const handleSwitchToManaged = async () => {
+    setSwitching(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
+        extraParams: { prompt: 'select_account' },
+      });
+      if (result.error) throw result.error;
+      if (!result.redirected) navigate('/');
+    } catch (err: any) {
+      toast.error(
+        err?.message?.includes('redirect_uri_mismatch')
+          ? 'Custom Google credentials are still active. Open backend settings to clear them.'
+          : err?.message || 'Could not start Google sign-in.'
+      );
+      setSwitching(false);
+    }
+  };
+
   const [params] = useSearchParams();
 
   const rawError = params.get('error') || params.get('authError') || '';
@@ -78,28 +102,23 @@ export default function AuthError() {
             )}
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button onClick={() => navigate('/auth')} className="w-full">
+              <Button onClick={() => navigate('/auth')} className="w-full" variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" /> Try again
               </Button>
               <Button
-                variant="outline"
+                onClick={handleSwitchToManaged}
+                disabled={switching}
                 className="w-full"
-                asChild
               >
-                <a
-                  href="https://docs.lovable.dev/features/cloud#authentication"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Settings className="h-4 w-4 mr-2" /> Switch to managed Google
-                  <ExternalLink className="h-3 w-3 ml-1 opacity-70" />
-                </a>
+                <Sparkles className="h-4 w-4 mr-2" />
+                {switching ? 'Switching…' : 'Use managed Google'}
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              Tip: Managed Google login works instantly — no Google Cloud setup, no redirect URL config.
+              Managed Google login uses Lovable's pre-approved OAuth app — no Google Cloud setup or redirect URL config needed.
             </p>
+
 
             <div className="text-center text-sm">
               Still stuck?{' '}
