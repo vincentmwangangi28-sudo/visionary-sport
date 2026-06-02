@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 // Lazy load all other pages for reduced initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AuthError = lazy(() => import("./pages/AuthError"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Insights = lazy(() => import("./pages/Insights"));
 const Performance = lazy(() => import("./pages/Performance"));
