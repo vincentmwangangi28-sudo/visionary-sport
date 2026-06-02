@@ -24,6 +24,7 @@ const navLinks = [
   { to: "/best-bets",  label: "Best Bets",    icon: Flame },
   { to: "/predict",    label: "Predictor",    icon: Zap },
   { to: "/sports",     label: "More Sports",   icon: Zap },
+  { to: "/highlights", label: "Highlights",    icon: Film },
   { to: "/statistics", label: "Statistics",    icon: BarChart2 },
   { to: "/about",      label: "About",        icon: Info },
 ];

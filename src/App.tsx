@@ -31,6 +31,7 @@ const AdminDashboard    = lazy(() => import("./pages/AdminDashboard"));
 const NotFound          = lazy(() => import("./pages/NotFound"));
 const OtherSports       = lazy(() => import("./pages/OtherSports"));
 const Statistics        = lazy(() => import("./pages/Statistics"));
+const Highlights        = lazy(() => import("./pages/Highlights"));
 const CorrectScore      = lazy(() => import("./pages/CorrectScore"));
 const BTTS              = lazy(() => import("./pages/BTTS"));
 
@@ -74,6 +75,7 @@ const App = () => (
                 <Route path="/btts"          element={<BTTS />} />
                 <Route path="/sports"        element={<OtherSports />} />
                 <Route path="/statistics"    element={<Statistics />} />
+                <Route path="/highlights"   element={<Highlights />} />
                 <Route path="*"             element={<NotFound />} />
               </Routes>
             </Suspense>
