@@ -102,28 +102,23 @@ export default function AuthError() {
             )}
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button onClick={() => navigate('/auth')} className="w-full">
+              <Button onClick={() => navigate('/auth')} className="w-full" variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" /> Try again
               </Button>
               <Button
-                variant="outline"
+                onClick={handleSwitchToManaged}
+                disabled={switching}
                 className="w-full"
-                asChild
               >
-                <a
-                  href="https://docs.lovable.dev/features/cloud#authentication"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Settings className="h-4 w-4 mr-2" /> Switch to managed Google
-                  <ExternalLink className="h-3 w-3 ml-1 opacity-70" />
-                </a>
+                <Sparkles className="h-4 w-4 mr-2" />
+                {switching ? 'Switching…' : 'Use managed Google'}
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              Tip: Managed Google login works instantly — no Google Cloud setup, no redirect URL config.
+              Managed Google login uses Lovable's pre-approved OAuth app — no Google Cloud setup or redirect URL config needed.
             </p>
+
 
             <div className="text-center text-sm">
               Still stuck?{' '}
