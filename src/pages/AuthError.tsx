@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Settings, ArrowLeft, ExternalLink } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Sparkles, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { lovable } from '@/integrations/lovable/index';
+import { toast } from 'sonner';
 
 const KNOWN_ERRORS: Record<string, { title: string; description: string; fix: string }> = {
   redirect_uri_mismatch: {
