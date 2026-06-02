@@ -28,6 +28,27 @@ const KNOWN_ERRORS: Record<string, { title: string; description: string; fix: st
 
 export default function AuthError() {
   const navigate = useNavigate();
+  const [switching, setSwitching] = useState(false);
+
+  const handleSwitchToManaged = async () => {
+    setSwitching(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
+        extraParams: { prompt: 'select_account' },
+      });
+      if (result.error) throw result.error;
+      if (!result.redirected) navigate('/');
+    } catch (err: any) {
+      toast.error(
+        err?.message?.includes('redirect_uri_mismatch')
+          ? 'Custom Google credentials are still active. Open backend settings to clear them.'
+          : err?.message || 'Could not start Google sign-in.'
+      );
+      setSwitching(false);
+    }
+  };
+
   const [params] = useSearchParams();
 
   const rawError = params.get('error') || params.get('authError') || '';
