@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { lovable } from '@/integrations/lovable/index';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { friendlyOAuthError, logOAuth } from '@/lib/oauthLogger';
 
 interface SocialAuthButtonsProps {
   loading: boolean;
@@ -24,31 +26,51 @@ const AppleIcon = () => (
 );
 
 export default function SocialAuthButtons({ loading, setLoading, mode }: SocialAuthButtonsProps) {
-  const handleGoogleSignIn = async () => {
+  const navigate = useNavigate();
+
+  const startOAuth = async (provider: 'google' | 'apple') => {
     setLoading(true);
+    logOAuth({
+      level: 'info',
+      provider,
+      stage: 'start',
+      message: 'Initiating OAuth flow',
+      context: { mode, redirect_uri: window.location.origin },
+    });
     try {
-      const { error } = await lovable.auth.signInWithOAuth('google', {
+      const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
       });
-      if (error) throw error;
+      if (result.error) throw result.error;
+      if (result.redirected) {
+        logOAuth({ level: 'info', provider, stage: 'redirect', message: 'Browser redirecting to provider' });
+        return;
+      }
+      logOAuth({ level: 'info', provider, stage: 'success', message: 'Session established without redirect' });
+      navigate('/');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in with Google');
+      const raw = error?.message || String(error);
+      const friendly = friendlyOAuthError(raw);
+      logOAuth({
+        level: 'error',
+        provider,
+        stage: 'error',
+        message: friendly.title,
+        context: { raw, name: error?.name, status: error?.status, code: error?.code },
+      });
+      toast.error(friendly.title, {
+        description: friendly.hint ? `${friendly.message} ${friendly.hint}` : friendly.message,
+        action: {
+          label: 'Details',
+          onClick: () => navigate(`/auth/error?error=${encodeURIComponent(raw)}`),
+        },
+      });
       setLoading(false);
     }
   };
 
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await lovable.auth.signInWithOAuth('apple', {
-        redirect_uri: window.location.origin,
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in with Apple');
-      setLoading(false);
-    }
-  };
+  const handleGoogleSignIn = () => startOAuth('google');
+  const handleAppleSignIn = () => startOAuth('apple');
 
   const buttonText = mode === 'signin' ? 'Continue with' : 'Sign up with';
 
