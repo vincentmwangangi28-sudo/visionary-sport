@@ -220,12 +220,34 @@ export const Navbar = () => {
                   );
                 })}
               </div>
-              {user && (
+              {user ? (
                 <div className="p-4 border-t border-border">
                   <Button variant="outline" size="sm" onClick={() => { signOut(); setMobileOpen(false); }} className="w-full gap-2">
                     <LogOut className="h-4 w-4" />
                     Sign Out
                   </Button>
+                </div>
+              ) : (
+                <div className="p-4 border-t border-border space-y-2">
+                  <Button
+                    size="sm"
+                    className="w-full gap-2"
+                    variant="outline"
+                    onClick={() => { handleGoogleSignIn(); setMobileOpen(false); }}
+                    disabled={googleLoading}
+                  >
+                    <GoogleIconSmall />
+                    {googleLoading ? 'Connecting...' : 'Sign in with Google'}
+                  </Button>
+                  <Link
+                    to="/auth"
+                    onClick={() => setMobileOpen(false)}
+                    className="block w-full"
+                  >
+                    <Button size="sm" variant="ghost" className="w-full text-muted-foreground">
+                      More sign-in options
+                    </Button>
+                  </Link>
                 </div>
               )}
             </motion.div>
