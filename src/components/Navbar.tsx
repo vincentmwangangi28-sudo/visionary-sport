@@ -35,7 +35,9 @@ const navLinks = [
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -49,6 +51,42 @@ export const Navbar = () => {
       .maybeSingle()
       .then(({ data }) => setIsAdmin(!!data));
   }, [user]);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    logOAuth({
+      level: 'info',
+      provider: 'google',
+      stage: 'start',
+      message: 'Navbar Google OAuth initiated',
+      context: { redirect_uri: window.location.origin },
+    });
+    try {
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) {
+        logOAuth({ level: 'info', provider: 'google', stage: 'redirect', message: 'Browser redirecting to Google' });
+        return;
+      }
+      navigate('/');
+    } catch (error: any) {
+      const raw = error?.message || String(error);
+      const friendly = friendlyOAuthError(raw);
+      logOAuth({
+        level: 'error',
+        provider: 'google',
+        stage: 'error',
+        message: friendly.title,
+        context: { raw },
+      });
+      toast.error(friendly.title, {
+        description: friendly.hint ? `${friendly.message} ${friendly.hint}` : friendly.message,
+      });
+      setGoogleLoading(false);
+    }
+  };
 
   const allLinks = isAdmin
     ? [...navLinks, { to: "/admin", label: "Admin", icon: Shield }]
