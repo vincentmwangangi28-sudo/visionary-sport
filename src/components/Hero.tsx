@@ -21,13 +21,51 @@ const GoogleIcon = () => (
 
 export const Hero = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [bgLoaded, setBgLoaded] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     const img = new Image();
     img.src = heroStadium;
     img.onload = () => setBgLoaded(true);
   }, []);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    logOAuth({
+      level: 'info',
+      provider: 'google',
+      stage: 'start',
+      message: 'Hero Google OAuth initiated',
+      context: { redirect_uri: window.location.origin },
+    });
+    try {
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) {
+        logOAuth({ level: 'info', provider: 'google', stage: 'redirect', message: 'Browser redirecting to Google' });
+        return;
+      }
+      navigate('/');
+    } catch (error: any) {
+      const raw = error?.message || String(error);
+      const friendly = friendlyOAuthError(raw);
+      logOAuth({
+        level: 'error',
+        provider: 'google',
+        stage: 'error',
+        message: friendly.title,
+        context: { raw },
+      });
+      toast.error(friendly.title, {
+        description: friendly.hint ? `${friendly.message} ${friendly.hint}` : friendly.message,
+      });
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
