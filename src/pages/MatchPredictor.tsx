@@ -56,7 +56,7 @@ export default function MatchPredictor() {
     <div className="min-h-screen bg-background">
       <SEO title="Match Predictor | PredictPro" description="Enter any two teams and get an instant AI prediction with confidence score, odds, and detailed analysis." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-3xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold flex items-center justify-center gap-3 mb-2">
             <Zap className="h-8 w-8 text-primary" />Match Predictor

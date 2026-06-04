@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AIChatbot } from "@/components/AIChatbot";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { queryClient } from "@/lib/queryClient";
 import { Suspense, lazy } from "react";
 
@@ -32,6 +33,8 @@ const NotFound          = lazy(() => import("./pages/NotFound"));
 const OtherSports       = lazy(() => import("./pages/OtherSports"));
 const Statistics        = lazy(() => import("./pages/Statistics"));
 const Highlights        = lazy(() => import("./pages/Highlights"));
+const PlayerSearch      = lazy(() => import("./pages/PlayerSearch"));
+const Standings         = lazy(() => import("./pages/Standings"));
 const CorrectScore      = lazy(() => import("./pages/CorrectScore"));
 const BTTS              = lazy(() => import("./pages/BTTS"));
 
@@ -76,9 +79,12 @@ const App = () => (
                 <Route path="/sports"        element={<OtherSports />} />
                 <Route path="/statistics"    element={<Statistics />} />
                 <Route path="/highlights"   element={<Highlights />} />
+                <Route path="/players"       element={<PlayerSearch />} />
+                <Route path="/standings"     element={<Standings />} />
                 <Route path="*"             element={<NotFound />} />
               </Routes>
             </Suspense>
+            <MobileBottomNav />
             <AIChatbot />
           </AuthProvider>
         </BrowserRouter>

@@ -68,7 +68,7 @@ export default function Statistics() {
     <div className="min-h-screen bg-background">
       <SEO title="Global Statistics | PredictPro" description="AI prediction accuracy statistics across all leagues worldwide. See our win rates, confidence distributions and league coverage." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-6xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold flex items-center gap-3"><BarChart3 className="h-8 w-8 text-primary" />Global Statistics</h1>
           <p className="text-muted-foreground mt-1">Real-time AI prediction analytics across all leagues worldwide.</p>

@@ -58,7 +58,7 @@ export default function OtherSports() {
     <div className="min-h-screen bg-background">
       <SEO title="Multi-Sport Predictions | PredictPro" description="AI predictions for tennis, basketball, cricket and rugby. Global sports coverage." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-4xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-3"><Zap className="h-8 w-8 text-primary" />Multi-Sport Predictions</h1>
           <p className="text-muted-foreground mt-1">AI-powered predictions for tennis, basketball, cricket & rugby.</p>

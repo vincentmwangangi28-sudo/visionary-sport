@@ -39,7 +39,7 @@ export default function BTTS() {
     <div className="min-h-screen bg-background">
       <SEO title="BTTS Predictions | PredictPro" description="Both Teams To Score (BTTS) and Over/Under 2.5 goals predictions for today's matches." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-4xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Swords className="h-8 w-8 text-primary" />BTTS & Over/Under</h1>

@@ -34,7 +34,7 @@ export default function BankrollManager() {
     <div className="min-h-screen bg-background">
       <SEO title="Bankroll Manager | PredictPro" description="Manage your betting bankroll with Kelly Criterion, flat stake, and variance calculators. Bet responsibly." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-5xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-3"><Wallet className="h-8 w-8 text-primary" />Bankroll Manager</h1>
           <p className="text-muted-foreground mt-1">Protect your capital with proper stake sizing. The tools that serious bettors use.</p>

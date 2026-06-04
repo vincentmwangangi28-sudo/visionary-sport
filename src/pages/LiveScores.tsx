@@ -102,7 +102,7 @@ export default function LiveScores() {
     <div className="min-h-screen bg-background">
       <SEO title="Live Scores | PredictPro" description="Real-time football scores, match events and live updates. Follow all matches live." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-3xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Activity className="h-8 w-8 text-red-500" />Live Scores</h1>

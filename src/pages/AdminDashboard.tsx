@@ -100,7 +100,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-7xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-7xl">
         <h1 className="text-3xl font-bold mb-8">Revenue Dashboard</h1>
 
         {fetching ? (

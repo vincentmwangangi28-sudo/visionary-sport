@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, Share2, Clock, Flame, CheckCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { WhatsAppShare } from '@/components/WhatsAppShare';
 
 interface Prediction {
   id: string; home_team: string; away_team: string; match_date: string;
@@ -50,7 +51,7 @@ export default function BestBets() {
     <div className="min-h-screen bg-background">
       <SEO title="Today's Best Bets | PredictPro" description="Today's highest confidence AI football predictions. Curated best bets with 60%+ confidence scores." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-3xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Flame className="h-8 w-8 text-orange-500" />Today's Best Bets</h1>
@@ -62,6 +63,7 @@ export default function BestBets() {
             <Button variant="outline" size="sm" onClick={fetchBets} disabled={loading} className="gap-1.5">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
+            <WhatsAppShare text={bets.slice(0,5).map(b => `✅ ${b.home_team} vs ${b.away_team} — ${b.predicted_outcome??b.prediction} (${b.confidence_score??b.confidence}%)`).join('\n') + '\n\npredictpro.guru'} />
             <Button size="sm" onClick={shareAll} disabled={!bets.length} className="gap-1.5">
               <Share2 className="h-4 w-4" />Share All
             </Button>

@@ -26,6 +26,8 @@ const navLinks = [
   { to: "/sports",     label: "More Sports",   icon: Zap },
   { to: "/highlights", label: "Highlights",    icon: Film },
   { to: "/statistics", label: "Statistics",    icon: BarChart2 },
+  { to: "/standings",  label: "Standings",     icon: Trophy },
+  { to: "/players",    label: "Player Search", icon: Search },
   { to: "/about",      label: "About",        icon: Info },
 ];
 

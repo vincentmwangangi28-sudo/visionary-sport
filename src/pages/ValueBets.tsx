@@ -33,7 +33,7 @@ export default function ValueBets() {
     <div className="min-h-screen bg-background">
       <SEO title="Value Bets | PredictPro" description="AI-identified value bets where our probability exceeds bookmaker odds. Find the edge over the house." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-5xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold flex items-center gap-3"><TrendingUp className="h-8 w-8 text-primary" />Value Bets</h1>
           <Button variant="outline" size="sm" onClick={fetch} disabled={loading} className="gap-2">

@@ -63,7 +63,7 @@ export default function Shop() {
     <div className="min-h-screen bg-background">
       <SEO title="Shop | PredictPro" description="Upgrade to premium AI football predictions. Available worldwide with card payment or M-Pesa." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-6xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black mb-3">Upgrade Your Game</h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">

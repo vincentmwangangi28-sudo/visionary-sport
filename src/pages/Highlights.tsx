@@ -32,7 +32,7 @@ export default function Highlights() {
     <div className="min-h-screen bg-background">
       <SEO title="Match Highlights | PredictPro" description="Latest football match highlights and video clips from top leagues worldwide." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-6xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Film className="h-8 w-8 text-primary" />Match Highlights</h1>

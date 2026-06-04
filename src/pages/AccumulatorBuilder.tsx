@@ -47,7 +47,7 @@ export default function AccumulatorBuilder() {
     <div className="min-h-screen bg-background">
       <SEO title="Accumulator Builder | PredictPro" description="Build and share AI-powered football accumulators. Calculate potential returns and share with friends." />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 max-w-6xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-3"><Calculator className="h-8 w-8 text-primary" />Accumulator Builder</h1>
           <p className="text-muted-foreground mt-1">Build multi-bet accumulators from AI predictions. Click any prediction to add it.</p>
