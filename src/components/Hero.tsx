@@ -136,12 +136,24 @@ export const Hero = () => {
               <GeneratePredictionDialog />
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <Link to="/auth" aria-label="Start your free trial">
-                  <Button variant="hero" size="lg" className="group">
-                    Start Your Free Trial
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                    onClick={handleGoogleSignIn}
+                    disabled={googleLoading}
+                  >
+                    <GoogleIcon />
+                    {googleLoading ? 'Connecting...' : 'Continue with Google'}
                   </Button>
-                </Link>
+                  <Link to="/auth" aria-label="Start your free trial">
+                    <Button variant="hero" size="lg" className="group">
+                      Start Your Free Trial
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                    </Button>
+                  </Link>
+                </div>
                 <p className="text-sm text-muted-foreground">No credit card required • 100 free coins to start</p>
               </div>
             )}
