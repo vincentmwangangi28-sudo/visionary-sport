@@ -134,16 +134,38 @@ export const Navbar = () => {
                   </Button>
                 </>
               ) : (
-                <Link to="/auth">
-                  <Button size="sm" className="bg-gradient-hero text-primary-foreground hover:opacity-90">
-                    Sign In
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 hidden sm:flex"
+                    onClick={handleGoogleSignIn}
+                    disabled={googleLoading}
+                  >
+                    <GoogleIconSmall />
+                    <span className="hidden md:inline">
+                      {googleLoading ? 'Connecting...' : 'Sign in with Google'}
+                    </span>
+                    <span className="md:hidden">
+                      {googleLoading ? '...' : 'Google'}
+                    </span>
                   </Button>
-                </Link>
+                  <Link to="/auth" className="hidden sm:block">
+                    <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                      More options
+                    </Button>
+                  </Link>
+                  <Link to="/auth" className="sm:hidden">
+                    <Button size="sm" className="bg-gradient-hero text-primary-foreground hover:opacity-90">
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
               )}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="lg:hidden" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Open menu"
               >
