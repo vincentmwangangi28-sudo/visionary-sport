@@ -155,7 +155,7 @@ export const useRealtimeProfile = () => {
     fetchProfile();
 
     const channel = supabase
-      .channel(`profile-${user.id}`)
+      .channel(`${user.id}:profile`)
       .on(
         'postgres_changes',
         {
@@ -207,7 +207,7 @@ export const useRealtimeTransactions = () => {
     fetchTransactions();
 
     const channel = supabase
-      .channel(`transactions-${user.id}`)
+      .channel(`${user.id}:transactions`)
       .on(
         'postgres_changes',
         {

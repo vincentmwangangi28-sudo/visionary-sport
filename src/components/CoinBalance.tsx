@@ -17,7 +17,7 @@ export const CoinBalance = () => {
 
     // Subscribe to real-time coin updates
     const channel = supabase
-      .channel(`coin-updates-${user.id}`)
+      .channel(`${user.id}:coin-updates`)
       .on(
         'postgres_changes',
         {
