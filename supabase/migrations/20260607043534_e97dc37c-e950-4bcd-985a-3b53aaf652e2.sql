@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Authenticated users can view poll votes" ON public.poll_votes;
+CREATE POLICY "Users can view their own poll votes" ON public.poll_votes FOR SELECT TO authenticated USING (auth.uid() = user_id);
