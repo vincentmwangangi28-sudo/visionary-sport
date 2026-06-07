@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface NewsArticle {
@@ -17,47 +17,55 @@ interface NewsArticle {
   updated_at: string;
 }
 
+const fetchNewsArticles = async (category?: string): Promise<NewsArticle[]> => {
+  let query = supabase
+    .from('news_articles')
+    .select('*')
+    .eq('is_published', true)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (category) {
+    query = query.eq('category', category);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []) as NewsArticle[];
+};
+
 export function useNewsArticles(category?: string) {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchArticles = async () => {
-    try {
-      let query = supabase
-        .from('news_articles')
-        .select('*')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      setArticles(data || []);
-    } catch (error) {
-      console.error('Error fetching news articles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['news-articles', category ?? 'all'],
+    queryFn: () => fetchNewsArticles(category),
+    // SWR semantics: serve cache instantly, revalidate in background
+    staleTime: 60_000,              // fresh for 1 min — no refetch
+    gcTime: 10 * 60_000,            // keep in cache for 10 min
+    refetchOnWindowFocus: true,     // background revalidation on tab focus
+    refetchOnReconnect: true,       // and after network recovery
+    refetchInterval: 5 * 60_000,    // periodic background refresh (5 min)
+    placeholderData: (prev) => prev, // keep showing old data while refetching
+  });
 
   const incrementViewCount = async (articleId: string) => {
     try {
-      // Direct update instead of RPC (public read allows this through service role if needed)
       console.log('View tracked for article:', articleId);
     } catch (error) {
       console.error('Error incrementing view count:', error);
     }
   };
 
-  useEffect(() => {
-    fetchArticles();
-  }, [category]);
+  // Allow callers to imperatively prime the cache (e.g. after publishing)
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ['news-articles'] });
 
-  return { articles, loading, refetch: fetchArticles, incrementViewCount };
+  return {
+    articles: data ?? [],
+    loading: isLoading,
+    refetch,
+    invalidate,
+    incrementViewCount,
+  };
 }

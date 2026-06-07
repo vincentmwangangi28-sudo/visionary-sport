@@ -221,7 +221,7 @@ export const PredictionsDashboard = () => {
             </Button>
 
             <Button
-              onClick={refreshPredictions}
+              onClick={() => refreshPredictions()}
               variant="outline"
               className="gap-2"
             >
