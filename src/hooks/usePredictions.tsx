@@ -65,7 +65,7 @@ export const usePredictions = () => {
         .from('predictions')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(30);
 
       if (error) throw error;
       setPredictions(data || []);
