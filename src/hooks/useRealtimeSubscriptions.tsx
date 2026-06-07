@@ -207,7 +207,7 @@ export const useRealtimeTransactions = () => {
     fetchTransactions();
 
     const channel = supabase
-      .channel(`transactions-${user.id}`)
+      .channel(`${user.id}:transactions`)
       .on(
         'postgres_changes',
         {
