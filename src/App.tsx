@@ -2,7 +2,9 @@ import "./App.css";
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -29,7 +31,31 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Today = lazy(() => import("./pages/Today"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24, // 24h — keep cache long enough to persist
+    },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  storage: typeof window !== "undefined" ? window.localStorage : undefined,
+  key: "predictpro-query-cache",
+  throttleTime: 1000,
+});
+
+// Only persist the queries we want available offline
+const persistOptions = {
+  persister,
+  maxAge: 1000 * 60 * 60 * 24, // 24h
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query: any) => {
+      const key = query.queryKey?.[0];
+      return key === "news-articles" || key === "predictions";
+    },
+  },
+};
 
 // Minimal loading fallback to avoid layout shift
 const PageLoader = () => (
@@ -40,7 +66,7 @@ const PageLoader = () => (
 
 const App = () => (
   <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <BrowserRouter>
         <AuthProvider>
           <Toaster />
@@ -69,7 +95,7 @@ const App = () => (
           </Suspense>
         </AuthProvider>
       </BrowserRouter>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   </HelmetProvider>
 );
 
