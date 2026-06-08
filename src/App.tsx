@@ -66,7 +66,7 @@ const PageLoader = () => (
 
 const App = () => (
   <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <BrowserRouter>
         <AuthProvider>
           <Toaster />
