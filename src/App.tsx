@@ -31,7 +31,31 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Today = lazy(() => import("./pages/Today"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24, // 24h — keep cache long enough to persist
+    },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  storage: typeof window !== "undefined" ? window.localStorage : undefined,
+  key: "predictpro-query-cache",
+  throttleTime: 1000,
+});
+
+// Only persist the queries we want available offline
+const persistOptions = {
+  persister,
+  maxAge: 1000 * 60 * 60 * 24, // 24h
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query: any) => {
+      const key = query.queryKey?.[0];
+      return key === "news-articles" || key === "predictions";
+    },
+  },
+};
 
 // Minimal loading fallback to avoid layout shift
 const PageLoader = () => (
