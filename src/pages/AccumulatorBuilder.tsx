@@ -45,7 +45,7 @@ export default function AccumulatorBuilder() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Accumulator Builder | PredictPro" description="Build and share AI-powered football accumulators. Calculate potential returns and share with friends." />
+      <SEO title="Football Accumulator Builder | Acca Calculator | PredictPro" description="Build football accumulators from AI predictions. Calculate potential returns, combine multiple bets and share your acca with friends." keywords="football accumulator builder, acca calculator, football acca tips, accumulator bet builder, multiple bet calculator" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="mb-6">

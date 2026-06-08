@@ -66,7 +66,7 @@ export default function Statistics() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Global Statistics | PredictPro" description="AI prediction accuracy statistics across all leagues worldwide. See our win rates, confidence distributions and league coverage." />
+      <SEO title="AI Prediction Statistics | Accuracy by League | PredictPro" description="PredictPro AI accuracy statistics across all football leagues. Win rates, confidence distributions and prediction performance analytics." keywords="football prediction accuracy, AI football statistics, prediction win rate, betting statistics football" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="mb-8">

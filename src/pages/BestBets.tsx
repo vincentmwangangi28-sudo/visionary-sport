@@ -49,7 +49,7 @@ export default function BestBets() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Today's Best Bets | PredictPro" description="Today's highest confidence AI football predictions. Curated best bets with 60%+ confidence scores." />
+      <SEO title="Today's Best Football Bets | Free AI Tips | PredictPro" description="Today's highest-confidence AI football predictions. Free daily tips with 60%+ accuracy scores, odds comparison and expert analysis. Premier League, La Liga, Champions League and more." keywords="best football bets today, free football tips today, sure bets today, high confidence football predictions, football accumulator tips" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="flex items-center justify-between mb-6">

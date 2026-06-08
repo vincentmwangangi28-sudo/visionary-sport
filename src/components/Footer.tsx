@@ -1,109 +1,93 @@
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
-import { FooterAd } from "./AdBanner";
+import { Zap, Globe, Twitter, Youtube, Mail } from "lucide-react";
 
-export const Footer = () => {
-  return (
-    <footer className="bg-muted/30 border-t">
-      {/* Footer Banner Ad */}
-      <div className="container mx-auto px-4 pt-8">
-        <FooterAd />
-      </div>
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">PredictPro</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              AI-powered sports predictions helping you make smarter betting decisions
-            </p>
-          </div>
-
-          {/* Product */}
-          <div>
-            <h3 className="font-semibold mb-4">Product</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                  Predictions
-                </Link>
-              </li>
-              <li>
-                <Link to="/leaderboard" className="text-muted-foreground hover:text-primary transition-colors">
-                  Leaderboard
-                </Link>
-              </li>
-              <li>
-                <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">
-                  How It Works
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h3 className="font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
-                </a>
-              </li>
-              <li>
-                <a href="#testimonials" className="text-muted-foreground hover:text-primary transition-colors">
-                  Testimonials
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#terms" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a href="#responsible-gaming" className="text-muted-foreground hover:text-primary transition-colors">
-                  Responsible Gaming
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} PredictPro. All rights reserved.</p>
-          <p className="mt-2">
-            Bet responsibly. Must be 18+ to participate.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
+const LINKS = {
+  Predictions: [
+    { to: "/", label: "Today's Predictions" },
+    { to: "/best-bets", label: "Best Bets" },
+    { to: "/predict", label: "Match Predictor" },
+    { to: "/correct-score", label: "Correct Score" },
+    { to: "/btts", label: "BTTS / Over-Under" },
+    { to: "/value-bets", label: "Value Bets" },
+  ],
+  Tools: [
+    { to: "/accumulator", label: "Acca Builder" },
+    { to: "/bankroll", label: "Bankroll Manager" },
+    { to: "/statistics", label: "Statistics" },
+    { to: "/standings", label: "Standings" },
+    { to: "/players", label: "Player Search" },
+    { to: "/highlights", label: "Highlights" },
+  ],
+  Community: [
+    { to: "/tipsters", label: "Community Tips" },
+    { to: "/leaderboard", label: "Leaderboard" },
+    { to: "/live", label: "Live Scores" },
+    { to: "/news", label: "Football News" },
+    { to: "/sports", label: "More Sports" },
+    { to: "/insights", label: "Insights" },
+  ],
+  Account: [
+    { to: "/shop", label: "Upgrade to Pro" },
+    { to: "/rewards", label: "Rewards" },
+    { to: "/performance", label: "My Performance" },
+    { to: "/auth", label: "Sign In / Register" },
+    { to: "/about", label: "About PredictPro" },
+  ],
 };
+
+export const Footer = () => (
+  <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
+    <div className="container mx-auto px-4 py-12 max-w-7xl">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
+        {/* Brand */}
+        <div className="col-span-2 md:col-span-1">
+          <Link to="/" className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm">PP</div>
+            <span className="font-bold text-lg">PredictPro</span>
+          </Link>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+            AI-powered football predictions covering 40+ leagues worldwide. Powered by Google Gemini AI.
+          </p>
+          <div className="flex gap-2">
+            <a href="https://twitter.com/PredictProAI" target="_blank" rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors">
+              <Twitter className="h-4 w-4" />
+            </a>
+            <a href="mailto:support@predictpro.guru"
+              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors">
+              <Mail className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+
+        {/* Link groups */}
+        {Object.entries(LINKS).map(([group, links]) => (
+          <div key={group}>
+            <p className="font-semibold text-sm mb-3">{group}</p>
+            <ul className="space-y-2">
+              {links.map(l => (
+                <li key={l.to}>
+                  <Link to={l.to} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+        <p>© {new Date().getFullYear()} PredictPro. All rights reserved. <span className="mx-1">·</span> predictpro.guru</p>
+        <div className="flex gap-4">
+          <span className="flex items-center gap-1.5"><Globe className="h-3.5 w-3.5" />Available worldwide</span>
+          <span>|</span>
+          <span>⚽ 40+ leagues</span>
+          <span>|</span>
+          <span>🤖 AI-powered</span>
+        </div>
+        <p className="text-center md:text-right">Gamble responsibly · 18+ only · For entertainment purposes</p>
+      </div>
+    </div>
+  </footer>
+);

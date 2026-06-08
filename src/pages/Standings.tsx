@@ -43,7 +43,7 @@ export default function Standings() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="League Standings | PredictPro" description="Live football league standings for Premier League, La Liga, Bundesliga, Serie A and more." />
+      <SEO title="Football League Standings 2025/26 | Live Tables | PredictPro" description="Live football league standings for Premier League, La Liga, Bundesliga, Serie A, Ligue 1 and Champions League. Updated in real-time with form, goal difference and points." keywords="Premier League table 2026, La Liga standings, Bundesliga table, Serie A standings, Champions League table, football league tables" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">

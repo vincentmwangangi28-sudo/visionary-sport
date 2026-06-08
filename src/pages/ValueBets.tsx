@@ -31,7 +31,7 @@ export default function ValueBets() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Value Bets | PredictPro" description="AI-identified value bets where our probability exceeds bookmaker odds. Find the edge over the house." />
+      <SEO title="Football Value Bets | Statistical Edge Finder | PredictPro" description="Find value bets where AI probability exceeds bookmaker odds. Statistical edge calculator for Premier League, La Liga, Bundesliga. Beat the bookmakers with data." keywords="football value bets, value betting football, beating bookmakers, positive expected value bets, football betting edge" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-2">

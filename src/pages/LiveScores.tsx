@@ -100,7 +100,7 @@ export default function LiveScores() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Live Scores | PredictPro" description="Real-time football scores, match events and live updates. Follow all matches live." />
+      <SEO title="Live Football Scores Today | Real-Time Updates | PredictPro" description="Live football scores updating every 30 seconds. Follow all matches live with goals, match events and final scores across all major leagues." keywords="live football scores, football scores today, live match updates, football results today, soccer live scores" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="flex items-center justify-between mb-6">

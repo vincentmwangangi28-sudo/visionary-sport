@@ -76,7 +76,7 @@ export default function Tipsters() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Community Tipsters | PredictPro" description="Community football tips from verified tipsters. Share predictions, vote on tips, track accuracy." />
+      <SEO title="Community Football Tipsters | Share & Vote Tips | PredictPro" description="Share football tips with the community, vote on predictions and track tipster accuracy. Join thousands of football fans sharing winning tips." keywords="football tipsters, community football tips, free football tipsters, best football tipsters, tipster leaderboard" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="flex items-center justify-between mb-6">

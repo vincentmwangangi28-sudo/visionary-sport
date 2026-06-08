@@ -34,7 +34,11 @@ const OtherSports       = lazy(() => import("./pages/OtherSports"));
 const Statistics        = lazy(() => import("./pages/Statistics"));
 const Highlights        = lazy(() => import("./pages/Highlights"));
 const PlayerSearch      = lazy(() => import("./pages/PlayerSearch"));
-const Standings         = lazy(() => import("./pages/Standings"));
+const Standings                  = lazy(() => import("./pages/Standings"));
+const PremierLeaguePredictions   = lazy(() => import("./pages/PremierLeaguePredictions"));
+const ChampionsLeaguePredictions = lazy(() => import("./pages/ChampionsLeaguePredictions"));
+const KPLPredictions             = lazy(() => import("./pages/KPLPredictions"));
+const LaLigaPredictions          = lazy(() => import("./pages/LaLigaPredictions"));
 const CorrectScore      = lazy(() => import("./pages/CorrectScore"));
 const BTTS              = lazy(() => import("./pages/BTTS"));
 
@@ -80,7 +84,11 @@ const App = () => (
                 <Route path="/statistics"    element={<Statistics />} />
                 <Route path="/highlights"   element={<Highlights />} />
                 <Route path="/players"       element={<PlayerSearch />} />
-                <Route path="/standings"     element={<Standings />} />
+                <Route path="/standings"                   element={<Standings />} />
+                <Route path="/premier-league-predictions" element={<PremierLeaguePredictions />} />
+                <Route path="/champions-league-predictions" element={<ChampionsLeaguePredictions />} />
+                <Route path="/kpl-predictions"            element={<KPLPredictions />} />
+                <Route path="/la-liga-predictions"        element={<LaLigaPredictions />} />
                 <Route path="*"             element={<NotFound />} />
               </Routes>
             </Suspense>

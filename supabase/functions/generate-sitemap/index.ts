@@ -1,99 +1,44 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+serve(async () => {
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const today = new Date().toISOString().split('T')[0];
 
-const BASE_URL = 'https://visionary-sport.lovable.app';
+  const { data: leagues } = await supabase.from('predictions')
+    .select('league').gte('match_date', today).order('league');
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const uniqueLeagues = [...new Set((leagues ?? []).map(l => l.league))];
 
-  try {
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const staticPages = [
+    { url: '/', priority: '1.0', freq: 'hourly' },
+    { url: '/best-bets', priority: '0.95', freq: 'daily' },
+    { url: '/predict', priority: '0.95', freq: 'daily' },
+    { url: '/live', priority: '0.9', freq: 'always' },
+    { url: '/value-bets', priority: '0.9', freq: 'daily' },
+    { url: '/correct-score', priority: '0.9', freq: 'daily' },
+    { url: '/btts', priority: '0.9', freq: 'daily' },
+    { url: '/standings', priority: '0.85', freq: 'daily' },
+    { url: '/accumulator', priority: '0.85', freq: 'daily' },
+    { url: '/news', priority: '0.85', freq: 'hourly' },
+    { url: '/highlights', priority: '0.85', freq: 'hourly' },
+    { url: '/statistics', priority: '0.8', freq: 'daily' },
+    { url: '/tipsters', priority: '0.8', freq: 'hourly' },
+    { url: '/players', priority: '0.75', freq: 'weekly' },
+    { url: '/leaderboard', priority: '0.75', freq: 'daily' },
+    { url: '/sports', priority: '0.75', freq: 'daily' },
+    { url: '/bankroll', priority: '0.7', freq: 'monthly' },
+    { url: '/shop', priority: '0.8', freq: 'weekly' },
+    { url: '/about', priority: '0.6', freq: 'monthly' },
+  ];
 
-    const today = new Date().toISOString().split('T')[0];
-
-    // Static routes
-    const staticRoutes = [
-      { loc: '/', priority: '1.0', changefreq: 'hourly' },
-      { loc: '/leaderboard', priority: '0.9', changefreq: 'hourly' },
-      { loc: '/performance', priority: '0.85', changefreq: 'daily' },
-      { loc: '/insights', priority: '0.8', changefreq: 'weekly' },
-      { loc: '/about', priority: '0.7', changefreq: 'monthly' },
-      { loc: '/auth', priority: '0.5', changefreq: 'monthly' },
-    ];
-
-    // Fetch recent predictions for dynamic URLs
-    const { data: predictions } = await supabase
-      .from('predictions')
-      .select('match_id, home_team, away_team, match_date, created_at')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    // Build URL entries
-    const urlEntries: string[] = [];
-
-    // Add static routes
-    for (const route of staticRoutes) {
-      urlEntries.push(`
-  <url>
-    <loc>${BASE_URL}${route.loc}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${route.changefreq}</changefreq>
-    <priority>${route.priority}</priority>
-  </url>`);
-    }
-
-    // Add prediction pages (if you have individual prediction pages)
-    if (predictions && predictions.length > 0) {
-      for (const pred of predictions) {
-        const matchDate = pred.match_date?.split('T')[0] || today;
-        const slug = `${pred.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${pred.away_team.toLowerCase().replace(/\s+/g, '-')}-${matchDate}`;
-        
-        urlEntries.push(`
-  <url>
-    <loc>${BASE_URL}/predictions/${slug}</loc>
-    <lastmod>${matchDate}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>`);
-      }
-    }
-
-    // Add daily predictions page
-    urlEntries.push(`
-  <url>
-    <loc>${BASE_URL}/predictions/${today}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>`);
-
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urlEntries.join('')}
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticPages.map(p => `  <url><loc>https://predictpro.guru${p.url}</loc><changefreq>${p.freq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`).join('\n')}
+${uniqueLeagues.map(l => `  <url><loc>https://predictpro.guru/?league=${encodeURIComponent(l)}</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>${today}</lastmod></url>`).join('\n')}
 </urlset>`;
 
-    return new Response(sitemap, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600',
-      },
-    });
-
-  } catch (error) {
-    console.error('Error generating sitemap:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to generate sitemap' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
+  return new Response(sitemap, {
+    headers: { 'Content-Type': 'application/xml', 'Cache-Control': 'public, max-age=3600' },
+  });
 });

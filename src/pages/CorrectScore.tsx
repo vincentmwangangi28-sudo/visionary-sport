@@ -54,7 +54,7 @@ export default function CorrectScore() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Correct Score Predictions | PredictPro" description="AI-powered correct score predictions with odds. Exact scoreline predictions for today's matches." />
+      <SEO title="Correct Score Predictions Today | AI Scoreline Tips | PredictPro" description="AI-powered correct score predictions for today's matches. Exact scoreline forecasts with odds for Premier League, Champions League, La Liga and more." keywords="correct score predictions today, exact score football tips, scoreline predictions, correct score odds, football score prediction" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">

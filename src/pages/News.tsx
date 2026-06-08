@@ -47,7 +47,7 @@ export default function News() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Football News | PredictPro" description="Latest football news from BBC Sport, Goal.com, ESPN and more. Stay updated with transfers, match previews and analysis." />
+      <SEO title="Football News Today | Transfer News & Match Previews | PredictPro" description="Latest football news from BBC Sport, Sky Sports, ESPN, Goal.com and more. Transfer news, match previews, injury updates and analysis." keywords="football news today, transfer news, Premier League news, Champions League news, football match previews, injury news football" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="flex items-center justify-between mb-6">

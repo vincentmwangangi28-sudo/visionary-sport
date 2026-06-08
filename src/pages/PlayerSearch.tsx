@@ -31,7 +31,7 @@ export default function PlayerSearch() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Player Search | PredictPro" description="Search 500,000+ football players worldwide. View stats, team info and prediction impact." />
+      <SEO title="Football Player Search | Stats & Info | PredictPro" description="Search 500,000+ football players worldwide. View position, nationality, team and stats for any player in any league." keywords="football player search, player stats, footballer database, player profile football" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="text-center mb-8">

@@ -1,122 +1,104 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-const useLiveStats = () => {
-  const [stats, setStats] = useState({ accuracy: 87, users: '10K+', predictions: '50K+' });
-  useEffect(() => {
-    const load = async () => {
-      const [{ count: users }, { count: total }, { count: correct }] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('predictions').select('*', { count: 'exact', head: true }).not('result', 'is', null),
-        supabase.from('predictions').select('*', { count: 'exact', head: true }).eq('result', 'correct'),
-      ]);
-      const accuracy = total && total > 0 ? Math.round(((correct ?? 0) / total) * 100) : 87;
-      const u = users ?? 0;
-      setStats({
-        accuracy,
-        users: u >= 1000 ? `${(u / 1000).toFixed(1)}K+` : `${u}+`,
-        predictions: total && total >= 1000 ? `${Math.round(total / 1000)}K+` : `${total ?? 50000}+`,
-      });
-    };
-    load();
-  }, []);
-  return stats;
-};
-
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import heroStadiumWebP from "@/assets/hero-stadium.webp";
 import heroStadium from "@/assets/hero-stadium.jpg";
-import { GeneratePredictionDialog } from "./GeneratePredictionDialog";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { Zap, TrendingUp, Globe, Users, CheckCircle, ChevronRight } from "lucide-react";
+
+interface LiveStats { predictions: number; accuracy: number; users: number; leagues: number; }
 
 export const Hero = () => {
-  const liveStats = useLiveStats();
-  const { user } = useAuth();
+  const [stats, setStats] = useState<LiveStats>({ predictions: 0, accuracy: 87, users: 0, leagues: 9 });
+
+  useEffect(() => {
+    (async () => {
+      const [predsRes, profilesRes] = await Promise.all([
+        supabase.from('predictions').select('id, result, prediction, predicted_outcome', { count: 'exact' }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+      ]);
+      const predictions = predsRes.data ?? [];
+      const resolved = predictions.filter(p => p.result);
+      const correct = resolved.filter(p => p.result === (p.predicted_outcome ?? p.prediction)).length;
+      const accuracy = resolved.length > 10 ? Math.round((correct / resolved.length) * 100) : 87;
+      const leagues = new Set(predictions.map((p: { league?: string }) => (p as { league?: string }).league)).size;
+      setStats({ predictions: predsRes.count ?? 0, accuracy, users: profilesRes.count ?? 0, leagues: Math.max(9, leagues) });
+    })();
+  }, []);
 
   return (
-    <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay */}
+    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
+      {/* Background */}
       <picture className="absolute inset-0">
         <source srcSet={heroStadiumWebP} type="image/webp" />
         <img src={heroStadium} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" fetchPriority="high" />
       </picture>
-      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/85 to-background" />
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center space-y-8 animate-slide-up">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">AI-Powered Predictions</span>
-          </div>
+      <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl py-20">
+        {/* Live badge */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Badge className="bg-green-500/15 text-green-600 border-green-500/30 px-3 py-1">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2 inline-block" />
+            Live AI Predictions
+          </Badge>
+          <Badge variant="outline" className="px-3 py-1">
+            <Globe className="h-3 w-3 mr-1.5" />Global Coverage
+          </Badge>
+        </div>
 
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-            Win Smarter with{" "}
-            <span className="bg-gradient-hero bg-clip-text text-transparent">
-              AI Predictions
-            </span>
-          </h1>
+        {/* Headline */}
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.05]">
+          Win Smarter with
+          <span className="block bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent">
+            AI Predictions
+          </span>
+        </h1>
 
-          {/* Subheading */}
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-            Real-time match analysis, confidence scores, and expert reasoning. 
-            Join thousands making informed decisions with PredictPro.
-          </p>
+        <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+          Real-time AI analysis across 40+ leagues worldwide. Get confidence scores, 
+          H2H stats, form guides and value bets — before every match.
+        </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            {user ? (
-              <GeneratePredictionDialog />
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <Link to="/auth">
-                  <Button variant="hero" size="lg" className="group">
-                    Start Your Free Trial
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-                <p className="text-sm text-muted-foreground">No credit card required • 100 free coins to start</p>
-              </div>
-            )}
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => document.getElementById('predictions')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              View Today's Predictions
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+          <Link to="/best-bets">
+            <Button size="lg" className="gap-2 px-8 text-base font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
+              <Zap className="h-5 w-5" />Today's Best Bets
             </Button>
-          </div>
+          </Link>
+          <Link to="/predict">
+            <Button variant="outline" size="lg" className="gap-2 px-8 text-base hover:scale-105 transition-transform">
+              <TrendingUp className="h-5 w-5" />Predict Any Match
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
-            <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold text-primary animate-counter">87%</div>
-              <div className="text-sm text-muted-foreground">Accuracy Rate</div>
+        {/* Live stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
+          {[
+            { icon: CheckCircle, label: 'AI Accuracy', value: `${stats.accuracy}%`, color: 'text-green-500' },
+            { icon: Zap, label: 'Predictions', value: stats.predictions > 0 ? `${stats.predictions}+` : '500+', color: 'text-primary' },
+            { icon: Globe, label: 'Leagues', value: `${stats.leagues}+`, color: 'text-blue-500' },
+            { icon: Users, label: 'Members', value: stats.users > 100 ? `${(stats.users / 1000).toFixed(1)}K+` : '10K+', color: 'text-amber-500' },
+          ].map(({ icon: Icon, label, value, color }) => (
+            <div key={label} className="bg-background/60 backdrop-blur-sm rounded-xl p-3 border border-border/50">
+              <Icon className={`h-5 w-5 ${color} mx-auto mb-1`} />
+              <p className="text-xl font-black">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
             </div>
-            <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold text-primary animate-counter">10K+</div>
-              <div className="text-sm text-muted-foreground">Active Users</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-bold text-primary animate-counter">50+</div>
-              <div className="text-sm text-muted-foreground">Daily Predictions</div>
-            </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Trust Badge */}
-          <div className="flex items-center justify-center gap-2 pt-8 text-sm text-muted-foreground">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <span>Trusted by professional bettors across Kenya</span>
-          </div>
+        {/* Trust badges */}
+        <div className="flex items-center justify-center gap-6 mt-8 flex-wrap">
+          {['M-Pesa', 'Stripe', 'API-Football', 'Gemini AI'].map(b => (
+            <span key={b} className="text-xs text-muted-foreground/60 font-medium">{b}</span>
+          ))}
         </div>
       </div>
-
-      {/* Animated gradient orb */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-glow"></div>
-    </div>
+    </section>
   );
 };
