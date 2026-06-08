@@ -95,7 +95,7 @@ const App = () => (
           </Suspense>
         </AuthProvider>
       </BrowserRouter>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   </HelmetProvider>
 );
 
