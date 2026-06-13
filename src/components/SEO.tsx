@@ -26,7 +26,11 @@ export const SEO = ({
   structuredData,
 }: SEOProps) => {
   const fullTitle = title.includes('PredictPro') ? title : `${title} | PredictPro`;
-  const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : typeof window !== 'undefined' ? window.location.href : BASE_URL;
+  const canonicalUrl = canonical
+    ? `${BASE_URL}${canonical}`
+    : typeof window !== 'undefined'
+      ? `${BASE_URL}${window.location.pathname}`
+      : BASE_URL;
 
   const defaultStructuredData = {
     '@context': 'https://schema.org',
