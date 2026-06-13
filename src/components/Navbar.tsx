@@ -28,6 +28,7 @@ const navLinks = [
   { to: "/statistics", label: "Statistics",    icon: BarChart2 },
   { to: "/standings",  label: "Standings",     icon: Trophy },
   { to: "/players",    label: "Player Search", icon: Search },
+  { to: "/blog",       label: "Blog",          icon: BookOpen },
   { to: "/about",      label: "About",        icon: Info },
 ];
 

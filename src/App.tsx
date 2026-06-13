@@ -39,6 +39,11 @@ const PremierLeaguePredictions   = lazy(() => import("./pages/PremierLeaguePredi
 const ChampionsLeaguePredictions = lazy(() => import("./pages/ChampionsLeaguePredictions"));
 const KPLPredictions             = lazy(() => import("./pages/KPLPredictions"));
 const LaLigaPredictions          = lazy(() => import("./pages/LaLigaPredictions"));
+const BundesligaPredictions      = lazy(() => import("./pages/BundesligaPredictions"));
+const SerieAPredictions          = lazy(() => import("./pages/SerieAPredictions"));
+const AFCONPredictions           = lazy(() => import("./pages/AFCONPredictions"));
+const Blog                       = lazy(() => import("./pages/Blog"));
+const BlogPost                   = lazy(() => import("./pages/BlogPost"));
 const CorrectScore      = lazy(() => import("./pages/CorrectScore"));
 const BTTS              = lazy(() => import("./pages/BTTS"));
 
@@ -82,14 +87,19 @@ const App = () => (
                 <Route path="/btts"          element={<BTTS />} />
                 <Route path="/sports"        element={<OtherSports />} />
                 <Route path="/statistics"    element={<Statistics />} />
-                <Route path="/highlights"   element={<Highlights />} />
+                <Route path="/highlights"    element={<Highlights />} />
                 <Route path="/players"       element={<PlayerSearch />} />
-                <Route path="/standings"                   element={<Standings />} />
-                <Route path="/premier-league-predictions" element={<PremierLeaguePredictions />} />
+                <Route path="/standings"                    element={<Standings />} />
+                <Route path="/premier-league-predictions"   element={<PremierLeaguePredictions />} />
                 <Route path="/champions-league-predictions" element={<ChampionsLeaguePredictions />} />
-                <Route path="/kpl-predictions"            element={<KPLPredictions />} />
-                <Route path="/la-liga-predictions"        element={<LaLigaPredictions />} />
-                <Route path="*"             element={<NotFound />} />
+                <Route path="/kpl-predictions"              element={<KPLPredictions />} />
+                <Route path="/la-liga-predictions"          element={<LaLigaPredictions />} />
+                <Route path="/bundesliga-predictions"       element={<BundesligaPredictions />} />
+                <Route path="/serie-a-predictions"          element={<SerieAPredictions />} />
+                <Route path="/afcon-predictions"            element={<AFCONPredictions />} />
+                <Route path="/blog"                         element={<Blog />} />
+                <Route path="/blog/:slug"                   element={<BlogPost />} />
+                <Route path="*"               element={<NotFound />} />
               </Routes>
             </Suspense>
             <MobileBottomNav />
