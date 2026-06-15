@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://predictpro.guru/</loc><changefreq>hourly</changefreq><priority>1.0</priority><lastmod>2026-06-04</lastmod></url>
   <url><loc>https://predictpro.guru/best-bets</loc><changefreq>daily</changefreq><priority>0.95</priority><lastmod>2026-06-04</lastmod></url>
   <url><loc>https://predictpro.guru/predict</loc><changefreq>daily</changefreq><priority>0.95</priority><lastmod>2026-06-04</lastmod></url>
@@ -39,14 +36,5 @@
   <url><loc>https://predictpro.guru/blog/correct-score-prediction-tips</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-04</lastmod></url>
   <url><loc>https://predictpro.guru/blog/bankroll-management-football</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-04</lastmod></url>
   <url><loc>https://predictpro.guru/blog/accumulator-building-strategy</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-04</lastmod></url>
-  <url><loc>https://predictpro.guru/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>2026-06-04</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/how-to-read-football-predictions</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-04</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/value-betting-explained</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-03</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/bankroll-management-football</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-02</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/premier-league-prediction-guide-2026</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-01</lastmod></url>
   <url><loc>https://predictpro.guru/blog/champions-league-group-stage-tips</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-05-31</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/btts-over-under-strategy</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-05-30</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/kpl-betting-guide-kenya</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-05-29</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/accumulator-building-strategy</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-05-28</lastmod></url>
-  <url><loc>https://predictpro.guru/blog/correct-score-prediction-tips</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-05-27</lastmod></url>
 </urlset>
