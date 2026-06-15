@@ -4,8 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Primary SEO -->
+    <!-- Default SEO (Helmet overrides per-route) -->
     <title>PredictPro — AI Football Predictions | Free Daily Tips</title>
+    <meta name="description" content="AI-powered football predictions with 87% accuracy. Free daily tips for Premier League, La Liga, Champions League, KPL and 40+ leagues worldwide. Confidence scores, H2H stats, value bets." />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <meta name="author" content="PredictPro" />
+
+    <!-- Open Graph defaults (Helmet overrides per-route) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PredictPro — AI Football Predictions" />
+    <meta property="og:title" content="PredictPro — AI Football Predictions | Free Daily Tips" />
+    <meta property="og:description" content="Free AI football predictions for 40+ leagues worldwide. Confidence scores, H2H stats, value bets. Premier League, KPL, Champions League, La Liga." />
+    <meta property="og:image" content="https://predictpro.guru/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://predictpro.guru/" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card defaults -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@PredictProAI" />
+    <meta name="twitter:title" content="PredictPro — AI Football Predictions | Free Daily Tips" />
+    <meta name="twitter:description" content="Free AI football predictions for 40+ leagues. Premier League, La Liga, KPL, Champions League." />
+    <meta name="twitter:image" content="https://predictpro.guru/og-image.jpg" />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
@@ -21,26 +42,52 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://bhgjlhgevyggkhyytulv.supabase.co" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- Performance: Preconnect critical origins -->
+    <link rel="preconnect" href="https://bhgjlhgevyggkhyytulv.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
     <link rel="dns-prefetch" href="https://api-football-v1.p.rapidapi.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ"></script>
+    <!-- Google Analytics (deferred for performance) -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-M0VE8D3XLZ', {
-        page_title: document.title,
-        send_page_view: true,
-        custom_map: { dimension1: 'user_type' }
+      gtag('config', 'G-M0VE8D3XLZ', { send_page_view: true });
+      // Defer GA load until after LCP
+      window.addEventListener('load', () => {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+        document.head.appendChild(s);
       });
     </script>
 
-    <!-- Stripe.js -->
-    <script async src="https://js.stripe.com/v3/"></script>
+    <!-- Stripe.js (deferred - not needed until checkout) -->
+    <script>
+      window.addEventListener('load', () => {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://js.stripe.com/v3/';
+        document.head.appendChild(s);
+      });
+    </script>
+
+    <!-- JSON-LD default structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "PredictPro",
+      "url": "https://predictpro.guru",
+      "description": "AI-powered football predictions for 40+ leagues worldwide",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://predictpro.guru/predict?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

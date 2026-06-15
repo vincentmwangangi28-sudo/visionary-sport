@@ -68,7 +68,7 @@ export const SEO = ({
   };
 
   return (
-    <Helmet>
+    <Helmet prioritizeSeoTags>
       {/* Primary */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />

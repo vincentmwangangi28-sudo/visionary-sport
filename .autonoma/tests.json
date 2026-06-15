@@ -1,0 +1,73 @@
+{
+  "generationId": "cmqdv9vmz0bg4018l9apmwdr5",
+  "scenarios": [
+    {
+      "id": "homepage-loads",
+      "name": "Homepage loads with predictions",
+      "steps": [
+        { "action": "navigate", "url": "/" },
+        { "action": "waitForText", "text": "PredictPro" },
+        { "action": "assertVisible", "selector": "nav" }
+      ]
+    },
+    {
+      "id": "best-bets-page",
+      "name": "Best Bets page renders",
+      "steps": [
+        { "action": "navigate", "url": "/best-bets" },
+        { "action": "assertStatusCode", "code": 200 },
+        { "action": "waitForText", "text": "Best Bets" }
+      ]
+    },
+    {
+      "id": "predict-page",
+      "name": "Match Predictor loads",
+      "steps": [
+        { "action": "navigate", "url": "/predict" },
+        { "action": "waitForText", "text": "Predict" },
+        { "action": "assertVisible", "selector": "input" }
+      ]
+    },
+    {
+      "id": "live-scores",
+      "name": "Live Scores page renders",
+      "steps": [
+        { "action": "navigate", "url": "/live" },
+        { "action": "assertStatusCode", "code": 200 }
+      ]
+    },
+    {
+      "id": "epl-landing",
+      "name": "Premier League predictions page",
+      "steps": [
+        { "action": "navigate", "url": "/premier-league-predictions" },
+        { "action": "waitForText", "text": "Premier League" },
+        { "action": "assertMeta", "name": "description" }
+      ]
+    },
+    {
+      "id": "blog-index",
+      "name": "Blog index loads",
+      "steps": [
+        { "action": "navigate", "url": "/blog" },
+        { "action": "waitForText", "text": "Blog" }
+      ]
+    },
+    {
+      "id": "sitemap-available",
+      "name": "Sitemap returns 200",
+      "steps": [
+        { "action": "navigate", "url": "/sitemap.xml" },
+        { "action": "assertStatusCode", "code": 200 }
+      ]
+    },
+    {
+      "id": "robots-available",
+      "name": "Robots.txt returns 200",
+      "steps": [
+        { "action": "navigate", "url": "/robots.txt" },
+        { "action": "assertStatusCode", "code": 200 }
+      ]
+    }
+  ]
+}

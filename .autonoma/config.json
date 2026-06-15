@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "projectName": "PredictPro",
+  "baseUrl": "https://predictpro.guru",
+  "generationId": "cmqdv9vmz0bg4018l9apmwdr5",
+  "apiToken": "ask_83d3b180537f2037db97dfc4e10f7f7fdd84b682e560374affe037e62a1c4c39",
+  "testTarget": "production"
+}
