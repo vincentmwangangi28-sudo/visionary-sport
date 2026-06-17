@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard } from "lucide-react";
+import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, BarChart, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard, Film, Search, BookOpen, Target } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
