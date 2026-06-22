@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, ChevronLeft, Share2, Zap } from "lucide-react";
+import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from "@/components/WhatsAppShare";
 
 const ARTICLES: Record<string, { title: string; description: string; keywords: string; category: string; readTime: string; date: string; content: string }> = {
@@ -159,6 +160,7 @@ export default function BlogPost() {
         </div>
         <article className="prose-sm max-w-none">{renderMarkdown(post.content)}</article>
 
+        <AdBannerHorizontal className="my-6" />
         {/* CTA */}
         <Card className="mt-10 border-primary/20 bg-primary/5">
           <CardContent className="p-6 text-center">

@@ -1,96 +1,57 @@
-import { useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef } from 'react';
 
-interface AdBannerProps {
-  slot: string;
-  format?: "auto" | "horizontal" | "vertical" | "rectangle";
+interface Props {
+  slot?: string;
+  format?: 'auto' | 'fluid' | 'rectangle' | 'horizontal';
   className?: string;
-  responsive?: boolean;
+  style?: React.CSSProperties;
 }
 
-// Your AdSense client ID
-const ADSENSE_CLIENT_ID = "ca-pub-1375386376692976";
+declare global {
+  interface Window { adsbygoogle: unknown[] }
+}
 
-export const AdBanner = ({ 
-  slot, 
-  format = "auto", 
-  className,
-  responsive = true 
-}: AdBannerProps) => {
-  const adRef = useRef<HTMLDivElement>(null);
+export const AdBanner = ({ slot = '', format = 'auto', className = '', style }: Props) => {
+  const ref = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
 
   useEffect(() => {
-    // Only push ads if AdSense script is loaded
+    if (pushed.current) return;
     try {
-      if (typeof window !== "undefined" && (window as Window & { adsbygoogle?: unknown[] }).adsbygoogle) {
-        (window as Window & { adsbygoogle?: unknown[] }).adsbygoogle.push({});
+      if (typeof window !== 'undefined') {
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
       }
-    } catch (error) {
-      console.log("AdSense not loaded yet");
-    }
+    } catch { /* AdSense not loaded yet */ }
   }, []);
 
-  const getAdStyles = () => {
-    switch (format) {
-      case "horizontal":
-        return { width: "100%", height: "90px" };
-      case "vertical":
-        return { width: "160px", height: "600px" };
-      case "rectangle":
-        return { width: "300px", height: "250px" };
-      default:
-        return {};
-    }
-  };
-
   return (
-    <div 
-      ref={adRef}
-      className={cn(
-        "ad-container overflow-hidden bg-muted/30 rounded-lg border border-border/50",
-        "flex items-center justify-center min-h-[90px]",
-        className
-      )}
-    >
+    <div className={`adsense-container overflow-hidden ${className}`} style={style}>
       <ins
+        ref={ref}
         className="adsbygoogle"
-        style={{ 
-          display: "block",
-          ...(!responsive && getAdStyles())
-        }}
-        data-ad-client={ADSENSE_CLIENT_ID}
+        style={{ display: 'block', ...style }}
+        data-ad-client="ca-pub-1375386376692976"
         data-ad-slot={slot}
-        data-ad-format={responsive ? "auto" : undefined}
-        data-full-width-responsive={responsive ? "true" : undefined}
+        data-ad-format={format}
+        data-full-width-responsive="true"
       />
     </div>
   );
 };
 
-// Sidebar Ad Component
-export const SidebarAd = ({ className }: { className?: string }) => (
-  <AdBanner 
-    slot="sidebar-1" 
-    format="rectangle" 
-    className={cn("sticky top-4", className)} 
-  />
+// Horizontal banner (728x90 leaderboard area)
+export const AdBannerHorizontal = ({ className = '' }: { className?: string }) => (
+  <AdBanner slot="auto" format="horizontal" className={`w-full min-h-[90px] ${className}`} />
 );
 
-// Footer Banner Ad
-export const FooterAd = ({ className }: { className?: string }) => (
-  <AdBanner 
-    slot="footer-banner" 
-    format="horizontal" 
-    className={cn("w-full max-w-4xl mx-auto", className)} 
-  />
+// Rectangle (300x250 medium rectangle)
+export const AdBannerRect = ({ className = '' }: { className?: string }) => (
+  <AdBanner slot="auto" format="rectangle" className={`min-h-[250px] ${className}`} />
 );
 
-// In-Content Ad (between cards)
-export const InContentAd = ({ className }: { className?: string }) => (
-  <AdBanner 
-    slot="in-content" 
-    format="auto" 
-    className={cn("my-6", className)} 
-    responsive={true}
-  />
+// Fluid (responsive, fits container)
+export const AdBannerFluid = ({ className = '' }: { className?: string }) => (
+  <AdBanner slot="auto" format="fluid" className={`w-full ${className}`} />
 );

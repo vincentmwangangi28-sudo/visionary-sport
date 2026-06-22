@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { AdBannerHorizontal } from '@/components/AdBanner';
 import { LiveLeagueTicker } from '@/components/LiveLeagueTicker';
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
@@ -75,6 +76,7 @@ const Index = () => {
       <div id="testimonials">
         <Testimonials />
       </div>
+      <AdBannerHorizontal className="mt-8 mx-4" />
       <Footer />
     </div>
     </>

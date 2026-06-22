@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, Share2, Clock, Flame, CheckCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from '@/components/WhatsAppShare';
 
 interface Prediction {
@@ -138,6 +139,7 @@ export default function BestBets() {
           ⚠️ These are AI predictions for entertainment. Past accuracy doesn't guarantee future results. Gamble responsibly.
         </div>
       </main>
+      <AdBannerHorizontal className="mb-4 mx-4" />
       <Footer />
     </div>
   );

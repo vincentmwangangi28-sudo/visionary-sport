@@ -5,139 +5,132 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 
-interface LiveMatch {
-  id: string; home_team: string; away_team: string; home_score?: number;
-  away_score?: number; status: string; minute?: number; league: string;
-  match_date: string; events?: { type: string; minute: number; team: string; player?: string }[];
+interface Match {
+  id: string; home_team: string; away_team: string;
+  home_score?: number; away_score?: number;
+  status: string; minute?: number; league: string; match_date: string;
+  ai_prediction?: string; confidence?: number;
 }
 
-const statusColor: Record<string, string> = {
-  live: 'bg-red-500 animate-pulse',
-  halftime: 'bg-amber-500',
-  finished: 'bg-green-600',
-  upcoming: 'bg-blue-500',
-};
-
 export default function LiveScores() {
-  const [matches, setMatches] = useState<LiveMatch[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const fetchMatches = async () => {
     try {
       const { data } = await supabase.functions.invoke('fetch-live-matches');
-      if (data?.matches) { setMatches(data.matches); setLastUpdated(new Date()); }
+      if (data?.matches?.length > 0) {
+        setMatches(data.matches);
+        setLastUpdated(new Date());
+      }
+    } catch (e) {
+      console.error('fetch-live-matches error', e);
     } finally { setLoading(false); }
   };
 
   useEffect(() => {
     fetchMatches();
-    const interval = setInterval(fetchMatches, 30_000);
-    return () => clearInterval(interval);
+    const iv = setInterval(fetchMatches, 30_000);
+    return () => clearInterval(iv);
   }, []);
 
-  const liveMatches = matches.filter(m => m.status === 'live' || m.status === 'halftime');
-  const todayMatches = matches.filter(m => m.status === 'upcoming' || m.status === 'finished');
+  const live = matches.filter(m => m.status === 'live' || m.status === 'halftime');
+  const upcoming = matches.filter(m => m.status === 'upcoming');
+  const finished = matches.filter(m => m.status === 'finished');
 
-  const MatchCard = ({ match }: { match: LiveMatch }) => {
-    const expanded = expandedId === match.id;
-    return (
-      <Card className={`${match.status === 'live' ? 'border-red-500/30 bg-red-500/5' : ''} transition-all`}>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">{match.league}</Badge>
-              <span className={`text-xs px-2 py-0.5 rounded-full text-white font-medium ${statusColor[match.status] ?? 'bg-gray-500'}`}>
-                {match.status === 'live' ? `${match.minute ?? 0}'` : match.status === 'halftime' ? 'HT' : match.status === 'finished' ? 'FT' : new Date(match.match_date).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-            <button onClick={() => setExpandedId(expanded ? null : match.id)} className="text-muted-foreground hover:text-foreground">
-              {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex-1 text-left">
-              <p className={`font-bold text-lg ${match.home_score !== undefined && match.away_score !== undefined && match.home_score > match.away_score ? 'text-primary' : ''}`}>{match.home_team}</p>
-            </div>
-            <div className="mx-4 text-center">
-              {match.home_score !== undefined && match.away_score !== undefined ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-black">{match.home_score}</span>
-                  <span className="text-muted-foreground font-bold">—</span>
-                  <span className="text-3xl font-black">{match.away_score}</span>
-                </div>
-              ) : (
-                <span className="text-2xl font-bold text-muted-foreground">vs</span>
-              )}
-            </div>
-            <div className="flex-1 text-right">
-              <p className={`font-bold text-lg ${match.home_score !== undefined && match.away_score !== undefined && match.away_score > match.home_score ? 'text-primary' : ''}`}>{match.away_team}</p>
-            </div>
-          </div>
-
-          {expanded && match.events && match.events.length > 0 && (
-            <div className="mt-4 pt-3 border-t space-y-1.5">
-              {match.events.map((e, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  <span className="text-xs text-muted-foreground w-8">{e.minute}'</span>
-                  <span>{e.type === 'goal' ? '⚽' : e.type === 'yellow_card' ? '🟨' : e.type === 'red_card' ? '🟥' : e.type === 'substitution' ? '🔄' : '📌'}</span>
-                  <span className="font-medium">{e.player ?? e.team}</span>
-                  <span className="text-muted-foreground text-xs ml-auto">{e.team}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
+  const statusBadge = (m: Match) => {
+    if (m.status === 'live') return <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-medium animate-pulse">{m.minute ?? 0}'</span>;
+    if (m.status === 'halftime') return <span className="px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full font-medium">HT</span>;
+    if (m.status === 'finished') return <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium">FT</span>;
+    return <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full font-medium">{new Date(m.match_date).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</span>;
   };
+
+  const MatchCard = ({ m }: { m: Match }) => (
+    <Card className={`${m.status==='live'?'border-red-500/30 bg-red-500/5':''} transition-all`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">{m.league}</Badge>
+            {statusBadge(m)}
+          </div>
+          <button onClick={() => setExpandedId(expandedId===m.id?null:m.id)}>
+            {expandedId===m.id?<ChevronUp className="h-4 w-4 text-muted-foreground"/>:<ChevronDown className="h-4 w-4 text-muted-foreground"/>}
+          </button>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <p className={`font-bold flex-1 ${m.home_score!=null&&m.away_score!=null&&m.home_score>m.away_score?'text-primary':''}`}>{m.home_team}</p>
+          <div className="text-center px-3">
+            {m.home_score!=null&&m.away_score!=null
+              ? <span className="text-2xl font-black">{m.home_score} – {m.away_score}</span>
+              : <span className="text-muted-foreground font-semibold">vs</span>}
+          </div>
+          <p className={`font-bold flex-1 text-right ${m.home_score!=null&&m.away_score!=null&&m.away_score>m.home_score?'text-primary':''}`}>{m.away_team}</p>
+        </div>
+        {expandedId===m.id && m.ai_prediction && (
+          <div className="mt-3 pt-3 border-t flex items-center gap-2 text-sm">
+            <Zap className="h-4 w-4 text-primary flex-shrink-0"/>
+            <span className="text-muted-foreground">AI Prediction:</span>
+            <Badge className="bg-primary/10 text-primary border-primary/20">{m.ai_prediction}</Badge>
+            {m.confidence && <span className="text-primary font-semibold">{m.confidence}%</span>}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Live Football Scores Today | Real-Time Updates | PredictPro" description="Live football scores updating every 30 seconds. Follow all matches live with goals, match events and final scores across all major leagues." keywords="live football scores, football scores today, live match updates, football results today, soccer live scores" />
+      <SEO title="Live Football Scores Today | Real-Time Updates | PredictPro" description="Live football scores updating every 30 seconds. Follow matches live with goals, events and final scores across all major leagues." canonical="/live" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3"><Activity className="h-8 w-8 text-red-500" />Live Scores</h1>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Clock className="h-3 w-3" />Auto-refreshes every 30s • Last: {lastUpdated.toLocaleTimeString('en-KE')}</p>
+            <h1 className="text-3xl font-bold flex items-center gap-3"><Activity className="h-8 w-8 text-red-500"/>Live Scores</h1>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Clock className="h-3 w-3"/>Auto-refreshes every 30s · {lastUpdated.toLocaleTimeString('en-KE')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchMatches} disabled={loading} className="gap-2">
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh
+          <Button variant="outline" size="sm" onClick={fetchMatches} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading?'animate-spin':''}`}/>
           </Button>
         </div>
 
         {loading ? (
-          <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}</div>
+          <div className="space-y-3">{Array.from({length:5}).map((_,i)=><Skeleton key={i} className="h-24 rounded-xl"/>)}</div>
         ) : (
-          <>
-            {liveMatches.length > 0 && (
-              <div className="mb-6">
-                <h2 className="font-semibold text-sm uppercase tracking-wide text-red-500 flex items-center gap-2 mb-3">
-                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />Live Now ({liveMatches.length})
-                </h2>
-                <div className="space-y-3">{liveMatches.map(m => <MatchCard key={m.id} match={m} />)}</div>
-              </div>
-            )}
-            {todayMatches.length > 0 && (
+          <div className="space-y-6">
+            {live.length>0 && (
               <div>
-                <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Today's Matches ({todayMatches.length})</h2>
-                <div className="space-y-3">{todayMatches.map(m => <MatchCard key={m.id} match={m} />)}</div>
+                <h2 className="font-semibold text-sm uppercase tracking-wide text-red-500 flex items-center gap-2 mb-3">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"/>Live Now ({live.length})
+                </h2>
+                <div className="space-y-3">{live.map(m=><MatchCard key={m.id} m={m}/>)}</div>
               </div>
             )}
-            {matches.length === 0 && (
+            {upcoming.length>0 && (
+              <div>
+                <h2 className="font-semibold text-sm uppercase tracking-wide text-blue-500 mb-3">Upcoming with AI Predictions ({upcoming.length})</h2>
+                <div className="space-y-3">{upcoming.map(m=><MatchCard key={m.id} m={m}/>)}</div>
+              </div>
+            )}
+            {finished.length>0 && (
+              <div>
+                <h2 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Results ({finished.length})</h2>
+                <div className="space-y-3">{finished.map(m=><MatchCard key={m.id} m={m}/>)}</div>
+              </div>
+            )}
+            {matches.length===0 && (
               <div className="text-center py-20">
-                <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No matches available right now. Check back later.</p>
+                <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4"/>
+                <p className="text-muted-foreground font-medium">No matches at the moment</p>
+                <p className="text-sm text-muted-foreground mt-1">Check back during match hours or view our <a href="/best-bets" className="text-primary hover:underline">upcoming predictions</a>.</p>
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
       <Footer />
