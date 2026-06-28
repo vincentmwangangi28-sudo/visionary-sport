@@ -33,7 +33,7 @@ export const PredictionCard = ({ prediction: p }: Props) => {
           <Badge variant="outline" className="text-xs">{p.league}</Badge>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            {new Date(p.match_date).toLocaleString('en-KE', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            {new Date(p.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + new Date(p.match_date).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
         <div className="mt-2">

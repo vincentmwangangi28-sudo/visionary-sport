@@ -29,10 +29,12 @@ export default function BestBets() {
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
+      const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
       const { data } = await supabase
         .from('predictions')
         .select('id,home_team,away_team,league,match_date,prediction,predicted_outcome,confidence,confidence_score,home_odds,draw_odds,away_odds,is_premium,result')
         .gte('match_date', today)
+        .lte('match_date', nextWeek)
         .gte('confidence', 60)
         .order('confidence', { ascending: false })
         .limit(10);
