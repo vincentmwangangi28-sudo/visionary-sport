@@ -58,7 +58,9 @@ const Index = () => {
         ]}
       />
       <Navbar />
+      <main id="main-content">
       <Hero />
+      
       
       {/* Above-fold lazy sections */}
       <Suspense fallback={<SectionLoader />}>
