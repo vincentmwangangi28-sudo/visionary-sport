@@ -50,7 +50,7 @@ export const Navbar = () => {
           <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2.5 shrink-0">
-              <img src={aiIcon} alt="PredictPro" className="w-8 h-8 md:w-10 md:h-10" width="40" height="40" loading="eager" />
+              <img src={aiIcon} alt="PredictPro AI Predictions Logo" className="w-8 h-8 md:w-10 md:h-10" width="40" height="40" loading="eager" />
               <span className="text-lg md:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
                 PredictPro
               </span>
