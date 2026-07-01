@@ -163,6 +163,7 @@ const Index = () => {
         <ScrollReveal><div id="testimonials"><Testimonials /></div></ScrollReveal>
         <Footer />
       </Suspense>
+      </main>
     </div>
   );
 };
