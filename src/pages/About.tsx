@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Target, Zap, Shield, Users, Brain, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
