@@ -701,7 +701,7 @@ export type Database = {
           prediction_id: string | null
           public_url: string | null
           storage_path: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string | null
@@ -709,7 +709,7 @@ export type Database = {
           prediction_id?: string | null
           public_url?: string | null
           storage_path: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string | null
@@ -717,7 +717,7 @@ export type Database = {
           prediction_id?: string | null
           public_url?: string | null
           storage_path?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
