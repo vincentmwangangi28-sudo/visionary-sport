@@ -45,10 +45,13 @@
     <meta name="twitter:description" content="AI-powered football predictions with confidence scores and transparent reasoning. Trusted by 10,000+ bettors across Kenya &amp; Africa." />
     <meta name="twitter:image" content="https://predictpro.guru/og-image.png" />
 
-    <!-- Google Analytics & AdSense - aggressively deferred to reduce unused JS -->
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976" crossorigin="anonymous"></script>
+
+    <!-- Google Analytics - deferred to reduce unused JS on initial load -->
     <script>
       (function() {
-        var gaLoaded = false, adLoaded = false;
+        var gaLoaded = false;
         function loadGA() {
           if (gaLoaded) return;
           gaLoaded = true;
@@ -64,31 +67,16 @@
             gtag('config', 'G-M0VE8D3XLZ', { page_path: location.pathname, send_page_view: true });
           };
         }
-        function loadAds() {
-          if (adLoaded) return;
-          adLoaded = true;
-          var s = document.createElement('script');
-          s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-          s.async = true;
-          s.crossOrigin = 'anonymous';
-          document.head.appendChild(s);
-        }
-        // Load GA on first user interaction or after 8s, whichever comes first
         var events = ['scroll','click','touchstart','keydown'];
         function onInteract() {
           loadGA();
-          // Load ads 2s after first interaction
-          setTimeout(loadAds, 2000);
           events.forEach(function(e){ removeEventListener(e, onInteract, {passive:true,capture:true}); });
         }
         events.forEach(function(e){ addEventListener(e, onInteract, {passive:true,capture:true}); });
-        // Fallback: load GA after 8s, ads after 12s if no interaction
-        addEventListener('load', function() {
-          setTimeout(loadGA, 8000);
-          setTimeout(loadAds, 12000);
-        });
+        addEventListener('load', function() { setTimeout(loadGA, 8000); });
       })();
     </script>
+
     
     <!-- Structured Data: WebApplication (unique to index.html; WebSite & Organization schemas handled by SEOHead) -->
     <script type="application/ld+json">
