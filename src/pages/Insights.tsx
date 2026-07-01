@@ -48,7 +48,24 @@ const Insights = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Sports Prediction Insights & Analysis | PredictPro"
+        description="Expert insights, betting strategies, and AI technology deep dives from the PredictPro team. Learn how our 87% accurate AI predictions work."
+        canonicalUrl="https://predictpro.guru/insights"
+        breadcrumbs={[
+          { name: "Home", url: "https://predictpro.guru" },
+          { name: "Insights", url: "https://predictpro.guru/insights" },
+        ]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "PredictPro Insights & Analysis",
+          "url": "https://predictpro.guru/insights",
+          "description": "Expert insights, betting strategies, and AI technology deep dives.",
+        }}
+      />
       <Navbar />
+      
       
       <main className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-6xl">
