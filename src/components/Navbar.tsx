@@ -132,7 +132,7 @@ export const Navbar = () => {
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <span className="font-bold text-lg">Menu</span>
-                <Button variant="ghost" size="sm" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" size="sm" aria-label="Close menu" onClick={() => setMobileOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
