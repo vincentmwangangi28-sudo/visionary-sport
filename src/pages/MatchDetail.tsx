@@ -160,7 +160,7 @@ export default function MatchDetail() {
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${matchTitle} - AI Prediction`} />
-        <link rel="canonical" href={`https://www.predictpro.guru/match/${matchId}`} />
+        <link rel="canonical" href={`https://predictpro.guru/match/${matchId}`} />
         <script type="application/ld+json">
           {JSON.stringify(sportsEventSchema)}
         </script>

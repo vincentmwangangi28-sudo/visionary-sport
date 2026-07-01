@@ -58,7 +58,9 @@ const Index = () => {
         ]}
       />
       <Navbar />
+      <main id="main-content">
       <Hero />
+      
       
       {/* Above-fold lazy sections */}
       <Suspense fallback={<SectionLoader />}>
@@ -161,6 +163,7 @@ const Index = () => {
         <ScrollReveal><div id="testimonials"><Testimonials /></div></ScrollReveal>
         <Footer />
       </Suspense>
+      </main>
     </div>
   );
 };

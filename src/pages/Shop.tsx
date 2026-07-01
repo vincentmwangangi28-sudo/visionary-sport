@@ -23,6 +23,9 @@ const Shop = () => {
         <Navbar />
         
         <main className="container mx-auto px-4 py-8 space-y-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-center bg-gradient-hero bg-clip-text text-transparent">
+            PredictPro Coin Shop
+          </h1>
           {/* Balance Header */}
           {user && (
             <div className="flex justify-center">

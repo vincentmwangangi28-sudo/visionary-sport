@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import { Target, Zap, Shield, Users, Brain, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -61,6 +62,28 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="About PredictPro - AI Sports Prediction Team"
+        description="Learn how PredictPro combines machine learning and deep football analytics to deliver 87% accurate AI sports predictions for Kenya and beyond."
+        canonicalUrl="https://predictpro.guru/about"
+        breadcrumbs={[
+          { name: "Home", url: "https://predictpro.guru" },
+          { name: "About", url: "https://predictpro.guru/about" },
+        ]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About PredictPro",
+          "url": "https://predictpro.guru/about",
+          "description": "AI-powered sports prediction platform combining machine learning and football analytics.",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "PredictPro",
+            "foundingDate": "2024",
+            "url": "https://predictpro.guru",
+          },
+        }}
+      />
       <Navbar />
       
       <main className="pt-24 pb-16">
