@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { ExternalLink, Clock, Newspaper, RefreshCw } from 'lucide-react';
 import { AdBannerHorizontal } from '@/components/AdBanner';
@@ -35,8 +36,8 @@ export default function News() {
   const fetchNews = async () => {
     setLoading(true); setError('');
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke('fetch-sports-news');
-      if (fnErr) throw fnErr;
+      const data = await callEdgeFn('fetch-sports-news');
+      if (!data) throw fnErr;
       if (data?.articles?.length > 0) {
         setArticles(data.articles);
       } else {

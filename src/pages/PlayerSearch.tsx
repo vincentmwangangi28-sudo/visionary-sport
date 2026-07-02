@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, User, TrendingUp, Star } from 'lucide-react';
 
@@ -24,7 +25,7 @@ export default function PlayerSearch() {
     if (!q.trim()) return;
     setQuery(q); setLoading(true); setSearched(true);
     try {
-      const { data } = await supabase.functions.invoke('search-players', { body: { query: q } });
+      const { data } = await callEdgeFn('search-players', { query: q });
       setPlayers(data?.players ?? []);
     } finally { setLoading(false); }
   };

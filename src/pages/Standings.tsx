@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -32,7 +33,7 @@ export default function Standings() {
   const fetch_ = async (lg = league) => {
     setLoading(true);
     try {
-      const { data } = await supabase.functions.invoke('fetch-standings', { body: { leagueId: lg.id } });
+      const data = await callEdgeFn('fetch-standings', { leagueId: lg.id }) as { standings?: unknown[] };
       setStandings(data?.standings ?? []);
     } finally { setLoading(false); }
   };

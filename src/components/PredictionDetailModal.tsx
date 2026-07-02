@@ -6,6 +6,7 @@ import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/p
 import { TeamFormBadge } from '@/components/TeamFormBadge';
 import { H2HWidget } from '@/components/H2HWidget';
 import { SharePrediction } from '@/components/SharePrediction';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, TrendingUp, Target } from 'lucide-react';
 

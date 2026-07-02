@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Zap, TrendingUp, Target, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -39,10 +40,8 @@ export default function MatchPredictor() {
     if (!home.trim() || !away.trim()) { toast.error('Enter both team names'); return; }
     setLoading(true); setResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-prediction', {
-        body: { home_team: home.trim(), away_team: away.trim(), match_date: date, league },
-      });
-      if (error || !data?.prediction) throw new Error(data?.error || 'Prediction failed');
+      const data = await callEdgeFn('generate-prediction', { home_team: home.trim(), away_team: away.trim(), match_date: date, league });
+      if (!data?.prediction) throw new Error(data?.error || 'Prediction failed');
       setResult(data.prediction);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to generate prediction');

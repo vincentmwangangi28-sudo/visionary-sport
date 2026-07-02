@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 
@@ -24,7 +25,7 @@ export default function LiveScores() {
 
   const fetchMatches = async () => {
     try {
-      const { data } = await supabase.functions.invoke('fetch-live-matches');
+      const data = await callEdgeFn('fetch-live-matches');
       if (data?.matches?.length > 0) {
         setMatches(data.matches);
         setLastUpdated(new Date());

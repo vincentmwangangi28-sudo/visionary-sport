@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info } from 'lucide-react';
 
@@ -22,7 +23,7 @@ export default function ValueBets() {
   const fetch = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.functions.invoke('find-value-bets');
+      const data = await callEdgeFn('find-value-bets');
       if (data?.valueBets) setBets(data.valueBets);
     } finally { setLoading(false); }
   };

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Film, Play, ExternalLink, RefreshCw, Youtube } from 'lucide-react';
 
@@ -21,7 +22,7 @@ export default function Highlights() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.functions.invoke('fetch-highlights');
+      const data = await callEdgeFn('fetch-highlights');
       if (data?.highlights?.length > 0) setHighlights(data.highlights);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
