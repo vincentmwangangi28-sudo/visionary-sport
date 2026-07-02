@@ -1,0 +1,21 @@
+# PredictPro
+
+> AI-powered sports predictions platform delivering daily football tips, match analysis, confidence scores, and expert reasoning — with a focus on Kenya and global leagues.
+
+PredictPro uses machine learning to generate predictions for the Premier League, La Liga, Champions League and more, with a stated 85%+ accuracy target. Content is available in English and Swahili.
+
+## Pages
+
+- [Home](/): Today's AI predictions, live matches, and featured news.
+- [Today's Matches](/today): Full slate of matches scheduled for today with AI predictions.
+- [News](/news): Latest football news, transfer rumors, and match previews.
+- [Insights](/insights): Expert analysis, betting strategies, and AI technology deep dives.
+- [Leaderboard](/leaderboard): Top-performing users and referral rankings.
+- [Performance](/performance): Historical accuracy stats and prediction tracking.
+- [About](/about): Mission, methodology, and team behind PredictPro.
+
+## Optional
+
+- [Responsible Gaming](/responsible-gaming): 18+ warnings and responsible betting resources.
+- [Privacy Policy](/privacy-policy): How we handle user data.
+- [Terms of Service](/terms-of-service): Platform usage terms.
