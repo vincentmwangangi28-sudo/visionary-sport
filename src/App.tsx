@@ -30,6 +30,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Today = lazy(() => import("./pages/Today"));
+const MathematicalPredictionsGuide = lazy(() => import("./pages/MathematicalPredictionsGuide"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
