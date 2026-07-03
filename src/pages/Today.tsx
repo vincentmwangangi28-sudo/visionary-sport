@@ -16,6 +16,13 @@ const Today = () => {
           content="AI-powered football match predictions for today with confidence scores, expert reasoning, and premium insights."
         />
         <link rel="canonical" href="https://visionary-sport.lovable.app/today" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Today's Match Predictions | PredictPro AI" />
+        <meta property="og:description" content="AI football predictions for today's matches with confidence scores and expert reasoning." />
+        <meta property="og:url" content="https://visionary-sport.lovable.app/today" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Today's Match Predictions | PredictPro AI" />
+        <meta name="twitter:description" content="AI football predictions for today's matches with confidence scores and expert reasoning." />
       </Helmet>
       <Navbar />
       <main>

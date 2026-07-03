@@ -49,7 +49,7 @@ const KENYA_KEYWORDS = [
 
 export const SEOHead = ({
   title = "PredictPro - AI Sports Predictions Kenya",
-  description = "Get AI-powered football predictions with 85%+ accuracy in Kenya. Daily betting tips, match analysis, upset alerts, and smart accumulators for Premier League, La Liga, Champions League.",
+  description = "AI football predictions Kenya with 85%+ accuracy. Daily betting tips, match analysis & smart accumulators for top European leagues.",
   keywords = ["sports predictions", "AI predictions", "football betting tips Kenya", "match predictions", "Premier League tips"],
   ogImage = "https://predictpro.guru/og-image.png",
   ogType = "website",

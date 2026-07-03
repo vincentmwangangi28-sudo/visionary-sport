@@ -33,10 +33,12 @@ export default function ResponsibleGaming() {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <Helmet>
         <title>Responsible Gaming | PredictPro Kenya</title>
-        <meta name="description" content="Learn about responsible gambling practices. Set limits, recognize warning signs, and find help resources. Bet safely with PredictPro." />
+        <meta name="description" content="Responsible gambling practices: set limits, recognize warning signs and find help resources. Bet safely with PredictPro." />
+        <meta property="og:type" content="website" />
         <meta property="og:title" content="Responsible Gaming | PredictPro Kenya" />
-        <meta property="og:description" content="Your guide to safe and responsible sports betting in Kenya. Get tips, resources, and support." />
-        <link rel="canonical" href="https://predictpro.guru/responsible-gaming" />
+        <meta property="og:description" content="Your guide to safe and responsible sports betting in Kenya. Tips, resources and support." />
+        <meta property="og:url" content="https://visionary-sport.lovable.app/responsible-gaming" />
+        <link rel="canonical" href="https://visionary-sport.lovable.app/responsible-gaming" />
       </Helmet>
 
       <Navbar />

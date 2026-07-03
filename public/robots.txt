@@ -1,5 +1,5 @@
 # PredictPro - AI Sports Predictions Platform
-# https://predictpro.guru
+# https://visionary-sport.lovable.app
 
 # Allow all major search engines
 User-agent: Googlebot
@@ -23,18 +23,9 @@ Allow: /sitemap*.xml
 # Disallow private areas
 Disallow: /api/
 Disallow: /admin/
-Disallow: /auth
-Disallow: /shop
-Disallow: /rewards
 
 # Crawl delay
 Crawl-delay: 1
 
-# Sitemaps
-Sitemap: https://predictpro.guru/sitemap-index.xml
-Sitemap: https://predictpro.guru/sitemap.xml
-Sitemap: https://predictpro.guru/image-sitemap.xml
-Sitemap: https://predictpro.guru/video-sitemap.xml
-
-# Host
-Host: predictpro.guru
+# Sitemap
+Sitemap: https://visionary-sport.lovable.app/sitemap.xml

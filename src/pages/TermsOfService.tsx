@@ -12,9 +12,13 @@ export default function TermsOfService() {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <Helmet>
         <title>Terms of Service | PredictPro Kenya</title>
-        <meta name="description" content="Read PredictPro's Terms of Service. Understand the rules, prediction coin policies, and user responsibilities when using our AI sports prediction platform." />
-        <link rel="canonical" href="https://predictpro.guru/terms-of-service" />
+        <meta name="description" content="PredictPro's Terms of Service: rules, prediction coin policies and user responsibilities for our AI sports prediction platform." />
+        <link rel="canonical" href="https://visionary-sport.lovable.app/terms-of-service" />
         <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Terms of Service | PredictPro Kenya" />
+        <meta property="og:description" content="Rules, coin policies and user responsibilities for using PredictPro." />
+        <meta property="og:url" content="https://visionary-sport.lovable.app/terms-of-service" />
       </Helmet>
 
       <Navbar />
