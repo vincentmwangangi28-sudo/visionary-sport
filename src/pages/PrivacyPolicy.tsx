@@ -11,9 +11,13 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <Helmet>
         <title>Privacy Policy | PredictPro Kenya</title>
-        <meta name="description" content="Read PredictPro's Privacy Policy. Learn how we collect, use, and protect your personal data when using our AI sports prediction platform." />
-        <link rel="canonical" href="https://predictpro.guru/privacy-policy" />
+        <meta name="description" content="Read PredictPro's Privacy Policy. Learn how we collect, use and protect your personal data on our AI sports prediction platform." />
+        <link rel="canonical" href="https://visionary-sport.lovable.app/privacy-policy" />
         <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Privacy Policy | PredictPro Kenya" />
+        <meta property="og:description" content="How PredictPro collects, uses and protects your personal data." />
+        <meta property="og:url" content="https://visionary-sport.lovable.app/privacy-policy" />
       </Helmet>
 
       <Navbar />

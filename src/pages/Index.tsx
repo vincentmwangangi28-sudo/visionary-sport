@@ -47,10 +47,10 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <SEOHead 
         title="AI Football Predictions Kenya - 85% Accuracy"
-        description="Get AI-powered football predictions with 85%+ accuracy in Kenya. Daily betting tips, match analysis, upset alerts, and smart accumulators for Premier League, La Liga, Champions League."
+        description="AI football predictions Kenya with 85%+ accuracy. Daily tips, match analysis & smart accumulators for Premier League, La Liga & Champions League."
         keywords={["AI predictions Kenya", "football predictions Nairobi", "betting tips Kenya", "Premier League predictions", "sports analysis Kenya", "accurate football tips"]}
-        canonicalUrl="https://predictpro.guru"
-        breadcrumbs={[{ name: "Home", url: "https://predictpro.guru" }]}
+        canonicalUrl="https://visionary-sport.lovable.app/"
+        breadcrumbs={[{ name: "Home", url: "https://visionary-sport.lovable.app/" }]}
         faqs={[
           { question: "What is PredictPro?", answer: "PredictPro is an AI-powered sports prediction platform in Kenya offering 85%+ accuracy on football, basketball, and tennis predictions." },
           { question: "How accurate are the predictions?", answer: "Our AI model achieves 85%+ accuracy across major leagues including Premier League, La Liga, and Champions League." },
