@@ -215,7 +215,7 @@ Keep your response concise and focused on the most important factors.`;
       JSON.stringify({
         success: true,
         predictionsGenerated,
-        totalMatches: data.response.length,
+        totalMatches: fixtures.length,
         errors: errors.length > 0 ? errors : undefined,
         timestamp: new Date().toISOString()
       }),
