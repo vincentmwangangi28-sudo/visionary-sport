@@ -208,8 +208,9 @@ Keep your response concise and focused on the most important factors.`;
           predictionsGenerated++;
         }
 
-        // Rate limit delay (avoid hitting API limits)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Space out requests to respect AI gateway rate limits
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
 
       } catch (error) {
         console.error(`❌ Error processing match:`, error);
