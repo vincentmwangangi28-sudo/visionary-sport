@@ -90,9 +90,6 @@ serve(async (req) => {
 
     console.log(`⚽ Processing ${fixtures.length} upcoming matches`);
 
-
-    console.log(`⚽ Found ${data.response.length} upcoming matches`);
-
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -102,13 +99,13 @@ serve(async (req) => {
     const errors: string[] = [];
 
     // Generate predictions for each match
-    for (const fixture of data.response.slice(0, 20)) { // Limit to 20 matches to avoid rate limits
+    for (const fixture of fixtures.slice(0, 20)) {
       try {
-        const homeTeam = fixture.teams.home.name;
-        const awayTeam = fixture.teams.away.name;
-        const league = fixture.league.name;
-        const matchDate = fixture.fixture.date;
-        const matchId = `${homeTeam.toLowerCase().replace(/\s+/g, '-')}-${awayTeam.toLowerCase().replace(/\s+/g, '-')}-${matchDate.split('T')[0]}`;
+        const homeTeam = fixture.homeTeam;
+        const awayTeam = fixture.awayTeam;
+        const league = fixture.league;
+        const matchDate = fixture.matchDate;
+        const matchId = fixture.id;
 
         // Check if prediction already exists
         const { data: existingPrediction } = await supabase
