@@ -14,45 +14,82 @@ serve(async (req) => {
   try {
     console.log('🤖 Starting daily prediction generation...');
     
+    const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN') || Deno.env.get('FOOTBALL_DATA_API_TOKEN');
     const apiSportsKey = Deno.env.get('API_SPORTS_KEY');
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     
-    if (!apiSportsKey) {
-      throw new Error('API_SPORTS_KEY not configured');
-    }
     if (!lovableApiKey) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Fetch upcoming matches from API-Sports (next 7 days)
     const today = new Date();
     const nextWeek = new Date(today);
     nextWeek.setDate(today.getDate() + 7);
-    
     const fromDate = today.toISOString().split('T')[0];
     const toDate = nextWeek.toISOString().split('T')[0];
-    
     console.log(`📅 Fetching matches from ${fromDate} to ${toDate}`);
-    
-    const response = await fetch(
-      `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&status=NS`,
-      {
-        headers: {
-          'x-apisports-key': apiSportsKey
-        }
-      }
-    );
 
-    const data = await response.json();
-    console.log(`📊 API-Sports status=${response.status} results=${data.results ?? 0} errors=${JSON.stringify(data.errors ?? {})}`);
-    
-    if (!data.response || data.response.length === 0) {
-      console.log('⚠️ No upcoming matches found');
+    // Normalized fixture list: { id, homeTeam, awayTeam, league, matchDate }
+    let fixtures: Array<{ id: string; homeTeam: string; awayTeam: string; league: string; matchDate: string }> = [];
+
+    // 1. Try Football-Data.org first (reliable, working token)
+    if (footballDataToken) {
+      try {
+        const fdRes = await fetch(
+          `https://api.football-data.org/v4/matches?dateFrom=${fromDate}&dateTo=${toDate}&status=SCHEDULED`,
+          { headers: { 'X-Auth-Token': footballDataToken } }
+        );
+        if (fdRes.ok) {
+          const fdData = await fdRes.json();
+          fixtures = (fdData.matches || []).map((m: any) => ({
+            id: `fd-${m.id}`,
+            homeTeam: m.homeTeam?.name ?? 'Home',
+            awayTeam: m.awayTeam?.name ?? 'Away',
+            league: m.competition?.name ?? 'Unknown League',
+            matchDate: m.utcDate,
+          }));
+          console.log(`✅ Football-Data: ${fixtures.length} scheduled matches`);
+        } else {
+          console.error(`❌ Football-Data error: ${fdRes.status}`);
+        }
+      } catch (e) {
+        console.error('❌ Football-Data fetch failed:', e);
+      }
+    }
+
+    // 2. Fallback to API-Sports if available and Football-Data returned nothing
+    if (fixtures.length === 0 && apiSportsKey) {
+      try {
+        const asRes = await fetch(
+          `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&status=NS`,
+          { headers: { 'x-apisports-key': apiSportsKey } }
+        );
+        const asData = await asRes.json();
+        console.log(`📊 API-Sports status=${asRes.status} results=${asData.results ?? 0} errors=${JSON.stringify(asData.errors ?? {})}`);
+        if (asData.response?.length) {
+          fixtures = asData.response.map((f: any) => ({
+            id: `as-${f.fixture.id}`,
+            homeTeam: f.teams.home.name,
+            awayTeam: f.teams.away.name,
+            league: f.league.name,
+            matchDate: f.fixture.date,
+          }));
+        }
+      } catch (e) {
+        console.error('❌ API-Sports fetch failed:', e);
+      }
+    }
+
+    if (fixtures.length === 0) {
+      console.log('⚠️ No upcoming matches found from any source');
       return new Response(
-        JSON.stringify({ message: 'No upcoming matches found', predictionsGenerated: 0, apiErrors: data.errors ?? null }),
+        JSON.stringify({ message: 'No upcoming matches found', predictionsGenerated: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`⚽ Processing ${fixtures.length} upcoming matches`);
+
 
     console.log(`⚽ Found ${data.response.length} upcoming matches`);
 
