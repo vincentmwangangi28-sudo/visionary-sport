@@ -35,7 +35,7 @@ serve(async (req) => {
     console.log(`📅 Fetching matches from ${fromDate} to ${toDate}`);
     
     const response = await fetch(
-      `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=39,140,78,135,61`, // Premier League, La Liga, Bundesliga, Serie A, Ligue 1
+      `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&status=NS`,
       {
         headers: {
           'x-apisports-key': apiSportsKey
