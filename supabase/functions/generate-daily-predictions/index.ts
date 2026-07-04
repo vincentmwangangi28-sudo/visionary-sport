@@ -44,11 +44,12 @@ serve(async (req) => {
     );
 
     const data = await response.json();
+    console.log(`📊 API-Sports status=${response.status} results=${data.results ?? 0} errors=${JSON.stringify(data.errors ?? {})}`);
     
     if (!data.response || data.response.length === 0) {
       console.log('⚠️ No upcoming matches found');
       return new Response(
-        JSON.stringify({ message: 'No upcoming matches found', predictionsGenerated: 0 }),
+        JSON.stringify({ message: 'No upcoming matches found', predictionsGenerated: 0, apiErrors: data.errors ?? null }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
