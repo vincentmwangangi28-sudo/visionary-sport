@@ -69,8 +69,10 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<LiveMatch[]>
 async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
   console.log('🔄 Trying TheSportsDB...');
   try {
-    const response = await fetch('https://www.thesportsdb.com/api/v2/json/60130162/livescore.php?s=Soccer');
-    const data = await response.json();
+    const response = await fetch('https://www.thesportsdb.com/api/v1/json/3/livescore.php?s=Soccer');
+    const text = await response.text();
+    let data: any = {};
+    try { data = JSON.parse(text); } catch { console.error('❌ TheSportsDB non-JSON response'); return []; }
     
     if (!data.events || data.events.length === 0) {
       console.log('⚠️ TheSportsDB: No live matches');
