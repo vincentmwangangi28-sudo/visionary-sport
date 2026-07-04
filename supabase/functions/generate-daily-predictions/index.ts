@@ -138,28 +138,37 @@ Keep your response concise and focused on the most important factors.`;
 
         console.log(`🔮 Generating prediction for ${homeTeam} vs ${awayTeam}...`);
 
-        // Call Lovable AI for prediction
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
-          }),
-        });
+        // Call Lovable AI with retry for 429/402
+        let aiResponse: Response | null = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${lovableApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+              ],
+            }),
+          });
+          if (aiResponse.ok) break;
+          if (aiResponse.status !== 429 && aiResponse.status !== 402) break;
+          const backoff = 2000 * Math.pow(2, attempt);
+          console.log(`⏳ AI ${aiResponse.status}, retrying in ${backoff}ms (attempt ${attempt + 1}/3)`);
+          await new Promise(r => setTimeout(r, backoff));
+        }
 
-        if (!aiResponse.ok) {
-          const errorText = await aiResponse.text();
-          console.error(`❌ AI API error for ${homeTeam} vs ${awayTeam}:`, aiResponse.status, errorText);
-          errors.push(`${homeTeam} vs ${awayTeam}: AI API error ${aiResponse.status}`);
+        if (!aiResponse || !aiResponse.ok) {
+          const errorText = aiResponse ? await aiResponse.text() : 'no response';
+          console.error(`❌ AI API error for ${homeTeam} vs ${awayTeam}:`, aiResponse?.status, errorText);
+          errors.push(`${homeTeam} vs ${awayTeam}: AI API error ${aiResponse?.status ?? 'n/a'}`);
           continue;
         }
+
 
         const aiData = await aiResponse.json();
         const aiContent = aiData.choices[0].message.content;
