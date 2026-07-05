@@ -255,8 +255,16 @@ serve(async (req) => {
     
     let matches: UpcomingMatch[] = [];
 
-    // 1. Fetch upcoming matches from Football Data API
-    if (footballDataToken) {
+    // 1. FREE: ESPN public API (no key, all major leagues)
+    matches = await fetchFromESPN();
+
+    // 2. FREE fallback: TheSportsDB (no key)
+    if (matches.length === 0) {
+      matches = await fetchFromTheSportsDB();
+    }
+
+    // 3. Optional: Football-Data.org (free tier, if token set)
+    if (matches.length === 0 && footballDataToken) {
       matches = await fetchFromFootballDataAPI(footballDataToken);
     }
 
