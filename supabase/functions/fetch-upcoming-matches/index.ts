@@ -62,6 +62,101 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatc
   }
 }
 
+// FREE: ESPN public API - no key needed, covers all major leagues worldwide
+async function fetchFromESPN(): Promise<UpcomingMatch[]> {
+  const leagues = [
+    { slug: 'eng.1', name: 'Premier League' },
+    { slug: 'esp.1', name: 'La Liga' },
+    { slug: 'ita.1', name: 'Serie A' },
+    { slug: 'ger.1', name: 'Bundesliga' },
+    { slug: 'fra.1', name: 'Ligue 1' },
+    { slug: 'uefa.champions', name: 'Champions League' },
+    { slug: 'uefa.europa', name: 'Europa League' },
+    { slug: 'usa.1', name: 'MLS' },
+  ];
+
+  console.log('🔄 Fetching upcoming matches from ESPN (free, no key)...');
+  const all: UpcomingMatch[] = [];
+
+  await Promise.all(leagues.map(async (lg) => {
+    try {
+      const res = await fetch(
+        `https://site.api.espn.com/apis/site/v2/sports/soccer/${lg.slug}/scoreboard`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const events = data?.events ?? [];
+      for (const ev of events) {
+        const status = ev?.status?.type?.state; // 'pre' | 'in' | 'post'
+        if (status !== 'pre') continue;
+        const comp = ev.competitions?.[0];
+        const home = comp?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName;
+        const away = comp?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName;
+        if (!home || !away) continue;
+        const d = new Date(ev.date);
+        all.push({
+          id: `espn-${ev.id}`,
+          homeTeam: home,
+          awayTeam: away,
+          league: lg.name,
+          date: d.toISOString().split('T')[0],
+          time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        });
+      }
+    } catch (e) {
+      console.error(`❌ ESPN ${lg.slug} error:`, e);
+    }
+  }));
+
+  // Sort by date/time asc
+  all.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  console.log(`✅ ESPN: Found ${all.length} upcoming matches`);
+  return all.slice(0, 20);
+}
+
+// FREE: TheSportsDB - free public key '3', no signup required
+async function fetchFromTheSportsDB(): Promise<UpcomingMatch[]> {
+  const leagueIds = [
+    { id: 4328, name: 'Premier League' },
+    { id: 4335, name: 'La Liga' },
+    { id: 4332, name: 'Serie A' },
+    { id: 4331, name: 'Bundesliga' },
+    { id: 4334, name: 'Ligue 1' },
+    { id: 4480, name: 'Champions League' },
+  ];
+
+  console.log('🔄 Fetching from TheSportsDB (free)...');
+  const all: UpcomingMatch[] = [];
+
+  await Promise.all(leagueIds.map(async (lg) => {
+    try {
+      const res = await fetch(
+        `https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${lg.id}`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const events = data?.events ?? [];
+      for (const ev of events) {
+        if (!ev.strHomeTeam || !ev.strAwayTeam) continue;
+        all.push({
+          id: `tsdb-${ev.idEvent}`,
+          homeTeam: ev.strHomeTeam,
+          awayTeam: ev.strAwayTeam,
+          league: lg.name,
+          date: ev.dateEvent ?? '',
+          time: (ev.strTime ?? '').slice(0, 5),
+        });
+      }
+    } catch (e) {
+      console.error(`❌ TheSportsDB ${lg.id} error:`, e);
+    }
+  }));
+
+  all.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  console.log(`✅ TheSportsDB: Found ${all.length} upcoming matches`);
+  return all.slice(0, 20);
+}
+
 // Fetch AI predictions from the database
 async function fetchDBPredictions(supabase: any, matches: UpcomingMatch[]): Promise<Map<string, { prediction: string; confidence: number }>> {
   const predictionsMap = new Map();
