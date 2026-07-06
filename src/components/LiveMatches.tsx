@@ -1,186 +1,53 @@
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLiveMatches } from "@/hooks/useLiveMatches";
-import { RefreshCw, Radio, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useLiveMatches } from '@/hooks/useLiveMatches';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Activity, RefreshCw, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const LiveMatches = () => {
-  const { matches, loading, source, lastUpdated, refresh } = useLiveMatches();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await refresh();
-    setTimeout(() => setIsRefreshing(false), 500);
-  };
-
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  if (loading) {
-    return (
-      <section className="py-20 bg-gradient-subtle">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-4xl font-bold mb-2 gradient-text">Live Matches</h2>
-              <p className="text-muted-foreground">Real-time football scores</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="p-6">
-                <Skeleton className="h-8 w-32 mb-4" />
-                <Skeleton className="h-16 w-full mb-4" />
-                <Skeleton className="h-4 w-24" />
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
+  const { matches, loading, source, refresh } = useLiveMatches();
+  const live = matches.filter((m: {status:string}) => m.status === 'live' || m.status === 'halftime');
+  if (loading) return (
+    <section className="py-12 bg-muted/20">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="flex items-center gap-3 mb-5"><Skeleton className="h-7 w-48"/></div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{Array.from({length:3}).map((_,i)=><Skeleton key={i} className="h-28 rounded-xl"/>)}</div>
+      </div>
+    </section>
+  );
+  if (!live.length) return null;
   return (
-    <section className="py-20 bg-gradient-subtle">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Radio className="w-6 h-6 text-primary animate-pulse" />
-                <h2 className="text-4xl font-bold gradient-text">Live Matches</h2>
-              </div>
-              <p className="text-muted-foreground">
-                {source === 'demo' ? 'Demo data - showing sample matches' : 'Real-time football scores'}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            {lastUpdated && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>Updated {formatTime(lastUpdated)}</span>
-              </div>
-            )}
-            <Button 
-              onClick={handleRefresh} 
-              variant="outline" 
-              size="sm"
-              disabled={isRefreshing}
-              className="gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+    <section className="py-12 bg-muted/20">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"/>
+            <Activity className="h-6 w-6 text-red-500"/>Live Now
+          </h2>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={refresh}><RefreshCw className="h-4 w-4"/></Button>
+            <Link to="/live"><Button size="sm">All Scores</Button></Link>
           </div>
         </div>
-
-        {matches.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Radio className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-xl font-semibold mb-2">No Live Matches</h3>
-            <p className="text-muted-foreground">
-              There are no matches being played right now. Check back later!
-            </p>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {matches.map((match) => (
-              <Card 
-                key={match.id} 
-                className="p-6 hover-lift transition-all duration-300 bg-gradient-prediction border-primary/10 relative overflow-hidden"
-              >
-                {/* Live indicator */}
-                <div className="absolute top-0 right-0 bg-destructive text-destructive-foreground px-3 py-1 text-xs font-bold flex items-center gap-1 rounded-bl-lg">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  LIVE
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {live.slice(0,6).map((m:{id:string;home_team:string;away_team:string;home_score?:number;away_score?:number;minute?:number;league:string}) => (
+            <Card key={m.id} className="border-red-500/20 bg-red-500/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline" className="text-xs">{m.league}</Badge>
+                  <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-medium animate-pulse">{m.minute ?? 0}'</span>
                 </div>
-
-                {/* League & Time */}
-                <div className="flex items-center justify-between mb-4">
-                  <Badge variant="outline" className="text-xs">
-                    {match.league}
-                  </Badge>
-                  <div className="flex items-center gap-1 text-sm font-bold text-primary">
-                    <Clock className="w-3 h-3" />
-                    {match.time}
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm flex-1">{m.home_team}</span>
+                  <span className="text-2xl font-black px-3">{m.home_score ?? 0} – {m.away_score ?? 0}</span>
+                  <span className="font-bold text-sm flex-1 text-right">{m.away_team}</span>
                 </div>
-
-                {/* Score Display */}
-                <div className="mb-4">
-                  <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-center mb-3">
-                    <div className="text-right">
-                      <h3 className="text-lg font-bold truncate">{match.homeTeam}</h3>
-                    </div>
-                    <div className="flex items-center gap-3 px-4 py-2 bg-secondary/20 rounded-lg">
-                      <span className="text-2xl font-bold text-primary">
-                        {match.homeScore ?? '-'}
-                      </span>
-                      <span className="text-muted-foreground">:</span>
-                      <span className="text-2xl font-bold text-primary">
-                        {match.awayScore ?? '-'}
-                      </span>
-                    </div>
-                    <div className="text-left">
-                      <h3 className="text-lg font-bold truncate">{match.awayTeam}</h3>
-                    </div>
-                  </div>
-                </div>
-
-                {/* AI Prediction */}
-                {match.prediction && match.confidence && (
-                  <div className="mt-4 pt-4 border-t border-border/50">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <span className="text-2xl">🔮</span>
-                      <span className="text-sm font-semibold text-foreground">AI Prediction</span>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-base font-bold text-primary mb-1">
-                        {match.prediction}
-                      </p>
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="flex-1 max-w-[120px] h-2 bg-secondary rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-primary to-primary-glow transition-all duration-500"
-                            style={{ width: `${match.confidence}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-bold text-primary">
-                          {match.confidence}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Status */}
-                <div className="text-center mt-3">
-                  <Badge variant="secondary" className="text-xs">
-                    {match.status}
-                  </Badge>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {source === 'demo' && (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              💡 Showing demo data. Connect a live sports API for real-time updates.
-            </p>
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );

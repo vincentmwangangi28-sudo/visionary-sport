@@ -1,65 +1,34 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from 'react';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 
-export interface UpcomingMatch {
-  id: string;
-  homeTeam: string;
-  awayTeam: string;
-  league: string;
-  date: string;
-  time: string;
-  prediction?: string;
-  confidence?: number;
-}
-
-interface UpcomingMatchesResponse {
-  success: boolean;
-  matches: UpcomingMatch[];
-  source: 'live' | 'demo';
-  lastUpdated: string;
-  error?: string;
+interface UpcomingMatch {
+  id: string; home_team: string; away_team: string;
+  league: string; match_date: string;
+  ai_prediction?: string; confidence?: number;
+  home_odds?: number; draw_odds?: number; away_odds?: number;
 }
 
 export const useUpcomingMatches = () => {
   const [matches, setMatches] = useState<UpcomingMatch[]>([]);
   const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState<'live' | 'demo'>('demo');
-  const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [source, setSource] = useState<'live' | 'upcoming'>('upcoming');
+  const [lastUpdated, setLastUpdated] = useState('');
 
-  const fetchUpcomingMatches = async () => {
+  const refresh = useCallback(async () => {
     try {
-      console.log('🔄 Fetching upcoming matches...');
-      
-      const { data, error } = await supabase.functions.invoke('fetch-upcoming-matches');
-
-      if (error) {
-        console.error('Error fetching upcoming matches:', error);
-        return;
+      const data = await callEdgeFn('fetch-live-matches') as { matches?: UpcomingMatch[] };
+      const upcoming = (data?.matches ?? []).filter((m: UpcomingMatch & { status?: string }) => m.status === 'upcoming');
+      if (upcoming.length > 0) {
+        setMatches(upcoming);
+        setSource('upcoming');
+        setLastUpdated(new Date().toISOString());
       }
-
-      const response = data as UpcomingMatchesResponse;
-      
-      if (response.success) {
-        setMatches(response.matches);
-        setSource(response.source);
-        setLastUpdated(response.lastUpdated);
-        console.log(`✅ Loaded ${response.matches.length} upcoming matches from ${response.source}`);
-      }
-    } catch (error) {
-      console.error('Error fetching upcoming matches:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUpcomingMatches();
-
-    // Update every 5 minutes (less frequent than live matches)
-    const interval = setInterval(fetchUpcomingMatches, 300000);
-
-    return () => clearInterval(interval);
+    } catch (e) {
+      console.error('useUpcomingMatches error:', e);
+    } finally { setLoading(false); }
   }, []);
 
-  return { matches, loading, source, lastUpdated, refresh: fetchUpcomingMatches };
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { matches, loading, source, lastUpdated, refresh };
 };
