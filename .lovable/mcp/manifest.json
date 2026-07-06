@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "predictpro-mcp",
+      "version": "0.1.0",
+      "title": "PredictPro MCP"
+    },
+    "tools": [
+      {
+        "name": "list_todays_predictions",
+        "title": "List today's predictions",
+        "description": "Returns PredictPro's AI football/sports predictions for today, sorted by confidence. Non-premium only.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "minConfidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Minimum confidence percentage (0-100). Defaults to 70."
+            },
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results. Defaults to 20."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_upcoming_predictions",
+        "title": "List upcoming predictions",
+        "description": "Returns upcoming (future) non-premium predictions within a look-ahead window in days.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 14,
+              "description": "Look-ahead window in days. Default 3."
+            },
+            "league": {
+              "type": "string",
+              "description": "Optional league name filter (exact match)."
+            },
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_platform_accuracy",
+        "title": "Get platform accuracy",
+        "description": "Returns PredictPro's recent overall prediction accuracy statistics (last N days).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 90,
+              "description": "Number of recent days. Default 30."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_news",
+        "title": "List news articles",
+        "description": "Returns the most recent published football/sports news articles from PredictPro.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max articles. Default 10."
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional category filter."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
