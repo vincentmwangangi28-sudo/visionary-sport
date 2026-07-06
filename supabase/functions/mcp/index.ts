@@ -150,13 +150,190 @@ var list_news_default = defineTool4({
   }
 });
 
+// src/lib/mcp/tools/list-upcoming-matches.ts
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient5 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z5 } from "npm:zod@^3.25.76";
+var list_upcoming_matches_default = defineTool5({
+  name: "list_upcoming_matches",
+  title: "List upcoming matches",
+  description: "Returns cached upcoming football matches with predictions and confidence. Sourced from ESPN, TheSportsDB, and Football-Data.org.",
+  inputSchema: {
+    league: z5.string().optional().describe("Optional league name filter (exact match)."),
+    limit: z5.number().min(1).max(50).optional().describe("Max results. Default 20.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ league, limit }) => {
+    const supabase = createClient5(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    let q = supabase.from("upcoming_matches_cache").select("match_id, home_team, away_team, league, sport, match_date, match_time, prediction, confidence").gte("match_date", (/* @__PURE__ */ new Date()).toISOString()).order("match_date", { ascending: true }).limit(limit ?? 20);
+    if (league) q = q.eq("league", league);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { matches: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/get-expert-analysis.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient6 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z6 } from "npm:zod@^3.25.76";
+var get_expert_analysis_default = defineTool6({
+  name: "get_expert_analysis",
+  title: "Get expert match analysis",
+  description: "Returns in-depth expert analysis for a specific match: form breakdown, head-to-head, key stats, injuries, and betting tips.",
+  inputSchema: {
+    matchId: z6.string().describe("The match_id to fetch analysis for.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ matchId }) => {
+    const supabase = createClient6(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    const { data, error } = await supabase.from("expert_analysis").select("match_id, form_analysis, head_to_head, key_stats, injury_report, betting_tips, created_at").eq("match_id", matchId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    if (!data) return { content: [{ type: "text", text: `No expert analysis found for match ${matchId}.` }] };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { analysis: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/list-transfer-rumors.ts
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient7 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z7 } from "npm:zod@^3.25.76";
+var list_transfer_rumors_default = defineTool7({
+  name: "list_transfer_rumors",
+  title: "List transfer rumors",
+  description: "Returns the latest football transfer rumors with probability scores, source, and target/current clubs.",
+  inputSchema: {
+    minProbability: z7.number().min(0).max(100).optional().describe("Minimum probability (0-100). Default 0."),
+    limit: z7.number().min(1).max(50).optional().describe("Max rumors. Default 15.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ minProbability, limit }) => {
+    const supabase = createClient7(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    const { data, error } = await supabase.from("transfer_rumors").select("player_name, current_club, target_club, transfer_fee, probability, source, headline, is_confirmed, updated_at").gte("probability", minProbability ?? 0).order("updated_at", { ascending: false }).limit(limit ?? 15);
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { rumors: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/list-active-contests.ts
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient8 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z8 } from "npm:zod@^3.25.76";
+var list_active_contests_default = defineTool8({
+  name: "list_active_contests",
+  title: "List active contests",
+  description: "Returns PredictPro's currently active prediction contests with entry fees, prize pools, and end dates.",
+  inputSchema: {
+    limit: z8.number().min(1).max(50).optional().describe("Max contests. Default 10.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ limit }) => {
+    const supabase = createClient8(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    const { data, error } = await supabase.from("contests").select("id, name, description, entry_fee, prize_pool, start_date, end_date, status").eq("status", "active").order("end_date", { ascending: true }).limit(limit ?? 10);
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { contests: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/get-news-article.ts
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient9 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z9 } from "npm:zod@^3.25.76";
+var get_news_article_default = defineTool9({
+  name: "get_news_article",
+  title: "Get news article",
+  description: "Fetches the full content of a specific news article by slug or ID.",
+  inputSchema: {
+    slugOrId: z9.string().describe("Article slug or UUID.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ slugOrId }) => {
+    const supabase = createClient9(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
+    const { data, error } = await supabase.from("news_articles").select("id, title, slug, content, excerpt, category, tags, author, featured_image, view_count, created_at").eq(isUuid ? "id" : "slug", slugOrId).eq("is_published", true).maybeSingle();
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    if (!data) return { content: [{ type: "text", text: `Article not found: ${slugOrId}` }] };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { article: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/get-streak-leaderboard.ts
+import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient10 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z10 } from "npm:zod@^3.25.76";
+var get_streak_leaderboard_default = defineTool10({
+  name: "get_streak_leaderboard",
+  title: "Get streak leaderboard",
+  description: "Returns the top users by prediction streak (current and longest) with total correct picks and win rates. Usernames are anonymised.",
+  inputSchema: {
+    metric: z10.enum(["current_streak", "longest_streak", "total_correct"]).optional().describe("Ranking metric. Default longest_streak."),
+    limit: z10.number().min(1).max(50).optional().describe("Max rows. Default 10.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ metric, limit }) => {
+    const supabase = createClient10(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    const orderBy = metric ?? "longest_streak";
+    const { data, error } = await supabase.from("user_streaks").select("current_streak, longest_streak, total_correct, last_prediction_date").order(orderBy, { ascending: false }).limit(limit ?? 10);
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    const ranked = (data ?? []).map((row, i) => ({ rank: i + 1, ...row }));
+    return {
+      content: [{ type: "text", text: JSON.stringify(ranked, null, 2) }],
+      structuredContent: { leaderboard: ranked, metric: orderBy }
+    };
+  }
+});
+
 // src/lib/mcp/index.ts
 var mcp_default = defineMcp({
   name: "predictpro-mcp",
   title: "PredictPro MCP",
-  version: "0.1.0",
-  instructions: "PredictPro is an AI-powered sports prediction platform. Use these tools to read today's and upcoming AI football/sports predictions (with confidence scores and reasoning), platform accuracy statistics, and recent news articles. All results are public/non-premium data.",
-  tools: [list_todays_predictions_default, list_upcoming_predictions_default, get_platform_accuracy_default, list_news_default]
+  version: "0.2.0",
+  instructions: "PredictPro is an AI-powered sports prediction platform. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, and streak leaderboards. All data is public/non-premium.",
+  tools: [
+    list_todays_predictions_default,
+    list_upcoming_predictions_default,
+    list_upcoming_matches_default,
+    get_expert_analysis_default,
+    get_platform_accuracy_default,
+    list_news_default,
+    get_news_article_default,
+    list_transfer_rumors_default,
+    list_active_contests_default,
+    get_streak_leaderboard_default
+  ]
 });
 
 // lovable-mcp-supabase-entry.ts
