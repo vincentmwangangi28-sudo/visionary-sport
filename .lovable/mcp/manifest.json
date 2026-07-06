@@ -8,7 +8,7 @@
   "mcp": {
     "server": {
       "name": "predictpro-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "PredictPro MCP"
     },
     "tools": [
@@ -76,6 +76,59 @@
         "outputSchema": null
       },
       {
+        "name": "list_upcoming_matches",
+        "title": "List upcoming matches",
+        "description": "Returns cached upcoming football matches with predictions and confidence. Sourced from ESPN, TheSportsDB, and Football-Data.org.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "league": {
+              "type": "string",
+              "description": "Optional league name filter (exact match)."
+            },
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results. Default 20."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_expert_analysis",
+        "title": "Get expert match analysis",
+        "description": "Returns in-depth expert analysis for a specific match: form breakdown, head-to-head, key stats, injuries, and betting tips.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "matchId": {
+              "type": "string",
+              "description": "The match_id to fetch analysis for."
+            }
+          },
+          "required": [
+            "matchId"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "get_platform_accuracy",
         "title": "Get platform accuracy",
         "description": "Returns PredictPro's recent overall prediction accuracy statistics (last N days).",
@@ -120,6 +173,118 @@
             "category": {
               "type": "string",
               "description": "Optional category filter."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_news_article",
+        "title": "Get news article",
+        "description": "Fetches the full content of a specific news article by slug or ID.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "slugOrId": {
+              "type": "string",
+              "description": "Article slug or UUID."
+            }
+          },
+          "required": [
+            "slugOrId"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_transfer_rumors",
+        "title": "List transfer rumors",
+        "description": "Returns the latest football transfer rumors with probability scores, source, and target/current clubs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "minProbability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Minimum probability (0-100). Default 0."
+            },
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max rumors. Default 15."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_active_contests",
+        "title": "List active contests",
+        "description": "Returns PredictPro's currently active prediction contests with entry fees, prize pools, and end dates.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max contests. Default 10."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_streak_leaderboard",
+        "title": "Get streak leaderboard",
+        "description": "Returns the top users by prediction streak (current and longest) with total correct picks and win rates. Usernames are anonymised.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "metric": {
+              "type": "string",
+              "enum": [
+                "current_streak",
+                "longest_streak",
+                "total_correct"
+              ],
+              "description": "Ranking metric. Default longest_streak."
+            },
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max rows. Default 10."
             }
           },
           "additionalProperties": false,

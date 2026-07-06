@@ -3,12 +3,29 @@ import listTodaysPredictions from "./tools/list-todays-predictions";
 import listUpcomingPredictions from "./tools/list-upcoming-predictions";
 import getPlatformAccuracy from "./tools/get-platform-accuracy";
 import listNews from "./tools/list-news";
+import listUpcomingMatches from "./tools/list-upcoming-matches";
+import getExpertAnalysis from "./tools/get-expert-analysis";
+import listTransferRumors from "./tools/list-transfer-rumors";
+import listActiveContests from "./tools/list-active-contests";
+import getNewsArticle from "./tools/get-news-article";
+import getStreakLeaderboard from "./tools/get-streak-leaderboard";
 
 export default defineMcp({
   name: "predictpro-mcp",
   title: "PredictPro MCP",
-  version: "0.1.0",
+  version: "0.2.0",
   instructions:
-    "PredictPro is an AI-powered sports prediction platform. Use these tools to read today's and upcoming AI football/sports predictions (with confidence scores and reasoning), platform accuracy statistics, and recent news articles. All results are public/non-premium data.",
-  tools: [listTodaysPredictions, listUpcomingPredictions, getPlatformAccuracy, listNews],
+    "PredictPro is an AI-powered sports prediction platform. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, and streak leaderboards. All data is public/non-premium.",
+  tools: [
+    listTodaysPredictions,
+    listUpcomingPredictions,
+    listUpcomingMatches,
+    getExpertAnalysis,
+    getPlatformAccuracy,
+    listNews,
+    getNewsArticle,
+    listTransferRumors,
+    listActiveContests,
+    getStreakLeaderboard,
+  ],
 });
