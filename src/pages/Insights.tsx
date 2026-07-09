@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, TrendingUp, Target, BarChart } from "lucide-react";
 import { RelatedContent } from "@/components/RelatedContent";
+import ValueBetFinder from "@/components/ValueBetFinder";
 
 const Insights = () => {
   const insights = [
