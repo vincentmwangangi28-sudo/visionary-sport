@@ -8,7 +8,7 @@
   "mcp": {
     "server": {
       "name": "predictpro-mcp",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "title": "PredictPro MCP"
     },
     "tools": [
@@ -285,6 +285,36 @@
               "minimum": 1,
               "maximum": 50,
               "description": "Max rows. Default 10."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_value_bets",
+        "title": "List value bets",
+        "description": "Returns upcoming non-premium predictions where the model's confidence exceeds the bookmaker's implied probability. Computes edge %, Kelly fraction, and expected value per unit staked.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "minEdge": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 50,
+              "description": "Minimum edge percentage. Default 5."
+            },
+            "limit": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results. Default 15."
             }
           },
           "additionalProperties": false,
