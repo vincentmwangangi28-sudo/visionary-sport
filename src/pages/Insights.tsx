@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, TrendingUp, Target, BarChart } from "lucide-react";
 import { RelatedContent } from "@/components/RelatedContent";
+import ValueBetFinder from "@/components/ValueBetFinder";
 
 const Insights = () => {
   const insights = [
@@ -77,6 +78,11 @@ const Insights = () => {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Expert insights, betting strategies, and AI technology deep dives from the PredictPro team
             </p>
+          </div>
+
+          {/* Value Bet Finder — advanced, non-AI feature */}
+          <div className="mb-12">
+            <ValueBetFinder />
           </div>
 
           {/* Insights Grid */}

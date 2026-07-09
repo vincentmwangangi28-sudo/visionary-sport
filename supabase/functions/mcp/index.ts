@@ -316,12 +316,63 @@ var get_streak_leaderboard_default = defineTool10({
   }
 });
 
+// src/lib/mcp/tools/list-value-bets.ts
+import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient11 } from "npm:@supabase/supabase-js@^2.74.0";
+import { z as z11 } from "npm:zod@^3.25.76";
+var list_value_bets_default = defineTool11({
+  name: "list_value_bets",
+  title: "List value bets",
+  description: "Returns upcoming non-premium predictions where the model's confidence exceeds the bookmaker's implied probability. Computes edge %, Kelly fraction, and expected value per unit staked.",
+  inputSchema: {
+    minEdge: z11.number().min(0).max(50).optional().describe("Minimum edge percentage. Default 5."),
+    limit: z11.number().min(1).max(50).optional().describe("Max results. Default 15.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ minEdge, limit }) => {
+    const supabase = createClient11(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
+    );
+    const { data, error } = await supabase.from("predictions").select("match_id, home_team, away_team, league, prediction, confidence, odds_value, match_date").eq("is_premium", false).gte("match_date", (/* @__PURE__ */ new Date()).toISOString()).not("odds_value", "is", null).gte("confidence", 55).order("match_date", { ascending: true }).limit(80);
+    if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+    const threshold = minEdge ?? 5;
+    const bets = (data ?? []).map((p) => {
+      const odds = Number(p.odds_value);
+      const conf = Number(p.confidence) / 100;
+      if (!odds || odds <= 1) return null;
+      const implied = 1 / odds;
+      const edge = (conf - implied) * 100;
+      const kelly = Math.max(0, (odds * conf - 1) / (odds - 1)) * 100;
+      const ev = (conf * odds - 1) * 100;
+      return {
+        match_id: p.match_id,
+        home_team: p.home_team,
+        away_team: p.away_team,
+        league: p.league,
+        prediction: p.prediction,
+        match_date: p.match_date,
+        odds,
+        model_confidence_pct: p.confidence,
+        market_implied_pct: Math.round(implied * 1e4) / 100,
+        edge_pct: Math.round(edge * 100) / 100,
+        kelly_pct: Math.round(kelly * 100) / 100,
+        ev_per_unit_pct: Math.round(ev * 100) / 100
+      };
+    }).filter((b) => !!b && b.edge_pct >= threshold).sort((a, b) => b.edge_pct - a.edge_pct).slice(0, limit ?? 15);
+    return {
+      content: [{ type: "text", text: JSON.stringify(bets, null, 2) }],
+      structuredContent: { value_bets: bets, min_edge_pct: threshold }
+    };
+  }
+});
+
 // src/lib/mcp/index.ts
 var mcp_default = defineMcp({
   name: "predictpro-mcp",
   title: "PredictPro MCP",
-  version: "0.2.0",
-  instructions: "PredictPro is an AI-powered sports prediction platform. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, and streak leaderboards. All data is public/non-premium.",
+  version: "0.3.0",
+  instructions: "PredictPro is an AI-powered sports prediction platform. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, streak leaderboards, and mathematically-derived value bets (edge/Kelly/EV vs bookmaker odds). All data is public/non-premium.",
   tools: [
     list_todays_predictions_default,
     list_upcoming_predictions_default,
@@ -332,7 +383,8 @@ var mcp_default = defineMcp({
     get_news_article_default,
     list_transfer_rumors_default,
     list_active_contests_default,
-    get_streak_leaderboard_default
+    get_streak_leaderboard_default,
+    list_value_bets_default
   ]
 });
 
