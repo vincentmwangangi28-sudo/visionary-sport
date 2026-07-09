@@ -80,6 +80,11 @@ const Insights = () => {
             </p>
           </div>
 
+          {/* Value Bet Finder — advanced, non-AI feature */}
+          <div className="mb-12">
+            <ValueBetFinder />
+          </div>
+
           {/* Insights Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {insights.map((insight) => {
