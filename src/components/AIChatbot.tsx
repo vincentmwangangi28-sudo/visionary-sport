@@ -68,8 +68,9 @@ export const AIChatbot = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm">PredictPro AI</p>
-              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" aria-hidden="true" />Online
+              <p className="text-xs text-white font-medium flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-4 h-4 bg-emerald-500 rounded-full" aria-hidden="true" />
+                <span>Online</span>
               </p>
             </div>
             <button
@@ -114,7 +115,7 @@ export const AIChatbot = () => {
 
           {/* Quick prompts */}
           <div className="px-3 pb-1.5 flex gap-2 overflow-x-auto flex-shrink-0">
-            {["Today's picks", 'Best bets', 'KPL tips'].map(q => (
+            {['Today\'s picks', 'Best bets', 'KPL tips'].map(q => (
               <button
                 key={q}
                 onClick={() => { setInput(q); }}
