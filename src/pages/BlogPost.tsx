@@ -17,7 +17,7 @@ const ARTICLES: Record<string, { title: string; description: string; keywords: s
     category: "Strategy", readTime: "5 min", date: "2026-06-04",
     content: `## What is a Confidence Score?
 
-A confidence score is our AI's estimate of how certain it is about a prediction. A **74% confidence** on Arsenal to win means the AI has found strong statistical support — form, H2H, home advantage — pointing to that outcome.
+A confidence score is our AI's estimate of how certain it is about a prediction. A **74% confidence** on Arsenal to win means the AI has found strong statistical support — form, H2H, home advant[...]
 
 **Confidence tiers:**
 - **85-95%** — Sure Bet tier. Strong statistical consensus across all metrics.
@@ -26,7 +26,7 @@ A confidence score is our AI's estimate of how certain it is about a prediction.
 
 ## Understanding Probability vs Odds
 
-If our AI gives Arsenal a **70% probability** of winning and the bookmaker offers **2.10 odds** (implied probability: 47.6%), that's a **value bet** — the AI thinks Arsenal is more likely to win than the odds suggest.
+If our AI gives Arsenal a **70% probability** of winning and the bookmaker offers **2.10 odds** (implied probability: 47.6%), that's a **value bet** — the AI thinks Arsenal is more likely to win[...]
 
 **Expected Value formula:**
 > EV = (Probability × Decimal Odds) - 1
@@ -60,7 +60,7 @@ The result is a confidence score backed by real data, not intuition.`
     category: "Strategy", readTime: "8 min", date: "2026-06-03",
     content: `## What is Value Betting?
 
-Value betting means placing bets where the **true probability is higher than what the odds imply**. If a coin flip pays 2.10 instead of 2.00, every flip has positive expected value — you'd be +5% on every bet.
+Value betting means placing bets where the **true probability is higher than what the odds imply**. If a coin flip pays 2.10 instead of 2.00, every flip has positive expected value — you'd be +5[...]
 
 Football is the same. When our AI calculates Arsenal have a 70% chance of winning but Betika offers 2.20 (implied: 45.5%), you have a **+54% edge** on that bet.
 
@@ -99,7 +99,7 @@ The KPL features 18 clubs competing across a 34-match season. The most-predicted
 ## How to Bet on KPL in Kenya
 
 **Via M-Pesa:**
-PredictPro accepts Safaricom M-Pesa via Lipana STK Push. For premium predictions, go to **Shop → M-Pesa → Enter your Safaricom number**. The STK push sends to your phone — enter your PIN and access unlocks instantly.
+PredictPro accepts Safaricom M-Pesa via Lipana STK Push. For premium predictions, go to **Shop → M-Pesa → Enter your Safaricom number**. The STK push sends to your phone — enter your PIN an[...]
 
 **Recommended platforms:** SportPesa, Betika, Odibets all cover KPL extensively.
 
@@ -117,14 +117,48 @@ If gambling affects your life, call **0800 723 253** (Kenya Responsible Gambling
 };
 
 function renderMarkdown(text: string) {
-  return text.split('\n').map((line, i) => {
-    if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold mt-6 mb-3">{line.slice(3)}</h2>;
-    if (line.startsWith('> ')) return <blockquote key={i} className="border-l-4 border-primary pl-4 italic text-muted-foreground my-3">{line.slice(2)}</blockquote>;
-    if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold my-1">{line.replace(/\*\*/g, '')}</p>;
-    if (line.startsWith('- ')) return <li key={i} className="ml-4 text-muted-foreground list-disc">{line.slice(2).replace(/\*\*(.*?)\*\*/g, (_, t) => t)}</li>;
-    if (line === '') return <div key={i} className="h-2" />;
-    return <p key={i} className="text-muted-foreground leading-relaxed my-1.5">{line.replace(/\*\*(.*?)\*\*/g, (_, t) => `<strong>${t}</strong>`)}</p>;
+  const lines = text.split('\n');
+  const nodes: React.ReactNode[] = [];
+  let listBuffer: string[] = [];
+
+  const flushList = () => {
+    if (listBuffer.length === 0) return;
+    nodes.push(
+      <ul key={`list-${nodes.length}`} className="ml-4 list-disc marker:text-muted-foreground">
+        {listBuffer.map((item, idx) => (
+          <li key={idx} className="text-muted-foreground my-1">{item}</li>
+        ))}
+      </ul>
+    );
+    listBuffer = [];
+  };
+
+  lines.forEach((line, i) => {
+    if (line.startsWith('- ')) {
+      listBuffer.push(line.slice(2).replace(/\*\*(.*?)\*\*/g, (_, t) => t));
+      return;
+    }
+
+    // Non-list line: flush any pending list
+    flushList();
+
+    if (line.startsWith('## ')) {
+      nodes.push(<h2 key={i} className="text-xl font-bold mt-6 mb-3">{line.slice(3)}</h2>);
+    } else if (line.startsWith('> ')) {
+      nodes.push(<blockquote key={i} className="border-l-4 border-primary pl-4 italic text-muted-foreground my-3">{line.slice(2)}</blockquote>);
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      nodes.push(<p key={i} className="font-bold my-1">{line.replace(/\*\*/g, '')}</p>);
+    } else if (line === '') {
+      nodes.push(<div key={i} className="h-2" />);
+    } else {
+      nodes.push(<p key={i} className="text-muted-foreground leading-relaxed my-1.5" dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />);
+    }
   });
+
+  // flush any trailing list
+  if (listBuffer.length) flushList();
+
+  return nodes;
 }
 
 export default function BlogPost() {
@@ -144,8 +178,8 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${post.title} | PredictPro`} description={post.description} keywords={post.keywords} canonical={`/blog/${slug}`}
-        structuredData={{ '@type': 'Article', headline: post.title, description: post.description, datePublished: post.date, author: { '@type': 'Organization', name: 'PredictPro' }, publisher: { '@type': 'Organization', name: 'PredictPro', url: 'https://predictpro.guru' } }} />
+      <SEO title={`${post.title} | PredictPro`} description={post.description} keywords={post.keywords} canonical={`/blog/${slug}`}>
+      </SEO>
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <Link to="/blog" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary mb-6 transition-colors">
