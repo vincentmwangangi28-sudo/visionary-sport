@@ -36,7 +36,7 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
   const analysis = getAnalysis(p);
 
   const OUTCOME_COLOR: Record<string, string> = {
-    'Home Win': 'bg-green-500', 'Away Win': 'bg-red-500', 'Draw': 'bg-amber-500',
+    'Home Win': 'bg-green-700', 'Away Win': 'bg-red-700', 'Draw': 'bg-amber-600',
   };
 
   const metadata = p.metadata as Record<string, number> | undefined;
@@ -71,9 +71,9 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
             <div className="space-y-2">
               <p className="text-sm font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary" />Win Probabilities</p>
               {[
-                { label: p.home_team, prob: metadata.home_win_probability, odds: p.home_odds, color: 'bg-green-500' },
-                { label: 'Draw', prob: metadata.draw_probability, odds: p.draw_odds, color: 'bg-amber-500' },
-                { label: p.away_team, prob: metadata.away_win_probability, odds: p.away_odds, color: 'bg-red-500' },
+                { label: p.home_team, prob: metadata.home_win_probability, odds: p.home_odds, color: 'bg-green-700' },
+                { label: 'Draw', prob: metadata.draw_probability, odds: p.draw_odds, color: 'bg-amber-600' },
+                { label: p.away_team, prob: metadata.away_win_probability, odds: p.away_odds, color: 'bg-red-700' },
               ].map(({ label, prob, odds, color }) => (
                 <div key={label}>
                   <div className="flex justify-between text-xs mb-1">

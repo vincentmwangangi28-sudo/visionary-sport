@@ -46,8 +46,8 @@ export default function LiveScores() {
   const finished = matches.filter(m => m.status === 'finished');
 
   const statusBadge = (m: Match) => {
-    if (m.status === 'live') return <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-medium animate-pulse">{m.minute ?? 0}'</span>;
-    if (m.status === 'halftime') return <span className="px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full font-medium">HT</span>;
+    if (m.status === 'live') return <span className="px-2 py-0.5 bg-red-700 text-white text-xs rounded-full font-medium animate-pulse">{m.minute ?? 0}'</span>;
+    if (m.status === 'halftime') return <span className="px-2 py-0.5 bg-amber-600 text-white text-xs rounded-full font-medium">HT</span>;
     if (m.status === 'finished') return <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium">FT</span>;
     return <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full font-medium">{new Date(m.match_date).toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})}</span>;
   };

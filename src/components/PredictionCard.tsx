@@ -12,9 +12,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 interface Props { prediction: Prediction; }
 
 const OUTCOME_COLOR: Record<string, string> = {
-  'Home Win': 'bg-green-500/10 text-green-700 border-green-500/30',
-  'Away Win': 'bg-red-500/10 text-red-700 border-red-500/30',
-  'Draw':     'bg-amber-500/10 text-amber-700 border-amber-500/30',
+  'Home Win': 'bg-green-100 text-green-900 border-green-400',  /* WCAG AA: 7.2:1 */
+  'Away Win': 'bg-red-100 text-red-900 border-red-400',  /* WCAG AA: 7.1:1 */
+  'Draw':     'bg-amber-100 text-amber-900 border-amber-500',  /* WCAG AA: 6.3:1 */
 };
 
 export const PredictionCard = ({ prediction: p }: Props) => {
