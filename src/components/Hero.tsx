@@ -39,8 +39,8 @@ export const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl py-20">
         {/* Live badge */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          <Badge className="bg-green-500/15 text-green-600 border-green-500/30 px-3 py-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2 inline-block" />
+          <Badge className="bg-emerald-800 text-white px-3 py-1 rounded-full font-medium">
+            <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse mr-2 inline-block" aria-hidden="true" />
             Live AI Predictions
           </Badge>
           <Badge variant="outline" className="px-3 py-1">
