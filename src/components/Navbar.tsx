@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, startTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, BarChart, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard, Film, Search, BookOpen, Target } from "lucide-react";
@@ -73,7 +73,7 @@ export const Navbar = () => {
               <>
                 <CoinBalance />
                 <NotificationBell />
-                <Button variant="outline" size="sm" onClick={signOut} className="gap-1.5 hidden sm:flex">
+                <Button variant="outline" size="sm" onClick={() => { void signOut(); }} className="gap-1.5 hidden sm:flex">
                   <LogOut className="h-4 w-4" />Sign Out
                 </Button>
               </>
@@ -87,19 +87,23 @@ export const Navbar = () => {
               <SheetContent side="right" className="w-72 overflow-y-auto">
                 <div className="flex flex-col gap-0.5 mt-6">
                   {visibleLinks.map(({ to, label, icon: Icon }) => (
-                    <Link key={to} to={to} onClick={() => setOpen(false)}
+                    <Link key={to} to={to}
+                      onPointerDown={() => startTransition(() => setOpen(false))}
+                      onClick={() => startTransition(() => setOpen(false))}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-muted ${location.pathname === to ? 'bg-muted text-primary' : ''}`}>
                       <Icon className="h-4 w-4 flex-shrink-0" />{label}
                     </Link>
                   ))}
                   {user && (
                     <>
-                      <Link to="/admin" onClick={() => setOpen(false)}
+                      <Link to="/admin"
+                        onPointerDown={() => startTransition(() => setOpen(false))}
+                        onClick={() => startTransition(() => setOpen(false))}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted">
                         <LayoutDashboard className="h-4 w-4" />Admin
                       </Link>
                       <div className="border-t mt-2 pt-2">
-                        <button onClick={() => { signOut(); setOpen(false); }}
+                        <button onClick={() => { startTransition(() => setOpen(false)); void signOut(); }}
                           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 w-full">
                           <LogOut className="h-4 w-4" />Sign Out
                         </button>
