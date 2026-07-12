@@ -67,15 +67,15 @@ export const PaymentDialog = ({ plan, priceKes, priceUsd, children, onSuccess }:
 
           {/* M-Pesa - Africa */}
           <MpesaPaymentDialog purpose="premium_subscription" amount={priceKes} title={`${plan.toUpperCase()} Plan — M-Pesa`} onSuccess={() => { setOpen(false); onSuccess?.(); }}>
-            <button className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-border hover:border-green-500/50 hover:bg-green-50/10 transition-all text-left">
-              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-                <Smartphone className="h-5 w-5 text-green-600" />
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-border hover:border-emerald-700/50 hover:bg-emerald-900/10 transition-all text-left">
+              <div className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center flex-shrink-0">
+                <Smartphone className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold">M-Pesa</p>
                 <p className="text-sm text-muted-foreground">Safaricom STK Push • KES {priceKes}</p>
               </div>
-              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 px-2 py-0.5 rounded-full">Kenya</span>
+              <span className="text-xs bg-emerald-800 text-white px-2 py-0.5 rounded-full">Kenya</span>
             </button>
           </MpesaPaymentDialog>
         </div>
