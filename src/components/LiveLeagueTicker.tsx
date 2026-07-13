@@ -8,24 +8,34 @@ export const LiveLeagueTicker = () => {
   const [stats, setStats] = useState<LeagueStat[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const { data } = await supabase.from('predictions')
-        .select('league, confidence, confidence_score')
-        .gte('match_date', today);
+    const fetchStats = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data } = await supabase.from('predictions')
+          .select('league, confidence, confidence_score')
+          .gte('match_date', today)
+          .not('league', 'is', null);
 
-      const map: Record<string, { total: number; sum: number }> = {};
-      (data ?? []).forEach(p => {
-        if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
-        map[p.league].total++;
-        map[p.league].sum += p.confidence_score ?? p.confidence ?? 0;
-      });
+        const map: Record<string, { total: number; sum: number }> = {};
+        (data ?? []).forEach((p: any) => {
+          const league = p.league ?? 'Unknown';
+          if (!map[league]) map[league] = { total: 0, sum: 0 };
+          map[league].total++;
+          map[league].sum += (p.confidence_score ?? p.confidence ?? 0);
+        });
 
-      setStats(Object.entries(map).map(([league, { total, sum }]) => ({
-        league, count: total, avgConfidence: Math.round(sum / total),
-      })).sort((a, b) => b.count - a.count));
+        const entries = Object.entries(map).map(([league, { total, sum }]) => ({
+          league, count: total, avgConfidence: total ? Math.round(sum / total) : 0,
+        })).sort((a, b) => b.count - a.count);
+
+        setStats(entries);
+      } catch (err) {
+        console.error('LiveLeagueTicker fetch error', err);
+        setStats([]);
+      }
     };
-    fetch();
+
+    fetchStats();
   }, []);
 
   if (!stats.length) return null;
