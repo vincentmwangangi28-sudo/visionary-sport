@@ -16,27 +16,31 @@ export const usePredictions = (page = 1, league?: string) => {
   const query = useQuery({
     queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const twoWeeks = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
-      let q = supabase
-        .from('predictions')
-        .select('*', { count: 'exact' })
-        .gte('match_date', today)
-        .lte('match_date', twoWeeks)
-        .order('confidence', { ascending: false })
-        .order('match_date', { ascending: true })
-        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-      if (league) q = q.eq('league', league);
-      const { data, error, count } = await q;
-      if (error) throw error;
-      return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
+      try {
+        const startIso = new Date().toISOString();
+        const endIso = new Date(Date.now() + 14 * 86400000).toISOString();
+        let q = supabase
+          .from('predictions')
+          .select('*', { count: 'exact' })
+          .gte('match_date', startIso)
+          .lte('match_date', endIso)
+          .order('confidence', { ascending: false })
+          .order('match_date', { ascending: true })
+          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+        if (league) q = q.eq('league', league);
+        const { data, error, count } = await q;
+        if (error) throw error;
+        return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
+      } catch (err) {
+        console.error('usePredictions query error', err);
+        return { predictions: [] as Prediction[], total: 0 };
+      }
     },
-    staleTime: 120_000,
-    retry: 3,
+    staleTime: 30_000,
+    retry: 1,
   });
 
-  // Gate premium for free users
-  const gated = (query.data?.predictions ?? []).map(p => {
+  const gated = (query.data?.predictions ?? []).map((p: any) => {
     const outcome = getPrediction(p);
     if (p.is_premium && !isPremium() && !outcome.includes('🔒')) {
       return {
@@ -53,22 +57,27 @@ export const usePredictions = (page = 1, league?: string) => {
   const total = query.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  // Prefetch next page
   if (page < totalPages) {
     queryClient.prefetchQuery({
       queryKey: [...queryKeys.predictions.list(page + 1), league ?? 'all'],
       queryFn: async () => {
-        const today = new Date().toISOString().split('T')[0];
-      const twoWeeks = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
-        let q = supabase.from('predictions').select('*', { count: 'exact' })
-          .gte('match_date', today)
-        .lte('match_date', twoWeeks).order('confidence', { ascending: false })
-          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-        if (league) q = q.eq('league', league);
-        const { data, count } = await q;
-        return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
+        try {
+          const startIso = new Date().toISOString();
+          const endIso = new Date(Date.now() + 14 * 86400000).toISOString();
+          let q = supabase.from('predictions').select('*', { count: 'exact' })
+            .gte('match_date', startIso)
+            .lte('match_date', endIso)
+            .order('confidence', { ascending: false })
+            .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+          if (league) q = q.eq('league', league);
+          const { data, count } = await q;
+          return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
+        } catch (err) {
+          console.error('prefetch error', err);
+          return { predictions: [] as Prediction[], total: 0 };
+        }
       },
-      staleTime: 120_000,
+      staleTime: 30_000,
     });
   }
 
