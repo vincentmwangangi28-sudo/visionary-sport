@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Share2, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Prediction } from '@/hooks/usePredictions';
+import { Prediction } from '@/types/prediction';
 
 export const SharePrediction = ({ prediction }: { prediction: Prediction }) => {
   const [shared, setShared] = useState(false);
