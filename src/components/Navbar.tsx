@@ -1,7 +1,7 @@
-import React, { useState, startTransition } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, BarChart, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard, Film, Search, BookOpen, Target } from "lucide-react";
+import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard, Film, Search, BookOpen } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { CoinBalance } from "./CoinBalance";
@@ -19,16 +19,16 @@ const navLinks = [
   { to: "/leaderboard",label: "Leaderboard",  icon: Trophy },
   { to: "/insights",   label: "Insights",     icon: BarChart2 },
   { to: "/performance",label: "Performance",  icon: BarChart2,  protected: true },
-  { to: "/shop",       label: "Shop",         icon: ShoppingBag,protected: true },
+  { to: "/shop",       label: "Shop",         icon: ShoppingBag, protected: true },
   { to: "/rewards",    label: "Rewards",      icon: Gift,       protected: true },
   { to: "/best-bets",  label: "Best Bets",    icon: Flame },
   { to: "/predict",    label: "Predictor",    icon: Zap },
-  { to: "/sports",     label: "More Sports",   icon: Zap },
-  { to: "/highlights", label: "Highlights",    icon: Film },
-  { to: "/statistics", label: "Statistics",    icon: BarChart2 },
-  { to: "/standings",  label: "Standings",     icon: Trophy },
-  { to: "/players",    label: "Player Search", icon: Search },
-  { to: "/blog",       label: "Blog",          icon: BookOpen },
+  { to: "/sports",     label: "More Sports",  icon: Zap },
+  { to: "/highlights", label: "Highlights",   icon: Film },
+  { to: "/statistics", label: "Statistics",   icon: BarChart2 },
+  { to: "/standings",  label: "Standings",    icon: Trophy },
+  { to: "/players",    label: "Player Search",icon: Search },
+  { to: "/blog",       label: "Blog",         icon: BookOpen },
   { to: "/about",      label: "About",        icon: Info },
 ];
 
@@ -88,22 +88,20 @@ export const Navbar = () => {
                 <div className="flex flex-col gap-0.5 mt-6">
                   {visibleLinks.map(({ to, label, icon: Icon }) => (
                     <Link key={to} to={to}
-                      onPointerDown={() => startTransition(() => setOpen(false))}
-                      onClick={() => startTransition(() => setOpen(false))}
+                      onPointerDown={() => setOpen(false)}
+                      onClick={() => setOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-muted ${location.pathname === to ? 'bg-muted text-primary' : ''}`}>
                       <Icon className="h-4 w-4 flex-shrink-0" />{label}
                     </Link>
                   ))}
                   {user && (
                     <>
-                      <Link to="/admin"
-                        onPointerDown={() => startTransition(() => setOpen(false))}
-                        onClick={() => startTransition(() => setOpen(false))}
+                      <Link to="/admin" onPointerDown={() => setOpen(false)} onClick={() => setOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted">
                         <LayoutDashboard className="h-4 w-4" />Admin
                       </Link>
                       <div className="border-t mt-2 pt-2">
-                        <button onClick={() => { startTransition(() => setOpen(false)); void signOut(); }}
+                        <button onClick={() => { setOpen(false); void signOut(); }}
                           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 w-full">
                           <LogOut className="h-4 w-4" />Sign Out
                         </button>
