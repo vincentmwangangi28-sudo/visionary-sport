@@ -2,12 +2,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
+import { toast } from 'sonner';
 
 export type { Prediction };
 export { getPrediction, getConfidence };
 
 const PAGE_SIZE = 9;
 const queryKeys = { predictions: { list: (p: number) => ['predictions', 'list', p] } };
+let showedSupabaseAuthWarning = false;
 
 export const usePredictions = (page = 1, league?: string) => {
   const { isPremium } = useSubscription();
@@ -31,8 +33,14 @@ export const usePredictions = (page = 1, league?: string) => {
         const { data, error, count } = await q;
         if (error) throw error;
         return { predictions: (data ?? []) as Prediction[], total: count ?? 0 };
-      } catch (err) {
+      } catch (err: any) {
         console.error('usePredictions query error', err);
+        // If Supabase returns 401 (unauthorized), show a single helpful toast in preview environments
+        const status = err?.status ?? err?.response?.status;
+        if ((status === 401 || String(err).includes('401')) && !showedSupabaseAuthWarning) {
+          showedSupabaseAuthWarning = true;
+          toast.error('Backend not configured: Supabase anon key missing or invalid. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel environment variables.');
+        }
         return { predictions: [] as Prediction[], total: 0 };
       }
     },
