@@ -17,18 +17,37 @@ export const useSubscription = () => {
 
   useEffect(() => {
     if (!user) { setSubscription(null); return; }
+    let mounted = true;
     setLoading(true);
-    supabase.from('subscriptions')
-      .select('*').eq('user_id', user.id).eq('status', 'active')
-      .gte('expires_at', new Date().toISOString())
-      .order('expires_at', { ascending: false }).limit(1).single()
-      .then(({ data }) => { setSubscription(data); setLoading(false); });
+
+    (async () => {
+      try {
+        // Fetch latest subscription record for user and compute expiry client-side
+        const { data, error } = await supabase.from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('expires_at', { ascending: false })
+          .limit(1)
+          .single();
+        if (error) { console.error('subscription fetch error', error); if (mounted) setSubscription(null); }
+        else if (mounted) setSubscription(data ?? null);
+      } catch (err) {
+        console.error('subscription fetch exception', err);
+        if (mounted) setSubscription(null);
+      } finally { if (mounted) setLoading(false); }
+    })();
+
+    return () => { mounted = false; };
   }, [user]);
 
   const isPremium = () => {
-    if (!user) return false;
-    if (!subscription) return false;
-    return subscription.status === 'active' && new Date(subscription.expires_at) > new Date();
+    if (!user || !subscription) return false;
+    try {
+      const exp = new Date(subscription.expires_at).getTime();
+      return subscription.status === 'active' && !Number.isNaN(exp) && exp > Date.now();
+    } catch {
+      return false;
+    }
   };
 
   return { subscription, isPremium, loading };
