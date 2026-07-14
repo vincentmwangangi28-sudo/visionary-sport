@@ -1,7 +1,7 @@
 project_id = "yofhrfahhzsxbtuhuwqf"
 
 [functions.generate-prediction]
-verify_jwt = true
+verify_jwt = false
 
 [functions.fetch-live-matches]
 verify_jwt = false
@@ -10,13 +10,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-daily-predictions]
-verify_jwt = true
+verify_jwt = false
 
 [functions.fetch-user-performance]
 verify_jwt = false
 
 [functions.mpesa-stk-push]
-verify_jwt = true
+verify_jwt = false
 
 [functions.mpesa-webhook]
 verify_jwt = false
@@ -50,12 +50,6 @@ verify_jwt = false
 
 [functions.activate-subscription]
 verify_jwt = false
-
-[functions.spin-wheel]
-verify_jwt = true
-
-[functions.activate-subscription]
-verify_jwt = true
 
 [functions.fetch-match-context]
 verify_jwt = false
