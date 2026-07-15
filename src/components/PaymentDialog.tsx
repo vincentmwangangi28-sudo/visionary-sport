@@ -15,8 +15,9 @@ export const PaymentDialog = ({ open, onClose, plan, price }: Props) => {
   const pay = async () => {
     setLoading(true);
     try {
-      const session = (await supabase.auth.getSession()).data.session;
-      if (!session) { toast.error('Please sign in first'); return; }
+      const sessionResult = await supabase.auth.getSession();
+      const session = sessionResult?.data?.session ?? null;
+      if (!session?.access_token) { toast.error('Please sign in first'); setLoading(false); return; }
       const data = await callEdgeFn('stripe-payment', { plan, currency: 'usd' }, session.access_token) as { url?: string; error?: string };
       if (data?.url) {
         window.open(data.url, '_blank');

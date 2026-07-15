@@ -1,28 +1,3 @@
-# PredictPro robots.txt
-# https://predictpro.guru
-
 User-agent: *
 Allow: /
-
-# Disallow private pages
-Disallow: /admin
-Disallow: /api/
-Disallow: /_vercel/
-Disallow: /auth
-Disallow: /performance
-Disallow: /rewards
-
-# Allow Google specific bots
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Googlebot-Image
-Allow: /assets/
-Allow: /public/
-
-# Sitemaps
-Sitemap: https://predictpro.guru/sitemap.xml
-
-# Host
-Host: predictpro.guru
+Sitemap: https://www.predictpro.guru/sitemap.xml
