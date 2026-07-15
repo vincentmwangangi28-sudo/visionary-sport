@@ -1,28 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyTokenCompat } from '../lib/verifyToken.ts';
 
 const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 
-const PRIZES = [
-  { type: 'coins',     amount: 10,  label: '10 Coins',      color: '#FFD700', weight: 20 },
-  { type: 'coins',     amount: 25,  label: '25 Coins',      color: '#FFA500', weight: 15 },
-  { type: 'coins',     amount: 50,  label: '50 Coins',      color: '#FF6347', weight: 10 },
-  { type: 'prediction',amount: 1,   label: 'Free Prediction',color: '#9B59B6', weight: 5  },
-  { type: 'nothing',   amount: 0,   label: 'Try Again',     color: '#95A5A6', weight: 25 },
-  { type: 'bonus',     amount: 100, label: '100 Coins!',    color: '#E74C3C', weight: 2  },
-  { type: 'coins',     amount: 15,  label: '15 Coins',      color: '#3498DB', weight: 18 },
-  { type: 'nothing',   amount: 0,   label: 'Better Luck',   color: '#7F8C8D', weight: 5  },
-];
-
-function selectPrize(): { prize: typeof PRIZES[0]; index: number } {
-  const total = PRIZES.reduce((s, p) => s + p.weight, 0);
-  let r = Math.random() * total;
-  for (let i = 0; i < PRIZES.length; i++) {
-    r -= PRIZES[i].weight;
-    if (r <= 0) return { prize: PRIZES[i], index: i };
-  }
-  return { prize: PRIZES[0], index: 0 };
-}
+const PLANS: Record<string, { price: number; name: string }> = {
+  basic: { price: 299, name: 'Basic' },
+  pro:   { price: 599, name: 'Pro' },
+  vip:   { price: 999, name: 'VIP' },
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -31,27 +17,47 @@ serve(async (req) => {
 
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-  const { data: { user }, error: authErr } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-  if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+  const token = authHeader.replace('Bearer ', '');
 
-  // Idempotency — one spin per day per user
-  const today = new Date().toISOString().split('T')[0];
-  const { data: existing } = await supabase.from('spin_wheel_entries').select('id')
-    .eq('user_id', user.id).gte('spun_at', `${today}T00:00:00`).lte('spun_at', `${today}T23:59:59`);
-  if (existing && existing.length > 0)
-    return new Response(JSON.stringify({ error: 'Already spun today', canSpin: false }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-
-  const { prize, index } = selectPrize();
-
-  // Record spin
-  await supabase.from('spin_wheel_entries').insert({ user_id: user.id, prize_type: prize.type, prize_amount: prize.amount });
-
-  // Award coins atomically using RPC (no race condition)
-  if (prize.type === 'coins' || prize.type === 'bonus') {
-    await supabase.rpc('add_coins', { user_id_val: user.id, amount_val: prize.amount });
+  const compat = await verifyTokenCompat(token);
+  let userId: string | null = null;
+  if (compat?.payload?.sub) userId = String(compat.payload.sub);
+  else {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    userId = user.id;
   }
 
-  return new Response(JSON.stringify({ success: true, prize, prizeIndex: index, canSpin: false }), {
+  const { plan, transactionId } = await req.json();
+  if (!plan || !PLANS[plan]) return new Response(JSON.stringify({ error: 'Invalid plan' }), { status: 400, headers: corsHeaders });
+  if (!transactionId) return new Response(JSON.stringify({ error: 'transactionId required — pay first' }), { status: 400, headers: corsHeaders });
+
+  // Verify payment completed
+  const { data: tx } = await supabase.from('transactions').select('status, amount, user_id')
+    .eq('id', transactionId).eq('user_id', userId).single();
+
+  if (!tx) return new Response(JSON.stringify({ error: 'Transaction not found' }), { status: 404, headers: corsHeaders });
+  if (tx.status !== 'completed') return new Response(JSON.stringify({ error: 'Payment not completed yet', status: tx.status }), { status: 402, headers: corsHeaders });
+  if (tx.amount < PLANS[plan].price) return new Response(JSON.stringify({ error: 'Insufficient payment amount' }), { status: 402, headers: corsHeaders });
+
+  // Cancel any existing active subscription
+  await supabase.from('subscriptions').update({ status: 'cancelled' }).eq('user_id', userId).eq('status', 'active');
+
+  // Activate new subscription
+  const expiresAt = new Date();
+  expiresAt.setMonth(expiresAt.getMonth() + 1);
+  const { data: sub, error: subErr } = await supabase.from('subscriptions').insert({
+    user_id: userId, plan, price_kes: PLANS[plan].price,
+    expires_at: expiresAt.toISOString(), status: 'active',
+    metadata: { transaction_id: transactionId },
+  }).select('id').single();
+
+  if (subErr) return new Response(JSON.stringify({ error: 'Failed to activate subscription' }), { status: 500, headers: corsHeaders });
+
+  // Mark transaction as used
+  await supabase.from('transactions').update({ metadata: { subscription_id: sub.id } }).eq('id', transactionId);
+
+  return new Response(JSON.stringify({ success: true, subscriptionId: sub.id, plan, expiresAt }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 });

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyTokenCompat } from '../lib/verifyToken.ts';
 
 const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 
@@ -18,8 +19,21 @@ serve(async (req) => {
 
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-  const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-  if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+  const token = authHeader.replace('Bearer ', '');
+
+  // Try compat verification first (v3 ES256)
+  const compat = await verifyTokenCompat(token);
+  let userId: string | null = null;
+  let userEmail: string | null = null;
+
+  if (compat?.payload?.sub) {
+    userId = String(compat.payload.sub);
+  } else {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    userId = user.id;
+    userEmail = user.email ?? null;
+  }
 
   const { plan, currency = 'usd', successUrl, cancelUrl } = await req.json();
   if (!plan || !PLANS[plan]) return new Response(JSON.stringify({ error: 'Invalid plan' }), { status: 400, headers: corsHeaders });
@@ -37,27 +51,14 @@ serve(async (req) => {
       'line_items[0][price_data][currency]': currency === 'kes' ? 'usd' : currency,
       'line_items[0][price_data][product_data][name]': `PredictPro ${planDetails.name} Plan (1 month)`,
       'line_items[0][price_data][product_data][description]': 'Unlimited AI predictions, advanced stats & global leagues',
-      'line_items[0][price_data][product_data][images][]': 'https://predictpro.guru/assets/ai-prediction-icon.png',
+      'line_items[0][price_data][product_data][images][]': 'https://www.predictpro.guru/assets/ai-prediction-icon.png',
       'line_items[0][price_data][unit_amount]': amount.toString(),
       'line_items[0][quantity]': '1',
-      'customer_email': user.email!,
-      'metadata[user_id]': user.id,
-      'metadata[plan]': plan,
-      'metadata[currency]': currency,
-      'payment_method_types[]': 'card',
-    }),
+      'customer_email': userEmail || '',
+      'metadata[user_id]': userId || ''
+    })
   });
 
-  const session = await stripeRes.json();
-  if (!session.url) return new Response(JSON.stringify({ error: 'Stripe error', details: session.error?.message }), { status: 500, headers: corsHeaders });
-
-  await supabase.from('transactions').insert({
-    user_id: user.id, type: 'premium_subscription',
-    amount: planDetails.price_kes, status: 'pending', payment_method: 'stripe',
-    metadata: { stripe_session_id: session.id, plan, currency },
-  });
-
-  return new Response(JSON.stringify({ success: true, url: session.url, sessionId: session.id }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+  const body = await stripeRes.text();
+  return new Response(body, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 });
