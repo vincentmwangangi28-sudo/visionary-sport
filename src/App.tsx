@@ -41,6 +41,7 @@ const KPLPredictions             = lazy(() => import("./pages/KPLPredictions"));
 const LaLigaPredictions          = lazy(() => import("./pages/LaLigaPredictions"));
 const BundesligaPredictions      = lazy(() => import("./pages/BundesligaPredictions"));
 const SerieAPredictions          = lazy(() => import("./pages/SerieAPredictions"));
+const WorldCupPredictions = lazy(() => import("./pages/WorldCupPredictions"));
 const AFCONPredictions           = lazy(() => import("./pages/AFCONPredictions"));
 const Blog                       = lazy(() => import("./pages/Blog"));
 const BlogPost                   = lazy(() => import("./pages/BlogPost"));
@@ -99,6 +100,7 @@ const App = () => (
                 <Route path="/la-liga-predictions"          element={<LaLigaPredictions />} />
                 <Route path="/bundesliga-predictions"       element={<BundesligaPredictions />} />
                 <Route path="/serie-a-predictions"          element={<SerieAPredictions />} />
+                <Route path="/world-cup-predictions" element={<WorldCupPredictions />} />
                 <Route path="/afcon-predictions"            element={<AFCONPredictions />} />
                 <Route path="/blog"                         element={<Blog />} />
                 <Route path="/blog/:slug"                   element={<BlogPost />} />
