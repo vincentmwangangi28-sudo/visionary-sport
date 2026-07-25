@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, Zap, Star, Trophy, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -46,9 +47,7 @@ export default function Rewards() {
 
     try {
       const session = (await supabase.auth.getSession()).data.session;
-      const { data } = await supabase.functions.invoke('spin-wheel', {
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-      });
+      const data = await callEdgeFn('spin-wheel', undefined, session?.access_token) as {success?:boolean;prize?:{label:string;type:string;amount:number};canSpin?:boolean};
       setTimeout(() => {
         setSpinning(false);
         if (data?.success) {

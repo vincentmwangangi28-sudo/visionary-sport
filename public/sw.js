@@ -1,42 +1,37 @@
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE = `predictpro-static-${CACHE_VERSION}`;
-const API_CACHE = `predictpro-api-${CACHE_VERSION}`;
-
 const STATIC_ASSETS = ['/', '/manifest.json', '/favicon.ico'];
 
-// Install — pre-cache shell
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(STATIC_CACHE).then(c => c.addAll(STATIC_ASSETS))
-  );
+  e.waitUntil(caches.open(STATIC_CACHE).then(c => c.addAll(STATIC_ASSETS)));
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys
-        .filter(k => k !== STATIC_CACHE && k !== API_CACHE)
-        .map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(k => k !== STATIC_CACHE).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// Fetch strategy:
-//   /assets/*  → Cache-first (immutable hashed files)
-//   /rest/v1/* → Network-first with 5min cache (Supabase API)
-//   else       → Network-first, fall back to cache (pages)
 self.addEventListener('fetch', (e) => {
   const { request } = e;
   const url = new URL(request.url);
 
-  // Skip non-GET and chrome-extension
-  if (request.method !== 'GET' || url.protocol === 'chrome-extension:') return;
+  // NEVER intercept: non-GET, chrome extensions, Supabase (auth/rest/functions), AdSense, Vercel analytics
+  if (
+    request.method !== 'GET' ||
+    url.protocol === 'chrome-extension:' ||
+    url.hostname.includes('supabase.co') ||
+    url.hostname.includes('googlesyndication.com') ||
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('vercel.com') ||
+    url.pathname.startsWith('/_vercel/')
+  ) return;
 
-  // Hashed assets — cache forever
+  // Hashed assets (/assets/*) — cache forever (immutable)
   if (url.pathname.startsWith('/assets/')) {
     e.respondWith(
       caches.match(request).then(cached => cached || fetch(request).then(res => {
@@ -48,22 +43,22 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Supabase REST API — network-first, 5min cache
-  if (url.hostname.includes('supabase.co') && url.pathname.startsWith('/rest/')) {
+  // Static files (icons, manifest, robots) — cache first
+  if (url.pathname.match(/\.(ico|png|jpg|jpeg|webp|svg|json|txt|xml)$/)) {
     e.respondWith(
-      fetch(request).then(res => {
+      caches.match(request).then(cached => cached || fetch(request).then(res => {
         const clone = res.clone();
-        caches.open(API_CACHE).then(c => c.put(request, clone));
+        caches.open(STATIC_CACHE).then(c => c.put(request, clone));
         return res;
-      }).catch(() => caches.match(request))
+      }).catch(() => new Response('Not found', { status: 404 })))
     );
     return;
   }
 
-  // Pages — network-first, fall back to cached index.html (SPA)
-  e.respondWith(
-    fetch(request).catch(() =>
-      caches.match(request) || caches.match('/')
-    )
-  );
+  // SPA navigation — network first, fallback to index.html
+  if (request.mode === 'navigate') {
+    e.respondWith(
+      fetch(request).catch(() => caches.match('/'))
+    );
+  }
 });

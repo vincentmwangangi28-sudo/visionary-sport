@@ -22,9 +22,7 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
     if (context || loading) return;
     setLoading(true);
     try {
-      const { data } = await supabase.functions.invoke('fetch-match-context', {
-        body: { home_team: p.home_team, away_team: p.away_team },
-      });
+      const data = await callEdgeFn('fetch-match-context', { home_team: p.home_team, away_team: p.away_team }) as {context?:{homeForm?:string;awayForm?:string;h2h?:{home:string;away:string;score:string;date:string}[]}};
       if (data?.context) setContext(data.context);
     } finally { setLoading(false); }
   };

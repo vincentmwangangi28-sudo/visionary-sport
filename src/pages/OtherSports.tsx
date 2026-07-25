@@ -44,9 +44,7 @@ export default function OtherSports() {
     if (predictions[key]) return;
     setLoading(key);
     try {
-      const { data } = await supabase.functions.invoke('generate-prediction', {
-        body: { home_team: match.home, away_team: match.away, league: match.league, match_date: new Date().toISOString().split('T')[0] },
-      });
+      const data = await callEdgeFn('generate-prediction', { home_team: match.home, away_team: match.away, league: match.league, match_date: new Date().toISOString().split('T')[0] }) as {prediction?: {predicted_outcome?:string;confidence_score?:number;analysis?:string;home_odds?:number;draw_odds?:number;away_odds?:number}};
       if (data?.prediction) setPredictions(p => ({ ...p, [key]: data.prediction }));
       else throw new Error('No prediction returned');
     } catch { toast.error('Failed to predict — try again'); }
