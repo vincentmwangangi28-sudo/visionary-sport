@@ -33,12 +33,13 @@ const navLinks = [
 ];
 
 const topNavLinks = [
-  { to: "/",            label: "Predictions" },
-  { to: "/live",        label: "Live" },
-  { to: "/best-bets",   label: "Best Bets" },
-  { to: "/predict",     label: "Predictor" },
-  { to: "/value-bets",  label: "Value Bets" },
-  { to: "/news",        label: "News" },
+  { to: "/",              label: "Predictions" },
+  { to: "/live",          label: "Live" },
+  { to: "/best-bets",     label: "Best Bets" },
+  { to: "/correct-score", label: "Correct Score" },
+  { to: "/btts",          label: "BTTS" },
+  { to: "/value-bets",    label: "Value Bets" },
+  { to: "/news",          label: "News" },
 ];
 
 export const Navbar = () => {
