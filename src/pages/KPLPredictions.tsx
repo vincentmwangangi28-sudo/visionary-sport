@@ -1,4 +1,44 @@
-import { Navbar } from "@/components/Navbar"; import { Footer } from "@/components/Footer"; import { SEO } from "@/components/SEO"; import { PredictionsDashboard } from "@/components/PredictionsDashboard"; import { Badge } from "@/components/ui/badge"; import { Card, CardContent } from "@/components/ui/card";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
+import { PredictionsDashboard } from "@/components/PredictionsDashboard";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+
 export default function KPLPredictions() {
-  return (<div className="min-h-screen bg-background"><SEO title="KPL Predictions Today | Kenya Premier League Tips | PredictPro" description="Free Kenya Premier League (KPL) predictions. AI tips for Gor Mahia, AFC Leopards, Tusker FC, Bandari and all KPL teams. M-Pesa payments available." canonical="/kpl-predictions" keywords="KPL predictions today, Kenya Premier League tips, Gor Mahia prediction, AFC Leopards tips, Tusker FC prediction, KPL betting tips Kenya, KPL correct score" /><Navbar /><main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl"><div className="text-center mb-10"><Badge className="mb-4 bg-green-600 text-white">🇰🇪 Kenya Premier League</Badge><h1 className="text-4xl font-black mb-3">KPL Predictions Today</h1><p className="text-muted-foreground text-lg max-w-2xl mx-auto">AI-powered Kenya Premier League predictions. Get tips for Gor Mahia vs AFC Leopards, Tusker FC, Bandari and all KPL matches. Pay with M-Pesa.</p></div><div className="flex justify-center gap-2 mb-8 flex-wrap">{"Gor Mahia,AFC Leopards,Tusker FC,Bandari,KCB FC,Wazito,Posta Rangers,Sofapaka".split(',').map(t=><Badge key={t} variant="outline">{t}</Badge>)}</div><PredictionsDashboard /><section className="mt-12 p-6 bg-green-500/10 rounded-xl border border-green-500/20"><h2 className="font-bold text-xl mb-3">🇰🇪 Kenya Football Predictions</h2><p className="text-muted-foreground">PredictPro covers all KPL matches with AI analysis. Pay for premium predictions with M-Pesa (Lipana STK Push) — no card required. Predictions available in English and Kiswahili.</p></section></main><Footer /></div>);
+  return (
+    <div className="min-h-screen bg-background">
+      <SEO
+        title="KPL Predictions Today | Free AI Tips | PredictPro"
+        description="Free Kenya Premier League (KPL) predictions. AI tips for Gor Mahia, AFC Leopards, Tusker FC, Bandari. Pay with M-Pesa."
+        canonical="/kpl-predictions"
+        keywords="KPL predictions today, Kenya Premier League tips, Gor Mahia prediction, AFC Leopards tips, Tusker FC prediction, KPL betting tips Kenya"
+      />
+      <Navbar />
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
+        <div className="text-center mb-10">
+          <Badge className="mb-4 bg-red-700 text-white px-4 py-1.5">🇰🇪 Kenya Premier League</Badge>
+          <h1 className="text-4xl font-black mb-3">KPL Predictions Today</h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free Kenya Premier League (KPL) predictions. AI tips for Gor Mahia, AFC Leopards, Tusker FC, Bandari. Pay with M-Pesa.</p>
+        </div>
+        <PredictionsDashboard />
+        <div className="mt-10 p-6 bg-muted/30 rounded-xl">
+          <h3 className="font-semibold mb-4">More Predictions</h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              {to:'/best-bets',l:'Best Bets Today'},
+              {to:'/value-bets',l:'Value Bets'},
+              {to:'/correct-score',l:'Correct Score'},
+              {to:'/btts',l:'BTTS Tips'},
+              {to:'/accumulator',l:'Acca Builder'},
+              {to:'/world-cup-predictions',l:'World Cup 2026'},
+            ].map(link=><Link key={link.to} to={link.to}><Button variant="outline" size="sm">{link.l}</Button></Link>)}
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
 }

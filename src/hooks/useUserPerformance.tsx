@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface UserPerformance {
@@ -14,7 +15,7 @@ export const useUserPerformance = () => {
 
   const fetchPerformance = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-user-performance');
+      const { data, error } = await callEdgeFn('fetch-user-performance');
       
       if (error) {
         console.error('Error fetching user performance:', error);

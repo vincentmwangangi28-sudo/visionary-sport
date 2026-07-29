@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -43,9 +45,7 @@ export const useSpinWheel = () => {
     setSpinning(true);
     try {
       const session = (await supabase.auth.getSession()).data.session;
-      const { data, error } = await supabase.functions.invoke('spin-wheel', {
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-      });
+      const { data, error } = await callEdgeFn('spin-wheel', undefined, (await supabase.auth.getSession()).data.session?.access_token);
       if (error || !data?.success) throw new Error(data?.error ?? 'Spin failed');
       setCanSpin(false);
       return { prize: data.prize as SpinPrize, prizeIndex: data.prizeIndex as number };
