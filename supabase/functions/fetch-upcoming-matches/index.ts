@@ -5,246 +5,155 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface UpcomingMatch {
+interface UpcomingMatchRaw {
   id: string;
-  homeTeam: string;
-  awayTeam: string;
-  league: string;
-  date: string;
-  time: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  league?: string;
+  date?: string;
+  time?: string;
   prediction?: string;
   confidence?: number;
 }
 
-// Fetch from Football Data API
-async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatch[]> {
-  if (!apiToken) {
-    console.log('⏭️ Skipping Football Data API: No API token');
-    return [];
+interface NormalizedMatch {
+  id: string;
+  home_team: string;
+  away_team: string;
+  competition?: string;
+  match_date: string; // ISO UTC
+  status: 'upcoming' | 'live' | 'halftime' | 'finished' | 'postponed' | 'cancelled' | 'unknown';
+  minute?: number | null;
+  home_score?: number | null;
+  away_score?: number | null;
+  home_logo?: string | null;
+  away_logo?: string | null;
+  prediction?: string;
+  confidence?: number;
+}
+
+function toIsoUtc(dateStr?: string, timeStr?: string) {
+  if (!dateStr) return new Date().toISOString();
+  // If already full ISO, return as-is
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime()) && dateStr.includes('T')) return d.toISOString();
+  } catch {}
+
+  // If date only (YYYY-MM-DD) and time provided, combine and treat as UTC
+  if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const t = timeStr && timeStr.length > 0 ? timeStr : '00:00:00';
+    return new Date(dateStr + 'T' + t + 'Z').toISOString();
   }
 
-  console.log('🔄 Fetching scheduled matches from Football Data API...');
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+}
+
+function generatePrediction(match: NormalizedMatch): { prediction: string; confidence: number } {
+  const home = match.home_score ?? null;
+  const away = match.away_score ?? null;
+  if (home === null || away === null) return { prediction: 'Draw', confidence: 50 };
+  const diff = (home ?? 0) - (away ?? 0);
+  if (diff > 0) return { prediction: 'Home Win', confidence: Math.min(90, 50 + diff * 10) };
+  if (diff < 0) return { prediction: 'Away Win', confidence: Math.min(90, 50 + Math.abs(diff) * 10) };
+  return { prediction: 'Draw', confidence: 55 };
+}
+
+function normalizeStatus(raw?: string): NormalizedMatch['status'] {
+  if (!raw) return 'upcoming';
+  const s = String(raw).toLowerCase();
+  if (s.includes('live') || s === 'in-play') return 'live';
+  if (s === 'ht' || s === 'halftime') return 'halftime';
+  if (s === 'ft' || s.includes('full')) return 'finished';
+  if (s.includes('post') || s.includes('postponed')) return 'postponed';
+  if (s.includes('canc') || s.includes('cancel')) return 'cancelled';
+  return 'upcoming';
+}
+
+// Fetch scheduled matches from Football Data API
+async function fetchFromFootballDataAPI(apiToken?: string): Promise<NormalizedMatch[]> {
+  if (!apiToken) return [];
   try {
     const response = await fetch('https://api.football-data.org/v4/matches?status=SCHEDULED', {
-      headers: {
-        'X-Auth-Token': apiToken
-      }
+      headers: { 'X-Auth-Token': apiToken }
     });
-
-    if (!response.ok) {
-      console.error(`❌ Football Data API error: ${response.status}`);
-      return [];
-    }
-
+    if (!response.ok) return [];
     const data = await response.json();
-    
-    if (!data.matches || data.matches.length === 0) {
-      console.log('⚠️ Football Data API: No scheduled matches');
-      return [];
-    }
+    if (!data.matches || !Array.isArray(data.matches)) return [];
 
-    // Get next 10 upcoming matches
-    const matches: UpcomingMatch[] = data.matches.slice(0, 10).map((match: any) => {
-      const matchDate = new Date(match.utcDate);
-      return {
-        id: match.id.toString(),
-        homeTeam: match.homeTeam.name,
-        awayTeam: match.awayTeam.name,
-        league: match.competition.name,
-        date: matchDate.toISOString().split('T')[0],
-        time: matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    return data.matches.slice(0, 50).map((match: any) => {
+      const match_date = toIsoUtc(match.utcDate);
+      const normalized: NormalizedMatch = {
+        id: String(match.id),
+        home_team: match.homeTeam?.name ?? 'Unknown',
+        away_team: match.awayTeam?.name ?? 'Unknown',
+        competition: match.competition?.name ?? undefined,
+        match_date,
+        status: 'upcoming',
+        minute: null,
+        home_score: null,
+        away_score: null,
       };
+      const { prediction, confidence } = generatePrediction(normalized);
+      return { ...normalized, prediction, confidence };
     });
-
-    console.log(`✅ Football Data API: Found ${matches.length} upcoming matches`);
-    return matches;
   } catch (error) {
-    console.error('❌ Football Data API error:', error);
+    console.error('Football Data API error (upcoming):', error);
     return [];
   }
 }
 
-// Fetch predictions from PredictPro API
-async function fetchPredictions(apiKey?: string): Promise<Map<string, { prediction: string; confidence: number }>> {
-  const predictionsMap = new Map();
-  
-  if (!apiKey) {
-    console.log('⏭️ Skipping PredictPro API: No API key');
-    return predictionsMap;
-  }
-
-  console.log('🔄 Fetching predictions from PredictPro...');
-  try {
-    const response = await fetch('https://predictpro.ai/api/upcoming-predictions', {
-      headers: {
-        'x-api-key': apiKey
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`❌ PredictPro API error: ${response.status}`);
-      return predictionsMap;
-    }
-
-    const data = await response.json();
-    
-    if (data.predictions && Array.isArray(data.predictions)) {
-      data.predictions.forEach((pred: any) => {
-        predictionsMap.set(pred.match_id, {
-          prediction: pred.prediction,
-          confidence: pred.confidence
-        });
-      });
-      console.log(`✅ PredictPro: Loaded ${predictionsMap.size} predictions`);
-    }
-  } catch (error) {
-    console.error('❌ PredictPro API error:', error);
-  }
-
-  return predictionsMap;
-}
-
-// Generate AI prediction based on team statistics (fallback)
-function generatePrediction(match: UpcomingMatch): { prediction: string; confidence: number } {
-  // Simple heuristic for demo - in production this would use real ML models
-  const homeAdvantage = 5;
-  const randomFactor = Math.random() * 20;
-  const confidence = Math.round(50 + homeAdvantage + randomFactor);
-  
-  let prediction = 'Draw';
-  if (confidence > 65) {
-    prediction = 'Home Win';
-  } else if (confidence < 45) {
-    prediction = 'Away Win';
-  }
-  
-  return { prediction, confidence: Math.min(confidence, 85) };
-}
-
-// Fallback: Generate mock upcoming matches for demo
-function generateMockUpcomingMatches(): UpcomingMatch[] {
-  console.log('🎭 Generating mock upcoming matches for demo');
-  
+// Fallback mock upcoming
+function generateMockUpcoming(): NormalizedMatch[] {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  const mockMatches = [
+  const iso = tomorrow.toISOString();
+  return [
     {
-      id: 'upcoming-1',
-      homeTeam: 'Arsenal',
-      awayTeam: 'Manchester City',
-      league: 'Premier League',
-      date: tomorrow.toISOString().split('T')[0],
-      time: '15:00',
-      prediction: 'Home Win',
-      confidence: 68,
+      id: 'upcoming-1', home_team: 'Arsenal', away_team: 'Manchester City', competition: 'Premier League',
+      match_date: iso, status: 'upcoming', minute: null, home_score: null, away_score: null, prediction: 'Home Win', confidence: 68,
     },
     {
-      id: 'upcoming-2',
-      homeTeam: 'PSG',
-      awayTeam: 'Monaco',
-      league: 'Ligue 1',
-      date: tomorrow.toISOString().split('T')[0],
-      time: '18:00',
-      prediction: 'Home Win',
-      confidence: 72,
-    },
-    {
-      id: 'upcoming-3',
-      homeTeam: 'Juventus',
-      awayTeam: 'Inter Milan',
-      league: 'Serie A',
-      date: tomorrow.toISOString().split('T')[0],
-      time: '20:00',
-      prediction: 'Draw',
-      confidence: 55,
+      id: 'upcoming-2', home_team: 'PSG', away_team: 'Monaco', competition: 'Ligue 1',
+      match_date: iso, status: 'upcoming', minute: null, home_score: null, away_score: null, prediction: 'Home Win', confidence: 72,
     },
   ];
-
-  return mockMatches;
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
     console.log('📡 Fetching upcoming matches...');
-    
-    // Get API keys from environment
-    const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN');
+    const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN') ?? Deno.env.get('FOOTBALL_DATA_API_TOKEN');
     const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
-    
-    let matches: UpcomingMatch[] = [];
 
-    // 1. Fetch upcoming matches from Football Data API
+    let matches: NormalizedMatch[] = [];
     if (footballDataToken) {
       matches = await fetchFromFootballDataAPI(footballDataToken);
     }
 
-    // 2. Fetch AI predictions from PredictPro and merge
-    if (matches.length > 0 && predictProApiKey) {
-      const predictions = await fetchPredictions(predictProApiKey);
-      
-      // Merge predictions with matches
-      matches = matches.map(match => {
-        const pred = predictions.get(match.id);
-        if (pred) {
-          return { ...match, prediction: pred.prediction, confidence: pred.confidence };
+    // Attach predictions if any (kept simple)
+    if (matches.length > 0) {
+      matches = matches.map(m => {
+        if (!m.prediction || !m.confidence) {
+          const { prediction, confidence } = generatePrediction(m);
+          return { ...m, prediction, confidence };
         }
-        // Fallback to generated predictions if API doesn't have data
-        const { prediction, confidence } = generatePrediction(match);
-        return { ...match, prediction, confidence };
-      });
-    } else if (matches.length > 0) {
-      // Generate predictions if no API key available
-      matches = matches.map(match => {
-        const { prediction, confidence } = generatePrediction(match);
-        return { ...match, prediction, confidence };
+        return m;
       });
     }
 
-    // 3. If no matches, use mock data for demo
-    if (matches.length === 0) {
-      matches = generateMockUpcomingMatches();
-    }
+    if (matches.length === 0) matches = generateMockUpcoming();
 
-    console.log(`✨ Returning ${matches.length} upcoming matches`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        matches,
-        source: matches[0]?.id?.startsWith('upcoming') ? 'demo' : 'live',
-        lastUpdated: new Date().toISOString(),
-      }),
-      {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 's-maxage=300, stale-while-revalidate'
-        },
-      }
-    );
+    return new Response(JSON.stringify({ success: true, matches, source: matches[0]?.id?.startsWith('upcoming') ? 'demo' : 'live', lastUpdated: new Date().toISOString() }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=300, stale-while-revalidate' },
+    });
   } catch (error) {
-    console.error('❌ Error fetching upcoming matches:', error);
-    
-    // Return mock data on error for better UX
-    const mockMatches = generateMockUpcomingMatches();
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        matches: mockMatches,
-        source: 'demo',
-        lastUpdated: new Date().toISOString(),
-        error: 'Using demo data',
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error('Error fetching upcoming matches:', error);
+    const mock = generateMockUpcoming();
+    return new Response(JSON.stringify({ success: true, matches: mock, source: 'demo', lastUpdated: new Date().toISOString(), error: 'Using demo data' }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
