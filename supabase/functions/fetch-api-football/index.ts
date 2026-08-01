@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,6 +46,32 @@ interface APIFootballMatch {
   };
 }
 
+function normalizeStatus(raw?: string) {
+  if (!raw) return 'unknown';
+  const s = String(raw).toLowerCase();
+  if (s.includes('live') || s === 'in-play' || s === '1h' || s === '2h') return 'live';
+  if (s === 'ht' || s === 'halftime') return 'halftime';
+  if (s === 'ft' || s.includes('full') || s.includes('finished')) return 'finished';
+  if (s.includes('post') || s.includes('postponed')) return 'postponed';
+  if (s.includes('canc') || s.includes('cancel')) return 'cancelled';
+  if (s === 'ns' || s === 'scheduled' || s === 'not started' || s === 'upcoming') return 'upcoming';
+  return 'unknown';
+}
+
+function toIsoUtc(dateStr?: string, timeStr?: string) {
+  if (!dateStr) return new Date().toISOString();
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime()) && dateStr.includes('T')) return d.toISOString();
+  } catch {}
+  if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const t = timeStr && timeStr.length > 0 ? timeStr : '00:00:00';
+    return new Date(dateStr + 'T' + t + 'Z').toISOString();
+  }
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -54,9 +79,6 @@ serve(async (req) => {
 
   try {
     const X_RAPIDAPI_KEY = Deno.env.get('X_RAPIDAPI_KEY');
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
     if (!X_RAPIDAPI_KEY) {
       console.error('X_RAPIDAPI_KEY not configured');
       return new Response(
@@ -70,14 +92,14 @@ serve(async (req) => {
 
     let endpoint = '';
     const currentSeason = new Date().getFullYear();
-    
+
     if (type === 'live') {
       endpoint = 'https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all';
     } else if (type === 'upcoming') {
       const targetDate = date || new Date().toISOString().split('T')[0];
       const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       endpoint = `https://api-football-v1.p.rapidapi.com/v3/fixtures?from=${targetDate}&to=${nextWeek}&status=NS`;
-      
+
       if (league && LEAGUES[league as keyof typeof LEAGUES]) {
         endpoint += `&league=${LEAGUES[league as keyof typeof LEAGUES]}&season=${currentSeason}`;
       }
@@ -110,24 +132,28 @@ serve(async (req) => {
 
     console.log(`Fetched ${matches.length} matches from API-Football`);
 
-    // Transform matches to our format
-    const transformedMatches = matches.map((match) => ({
-      id: `api-football-${match.fixture.id}`,
-      match_id: `api-football-${match.fixture.id}`,
-      homeTeam: match.teams.home.name,
-      awayTeam: match.teams.away.name,
-      homeScore: match.goals.home,
-      awayScore: match.goals.away,
-      status: match.fixture.status.short,
-      statusLong: match.fixture.status.long,
-      time: match.fixture.status.elapsed ? `${match.fixture.status.elapsed}'` : null,
-      league: match.league.name,
-      leagueLogo: match.league.logo,
-      country: match.league.country,
-      date: match.fixture.date,
-      homeLogo: match.teams.home.logo,
-      awayLogo: match.teams.away.logo,
-    }));
+    // Transform matches to canonical schema (snake_case, ISO date)
+    const transformedMatches = matches.map((m) => {
+      const matchDate = toIsoUtc(m.fixture.date);
+      const status = normalizeStatus(m.fixture.status.short ?? m.fixture.status.long);
+      const minute = m.fixture.status.elapsed ?? null;
+
+      return {
+        id: `api-football-${m.fixture.id}`,
+        home_team: m.teams.home.name,
+        away_team: m.teams.away.name,
+        competition: m.league?.name,
+        match_date: matchDate,
+        status,
+        minute,
+        home_score: m.goals.home ?? null,
+        away_score: m.goals.away ?? null,
+        home_logo: m.teams.home.logo ?? null,
+        away_logo: m.teams.away.logo ?? null,
+        prediction: null,
+        confidence: null,
+      };
+    });
 
     // Filter by major leagues for better user experience
     const majorLeagueIds = Object.values(LEAGUES);
