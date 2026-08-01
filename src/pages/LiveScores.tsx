@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { normalizeIncomingMatch } from '@/lib/matchNormalizer';
 
 interface Match {
   id: string; home_team: string; away_team: string;
@@ -26,8 +27,10 @@ export default function LiveScores() {
   const fetchMatches = async () => {
     try {
       const data = await callEdgeFn('fetch-live-matches');
-      if (data?.matches?.length > 0) {
-        setMatches(data.matches);
+      const incoming = (data?.matches ?? []).map((m: any) => normalizeIncomingMatch(m));
+      const shaped = incoming.map(m => ({ ...m, league: (m as any).competition ?? '' })) as Match[];
+      if (shaped.length > 0) {
+        setMatches(shaped);
         setLastUpdated(new Date());
       }
     } catch (e) {
@@ -87,7 +90,7 @@ export default function LiveScores() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Live Football Scores Today | Real-Time Updates | PredictPro" description="Live football scores updating every 30 seconds. Follow matches live with goals, events and final scores across all major leagues." canonical="/live" />
+      <SEO title="Live Football Scores Today | Real-Time Updates | PredictPro" description="Live football scores updating every 30 seconds. Follow matches live with goals, events and final scores [...]" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         <div className="flex items-center justify-between mb-6">
@@ -128,7 +131,7 @@ export default function LiveScores() {
               <div className="text-center py-20">
                 <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4"/>
                 <p className="text-muted-foreground font-medium">No matches at the moment</p>
-                <p className="text-sm text-muted-foreground mt-1">Check back during match hours or view our <a href="/best-bets" className="text-primary hover:underline">upcoming predictions</a>.</p>
+                <p className="text-sm text-muted-foreground mt-1">Check back during match hours or view our <a href="/best-bets" className="text-primary hover:underline">upcoming predictions</a>.[...]</p>
               </div>
             )}
           </div>
