@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { normalizeIncomingMatch } from '@/lib/matchNormalizer';
+import type { NormalizedMatch } from '@/lib/matchNormalizer';
 
 interface Match {
   id: string; home_team: string; away_team: string;
@@ -9,7 +11,7 @@ interface Match {
 }
 
 const SUPABASE_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
+const ANON_KEY = 'REDACTED_ANON_KEY_FOR_COMMIT';
 
 export const useLiveMatches = () => {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -21,7 +23,7 @@ export const useLiveMatches = () => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
-      
+
       const res = await fetch(`${SUPABASE_URL}/functions/v1/fetch-live-matches`, {
         method: 'POST',
         headers: {
@@ -32,13 +34,17 @@ export const useLiveMatches = () => {
         signal: controller.signal,
       });
       clearTimeout(timeout);
-      
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json() as { matches?: Match[]; live_count?: number };
-      
-      if (data?.matches?.length > 0) {
-        setMatches(data.matches);
-        setSource(data.live_count && data.live_count > 0 ? 'live' : 'upcoming');
+      const payload = await res.json() as { matches?: any[]; live_count?: number; source?: string };
+
+      const incoming: NormalizedMatch[] = (payload?.matches ?? []).map(normalizeIncomingMatch);
+      // add `league` field expected by UI from competition
+      const shaped = incoming.map(m => ({ ...m, league: (m as any).competition ?? '' })) as unknown as Match[];
+
+      if (shaped.length > 0) {
+        setMatches(shaped);
+        setSource(payload.source === 'live' ? 'live' : (payload.live_count && payload.live_count > 0 ? 'live' : 'upcoming'));
         setLastUpdated(new Date().toLocaleTimeString('en-KE'));
       }
     } catch (e) {
