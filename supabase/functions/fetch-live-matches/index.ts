@@ -5,361 +5,232 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface LiveMatch {
+interface LiveMatchRaw {
   id: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  status: string;
-  time: string;
-  league: string;
-  date: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  status?: string;
+  time?: string | null;
+  league?: string;
+  date?: string;
+}
+
+interface NormalizedMatch {
+  id: string;
+  home_team: string;
+  away_team: string;
+  home_score?: number | null;
+  away_score?: number | null;
+  competition?: string;
+  match_date: string; // ISO UTC string
+  status: 'live' | 'halftime' | 'finished' | 'upcoming' | 'postponed' | 'cancelled' | 'unknown';
+  minute?: number | null;
   prediction?: string;
   confidence?: number;
 }
 
-// Fetch from Football Data API
-async function fetchFromFootballDataAPI(apiToken?: string): Promise<LiveMatch[]> {
-  if (!apiToken) {
-    console.log('⏭️ Skipping Football Data API: No API token');
-    return [];
-  }
-
-  console.log('🔄 Trying Football Data API...');
+function toIsoUtc(dateStr?: string, timeStr?: string) {
+  if (!dateStr) return new Date().toISOString();
+  // If already full ISO, return as-is
   try {
-    const response = await fetch('https://api.football-data.org/v4/matches?status=LIVE', {
-      headers: {
-        'X-Auth-Token': apiToken
-      }
-    });
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime()) && dateStr.includes('T')) return d.toISOString();
+  } catch {}
 
-    if (!response.ok) {
-      console.error(`❌ Football Data API error: ${response.status}`);
-      return [];
-    }
-
-    const data = await response.json();
-    
-    if (!data.matches || data.matches.length === 0) {
-      console.log('⚠️ Football Data API: No live matches');
-      return [];
-    }
-
-    const matches: LiveMatch[] = data.matches.map((match: any) => ({
-      id: match.id.toString(),
-      homeTeam: match.homeTeam.name,
-      awayTeam: match.awayTeam.name,
-      homeScore: match.score.fullTime.home,
-      awayScore: match.score.fullTime.away,
-      status: 'LIVE',
-      time: `${match.minute || 0}'`,
-      league: match.competition.name,
-      date: match.utcDate.split('T')[0],
-    }));
-
-    console.log(`✅ Football Data API: Found ${matches.length} live matches`);
-    return matches;
-  } catch (error) {
-    console.error('❌ Football Data API error:', error);
-    return [];
+  // If date only (YYYY-MM-DD) and time provided, combine and treat as UTC
+  if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const t = timeStr && timeStr.length > 0 ? timeStr : '00:00:00';
+    return new Date(dateStr + 'T' + t + 'Z').toISOString();
   }
+
+  // Fallback: try to parse and normalize
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
 }
 
-// Fetch predictions from PredictPro API
-async function fetchPredictions(apiKey?: string): Promise<Map<string, { prediction: string; confidence: number }>> {
-  const predictionsMap = new Map();
-  
-  if (!apiKey) {
-    console.log('⏭️ Skipping PredictPro API: No API key');
-    return predictionsMap;
-  }
-
-  console.log('🔄 Fetching predictions from PredictPro...');
-  try {
-    const response = await fetch('https://predictpro.ai/api/live-predictions', {
-      headers: {
-        'x-api-key': apiKey
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`❌ PredictPro API error: ${response.status}`);
-      return predictionsMap;
-    }
-
-    const data = await response.json();
-    
-    if (data.predictions && Array.isArray(data.predictions)) {
-      data.predictions.forEach((pred: any) => {
-        predictionsMap.set(pred.match_id, {
-          prediction: pred.prediction,
-          confidence: pred.confidence
-        });
-      });
-      console.log(`✅ PredictPro: Loaded ${predictionsMap.size} predictions`);
-    }
-  } catch (error) {
-    console.error('❌ PredictPro API error:', error);
-  }
-
-  return predictionsMap;
+function normalizeStatus(raw?: string): NormalizedMatch['status'] {
+  if (!raw) return 'unknown';
+  const s = String(raw).toLowerCase();
+  if (s === 'live' || s === "1h" || s === "2h" || s.includes("live") || s === "in-play") return 'live';
+  if (s === 'ht' || s === 'halftime') return 'halftime';
+  if (s === 'ft' || s === 'finished' || s === 'full-time') return 'finished';
+  if (s === 'ns' || s === 'scheduled' || s === 'upcoming' || s === 'ns' || s === 'not started') return 'upcoming';
+  if (s.includes('post') || s.includes('postponed')) return 'postponed';
+  if (s.includes('canc') || s.includes('cancel')) return 'cancelled';
+  return 'unknown';
 }
 
-// Fetch from TheSportsDB (completely free, no API key needed)
-async function fetchFromTheSportsDB(): Promise<LiveMatch[]> {
-  console.log('🔄 Trying TheSportsDB...');
-  try {
-    const response = await fetch('https://www.thesportsdb.com/api/v2/json/60130162/livescore.php?s=Soccer');
-    const data = await response.json();
-    
-    if (!data.events || data.events.length === 0) {
-      console.log('⚠️ TheSportsDB: No live matches');
-      return [];
-    }
+// Lightweight prediction generator (fallback)
+function generatePrediction(match: NormalizedMatch): { prediction: string; confidence: number } {
+  const home = match.home_score ?? null;
+  const away = match.away_score ?? null;
+  if (home === null || away === null) return { prediction: 'Draw', confidence: 50 };
+  const diff = (home ?? 0) - (away ?? 0);
+  if (diff > 0) return { prediction: 'Home Win', confidence: Math.min(90, 50 + diff * 10) };
+  if (diff < 0) return { prediction: 'Away Win', confidence: Math.min(90, 50 + Math.abs(diff) * 10) };
+  return { prediction: 'Draw', confidence: 55 };
+}
 
-    const matches: LiveMatch[] = data.events.map((event: any) => {
-      const match = {
-        id: event.idEvent || `${event.strHomeTeam}-${event.strAwayTeam}`,
-        homeTeam: event.strHomeTeam,
-        awayTeam: event.strAwayTeam,
-        homeScore: event.intHomeScore ? parseInt(event.intHomeScore) : null,
-        awayScore: event.intAwayScore ? parseInt(event.intAwayScore) : null,
-        status: event.strStatus || 'LIVE',
-        time: event.strProgress || event.strTime || '0',
-        league: event.strLeague || 'Unknown',
-        date: event.dateEvent || new Date().toISOString().split('T')[0],
+// Try multiple upstream sources and return a normalized schema expected by the frontend
+async function fetchFromFootballDataAPI(apiToken?: string): Promise<NormalizedMatch[]> {
+  if (!apiToken) return [];
+  try {
+    const res = await fetch('https://api.football-data.org/v4/matches?status=LIVE', {
+      headers: { 'X-Auth-Token': apiToken }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.matches || !Array.isArray(data.matches)) return [];
+    return data.matches.map((m: any) => {
+      const match_date = toIsoUtc(m.utcDate);
+      const status = normalizeStatus(m.status?.short ?? m.status ?? 'live');
+      const minute = typeof m.minute === 'number' ? m.minute : undefined;
+      const normalized: NormalizedMatch = {
+        id: String(m.id),
+        home_team: m.homeTeam?.name ?? m.homeTeam?.shortName ?? m.homeTeam?.tla ?? 'Unknown',
+        away_team: m.awayTeam?.name ?? m.awayTeam?.shortName ?? m.awayTeam?.tla ?? 'Unknown',
+        home_score: (m.score?.fullTime?.home ?? null),
+        away_score: (m.score?.fullTime?.away ?? null),
+        competition: m.competition?.name ?? undefined,
+        match_date,
+        status,
+        minute: minute ?? null,
       };
-      const { prediction, confidence } = generatePrediction(match);
-      return { ...match, prediction, confidence };
+      const { prediction, confidence } = generatePrediction(normalized);
+      return { ...normalized, prediction, confidence };
     });
-
-    console.log(`✅ TheSportsDB: Found ${matches.length} live matches`);
-    return matches;
-  } catch (error) {
-    console.error('❌ TheSportsDB error:', error);
+  } catch (e) {
+    console.error('Football Data API error', e);
     return [];
   }
 }
 
-// Fetch from API-Sports (requires API key)
-async function fetchFromAPISports(apiKey?: string): Promise<LiveMatch[]> {
-  if (!apiKey) {
-    console.log('⏭️ Skipping API-Sports: No API key');
-    return [];
-  }
-
-  console.log('🔄 Trying API-Sports...');
+async function fetchFromAPISports(apiKey?: string): Promise<NormalizedMatch[]> {
+  if (!apiKey) return [];
   try {
-    const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
-      headers: {
-        'x-apisports-key': apiKey
-      }
+    const res = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
+      headers: { 'x-apisports-key': apiKey }
     });
-
-    const data = await response.json();
-    
-    if (!data.response || data.response.length === 0) {
-      console.log('⚠️ API-Sports: No live matches');
-      return [];
-    }
-
-    const matches: LiveMatch[] = data.response.map((fixture: any) => {
-      const match = {
-        id: fixture.fixture.id.toString(),
-        homeTeam: fixture.teams.home.name,
-        awayTeam: fixture.teams.away.name,
-        homeScore: fixture.goals.home,
-        awayScore: fixture.goals.away,
-        status: fixture.fixture.status.short,
-        time: fixture.fixture.status.elapsed ? `${fixture.fixture.status.elapsed}'` : '0\'',
-        league: fixture.league.name,
-        date: fixture.fixture.date.split('T')[0],
+    if (!res.ok) return [];
+    const data = await res.json();
+    const arr = data.response || [];
+    return arr.map((f: any) => {
+      const match_date = toIsoUtc(f.fixture?.date);
+      const status = normalizeStatus(f.fixture?.status?.short ?? f.fixture?.status?.long);
+      const minute = f.fixture?.status?.elapsed ?? null;
+      const normalized: NormalizedMatch = {
+        id: String(f.fixture?.id),
+        home_team: f.teams?.home?.name ?? 'Unknown',
+        away_team: f.teams?.away?.name ?? 'Unknown',
+        home_score: f.goals?.home ?? null,
+        away_score: f.goals?.away ?? null,
+        competition: f.league?.name ?? undefined,
+        match_date,
+        status,
+        minute,
       };
-      const { prediction, confidence } = generatePrediction(match);
-      return { ...match, prediction, confidence };
+      const { prediction, confidence } = generatePrediction(normalized);
+      return { ...normalized, prediction, confidence };
     });
-
-    console.log(`✅ API-Sports: Found ${matches.length} live matches`);
-    return matches;
-  } catch (error) {
-    console.error('❌ API-Sports error:', error);
+  } catch (e) {
+    console.error('API-Sports error', e);
     return [];
   }
 }
 
-// Generate AI prediction based on current score
-function generatePrediction(match: LiveMatch): { prediction: string; confidence: number } {
-  const { homeScore, awayScore } = match;
-  
-  if (homeScore === null || awayScore === null) {
-    return { prediction: 'Draw', confidence: 50 };
+async function fetchFromTheSportsDB(): Promise<NormalizedMatch[]> {
+  try {
+    const res = await fetch('https://www.thesportsdb.com/api/v2/json/60130162/livescore.php?s=Soccer');
+    const data = await res.json();
+    if (!data.events || data.events.length === 0) return [];
+    return data.events.map((ev: any) => {
+      // TheSportsDB often provides dateEvent and strTime without timezone — treat as UTC midnight if missing time
+      const date = ev.dateEvent || ev.date || undefined;
+      const time = ev.strTime || ev.time || '00:00:00';
+      const match_date = toIsoUtc(date, time);
+      const status = normalizeStatus(ev.strStatus || 'live');
+      const normalized: NormalizedMatch = {
+        id: ev.idEvent ? String(ev.idEvent) : `${ev.strHomeTeam}-${ev.strAwayTeam}`,
+        home_team: ev.strHomeTeam ?? 'Unknown',
+        away_team: ev.strAwayTeam ?? 'Unknown',
+        home_score: ev.intHomeScore ? parseInt(ev.intHomeScore) : null,
+        away_score: ev.intAwayScore ? parseInt(ev.intAwayScore) : null,
+        competition: ev.strLeague ?? undefined,
+        match_date,
+        status,
+        minute: null,
+      };
+      const { prediction, confidence } = generatePrediction(normalized);
+      return { ...normalized, prediction, confidence };
+    });
+  } catch (e) {
+    console.error('TheSportsDB error', e);
+    return [];
   }
-  
-  const scoreDiff = homeScore - awayScore;
-  const time = parseInt(match.time) || 0;
-  const timeRemaining = 90 - time;
-  
-  // Calculate confidence based on score difference and time remaining
-  let confidence = 50;
-  let prediction = 'Draw';
-  
-  if (scoreDiff > 0) {
-    prediction = 'Home Win';
-    confidence = Math.min(50 + (scoreDiff * 15) + ((90 - timeRemaining) / 90 * 30), 95);
-  } else if (scoreDiff < 0) {
-    prediction = 'Away Win';
-    confidence = Math.min(50 + (Math.abs(scoreDiff) * 15) + ((90 - timeRemaining) / 90 * 30), 95);
-  } else {
-    prediction = 'Draw';
-    confidence = Math.max(35, 60 - ((90 - timeRemaining) / 90 * 20));
-  }
-  
-  return { prediction, confidence: Math.round(confidence) };
 }
 
-// Fallback: Generate mock live data for demo purposes
-function generateMockLiveMatches(): LiveMatch[] {
-  console.log('🎭 Generating mock live matches for demo');
-  
-  const mockMatches = [
+function generateMockLiveMatches(): NormalizedMatch[] {
+  const now = new Date().toISOString();
+  return [
     {
-      id: 'mock-1',
-      homeTeam: 'Manchester United',
-      awayTeam: 'Liverpool',
-      homeScore: 1,
-      awayScore: 2,
-      status: 'LIVE',
-      time: '67\'',
-      league: 'Premier League',
-      date: new Date().toISOString().split('T')[0],
-      prediction: 'Away Win',
-      confidence: 74,
+      id: 'mock-1', home_team: 'Manchester United', away_team: 'Liverpool', home_score: 1, away_score: 2,
+      competition: 'Premier League', match_date: now, status: 'live', minute: 67, prediction: 'Away Win', confidence: 74,
     },
     {
-      id: 'mock-2',
-      homeTeam: 'Barcelona',
-      awayTeam: 'Real Madrid',
-      homeScore: 2,
-      awayScore: 2,
-      status: 'LIVE',
-      time: '78\'',
-      league: 'La Liga',
-      date: new Date().toISOString().split('T')[0],
-      prediction: 'Draw',
-      confidence: 52,
-    },
-    {
-      id: 'mock-3',
-      homeTeam: 'Bayern Munich',
-      awayTeam: 'Borussia Dortmund',
-      homeScore: 3,
-      awayScore: 1,
-      status: 'LIVE',
-      time: '82\'',
-      league: 'Bundesliga',
-      date: new Date().toISOString().split('T')[0],
-      prediction: 'Home Win',
-      confidence: 88,
+      id: 'mock-2', home_team: 'Barcelona', away_team: 'Real Madrid', home_score: 2, away_score: 2,
+      competition: 'La Liga', match_date: now, status: 'live', minute: 78, prediction: 'Draw', confidence: 52,
     },
   ];
-
-  return mockMatches;
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    console.log('📡 Fetching live matches...');
-    
-    // Get API keys from environment
     const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
-    const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
-    const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
-    
-    let matches: LiveMatch[] = [];
+    const apisportsKey = Deno.env.get('RAPIDAPI_KEY');
+    const predictProKey = Deno.env.get('PREDICTPRO_API_KEY');
 
-    // Try multiple sources with fallback
-    // 1. Try Football Data API first (primary source)
+    let matches: NormalizedMatch[] = [];
+
+    // 1. Football Data API (preferred)
     if (footballDataToken) {
       matches = await fetchFromFootballDataAPI(footballDataToken);
     }
 
-    // 2. If no matches, try API-Sports
-    if (matches.length === 0 && rapidApiKey) {
-      matches = await fetchFromAPISports(rapidApiKey);
+    // 2. API-Sports fallback
+    if (matches.length === 0 && apisportsKey) {
+      matches = await fetchFromAPISports(apisportsKey);
     }
 
-    // 3. If no matches, try TheSportsDB (free, no key required)
+    // 3. TheSportsDB fallback
     if (matches.length === 0) {
       matches = await fetchFromTheSportsDB();
     }
 
-    // 4. Fetch AI predictions from PredictPro and merge with matches
-    if (matches.length > 0 && predictProApiKey) {
-      const predictions = await fetchPredictions(predictProApiKey);
-      
-      // Merge predictions with matches
-      matches = matches.map(match => {
-        const pred = predictions.get(match.id);
-        if (pred) {
-          return { ...match, prediction: pred.prediction, confidence: pred.confidence };
+    // 4. Attach/generate predictions
+    if (matches.length > 0) {
+      // If external PredictPro available we could merge here (kept simple for compatibility)
+      matches = matches.map(m => {
+        if (!m.prediction || !m.confidence) {
+          const { prediction, confidence } = generatePrediction(m);
+          return { ...m, prediction, confidence };
         }
-        // Fallback to generated predictions if API doesn't have data
-        const { prediction, confidence } = generatePrediction(match);
-        return { ...match, prediction, confidence };
-      });
-    } else if (matches.length > 0) {
-      // Generate predictions if no API key available
-      matches = matches.map(match => {
-        const { prediction, confidence } = generatePrediction(match);
-        return { ...match, prediction, confidence };
+        return m;
       });
     }
 
-    // 5. If still no matches, use mock data for demo
-    if (matches.length === 0) {
-      matches = generateMockLiveMatches();
-    }
+    if (matches.length === 0) matches = generateMockLiveMatches();
 
-    console.log(`✨ Returning ${matches.length} live matches`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        matches,
-        source: matches[0]?.id?.startsWith('mock') ? 'demo' : 'live',
-        lastUpdated: new Date().toISOString(),
-      }),
-      {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 's-maxage=30, stale-while-revalidate'
-        },
-      }
-    );
+    return new Response(JSON.stringify({ success: true, matches, source: matches[0]?.id?.startsWith('mock') ? 'demo' : 'live', lastUpdated: new Date().toISOString() }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=30, stale-while-revalidate' },
+    });
   } catch (error) {
-    console.error('❌ Error fetching live matches:', error);
-    
-    // Return mock data on error for better UX
-    const mockMatches = generateMockLiveMatches();
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        matches: mockMatches,
-        source: 'demo',
-        lastUpdated: new Date().toISOString(),
-        error: 'Using demo data',
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error('Error fetching live matches:', error);
+    const mock = generateMockLiveMatches();
+    return new Response(JSON.stringify({ success: true, matches: mock, source: 'demo', lastUpdated: new Date().toISOString(), error: 'Using demo data' }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
