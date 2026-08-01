@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { normalizeIncomingMatch } from '@/lib/matchNormalizer';
 import type { NormalizedMatch } from '@/lib/matchNormalizer';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/integrations/supabase/client';
 
 interface Match {
   id: string; home_team: string; away_team: string;
@@ -9,9 +10,6 @@ interface Match {
   match_date: string; ai_prediction?: string; confidence?: number;
   home_odds?: number; draw_odds?: number; away_odds?: number;
 }
-
-const SUPABASE_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const ANON_KEY = 'REDACTED_ANON_KEY_FOR_COMMIT';
 
 export const useLiveMatches = () => {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -28,8 +26,8 @@ export const useLiveMatches = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${ANON_KEY}`,
-          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY,
         },
         signal: controller.signal,
       });
