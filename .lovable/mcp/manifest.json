@@ -3,13 +3,17 @@
   "sdk_version": "0.20.0",
   "path": "/functions/v1/mcp",
   "auth": {
-    "type": "none"
+    "type": "oauth",
+    "issuer": "https://osyygprivxbknsngclhr.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
   },
   "mcp": {
     "server": {
-      "name": "predictpro-mcp",
-      "version": "0.3.0",
-      "title": "PredictPro MCP"
+      "name": "visionary-sport",
+      "version": "0.4.0",
+      "title": "visionary-sport"
     },
     "tools": [
       {

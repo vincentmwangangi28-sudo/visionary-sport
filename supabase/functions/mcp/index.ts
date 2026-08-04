@@ -3,7 +3,7 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/list-todays-predictions.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
@@ -368,11 +368,16 @@ var list_value_bets_default = defineTool11({
 });
 
 // src/lib/mcp/index.ts
+var projectRef = "osyygprivxbknsngclhr";
 var mcp_default = defineMcp({
-  name: "predictpro-mcp",
-  title: "PredictPro MCP",
-  version: "0.3.0",
-  instructions: "PredictPro is an AI-powered sports prediction platform. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, streak leaderboards, and mathematically-derived value bets (edge/Kelly/EV vs bookmaker odds). All data is public/non-premium.",
+  name: "visionary-sport",
+  title: "visionary-sport",
+  version: "0.4.0",
+  instructions: "PredictPro is an AI-powered sports prediction platform. Callers sign in as a user of this app, so tools act as that user and row-level security applies. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, the signed-in user's streak stats, and mathematically-derived value bets (edge/Kelly/EV vs bookmaker odds).",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
   tools: [
     list_todays_predictions_default,
     list_upcoming_predictions_default,
