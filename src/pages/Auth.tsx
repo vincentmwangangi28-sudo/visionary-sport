@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Trophy, Eye, EyeOff, ArrowLeft, Mail, CheckCircle, Wand2 } from 'lucide-react';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -33,6 +33,10 @@ const resetPasswordSchema = z.object({
 export default function Auth() {
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Preserve an intended same-origin destination (e.g. the OAuth consent page).
+  const rawNext = searchParams.get('next');
+  const nextPath = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -45,9 +49,9 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate(nextPath);
     }
-  }, [user, navigate]);
+  }, [user, navigate, nextPath]);
 
   const [signInData, setSignInData] = useState({ email: '', password: '' });
   const [signUpData, setSignUpData] = useState({ email: '', password: '', fullName: '' });
@@ -64,6 +68,7 @@ export default function Auth() {
     setLoading(true);
     try {
       await signIn(validation.data.email, validation.data.password);
+      navigate(nextPath);
       
       // Store remember me preference
       if (rememberMe) {
@@ -145,7 +150,7 @@ export default function Auth() {
               <CardDescription>Sign in without a password</CardDescription>
             </CardHeader>
             <CardContent>
-              <MagicLinkForm onBack={() => setShowMagicLink(false)} />
+              <MagicLinkForm onBack={() => setShowMagicLink(false)} nextPath={nextPath} />
             </CardContent>
           </Card>
         </div>
@@ -267,6 +272,7 @@ export default function Auth() {
                   loading={socialLoading} 
                   setLoading={setSocialLoading}
                   mode="signin"
+                  nextPath={nextPath}
                 />
 
                 <Button
@@ -363,6 +369,7 @@ export default function Auth() {
                   loading={socialLoading} 
                   setLoading={setSocialLoading}
                   mode="signup"
+                  nextPath={nextPath}
                 />
 
                 <AuthDivider text="Or sign up with email" />
