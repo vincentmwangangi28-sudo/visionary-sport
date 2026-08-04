@@ -94,6 +94,8 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/today" element={<Today />} />
               <Route path="/guides/mathematical-football-predictions" element={<MathematicalPredictionsGuide />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
