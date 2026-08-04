@@ -1,116 +1,107 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, RefreshCw, Trophy, Lock } from 'lucide-react';
-import { useSubscription } from '@/hooks/useSubscription';
+import { Target, RefreshCw, Zap, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AdBannerHorizontal } from '@/components/AdBanner';
+import type { Prediction } from '@/types/prediction';
 
-interface ScorePrediction {
-  id: string; home_team: string; away_team: string; match_date: string;
-  league: string; predicted_score: string; confidence: number;
-  odds: number; is_premium: boolean;
-}
+interface PredMeta { correct_score?: string; home_win_probability?: number; away_win_probability?: number; draw_probability?: number; }
 
 export default function CorrectScore() {
-  const [predictions, setPredictions] = useState<ScorePrediction[]>([]);
+  const [preds, setPreds] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isPremium } = useSubscription();
 
-  const fetch = async () => {
+  const fetch_ = async () => {
     setLoading(true);
-    const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase.from('predictions')
-      .select('id,home_team,away_team,match_date,league,confidence,confidence_score,is_premium,metadata')
-      .gte('match_date', today).order('confidence', { ascending: false }).limit(15);
-
-    // Extract or generate correct score from metadata/confidence
-    const scores = (data ?? []).map(p => ({
-      ...p,
-      predicted_score: generateScore(p.confidence_score ?? p.confidence ?? 60),
-      odds: generateScoreOdds(p.confidence_score ?? p.confidence ?? 60),
-    }));
-    setPredictions(scores as ScorePrediction[]);
+      .select('*')
+      .gte('match_date', new Date().toISOString())
+      .lte('match_date', new Date(Date.now() + 14 * 86400000).toISOString())
+      .gte('confidence', 60)
+      .order('confidence', { ascending: false })
+      .limit(20);
+    setPreds((data ?? []) as Prediction[]);
     setLoading(false);
   };
 
-  const generateScore = (confidence: number | null | undefined) => {
-    const scenarios = confidence > 75
-      ? ['1-0','2-0','2-1'] : confidence > 60
-      ? ['1-1','2-1','1-0','2-2'] : ['0-0','1-1','2-2','1-2','0-1'];
-    return scenarios[Math.floor(Math.random() * scenarios.length)];
-  };
-
-  const generateScoreOdds = (confidence: number | null | undefined) => {
-    return Math.round((100 / Math.max(confidence * 0.4, 5)) * 100) / 100;
-  };
-
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetch_(); }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Correct Score Predictions Today | AI Scoreline Tips | PredictPro" description="AI-powered correct score predictions for today's matches. Exact scoreline forecasts with odds for Premier League, Champions League, La Liga and more." keywords="correct score predictions today, exact score football tips, scoreline predictions, correct score odds, football score prediction" />
+      <SEO title="Correct Score Predictions Today | AI Scoreline Tips | PredictPro"
+        description="AI-powered correct score predictions for today's matches. Exact scoreline forecasts with odds for Premier League, Champions League, La Liga and more."
+        canonical="/correct-score"
+        keywords="correct score predictions today, exact score football tips, scoreline predictions, correct score odds" />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Target className="h-8 w-8 text-primary" />Correct Score</h1>
-            <p className="text-muted-foreground mt-1">Exact scoreline predictions for today's matches.</p>
+            <p className="text-muted-foreground mt-1">AI-predicted exact scorelines · 60%+ confidence matches</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetch} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /></Button>
+          <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
 
-        {!isPremium() && (
-          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Trophy className="h-6 w-6 text-primary flex-shrink-0" />
-              <div>
-                <p className="font-semibold">Correct Score is a Premium Feature</p>
-                <p className="text-sm text-muted-foreground">Upgrade to see all exact scoreline predictions and odds.</p>
-              </div>
-            </div>
-            <Link to="/shop"><Button size="sm">Upgrade</Button></Link>
-          </div>
-        )}
+        <AdBannerHorizontal className="mb-6" />
 
         {loading ? (
-          <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
+          </div>
+        ) : preds.length === 0 ? (
+          <div className="text-center py-20">
+            <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="font-semibold">No correct score predictions right now</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">Check back after 6AM EAT when daily predictions are generated</p>
+            <Link to="/best-bets"><Button>View Best Bets Instead</Button></Link>
+          </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {predictions.map((pred, i) => {
-              const locked = pred.is_premium && !isPremium() && i >= 3;
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {preds.map(p => {
+              const meta = (p.metadata as PredMeta) ?? {};
+              const score = meta.correct_score ?? (p.predicted_outcome === 'Home Win' ? '1-0' : p.predicted_outcome === 'Away Win' ? '0-1' : '1-1');
+              const isPremium = p.is_premium;
               return (
-                <Card key={pred.id} className={`${locked ? 'opacity-60' : ''} hover:border-primary/30 transition-all`}>
+                <Card key={p.id} className={`hover:border-primary/30 transition-all ${isPremium ? 'border-amber-500/30' : ''}`}>
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs">{pred.league}</Badge>
-                      <span className="text-xs text-muted-foreground ml-auto">{new Date(pred.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <Badge variant="outline" className="text-xs truncate max-w-[65%]">{p.league}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(p.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </span>
                     </div>
-                    <p className="font-semibold text-sm mb-3">{pred.home_team} vs {pred.away_team}</p>
-                    <div className="flex items-center justify-between">
-                      {locked ? (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Lock className="h-4 w-4" /><span className="text-sm">Premium only</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <span className="text-3xl font-black text-primary">{pred.predicted_score}</span>
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Odds</p>
-                            <p className="font-bold">{pred.odds.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Confidence</p>
-                        <p className="font-bold text-primary">{pred.confidence}%</p>
+                    <p className="font-bold text-sm mb-1">{p.home_team}</p>
+                    <p className="text-xs text-muted-foreground mb-1">vs</p>
+                    <p className="font-bold text-sm mb-3">{p.away_team}</p>
+                    {isPremium ? (
+                      <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/20 rounded-lg p-3">
+                        <Lock className="h-5 w-5 text-amber-500" />
+                        <div><p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Premium Pick</p>
+                          <Link to="/shop"><Button size="sm" variant="outline" className="mt-1 h-6 text-xs px-2">Unlock</Button></Link></div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="text-center bg-primary/10 rounded-xl p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Predicted Score</p>
+                        <p className="text-3xl font-black text-primary">{score}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{p.confidence}% confidence</p>
+                      </div>
+                    )}
+                    {p.home_odds && (
+                      <div className="flex gap-2 mt-2 text-xs text-muted-foreground justify-center">
+                        <span>1: <b>{p.home_odds.toFixed(2)}</b></span>
+                        {p.draw_odds && <span>X: <b>{p.draw_odds.toFixed(2)}</b></span>}
+                        <span>2: <b>{p.away_odds?.toFixed(2)}</b></span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );

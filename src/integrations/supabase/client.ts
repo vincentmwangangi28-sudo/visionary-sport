@@ -3,7 +3,6 @@ import type { Database } from './types';
 
 export const SUPABASE_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
-export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_b8PmUWXn1tx_EHerqAHYSw_TDTX46-a';
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
