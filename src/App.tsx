@@ -31,6 +31,8 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Today = lazy(() => import("./pages/Today"));
 const MathematicalPredictionsGuide = lazy(() => import("./pages/MathematicalPredictionsGuide"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -92,6 +94,8 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/today" element={<Today />} />
               <Route path="/guides/mathematical-football-predictions" element={<MathematicalPredictionsGuide />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

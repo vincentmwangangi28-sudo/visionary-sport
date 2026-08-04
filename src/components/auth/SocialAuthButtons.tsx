@@ -8,6 +8,8 @@ interface SocialAuthButtonsProps {
   loading: boolean;
   setLoading: (loading: boolean) => void;
   mode: 'signin' | 'signup';
+  /** Same-origin path to return to after auth (e.g. an OAuth consent page). */
+  nextPath?: string;
 }
 
 const GoogleIcon = () => (
@@ -25,7 +27,7 @@ const AppleIcon = () => (
   </svg>
 );
 
-export default function SocialAuthButtons({ loading, setLoading, mode }: SocialAuthButtonsProps) {
+export default function SocialAuthButtons({ loading, setLoading, mode, nextPath = '/' }: SocialAuthButtonsProps) {
   const navigate = useNavigate();
 
   const startOAuth = async (provider: 'google' | 'apple') => {
@@ -35,11 +37,11 @@ export default function SocialAuthButtons({ loading, setLoading, mode }: SocialA
       provider,
       stage: 'start',
       message: 'Initiating OAuth flow',
-      context: { mode, redirect_uri: window.location.origin },
+      context: { mode, redirect_uri: `${window.location.origin}${nextPath}` },
     });
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}${nextPath}`,
       });
       if (result.error) throw result.error;
       if (result.redirected) {
@@ -47,7 +49,7 @@ export default function SocialAuthButtons({ loading, setLoading, mode }: SocialA
         return;
       }
       logOAuth({ level: 'info', provider, stage: 'success', message: 'Session established without redirect' });
-      navigate('/');
+      navigate(nextPath);
     } catch (error: any) {
       const raw = error?.message || String(error);
       const friendly = friendlyOAuthError(raw);

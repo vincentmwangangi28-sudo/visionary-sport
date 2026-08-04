@@ -3,13 +3,17 @@
   "sdk_version": "0.20.0",
   "path": "/functions/v1/mcp",
   "auth": {
-    "type": "none"
+    "type": "oauth",
+    "issuer": "https://osyygprivxbknsngclhr.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
   },
   "mcp": {
     "server": {
-      "name": "predictpro-mcp",
-      "version": "0.3.0",
-      "title": "PredictPro MCP"
+      "name": "visionary-sport",
+      "version": "0.4.0",
+      "title": "visionary-sport"
     },
     "tools": [
       {
@@ -261,8 +265,8 @@
       },
       {
         "name": "get_streak_leaderboard",
-        "title": "Get streak leaderboard",
-        "description": "Returns the top users by prediction streak (current and longest) with total correct picks and win rates. Usernames are anonymised.",
+        "title": "Get my streak stats",
+        "description": "Returns prediction streak stats (current streak, longest streak, total correct picks) visible to the signed-in user. Requires sign-in; row-level security limits rows to the caller's own data.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,

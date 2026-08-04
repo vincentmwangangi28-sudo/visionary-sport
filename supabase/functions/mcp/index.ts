@@ -3,7 +3,7 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/list-todays-predictions.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
@@ -289,22 +289,69 @@ var get_news_article_default = defineTool9({
 
 // src/lib/mcp/tools/get-streak-leaderboard.ts
 import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { createClient as createClient10 } from "npm:@supabase/supabase-js@^2.74.0";
 import { z as z10 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp/supabase.ts
+import { createClient as createClient10 } from "npm:@supabase/supabase-js@^2.74.0";
+function runtimeEnv(name) {
+  const runtime = globalThis;
+  return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
+}
+function configuredEnv(names) {
+  for (const name of names) {
+    const value = runtimeEnv(name)?.trim();
+    if (value) return value;
+  }
+  return void 0;
+}
+function supabaseProjectUrl() {
+  const url = configuredEnv(["SUPABASE_URL", "VITE_SUPABASE_URL"]);
+  if (!url) throw new Error("SUPABASE_URL (or VITE_SUPABASE_URL) is required");
+  return url;
+}
+function supabasePublishableKey() {
+  const direct = configuredEnv(["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY"]);
+  if (direct) return direct;
+  const keyset = runtimeEnv("SUPABASE_PUBLISHABLE_KEYS");
+  if (keyset) {
+    try {
+      const parsed = JSON.parse(keyset);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        const keys = parsed;
+        const key = [keys.default, ...Object.values(keys)].find((v) => typeof v === "string" && v.trim().startsWith("sb_publishable_"))?.trim();
+        if (key) return key;
+      }
+    } catch {
+    }
+  }
+  const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
+  if (legacy) return legacy;
+  throw new Error("SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required");
+}
+function supabaseForUser(ctx) {
+  const token = ctx.getToken();
+  if (!token) throw new Error("supabaseForUser requires a verified OAuth token");
+  return createClient10(supabaseProjectUrl(), supabasePublishableKey(), {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+
+// src/lib/mcp/tools/get-streak-leaderboard.ts
 var get_streak_leaderboard_default = defineTool10({
   name: "get_streak_leaderboard",
-  title: "Get streak leaderboard",
-  description: "Returns the top users by prediction streak (current and longest) with total correct picks and win rates. Usernames are anonymised.",
+  title: "Get my streak stats",
+  description: "Returns prediction streak stats (current streak, longest streak, total correct picks) visible to the signed-in user. Requires sign-in; row-level security limits rows to the caller's own data.",
   inputSchema: {
     metric: z10.enum(["current_streak", "longest_streak", "total_correct"]).optional().describe("Ranking metric. Default longest_streak."),
     limit: z10.number().min(1).max(50).optional().describe("Max rows. Default 10.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ metric, limit }) => {
-    const supabase = createClient10(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY
-    );
+  handler: async ({ metric, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
     const orderBy = metric ?? "longest_streak";
     const { data, error } = await supabase.from("user_streaks").select("current_streak, longest_streak, total_correct, last_prediction_date").order(orderBy, { ascending: false }).limit(limit ?? 10);
     if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
@@ -368,11 +415,16 @@ var list_value_bets_default = defineTool11({
 });
 
 // src/lib/mcp/index.ts
+var projectRef = "osyygprivxbknsngclhr";
 var mcp_default = defineMcp({
-  name: "predictpro-mcp",
-  title: "PredictPro MCP",
-  version: "0.3.0",
-  instructions: "PredictPro is an AI-powered sports prediction platform. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, streak leaderboards, and mathematically-derived value bets (edge/Kelly/EV vs bookmaker odds). All data is public/non-premium.",
+  name: "visionary-sport",
+  title: "visionary-sport",
+  version: "0.4.0",
+  instructions: "PredictPro is an AI-powered sports prediction platform. Callers sign in as a user of this app, so tools act as that user and row-level security applies. Read tools cover today's and upcoming AI predictions (with confidence and reasoning), cached upcoming matches, in-depth expert analysis per match, platform accuracy stats, news articles (list + full content), transfer rumors, active prediction contests, the signed-in user's streak stats, and mathematically-derived value bets (edge/Kelly/EV vs bookmaker odds).",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
   tools: [
     list_todays_predictions_default,
     list_upcoming_predictions_default,
