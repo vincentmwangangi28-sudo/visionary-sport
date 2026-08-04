@@ -1,4 +1,4 @@
-import { defineMcp } from "@lovable.dev/mcp-js";
+import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import listTodaysPredictions from "./tools/list-todays-predictions";
 import listUpcomingPredictions from "./tools/list-upcoming-predictions";
 import getPlatformAccuracy from "./tools/get-platform-accuracy";
