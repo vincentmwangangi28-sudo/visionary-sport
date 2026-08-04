@@ -265,8 +265,8 @@
       },
       {
         "name": "get_streak_leaderboard",
-        "title": "Get streak leaderboard",
-        "description": "Returns the top users by prediction streak (current and longest) with total correct picks and win rates. Usernames are anonymised.",
+        "title": "Get my streak stats",
+        "description": "Returns prediction streak stats (current streak, longest streak, total correct picks) visible to the signed-in user. Requires sign-in; row-level security limits rows to the caller's own data.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
