@@ -11,9 +11,11 @@ const emailSchema = z.string().trim().email('Invalid email format').max(255);
 
 interface MagicLinkFormProps {
   onBack: () => void;
+  /** Same-origin path to return to after the magic link is used. */
+  nextPath?: string;
 }
 
-export default function MagicLinkForm({ onBack }: MagicLinkFormProps) {
+export default function MagicLinkForm({ onBack, nextPath = '/' }: MagicLinkFormProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -32,7 +34,7 @@ export default function MagicLinkForm({ onBack }: MagicLinkFormProps) {
       const { error } = await supabase.auth.signInWithOtp({
         email: validation.data,
         options: {
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: `${window.location.origin}${nextPath}`
         }
       });
       

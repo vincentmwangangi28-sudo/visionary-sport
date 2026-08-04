@@ -92,7 +92,7 @@ export default function Auth() {
     
     setLoading(true);
     try {
-      await signUp(validation.data.email, validation.data.password, validation.data.fullName);
+      await signUp(validation.data.email, validation.data.password, validation.data.fullName, nextPath);
       
       // GA4 Event Tracking for trial start
       if (typeof window !== 'undefined' && (window as any).gtag) {
