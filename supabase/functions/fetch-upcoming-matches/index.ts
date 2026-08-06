@@ -13,6 +13,7 @@ interface UpcomingMatch {
   league: string;
   date: string;
   time: string;
+  kickoff?: string;
   prediction?: string;
   confidence?: number;
 }
@@ -51,6 +52,7 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatc
         league: match.competition.name,
         date: matchDate.toISOString().split('T')[0],
         time: matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        kickoff: matchDate.toISOString(),
       };
     });
 
@@ -101,6 +103,7 @@ async function fetchFromESPN(): Promise<UpcomingMatch[]> {
           league: lg.name,
           date: d.toISOString().split('T')[0],
           time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          kickoff: d.toISOString(),
         });
       }
     } catch (e) {
@@ -145,6 +148,7 @@ async function fetchFromTheSportsDB(): Promise<UpcomingMatch[]> {
           league: lg.name,
           date: ev.dateEvent ?? '',
           time: (ev.strTime ?? '').slice(0, 5),
+          kickoff: ev.dateEvent ? new Date(`${ev.dateEvent}T${(ev.strTime ?? '00:00:00')}Z`).toISOString() : undefined,
         });
       }
     } catch (e) {
@@ -294,14 +298,14 @@ serve(async (req) => {
     if (!isDemo && matches.length > 0) {
       try {
         const rows = matches
-          .filter((m) => m.date)
+          .filter((m) => m.date || m.kickoff)
           .map((m) => ({
             match_id: m.id,
             home_team: m.homeTeam,
             away_team: m.awayTeam,
             league: m.league,
             sport: 'football',
-            match_date: new Date(`${m.date}T${(m.time || '00:00').slice(0, 5)}:00Z`).toISOString(),
+            match_date: m.kickoff ?? new Date(`${m.date}T00:00:00Z`).toISOString(),
             match_time: m.time || '00:00',
             prediction: m.prediction ?? null,
             confidence: m.confidence ?? null,
