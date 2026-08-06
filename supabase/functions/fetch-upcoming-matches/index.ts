@@ -329,7 +329,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         matches,
-        source: matches[0]?.id?.startsWith('upcoming') ? 'demo' : 'live',
+        source: isDemo ? 'demo' : 'live',
         lastUpdated: new Date().toISOString(),
       }),
       {
