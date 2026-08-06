@@ -13,6 +13,7 @@ interface UpcomingMatch {
   league: string;
   date: string;
   time: string;
+  kickoff?: string;
   prediction?: string;
   confidence?: number;
 }
@@ -51,6 +52,7 @@ async function fetchFromFootballDataAPI(apiToken?: string): Promise<UpcomingMatc
         league: match.competition.name,
         date: matchDate.toISOString().split('T')[0],
         time: matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        kickoff: matchDate.toISOString(),
       };
     });
 
@@ -101,6 +103,7 @@ async function fetchFromESPN(): Promise<UpcomingMatch[]> {
           league: lg.name,
           date: d.toISOString().split('T')[0],
           time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          kickoff: d.toISOString(),
         });
       }
     } catch (e) {
@@ -145,6 +148,7 @@ async function fetchFromTheSportsDB(): Promise<UpcomingMatch[]> {
           league: lg.name,
           date: ev.dateEvent ?? '',
           time: (ev.strTime ?? '').slice(0, 5),
+          kickoff: ev.dateEvent ? new Date(`${ev.dateEvent}T${(ev.strTime ?? '00:00:00')}Z`).toISOString() : undefined,
         });
       }
     } catch (e) {
@@ -288,13 +292,48 @@ serve(async (req) => {
       matches = generateMockUpcomingMatches();
     }
 
+    const isDemo = matches[0]?.id?.startsWith('upcoming') ?? false;
+
+    // 4. Persist real matches into the cache table (used by MCP tools + UI fallback)
+    if (!isDemo && matches.length > 0) {
+      try {
+        const rows = matches
+          .filter((m) => m.date || m.kickoff)
+          .map((m) => ({
+            match_id: m.id,
+            home_team: m.homeTeam,
+            away_team: m.awayTeam,
+            league: m.league,
+            sport: 'football',
+            match_date: m.kickoff ?? new Date(`${m.date}T00:00:00Z`).toISOString(),
+            match_time: m.time || '00:00',
+            prediction: m.prediction ?? null,
+            confidence: m.confidence ?? null,
+            updated_at: new Date().toISOString(),
+          }));
+
+        const { error: upsertError } = await supabase
+          .from('upcoming_matches_cache')
+          .upsert(rows, { onConflict: 'match_id' });
+
+        if (upsertError) {
+          console.error('❌ Cache upsert error:', upsertError.message);
+        } else {
+          console.log(`💾 Cached ${rows.length} upcoming matches`);
+        }
+      } catch (e) {
+        console.error('❌ Cache upsert failed:', e);
+      }
+    }
+
     console.log(`✨ Returning ${matches.length} upcoming matches`);
+
 
     return new Response(
       JSON.stringify({
         success: true,
         matches,
-        source: matches[0]?.id?.startsWith('upcoming') ? 'demo' : 'live',
+        source: isDemo ? 'demo' : 'live',
         lastUpdated: new Date().toISOString(),
       }),
       {
