@@ -144,15 +144,22 @@ serve(async (req) => {
 
       const o = scoreMatrix(lambdaHome, lambdaAway);
 
-      const candidates: { label: string; p: number }[] = [
+      // Prefer the match-result market; only switch to a goals market when it is
+      // clearly stronger (10+ percentage points) than the best 1X2 selection.
+      const resultMarkets = [
         { label: `${match.home_team} to win`, p: o.home },
         { label: 'Draw', p: o.draw },
         { label: `${match.away_team} to win`, p: o.away },
+      ].sort((a, b) => b.p - a.p);
+      const goalsMarkets = [
         { label: 'Over 2.5 goals', p: o.over25 },
         { label: 'Both teams to score', p: o.btts },
-      ];
-      candidates.sort((a, b) => b.p - a.p);
-      const pick = candidates[0];
+      ].sort((a, b) => b.p - a.p);
+
+      const bestResult = resultMarkets[0];
+      const bestGoals = goalsMarkets[0];
+      const pick = bestGoals.p > bestResult.p + 0.10 ? bestGoals : bestResult;
+
 
       const confidence = Math.round(Math.min(92, Math.max(52, pick.p * 100)));
       const isUpset = pick.label.includes(match.away_team) && o.away > o.home;
