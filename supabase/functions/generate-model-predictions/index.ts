@@ -188,7 +188,7 @@ serve(async (req) => {
 
     const { error: insertError } = await supabase
       .from('predictions')
-      .upsert(rows, { onConflict: 'match_id' });
+      .insert(rows);
 
     if (insertError) throw new Error(`insert failed: ${insertError.message}`);
 
