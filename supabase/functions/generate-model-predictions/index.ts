@@ -78,7 +78,7 @@ serve(async (req) => {
     );
 
     const nowIso = new Date().toISOString();
-    const horizon = new Date(Date.now() + 7 * 86400000).toISOString();
+    const horizon = new Date(Date.now() + 30 * 86400000).toISOString();
 
     const { data: matches, error: matchesError } = await supabase
       .from('upcoming_matches_cache')
