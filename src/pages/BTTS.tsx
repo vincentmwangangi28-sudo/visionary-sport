@@ -1,91 +1,101 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { RefreshCw, Swords, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart2, RefreshCw, TrendingUp } from 'lucide-react';
+import { AdBannerHorizontal } from '@/components/AdBanner';
+import type { Prediction } from '@/types/prediction';
+
+interface Meta { btts_probability?: number; over25_probability?: number; }
 
 export default function BTTS() {
-  const [predictions, setPredictions] = useState<{ id: string; home_team: string; away_team: string; match_date: string; league: string; btts: boolean; confidence: number; over25: boolean; over25Confidence: number }[]>([]);
+  const [preds, setPreds] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'yes' | 'no'>('yes');
+  const [tab, setTab] = useState<'btts' | 'over25'>('btts');
 
-  const fetch = async () => {
+  const fetch_ = async () => {
     setLoading(true);
-    const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase.from('predictions')
-      .select('id,home_team,away_team,match_date,league,confidence,confidence_score')
-      .gte('match_date', today).limit(20);
-
-    const enriched = (data ?? []).map(p => ({
-      ...p,
-      btts: (p.confidence_score ?? p.confidence) > 55,
-      over25: (p.confidence_score ?? p.confidence) > 50,
-      over25Confidence: Math.min(95, (p.confidence_score ?? p.confidence) + Math.floor(Math.random() * 10)),
-    }));
-    setPredictions(enriched);
+      .select('*')
+      .gte('match_date', new Date().toISOString())
+      .lte('match_date', new Date(Date.now() + 14 * 86400000).toISOString())
+      .order('match_date', { ascending: true })
+      .limit(24);
+    setPreds((data ?? []) as Prediction[]);
     setLoading(false);
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetch_(); }, []);
 
-  const filtered = predictions.filter(p => filter === 'all' ? true : filter === 'yes' ? p.btts : !p.btts);
+  const sorted = [...preds].sort((a, b) => {
+    const key = tab === 'btts' ? 'btts_probability' : 'over25_probability';
+    const av = (a.metadata as Meta)?.[key] ?? 0;
+    const bv = (b.metadata as Meta)?.[key] ?? 0;
+    return bv - av;
+  });
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="BTTS Predictions | PredictPro" description="Both Teams To Score (BTTS) and Over/Under 2.5 goals predictions for today's matches." />
+      <SEO title="BTTS & Over/Under 2.5 Predictions | PredictPro"
+        description="Both Teams to Score and Over/Under 2.5 goals predictions. AI analysis with probability scores for all major football leagues."
+        canonical="/btts"
+        keywords="BTTS predictions today, both teams to score tips, over 2.5 goals predictions, BTTS football tips free" />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3"><Swords className="h-8 w-8 text-primary" />BTTS & Over/Under</h1>
-            <p className="text-muted-foreground mt-1">Both Teams to Score and Over 2.5 goals predictions.</p>
+            <h1 className="text-3xl font-bold flex items-center gap-3"><BarChart2 className="h-8 w-8 text-primary" />BTTS &amp; Goals</h1>
+            <p className="text-muted-foreground mt-1">AI-calculated goal market probabilities · Next 14 days</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetch} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /></Button>
+          <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
 
-        <div className="flex gap-2 mb-4">
-          {(['all', 'yes', 'no'] as const).map(f => (
-            <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)} className="capitalize">
-              {f === 'all' ? 'All' : f === 'yes' ? '✅ BTTS Yes' : '❌ BTTS No'}
-            </Button>
-          ))}
+        <div className="flex gap-2 mb-6">
+          <Button variant={tab === 'btts' ? 'default' : 'outline'} size="sm" onClick={() => setTab('btts')}>Both Teams to Score</Button>
+          <Button variant={tab === 'over25' ? 'default' : 'outline'} size="sm" onClick={() => setTab('over25')}>Over/Under 2.5</Button>
         </div>
+
+        <AdBannerHorizontal className="mb-6" />
 
         {loading ? (
-          <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}</div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}</div>
+        ) : sorted.length === 0 ? (
+          <div className="text-center py-20"><BarChart2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><p className="font-semibold">No predictions available</p></div>
         ) : (
-          <div className="space-y-3">
-            {filtered.map(pred => (
-              <Card key={pred.id} className="hover:border-primary/20 transition-all">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs">{pred.league}</Badge>
-                    <span className="text-xs text-muted-foreground">{new Date(pred.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                  </div>
-                  <p className="font-bold mb-3">{pred.home_team} vs {pred.away_team}</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className={`rounded-lg p-3 text-center ${pred.btts ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
-                      <p className="text-xs text-muted-foreground mb-1">BTTS</p>
-                      <p className={`font-bold text-lg ${pred.btts ? 'text-green-600' : 'text-red-600'}`}>{pred.btts ? '✅ Yes' : '❌ No'}</p>
-                      <p className="text-xs text-muted-foreground">{pred.confidence_score ?? pred.confidence}% confidence</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {sorted.map(p => {
+              const meta = (p.metadata as Meta) ?? {};
+              const val = tab === 'btts' ? meta.btts_probability : meta.over25_probability;
+              const label = tab === 'btts' ? (val && val >= 50 ? 'Yes' : 'No') : (val && val >= 50 ? 'Over 2.5' : 'Under 2.5');
+              return (
+                <Card key={p.id} className="hover:border-primary/30 transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className="text-xs truncate max-w-[65%]">{p.league}</Badge>
+                      <span className="text-xs text-muted-foreground">{new Date(p.match_date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}</span>
                     </div>
-                    <div className={`rounded-lg p-3 text-center ${pred.over25 ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-muted border'}`}>
-                      <p className="text-xs text-muted-foreground mb-1">Over 2.5 Goals</p>
-                      <div className="flex items-center justify-center gap-1">
-                        {pred.over25 ? <TrendingUp className="h-4 w-4 text-blue-500" /> : <TrendingDown className="h-4 w-4 text-muted-foreground" />}
-                        <p className={`font-bold text-lg ${pred.over25 ? 'text-blue-600' : 'text-muted-foreground'}`}>{pred.over25 ? 'Over' : 'Under'}</p>
+                    <p className="text-sm font-semibold mb-3">{p.home_team} <span className="text-muted-foreground font-normal">vs</span> {p.away_team}</p>
+                    <div className="flex items-center justify-between">
+                      <Badge className={`${val && val >= 50 ? 'bg-green-700' : 'bg-red-700'} text-white`}>{label}</Badge>
+                      <div className="flex items-center gap-1.5">
+                        <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-bold text-primary">{val ?? 50}%</span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{pred.over25Confidence}% confidence</p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="h-1.5 bg-muted rounded-full mt-2">
+                      <div className={`h-full rounded-full ${val && val >= 50 ? 'bg-green-600' : 'bg-red-600'}`} style={{ width: `${val ?? 50}%` }} />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </main>
