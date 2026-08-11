@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
-import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Goal } from 'lucide-react';
 import { normalizeIncomingMatch } from '@/lib/matchNormalizer';
+import { toast } from 'sonner';
 
 interface Match {
   id: string; home_team: string; away_team: string;
@@ -42,6 +43,33 @@ export default function LiveScores() {
     fetchMatches();
     const iv = setInterval(fetchMatches, 30_000);
     return () => clearInterval(iv);
+  }, []);
+
+  // Real-time goal notifications via Supabase Realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel('live-match-goals')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'live_match_events' },
+        (payload) => {
+          const ev = payload.new as {
+            home_team: string; away_team: string; home_score: number; away_score: number;
+            minute: number | null; scoring_side: string; league: string;
+          };
+          const scorer = ev.scoring_side === 'home' ? ev.home_team : ev.away_team;
+          toast(`⚽ GOAL! ${scorer}`, {
+            description: `${ev.home_team} ${ev.home_score} - ${ev.away_score} ${ev.away_team}${ev.minute ? ` · ${ev.minute}'` : ''}`,
+            icon: <Goal className="h-4 w-4 text-green-500" />,
+            duration: 6000,
+          });
+          // Refresh matches to reflect new score immediately
+          fetchMatches();
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const live = matches.filter(m => m.status === 'live' || m.status === 'halftime');

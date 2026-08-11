@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/generate-sitemap"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

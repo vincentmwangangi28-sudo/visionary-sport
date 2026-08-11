@@ -1,13 +1,15 @@
 import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, ChevronLeft, Share2, Zap } from "lucide-react";
+import { Clock, ChevronLeft, Zap, Loader2 } from "lucide-react";
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from "@/components/WhatsAppShare";
+import { supabase } from "@/integrations/supabase/client";
 
 const ARTICLES: Record<string, { title: string; description: string; keywords: string; category: string; readTime: string; date: string; content: string }> = {
   "how-to-read-football-predictions": {
@@ -129,7 +131,38 @@ function renderMarkdown(text: string) {
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const post = slug ? ARTICLES[slug] : null;
+  const staticPost = slug ? ARTICLES[slug] : null;
+  const [dbPost, setDbPost] = useState<{ title: string; description: string; category: string; read_time: string; published_at: string; content: string } | null>(null);
+  const [loading, setLoading] = useState(!staticPost);
+
+  useEffect(() => {
+    if (staticPost || !slug) { setLoading(false); return; }
+    (async () => {
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('title, description, category, read_time, published_at, content')
+        .eq('slug', slug)
+        .maybeSingle();
+      setDbPost(data);
+      setLoading(false);
+    })();
+  }, [slug, staticPost]);
+
+  const post = staticPost
+    ? staticPost
+    : dbPost
+      ? { title: dbPost.title, description: dbPost.description, keywords: dbPost.title.toLowerCase(), category: dbPost.category, readTime: dbPost.read_time, date: dbPost.published_at, content: dbPost.content }
+      : null;
+
+  if (loading) return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container mx-auto px-4 py-24 flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </main>
+      <Footer />
+    </div>
+  );
 
   if (!post) return (
     <div className="min-h-screen bg-background">

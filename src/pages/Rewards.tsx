@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Gift, Zap, Star, Trophy, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { ReferralCard } from '@/components/ReferralCard';
+import { EmailDigestToggle } from '@/components/EmailDigestToggle';
 
 const SEGMENTS = [
   { label: '10 Coins',   color: '#FFD700', emoji: '🪙', type: 'coins',   amount: 10  },
@@ -142,7 +144,6 @@ export default function Rewards() {
               { icon: Star,   label: 'Daily Spin',        desc: 'One free spin every 24hrs',         reward: '10–100 coins' },
               { icon: Zap,    label: 'Share a Tip',        desc: 'Post a prediction on Tipsters',     reward: '10 coins',    link: '/tipsters' },
               { icon: Trophy, label: 'Tip Wins',           desc: 'Your community tip is correct',     reward: '25 coins',    link: '/tipsters' },
-              { icon: Gift,   label: 'Refer a Friend',     desc: 'Use your referral code',            reward: '50 coins each' },
             ].map(({ icon: Icon, label, desc, reward, link }) => (
               <Card key={label} className="hover:border-primary/20 transition-all">
                 <CardContent className="p-4 flex items-center gap-4">
@@ -158,6 +159,10 @@ export default function Rewards() {
                 </CardContent>
               </Card>
             ))}
+
+            <ReferralCard />
+
+            <EmailDigestToggle />
 
             <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
               <CardContent className="p-4">

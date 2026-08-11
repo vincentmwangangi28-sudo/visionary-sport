@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, Lock, Eye, EyeOff, Zap, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff, Zap, ArrowLeft, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -48,11 +49,15 @@ export default function Auth() {
       }
       if (mode === 'register') {
         if (!password || password.length < 6) { toast.error('Password must be 6+ characters'); return; }
-        const { error } = await supabase.auth.signUp({
+        const refCode = params.get('ref');
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email, password,
-          options: { data: { full_name: fullName || email.split('@')[0] } },
+          options: { data: { full_name: fullName || email.split('@')[0], referral_code: refCode || undefined } },
         });
         if (error) throw error;
+        if (refCode && signUpData.user) {
+          callEdgeFn('apply-referral-on-signup', { referral_code: refCode, new_user_id: signUpData.user.id }).catch(() => {});
+        }
         toast.success('Account created! Check your email to verify.');
         return;
       }
@@ -79,6 +84,12 @@ export default function Auth() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <SEO title="Sign In | PredictPro" description="Sign in to PredictPro to access premium AI football predictions." canonical="/auth" noIndex />
       <div className="w-full max-w-md">
+        {params.get('ref') && (
+          <div className="mb-4 flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-2.5 text-sm">
+            <Gift className="h-4 w-4 text-primary flex-shrink-0" />
+            <span>You were invited! Sign up to give you both <b>50 coins</b>.</span>
+          </div>
+        )}
         {/* Logo */}
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2 mb-3">
