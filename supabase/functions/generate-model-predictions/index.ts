@@ -66,17 +66,47 @@ function formMultiplier(wins: number, played: number): number {
   return 0.85 + Math.min(1, Math.max(0, rate)) * 0.3;
 }
 
+const JOB_NAME = 'generate-model-predictions';
+/** Calendar date in East Africa Time (UTC+3), used to group daily runs. */
+const eatDate = () => new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
 
+  // Open an audit row so every run is visible in the run-history page.
+  let runId: string | null = null;
+  const { data: runRow } = await supabase
+    .from('job_runs')
+    .insert({
+      job_name: JOB_NAME,
+      status: 'running',
+      eat_date: eatDate(),
+      started_at: new Date().toISOString(),
+      processed: 0,
+    })
+    .select('id')
+    .maybeSingle();
+  runId = runRow?.id ?? null;
+
+  const finishRun = async (
+    status: string,
+    fields: { processed?: number; total_markets?: number; error?: string; metadata?: Record<string, unknown> } = {},
+  ) => {
+    if (!runId) return;
+    await supabase
+      .from('job_runs')
+      .update({ status, finished_at: new Date().toISOString(), ...fields })
+      .eq('id', runId);
+  };
+
+  try {
     const nowIso = new Date().toISOString();
     const horizon = new Date(Date.now() + 30 * 86400000).toISOString();
 
@@ -90,6 +120,7 @@ serve(async (req) => {
 
     if (matchesError) throw new Error(`cache read failed: ${matchesError.message}`);
     if (!matches || matches.length === 0) {
+      await finishRun('skipped', { processed: 0, total_markets: 0, metadata: { message: 'No cached upcoming matches' } });
       return new Response(JSON.stringify({ success: true, created: 0, message: 'No cached upcoming matches' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
