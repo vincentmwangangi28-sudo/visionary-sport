@@ -40,7 +40,11 @@ export const Navbar = () => {
   }, [user]);
 
   const allLinks = isAdmin
-    ? [...navLinks, { to: "/admin", label: "Admin", icon: Shield }]
+    ? [
+        ...navLinks,
+        { to: "/admin", label: "Admin", icon: Shield },
+        { to: "/admin/prediction-runs", label: "Runs", icon: History },
+      ]
     : navLinks;
 
   return (

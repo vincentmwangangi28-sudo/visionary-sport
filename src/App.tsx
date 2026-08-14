@@ -93,6 +93,7 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/prediction-runs" element={<PredictionRuns />} />
               <Route path="/today" element={<Today />} />
               <Route path="/guides/mathematical-football-predictions" element={<MathematicalPredictionsGuide />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
