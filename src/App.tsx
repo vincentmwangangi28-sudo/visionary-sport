@@ -29,6 +29,7 @@ const ResponsibleGaming = lazy(() => import("./pages/ResponsibleGaming"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const PredictionRuns = lazy(() => import("./pages/PredictionRuns"));
 const Today = lazy(() => import("./pages/Today"));
 const MathematicalPredictionsGuide = lazy(() => import("./pages/MathematicalPredictionsGuide"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
