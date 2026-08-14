@@ -131,8 +131,8 @@ const PredictionRuns = () => {
       <SEOHead
         title="Prediction Run History | PredictPro Admin"
         description="Audit log of daily prediction generation runs: timestamps, predictions inserted, and errors."
-        canonical="/admin/prediction-runs"
-        noindex
+        canonicalUrl="https://predictpro.guru/admin/prediction-runs"
+        noIndex
       />
       <Navbar />
 
