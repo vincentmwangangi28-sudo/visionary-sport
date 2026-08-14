@@ -219,6 +219,11 @@ serve(async (req) => {
     }
 
     if (rows.length === 0) {
+      await finishRun('skipped', {
+        processed: 0,
+        total_markets: matches.length,
+        metadata: { message: 'All cached matches already have predictions', scanned: matches.length },
+      });
       return new Response(JSON.stringify({ success: true, created: 0, message: 'All cached matches already have predictions' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -232,13 +237,25 @@ serve(async (req) => {
 
     console.log(`📐 Generated ${rows.length} model predictions (no AI credits used)`);
 
+    await finishRun('success', {
+      processed: rows.length,
+      total_markets: matches.length,
+      metadata: {
+        scanned: matches.length,
+        model: 'poisson-baseline-v1',
+        leagues: [...new Set(rows.map((r) => r.league as string))],
+      },
+    });
+
     return new Response(JSON.stringify({ success: true, created: rows.length, scanned: matches.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('generate-model-predictions error:', error);
+    await finishRun('failed', { error: message });
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
