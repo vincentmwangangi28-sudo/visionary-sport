@@ -66,17 +66,39 @@ function formMultiplier(wins: number, played: number): number {
   return 0.85 + Math.min(1, Math.max(0, rate)) * 0.3;
 }
 
+const JOB_NAME = 'generate-model-predictions';
+/** Calendar date in East Africa Time (UTC+3), used to group daily runs. */
+const eatDate = () => new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
 
+  // Audit every run in job_runs so the run-history page can report it.
+  const startedAt = new Date().toISOString();
+  const finishRun = async (
+    status: 'success' | 'partial' | 'failed' | 'skipped',
+    fields: { processed?: number; total_markets?: number; error?: string; metadata?: Record<string, unknown> } = {},
+  ) => {
+    const { error } = await supabase.from('job_runs').insert({
+      job_name: JOB_NAME,
+      status,
+      eat_date: eatDate(),
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      processed: 0,
+      ...fields,
+    });
+    if (error) console.error('job_runs log failed:', error.message);
+  };
+
+  try {
     const nowIso = new Date().toISOString();
     const horizon = new Date(Date.now() + 30 * 86400000).toISOString();
 
@@ -90,6 +112,7 @@ serve(async (req) => {
 
     if (matchesError) throw new Error(`cache read failed: ${matchesError.message}`);
     if (!matches || matches.length === 0) {
+      await finishRun('skipped', { processed: 0, total_markets: 0, metadata: { message: 'No cached upcoming matches' } });
       return new Response(JSON.stringify({ success: true, created: 0, message: 'No cached upcoming matches' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -188,6 +211,11 @@ serve(async (req) => {
     }
 
     if (rows.length === 0) {
+      await finishRun('skipped', {
+        processed: 0,
+        total_markets: matches.length,
+        metadata: { message: 'All cached matches already have predictions', scanned: matches.length },
+      });
       return new Response(JSON.stringify({ success: true, created: 0, message: 'All cached matches already have predictions' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -201,13 +229,25 @@ serve(async (req) => {
 
     console.log(`📐 Generated ${rows.length} model predictions (no AI credits used)`);
 
+    await finishRun('success', {
+      processed: rows.length,
+      total_markets: matches.length,
+      metadata: {
+        scanned: matches.length,
+        model: 'poisson-baseline-v1',
+        leagues: [...new Set(rows.map((r) => r.league as string))],
+      },
+    });
+
     return new Response(JSON.stringify({ success: true, created: rows.length, scanned: matches.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('generate-model-predictions error:', error);
+    await finishRun('failed', { error: message });
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

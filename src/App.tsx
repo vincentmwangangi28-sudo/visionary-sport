@@ -29,6 +29,7 @@ const ResponsibleGaming = lazy(() => import("./pages/ResponsibleGaming"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const PredictionRuns = lazy(() => import("./pages/PredictionRuns"));
 const Today = lazy(() => import("./pages/Today"));
 const MathematicalPredictionsGuide = lazy(() => import("./pages/MathematicalPredictionsGuide"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
@@ -92,6 +93,7 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/prediction-runs" element={<PredictionRuns />} />
               <Route path="/today" element={<Today />} />
               <Route path="/guides/mathematical-football-predictions" element={<MathematicalPredictionsGuide />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />

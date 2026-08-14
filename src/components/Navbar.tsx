@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, ShoppingBag, Gift, BarChart3, Trophy, Newspaper, Lightbulb, Info, Home, Shield } from "lucide-react";
+import { Menu, X, LogOut, ShoppingBag, Gift, BarChart3, Trophy, Newspaper, Lightbulb, Info, Home, Shield, History } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +40,11 @@ export const Navbar = () => {
   }, [user]);
 
   const allLinks = isAdmin
-    ? [...navLinks, { to: "/admin", label: "Admin", icon: Shield }]
+    ? [
+        ...navLinks,
+        { to: "/admin", label: "Admin", icon: Shield },
+        { to: "/admin/prediction-runs", label: "Runs", icon: History },
+      ]
     : navLinks;
 
   return (
