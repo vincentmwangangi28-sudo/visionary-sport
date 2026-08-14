@@ -80,30 +80,22 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  // Open an audit row so every run is visible in the run-history page.
-  let runId: string | null = null;
-  const { data: runRow } = await supabase
-    .from('job_runs')
-    .insert({
-      job_name: JOB_NAME,
-      status: 'running',
-      eat_date: eatDate(),
-      started_at: new Date().toISOString(),
-      processed: 0,
-    })
-    .select('id')
-    .maybeSingle();
-  runId = runRow?.id ?? null;
-
+  // Audit every run in job_runs so the run-history page can report it.
+  const startedAt = new Date().toISOString();
   const finishRun = async (
-    status: string,
+    status: 'success' | 'partial' | 'failed' | 'skipped',
     fields: { processed?: number; total_markets?: number; error?: string; metadata?: Record<string, unknown> } = {},
   ) => {
-    if (!runId) return;
-    await supabase
-      .from('job_runs')
-      .update({ status, finished_at: new Date().toISOString(), ...fields })
-      .eq('id', runId);
+    const { error } = await supabase.from('job_runs').insert({
+      job_name: JOB_NAME,
+      status,
+      eat_date: eatDate(),
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      processed: 0,
+      ...fields,
+    });
+    if (error) console.error('job_runs log failed:', error.message);
   };
 
   try {
