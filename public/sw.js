@@ -1,5 +1,5 @@
-// PredictPro Service Worker v2
-const CACHE = 'predictpro-v2';
+// PredictPro Service Worker v3
+const CACHE = 'predictpro-v3';
 const STATIC = ['/', '/best-bets', '/live', '/news', '/correct-score', '/btts', '/manifest.json', '/favicon.ico'];
 
 self.addEventListener('install', e => {
@@ -15,28 +15,37 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Don't intercept Supabase or external API calls
-  const url = new URL(e.request.url);
-  if (url.hostname.includes('supabase.co') || url.hostname.includes('rapidapi.com') ||
-      url.hostname.includes('googleapis.com') || url.hostname.includes('stripe.com')) return;
+  const req = e.request;
 
-  // Network first for HTML, cache fallback for assets
-  if (e.request.mode === 'navigate') {
+  // Only ever handle plain http(s) GET requests. Skip everything else outright:
+  // chrome-extension:, moz-extension:, data:, blob: schemes (Cache API rejects these),
+  // non-GET methods, and any cross-origin request (ads, analytics, third-party APIs) —
+  // those are the browser's problem to fetch or block, not ours to intercept/cache.
+  let url;
+  try { url = new URL(req.url); } catch { return; }
+  if (!url.protocol.startsWith('http')) return;
+  if (req.method !== 'GET') return;
+  if (url.origin !== self.location.origin) return;
+
+  if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match('/').then(r => r || fetch(e.request)))
+      fetch(req).catch(() => caches.match('/').then(r => r || Response.error()))
     );
     return;
   }
+
   e.respondWith(
-    caches.match(e.request).then(cached => {
+    caches.match(req).then(cached => {
       if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (res && res.status === 200 && e.request.method === 'GET') {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      });
+      return fetch(req)
+        .then(res => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(req, clone)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => cached || Response.error());
     })
   );
 });
