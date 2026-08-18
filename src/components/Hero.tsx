@@ -50,27 +50,27 @@ export const Hero = () => {
 
         {/* Headline */}
         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.05]">
-          Win Smarter with
+          The Algorithmic Edge in
           <span className="block bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent">
-            AI Predictions
+            Football Markets
           </span>
         </h1>
 
         <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
-          Real-time AI analysis across 40+ leagues worldwide. Get confidence scores, 
-          H2H stats, form guides and value bets — before every match.
+          Real-time Expected Goals (xG) modelling across 40+ leagues worldwide.
+          Confidence-scored outcome vectors, H2H regression, form-weighted signals and value-bet detection — before every kickoff.
         </p>
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
           <Link to="/best-bets">
             <Button size="lg" className="gap-2 px-8 text-base font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-              <Zap className="h-5 w-5" />Today's Best Bets
+              <Zap className="h-5 w-5" />High-Probability Vectors
             </Button>
           </Link>
           <Link to="/predict">
             <Button variant="outline" size="lg" className="gap-2 px-8 text-base hover:scale-105 transition-transform">
-              <TrendingUp className="h-5 w-5" />Predict Any Match
+              <TrendingUp className="h-5 w-5" />Run the Model
               <ChevronRight className="h-4 w-4" />
             </Button>
           </Link>

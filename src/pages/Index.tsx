@@ -6,6 +6,8 @@ import { LiveMatches } from "@/components/LiveMatches";
 import { UpcomingMatches } from "@/components/UpcomingMatches";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
 import { AdBannerHorizontal } from "@/components/AdBanner";
+import { PastResultsArchive } from "@/components/PastResultsArchive";
+import { TelegramPromoBanner } from "@/components/TelegramPromoBanner";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,7 @@ export default function Index() {
         canonical="/"
       />
       <Navbar />
+      <TelegramPromoBanner />
       <LiveLeagueTicker />
       <Hero />
 
@@ -55,6 +58,8 @@ export default function Index() {
           <PredictionsDashboard />
         </div>
       </section>
+
+      <PastResultsArchive />
 
       {/* Features */}
       <section className="py-14 bg-muted/20">

@@ -13,6 +13,8 @@ import { CoinShop } from "@/components/CoinShop";
 import { Crown, Check, Star, Globe, Smartphone, Zap, Shield, BarChart2, Bell } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { callEdgeFn } from "@/lib/callEdgeFunction";
+import { PaystackCheckoutButton } from "@/components/PaystackCheckoutButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const FEATURES: Record<string, { icon: typeof Check; label: string }[]> = {
@@ -49,6 +51,16 @@ export default function Shop() {
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       toast.success("Payment successful! Your subscription is being activated.");
+    }
+    const paystackRef = searchParams.get("reference") || searchParams.get("trxref");
+    if (searchParams.get("paystack") === "success" && paystackRef) {
+      callEdgeFn('paystack-verify', { reference: paystackRef })
+        .then((data) => {
+          const d = data as { success?: boolean };
+          if (d?.success) toast.success('Payment verified! Your subscription is now active.');
+          else toast.error('Payment verification failed. Contact support if you were charged.');
+        })
+        .catch(() => toast.error('Could not verify payment. Contact support if you were charged.'));
     }
   }, [searchParams]);
 
@@ -150,6 +162,9 @@ export default function Shop() {
                               <Globe className="h-4 w-4 mr-2" />Get {plan.name}
                             </Button>
                           </PaymentDialog>
+                        )}
+                        {user && !isCurrentPlan && (
+                          <PaystackCheckoutButton plan={plan.id as 'basic' | 'pro' | 'vip'} className="w-full mt-2" />
                         )}
                       </div>
                     </CardContent>

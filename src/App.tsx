@@ -13,6 +13,7 @@ import { queryClient } from "@/lib/queryClient";
 import { Suspense, lazy } from "react";
 
 const Index             = lazy(() => import("./pages/Index"));
+const MatchPrediction   = lazy(() => import("./pages/MatchPrediction"));
 const Auth              = lazy(() => import("./pages/Auth"));
 const Leaderboard       = lazy(() => import("./pages/Leaderboard"));
 const Insights          = lazy(() => import("./pages/Insights"));
@@ -82,6 +83,7 @@ const App = () => (
                 <Route path="/tipsters"      element={<Tipsters />} />
                 <Route path="/bankroll"      element={<BankrollManager />} />
                 <Route path="/predict"       element={<MatchPredictor />} />
+                <Route path="/predict/:matchSlug" element={<MatchPrediction />} />
                 <Route path="/best-bets"     element={<BestBets />} />
                 <Route path="/performance"   element={<ProtectedRoute><Performance /></ProtectedRoute>} />
                 <Route path="/shop"          element={<ProtectedRoute><Shop /></ProtectedRoute>} />
