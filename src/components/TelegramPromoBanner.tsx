@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
 
 const DISMISS_KEY = 'pp_telegram_banner_dismissed';
-const TELEGRAM_URL = 'https://t.me/predictpro_guru';
+const TELEGRAM_URL = 'https://t.me/predictproAi';
 
 export const TelegramPromoBanner = () => {
   const [dismissed, setDismissed] = useState(true);
