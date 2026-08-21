@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Zap, TrendingUp, Globe, Shield } from "lucide-react";
 
 const FEATURES = [
-  { icon: Zap, title: "AI-Powered Analysis", desc: "Google Gemini AI processes form, H2H, injuries and odds to deliver predictions you can trust." },
-  { icon: TrendingUp, title: "Value Bet Finder", desc: "Statistical edge detection identifies where bookmaker odds underestimate true probability." },
-  { icon: Globe, title: "40+ Leagues Worldwide", desc: "EPL, La Liga, Champions League, KPL, AFCON, MLS — every major league covered daily." },
-  { icon: Shield, title: "Transparent & Safe", desc: "Every prediction includes AI reasoning. Responsible gambling tools built in." },
+  { icon: Zap, title: "Algorithmic Modeling", desc: "Gemini-driven inference processes form, H2H regression, injuries and market odds into a single confidence-weighted vector." },
+  { icon: TrendingUp, title: "xG-Derived Value Detection", desc: "Statistical edge modelling flags where market-implied probability diverges from our Expected Goals (xG) Matrix." },
+  { icon: Globe, title: "40+ League Coverage", desc: "EPL, La Liga, Champions League, KPL, AFCON, MLS — full-spectrum daily coverage across every major football market." },
+  { icon: Shield, title: "Transparent & Auditable", desc: "Every output ships with model reasoning. Responsible-gambling safeguards built into the pipeline." },
 ];
 
 export default function Index() {
@@ -82,10 +82,10 @@ export default function Index() {
       {/* CTA */}
       <section className="py-14">
         <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h2 className="text-3xl font-black mb-3">Ready to Win Smarter?</h2>
-          <p className="text-muted-foreground mb-6">Join 10,000+ members using AI predictions daily. Free to start.</p>
+          <h2 className="text-3xl font-black mb-3">Ready to Trade on Better Data?</h2>
+          <p className="text-muted-foreground mb-6">10,000+ members running the model daily. Free to start.</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Link to="/predict"><Button size="lg" className="gap-2"><Zap className="h-5 w-5" />Try Match Predictor</Button></Link>
+            <Link to="/predict"><Button size="lg" className="gap-2"><Zap className="h-5 w-5" />Run the Model</Button></Link>
             <Link to="/shop"><Button size="lg" variant="outline">View Plans</Button></Link>
           </div>
         </div>

@@ -50,7 +50,7 @@ export default function BTTS() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><BarChart2 className="h-8 w-8 text-primary" />BTTS &amp; Goals</h1>
-            <p className="text-muted-foreground mt-1">AI-calculated goal market probabilities · Next 14 days</p>
+            <p className="text-muted-foreground mt-1">Algorithmic goal-market probability modelling · Rolling 14-day window</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

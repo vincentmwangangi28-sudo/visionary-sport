@@ -80,7 +80,7 @@ export const PredictionCard = ({ prediction: p }: Props) => {
 
         {locked && (
           <Link to="/shop">
-            <Button size="sm" className="w-full gap-2"><TrendingUp className="h-3.5 w-3.5" />Unlock Premium</Button>
+            <Button size="sm" className="w-full gap-2"><TrendingUp className="h-3.5 w-3.5" />Unlock Full Vector</Button>
           </Link>
         )}
 

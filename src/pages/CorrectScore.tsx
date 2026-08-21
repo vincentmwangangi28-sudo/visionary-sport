@@ -44,7 +44,7 @@ export default function CorrectScore() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Target className="h-8 w-8 text-primary" />Correct Score</h1>
-            <p className="text-muted-foreground mt-1">AI-predicted exact scorelines · 60%+ confidence matches</p>
+            <p className="text-muted-foreground mt-1">High-Probability Exact Scoreline Vectors · 60%+ confidence threshold</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -90,7 +90,7 @@ export default function CorrectScore() {
                       </div>
                     ) : (
                       <div className="text-center bg-primary/10 rounded-xl p-3">
-                        <p className="text-xs text-muted-foreground mb-1">Predicted Score</p>
+                        <p className="text-xs text-muted-foreground mb-1">Scoreline Vector</p>
                         <p className="text-3xl font-black text-primary">{score}</p>
                         <p className="text-xs text-muted-foreground mt-1">{p.confidence}% confidence</p>
                       </div>

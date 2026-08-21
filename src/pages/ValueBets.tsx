@@ -41,7 +41,7 @@ export default function ValueBets() {
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh
           </Button>
         </div>
-        <p className="text-muted-foreground mb-6">Matches where our AI probability exceeds the bookmaker's implied probability — giving you a statistical edge.</p>
+        <p className="text-muted-foreground mb-6">Fixtures where our Expected Goals (xG) Matrix diverges from the market's implied probability — quantifying the statistical edge before it closes.</p>
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6 flex gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />

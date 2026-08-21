@@ -66,7 +66,7 @@ export default function MatchPredictor() {
           <h1 className="text-3xl font-bold flex items-center justify-center gap-3 mb-2">
             <Zap className="h-8 w-8 text-primary" />Match Predictor
           </h1>
-          <p className="text-muted-foreground">Enter any two teams for an instant AI prediction.</p>
+          <p className="text-muted-foreground">Run any fixture through our Algorithmic Modeling engine for an instant outcome vector.</p>
         </div>
 
         <Card className="mb-6">
@@ -91,7 +91,7 @@ export default function MatchPredictor() {
               </Select>
             </div>
             <Button onClick={predict} disabled={loading || !home || !away} className="w-full gap-2" size="lg">
-              {loading ? <><Loader2 className="h-5 w-5 animate-spin" />Analysing...</> : <><Zap className="h-5 w-5" />Predict Now</>}
+              {loading ? <><Loader2 className="h-5 w-5 animate-spin" />Modelling...</> : <><Zap className="h-5 w-5" />Run the Model</>}
             </Button>
           </CardContent>
         </Card>

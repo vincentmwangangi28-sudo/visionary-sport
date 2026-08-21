@@ -51,7 +51,7 @@ export default function BestBets() {
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Trophy className="h-8 w-8 text-primary" />Best Bets Today
             </h1>
-            <p className="text-muted-foreground mt-1">AI predictions with {minConf}%+ confidence · Next 7 days</p>
+            <p className="text-muted-foreground mt-1">Outcome vectors ranked by confidence-weighted probability · {minConf}%+ threshold · Rolling 7-day window</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <WhatsAppShare text={shareText} />
