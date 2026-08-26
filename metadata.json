@@ -1,0 +1,8 @@
+{
+  "name": "PredictPro",
+  "description": "AI-powered football predictions, confidence scores, live matches, match predictors, and betting analytics for top leagues worldwide.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,12 +1,6 @@
 import { createRoot } from "react-dom/client";
-import { inject } from "@vercel/analytics";
-import { injectSpeedInsights } from "@vercel/speed-insights";
 import App from "./App.tsx";
 import "./index.css";
-
-// Vercel analytics
-inject();
-injectSpeedInsights();
 
 // Register service worker for offline support + asset caching
 if ('serviceWorker' in navigator) {
