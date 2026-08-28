@@ -5,17 +5,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface LiveMatchRaw {
-  id: string;
-  homeTeam?: string;
-  awayTeam?: string;
-  homeScore?: number | null;
-  awayScore?: number | null;
-  status?: string;
-  time?: string | null;
-  league?: string;
-  date?: string;
-}
+const LEAGUES = [
+  { code: 'eng.1', name: 'Premier League' },
+  { code: 'esp.1', name: 'La Liga' },
+  { code: 'ita.1', name: 'Serie A' },
+  { code: 'ger.1', name: 'Bundesliga' },
+  { code: 'fra.1', name: 'Ligue 1' },
+  { code: 'uefa.champions', name: 'Champions League' },
+  { code: 'usa.1', name: 'MLS' },
+  { code: 'bra.1', name: 'Brazilian Serie A' },
+  { code: 'ned.1', name: 'Eredivisie' },
+  { code: 'por.1', name: 'Primeira Liga' },
+  { code: 'mex.1', name: 'Liga MX' },
+  { code: 'eng.2', name: 'Championship' }
+];
 
 interface NormalizedMatch {
   id: string;
@@ -24,212 +27,151 @@ interface NormalizedMatch {
   home_score?: number | null;
   away_score?: number | null;
   competition?: string;
-  match_date: string; // ISO UTC string
+  match_date: string;
   status: 'live' | 'halftime' | 'finished' | 'upcoming' | 'postponed' | 'cancelled' | 'unknown';
   minute?: number | null;
   prediction?: string;
   confidence?: number;
+  home_odds?: number;
+  draw_odds?: number;
+  away_odds?: number;
+  home_logo?: string | null;
+  away_logo?: string | null;
 }
 
-function toIsoUtc(dateStr?: string, timeStr?: string) {
+function toIsoUtc(dateStr?: string) {
   if (!dateStr) return new Date().toISOString();
-  // If already full ISO, return as-is
   try {
     const d = new Date(dateStr);
-    if (!isNaN(d.getTime()) && dateStr.includes('T')) return d.toISOString();
+    if (!isNaN(d.getTime())) return d.toISOString();
   } catch {}
+  return new Date().toISOString();
+}
 
-  // If date only (YYYY-MM-DD) and time provided, combine and treat as UTC
-  if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const t = timeStr && timeStr.length > 0 ? timeStr : '00:00:00';
-    return new Date(dateStr + 'T' + t + 'Z').toISOString();
+function generatePrediction(home: string, away: string, homeScore: number | null = null, awayScore: number | null = null) {
+  let homeProb = 0.45;
+  let drawProb = 0.28;
+  let awayProb = 0.27;
+
+  if (homeScore !== null && awayScore !== null) {
+    const diff = homeScore - awayScore;
+    if (diff > 0) {
+      homeProb = Math.min(0.90, 0.58 + diff * 0.14);
+      awayProb = Math.max(0.05, 0.18 - diff * 0.07);
+      drawProb = 1 - homeProb - awayProb;
+    } else if (diff < 0) {
+      awayProb = Math.min(0.90, 0.58 + Math.abs(diff) * 0.14);
+      homeProb = Math.max(0.05, 0.18 - Math.abs(diff) * 0.07);
+      drawProb = 1 - homeProb - awayProb;
+    } else {
+      drawProb = 0.46;
+      homeProb = 0.30;
+      awayProb = 0.24;
+    }
   }
 
-  // Fallback: try to parse and normalize
-  const parsed = new Date(dateStr);
-  return isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
-}
+  let outcome = 'Home Win';
+  let conf = Math.round(homeProb * 100);
 
-function normalizeStatus(raw?: string): NormalizedMatch['status'] {
-  if (!raw) return 'unknown';
-  const s = String(raw).toLowerCase();
-  if (s === 'live' || s === "1h" || s === "2h" || s.includes("live") || s === "in-play") return 'live';
-  if (s === 'ht' || s === 'halftime') return 'halftime';
-  if (s === 'ft' || s === 'finished' || s === 'full-time') return 'finished';
-  if (s === 'ns' || s === 'scheduled' || s === 'upcoming' || s === 'ns' || s === 'not started') return 'upcoming';
-  if (s.includes('post') || s.includes('postponed')) return 'postponed';
-  if (s.includes('canc') || s.includes('cancel')) return 'cancelled';
-  return 'unknown';
-}
-
-// Lightweight prediction generator (fallback)
-function generatePrediction(match: NormalizedMatch): { prediction: string; confidence: number } {
-  const home = match.home_score ?? null;
-  const away = match.away_score ?? null;
-  if (home === null || away === null) return { prediction: 'Draw', confidence: 50 };
-  const diff = (home ?? 0) - (away ?? 0);
-  if (diff > 0) return { prediction: 'Home Win', confidence: Math.min(90, 50 + diff * 10) };
-  if (diff < 0) return { prediction: 'Away Win', confidence: Math.min(90, 50 + Math.abs(diff) * 10) };
-  return { prediction: 'Draw', confidence: 55 };
-}
-
-// Try multiple upstream sources and return a normalized schema expected by the frontend
-async function fetchFromFootballDataAPI(apiToken?: string): Promise<NormalizedMatch[]> {
-  if (!apiToken) return [];
-  try {
-    const res = await fetch('https://api.football-data.org/v4/matches?status=LIVE', {
-      headers: { 'X-Auth-Token': apiToken }
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (!data.matches || !Array.isArray(data.matches)) return [];
-    return data.matches.map((m: any) => {
-      const match_date = toIsoUtc(m.utcDate);
-      const status = normalizeStatus(m.status?.short ?? m.status ?? 'live');
-      const minute = typeof m.minute === 'number' ? m.minute : undefined;
-      const normalized: NormalizedMatch = {
-        id: String(m.id),
-        home_team: m.homeTeam?.name ?? m.homeTeam?.shortName ?? m.homeTeam?.tla ?? 'Unknown',
-        away_team: m.awayTeam?.name ?? m.awayTeam?.shortName ?? m.awayTeam?.tla ?? 'Unknown',
-        home_score: (m.score?.fullTime?.home ?? null),
-        away_score: (m.score?.fullTime?.away ?? null),
-        competition: m.competition?.name ?? undefined,
-        match_date,
-        status,
-        minute: minute ?? null,
-      };
-      const { prediction, confidence } = generatePrediction(normalized);
-      return { ...normalized, prediction, confidence };
-    });
-  } catch (e) {
-    console.error('Football Data API error', e);
-    return [];
+  if (awayProb > homeProb && awayProb > drawProb) {
+    outcome = 'Away Win';
+    conf = Math.round(awayProb * 100);
+  } else if (drawProb > homeProb && drawProb > awayProb) {
+    outcome = 'Draw';
+    conf = Math.round(drawProb * 100);
   }
+
+  return {
+    prediction: outcome,
+    confidence: Math.min(94, Math.max(55, conf)),
+    home_odds: Number((1 / Math.max(0.1, homeProb) * 0.95).toFixed(2)),
+    draw_odds: Number((1 / Math.max(0.1, drawProb) * 0.95).toFixed(2)),
+    away_odds: Number((1 / Math.max(0.1, awayProb) * 0.95).toFixed(2)),
+  };
 }
 
-async function fetchFromAPISports(apiKey?: string): Promise<NormalizedMatch[]> {
-  if (!apiKey) return [];
-  try {
-    const res = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
-      headers: { 'x-apisports-key': apiKey }
+async function fetchFromEspnScoreboards(): Promise<NormalizedMatch[]> {
+  const matches: NormalizedMatch[] = [];
+  
+  const promises = LEAGUES.map(async (league) => {
+    try {
+      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.events || []).map((e: any) => ({ ...e, _league: league.name }));
+    } catch {
+      return [];
+    }
+  });
+
+  const eventsList = await Promise.all(promises);
+  const events = eventsList.flat();
+
+  for (const ev of events) {
+    const comp = ev.competitions?.[0] || {};
+    const homeComp = comp.competitors?.find((c: any) => c.homeAway === 'home');
+    const awayComp = comp.competitors?.find((c: any) => c.homeAway === 'away');
+    const homeTeam = homeComp?.team?.displayName || homeComp?.team?.name;
+    const awayTeam = awayComp?.team?.displayName || awayComp?.team?.name;
+    if (!homeTeam || !awayTeam) continue;
+
+    const homeLogo = homeComp?.team?.logo || null;
+    const awayLogo = awayComp?.team?.logo || null;
+    const homeScore = homeComp?.score !== undefined ? parseInt(String(homeComp.score), 10) : null;
+    const awayScore = awayComp?.score !== undefined ? parseInt(String(awayComp.score), 10) : null;
+
+    const state = ev.status?.type?.state;
+    const desc = (ev.status?.type?.description || '').toLowerCase();
+    let status: NormalizedMatch['status'] = 'upcoming';
+    let minute: number | null = null;
+
+    if (state === 'in') {
+      status = 'live';
+      minute = parseInt(String(ev.status?.displayClock || '45').replace("'", ''), 10) || 45;
+      if (desc.includes('half') || desc.includes('ht')) status = 'halftime';
+    } else if (state === 'post' || desc.includes('final')) {
+      status = 'finished';
+    }
+
+    const pred = generatePrediction(homeTeam, awayTeam, state === 'in' || state === 'post' ? homeScore : null, state === 'in' || state === 'post' ? awayScore : null);
+
+    matches.push({
+      id: `espn-${ev.id || `${homeTeam}-${awayTeam}`}`,
+      home_team: homeTeam,
+      away_team: awayTeam,
+      competition: ev._league || 'Football Match',
+      match_date: toIsoUtc(ev.date),
+      status,
+      minute,
+      home_score: state === 'in' || state === 'post' ? homeScore : null,
+      away_score: state === 'in' || state === 'post' ? awayScore : null,
+      home_logo: homeLogo,
+      away_logo: awayLogo,
+      ...pred,
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    const arr = data.response || [];
-    return arr.map((f: any) => {
-      const match_date = toIsoUtc(f.fixture?.date);
-      const status = normalizeStatus(f.fixture?.status?.short ?? f.fixture?.status?.long);
-      const minute = f.fixture?.status?.elapsed ?? null;
-      const normalized: NormalizedMatch = {
-        id: String(f.fixture?.id),
-        home_team: f.teams?.home?.name ?? 'Unknown',
-        away_team: f.teams?.away?.name ?? 'Unknown',
-        home_score: f.goals?.home ?? null,
-        away_score: f.goals?.away ?? null,
-        competition: f.league?.name ?? undefined,
-        match_date,
-        status,
-        minute,
-      };
-      const { prediction, confidence } = generatePrediction(normalized);
-      return { ...normalized, prediction, confidence };
-    });
-  } catch (e) {
-    console.error('API-Sports error', e);
-    return [];
   }
-}
 
-async function fetchFromTheSportsDB(): Promise<NormalizedMatch[]> {
-  try {
-    const res = await fetch('https://www.thesportsdb.com/api/v2/json/60130162/livescore.php?s=Soccer');
-    const data = await res.json();
-    if (!data.events || data.events.length === 0) return [];
-    return data.events.map((ev: any) => {
-      // TheSportsDB often provides dateEvent and strTime without timezone — treat as UTC midnight if missing time
-      const date = ev.dateEvent || ev.date || undefined;
-      const time = ev.strTime || ev.time || '00:00:00';
-      const match_date = toIsoUtc(date, time);
-      const status = normalizeStatus(ev.strStatus || 'live');
-      const normalized: NormalizedMatch = {
-        id: ev.idEvent ? String(ev.idEvent) : `${ev.strHomeTeam}-${ev.strAwayTeam}`,
-        home_team: ev.strHomeTeam ?? 'Unknown',
-        away_team: ev.strAwayTeam ?? 'Unknown',
-        home_score: ev.intHomeScore ? parseInt(ev.intHomeScore) : null,
-        away_score: ev.intAwayScore ? parseInt(ev.intAwayScore) : null,
-        competition: ev.strLeague ?? undefined,
-        match_date,
-        status,
-        minute: null,
-      };
-      const { prediction, confidence } = generatePrediction(normalized);
-      return { ...normalized, prediction, confidence };
-    });
-  } catch (e) {
-    console.error('TheSportsDB error', e);
-    return [];
-  }
-}
-
-function generateMockLiveMatches(): NormalizedMatch[] {
-  const now = new Date().toISOString();
-  return [
-    {
-      id: 'mock-1', home_team: 'Manchester United', away_team: 'Liverpool', home_score: 1, away_score: 2,
-      competition: 'Premier League', match_date: now, status: 'live', minute: 67, prediction: 'Away Win', confidence: 74,
-    },
-    {
-      id: 'mock-2', home_team: 'Barcelona', away_team: 'Real Madrid', home_score: 2, away_score: 2,
-      competition: 'La Liga', match_date: now, status: 'live', minute: 78, prediction: 'Draw', confidence: 52,
-    },
-  ];
+  return matches;
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    const footballDataToken = Deno.env.get('FOOTBALL_DATA_API_TOKEN');
-    const apisportsKey = Deno.env.get('RAPIDAPI_KEY');
-    const predictProKey = Deno.env.get('PREDICTPRO_API_KEY');
+    const matches = await fetchFromEspnScoreboards();
+    const liveCount = matches.filter(m => m.status === 'live' || m.status === 'halftime').length;
 
-    let matches: NormalizedMatch[] = [];
-
-    // 1. Football Data API (preferred)
-    if (footballDataToken) {
-      matches = await fetchFromFootballDataAPI(footballDataToken);
-    }
-
-    // 2. API-Sports fallback
-    if (matches.length === 0 && apisportsKey) {
-      matches = await fetchFromAPISports(apisportsKey);
-    }
-
-    // 3. TheSportsDB fallback
-    if (matches.length === 0) {
-      matches = await fetchFromTheSportsDB();
-    }
-
-    // 4. Attach/generate predictions
-    if (matches.length > 0) {
-      // If external PredictPro available we could merge here (kept simple for compatibility)
-      matches = matches.map(m => {
-        if (!m.prediction || !m.confidence) {
-          const { prediction, confidence } = generatePrediction(m);
-          return { ...m, prediction, confidence };
-        }
-        return m;
-      });
-    }
-
-    if (matches.length === 0) matches = generateMockLiveMatches();
-
-    return new Response(JSON.stringify({ success: true, matches, source: matches[0]?.id?.startsWith('mock') ? 'demo' : 'live', lastUpdated: new Date().toISOString() }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=30, stale-while-revalidate' },
+    return new Response(JSON.stringify({ 
+      success: true, 
+      matches, 
+      live_count: liveCount,
+      source: 'live_feed', 
+      lastUpdated: new Date().toISOString() 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=15, stale-while-revalidate' },
     });
   } catch (error) {
-    console.error('Error fetching live matches:', error);
-    const mock = generateMockLiveMatches();
-    return new Response(JSON.stringify({ success: true, matches: mock, source: 'demo', lastUpdated: new Date().toISOString(), error: 'Using demo data' }), {
+    console.error('Error in fetch-live-matches:', error);
+    return new Response(JSON.stringify({ success: false, matches: [], source: 'error', error: String(error) }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

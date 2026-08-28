@@ -23,7 +23,7 @@ export default function LaLigaPredictions() {
           <h1 className="text-4xl font-black mb-3">La Liga Predictions 2025/26</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free La Liga predictions for 2025/26. AI tips for Real Madrid, Barcelona, Atletico Madrid and every Primera Division match.</p>
         </div>
-        <PredictionsDashboard />
+        <PredictionsDashboard initialLeague="La Liga" />
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
           <h3 className="font-semibold mb-4">More Predictions</h3>
           <div className="flex flex-wrap gap-2">

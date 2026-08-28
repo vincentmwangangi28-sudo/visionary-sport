@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { getConfidence, getPrediction } from '@/types/prediction';
 import { Target, RefreshCw, Zap, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdBannerHorizontal } from '@/components/AdBanner';
@@ -20,15 +22,24 @@ export default function CorrectScore() {
 
   const fetch_ = async () => {
     setLoading(true);
-    const { data } = await supabase.from('predictions')
-      .select('*')
-      .gte('match_date', new Date().toISOString())
-      .lte('match_date', new Date(Date.now() + 14 * 86400000).toISOString())
-      .gte('confidence', 60)
-      .order('confidence', { ascending: false })
-      .limit(20);
-    setPreds((data ?? []) as Prediction[]);
-    setLoading(false);
+    try {
+      const realFixtures = await fetchRealtimeUpcomingFixtures();
+      if (realFixtures && realFixtures.length > 0) {
+        setPreds(realFixtures.slice(0, 18));
+      } else {
+        const { data } = await supabase.from('predictions')
+          .select('*')
+          .gte('match_date', new Date().toISOString())
+          .gte('confidence', 60)
+          .order('confidence', { ascending: false })
+          .limit(20);
+        setPreds((data ?? []) as Prediction[]);
+      }
+    } catch (e) {
+      console.warn('Correct score fetch error:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetch_(); }, []);
@@ -68,7 +79,8 @@ export default function CorrectScore() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {preds.map(p => {
               const meta = (p.metadata as PredMeta) ?? {};
-              const score = meta.correct_score ?? (p.predicted_outcome === 'Home Win' ? '1-0' : p.predicted_outcome === 'Away Win' ? '0-1' : '1-1');
+              const outcome = p.predicted_outcome || p.prediction || 'Home Win';
+              const score = meta.correct_score ?? (outcome === 'Home Win' ? '2-1' : outcome === 'Away Win' ? '1-2' : '1-1');
               const isPremium = p.is_premium;
               return (
                 <Card key={p.id} className={`hover:border-primary/30 transition-all ${isPremium ? 'border-amber-500/30' : ''}`}>

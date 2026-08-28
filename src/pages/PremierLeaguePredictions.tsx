@@ -56,7 +56,7 @@ export default function PremierLeaguePredictions() {
           ))}
         </div>
 
-        <PredictionsDashboard />
+        <PredictionsDashboard initialLeague="Premier League" />
 
         {/* FAQ for SEO */}
         <section className="mt-16">

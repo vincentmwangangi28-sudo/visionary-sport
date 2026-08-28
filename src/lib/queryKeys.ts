@@ -26,4 +26,10 @@ export const queryKeys = {
     byUser: (userId: string) => ['subscription', userId] as const,
   },
   leaderboard: { all: ['leaderboard'] as const },
+  football: {
+    all: ['football'] as const,
+    leagues: (country?: string) => ['football', 'leagues', country || 'all'] as const,
+    liveFixtures: (leagueId?: number | string) => ['football', 'fixtures', 'live', leagueId || 'all'] as const,
+    upcomingFixtures: (league?: string, daysAhead?: number) => ['football', 'fixtures', 'upcoming', league || 'all', daysAhead || 7] as const,
+  },
 } as const;

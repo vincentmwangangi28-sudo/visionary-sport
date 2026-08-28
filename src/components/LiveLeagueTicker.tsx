@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Activity } from 'lucide-react';
+import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 
 interface LeagueStat { league: string; count: number; avgConfidence: number; }
 
@@ -8,24 +10,60 @@ export const LiveLeagueTicker = () => {
   const [stats, setStats] = useState<LeagueStat[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
+    let isMounted = true;
+    const fetchStats = async () => {
       const today = new Date().toISOString().split('T')[0];
-      const { data } = await supabase.from('predictions')
-        .select('league, confidence, confidence_score')
-        .gte('match_date', today);
-
       const map: Record<string, { total: number; sum: number }> = {};
-      (data ?? []).forEach(p => {
-        if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
-        map[p.league].total++;
-        map[p.league].sum += p.confidence_score ?? p.confidence ?? 0;
-      });
 
-      setStats(Object.entries(map).map(([league, { total, sum }]) => ({
-        league, count: total, avgConfidence: Math.round(sum / total),
-      })).sort((a, b) => b.count - a.count));
+      try {
+        const { data } = await supabase.from('predictions')
+          .select('league, confidence, confidence_score')
+          .gte('match_date', today);
+
+        if (data && data.length > 0) {
+          data.forEach(p => {
+            if (!p.league) return;
+            if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
+            map[p.league].total++;
+            map[p.league].sum += p.confidence_score ?? p.confidence ?? 75;
+          });
+        }
+      } catch {
+        // Continue to fallback
+      }
+
+      // If database is empty or small, supplement with live fixtures
+      if (Object.keys(map).length === 0) {
+        try {
+          const fixtures = await fetchRealtimeUpcomingFixtures();
+          const items = fixtures.length > 0 ? fixtures : DEFAULT_PREDICTIONS;
+          items.forEach(p => {
+            if (!p.league) return;
+            if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
+            map[p.league].total++;
+            map[p.league].sum += p.confidence_score ?? p.confidence ?? 75;
+          });
+        } catch {
+          DEFAULT_PREDICTIONS.forEach(p => {
+            if (!p.league) return;
+            if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
+            map[p.league].total++;
+            map[p.league].sum += p.confidence_score ?? p.confidence ?? 75;
+          });
+        }
+      }
+
+      if (isMounted) {
+        setStats(Object.entries(map).map(([league, { total, sum }]) => ({
+          league, count: total, avgConfidence: Math.round(sum / total),
+        })).sort((a, b) => b.count - a.count));
+      }
     };
-    fetch();
+    fetchStats();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (!stats.length) return null;

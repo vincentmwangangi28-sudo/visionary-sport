@@ -93,6 +93,19 @@ export const Navbar = () => {
                       <Icon className="h-4 w-4 flex-shrink-0" />{label}
                     </Link>
                   ))}
+                  <div className="border-t my-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        const trigger = document.querySelector('[title*="Real-Time Data Feed Connected"]') as HTMLElement;
+                        if (trigger) trigger.click();
+                      }}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full"
+                    >
+                      <Zap className="h-4 w-4 flex-shrink-0" />API Keys & Live Feeds
+                    </button>
+                  </div>
                   {user && (
                     <>
                       <Link to="/admin" onClick={() => setOpen(false)}

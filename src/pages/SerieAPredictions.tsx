@@ -23,7 +23,7 @@ export default function SerieAPredictions() {
           <h1 className="text-4xl font-black mb-3">Serie A Predictions 2025/26</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free Serie A predictions for 2025/26. AI tips for Inter Milan, AC Milan, Juventus, Napoli and all 20 Serie A teams.</p>
         </div>
-        <PredictionsDashboard />
+        <PredictionsDashboard initialLeague="Serie A" />
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
           <h3 className="font-semibold mb-4">More Predictions</h3>
           <div className="flex flex-wrap gap-2">

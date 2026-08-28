@@ -23,7 +23,7 @@ export default function KPLPredictions() {
           <h1 className="text-4xl font-black mb-3">KPL Predictions Today</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free Kenya Premier League (KPL) predictions. AI tips for Gor Mahia, AFC Leopards, Tusker FC, Bandari. Pay with M-Pesa.</p>
         </div>
-        <PredictionsDashboard />
+        <PredictionsDashboard initialLeague="KPL" />
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
           <h3 className="font-semibold mb-4">More Predictions</h3>
           <div className="flex flex-wrap gap-2">

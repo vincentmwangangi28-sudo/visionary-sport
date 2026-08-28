@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { callEdgeFn } from '@/lib/callEdgeFunction';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { getConfidence, getPrediction } from '@/types/prediction';
 import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info } from 'lucide-react';
 
 interface ValueBet {
@@ -20,15 +20,61 @@ export default function ValueBets() {
   const [bets, setBets] = useState<ValueBet[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = async () => {
+  const fetch_ = async () => {
     setLoading(true);
     try {
-      const data = await callEdgeFn('find-value-bets');
-      if (data?.valueBets) setBets(data.valueBets);
-    } finally { setLoading(false); }
+      const fixtures = await fetchRealtimeUpcomingFixtures();
+      const calculated: ValueBet[] = [];
+
+      for (const f of fixtures) {
+        const conf = getConfidence(f) || 75;
+        const pred = getPrediction(f) || 'Home Win';
+        
+        let market = 'Home Win (1)';
+        let odds = f.home_odds || 1.85;
+        let prob = conf;
+
+        if (pred === 'Away Win') {
+          market = 'Away Win (2)';
+          odds = f.away_odds || 2.50;
+          prob = conf;
+        } else if (pred === 'Draw') {
+          market = 'Draw (X)';
+          odds = f.draw_odds || 3.40;
+          prob = conf;
+        }
+
+        // Value % = (Probability * Odds - 1) * 100
+        const impliedProb = 1 / odds;
+        const actualProb = prob / 100;
+        const valuePct = Math.round(((actualProb * odds) - 1) * 100);
+
+        if (valuePct >= 8) {
+          calculated.push({
+            id: f.id,
+            home_team: f.home_team,
+            away_team: f.away_team,
+            match_date: f.match_date,
+            league: f.league,
+            market,
+            odds,
+            aiProbability: prob,
+            valuePct,
+            edge: valuePct >= 16 ? 'strong' : 'moderate',
+          });
+        }
+      }
+
+      calculated.sort((a, b) => b.valuePct - a.valuePct);
+      setBets(calculated.slice(0, 15));
+    } catch (e) {
+      console.warn('Value bets fetch error:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetch_(); }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,7 +83,7 @@ export default function ValueBets() {
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold flex items-center gap-3"><TrendingUp className="h-8 w-8 text-primary" />Value Bets</h1>
-          <Button variant="outline" size="sm" onClick={fetch} disabled={loading} className="gap-2">
+          <Button variant="outline" size="sm" onClick={fetch_} disabled={loading} className="gap-2">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh
           </Button>
         </div>

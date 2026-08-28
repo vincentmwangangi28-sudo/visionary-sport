@@ -5,154 +5,123 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface UpcomingMatchRaw {
-  id: string;
-  homeTeam?: string;
-  awayTeam?: string;
-  league?: string;
-  date?: string;
-  time?: string;
-  prediction?: string;
-  confidence?: number;
-}
+const LEAGUES = [
+  { code: 'eng.1', name: 'Premier League' },
+  { code: 'esp.1', name: 'La Liga' },
+  { code: 'ita.1', name: 'Serie A' },
+  { code: 'ger.1', name: 'Bundesliga' },
+  { code: 'fra.1', name: 'Ligue 1' },
+  { code: 'uefa.champions', name: 'Champions League' },
+  { code: 'usa.1', name: 'MLS' },
+  { code: 'bra.1', name: 'Brazilian Serie A' },
+  { code: 'ned.1', name: 'Eredivisie' },
+  { code: 'por.1', name: 'Primeira Liga' },
+  { code: 'mex.1', name: 'Liga MX' },
+  { code: 'eng.2', name: 'Championship' }
+];
 
-interface NormalizedMatch {
-  id: string;
-  home_team: string;
-  away_team: string;
-  competition?: string;
-  match_date: string; // ISO UTC
-  status: 'upcoming' | 'live' | 'halftime' | 'finished' | 'postponed' | 'cancelled' | 'unknown';
-  minute?: number | null;
-  home_score?: number | null;
-  away_score?: number | null;
-  home_logo?: string | null;
-  away_logo?: string | null;
-  prediction?: string;
-  confidence?: number;
-}
-
-function toIsoUtc(dateStr?: string, timeStr?: string) {
+function toIsoUtc(dateStr?: string) {
   if (!dateStr) return new Date().toISOString();
-  // If already full ISO, return as-is
   try {
     const d = new Date(dateStr);
-    if (!isNaN(d.getTime()) && dateStr.includes('T')) return d.toISOString();
+    if (!isNaN(d.getTime())) return d.toISOString();
   } catch {}
+  return new Date().toISOString();
+}
 
-  // If date only (YYYY-MM-DD) and time provided, combine and treat as UTC
-  if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    const t = timeStr && timeStr.length > 0 ? timeStr : '00:00:00';
-    return new Date(dateStr + 'T' + t + 'Z').toISOString();
+async function fetchUpcomingFixtures(): Promise<any[]> {
+  const targetDates: string[] = [];
+  const now = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now.getTime() + i * 86400000);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    targetDates.push(`${y}${m}${day}`);
   }
 
-  const parsed = new Date(dateStr);
-  return isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
-}
+  const promises: Promise<any[]>[] = [];
 
-function generatePrediction(match: NormalizedMatch): { prediction: string; confidence: number } {
-  const home = match.home_score ?? null;
-  const away = match.away_score ?? null;
-  if (home === null || away === null) return { prediction: 'Draw', confidence: 50 };
-  const diff = (home ?? 0) - (away ?? 0);
-  if (diff > 0) return { prediction: 'Home Win', confidence: Math.min(90, 50 + diff * 10) };
-  if (diff < 0) return { prediction: 'Away Win', confidence: Math.min(90, 50 + Math.abs(diff) * 10) };
-  return { prediction: 'Draw', confidence: 55 };
-}
-
-function normalizeStatus(raw?: string): NormalizedMatch['status'] {
-  if (!raw) return 'upcoming';
-  const s = String(raw).toLowerCase();
-  if (s.includes('live') || s === 'in-play') return 'live';
-  if (s === 'ht' || s === 'halftime') return 'halftime';
-  if (s === 'ft' || s.includes('full')) return 'finished';
-  if (s.includes('post') || s.includes('postponed')) return 'postponed';
-  if (s.includes('canc') || s.includes('cancel')) return 'cancelled';
-  return 'upcoming';
-}
-
-// Fetch scheduled matches from Football Data API
-async function fetchFromFootballDataAPI(apiToken?: string): Promise<NormalizedMatch[]> {
-  if (!apiToken) return [];
-  try {
-    const response = await fetch('https://api.football-data.org/v4/matches?status=SCHEDULED', {
-      headers: { 'X-Auth-Token': apiToken }
-    });
-    if (!response.ok) return [];
-    const data = await response.json();
-    if (!data.matches || !Array.isArray(data.matches)) return [];
-
-    return data.matches.slice(0, 50).map((match: any) => {
-      const match_date = toIsoUtc(match.utcDate);
-      const normalized: NormalizedMatch = {
-        id: String(match.id),
-        home_team: match.homeTeam?.name ?? 'Unknown',
-        away_team: match.awayTeam?.name ?? 'Unknown',
-        competition: match.competition?.name ?? undefined,
-        match_date,
-        status: 'upcoming',
-        minute: null,
-        home_score: null,
-        away_score: null,
-      };
-      const { prediction, confidence } = generatePrediction(normalized);
-      return { ...normalized, prediction, confidence };
-    });
-  } catch (error) {
-    console.error('Football Data API error (upcoming):', error);
-    return [];
+  for (const league of LEAGUES) {
+    for (const dateStr of targetDates) {
+      promises.push((async () => {
+        try {
+          const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${dateStr}`);
+          if (!res.ok) return [];
+          const data = await res.json();
+          return (data.events || []).map((e: any) => ({ ...e, _league: league.name }));
+        } catch {
+          return [];
+        }
+      })());
+    }
   }
-}
 
-// Fallback mock upcoming
-function generateMockUpcoming(): NormalizedMatch[] {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const iso = tomorrow.toISOString();
-  return [
-    {
-      id: 'upcoming-1', home_team: 'Arsenal', away_team: 'Manchester City', competition: 'Premier League',
-      match_date: iso, status: 'upcoming', minute: null, home_score: null, away_score: null, prediction: 'Home Win', confidence: 68,
-    },
-    {
-      id: 'upcoming-2', home_team: 'PSG', away_team: 'Monaco', competition: 'Ligue 1',
-      match_date: iso, status: 'upcoming', minute: null, home_score: null, away_score: null, prediction: 'Home Win', confidence: 72,
-    },
-  ];
+  const rawList = await Promise.all(promises);
+  const events = rawList.flat();
+
+  const matches: any[] = [];
+  const seen = new Set<string>();
+
+  for (const ev of events) {
+    const comp = ev.competitions?.[0] || {};
+    const homeComp = comp.competitors?.find((c: any) => c.homeAway === 'home');
+    const awayComp = comp.competitors?.find((c: any) => c.homeAway === 'away');
+    const home = homeComp?.team?.displayName || homeComp?.team?.name;
+    const away = awayComp?.team?.displayName || awayComp?.team?.name;
+    if (!home || !away) continue;
+
+    const key = `${home}-${away}-${String(ev.date).split('T')[0]}`.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const homeLogo = homeComp?.team?.logo || null;
+    const awayLogo = awayComp?.team?.logo || null;
+    const venue = comp.venue?.fullName || ev.venue?.displayName || 'Home Stadium';
+    const oddsDetail = comp.odds?.[0]?.details;
+
+    matches.push({
+      id: `real-${ev.id || key}`,
+      home_team: home,
+      away_team: away,
+      competition: ev._league || 'Football League',
+      match_date: toIsoUtc(ev.date),
+      status: 'upcoming',
+      minute: null,
+      home_score: null,
+      away_score: null,
+      home_logo: homeLogo,
+      away_logo: awayLogo,
+      venue,
+      odds: oddsDetail,
+      prediction: 'Home Win',
+      confidence: 75,
+      home_odds: 1.85,
+      draw_odds: 3.50,
+      away_odds: 4.20,
+    });
+  }
+
+  return matches;
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    console.log('📡 Fetching upcoming matches...');
-    const footballDataToken = Deno.env.get('FOOTBALL_DATA_TOKEN') ?? Deno.env.get('FOOTBALL_DATA_API_TOKEN');
-    const predictProApiKey = Deno.env.get('PREDICTPRO_API_KEY');
+    const matches = await fetchUpcomingFixtures();
 
-    let matches: NormalizedMatch[] = [];
-    if (footballDataToken) {
-      matches = await fetchFromFootballDataAPI(footballDataToken);
-    }
-
-    // Attach predictions if any (kept simple)
-    if (matches.length > 0) {
-      matches = matches.map(m => {
-        if (!m.prediction || !m.confidence) {
-          const { prediction, confidence } = generatePrediction(m);
-          return { ...m, prediction, confidence };
-        }
-        return m;
-      });
-    }
-
-    if (matches.length === 0) matches = generateMockUpcoming();
-
-    return new Response(JSON.stringify({ success: true, matches, source: matches[0]?.id?.startsWith('upcoming') ? 'demo' : 'live', lastUpdated: new Date().toISOString() }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=300, stale-while-revalidate' },
+    return new Response(JSON.stringify({ 
+      success: true, 
+      matches, 
+      count: matches.length,
+      source: 'live_feed', 
+      lastUpdated: new Date().toISOString() 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=120, stale-while-revalidate' },
     });
   } catch (error) {
-    console.error('Error fetching upcoming matches:', error);
-    const mock = generateMockUpcoming();
-    return new Response(JSON.stringify({ success: true, matches: mock, source: 'demo', lastUpdated: new Date().toISOString(), error: 'Using demo data' }), {
+    console.error('Error in fetch-upcoming-matches:', error);
+    return new Response(JSON.stringify({ success: false, matches: [], source: 'error' }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

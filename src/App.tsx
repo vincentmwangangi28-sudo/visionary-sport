@@ -5,6 +5,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
+import { BetSlipProvider } from "@/hooks/useBetSlip";
+import { BetSlipDrawer } from "@/components/BetSlipDrawer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AIChatbot } from "@/components/AIChatbot";

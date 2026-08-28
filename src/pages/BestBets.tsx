@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -12,27 +12,97 @@ import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from '@/components/WhatsAppShare';
 import type { Prediction } from '@/types/prediction';
 import { getPrediction, getConfidence } from '@/types/prediction';
+import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { mergeAndPreservePredictions } from '@/services/predictionStorage';
+
+function sanitizeAndDeduplicate(list: Prediction[]): Prediction[] {
+  const seenTeams = new Map<string, number>();
+  const sanitized: Prediction[] = [];
+
+  for (const pred of list) {
+    if (!pred.home_team || !pred.away_team) continue;
+    const matchTime = new Date(pred.match_date).getTime();
+    
+    const homeLast = seenTeams.get(pred.home_team.toLowerCase());
+    const awayLast = seenTeams.get(pred.away_team.toLowerCase());
+    const tooCloseHome = homeLast && Math.abs(matchTime - homeLast) < 48 * 3600 * 1000;
+    const tooCloseAway = awayLast && Math.abs(matchTime - awayLast) < 48 * 3600 * 1000;
+
+    if (tooCloseHome || tooCloseAway) continue;
+
+    seenTeams.set(pred.home_team.toLowerCase(), matchTime);
+    seenTeams.set(pred.away_team.toLowerCase(), matchTime);
+    sanitized.push(pred);
+  }
+
+  return sanitized;
+}
 
 export default function BestBets() {
   const [bets, setBets] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [minConf, setMinConf] = useState(60);
+  const [minConf, setMinConf] = useState(70);
 
-  const fetch_ = async () => {
+  const fetch_ = useCallback(async () => {
     setLoading(true);
-    const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString();
-    const { data } = await supabase.from('predictions')
-      .select('*')
-      .gte('match_date', new Date().toISOString())
-      .lte('match_date', nextWeek)
-      .gte('confidence', minConf)
-      .order('confidence', { ascending: false })
-      .limit(18);
-    setBets((data ?? []) as Prediction[]);
-    setLoading(false);
-  };
+    const items: Prediction[] = [];
+    
+    // 1. Fetch real-time live upcoming fixtures
+    try {
+      const realFixtures = await fetchRealtimeUpcomingFixtures();
+      if (realFixtures && realFixtures.length > 0) {
+        items.push(...realFixtures.filter(p => (getConfidence(p) || 0) >= minConf));
+      }
+    } catch (err) {
+      console.warn('Realtime fixtures error in BestBets:', err);
+    }
 
-  useEffect(() => { fetch_(); }, [minConf]);
+    // 2. Only fallback if no real fixtures found
+    if (items.length < 4) {
+      try {
+        const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString();
+        const { data } = await supabase.from('predictions')
+          .select('*')
+          .gte('match_date', new Date().toISOString())
+          .lte('match_date', nextWeek)
+          .gte('confidence', minConf)
+          .order('confidence', { ascending: false })
+          .limit(20);
+        if (data && data.length > 0) {
+          const existing = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
+          for (const d of data as Prediction[]) {
+            const key = `${d.home_team}-${d.away_team}`.toLowerCase();
+            if (!existing.has(key)) {
+              items.push(d);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('BestBets fetch error:', err);
+      }
+
+      if (items.length < 4) {
+        const fallback = DEFAULT_PREDICTIONS.filter(p => (getConfidence(p) || 0) >= minConf);
+        const existingIds = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
+        for (const f of fallback) {
+          const key = `${f.home_team}-${f.away_team}`.toLowerCase();
+          if (!existingIds.has(key)) {
+            items.push(f);
+          }
+        }
+      }
+    }
+
+    const clean = sanitizeAndDeduplicate(mergeAndPreservePredictions(items));
+    clean.sort((a, b) => (getConfidence(b) || 0) - (getConfidence(a) || 0));
+    setBets(clean.slice(0, 18));
+    setLoading(false);
+  }, [minConf]);
+
+  useEffect(() => {
+    fetch_();
+  }, [fetch_]);
 
   const shareText = bets.slice(0, 5).map(b =>
     `✅ ${b.home_team} vs ${b.away_team} — ${getPrediction(b)} (${getConfidence(b)}% conf)`
@@ -63,7 +133,7 @@ export default function BestBets() {
 
         {/* Confidence filter */}
         <div className="flex gap-2 mb-6 flex-wrap">
-          {[50, 60, 70, 75, 80].map(c => (
+          {[60, 70, 75, 80].map(c => (
             <Button key={c} size="sm" variant={minConf === c ? 'default' : 'outline'}
               onClick={() => setMinConf(c)} className="gap-1.5">
               <TrendingUp className="h-3.5 w-3.5" />{c}%+
@@ -83,7 +153,7 @@ export default function BestBets() {
             <Zap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="font-semibold text-lg">No predictions at {minConf}%+ confidence</p>
             <p className="text-muted-foreground mt-1 mb-4">Try a lower threshold to see more picks</p>
-            <Button onClick={() => setMinConf(50)} variant="outline">Show All (50%+)</Button>
+            <Button onClick={() => setMinConf(60)} variant="outline">Show All (60%+)</Button>
           </div>
         ) : (
           <>

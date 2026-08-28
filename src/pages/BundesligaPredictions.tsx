@@ -23,7 +23,7 @@ export default function BundesligaPredictions() {
           <h1 className="text-4xl font-black mb-3">Bundesliga Predictions 2025/26</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free Bundesliga predictions for 2025/26. AI tips for Bayer Leverkusen, Bayern Munich, Dortmund and all 18 Bundesliga clubs.</p>
         </div>
-        <PredictionsDashboard />
+        <PredictionsDashboard initialLeague="Bundesliga" />
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
           <h3 className="font-semibold mb-4">More Predictions</h3>
           <div className="flex flex-wrap gap-2">

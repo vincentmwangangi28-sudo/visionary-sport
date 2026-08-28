@@ -1,87 +1,284 @@
-import { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Bell, Volume2, VolumeX, Sparkles, Trophy, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 
-interface Notification { id: string; type: string; message: string; read: boolean; created_at: string; }
+interface Notification {
+  id: string;
+  type: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+}
 
 const TYPE_ICON: Record<string, string> = {
-  payment_success: '💰', subscription_activated: '👑', payment_failed: '❌',
-  subscription_expiry_reminder: '⏰', new_prediction: '🔮', default: '🔔',
+  payment_success: '💰',
+  subscription_activated: '👑',
+  payment_failed: '❌',
+  subscription_expiry_reminder: '⏰',
+  new_prediction: '🔮',
+  match_alert: '⚽',
+  goal_alert: '🚨',
+  default: '🔔',
 };
+
+// Default sample notifications for instant preview
+const DEMO_NOTIFICATIONS: Notification[] = [
+  {
+    id: 'demo-1',
+    type: 'new_prediction',
+    message: '🔥 High Confidence Pick: Real Madrid vs Real Sociedad (86% Confidence Win)',
+    read: false,
+    created_at: new Date(Date.now() - 15 * 60000).toISOString(),
+  },
+  {
+    id: 'demo-2',
+    type: 'match_alert',
+    message: '⚽ Crystal Palace vs Man City kickoff in 1 hour. Starting lineups confirmed.',
+    read: false,
+    created_at: new Date(Date.now() - 45 * 60000).toISOString(),
+  },
+  {
+    id: 'demo-3',
+    type: 'goal_alert',
+    message: '🎯 Value Bet Alert: Over 2.5 Goals @ 1.85 identified with +8.2% statistical edge.',
+    read: true,
+    created_at: new Date(Date.now() - 120 * 60000).toISOString(),
+  },
+];
 
 export const NotificationBell = () => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    try {
+      const saved = localStorage.getItem('predictpro_notifications');
+      return saved ? JSON.parse(saved) : DEMO_NOTIFICATIONS;
+    } catch {
+      return DEMO_NOTIFICATIONS;
+    }
+  });
   const [open, setOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('predictpro_sound_alerts') !== 'false';
+  });
 
-  const fetch = async () => {
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const playChime = () => {
+    if (!soundEnabled) return;
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') ctx.resume();
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.15); // A5
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    } catch (e) {
+      console.warn('Audio playback error', e);
+    }
+  };
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    localStorage.setItem('predictpro_sound_alerts', String(next));
+    if (next) {
+      playChime();
+      toast.success('Sound alerts enabled');
+    } else {
+      toast.info('Sound alerts muted');
+    }
+  };
+
+  const fetchSupabaseNotifications = async () => {
     if (!user) return;
-    const { data } = await supabase.from('notifications').select('*')
-      .eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
-    setNotifications(data ?? []);
+    try {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (data && data.length > 0) {
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const markAllRead = async () => {
-    if (!user) return;
-    await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      localStorage.setItem('predictpro_notifications', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (user) {
+      try {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('user_id', user.id)
+          .eq('read', false);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    toast.success('All notifications marked as read');
   };
 
-  useEffect(() => { fetch(); }, [user]);
+  const simulateAlert = () => {
+    const alerts = [
+      '🚨 GOAL ALERT: Liverpool 1 - 0 Nottingham Forest (Salah 24\')',
+      '🔮 New 88% Confidence Pick generated for Champions League!',
+      '⚡ Instant Value Alert: Bayern Munich Asian Handicap -1.5 @ 2.05',
+    ];
+    const picked = alerts[Math.floor(Math.random() * alerts.length)];
+    const newNotif: Notification = {
+      id: 'sim-' + Date.now(),
+      type: 'goal_alert',
+      message: picked,
+      read: false,
+      created_at: new Date().toISOString(),
+    };
 
-  // Realtime updates
+    setNotifications((prev) => {
+      const updated = [newNotif, ...prev.slice(0, 15)];
+      localStorage.setItem('predictpro_notifications', JSON.stringify(updated));
+      return updated;
+    });
+    playChime();
+    toast.info(picked);
+  };
+
   useEffect(() => {
-    if (!user) return;
-    const channel = supabase.channel('notifications-' + user.id)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        payload => setNotifications(prev => [payload.new as Notification, ...prev]))
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    fetchSupabaseNotifications();
   }, [user]);
 
-  if (!user) return null;
+  // Realtime updates if logged in
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('notifications-' + user.id)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          setNotifications((prev) => [payload.new as Notification, ...prev]);
+          playChime();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
-  const unread = notifications.filter(n => !n.read).length;
+  const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) fetch(); }}>
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) fetchSupabaseNotifications(); }}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative p-2">
+        <Button variant="ghost" size="sm" className="relative p-2 h-9 w-9 rounded-full" title="Live Match & Tip Alerts">
           <Bell className="h-5 w-5" />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse border-2 border-background">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between p-3 border-b">
-          <span className="font-semibold text-sm">Notifications</span>
-          {unread > 0 && (
-            <button onClick={markAllRead} className="text-xs text-primary hover:underline">Mark all read</button>
+      <PopoverContent className="w-84 sm:w-96 p-0 shadow-2xl border bg-card" align="end">
+        {/* Header */}
+        <div className="flex items-center justify-between p-3.5 border-b bg-card">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-sm">Match & AI Alerts</span>
+            {unread > 0 && (
+              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-black">
+                {unread} new
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSound}
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              title={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
+            >
+              {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4" />}
+            </Button>
+            {unread > 0 && (
+              <button onClick={markAllRead} className="text-xs text-primary font-semibold hover:underline">
+                Mark all read
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* List */}
+        <div className="max-h-80 overflow-y-auto divide-y">
+          {notifications.length === 0 ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">
+              <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
+              No notifications yet
+            </div>
+          ) : (
+            notifications.map((n) => (
+              <div
+                key={n.id}
+                className={`flex gap-3 p-3 hover:bg-muted/30 transition-colors ${
+                  !n.read ? 'bg-primary/5' : ''
+                }`}
+              >
+                <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICON[n.type] ?? TYPE_ICON.default}</span>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-xs leading-snug ${!n.read ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+                    {n.message}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                  </p>
+                </div>
+                {!n.read && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
+              </div>
+            ))
           )}
         </div>
-        <div className="max-h-80 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">No notifications yet</div>
-          ) : notifications.map(n => (
-            <div key={n.id} className={`flex gap-3 p-3 border-b last:border-0 hover:bg-muted/30 transition-colors ${!n.read ? 'bg-primary/5' : ''}`}>
-              <span className="text-lg flex-shrink-0 mt-0.5">{TYPE_ICON[n.type] ?? TYPE_ICON.default}</span>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm leading-snug ${!n.read ? 'font-medium' : ''}`}>{n.message}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                </p>
-              </div>
-              {!n.read && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
-            </div>
-          ))}
+
+        {/* Footer with test simulation */}
+        <div className="p-2.5 bg-muted/40 border-t flex items-center justify-between text-xs">
+          <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+            <Sparkles className="h-3 w-3 text-primary" /> Live Push & Alerts Active
+          </span>
+          <button
+            onClick={simulateAlert}
+            className="text-[11px] font-bold text-primary hover:underline"
+          >
+            Test Live Alert
+          </button>
         </div>
       </PopoverContent>
     </Popover>

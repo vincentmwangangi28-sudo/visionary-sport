@@ -23,7 +23,7 @@ export default function AFCONPredictions() {
           <h1 className="text-4xl font-black mb-3">AFCON 2026 Predictions</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free African Cup of Nations 2026 predictions. AI tips for Nigeria, Egypt, Morocco, Senegal and all AFCON teams.</p>
         </div>
-        <PredictionsDashboard />
+        <PredictionsDashboard initialLeague="AFCON Qualifier" />
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
           <h3 className="font-semibold mb-4">More Predictions</h3>
           <div className="flex flex-wrap gap-2">

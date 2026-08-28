@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchRealtimeFinishedMatches } from '@/services/realtimeFootball';
 import { Film, Play, ExternalLink, RefreshCw, Youtube } from 'lucide-react';
 
 interface Highlight {
@@ -23,9 +23,30 @@ export default function Highlights() {
     setLoading(true);
     try {
       const data = await callEdgeFn('fetch-highlights');
-      if (data?.highlights?.length > 0) setHighlights(data.highlights);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+      if (data?.highlights?.length > 0) {
+        setHighlights(data.highlights);
+        return;
+      }
+      // Load recent finished matches from ESPN feed
+      const finished = await fetchRealtimeFinishedMatches();
+      if (finished && finished.length > 0) {
+        const generated: Highlight[] = finished.slice(0, 18).map(m => ({
+          id: `hl-${m.id}`,
+          title: `${m.home_team} ${m.home_score ?? ''} - ${m.away_score ?? ''} ${m.away_team} Highlights & Goals`,
+          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${m.home_team} vs ${m.away_team} highlights ${new Date(m.match_date).getFullYear()}`)}`,
+          thumbnail: m.home_logo || m.away_logo || null,
+          date: m.match_date,
+          competition: m.competition,
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+        }));
+        setHighlights(generated);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);

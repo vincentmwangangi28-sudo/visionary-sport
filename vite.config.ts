@@ -5,7 +5,10 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   server: { host: "0.0.0.0", port: 3000 },
   plugins: [react()],
-  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
+  resolve: { 
+    alias: { "@": path.resolve(__dirname, "./src") },
+    dedupe: ["react", "react-dom", "react-router-dom"],
+  },
   build: {
     target: "es2020",
     chunkSizeWarningLimit: 600,
