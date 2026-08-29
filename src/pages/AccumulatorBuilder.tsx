@@ -7,38 +7,49 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePredictions } from '@/hooks/usePredictions';
-import { SharePrediction } from '@/components/SharePrediction';
-import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy } from 'lucide-react';
+import { useBetSlip } from '@/hooks/useBetSlip';
+import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, CheckCheck, Flame } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface AccaSelection { id: string; match: string; market: string; odds: number; confidence: number; }
 
 export default function AccumulatorBuilder() {
   const { predictions } = usePredictions(1);
-  const [selections, setSelections] = useState<AccaSelection[]>([]);
-  const [stake, setStake] = useState('100');
+  const {
+    selections,
+    stake,
+    setStake,
+    currency,
+    setCurrency,
+    addSelection: addToSlip,
+    removeSelection,
+    clearSlip,
+    totalOdds,
+    bonusMultiplier,
+    potentialReturn,
+    boostedReturn,
+    combinedConfidence,
+    generateBookingCode,
+  } = useBetSlip();
 
-  const totalOdds = selections.reduce((acc, s) => acc * s.odds, 1);
-  const potentialReturn = parseFloat(stake || '0') * totalOdds;
-  const combinedConfidence = selections.length > 0
-    ? Math.round(selections.reduce((acc, s) => acc * (s.confidence / 100), 1) * 100)
-    : 0;
+  const [selectedBookmaker, setSelectedBookmaker] = useState('SportyBet');
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  const addSelection = (pred: typeof predictions[0], market: string, odds: number) => {
-    if (selections.find(s => s.id === `${pred.id}-${market}`)) { toast.error('Already added'); return; }
-    if (selections.length >= 10) { toast.error('Maximum 10 selections'); return; }
-    setSelections(prev => [...prev, {
-      id: `${pred.id}-${market}`,
-      match: `${pred.home_team} vs ${pred.away_team}`,
-      market, odds, confidence: pred.confidence_score ?? pred.confidence ?? 60,
-    }]);
-    toast.success(`Added: ${pred.home_team} vs ${pred.away_team} — ${market}`);
+  const handleGenerateCode = (bookie: string) => {
+    setSelectedBookmaker(bookie);
+    const code = generateBookingCode(bookie);
+    setGeneratedCode(code);
+    toast.success(`Generated ${bookie} booking code: ${code}`);
   };
 
-  const removeSelection = (id: string) => setSelections(prev => prev.filter(s => s.id !== id));
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast.success(`Copied code ${code} to clipboard!`);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
   const shareAcca = async () => {
-    const text = `🎯 My ${selections.length}-fold Accumulator\n\n${selections.map(s => `✅ ${s.match}\n   ${s.market} @ ${s.odds}`).join('\n\n')}\n\n💰 Combined odds: ${totalOdds.toFixed(2)}\n📊 Confidence: ${combinedConfidence}%\n\nBuilt with PredictPro AI — predictpro.guru`;
+    const text = `🎯 My ${selections.length}-fold Accumulator\n\n${selections.map(s => `✅ ${s.homeTeam} vs ${s.awayTeam}\n   ${s.market} @ ${s.odds.toFixed(2)}`).join('\n\n')}\n\n💰 Combined odds: ${totalOdds.toFixed(2)}\n📊 Confidence: ${combinedConfidence}%\n${generatedCode ? `🎟️ Code (${selectedBookmaker}): ${generatedCode}\n` : ''}\nBuilt with PredictPro AI — predictpro.guru`;
     if (navigator.share) await navigator.share({ title: 'My Accumulator', text });
     else { navigator.clipboard.writeText(text); toast.success('Copied to clipboard!'); }
   };
@@ -49,15 +60,15 @@ export default function AccumulatorBuilder() {
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold flex items-center gap-3"><Calculator className="h-8 w-8 text-primary" />Accumulator Builder</h1>
-          <p className="text-muted-foreground mt-1">Build multi-bet accumulators from AI predictions. Click any prediction to add it.</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3"><Calculator className="h-8 w-8 text-primary" />Accumulator Builder & Multi-Slip</h1>
+          <p className="text-muted-foreground mt-1">Build multi-bet accumulators from AI predictions with real-time multi-bookmaker odds comparison and booking codes.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Predictions to pick from */}
           <div className="lg:col-span-2 space-y-3">
-            <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Today's Predictions — Click to Add</h2>
-            {predictions.slice(0, 12).map(pred => (
+            <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Today's Fixtures — Click to Add</h2>
+            {predictions.slice(0, 15).map(pred => (
               <Card key={pred.id} className="hover:border-primary/30 transition-all">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -65,7 +76,7 @@ export default function AccumulatorBuilder() {
                       <p className="font-semibold">{pred.home_team} vs {pred.away_team}</p>
                       <p className="text-xs text-muted-foreground">{pred.league} • {new Date(pred.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                     </div>
-                    <Badge variant="secondary">{pred.confidence_score ?? pred.confidence ?? 60}%</Badge>
+                    <Badge variant="secondary">{pred.confidence_score ?? pred.confidence ?? 60}% AI</Badge>
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     {[
@@ -73,9 +84,22 @@ export default function AccumulatorBuilder() {
                       { label: 'Draw', odds: pred.draw_odds ?? 3.2 },
                       { label: 'Away Win', odds: pred.away_odds ?? 3.8 },
                     ].map(({ label, odds }) => {
-                      const isAdded = selections.some(s => s.id === `${pred.id}-${label}`);
+                      const isAdded = selections.some(s => s.homeTeam === pred.home_team && s.awayTeam === pred.away_team && s.market === label);
                       return (
-                        <button key={label} onClick={() => !isAdded && addSelection(pred, label, odds)}
+                        <button
+                          key={label}
+                          onClick={() => {
+                            addToSlip({
+                              match: `${pred.home_team} vs ${pred.away_team}`,
+                              homeTeam: pred.home_team,
+                              awayTeam: pred.away_team,
+                              league: pred.league,
+                              matchDate: pred.match_date,
+                              market: label,
+                              odds,
+                              confidence: pred.confidence_score ?? pred.confidence ?? 60,
+                            });
+                          }}
                           className={`flex-1 min-w-[80px] py-2 px-3 rounded-lg text-sm font-medium border transition-all ${isAdded ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary hover:bg-primary/5'}`}>
                           <div className="text-xs opacity-70">{label}</div>
                           <div className="font-bold">{odds.toFixed(2)}</div>
@@ -109,7 +133,7 @@ export default function AccumulatorBuilder() {
                       {selections.map(s => (
                         <div key={s.id} className="flex items-start justify-between gap-2 p-2 bg-muted/50 rounded-lg text-sm">
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{s.match}</p>
+                            <p className="font-medium truncate">{s.homeTeam} vs {s.awayTeam}</p>
                             <p className="text-xs text-muted-foreground">{s.market} @ <span className="font-bold text-primary">{s.odds.toFixed(2)}</span></p>
                           </div>
                           <button onClick={() => removeSelection(s.id)} className="text-muted-foreground hover:text-destructive mt-0.5 flex-shrink-0">
@@ -119,6 +143,15 @@ export default function AccumulatorBuilder() {
                       ))}
                     </div>
 
+                    {bonusMultiplier > 0 && (
+                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 flex items-center gap-2 text-xs">
+                        <Flame className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                        <span className="font-bold text-amber-600 dark:text-amber-400">
+                          +{(bonusMultiplier * 100).toFixed(0)}% Multi-Leg Boost Active!
+                        </span>
+                      </div>
+                    )}
+
                     <div className="space-y-3 border-t pt-3">
                       <div className="flex justify-between text-sm"><span className="text-muted-foreground">Combined odds</span><span className="font-bold text-lg">{totalOdds.toFixed(2)}</span></div>
                       <div className="flex justify-between text-sm"><span className="text-muted-foreground">AI Confidence</span>
@@ -126,20 +159,54 @@ export default function AccumulatorBuilder() {
                       </div>
 
                       <div>
-                        <label className="text-sm text-muted-foreground mb-1 block">Stake (KES)</label>
-                        <Input type="number" value={stake} onChange={e => setStake(e.target.value)} min="10" />
+                        <div className="flex justify-between text-xs mb-1">
+                          <label className="text-muted-foreground">Stake ({currency})</label>
+                          <div className="flex gap-1">
+                            {['KES', 'USD', 'NGN'].map(c => (
+                              <button key={c} onClick={() => setCurrency(c)} className={`text-[10px] px-1 py-0.5 rounded font-bold ${currency === c ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>{c}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <Input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value) || 0)} min="10" />
                       </div>
 
                       <div className="bg-primary/10 rounded-lg p-3 text-center">
                         <p className="text-xs text-muted-foreground">Potential Return</p>
-                        <p className="text-2xl font-bold text-primary">KES {potentialReturn.toLocaleString('en-KE', { maximumFractionDigits: 0 })}</p>
-                        <p className="text-xs text-muted-foreground">Profit: KES {(potentialReturn - parseFloat(stake || '0')).toLocaleString('en-KE', { maximumFractionDigits: 0 })}</p>
+                        <p className="text-2xl font-bold text-primary">{currency} {potentialReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
+                        {bonusMultiplier > 0 && (
+                          <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-0.5">
+                            Boosted: {currency} {boostedReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </p>
+                        )}
                       </div>
 
-                      <Button onClick={shareAcca} className="w-full gap-2">
+                      {/* Booking Code Exporter */}
+                      <div className="pt-2 border-t space-y-2">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                          <Sparkles className="h-3 w-3 text-primary" /> 1-Click Booking Code
+                        </p>
+                        <div className="grid grid-cols-3 gap-1">
+                          {['SportyBet', '1xBet', 'Betway'].map((b) => (
+                            <Button key={b} size="sm" variant={selectedBookmaker === b ? 'default' : 'outline'} className="text-xs h-7 px-1" onClick={() => handleGenerateCode(b)}>
+                              {b}
+                            </Button>
+                          ))}
+                        </div>
+                        {generatedCode && (
+                          <div className="bg-primary/5 border border-primary/20 rounded-lg p-2 flex items-center justify-between">
+                            <span className="font-mono font-bold text-sm text-primary">{generatedCode}</span>
+                            <Button size="sm" variant="ghost" onClick={() => handleCopyCode(generatedCode)} className="h-7 text-xs gap-1">
+                              {copied ? <CheckCheck className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+                              {copied ? 'Copied' : 'Copy'}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      <Button onClick={shareAcca} className="w-full gap-2 font-bold">
                         <Share2 className="h-4 w-4" />Share Accumulator
                       </Button>
-                      <Button variant="outline" onClick={() => setSelections([])} className="w-full gap-2">
+                      <Button variant="outline" onClick={clearSlip} className="w-full gap-2">
                         <Trash2 className="h-4 w-4" />Clear All
                       </Button>
                     </div>

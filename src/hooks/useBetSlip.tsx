@@ -150,10 +150,26 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
+const defaultFallbackContext: BetSlipContextType = {
+  selections: [],
+  isOpen: false,
+  setIsOpen: () => {},
+  stake: 100,
+  setStake: () => {},
+  currency: 'KES',
+  setCurrency: () => {},
+  addSelection: () => {},
+  removeSelection: () => {},
+  clearSlip: () => {},
+  totalOdds: 1,
+  bonusMultiplier: 0,
+  potentialReturn: 0,
+  boostedReturn: 0,
+  combinedConfidence: 0,
+  generateBookingCode: () => '',
+};
+
 export const useBetSlip = () => {
   const context = useContext(BetSlipContext);
-  if (!context) {
-    throw new Error('useBetSlip must be used within a BetSlipProvider');
-  }
-  return context;
+  return context || defaultFallbackContext;
 };

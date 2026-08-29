@@ -53,14 +53,31 @@ export interface RealtimeMatchResult {
   lastUpdated: string;
 }
 
+// Cooldown tracker for rate-limited API endpoints (429 / 403)
+const hostCooldowns = new Map<string, number>();
+
+function isHostInCooldown(host: string): boolean {
+  const cd = hostCooldowns.get(host);
+  if (!cd) return false;
+  if (Date.now() > cd) {
+    hostCooldowns.delete(host);
+    return false;
+  }
+  return true;
+}
+
+function setHostCooldown(host: string, durationMs = 180_000) {
+  hostCooldowns.set(host, Date.now() + durationMs);
+}
+
 // In-memory cache to prevent excessive requests
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
 }
 const cache = new Map<string, CacheEntry<unknown>>();
-const CACHE_TTL_LIVE = 15_000; // 15s for live scores
-const CACHE_TTL_UPCOMING = 60_000; // 60s for upcoming fixtures
+const CACHE_TTL_LIVE = 25_000; // 25s for live scores
+const CACHE_TTL_UPCOMING = 90_000; // 90s for upcoming fixtures
 
 // Helper to get custom API keys from env or localStorage
 export function getCustomApiKey(type: 'api_football' | 'football_data' | 'rapidapi' | 'sofascore' | 'livescore' | 'free_football' | 'bet365' | 'football_prediction'): string | null {
@@ -247,6 +264,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
       'free-football-api-data.p.rapidapi.com'
     ];
     for (const rapidHost of rapidHosts) {
+      if (isHostInCooldown(rapidHost)) continue;
       try {
         const res = await fetch(`https://${rapidHost}/football-current-live`, {
           headers: {
@@ -254,6 +272,10 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
             'x-rapidapi-key': freeApiKey,
           },
         });
+        if (res.status === 429 || res.status === 403) {
+          setHostCooldown(rapidHost);
+          continue;
+        }
         if (res.ok) {
           const json = await res.json();
           const liveList = json.response?.live || [];
@@ -561,22 +583,29 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
   const rangeParam = `${y}${m}${d}-${y2}${m2}${d2}`;
 
-  const fetchPromises = selectedLeagues.map(async (league) => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${rangeParam}`, {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
-    } catch (e) {
-      console.warn(`Failed fetching upcoming fixtures for ${league.name}:`, e);
-      return [];
-    }
-  });
+  const ESPN_SCOREBOARD_SUPPORTED = new Set([
+    'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1',
+    'uefa.champions', 'uefa.europa', 'uefa.europa.conf',
+    'usa.1', 'bra.1', 'ned.1', 'por.1', 'sco.1', 'mex.1', 'eng.2'
+  ]);
+
+  const fetchPromises = selectedLeagues
+    .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
+    .map(async (league) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${rangeParam}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
+      } catch {
+        return [];
+      }
+    });
 
   const resultsByLeague = await Promise.all(fetchPromises);
   const rawEvents = resultsByLeague.flat();
@@ -646,6 +675,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     ];
 
     for (const rapidHost of rapidHosts) {
+      if (isHostInCooldown(rapidHost)) continue;
       let hostSuccess = false;
       for (const queryDate of datesToQuery.slice(0, 2)) {
         try {
@@ -655,6 +685,10 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
               'x-rapidapi-key': freeApiKey,
             },
           });
+          if (res.status === 429 || res.status === 403) {
+            setHostCooldown(rapidHost);
+            break;
+          }
           if (res.ok) {
             const json = await res.json();
             const apiMatches = json.response?.matches || [];
