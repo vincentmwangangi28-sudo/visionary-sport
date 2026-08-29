@@ -43,7 +43,7 @@ export const LEAGUES_LIST: LeagueDefinition[] = [
   { name: 'Coppa Italia', espnCode: 'ita.coppa_italia', apiFootballId: 137, country: 'Italy' },
   { name: 'Coupe de France', espnCode: 'fra.coupe_de_france', apiFootballId: 66, country: 'France' },
   { name: 'MLS', espnCode: 'usa.1', apiFootballId: 253, country: 'USA' },
-  { name: 'Saudi Pro League', espnCode: 'sau.1', apiFootballId: 307, country: 'Saudi Arabia' },
+  { name: 'Saudi Pro League', espnCode: 'ksa.1', apiFootballId: 307, country: 'Saudi Arabia' },
   { name: 'AFCON Qualifier', espnCode: 'caf.nations_qual', apiFootballId: 20, country: 'Africa' },
   { name: 'AFCON', espnCode: 'caf.nations', apiFootballId: 6, country: 'Africa' },
   { name: 'CAF Champions League', espnCode: 'caf.champions', apiFootballId: 12, country: 'Africa' },
@@ -227,7 +227,6 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
             liveCount,
             lastUpdated: new Date().toISOString(),
           };
-          cache.set(cacheKey, { data: result, timestamp: Date.now() });
           return result;
         }
       }
@@ -297,7 +296,6 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
               liveCount,
               lastUpdated: new Date().toISOString(),
             };
-            cache.set(cacheKey, { data: result, timestamp: Date.now() });
             return result;
           }
         }
@@ -361,7 +359,6 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
             liveCount,
             lastUpdated: new Date().toISOString(),
           };
-          cache.set(cacheKey, { data: result, timestamp: Date.now() });
           return result;
         }
       }
@@ -420,7 +417,6 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
             liveCount,
             lastUpdated: new Date().toISOString(),
           };
-          cache.set(cacheKey, { data: result, timestamp: Date.now() });
           return result;
         }
       }
