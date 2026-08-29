@@ -49,13 +49,19 @@ export const Footer = () => (
             AI-powered football predictions covering 40+ leagues worldwide. Powered by Google Gemini AI.
           </p>
           <div className="flex gap-2">
-            <a href="https://twitter.com/PredictProAI" target="_blank" rel="noopener noreferrer"
+            <a 
+              href="https://twitter.com/PredictProAI" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              aria-label="Follow PredictPro on Twitter / X"
               className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors">
-              <Twitter className="h-4 w-4" />
+              <Twitter className="h-4 w-4" aria-hidden="true" />
             </a>
-            <a href="mailto:support@predictpro.guru"
+            <a 
+              href="mailto:support@predictpro.guru"
+              aria-label="Contact PredictPro Support via Email"
               className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors">
-              <Mail className="h-4 w-4" />
+              <Mail className="h-4 w-4" aria-hidden="true" />
             </a>
           </div>
         </div>

@@ -118,9 +118,11 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
           </div>
 
           {/* Quick Odds Bar */}
-          <div className="grid grid-cols-3 gap-2 mt-4">
+          <div className="grid grid-cols-3 gap-2 mt-4" role="group" aria-label="Select match outcome odds">
             <button
+              type="button"
               onClick={() => handleAddBet('Home Win', bestHomeOdds)}
+              aria-label={`Select ${p.home_team} (Home Win) at ${bestHomeOdds.toFixed(2)} odds`}
               className={`p-2 rounded-xl border text-center transition-all ${
                 isSelected('Home Win')
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -130,12 +132,14 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               <div className="text-[11px] opacity-80 font-medium">1 (Home)</div>
               <div className="font-black text-sm flex items-center justify-center gap-1">
                 {bestHomeOdds.toFixed(2)}
-                {isSelected('Home Win') && <Check className="h-3.5 w-3.5" />}
+                {isSelected('Home Win') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
               </div>
             </button>
 
             <button
+              type="button"
               onClick={() => handleAddBet('Draw', bestDrawOdds)}
+              aria-label={`Select Draw at ${bestDrawOdds.toFixed(2)} odds`}
               className={`p-2 rounded-xl border text-center transition-all ${
                 isSelected('Draw')
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -145,12 +149,14 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               <div className="text-[11px] opacity-80 font-medium">X (Draw)</div>
               <div className="font-black text-sm flex items-center justify-center gap-1">
                 {bestDrawOdds.toFixed(2)}
-                {isSelected('Draw') && <Check className="h-3.5 w-3.5" />}
+                {isSelected('Draw') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
               </div>
             </button>
 
             <button
+              type="button"
               onClick={() => handleAddBet('Away Win', bestAwayOdds)}
+              aria-label={`Select ${p.away_team} (Away Win) at ${bestAwayOdds.toFixed(2)} odds`}
               className={`p-2 rounded-xl border text-center transition-all ${
                 isSelected('Away Win')
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -160,7 +166,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               <div className="text-[11px] opacity-80 font-medium">2 (Away)</div>
               <div className="font-black text-sm flex items-center justify-center gap-1">
                 {bestAwayOdds.toFixed(2)}
-                {isSelected('Away Win') && <Check className="h-3.5 w-3.5" />}
+                {isSelected('Away Win') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
               </div>
             </button>
           </div>

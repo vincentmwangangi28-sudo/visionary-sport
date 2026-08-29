@@ -176,30 +176,34 @@ export default function MatchPredictor() {
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Home Team</label>
+                <label htmlFor="home-team-input" className="text-xs font-medium text-muted-foreground mb-1.5 block">Home Team</label>
                 <Input
+                  id="home-team-input"
                   placeholder="e.g. Arsenal"
                   value={home}
                   onChange={e => setHome(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && predict()}
                   className="text-base"
+                  aria-label="Home Team name"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Away Team</label>
+                <label htmlFor="away-team-input" className="text-xs font-medium text-muted-foreground mb-1.5 block">Away Team</label>
                 <Input
+                  id="away-team-input"
                   placeholder="e.g. Chelsea"
                   value={away}
                   onChange={e => setAway(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && predict()}
                   className="text-base"
+                  aria-label="Away Team name"
                 />
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">League / Competition</label>
+              <label htmlFor="league-select" className="text-xs font-medium text-muted-foreground mb-1.5 block">League / Competition</label>
               <Select value={league} onValueChange={setLeague}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="league-select" aria-label="Select League / Competition"><SelectValue /></SelectTrigger>
                 <SelectContent>{LEAGUES.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
               </Select>
             </div>

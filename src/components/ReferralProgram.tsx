@@ -101,12 +101,12 @@ export const ReferralProgram = () => {
               <div className="flex-1 bg-muted rounded-lg px-4 py-3 font-mono text-lg font-bold text-center">
                 {referralCode.code}
               </div>
-              <Button variant="outline" size="icon" onClick={copyCode}>
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              <Button variant="outline" size="icon" onClick={copyCode} aria-label="Copy referral code">
+                {copied ? <Check className="h-4 w-4 text-green-500" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
               </Button>
             </div>
-            <Button variant="outline" className="w-full" onClick={copyLink}>
-              <Copy className="mr-2 h-4 w-4" />
+            <Button variant="outline" className="w-full" onClick={copyLink} aria-label="Copy Invite Link to clipboard">
+              <Copy className="mr-2 h-4 w-4" aria-hidden="true" />
               Copy Invite Link
             </Button>
           </div>
@@ -126,16 +126,18 @@ export const ReferralProgram = () => {
 
         {/* Apply Code */}
         <div className="space-y-3 pt-4 border-t">
-          <label className="text-sm font-medium">Have a referral code?</label>
+          <label htmlFor="referral-code-input" className="text-sm font-medium">Have a referral code?</label>
           <div className="flex gap-2">
             <Input
+              id="referral-code-input"
               placeholder="Enter code"
               value={inputCode}
               onChange={(e) => setInputCode(e.target.value.toUpperCase())}
               className="font-mono"
+              aria-label="Enter referral code to claim bonus"
             />
-            <Button onClick={handleApplyCode} disabled={applying}>
-              {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
+            <Button onClick={handleApplyCode} disabled={applying} aria-label="Apply referral code">
+              {applying ? <Loader2 className="h-4 w-4 animate-spin" aria-label="Applying code" /> : <Gift className="h-4 w-4" aria-hidden="true" />}
             </Button>
           </div>
         </div>

@@ -86,10 +86,13 @@ export default function LiveScores() {
             )}
           </div>
           <button
+            type="button"
             onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
+            aria-label={expandedId === m.id ? `Hide match events for ${m.home_team} vs ${m.away_team}` : `Show match events for ${m.home_team} vs ${m.away_team}`}
+            aria-expanded={expandedId === m.id}
             className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           >
-            {expandedId === m.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {expandedId === m.id ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
 
@@ -195,8 +198,9 @@ export default function LiveScores() {
               onClick={() => refresh()} 
               disabled={loading || isLiveFetching} 
               className="gap-1.5 text-xs"
+              aria-label="Sync live match data now"
             >
-              <RefreshCw className={`h-4 w-4 ${loading || isLiveFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${loading || isLiveFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span>Sync Now</span>
             </Button>
           </div>

@@ -88,9 +88,9 @@ export const ReferralCard = () => {
         ) : (
           <>
             <div className="flex gap-2 mb-3">
-              <Input readOnly value={link} className="text-xs font-mono" />
+              <Input readOnly value={link} className="text-xs font-mono" aria-label="Your referral link" />
               <Button size="icon" variant="outline" onClick={copy} aria-label="Copy referral link">
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-green-600" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
               </Button>
             </div>
 

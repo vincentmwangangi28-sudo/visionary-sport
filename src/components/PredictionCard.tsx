@@ -93,8 +93,10 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               ].map(({ label, key, odds }) =>
                 odds ? (
                   <button
+                    type="button"
                     key={key}
                     onClick={(e) => handleOddsClick(e, label, odds)}
+                    aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${odds.toFixed(2)} to betslip`}
                     className={`px-2 py-1 rounded text-xs font-bold border transition-all ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary'
@@ -172,8 +174,10 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               ].map(({ label, name, odds }) =>
                 odds ? (
                   <button
+                    type="button"
                     key={label}
                     onClick={(e) => handleOddsClick(e, label, odds)}
+                    aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${odds.toFixed(2)} to betslip`}
                     className={`py-1.5 px-2 rounded-lg border text-center transition-all ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary shadow-sm font-black'
@@ -200,8 +204,8 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
 
           {locked && (
             <Link to="/shop">
-              <Button size="sm" className="w-full gap-2 font-bold">
-                <TrendingUp className="h-3.5 w-3.5" /> Unlock Full Vector
+              <Button size="sm" className="w-full gap-2 font-bold" aria-label="Upgrade to Pro to unlock full vector predictions">
+                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" /> Unlock Full Vector
               </Button>
             </Link>
           )}
@@ -209,13 +213,15 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
           {/* Footer Actions: Analytics Trigger + Share */}
           <div className="flex items-center justify-between pt-1 border-t">
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowAnalytics(true);
               }}
+              aria-label={`View match analytics, head-to-head statistics and predicted lineups for ${p.home_team} vs ${p.away_team}`}
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
-              <BarChart3 className="h-3.5 w-3.5" /> Analytics & Lineups
+              <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> Analytics & Lineups
             </button>
 
             <SharePrediction

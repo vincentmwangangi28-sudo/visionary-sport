@@ -53,10 +53,10 @@ export const MpesaPaymentDialog = ({ open, onClose, plan, price }: Props) => {
               <Badge className="bg-green-600 text-white text-base px-3 py-1">KES {price}</Badge>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1.5 block">Safaricom Number</label>
-              <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0712 345 678" type="tel"/>
+              <label htmlFor="mpesa-phone-input" className="text-sm font-medium mb-1.5 block">Safaricom Number</label>
+              <Input id="mpesa-phone-input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0712 345 678" type="tel" aria-label="Safaricom phone number for M-Pesa STK push" />
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3"/>Enter the M-Pesa registered number
+                <AlertCircle className="h-3 w-3" aria-hidden="true" />Enter the M-Pesa registered number
               </p>
             </div>
             <Button onClick={pay} disabled={loading || !phone} className="w-full gap-2 bg-green-600 hover:bg-green-700">

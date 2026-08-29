@@ -40,9 +40,18 @@ export default function PlayerSearch() {
           <p className="text-muted-foreground">Search 500,000+ players from all leagues worldwide.</p>
         </div>
         <div className="flex gap-2 mb-6">
-          <Input placeholder="Search player name..." value={query} onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && search(query)} className="text-base" />
-          <Button onClick={() => search(query)} disabled={loading} className="px-6"><Search className="h-4 w-4" /></Button>
+          <Input 
+            id="player-search-input"
+            placeholder="Search player name..." 
+            value={query} 
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && search(query)} 
+            className="text-base" 
+            aria-label="Search football player by name"
+          />
+          <Button onClick={() => search(query)} disabled={loading} className="px-6" aria-label="Search player database">
+            <Search className="h-4 w-4" aria-hidden="true" />
+          </Button>
         </div>
         {!searched && (
           <div>

@@ -199,10 +199,16 @@ export const NotificationBell = () => {
   return (
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) fetchSupabaseNotifications(); }}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative p-2 h-9 w-9 rounded-full" title="Live Match & Tip Alerts">
-          <Bell className="h-5 w-5" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="relative p-2 h-9 w-9 rounded-full" 
+          title="Live Match & Tip Alerts"
+          aria-label={`Match and AI Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
+        >
+          <Bell className="h-5 w-5" aria-hidden="true" />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse border-2 border-background">
+            <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse border-2 border-background" aria-hidden="true">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
@@ -227,11 +233,17 @@ export const NotificationBell = () => {
               onClick={toggleSound}
               className="h-7 w-7 text-muted-foreground hover:text-foreground"
               title={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
+              aria-label={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
             >
-              {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4" />}
+              {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" aria-hidden="true" /> : <VolumeX className="h-4 w-4" aria-hidden="true" />}
             </Button>
             {unread > 0 && (
-              <button onClick={markAllRead} className="text-xs text-primary font-semibold hover:underline">
+              <button 
+                type="button" 
+                onClick={markAllRead} 
+                className="text-xs text-primary font-semibold hover:underline"
+                aria-label="Mark all notifications as read"
+              >
                 Mark all read
               </button>
             )}

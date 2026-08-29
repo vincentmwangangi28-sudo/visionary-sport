@@ -285,6 +285,8 @@ export const TeamFormTrendsChart = ({
                     id={`team-chip-${row.position}`}
                     type="button"
                     onClick={() => toggleTeam(row.team)}
+                    aria-pressed={isSelected}
+                    aria-label={`Toggle trend line for ${row.team}, currently ${isSelected ? 'selected' : 'not selected'}`}
                     style={{
                       borderColor: isSelected ? teamColor : undefined,
                       backgroundColor: isSelected ? `${teamColor}15` : undefined,

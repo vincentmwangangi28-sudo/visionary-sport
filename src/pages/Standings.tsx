@@ -75,8 +75,9 @@ export default function Standings() {
               onClick={handleSync}
               disabled={loading || isFetching}
               className="gap-1.5"
+              aria-label="Sync league standings"
             >
-              <RefreshCw className={`h-4 w-4 ${loading || isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${loading || isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span className="hidden sm:inline">Sync Standings</span>
             </Button>
           </div>
@@ -85,7 +86,7 @@ export default function Standings() {
         {/* Informative Provider Notice if fallback is used */}
         {!isLive && (
           <Alert className="mb-6 bg-muted/40 border-primary/20 text-xs">
-            <AlertCircle className="h-4 w-4 text-primary" />
+            <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
             <AlertTitle className="text-xs font-semibold">Live Data Status</AlertTitle>
             <AlertDescription className="text-xs text-muted-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-0.5">
               <span>Displaying verified season tables. Live sync automatically caches API updates in the background.</span>
@@ -95,6 +96,7 @@ export default function Standings() {
                 className="h-auto p-0 text-xs text-primary font-medium underline self-start sm:self-auto"
                 onClick={handleSync}
                 disabled={loading || isFetching}
+                aria-label="Sync standings data immediately"
               >
                 Sync Now
               </Button>
@@ -104,7 +106,7 @@ export default function Standings() {
 
         {/* League Selector Chips & View Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <div className="flex gap-2 flex-wrap flex-1">
+          <div className="flex gap-2 flex-wrap flex-1" role="group" aria-label="Select league standings">
             {LEAGUES.map(lg => (
               <Button
                 key={lg.id}
@@ -113,22 +115,24 @@ export default function Standings() {
                 variant={league.id === lg.id ? 'default' : 'outline'}
                 onClick={() => selectLeague(lg)}
                 className="text-xs gap-1.5 h-9"
+                aria-label={`View standings for ${lg.name}`}
               >
-                <span>{lg.flag}</span>
+                <span aria-hidden="true">{lg.flag}</span>
                 <span>{lg.name}</span>
               </Button>
             ))}
           </div>
 
-          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60 self-start sm:self-auto">
+          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60 self-start sm:self-auto" role="group" aria-label="Toggle view mode">
             <Button
               id="view-toggle-chart-btn"
               variant={showChart ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setShowChart(true)}
               className="h-7 text-xs gap-1.5 px-2.5"
+              aria-label="Show form analytics and charts"
             >
-              <BarChart2 className="h-3.5 w-3.5" />
+              <BarChart2 className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Form Analytics</span>
             </Button>
             <Button
@@ -137,8 +141,9 @@ export default function Standings() {
               size="sm"
               onClick={() => setShowChart(false)}
               className="h-7 text-xs gap-1.5 px-2.5"
+              aria-label="Show standings table only"
             >
-              <TableIcon className="h-3.5 w-3.5" />
+              <TableIcon className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Table Only</span>
             </Button>
           </div>

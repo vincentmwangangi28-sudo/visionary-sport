@@ -32,7 +32,13 @@ export const Hero = () => {
       {/* Background */}
       <picture className="absolute inset-0">
         <source srcSet={heroStadiumWebP} type="image/webp" />
-        <img src={heroStadium} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" fetchpriority="high" />
+        <img 
+          src={heroStadium} 
+          alt="PredictPro Stadium and Football Analytics Arena" 
+          className="absolute inset-0 w-full h-full object-cover" 
+          loading="eager" 
+          fetchPriority="high" 
+        />
       </picture>
       <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/85 to-background" />
 

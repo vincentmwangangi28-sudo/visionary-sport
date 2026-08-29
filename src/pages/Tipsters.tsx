@@ -96,10 +96,22 @@ export default function Tipsters() {
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader className="pb-3"><CardTitle className="text-base">Share Your Tip</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
-                  <Input placeholder="Match (e.g. Arsenal vs Chelsea)" value={form.match} onChange={e => setForm(f => ({ ...f, match: e.target.value }))} />
-                  <Input placeholder="Prediction (e.g. Arsenal Win / Over 2.5)" value={form.prediction} onChange={e => setForm(f => ({ ...f, prediction: e.target.value }))} />
-                  <Input placeholder="Odds (e.g. 1.85)" type="number" step="0.01" value={form.odds} onChange={e => setForm(f => ({ ...f, odds: e.target.value }))} />
-                  <Textarea placeholder="Your reasoning (min 20 chars)..." value={form.reasoning} onChange={e => setForm(f => ({ ...f, reasoning: e.target.value }))} rows={3} />
+                  <div>
+                    <label htmlFor="tip-match-input" className="sr-only">Match fixture</label>
+                    <Input id="tip-match-input" placeholder="Match (e.g. Arsenal vs Chelsea)" value={form.match} onChange={e => setForm(f => ({ ...f, match: e.target.value }))} aria-label="Match fixture" />
+                  </div>
+                  <div>
+                    <label htmlFor="tip-prediction-input" className="sr-only">Prediction</label>
+                    <Input id="tip-prediction-input" placeholder="Prediction (e.g. Arsenal Win / Over 2.5)" value={form.prediction} onChange={e => setForm(f => ({ ...f, prediction: e.target.value }))} aria-label="Prediction outcome" />
+                  </div>
+                  <div>
+                    <label htmlFor="tip-odds-input" className="sr-only">Odds</label>
+                    <Input id="tip-odds-input" placeholder="Odds (e.g. 1.85)" type="number" step="0.01" value={form.odds} onChange={e => setForm(f => ({ ...f, odds: e.target.value }))} aria-label="Estimated odds" />
+                  </div>
+                  <div>
+                    <label htmlFor="tip-reasoning-input" className="sr-only">Reasoning</label>
+                    <Textarea id="tip-reasoning-input" placeholder="Your reasoning (min 20 chars)..." value={form.reasoning} onChange={e => setForm(f => ({ ...f, reasoning: e.target.value }))} rows={3} aria-label="Analysis and reasoning" />
+                  </div>
                   <Button onClick={submitTip} disabled={submitting} className="w-full">
                     {submitting ? 'Submitting...' : 'Share Tip 🚀'}
                   </Button>
@@ -131,13 +143,19 @@ export default function Tipsters() {
                       <Badge className="my-1.5 bg-primary/10 text-primary border-primary/20">{tip.prediction}</Badge>
                       <p className="text-sm text-muted-foreground">{tip.reasoning}</p>
                       <div className="flex gap-3 mt-3">
-                        <button onClick={() => vote(tip.id, 'like')}
+                        <button
+                          type="button"
+                          onClick={() => vote(tip.id, 'like')}
+                          aria-label={`Like tip for ${tip.match}, currently ${tip.likes} likes`}
                           className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full transition-colors ${tip.user_vote === 'like' ? 'bg-green-500 text-white' : 'bg-muted hover:bg-green-100 hover:text-green-700'}`}>
-                          <ThumbsUp className="h-3.5 w-3.5" />{tip.likes}
+                          <ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />{tip.likes}
                         </button>
-                        <button onClick={() => vote(tip.id, 'dislike')}
+                        <button
+                          type="button"
+                          onClick={() => vote(tip.id, 'dislike')}
+                          aria-label={`Dislike tip for ${tip.match}, currently ${tip.dislikes} dislikes`}
                           className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full transition-colors ${tip.user_vote === 'dislike' ? 'bg-red-500 text-white' : 'bg-muted hover:bg-red-100 hover:text-red-700'}`}>
-                          <ThumbsDown className="h-3.5 w-3.5" />{tip.dislikes}
+                          <ThumbsDown className="h-3.5 w-3.5" aria-hidden="true" />{tip.dislikes}
                         </button>
                       </div>
                     </div>

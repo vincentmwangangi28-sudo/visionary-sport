@@ -115,7 +115,9 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => setSearchQuery('')}
+              aria-label="Clear search input"
               className="absolute right-2.5 top-2.5 text-xs text-muted-foreground hover:text-foreground"
             >
               ✕
@@ -126,8 +128,9 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         {/* Quick Filter Badges + View Mode Switch */}
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
           {/* Quick Filters */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg" role="group" aria-label="Filter predictions">
             <button
+              type="button"
               onClick={() => setQuickFilter('all')}
               className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
                 quickFilter === 'all'
@@ -138,6 +141,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               All
             </button>
             <button
+              type="button"
               onClick={() => setQuickFilter('high_confidence')}
               className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
                 quickFilter === 'high_confidence'
@@ -148,6 +152,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               <Sparkles className="h-3 w-3" /> &gt;80% AI
             </button>
             <button
+              type="button"
               onClick={() => setQuickFilter('value_bets')}
               className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
                 quickFilter === 'value_bets'
@@ -160,15 +165,16 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
           </div>
 
           {/* Grid vs List View Toggle */}
-          <div className="flex items-center gap-0.5 bg-muted/60 p-1 rounded-lg">
+          <div className="flex items-center gap-0.5 bg-muted/60 p-1 rounded-lg" role="group" aria-label="Change layout view">
             <Button
               size="icon"
               variant={viewMode === 'card' ? 'secondary' : 'ghost'}
               onClick={() => handleSetViewMode('card')}
               className="h-7 w-7"
               title="Card Grid View"
+              aria-label="Switch to Card Grid View"
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
             <Button
               size="icon"
@@ -176,8 +182,9 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               onClick={() => handleSetViewMode('compact')}
               className="h-7 w-7"
               title="Compact List View"
+              aria-label="Switch to Compact List View"
             >
-              <List className="h-3.5 w-3.5" />
+              <List className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </div>
 
@@ -188,8 +195,9 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             disabled={isFetching}
             className="h-8 px-2 text-muted-foreground hover:text-foreground"
             title="Refresh Fixtures"
+            aria-label="Refresh Fixtures"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
           </Button>
         </div>
       </div>

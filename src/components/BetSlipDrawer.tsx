@@ -89,11 +89,12 @@ export const BetSlipDrawer = () => {
         <div className="fixed bottom-20 md:bottom-6 right-4 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Button
             onClick={() => setIsOpen(true)}
+            aria-label={`Open Acca Bet Slip with ${selections.length} selections, total odds ${totalOdds.toFixed(2)}`}
             className="h-13 px-4 py-3 bg-primary text-primary-foreground shadow-2xl rounded-full flex items-center gap-3 border-2 border-primary-foreground/20 hover:scale-105 transition-all group"
           >
             <div className="relative">
-              <Ticket className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-              <span className="absolute -top-2 -right-2 h-5 w-5 bg-amber-500 text-slate-950 font-black text-xs rounded-full flex items-center justify-center border-2 border-primary">
+              <Ticket className="h-5 w-5 group-hover:rotate-12 transition-transform" aria-hidden="true" />
+              <span className="absolute -top-2 -right-2 h-5 w-5 bg-amber-500 text-slate-950 font-black text-xs rounded-full flex items-center justify-center border-2 border-primary" aria-hidden="true">
                 {selections.length}
               </span>
             </div>
@@ -101,7 +102,7 @@ export const BetSlipDrawer = () => {
               <p className="text-xs font-bold leading-tight">Acca Bet Slip</p>
               <p className="text-xs opacity-90 font-medium">Odds: {totalOdds.toFixed(2)}</p>
             </div>
-            <ChevronRight className="h-4 w-4 ml-1 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight className="h-4 w-4 ml-1 opacity-70 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
           </Button>
         </div>
       )}
@@ -164,11 +165,13 @@ export const BetSlipDrawer = () => {
                         <p className="font-bold text-sm leading-snug">{s.homeTeam} vs {s.awayTeam}</p>
                       </div>
                       <button
+                        type="button"
                         onClick={() => removeSelection(s.id)}
                         className="absolute top-2.5 right-2.5 p-1 text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-colors"
                         title="Remove selection"
+                        aria-label={`Remove ${s.homeTeam} vs ${s.awayTeam} (${s.market}) from bet slip`}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
 
@@ -260,12 +263,14 @@ export const BetSlipDrawer = () => {
                 {/* Stake Input */}
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-xs">
-                    <label className="font-medium text-muted-foreground">Stake Amount</label>
-                    <div className="flex gap-1">
+                    <label htmlFor="betslip-stake-input" className="font-medium text-muted-foreground">Stake Amount</label>
+                    <div className="flex gap-1" role="group" aria-label="Select currency">
                       {['KES', 'USD', 'NGN'].map((c) => (
                         <button
+                          type="button"
                           key={c}
                           onClick={() => setCurrency(c)}
+                          aria-label={`Set currency to ${c}`}
                           className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                         >
                           {c}
@@ -275,12 +280,14 @@ export const BetSlipDrawer = () => {
                   </div>
                   <div className="relative">
                     <Input
+                      id="betslip-stake-input"
                       type="number"
                       min="10"
                       step="10"
                       value={stake || ''}
                       onChange={(e) => setStake(parseFloat(e.target.value) || 0)}
                       className="font-bold text-base pr-16"
+                      aria-label="Stake amount"
                     />
                     <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-bold">{currency}</span>
                   </div>

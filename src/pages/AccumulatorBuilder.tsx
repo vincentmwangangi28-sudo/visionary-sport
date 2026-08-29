@@ -87,6 +87,7 @@ export default function AccumulatorBuilder() {
                       const isAdded = selections.some(s => s.homeTeam === pred.home_team && s.awayTeam === pred.away_team && s.market === label);
                       return (
                         <button
+                          type="button"
                           key={label}
                           onClick={() => {
                             addToSlip({
@@ -100,6 +101,7 @@ export default function AccumulatorBuilder() {
                               confidence: pred.confidence_score ?? pred.confidence ?? 60,
                             });
                           }}
+                          aria-label={`Select ${label} at ${odds.toFixed(2)} odds for ${pred.home_team} vs ${pred.away_team}`}
                           className={`flex-1 min-w-[80px] py-2 px-3 rounded-lg text-sm font-medium border transition-all ${isAdded ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary hover:bg-primary/5'}`}>
                           <div className="text-xs opacity-70">{label}</div>
                           <div className="font-bold">{odds.toFixed(2)}</div>
@@ -136,8 +138,13 @@ export default function AccumulatorBuilder() {
                             <p className="font-medium truncate">{s.homeTeam} vs {s.awayTeam}</p>
                             <p className="text-xs text-muted-foreground">{s.market} @ <span className="font-bold text-primary">{s.odds.toFixed(2)}</span></p>
                           </div>
-                          <button onClick={() => removeSelection(s.id)} className="text-muted-foreground hover:text-destructive mt-0.5 flex-shrink-0">
-                            <Trash2 className="h-4 w-4" />
+                          <button
+                            type="button"
+                            onClick={() => removeSelection(s.id)}
+                            aria-label={`Remove ${s.homeTeam} vs ${s.awayTeam} selection from slip`}
+                            className="text-muted-foreground hover:text-destructive mt-0.5 flex-shrink-0"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </button>
                         </div>
                       ))}
@@ -160,14 +167,29 @@ export default function AccumulatorBuilder() {
 
                       <div>
                         <div className="flex justify-between text-xs mb-1">
-                          <label className="text-muted-foreground">Stake ({currency})</label>
-                          <div className="flex gap-1">
+                          <label htmlFor="acca-stake-input" className="text-muted-foreground">Stake ({currency})</label>
+                          <div className="flex gap-1" role="group" aria-label="Select stake currency">
                             {['KES', 'USD', 'NGN'].map(c => (
-                              <button key={c} onClick={() => setCurrency(c)} className={`text-[10px] px-1 py-0.5 rounded font-bold ${currency === c ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>{c}</button>
+                              <button
+                                type="button"
+                                key={c}
+                                onClick={() => setCurrency(c)}
+                                aria-label={`Set currency to ${c}`}
+                                className={`text-[10px] px-1 py-0.5 rounded font-bold ${currency === c ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                              >
+                                {c}
+                              </button>
                             ))}
                           </div>
                         </div>
-                        <Input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value) || 0)} min="10" />
+                        <Input
+                          id="acca-stake-input"
+                          type="number"
+                          value={stake}
+                          onChange={e => setStake(parseFloat(e.target.value) || 0)}
+                          min="10"
+                          aria-label={`Stake amount in ${currency}`}
+                        />
                       </div>
 
                       <div className="bg-primary/10 rounded-lg p-3 text-center">

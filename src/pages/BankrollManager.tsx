@@ -51,21 +51,21 @@ export default function BankrollManager() {
             <CardHeader><CardTitle className="flex items-center gap-2"><Calculator className="h-5 w-5 text-primary" />Stake Calculator</CardTitle></CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-1.5">
-                <Label>Total Bankroll (KES)</Label>
-                <Input type="number" value={bankroll} onChange={e => setBankroll(e.target.value)} />
+                <Label htmlFor="bankroll-input">Total Bankroll (KES)</Label>
+                <Input id="bankroll-input" type="number" value={bankroll} onChange={e => setBankroll(e.target.value)} aria-label="Total Bankroll in KES" />
               </div>
               <div className="space-y-2">
-                <Label>Stake per bet: <span className="text-primary font-bold">{stakePercent[0]}%</span> = KES {stake.toLocaleString('en-KE', { maximumFractionDigits: 0 })}</Label>
-                <Slider value={stakePercent} onValueChange={setStakePercent} min={0.5} max={10} step={0.5} className="w-full" />
+                <Label id="stake-percent-label">Stake per bet: <span className="text-primary font-bold">{stakePercent[0]}%</span> = KES {stake.toLocaleString('en-KE', { maximumFractionDigits: 0 })}</Label>
+                <Slider value={stakePercent} onValueChange={setStakePercent} min={0.5} max={10} step={0.5} className="w-full" aria-labelledby="stake-percent-label" aria-label="Stake percentage per bet" />
                 <div className="flex justify-between text-xs text-muted-foreground"><span>0.5% Safe</span><span>5% Aggressive</span><span>10% Risky</span></div>
               </div>
               <div className="space-y-1.5">
-                <Label>Decimal Odds</Label>
-                <Input type="number" step="0.05" value={odds} onChange={e => setOdds(e.target.value)} />
+                <Label htmlFor="decimal-odds-input">Decimal Odds</Label>
+                <Input id="decimal-odds-input" type="number" step="0.05" value={odds} onChange={e => setOdds(e.target.value)} aria-label="Decimal Odds" />
               </div>
               <div className="space-y-2">
-                <Label>Your Confidence: <span className="text-primary font-bold">{confidence[0]}%</span></Label>
-                <Slider value={confidence} onValueChange={setConfidence} min={30} max={95} step={1} />
+                <Label id="confidence-percent-label">Your Confidence: <span className="text-primary font-bold">{confidence[0]}%</span></Label>
+                <Slider value={confidence} onValueChange={setConfidence} min={30} max={95} step={1} aria-labelledby="confidence-percent-label" aria-label="Confidence percentage" />
               </div>
 
               {/* Results */}

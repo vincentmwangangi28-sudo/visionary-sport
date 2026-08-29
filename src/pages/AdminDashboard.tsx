@@ -22,8 +22,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!user) return;
     // Check admin role
-    supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').single()
-      .then(({ data }) => setIsAdmin(!!data));
+    supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!data);
+        }
+      })
+      .catch(() => setIsAdmin(false));
   }, [user]);
 
   useEffect(() => {

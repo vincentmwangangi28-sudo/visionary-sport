@@ -1,0 +1,22 @@
+# PredictPro — AI Football Predictions & Analytics
+
+PredictPro provides automated match predictions, mathematical expected goals (xG) metrics, Poisson probability models, head-to-head performance analysis, and live football data for 40+ leagues worldwide.
+
+## Primary Sections & Links
+- [Home & Daily Highlights](https://predictpro.guru/)
+- [Live Matchday Scores](https://predictpro.guru/live)
+- [League Standings & Tables](https://predictpro.guru/standings)
+- [Mathematical Prediction Matrix](https://predictpro.guru/predict)
+- [Performance & Historical Accuracy](https://predictpro.guru/performance)
+- [Value Bets & Odds Analyzer](https://predictpro.guru/value-bets)
+- [Community Tipsters & Leaderboards](https://predictpro.guru/leaderboard)
+
+## Data Coverage
+- Premier League (England)
+- La Liga (Spain)
+- Bundesliga (Germany)
+- Serie A (Italy)
+- Ligue 1 (France)
+- UEFA Champions League & Europa League
+- Kenya Premier League (FKF-PL)
+- Over 40 global leagues with synchronized real-time match events.
