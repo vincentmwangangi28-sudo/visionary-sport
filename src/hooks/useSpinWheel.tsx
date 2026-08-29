@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
-import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export interface SpinPrize {
   type: 'coins' | 'prediction' | 'nothing' | 'bonus';
@@ -45,12 +45,17 @@ export const useSpinWheel = () => {
     setSpinning(true);
     try {
       const session = (await supabase.auth.getSession()).data.session;
-      const { data, error } = await callEdgeFn('spin-wheel', undefined, (await supabase.auth.getSession()).data.session?.access_token);
+      const { data, error } = await callEdgeFn('spin-wheel', undefined, session?.access_token);
       if (error || !data?.success) throw new Error(data?.error ?? 'Spin failed');
       setCanSpin(false);
       return { prize: data.prize as SpinPrize, prizeIndex: data.prizeIndex as number };
-    } catch (err) {
-      console.error('Spin error:', err);
+    } catch (err: any) {
+      if (err?.status === 409 || err?.message?.toLowerCase().includes('already')) {
+        setCanSpin(false);
+        toast.info('You have already taken your daily spin today. Check back tomorrow!');
+      } else {
+        toast.error(err?.message || 'Daily spin could not be completed. Please try again.');
+      }
       return null;
     } finally { setSpinning(false); }
   };

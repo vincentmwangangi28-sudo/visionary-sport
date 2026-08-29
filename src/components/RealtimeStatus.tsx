@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Wifi, Key } from 'lucide-react';
+import { Wifi, Activity } from 'lucide-react';
 import { ApiKeyConfigModal } from './ApiKeyConfigModal';
 
 export const RealtimeStatus = () => {
@@ -28,7 +28,7 @@ export const RealtimeStatus = () => {
         type="button"
         onClick={() => setModalOpen(true)}
         className="cursor-pointer flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-all hover:scale-105 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:border-emerald-500/40"
-        title="Real-Time Data Feed Connected · Click to Configure API Keys"
+        title="Real-Time Data Feed Active · Click to view Feed Status"
       >
         <div className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -36,7 +36,7 @@ export const RealtimeStatus = () => {
         </div>
         <Wifi className="h-2.5 w-2.5" />
         <span className="hidden sm:inline font-semibold">LIVE FEED</span>
-        <Key className="h-2.5 w-2.5 opacity-60 ml-0.5" />
+        <Activity className="h-2.5 w-2.5 opacity-60 ml-0.5 text-emerald-500" />
       </button>
 
       <ApiKeyConfigModal open={modalOpen} onOpenChange={setModalOpen} />

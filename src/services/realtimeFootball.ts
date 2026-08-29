@@ -6,6 +6,17 @@ import {
   getSavedPrediction,
   savePrediction 
 } from '@/services/predictionStorage';
+import {
+  isHostInCooldown,
+  setHostCooldown,
+  getFootballCache,
+  setFootballCache,
+  fetchWithCacheAndDeduplication,
+  safeFootballFetch,
+  CACHE_TTLS
+} from '@/services/footballDataCache';
+
+export { isHostInCooldown, setHostCooldown, getFootballCache, setFootballCache };
 
 // Supported top leagues mapping
 export interface LeagueDefinition {
@@ -52,32 +63,6 @@ export interface RealtimeMatchResult {
   liveCount: number;
   lastUpdated: string;
 }
-
-// Cooldown tracker for rate-limited API endpoints (429 / 403)
-const hostCooldowns = new Map<string, number>();
-
-function isHostInCooldown(host: string): boolean {
-  const cd = hostCooldowns.get(host);
-  if (!cd) return false;
-  if (Date.now() > cd) {
-    hostCooldowns.delete(host);
-    return false;
-  }
-  return true;
-}
-
-function setHostCooldown(host: string, durationMs = 180_000) {
-  hostCooldowns.set(host, Date.now() + durationMs);
-}
-
-// In-memory cache to prevent excessive requests
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-}
-const cache = new Map<string, CacheEntry<unknown>>();
-const CACHE_TTL_LIVE = 25_000; // 25s for live scores
-const CACHE_TTL_UPCOMING = 90_000; // 90s for upcoming fixtures
 
 // Helper to get custom API keys from env or localStorage
 export function getCustomApiKey(type: 'api_football' | 'football_data' | 'rapidapi' | 'sofascore' | 'livescore' | 'free_football' | 'bet365' | 'football_prediction'): string | null {
@@ -189,12 +174,8 @@ function computeLivePrediction(home: string, away: string, homeScore: number | n
  */
 export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
   const cacheKey = 'live_matches_realtime_feed';
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL_LIVE) {
-    return cached.data as RealtimeMatchResult;
-  }
-
-  const matches: NormalizedMatch[] = [];
+  return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.LIVE_MATCHES, async () => {
+    const matches: NormalizedMatch[] = [];
 
   // Check if custom API-Football key is configured
   const apiFootballKey = getCustomApiKey('api_football') || getCustomApiKey('rapidapi');
@@ -537,16 +518,16 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     });
   }
 
-  const liveCount = matches.filter(m => m.status === 'live' || m.status === 'halftime').length;
-  const result: RealtimeMatchResult = {
-    matches,
-    source: 'live_feed',
-    liveCount,
-    lastUpdated: new Date().toISOString(),
-  };
+    const liveCount = matches.filter(m => m.status === 'live' || m.status === 'halftime').length;
+    const result: RealtimeMatchResult = {
+      matches,
+      source: 'live_feed',
+      liveCount,
+      lastUpdated: new Date().toISOString(),
+    };
 
-  cache.set(cacheKey, { data: result, timestamp: Date.now() });
-  return result;
+    return result;
+  });
 }
 
 /**
@@ -554,12 +535,8 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
  */
 export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Promise<Prediction[]> {
   const cacheKey = `upcoming_fixtures_${leagueFilter || 'all'}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL_UPCOMING) {
-    return cached.data as Prediction[];
-  }
-
-  let selectedLeagues = LEAGUES_LIST;
+  return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
+    let selectedLeagues = LEAGUES_LIST;
   if (leagueFilter && leagueFilter !== 'All') {
     const found = LEAGUES_LIST.filter(l => 
       l.name.toLowerCase().includes(leagueFilter.toLowerCase()) || 
@@ -859,11 +836,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
   // Sort by date ascending, then confidence descending
   lockedPredictions.sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
 
-  if (lockedPredictions.length > 0) {
-    cache.set(cacheKey, { data: lockedPredictions, timestamp: Date.now() });
-  }
-
   return lockedPredictions;
+  });
 }
 
 /**
@@ -871,112 +845,106 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
  */
 export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promise<NormalizedMatch[]> {
   const cacheKey = `finished_matches_${leagueFilter || 'all'}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL_UPCOMING) {
-    return cached.data as NormalizedMatch[];
-  }
 
-  let selectedLeagues = LEAGUES_LIST;
-  if (leagueFilter && leagueFilter !== 'All') {
-    const found = LEAGUES_LIST.filter(l => 
-      l.name.toLowerCase().includes(leagueFilter.toLowerCase()) || 
-      leagueFilter.toLowerCase().includes(l.name.toLowerCase())
-    );
-    if (found.length > 0) {
-      selectedLeagues = found;
-    }
-  }
-
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-
-  const past = new Date(now.getTime() - 14 * 86400000);
-  const y1 = past.getFullYear();
-  const m1 = String(past.getMonth() + 1).padStart(2, '0');
-  const d1 = String(past.getDate()).padStart(2, '0');
-
-  const pastRange = `${y1}${m1}${d1}-${y}${m}${d}`;
-
-  const fetchPromises = selectedLeagues.map(async (league) => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${pastRange}`, {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
-    } catch {
-      return [];
-    }
-  });
-
-  const results = await Promise.all(fetchPromises);
-  const rawEvents = results.flat();
-  const finishedList: NormalizedMatch[] = [];
-  const seenMatches = new Set<string>();
-
-  for (const ev of rawEvents) {
-    const statusObj = (ev.status as Record<string, unknown>)?.type as Record<string, string> | undefined;
-    const state = statusObj?.state;
-    const statusDesc = (statusObj?.description || '').toLowerCase();
-    
-    // Only include finished / post games
-    if (state !== 'post' && !statusDesc.includes('final') && !statusDesc.includes('full time')) {
-      continue;
+  return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
+    let selectedLeagues = LEAGUES_LIST;
+    if (leagueFilter && leagueFilter !== 'All') {
+      const found = LEAGUES_LIST.filter(l => 
+        l.name.toLowerCase().includes(leagueFilter.toLowerCase()) || 
+        leagueFilter.toLowerCase().includes(l.name.toLowerCase())
+      );
+      if (found.length > 0) {
+        selectedLeagues = found;
+      }
     }
 
-    const competitions = (ev.competitions as Array<Record<string, unknown>>) || [];
-    const comp = competitions[0] || {};
-    const competitors = (comp.competitors as Array<Record<string, unknown>>) || [];
-    const homeComp = competitors.find(c => c.homeAway === 'home');
-    const awayComp = competitors.find(c => c.homeAway === 'away');
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
 
-    const homeTeam = (homeComp?.team as Record<string, string>)?.displayName || (homeComp?.team as Record<string, string>)?.name;
-    const awayTeam = (awayComp?.team as Record<string, string>)?.displayName || (awayComp?.team as Record<string, string>)?.name;
-    if (!homeTeam || !awayTeam) continue;
+    const past = new Date(now.getTime() - 14 * 86400000);
+    const y1 = past.getFullYear();
+    const m1 = String(past.getMonth() + 1).padStart(2, '0');
+    const d1 = String(past.getDate()).padStart(2, '0');
 
-    const matchKey = `fin-${homeTeam.toLowerCase()}-${awayTeam.toLowerCase()}-${String(ev.date).split('T')[0]}`;
-    if (seenMatches.has(matchKey)) continue;
-    seenMatches.add(matchKey);
+    const pastRange = `${y1}${m1}${d1}-${y}${m}${d}`;
 
-    const homeScore = homeComp?.score !== undefined ? parseInt(String(homeComp.score), 10) : null;
-    const awayScore = awayComp?.score !== undefined ? parseInt(String(awayComp.score), 10) : null;
-
-    const pred = computeLivePrediction(homeTeam, awayTeam, homeScore, awayScore);
-
-    finishedList.push({
-      id: `espn-fin-${ev.id || matchKey}`,
-      home_team: homeTeam,
-      away_team: awayTeam,
-      competition: (ev._leagueName as string) || 'Football Match',
-      match_date: ev.date ? toIsoUtc(ev.date as string) : new Date().toISOString(),
-      status: 'finished',
-      minute: 90,
-      home_score: homeScore,
-      away_score: awayScore,
-      home_logo: (homeComp?.team as Record<string, string>)?.logo || null,
-      away_logo: (awayComp?.team as Record<string, string>)?.logo || null,
-      prediction: pred.prediction,
-      confidence: pred.confidence,
-      home_odds: pred.home_odds,
-      draw_odds: pred.draw_odds,
-      away_odds: pred.away_odds,
+    const fetchPromises = selectedLeagues.map(async (league) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${pastRange}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
+      } catch {
+        return [];
+      }
     });
-  }
 
-  // Sort by date descending (most recent first)
-  finishedList.sort((a, b) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime());
+    const results = await Promise.all(fetchPromises);
+    const rawEvents = results.flat();
+    const finishedList: NormalizedMatch[] = [];
+    const seenMatches = new Set<string>();
 
-  if (finishedList.length > 0) {
-    cache.set(cacheKey, { data: finishedList, timestamp: Date.now() });
-  }
+    for (const ev of rawEvents) {
+      const statusObj = (ev.status as Record<string, unknown>)?.type as Record<string, string> | undefined;
+      const state = statusObj?.state;
+      const statusDesc = (statusObj?.description || '').toLowerCase();
+      
+      // Only include finished / post games
+      if (state !== 'post' && !statusDesc.includes('final') && !statusDesc.includes('full time')) {
+        continue;
+      }
 
-  return finishedList;
+      const competitions = (ev.competitions as Array<Record<string, unknown>>) || [];
+      const comp = competitions[0] || {};
+      const competitors = (comp.competitors as Array<Record<string, unknown>>) || [];
+      const homeComp = competitors.find(c => c.homeAway === 'home');
+      const awayComp = competitors.find(c => c.homeAway === 'away');
+
+      const homeTeam = (homeComp?.team as Record<string, string>)?.displayName || (homeComp?.team as Record<string, string>)?.name;
+      const awayTeam = (awayComp?.team as Record<string, string>)?.displayName || (awayComp?.team as Record<string, string>)?.name;
+      if (!homeTeam || !awayTeam) continue;
+
+      const matchKey = `fin-${homeTeam.toLowerCase()}-${awayTeam.toLowerCase()}-${String(ev.date).split('T')[0]}`;
+      if (seenMatches.has(matchKey)) continue;
+      seenMatches.add(matchKey);
+
+      const homeScore = homeComp?.score !== undefined ? parseInt(String(homeComp.score), 10) : null;
+      const awayScore = awayComp?.score !== undefined ? parseInt(String(awayComp.score), 10) : null;
+
+      const pred = computeLivePrediction(homeTeam, awayTeam, homeScore, awayScore);
+
+      finishedList.push({
+        id: `espn-fin-${ev.id || matchKey}`,
+        home_team: homeTeam,
+        away_team: awayTeam,
+        competition: (ev._leagueName as string) || 'Football Match',
+        match_date: ev.date ? toIsoUtc(ev.date as string) : new Date().toISOString(),
+        status: 'finished',
+        minute: 90,
+        home_score: homeScore,
+        away_score: awayScore,
+        home_logo: (homeComp?.team as Record<string, string>)?.logo || null,
+        away_logo: (awayComp?.team as Record<string, string>)?.logo || null,
+        prediction: pred.prediction,
+        confidence: pred.confidence,
+        home_odds: pred.home_odds,
+        draw_odds: pred.draw_odds,
+        away_odds: pred.away_odds,
+      });
+    }
+
+    // Sort by date descending (most recent first)
+    finishedList.sort((a, b) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime());
+
+    return finishedList;
+  });
 }
 
 /**
@@ -987,134 +955,134 @@ export async function fetchRealtimeStandingsTable(leagueId: number | string): Pr
   if (!leagueObj) return [];
 
   const cacheKey = `standings_${leagueObj.espnCode}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < 300_000) { // 5 min cache
-    return cached.data as any[];
-  }
 
-  // 1. Check Sofascore / Free API Live Football Data if key is available
-  const freeApiKey = getCustomApiKey('free_football') || getCustomApiKey('rapidapi');
-  const freeApiLeagueMap: Record<number, number> = {
-    39: 47,  // Premier League
-    140: 87, // La Liga
-    78: 54,  // Bundesliga
-    135: 55, // Serie A
-    61: 53,  // Ligue 1
-    2: 42,   // Champions League
-    3: 73,   // Europa League
-  };
+  return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.STANDINGS, async () => {
+    // 1. Check Sofascore / Free API Live Football Data if key is available
+    const freeApiKey = getCustomApiKey('free_football') || getCustomApiKey('rapidapi');
+    const freeApiLeagueMap: Record<number, number> = {
+      39: 47,  // Premier League
+      140: 87, // La Liga
+      78: 54,  // Bundesliga
+      135: 55, // Serie A
+      61: 53,  // Ligue 1
+      2: 42,   // Champions League
+      3: 73,   // Europa League
+    };
 
-  const mappedFreeApiId = leagueObj.apiFootballId ? freeApiLeagueMap[leagueObj.apiFootballId] : undefined;
+    const mappedFreeApiId = leagueObj.apiFootballId ? freeApiLeagueMap[leagueObj.apiFootballId] : undefined;
 
-  if (freeApiKey && mappedFreeApiId) {
-    const rapidHosts = [
-      'free-api-live-football-data-cheaper-version.p.rapidapi.com',
-      'free-api-live-football-data.p.rapidapi.com',
-      'free-football-api-data.p.rapidapi.com'
-    ];
-    for (const rapidHost of rapidHosts) {
+    if (freeApiKey && mappedFreeApiId) {
+      const rapidHosts = [
+        'free-api-live-football-data-cheaper-version.p.rapidapi.com',
+        'free-api-live-football-data.p.rapidapi.com',
+        'free-football-api-data.p.rapidapi.com'
+      ];
+      for (const rapidHost of rapidHosts) {
+        if (isHostInCooldown(rapidHost)) continue;
+        try {
+          const freeRes = await fetch(`https://${rapidHost}/football-get-standing-all?leagueid=${mappedFreeApiId}`, {
+            headers: {
+              'x-rapidapi-host': rapidHost,
+              'x-rapidapi-key': freeApiKey,
+            },
+          });
+          if (freeRes.status === 429 || freeRes.status === 403) {
+            setHostCooldown(rapidHost);
+            continue;
+          }
+          if (freeRes.ok) {
+            const freeData = await freeRes.json();
+            const rows = freeData.response?.standing || [];
+            if (rows.length > 0) {
+              const parsed = rows.map((r: any, idx: number) => ({
+                position: r.idx || idx + 1,
+                team: r.name || r.shortName || 'Unknown',
+                logo: r.id ? `https://images.fotmob.com/image_resources/logo/teamlogo/${r.id}.png` : '',
+                played: r.played || 0,
+                won: r.wins || 0,
+                drawn: r.draws || 0,
+                lost: r.losses || 0,
+                gf: r.scoresStr ? parseInt(String(r.scoresStr).split('-')[0] || '0', 10) : 0,
+                ga: r.scoresStr ? parseInt(String(r.scoresStr).split('-')[1] || '0', 10) : 0,
+                gd: r.goalConDiff || 0,
+                points: r.pts || 0,
+                form: '',
+              }));
+              return parsed;
+            }
+          }
+        } catch (e) {
+          console.debug(`Free API standings fetch fallback on ${rapidHost}:`, e);
+        }
+      }
+    }
+
+    const rapidKey = getCustomApiKey('sofascore') || getCustomApiKey('rapidapi');
+    if (rapidKey && (leagueObj.apiFootballId === 39 || leagueObj.name.includes('Premier')) && !isHostInCooldown('sofascore.p.rapidapi.com')) {
       try {
-        const freeRes = await fetch(`https://${rapidHost}/football-get-standing-all?leagueid=${mappedFreeApiId}`, {
+        const sofaRes = await fetch('https://sofascore.p.rapidapi.com/tournaments/get-standings?tournamentId=17&seasonId=52186', {
           headers: {
-            'x-rapidapi-host': rapidHost,
-            'x-rapidapi-key': freeApiKey,
+            'x-rapidapi-host': 'sofascore.p.rapidapi.com',
+            'x-rapidapi-key': rapidKey,
           },
         });
-        if (freeRes.ok) {
-          const freeData = await freeRes.json();
-          const rows = freeData.response?.standing || [];
+        if (sofaRes.status === 429 || sofaRes.status === 403) {
+          setHostCooldown('sofascore.p.rapidapi.com');
+        } else if (sofaRes.ok) {
+          const sofaData = await sofaRes.json();
+          const rows = sofaData.standings?.[0]?.rows || [];
           if (rows.length > 0) {
-            const parsed = rows.map((r: any, idx: number) => ({
-              position: r.idx || idx + 1,
-              team: r.name || r.shortName || 'Unknown',
-              logo: r.id ? `https://images.fotmob.com/image_resources/logo/teamlogo/${r.id}.png` : '',
-              played: r.played || 0,
+            const parsed = rows.map((r: any) => ({
+              position: r.position,
+              team: r.team?.name || 'Unknown',
+              logo: r.team?.id ? `https://api.sofascore.app/api/v1/team/${r.team.id}/image` : '',
+              played: r.matches || 0,
               won: r.wins || 0,
               drawn: r.draws || 0,
               lost: r.losses || 0,
-              gf: r.scoresStr ? parseInt(String(r.scoresStr).split('-')[0] || '0', 10) : 0,
-              ga: r.scoresStr ? parseInt(String(r.scoresStr).split('-')[1] || '0', 10) : 0,
-              gd: r.goalConDiff || 0,
-              points: r.pts || 0,
+              gf: r.scoresFor || 0,
+              ga: r.scoresAgainst || 0,
+              gd: (r.scoresFor || 0) - (r.scoresAgainst || 0),
+              points: r.points || 0,
               form: '',
             }));
-            cache.set(cacheKey, { data: parsed, timestamp: Date.now() });
             return parsed;
           }
         }
       } catch (e) {
-        console.debug(`Free API standings fetch fallback on ${rapidHost}:`, e);
+        console.warn('Sofascore standings fetch fallback:', e);
       }
     }
-  }
 
-  const rapidKey = getCustomApiKey('sofascore') || getCustomApiKey('rapidapi');
-  if (rapidKey && (leagueObj.apiFootballId === 39 || leagueObj.name.includes('Premier'))) {
     try {
-      const sofaRes = await fetch('https://sofascore.p.rapidapi.com/tournaments/get-standings?tournamentId=17&seasonId=52186', {
-        headers: {
-          'x-rapidapi-host': 'sofascore.p.rapidapi.com',
-          'x-rapidapi-key': rapidKey,
-        },
+      const res = await fetch(`https://site.api.espn.com/apis/v2/sports/soccer/${leagueObj.espnCode}/standings`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      const rawEntries = data.children?.[0]?.standings?.entries || [];
+
+      const parsed = rawEntries.map((e: any, idx: number) => {
+        const stats = e.stats || [];
+        const getStat = (name: string) => stats.find((s: any) => s.name === name)?.value ?? 0;
+        return {
+          position: idx + 1,
+          team: e.team?.displayName || e.team?.name || 'Unknown',
+          logo: e.team?.logos?.[0]?.href || '',
+          played: getStat('gamesPlayed'),
+          won: getStat('wins'),
+          drawn: getStat('ties'),
+          lost: getStat('losses'),
+          gf: getStat('pointsFor'),
+          ga: getStat('pointsAgainst'),
+          gd: getStat('pointDifferential'),
+          points: getStat('points'),
+          form: (e.form || '').slice(0, 5)
+        };
       });
-      if (sofaRes.ok) {
-        const sofaData = await sofaRes.json();
-        const rows = sofaData.standings?.[0]?.rows || [];
-        if (rows.length > 0) {
-          const parsed = rows.map((r: any) => ({
-            position: r.position,
-            team: r.team?.name || 'Unknown',
-            logo: r.team?.id ? `https://api.sofascore.app/api/v1/team/${r.team.id}/image` : '',
-            played: r.matches || 0,
-            won: r.wins || 0,
-            drawn: r.draws || 0,
-            lost: r.losses || 0,
-            gf: r.scoresFor || 0,
-            ga: r.scoresAgainst || 0,
-            gd: (r.scoresFor || 0) - (r.scoresAgainst || 0),
-            points: r.points || 0,
-            form: '',
-          }));
-          cache.set(cacheKey, { data: parsed, timestamp: Date.now() });
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.warn('Sofascore standings fetch fallback:', e);
+
+      return parsed;
+    } catch (err) {
+      console.warn(`Failed fetching real standings for ${leagueObj.name}:`, err);
+      return [];
     }
-  }
-
-  try {
-    const res = await fetch(`https://site.api.espn.com/apis/v2/sports/soccer/${leagueObj.espnCode}/standings`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const rawEntries = data.children?.[0]?.standings?.entries || [];
-
-    const parsed = rawEntries.map((e: any, idx: number) => {
-      const stats = e.stats || [];
-      const getStat = (name: string) => stats.find((s: any) => s.name === name)?.value ?? 0;
-      return {
-        position: idx + 1,
-        team: e.team?.displayName || e.team?.name || 'Unknown',
-        logo: e.team?.logos?.[0]?.href || '',
-        played: getStat('gamesPlayed'),
-        won: getStat('wins'),
-        drawn: getStat('ties'),
-        lost: getStat('losses'),
-        gf: getStat('pointsFor'),
-        ga: getStat('pointsAgainst'),
-        gd: getStat('pointDifferential'),
-        points: getStat('points'),
-        form: (e.form || '').slice(0, 5)
-      };
-    });
-
-    if (parsed.length > 0) {
-      cache.set(cacheKey, { data: parsed, timestamp: Date.now() });
-    }
-    return parsed;
-  } catch (err) {
-    console.warn(`Failed fetching real standings for ${leagueObj.name}:`, err);
-    return [];
-  }
+  });
 }

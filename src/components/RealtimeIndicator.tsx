@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, Zap, Radio, CheckCircle2, Key, RefreshCw } from 'lucide-react';
+import { Activity, Zap, Radio, CheckCircle2, RefreshCw } from 'lucide-react';
 import { ApiKeyConfigModal } from './ApiKeyConfigModal';
 
 interface RealtimeIndicatorProps {
@@ -108,8 +108,8 @@ export const RealtimeIndicator = ({
               onClick={() => setModalOpen(true)}
               className="h-8 text-xs gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
             >
-              <Key className="h-3 w-3" />
-              API Key Settings
+              <Activity className="h-3 w-3" />
+              Feed Status
             </Button>
           </div>
         </div>

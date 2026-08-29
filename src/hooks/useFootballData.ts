@@ -5,7 +5,9 @@ import {
   fetchRealtimeStandingsTable,
   LEAGUES_LIST, 
   getCustomApiKey,
-  LeagueDefinition
+  LeagueDefinition,
+  isHostInCooldown,
+  setHostCooldown
 } from '@/services/realtimeFootball';
 import {
   getSportmonksApiKey,
@@ -51,6 +53,13 @@ export class FootballApiError extends Error {
  * Helper to inspect fetch response, catch 401/403 status codes, and log them explicitly for debugging.
  */
 export async function validateFootballApiResponse(res: Response, endpoint: string, provider: string): Promise<boolean> {
+  try {
+    const urlObj = new URL(endpoint);
+    if (res.status === 429 || res.status === 403 || res.status === 401) {
+      setHostCooldown(urlObj.hostname, 300_000); // 5 min cooldown for exhausted/invalid keys
+    }
+  } catch {}
+
   if (res.status === 401 || res.status === 403) {
     const errorType = res.status === 401 
       ? '401 Unauthorized (Invalid / Missing API Key)' 
@@ -68,6 +77,10 @@ export async function validateFootballApiResponse(res: Response, endpoint: strin
       }
     );
 
+    return false;
+  }
+
+  if (res.status === 429) {
     return false;
   }
 
@@ -263,62 +276,65 @@ async function fetchLiveFixturesQuery(leagueId?: number | string): Promise<ApiFo
   const customKey = getCustomApiKey('api_football') || getCustomApiKey('rapidapi');
 
   if (customKey) {
-    try {
-      const isRapid = !!getCustomApiKey('rapidapi');
-      let url = isRapid 
-        ? 'https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all'
-        : 'https://v3.football.api-sports.io/fixtures?live=all';
-      
-      if (leagueId && leagueId !== 'all') {
-        url = isRapid
-          ? `https://api-football-v1.p.rapidapi.com/v3/fixtures?live=${leagueId}`
-          : `https://v3.football.api-sports.io/fixtures?live=${leagueId}`;
-      }
-
-      const headers: Record<string, string> = isRapid
-        ? { 'X-RapidAPI-Key': customKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' }
-        : { 'x-apisports-key': customKey };
-
-      const res = await fetch(url, { headers });
-      await validateFootballApiResponse(res, url, isRapid ? 'API-Football (RapidAPI)' : 'API-Football (Direct)');
-
-      if (res.ok) {
-        const json = await res.json();
-        if (json.response && Array.isArray(json.response)) {
-          return json.response.map((item: any) => {
-            const h = item.teams?.home?.name || 'Home Team';
-            const a = item.teams?.away?.name || 'Away Team';
-            const statusShort = (item.fixture?.status?.short || '').toLowerCase();
-            let status: ApiFootballLiveFixture['status'] = 'live';
-            if (statusShort === 'ht') status = 'halftime';
-            else if (['ft', 'aet', 'pen'].includes(statusShort)) status = 'finished';
-            else if (['ns', 'tbd'].includes(statusShort)) status = 'upcoming';
-            else if (['pst', 'canc', 'abd'].includes(statusShort)) status = 'postponed';
-
-            return {
-              id: `apifootball-${item.fixture?.id || `${h}-${a}`}`,
-              home_team: h,
-              away_team: a,
-              home_score: item.goals?.home ?? null,
-              away_score: item.goals?.away ?? null,
-              status,
-              minute: item.fixture?.status?.elapsed || 45,
-              league: item.league?.name || 'Football League',
-              league_id: item.league?.id,
-              match_date: item.fixture?.date || new Date().toISOString(),
-              home_logo: item.teams?.home?.logo || null,
-              away_logo: item.teams?.away?.logo || null,
-              venue: item.fixture?.venue?.name,
-              is_realtime: true,
-            };
-          });
+    const isRapid = !!getCustomApiKey('rapidapi');
+    const rapidHost = isRapid ? 'api-football-v1.p.rapidapi.com' : 'v3.football.api-sports.io';
+    if (!isHostInCooldown(rapidHost)) {
+      try {
+        let url = isRapid 
+          ? 'https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all'
+          : 'https://v3.football.api-sports.io/fixtures?live=all';
+        
+        if (leagueId && leagueId !== 'all') {
+          url = isRapid
+            ? `https://api-football-v1.p.rapidapi.com/v3/fixtures?live=${leagueId}`
+            : `https://v3.football.api-sports.io/fixtures?live=${leagueId}`;
         }
+
+        const headers: Record<string, string> = isRapid
+          ? { 'X-RapidAPI-Key': customKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' }
+          : { 'x-apisports-key': customKey };
+
+        const res = await fetch(url, { headers });
+        const valid = await validateFootballApiResponse(res, url, isRapid ? 'API-Football (RapidAPI)' : 'API-Football (Direct)');
+
+        if (valid && res.ok) {
+          const json = await res.json();
+          if (json.response && Array.isArray(json.response)) {
+            return json.response.map((item: any) => {
+              const h = item.teams?.home?.name || 'Home Team';
+              const a = item.teams?.away?.name || 'Away Team';
+              const statusShort = (item.fixture?.status?.short || '').toLowerCase();
+              let status: ApiFootballLiveFixture['status'] = 'live';
+              if (statusShort === 'ht') status = 'halftime';
+              else if (['ft', 'aet', 'pen'].includes(statusShort)) status = 'finished';
+              else if (['ns', 'tbd'].includes(statusShort)) status = 'upcoming';
+              else if (['pst', 'canc', 'abd'].includes(statusShort)) status = 'postponed';
+
+              return {
+                id: `apifootball-${item.fixture?.id || `${h}-${a}`}`,
+                home_team: h,
+                away_team: a,
+                home_score: item.goals?.home ?? null,
+                away_score: item.goals?.away ?? null,
+                status,
+                minute: item.fixture?.status?.elapsed || 45,
+                league: item.league?.name || 'Football League',
+                league_id: item.league?.id,
+                match_date: item.fixture?.date || new Date().toISOString(),
+                home_logo: item.teams?.home?.logo || null,
+                away_logo: item.teams?.away?.logo || null,
+                venue: item.fixture?.venue?.name,
+                is_realtime: true,
+              };
+            });
+          }
+        }
+      } catch (err) {
+        if (err instanceof FootballApiError) {
+          throw err;
+        }
+        console.warn('[useFootballData] Direct API-Football query failed, attempting unified live engine:', err);
       }
-    } catch (err) {
-      if (err instanceof FootballApiError) {
-        throw err;
-      }
-      console.warn('[useFootballData] Direct API-Football query failed, attempting unified live engine:', err);
     }
   }
 
@@ -368,43 +384,46 @@ async function fetchLeaguesQuery(country?: string): Promise<ApiFootballLeagueIte
   const customKey = getCustomApiKey('api_football') || getCustomApiKey('rapidapi');
 
   if (customKey) {
-    try {
-      const isRapid = !!getCustomApiKey('rapidapi');
-      let url = isRapid 
-        ? 'https://api-football-v1.p.rapidapi.com/v3/leagues'
-        : 'https://v3.football.api-sports.io/leagues';
-      
-      if (country) {
-        url += `?country=${encodeURIComponent(country)}`;
-      } else {
-        url += '?current=true';
-      }
-
-      const headers: Record<string, string> = isRapid
-        ? { 'X-RapidAPI-Key': customKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' }
-        : { 'x-apisports-key': customKey };
-
-      const res = await fetch(url, { headers });
-      await validateFootballApiResponse(res, url, isRapid ? 'API-Football (RapidAPI)' : 'API-Football');
-
-      if (res.ok) {
-        const json = await res.json();
-        if (json.response && Array.isArray(json.response)) {
-          return json.response.slice(0, 30).map((item: any) => ({
-            id: item.league?.id,
-            name: item.league?.name,
-            type: item.league?.type || 'League',
-            logo: item.league?.logo,
-            country: item.country?.name,
-            countryCode: item.country?.code,
-            countryFlag: item.country?.flag,
-            season: item.seasons?.[0]?.year,
-          }));
+    const isRapid = !!getCustomApiKey('rapidapi');
+    const rapidHost = isRapid ? 'api-football-v1.p.rapidapi.com' : 'v3.football.api-sports.io';
+    if (!isHostInCooldown(rapidHost)) {
+      try {
+        let url = isRapid 
+          ? 'https://api-football-v1.p.rapidapi.com/v3/leagues'
+          : 'https://v3.football.api-sports.io/leagues';
+        
+        if (country) {
+          url += `?country=${encodeURIComponent(country)}`;
+        } else {
+          url += '?current=true';
         }
+
+        const headers: Record<string, string> = isRapid
+          ? { 'X-RapidAPI-Key': customKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' }
+          : { 'x-apisports-key': customKey };
+
+        const res = await fetch(url, { headers });
+        const valid = await validateFootballApiResponse(res, url, isRapid ? 'API-Football (RapidAPI)' : 'API-Football');
+
+        if (valid && res.ok) {
+          const json = await res.json();
+          if (json.response && Array.isArray(json.response)) {
+            return json.response.slice(0, 30).map((item: any) => ({
+              id: item.league?.id,
+              name: item.league?.name,
+              type: item.league?.type || 'League',
+              logo: item.league?.logo,
+              country: item.country?.name,
+              countryCode: item.country?.code,
+              countryFlag: item.country?.flag,
+              season: item.seasons?.[0]?.year,
+            }));
+          }
+        }
+      } catch (err) {
+        if (err instanceof FootballApiError) throw err;
+        console.warn('[useFootballData] API-Football leagues query warning:', err);
       }
-    } catch (err) {
-      if (err instanceof FootballApiError) throw err;
-      console.warn('[useFootballData] API-Football leagues query warning:', err);
     }
   }
 
@@ -508,46 +527,49 @@ async function fetchStandingsQuery(leagueId: number, season?: number): Promise<{
 
   // Try direct API-Football if key is configured
   if (customKey) {
-    try {
-      const isRapid = !!getCustomApiKey('rapidapi');
-      const url = isRapid
-        ? `https://api-football-v1.p.rapidapi.com/v3/standings?league=${leagueId}&season=${targetSeason}`
-        : `https://v3.football.api-sports.io/standings?league=${leagueId}&season=${targetSeason}`;
+    const isRapid = !!getCustomApiKey('rapidapi');
+    const rapidHost = isRapid ? 'api-football-v1.p.rapidapi.com' : 'v3.football.api-sports.io';
+    if (!isHostInCooldown(rapidHost)) {
+      try {
+        const url = isRapid
+          ? `https://api-football-v1.p.rapidapi.com/v3/standings?league=${leagueId}&season=${targetSeason}`
+          : `https://v3.football.api-sports.io/standings?league=${leagueId}&season=${targetSeason}`;
 
-      const headers: Record<string, string> = isRapid
-        ? { 'X-RapidAPI-Key': customKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' }
-        : { 'x-apisports-key': customKey };
+        const headers: Record<string, string> = isRapid
+          ? { 'X-RapidAPI-Key': customKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' }
+          : { 'x-apisports-key': customKey };
 
-      const res = await fetch(url, { headers });
-      await validateFootballApiResponse(res, url, isRapid ? 'API-Football Standings (RapidAPI)' : 'API-Football Standings');
+        const res = await fetch(url, { headers });
+        const valid = await validateFootballApiResponse(res, url, isRapid ? 'API-Football Standings (RapidAPI)' : 'API-Football Standings');
 
-      if (res.ok) {
-        const json = await res.json();
-        const leagueObj = json.response?.[0]?.league;
-        const rawStandings = leagueObj?.standings?.[0];
+        if (valid && res.ok) {
+          const json = await res.json();
+          const leagueObj = json.response?.[0]?.league;
+          const rawStandings = leagueObj?.standings?.[0];
 
-        if (Array.isArray(rawStandings) && rawStandings.length > 0) {
-          const formatted: StandingRow[] = rawStandings.map((row: any) => ({
-            position: row.rank,
-            team: row.team?.name || 'Unknown Team',
-            logo: row.team?.logo,
-            played: row.all?.played ?? 0,
-            won: row.all?.win ?? 0,
-            drawn: row.all?.draw ?? 0,
-            lost: row.all?.lose ?? 0,
-            gf: row.all?.goals?.for ?? 0,
-            ga: row.all?.goals?.against ?? 0,
-            gd: row.goalsDiff ?? 0,
-            points: row.points ?? 0,
-            form: row.form || '',
-          }));
+          if (Array.isArray(rawStandings) && rawStandings.length > 0) {
+            const formatted: StandingRow[] = rawStandings.map((row: any) => ({
+              position: row.rank,
+              team: row.team?.name || 'Unknown Team',
+              logo: row.team?.logo,
+              played: row.all?.played ?? 0,
+              won: row.all?.win ?? 0,
+              drawn: row.all?.draw ?? 0,
+              lost: row.all?.lose ?? 0,
+              gf: row.all?.goals?.for ?? 0,
+              ga: row.all?.goals?.against ?? 0,
+              gd: row.goalsDiff ?? 0,
+              points: row.points ?? 0,
+              form: row.form || '',
+            }));
 
-          return { standings: formatted, isLive: true };
+            return { standings: formatted, isLive: true };
+          }
         }
+      } catch (err) {
+        if (err instanceof FootballApiError) throw err;
+        console.warn('[useFootballData] API-Football standings fetch warning:', err);
       }
-    } catch (err) {
-      if (err instanceof FootballApiError) throw err;
-      console.warn('[useFootballData] API-Football standings fetch warning:', err);
     }
   }
 
@@ -706,7 +728,7 @@ export function useFootballData(options?: {
   );
 
   const serviceUnavailableMessage = hasAuthError
-    ? `Service Temporarily Unavailable: Authentication failed (HTTP ${authErrorStatus || '401/403'}). Please check provider API key credentials.`
+    ? `Service Temporarily Unavailable: Authentication connecting (HTTP ${authErrorStatus || '401/403'}). Reconnecting live sports feed.`
     : 'Service Temporarily Unavailable: Live sports data feeds are temporarily unreachable.';
 
   const activeLiveCount = (liveQuery.data || []).filter(
