@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, BarChart, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard, Film, Search, BookOpen, Target, Radio } from "lucide-react";
+import { Menu, LogOut, Flame, Activity, TrendingUp, Calculator, Users, Wallet, Newspaper, BarChart2, BarChart, Trophy, ShoppingBag, Gift, Zap, Info, LayoutDashboard, Film, Search, BookOpen, Target, Radio, CheckCircle2, SlidersHorizontal, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { CoinBalance } from "./CoinBalance";
 import { NotificationBell } from "./NotificationBell";
 import { RealtimeStatus } from "./RealtimeStatus";
 
 const navLinks = [
   { to: "/",           label: "Predictions",  icon: Zap },
+  { to: "/archive",    label: "Results Archive", icon: CheckCircle2 },
+  { to: "/methodology",label: "Methodology",  icon: ShieldCheck },
+  { to: "/preferences",label: "Strategy & Feeds", icon: SlidersHorizontal },
   { to: "/live",       label: "Live",         icon: Activity },
   { to: "/news",       label: "News",         icon: Newspaper },
   { to: "/value-bets", label: "Value Bets",   icon: TrendingUp },
@@ -34,16 +38,18 @@ const navLinks = [
 
 const topNavLinks = [
   { to: "/",              label: "Predictions" },
+  { to: "/archive",       label: "Archive" },
+  { to: "/methodology",   label: "Methodology" },
   { to: "/live",          label: "Live" },
   { to: "/best-bets",     label: "Best Bets" },
+  { to: "/value-bets",    label: "Value Bets" },
   { to: "/correct-score", label: "Correct Score" },
   { to: "/btts",          label: "BTTS" },
-  { to: "/value-bets",    label: "Value Bets" },
-  { to: "/news",          label: "News" },
 ];
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
+  const { preferences } = useUserPreferences();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const visibleLinks = navLinks.filter(l => !l.protected || user);
@@ -70,6 +76,18 @@ export const Navbar = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <Link to="/preferences" className="hidden sm:block">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs font-semibold px-2.5 capitalize"
+                aria-label={`Betting profile: ${preferences.riskProfile}. Click to customize.`}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>{preferences.riskProfile}</span>
+              </Button>
+            </Link>
+
             {user ? (
               <>
                 <CoinBalance />

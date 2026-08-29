@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
+import { UserPreferencesProvider } from "@/hooks/useUserPreferences";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { BetSlipDrawer } from "@/components/BetSlipDrawer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -22,6 +23,9 @@ const Leaderboard       = lazyWithRetry(() => import("./pages/Leaderboard"));
 const Insights          = lazyWithRetry(() => import("./pages/Insights"));
 const Performance       = lazyWithRetry(() => import("./pages/Performance"));
 const About             = lazyWithRetry(() => import("./pages/About"));
+const Archive           = lazyWithRetry(() => import("./pages/Archive"));
+const Methodology       = lazyWithRetry(() => import("./pages/Methodology"));
+const Preferences       = lazyWithRetry(() => import("./pages/Preferences"));
 const Shop              = lazyWithRetry(() => import("./pages/Shop"));
 const Rewards           = lazyWithRetry(() => import("./pages/Rewards"));
 const News              = lazyWithRetry(() => import("./pages/News"));
@@ -67,19 +71,24 @@ const App = () => (
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <BetSlipProvider>
-              <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
-                Skip to content
-              </a>
-              <Toaster />
-              <Sonner />
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/"              element={<Index />} />
-                  <Route path="/auth"          element={<Auth />} />
-                  <Route path="/about"         element={<About />} />
-                  <Route path="/leaderboard"   element={<Leaderboard />} />
-                  <Route path="/insights"      element={<Insights />} />
+            <UserPreferencesProvider>
+              <BetSlipProvider>
+                <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
+                  Skip to content
+                </a>
+                <Toaster />
+                <Sonner />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/"              element={<Index />} />
+                    <Route path="/auth"          element={<Auth />} />
+                    <Route path="/about"         element={<About />} />
+                    <Route path="/archive"       element={<Archive />} />
+                    <Route path="/results"       element={<Archive />} />
+                    <Route path="/methodology"   element={<Methodology />} />
+                    <Route path="/preferences"   element={<Preferences />} />
+                    <Route path="/leaderboard"   element={<Leaderboard />} />
+                    <Route path="/insights"      element={<Insights />} />
                   <Route path="/news"          element={<News />} />
                   <Route path="/live"          element={<LiveScores />} />
                   <Route path="/value-bets"    element={<ValueBets />} />
@@ -117,8 +126,9 @@ const App = () => (
               <MobileBottomNav />
               <AIChatbot />
             </BetSlipProvider>
-          </AuthProvider>
-        </BrowserRouter>
+          </UserPreferencesProvider>
+        </AuthProvider>
+      </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
   </ErrorBoundary>

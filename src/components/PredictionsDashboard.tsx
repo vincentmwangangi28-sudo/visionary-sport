@@ -1,10 +1,12 @@
 import { useState, useMemo, Fragment } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
+import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import {
   Zap,
   ChevronLeft,
@@ -17,7 +19,9 @@ import {
   Flame,
   TrendingUp,
   Calendar,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
 import { AdBannerFluid } from '@/components/AdBanner';
 
@@ -53,6 +57,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     return (localStorage.getItem('predictpro_view_mode') as 'card' | 'compact') || 'card';
   });
 
+  const { preferences, setRiskProfile } = useUserPreferences();
   const { predictions, isLoading, totalPages, isFetching, refetch } = usePredictions(page, league);
 
   const handleSetViewMode = (mode: 'card' | 'compact') => {
@@ -60,7 +65,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     localStorage.setItem('predictpro_view_mode', mode);
   };
 
-  // Client-side filtering for quick filters and search
+  // Client-side filtering for quick filters, risk profiles, and search
   const filteredPredictions = useMemo(() => {
     return predictions.filter((p) => {
       // Search match
@@ -70,8 +75,18 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         if (!matchesTeam) return false;
       }
 
-      // Quick filter
+      // Risk Profile adaptive filtering
       const conf = p.confidence_score ?? p.confidence ?? 60;
+      if (preferences.riskProfile === 'conservative') {
+        // High confidence only, reasonable odds
+        if (conf < 72) return false;
+      } else if (preferences.riskProfile === 'aggressive') {
+        // Look for juicy odds or higher potential yield
+        const hasDecentOdds = (p.home_odds && p.home_odds >= 1.90) || (p.away_odds && p.away_odds >= 1.90) || (p.draw_odds && p.draw_odds >= 3.0);
+        if (!hasDecentOdds && conf < 80) return false;
+      }
+
+      // Quick filter
       if (quickFilter === 'high_confidence') {
         if (conf < 80) return false;
       } else if (quickFilter === 'value_bets') {
@@ -85,7 +100,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
       return true;
     });
-  }, [predictions, searchQuery, quickFilter]);
+  }, [predictions, searchQuery, quickFilter, preferences.riskProfile]);
 
   if (isLoading) {
     return (
@@ -102,6 +117,49 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
   return (
     <div className="space-y-5">
+      {/* Risk Profile & Credibility Proof Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/30 border border-border/70 p-3 rounded-xl">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+            Strategy:
+          </span>
+          <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border" role="group" aria-label="Select active risk profile">
+            {(['conservative', 'balanced', 'aggressive'] as RiskProfile[]).map((profile) => (
+              <button
+                key={profile}
+                type="button"
+                onClick={() => setRiskProfile(profile)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-md capitalize transition-all ${
+                  preferences.riskProfile === profile
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                aria-pressed={preferences.riskProfile === profile}
+                aria-label={`Switch strategy to ${profile}`}
+              >
+                {profile}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link to="/archive">
+            <Badge variant="outline" className="hover:bg-muted text-[11px] gap-1 cursor-pointer font-semibold py-1">
+              <CheckCircle2 className="h-3 w-3 text-green-500" aria-hidden="true" />
+              Verified Results Archive
+            </Badge>
+          </Link>
+          <Link to="/methodology">
+            <Badge variant="outline" className="hover:bg-muted text-[11px] gap-1 cursor-pointer font-semibold py-1">
+              <ShieldCheck className="h-3 w-3 text-primary" aria-hidden="true" />
+              Model Methodology
+            </Badge>
+          </Link>
+        </div>
+      </div>
+
       {/* Controls Bar: Search + Filter Pills + View Switcher */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         {/* Search Input */}

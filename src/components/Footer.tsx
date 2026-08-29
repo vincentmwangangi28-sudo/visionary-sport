@@ -4,6 +4,8 @@ import { Zap, Globe, Twitter, Youtube, Mail } from "lucide-react";
 const LINKS = {
   Predictions: [
     { to: "/", label: "Today's Predictions" },
+    { to: "/archive", label: "Results Archive (Ledger)" },
+    { to: "/methodology", label: "Mathematical Methodology" },
     { to: "/best-bets", label: "Best Bets" },
     { to: "/predict", label: "Match Predictor" },
     { to: "/correct-score", label: "Correct Score" },
@@ -11,6 +13,7 @@ const LINKS = {
     { to: "/value-bets", label: "Value Bets" },
   ],
   Tools: [
+    { to: "/preferences", label: "Strategy & Risk Feeds" },
     { to: "/accumulator", label: "Acca Builder" },
     { to: "/bankroll", label: "Bankroll Manager" },
     { to: "/statistics", label: "Statistics" },
