@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -22,7 +22,7 @@ export const useReferral = () => {
   const [loading, setLoading] = useState(true);
   const [totalEarned, setTotalEarned] = useState(0);
 
-  const fetchReferralData = async () => {
+  const fetchReferralData = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -74,7 +74,7 @@ export const useReferral = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const applyReferralCode = async (code: string): Promise<{ success: boolean; message: string }> => {
     if (!user) return { success: false, message: 'Please login first' };
@@ -160,7 +160,7 @@ export const useReferral = () => {
 
   useEffect(() => {
     fetchReferralData();
-  }, [user]);
+  }, [fetchReferralData]);
 
   return { referralCode, referrals, totalEarned, loading, applyReferralCode, refetch: fetchReferralData };
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -15,13 +15,11 @@ export const useStreakData = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    fetchStreakData();
-  }, [user]);
-
-  const fetchStreakData = async () => {
-    if (!user) return;
+  const fetchStreakData = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       // Use DB-side RPC — O(1) instead of O(n) client loop
@@ -36,7 +34,11 @@ export const useStreakData = () => {
       if (longest >= 15) badges.push('🌟 Legend');
       setStreakData({ currentStreak: d?.current_streak ?? 0, longestStreak: longest, totalCorrect: d?.total_correct ?? 0, totalPredictions: d?.total_predictions ?? 0, badges });
     } catch { /* keep defaults */ } finally { setLoading(false); }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchStreakData();
+  }, [fetchStreakData]);
 
   return { streakData, loading, refetch: fetchStreakData };
 };

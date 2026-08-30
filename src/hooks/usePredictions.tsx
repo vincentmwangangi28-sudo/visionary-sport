@@ -53,6 +53,22 @@ export const usePredictions = (page = 1, league?: string) => {
 
   const query = useQuery({
     queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
+    placeholderData: () => {
+      // Instantly provide cached predictions or default schedule while background refresh runs
+      const saved = getSavedPredictionsList();
+      const list = saved.length > 0 ? saved : DEFAULT_PREDICTIONS;
+      let filtered = list;
+      if (league && league !== 'All' && league !== 'all') {
+        filtered = list.filter(p => p.league?.toLowerCase().includes(league.toLowerCase()));
+        if (filtered.length === 0) filtered = list;
+      }
+      const start = (page - 1) * PAGE_SIZE;
+      return {
+        predictions: filtered.slice(start, start + PAGE_SIZE),
+        total: filtered.length,
+        isRealTime: false,
+      };
+    },
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
 

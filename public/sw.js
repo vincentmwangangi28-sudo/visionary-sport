@@ -1,5 +1,5 @@
-// PredictPro Service Worker v5 - Offline First & Resilient Caching Strategy
-const CACHE_VERSION = 'v5';
+// PredictPro Service Worker v6 - Resilient Offline & Chunk Loading Strategy
+const CACHE_VERSION = 'v6';
 const CACHE_STATIC = `predictpro-static-${CACHE_VERSION}`;
 const CACHE_IMAGES = `predictpro-images-${CACHE_VERSION}`;
 const CACHE_DATA = `predictpro-data-${CACHE_VERSION}`;
@@ -11,13 +11,6 @@ const MAX_IMAGE_CACHE_ENTRIES = 250;
 const STATIC_SHELL_ASSETS = [
   '/',
   '/index.html',
-  '/best-bets',
-  '/live',
-  '/news',
-  '/correct-score',
-  '/btts',
-  '/insights',
-  '/value-bets',
   '/manifest.json',
   '/favicon.ico',
   '/favicon-32x32.png',
@@ -48,19 +41,21 @@ async function trimCache(cacheName, maxItems) {
   }
 }
 
-// 1. Installation: Pre-cache static app shell
+// 1. Installation: Pre-cache core shell
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_STATIC).then(cache => {
-      return cache.addAll(STATIC_SHELL_ASSETS).catch(err => {
-        console.warn('[SW] Pre-caching static assets completed with partial matches:', err);
-      });
+    caches.open(CACHE_STATIC).then(async cache => {
+      try {
+        await cache.addAll(STATIC_SHELL_ASSETS);
+      } catch (err) {
+        console.warn('[SW] Core asset pre-cache finished with partial matches:', err);
+      }
     })
   );
 });
 
-// 2. Activation: Clean up deprecated cache versions
+// 2. Activation: Clean up older cache versions immediately
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => {
@@ -94,7 +89,7 @@ function isDataOrApiRequest(request, url) {
 }
 
 // Helper: Network fetch with timeout
-function fetchWithTimeout(request, timeoutMs = 3000) {
+function fetchWithTimeout(request, timeoutMs = 3500) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(new Error(`Fetch timed out after ${timeoutMs}ms`));
@@ -127,54 +122,74 @@ self.addEventListener('fetch', event => {
   if (!url.protocol.startsWith('http')) return;
   if (req.method !== 'GET') return;
 
-  // A. Navigation (SPA HTML Entrypoint) - Network-first with instant offline fallback to '/'
+  // Let third-party external scripts (Google Ads, Stripe, analytics, extensions) pass directly through to browser
+  if (
+    url.origin !== self.location.origin &&
+    !isImageRequest(req, url) &&
+    !isDataOrApiRequest(req, url) &&
+    !url.hostname.includes('fonts.googleapis.com') &&
+    !url.hostname.includes('fonts.gstatic.com')
+  ) {
+    return;
+  }
+
+  // A. Navigation (SPA HTML Entrypoint) - Network-first with instant offline fallback to cached index.html
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetchWithTimeout(req, 2500)
-        .then(res => {
-          if (res && res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE_STATIC).then(c => c.put(req, clone)).catch(() => {});
+      (async () => {
+        try {
+          const netRes = await fetchWithTimeout(req, 3000);
+          if (netRes && netRes.status === 200) {
+            const cache = await caches.open(CACHE_STATIC);
+            cache.put(req, netRes.clone()).catch(() => {});
+            return netRes;
           }
-          return res;
-        })
-        .catch(async () => {
-          const cached = (await caches.match(req)) || (await caches.match('/index.html')) || (await caches.match('/'));
-          return cached || new Response('Offline - PredictPro is ready once reconnected.', {
-            status: 200,
-            headers: { 'Content-Type': 'text/html' }
-          });
-        })
+        } catch (err) {
+          // Network failed or timed out
+        }
+
+        const cache = await caches.open(CACHE_STATIC);
+        const cached = (await cache.match(req)) || (await cache.match('/index.html')) || (await cache.match('/'));
+        if (cached) {
+          return cached;
+        }
+
+        return new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><title>PredictPro - Offline</title></head><body style="font-family:sans-serif;padding:2rem;text-align:center;background:#090d16;color:#e2e8f0;"><h2>PredictPro is Offline</h2><p>Please check your internet connection and reload.</p><button onclick="location.reload()" style="padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Retry</button></body></html>', {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      })()
     );
     return;
   }
 
-  // B. Team Logos & Images - Cache-First (Instant Offline display & High Performance)
+  // B. Team Logos & Images - Cache-First with fallback
   if (isImageRequest(req, url)) {
     event.respondWith(
-      caches.open(CACHE_IMAGES).then(async cache => {
+      (async () => {
+        const cache = await caches.open(CACHE_IMAGES);
         const cached = await cache.match(req);
         if (cached) {
           return cached;
         }
 
         try {
-          // Fetch from network
           const netRes = await fetch(req, { mode: 'cors' }).catch(() => fetch(req));
           if (netRes && (netRes.status === 200 || netRes.type === 'opaque')) {
             cache.put(req, netRes.clone()).catch(() => {});
-            // Trim cache in background
             setTimeout(() => trimCache(CACHE_IMAGES, MAX_IMAGE_CACHE_ENTRIES), 1000);
+            return netRes;
           }
-          return netRes;
         } catch (err) {
-          // If network failed and nothing in cache, return transparent fallback SVG
-          return new Response(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#334155"/><text x="16" y="20" fill="#fff" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">PP</text></svg>',
-            { headers: { 'Content-Type': 'image/svg+xml' } }
-          );
+          // Network fetch failed
         }
-      })
+
+        // Return deterministic fallback SVG shield badge
+        return new Response(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#334155"/><text x="16" y="20" fill="#fff" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">⚽</text></svg>',
+          { headers: { 'Content-Type': 'image/svg+xml' } }
+        );
+      })()
     );
     return;
   }
@@ -185,57 +200,83 @@ self.addEventListener('fetch', event => {
       (async () => {
         const cache = await caches.open(CACHE_DATA);
         try {
-          // Attempt network fetch with 3s timeout for intermittent connections
           const netRes = await fetchWithTimeout(req.clone(), 3000);
           if (netRes && netRes.ok) {
             cache.put(req, netRes.clone()).catch(() => {});
             return netRes;
           }
-          throw new Error('Network response not ok');
         } catch (err) {
-          // Network failed or timed out: fall back to cached data
-          const cached = await cache.match(req);
-          if (cached) {
-            // Add a header to indicate served from offline cache
-            const newHeaders = new Headers(cached.headers);
-            newHeaders.set('X-PredictPro-Offline', 'true');
-            return new Response(cached.body, {
-              status: cached.status,
-              statusText: cached.statusText,
-              headers: newHeaders,
-            });
-          }
-
-          // Fallback empty JSON response to prevent client crashing
-          return new Response(
-            JSON.stringify({ ok: true, offline: true, data: [], cached_matches: [] }),
-            {
-              status: 200,
-              headers: { 'Content-Type': 'application/json', 'X-PredictPro-Offline': 'true' }
-            }
-          );
+          // Network failed or timed out
         }
+
+        const cached = await cache.match(req);
+        if (cached) {
+          const newHeaders = new Headers(cached.headers);
+          newHeaders.set('X-PredictPro-Offline', 'true');
+          return new Response(cached.body, {
+            status: cached.status,
+            statusText: cached.statusText,
+            headers: newHeaders,
+          });
+        }
+
+        // Return empty JSON structure instead of failing
+        return new Response(
+          JSON.stringify({ ok: true, offline: true, data: [], cached_matches: [] }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', 'X-PredictPro-Offline': 'true' }
+          }
+        );
       })()
     );
     return;
   }
 
-  // D. Static Assets (Scripts, CSS, Fonts, Icons) - Stale-While-Revalidate
+  // D. Same-Origin Static Assets & Dynamic Chunks (/assets/*.js, .css, fonts)
   if (url.origin === self.location.origin || url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
     event.respondWith(
-      caches.open(CACHE_STATIC).then(async cache => {
+      (async () => {
+        const cache = await caches.open(CACHE_STATIC);
         const cached = await cache.match(req);
-        const fetchPromise = fetch(req)
-          .then(netRes => {
-            if (netRes && netRes.status === 200) {
-              cache.put(req, netRes.clone()).catch(() => {});
-            }
-            return netRes;
-          })
-          .catch(() => cached);
 
-        return cached || fetchPromise;
-      })
+        try {
+          const netRes = await fetch(req);
+          if (netRes && (netRes.status === 200 || netRes.type === 'opaque')) {
+            cache.put(req, netRes.clone()).catch(() => {});
+            return netRes;
+          }
+        } catch (err) {
+          // Network failed (offline or network glitch)
+        }
+
+        // Return cached version if available
+        if (cached) {
+          return cached;
+        }
+
+        // Fallback for JS/CSS so dynamic import error handlers receive a valid HTTP status or clean module
+        if (req.destination === 'script' || url.pathname.endsWith('.js')) {
+          return new Response('/* PredictPro Offline Chunk Fallback */\nexport default {};', {
+            status: 200,
+            headers: { 'Content-Type': 'application/javascript' }
+          });
+        }
+
+        if (req.destination === 'style' || url.pathname.endsWith('.css')) {
+          return new Response('/* Offline CSS fallback */', {
+            status: 200,
+            headers: { 'Content-Type': 'text/css' }
+          });
+        }
+
+        // Generic 503 response guaranteed to be a valid Response object
+        return new Response('Resource offline', {
+          status: 503,
+          statusText: 'Offline',
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      })()
     );
     return;
   }
@@ -278,14 +319,13 @@ self.addEventListener('message', async event => {
     const cache = await caches.open(CACHE_IMAGES);
     const urls = event.data.urls.filter(u => typeof u === 'string' && u.startsWith('http'));
     
-    // Fetch and cache logos in parallel
     await Promise.allSettled(
       urls.map(async logoUrl => {
         try {
           const match = await cache.match(logoUrl);
           if (!match) {
             const res = await fetch(logoUrl, { mode: 'no-cors' });
-            if (res) {
+            if (res && (res.status === 200 || res.type === 'opaque')) {
               await cache.put(logoUrl, res);
             }
           }
@@ -330,6 +370,7 @@ self.addEventListener('message', async event => {
   if (event.data.type === 'CLEAR_OFFLINE_CACHE') {
     event.waitUntil(
       Promise.all([
+        caches.delete(CACHE_STATIC),
         caches.delete(CACHE_IMAGES),
         caches.delete(CACHE_DATA),
       ])

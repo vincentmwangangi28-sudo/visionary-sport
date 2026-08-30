@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,7 +28,7 @@ export const useSpinWheel = () => {
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(false);
 
-  const checkCanSpin = async () => {
+  const checkCanSpin = useCallback(async () => {
     if (!user) { setCanSpin(false); setLoading(false); return; }
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -37,7 +37,7 @@ export const useSpinWheel = () => {
       setCanSpin(!data || data.length === 0);
     } catch { setCanSpin(false); }
     finally { setLoading(false); }
-  };
+  }, [user]);
 
   // Server-side spin — prize selected & coins credited atomically by edge function
   const spin = async (): Promise<{ prize: SpinPrize; prizeIndex: number } | null> => {
@@ -60,6 +60,6 @@ export const useSpinWheel = () => {
     } finally { setSpinning(false); }
   };
 
-  useEffect(() => { checkCanSpin(); }, [user]);
+  useEffect(() => { checkCanSpin(); }, [checkCanSpin]);
   return { canSpin, loading, spinning, spin, checkCanSpin };
 };

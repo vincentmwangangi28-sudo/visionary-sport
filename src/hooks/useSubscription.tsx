@@ -15,13 +15,15 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const userId = user?.id;
+
   useEffect(() => {
-    if (!user) { setSubscription(null); return; }
+    if (!userId) { setSubscription(null); return; }
     setLoading(true);
     supabase
       .from('subscriptions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('status', 'active')
       .gte('expires_at', new Date().toISOString())
       .order('expires_at', { ascending: false })
@@ -32,7 +34,7 @@ export const useSubscription = () => {
         setSubscription(data ?? null);
         setLoading(false);
       });
-  }, [user?.id]);
+  }, [userId]);
 
   const isPremium = () => {
     if (!subscription) return false;

@@ -4,6 +4,7 @@ import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { 
   getSavedPrediction, 
+  getSavedPredictionsList,
   generateDeterministicPrediction,
   savePrediction 
 } from '@/services/predictionStorage';
@@ -46,8 +47,25 @@ function deduplicateMatches(list: UpcomingMatch[]): UpcomingMatch[] {
 }
 
 export const useUpcomingMatches = () => {
-  const [matches, setMatches] = useState<UpcomingMatch[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Initialize immediately from cached or default predictions for instant UI rendering
+  const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
+    const saved = getSavedPredictionsList();
+    const list = saved.length > 0 ? saved : DEFAULT_PREDICTIONS;
+    return deduplicateMatches(list.slice(0, 12).map(p => ({
+      id: p.id,
+      home_team: p.home_team,
+      away_team: p.away_team,
+      league: p.league,
+      match_date: p.match_date,
+      ai_prediction: p.prediction,
+      confidence: p.confidence,
+      home_odds: p.home_odds,
+      draw_odds: p.draw_odds,
+      away_odds: p.away_odds,
+      is_realtime: false,
+    })));
+  });
+  const [loading, setLoading] = useState(false);
   const [isRealTime, setIsRealTime] = useState(true);
 
   const refresh = useCallback(async () => {
