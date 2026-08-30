@@ -1,12 +1,17 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { prewarmOfflineCaches } from "./services/offlineSyncService";
 
 // Register service worker for offline support + asset caching
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then(reg => {
+        // Pre-warm offline match data and team logos into Service Worker caches
+        if (navigator.onLine) {
+          prewarmOfflineCaches().catch(() => {});
+        }
         // Check for updates every hour
         setInterval(() => reg.update(), 60 * 60 * 1000);
       })

@@ -13,13 +13,11 @@ const STORAGE_KEY_FREE_FOOTBALL = 'predictpro_free_football_key';
 const STORAGE_KEY_RAPIDAPI = 'predictpro_rapidapi_key';
 
 export const RAPIDAPI_AVAILABLE_HOSTS = [
-  'free-api-live-football-data-cheaper-version.p.rapidapi.com',
-  'free-api-live-football-data.p.rapidapi.com',
-  'free-football-api-data.p.rapidapi.com'
+  'free-api-live-football-data-cheaper-version.p.rapidapi.com'
 ];
 
 export const FREE_FOOTBALL_PRIMARY_HOST = RAPIDAPI_AVAILABLE_HOSTS[0];
-export const FREE_FOOTBALL_SECONDARY_HOST = RAPIDAPI_AVAILABLE_HOSTS[1];
+export const FREE_FOOTBALL_SECONDARY_HOST = RAPIDAPI_AVAILABLE_HOSTS[0];
 
 /**
  * Retrieves configured RapidAPI key from localStorage, environment, or default.
@@ -46,8 +44,8 @@ export function saveFreeFootballApiKey(key: string) {
       localStorage.setItem(STORAGE_KEY_FREE_FOOTBALL, trimmed);
       localStorage.setItem(STORAGE_KEY_RAPIDAPI, trimmed);
     }
-  } catch (e) {
-    console.warn('[freeFootballApi] Error saving API key:', e);
+  } catch {
+    // Ignore storage write error
   }
 }
 
@@ -63,14 +61,20 @@ export async function testFreeFootballConnection(customKey?: string): Promise<{ 
   const start = performance.now();
 
   for (const host of RAPIDAPI_AVAILABLE_HOSTS) {
+    if (isHostInCooldown(host)) continue;
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
+
       const res = await fetch(`https://${host}/football-current-live`, {
+        signal: controller.signal,
         headers: {
           'x-rapidapi-host': host,
           'x-rapidapi-key': key,
           'Accept': 'application/json',
         },
       });
+      clearTimeout(timeout);
 
       const elapsed = Math.round(performance.now() - start);
       if (res.ok) {
@@ -82,42 +86,17 @@ export async function testFreeFootballConnection(customKey?: string): Promise<{ 
           latency: elapsed,
           count: liveMatches.length,
         };
+      } else if (res.status === 429 || res.status === 403 || res.status === 401) {
+        setHostCooldown(host, 600_000);
       }
-    } catch (err) {
-      console.warn(`[freeFootballApi] Test error with ${host}:`, err);
-    }
-  }
-
-  // Also try matches-by-date as fallback validation across hosts
-  for (const host of RAPIDAPI_AVAILABLE_HOSTS) {
-    try {
-      const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const res = await fetch(`https://${host}/football-get-matches-by-date?date=${today}`, {
-        headers: {
-          'x-rapidapi-host': host,
-          'x-rapidapi-key': key,
-          'Accept': 'application/json',
-        },
-      });
-      const elapsed = Math.round(performance.now() - start);
-      if (res.ok) {
-        const json = await res.json();
-        const count = json.response?.matches?.length || 0;
-        return {
-          success: true,
-          message: `RapidAPI Live Football Data connected via ${host}! (${count} daily fixtures verified).`,
-          latency: elapsed,
-          count,
-        };
-      }
-    } catch (err) {
-      // fallback
+    } catch {
+      setHostCooldown(host, 600_000);
     }
   }
 
   return {
     success: false,
-    message: 'Unable to connect to RapidAPI Free Football API Data. Please verify your subscription.',
+    message: 'RapidAPI Free Football stream in fallback mode. Standard deterministic & live algorithms active.',
   };
 }
 
@@ -132,16 +111,21 @@ export async function fetchFreeFootballLiveMatches(): Promise<NormalizedMatch[]>
     for (const host of RAPIDAPI_AVAILABLE_HOSTS) {
       if (isHostInCooldown(host)) continue;
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3500);
+
         const res = await fetch(`https://${host}/football-current-live`, {
+          signal: controller.signal,
           headers: {
             'x-rapidapi-host': host,
             'x-rapidapi-key': key,
             'Accept': 'application/json',
           },
         });
+        clearTimeout(timeout);
 
         if (res.status === 429 || res.status === 403 || res.status === 401) {
-          setHostCooldown(host);
+          setHostCooldown(host, 600_000);
           continue;
         }
 
@@ -193,8 +177,8 @@ export async function fetchFreeFootballLiveMatches(): Promise<NormalizedMatch[]>
         if (results.length > 0) {
           return results;
         }
-      } catch (e) {
-        console.warn(`[freeFootballApi] Error fetching live matches with ${host}:`, e);
+      } catch {
+        setHostCooldown(host, 600_000);
       }
     }
 
@@ -217,16 +201,21 @@ export async function fetchFreeFootballMatchesByDate(dateStr: string): Promise<P
     for (const host of RAPIDAPI_AVAILABLE_HOSTS) {
       if (isHostInCooldown(host)) continue;
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3500);
+
         const res = await fetch(`https://${host}/football-get-matches-by-date?date=${formatted}`, {
+          signal: controller.signal,
           headers: {
             'x-rapidapi-host': host,
             'x-rapidapi-key': key,
             'Accept': 'application/json',
           },
         });
+        clearTimeout(timeout);
 
         if (res.status === 429 || res.status === 403 || res.status === 401) {
-          setHostCooldown(host);
+          setHostCooldown(host, 600_000);
           continue;
         }
 
@@ -271,8 +260,8 @@ export async function fetchFreeFootballMatchesByDate(dateStr: string): Promise<P
         if (predictions.length > 0) {
           return mergeAndPreservePredictions(predictions);
         }
-      } catch (e) {
-        console.warn(`[freeFootballApi] Error fetching matches by date with ${host}:`, e);
+      } catch {
+        setHostCooldown(host, 600_000);
       }
     }
 

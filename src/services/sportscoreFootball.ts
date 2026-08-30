@@ -5,9 +5,16 @@ import {
   mergeAndPreservePredictions,
   getSavedPrediction 
 } from '@/services/predictionStorage';
+import {
+  isHostInCooldown,
+  setHostCooldown,
+  fetchWithCacheAndDeduplication,
+  CACHE_TTLS
+} from '@/services/footballDataCache';
 
 const SPORTSCORE_STORAGE_KEY = 'predictpro_sportscore_key';
 const DEFAULT_SPORTSCORE_KEY = '634f376987mshcc08c0be647a479p196325jsn87def99b6aac';
+const SPORTSCORE_HOST = 'sportscore6.p.rapidapi.com';
 
 export function getSportscoreApiKey(): string {
   try {
@@ -79,33 +86,47 @@ export interface SportscoreTeamResponse {
 }
 
 /**
- * Fetch matches for a specific team slug from SportScore6 RapidAPI
+ * Fetch matches for a specific team slug from SportScore6 RapidAPI with safe timeout and cooldown
  */
 export async function fetchSportscoreTeamMatches(slug: string): Promise<SportscoreRawMatch[]> {
+  if (isHostInCooldown(SPORTSCORE_HOST)) return [];
   const apiKey = getSportscoreApiKey();
   if (!apiKey) return [];
 
-  try {
-    const url = `https://sportscore6.p.rapidapi.com/api/widget/team/?slug=${encodeURIComponent(slug)}`;
-    const res = await fetch(url, {
-      headers: {
-        'x-rapidapi-host': 'sportscore6.p.rapidapi.com',
-        'x-rapidapi-key': apiKey,
-        'Accept': 'application/json',
-      }
-    });
+  const cacheKey = `sportscore_team_${slug}`;
+  return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
 
-    if (!res.ok) {
-      console.warn(`Sportscore6 returned status ${res.status} for team slug ${slug}`);
+      const url = `https://${SPORTSCORE_HOST}/api/widget/team/?slug=${encodeURIComponent(slug)}`;
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'x-rapidapi-host': SPORTSCORE_HOST,
+          'x-rapidapi-key': apiKey,
+          'Accept': 'application/json',
+        }
+      });
+      clearTimeout(timeout);
+
+      if (res.status === 429 || res.status === 403 || res.status === 401) {
+        setHostCooldown(SPORTSCORE_HOST, 600_000); // 10 min cooldown
+        return [];
+      }
+
+      if (!res.ok) {
+        return [];
+      }
+
+      const data: SportscoreTeamResponse = await res.json();
+      return Array.isArray(data.matches) ? data.matches : [];
+    } catch {
+      // Set cooldown on DNS failure or connection timeout to prevent spamming
+      setHostCooldown(SPORTSCORE_HOST, 600_000);
       return [];
     }
-
-    const data: SportscoreTeamResponse = await res.json();
-    return Array.isArray(data.matches) ? data.matches : [];
-  } catch (err) {
-    console.warn(`Sportscore6 error fetching ${slug}:`, err);
-    return [];
-  }
+  });
 }
 
 /**

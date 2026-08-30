@@ -129,7 +129,24 @@ export const useUpcomingMatches = () => {
       setMatches(deduplicated);
       setIsRealTime(realMatches.length > 0);
     } catch (e) {
-      console.warn('useUpcomingMatches error:', e instanceof Error ? e.message : 'fetch failed');
+      console.warn('useUpcomingMatches error (activating offline cache):', e instanceof Error ? e.message : 'fetch failed');
+      // Offline fallback: load from persistent local prediction store & defaults
+      const saved = getSavedPredictionsList();
+      const offlineList: UpcomingMatch[] = (saved.length > 0 ? saved : DEFAULT_PREDICTIONS).map(p => ({
+        id: p.id,
+        home_team: p.home_team,
+        away_team: p.away_team,
+        league: p.league,
+        match_date: p.match_date,
+        ai_prediction: p.prediction,
+        confidence: p.confidence,
+        home_odds: p.home_odds,
+        draw_odds: p.draw_odds,
+        away_odds: p.away_odds,
+        is_realtime: false,
+      }));
+      setMatches(deduplicateMatches(offlineList));
+      setIsRealTime(false);
     } finally {
       setLoading(false);
     }

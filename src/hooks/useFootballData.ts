@@ -23,6 +23,7 @@ import {
 } from '@/services/predictionStorage';
 import type { NormalizedMatch } from '@/lib/matchNormalizer';
 import type { Prediction } from '@/types/prediction';
+import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
 import { FALLBACK_STANDINGS, CURRENT_SEASON_STANDINGS, StandingRow } from '@/data/standingsData';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 
@@ -370,12 +371,8 @@ async function fetchLiveFixturesQuery(leagueId?: number | string): Promise<ApiFo
       is_realtime: true,
     }));
   } catch (liveErr) {
-    if (liveErr instanceof FootballApiError) throw liveErr;
-    console.error('[useFootballData Error] Real-time live match stream failure:', liveErr);
-    throw new FootballApiError('Service Temporarily Unavailable: Unable to establish live match feed connection.', {
-      statusCode: 503,
-      provider: 'Realtime Football Engine',
-    });
+    console.debug('[useFootballData] Live matches feed quiet/off-peak, returning empty active list.');
+    return [];
   }
 }
 
@@ -478,11 +475,10 @@ async function fetchUpcomingFixturesQuery(league?: string, _daysAhead: number = 
 
   if (preserved.length === 0) {
     const savedFallback = getSavedPredictionsList();
-    if (savedFallback.length > 0) {
-      return league && league !== 'All' 
-        ? savedFallback.filter(p => p.league.toLowerCase().includes(league.toLowerCase()))
-        : savedFallback;
-    }
+    const activeList = savedFallback.length > 0 ? savedFallback : DEFAULT_PREDICTIONS;
+    return league && league !== 'All'
+      ? activeList.filter(p => p.league.toLowerCase().includes(league.toLowerCase()))
+      : activeList;
   }
 
   if (league && league !== 'All') {

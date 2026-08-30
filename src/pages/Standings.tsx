@@ -11,6 +11,7 @@ import { Trophy, RefreshCw, AlertCircle, ShieldAlert, Activity, BarChart2, Table
 import { LEAGUES, FALLBACK_STANDINGS, LeagueConfig } from '@/data/standingsData';
 import { useStandings } from '@/hooks/useFootballData';
 import { TeamFormTrendsChart } from '@/components/TeamFormTrendsChart';
+import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 
 const FormBit = ({ r }: { r: string }) => (
@@ -253,17 +254,8 @@ export default function Standings() {
                       >
                         <td className="py-2.5 px-3 text-muted-foreground font-medium">{row.position}</td>
                         <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2">
-                            {row.logo && (
-                              <img
-                                src={row.logo}
-                                alt=""
-                                className="w-5 h-5 object-contain flex-shrink-0"
-                                onError={e => {
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
-                            )}
+                          <div className="flex items-center gap-2.5">
+                            <TeamLogo team={row.team} logoUrl={row.logo} size="xs" />
                             <span className="font-medium truncate max-w-[140px] sm:max-w-none">{row.team}</span>
                           </div>
                         </td>

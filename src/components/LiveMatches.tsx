@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Activity, RefreshCw, Radio, Zap, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { TeamLogo } from '@/components/TeamLogo';
 
 export const LiveMatches = () => {
   const { 
@@ -110,14 +111,7 @@ export const LiveMatches = () => {
                   </div>
                   <div className="flex items-center justify-between my-2 gap-2">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {m.home_logo && (
-                        <img
-                          src={m.home_logo}
-                          alt=""
-                          className="w-4 h-4 object-contain flex-shrink-0"
-                          onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
-                        />
-                      )}
+                      <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="xs" />
                       <span className="font-bold text-sm truncate">{m.home_team}</span>
                     </div>
                     <span className="text-xl font-black px-2 tabular-nums">
@@ -125,14 +119,7 @@ export const LiveMatches = () => {
                     </span>
                     <div className="flex items-center justify-end gap-2 flex-1 min-w-0 text-right">
                       <span className="font-bold text-sm truncate">{m.away_team}</span>
-                      {m.away_logo && (
-                        <img
-                          src={m.away_logo}
-                          alt=""
-                          className="w-4 h-4 object-contain flex-shrink-0"
-                          onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
-                        />
-                      )}
+                      <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="xs" />
                     </div>
                   </div>
                   {m.prediction && (

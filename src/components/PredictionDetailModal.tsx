@@ -6,6 +6,7 @@ import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/p
 import { TeamFormBadge } from '@/components/TeamFormBadge';
 import { H2HWidget } from '@/components/H2HWidget';
 import { SharePrediction } from '@/components/SharePrediction';
+import { TeamLogo } from '@/components/TeamLogo';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, TrendingUp, Target } from 'lucide-react';
@@ -43,7 +44,11 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-lg">{p.home_team} vs {p.away_team}</DialogTitle>
+          <div className="flex items-center gap-3 my-1">
+            <TeamLogo team={p.home_team} size="md" />
+            <DialogTitle className="text-lg flex-1 min-w-0 truncate">{p.home_team} vs {p.away_team}</DialogTitle>
+            <TeamLogo team={p.away_team} size="md" />
+          </div>
           <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
             <Badge variant="outline">{p.league}</Badge>
             <span>{new Date(p.match_date).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' })}</span>

@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AIChatbot } from "@/components/AIChatbot";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { queryClient } from "@/lib/queryClient";
 import { Suspense } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -53,6 +54,7 @@ const WorldCupPredictions = lazyWithRetry(() => import("./pages/WorldCupPredicti
 const AFCONPredictions           = lazyWithRetry(() => import("./pages/AFCONPredictions"));
 const Blog                       = lazyWithRetry(() => import("./pages/Blog"));
 const BlogPost                   = lazyWithRetry(() => import("./pages/BlogPost"));
+const Sitemap                    = lazyWithRetry(() => import("./pages/Sitemap"));
 const CorrectScore      = lazyWithRetry(() => import("./pages/CorrectScore"));
 const BTTS              = lazyWithRetry(() => import("./pages/BTTS"));
 
@@ -76,6 +78,7 @@ const App = () => (
                 <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
                   Skip to content
                 </a>
+                <OfflineBanner />
                 <Toaster />
                 <Sonner />
                 <Suspense fallback={<PageLoader />}>
@@ -119,6 +122,7 @@ const App = () => (
                   <Route path="/afcon-predictions"            element={<AFCONPredictions />} />
                   <Route path="/blog"                         element={<Blog />} />
                   <Route path="/blog/:slug"                   element={<BlogPost />} />
+                  <Route path="/sitemap"                      element={<Sitemap />} />
                   <Route path="*"               element={<NotFound />} />
                 </Routes>
               </Suspense>

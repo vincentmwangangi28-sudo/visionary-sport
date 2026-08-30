@@ -11,6 +11,7 @@ const LINKS = {
     { to: "/correct-score", label: "Correct Score" },
     { to: "/btts", label: "BTTS / Over-Under" },
     { to: "/value-bets", label: "Value Bets" },
+    { to: "/blog", label: "Betting Strategy Blog" },
   ],
   Tools: [
     { to: "/preferences", label: "Strategy & Risk Feeds" },
@@ -35,6 +36,7 @@ const LINKS = {
     { to: "/performance", label: "My Performance" },
     { to: "/auth", label: "Sign In / Register" },
     { to: "/about", label: "About PredictPro" },
+    { to: "/sitemap", label: "Sitemap & Index" },
   ],
 };
 

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info } from 'lucide-react';
+import { TeamLogo } from '@/components/TeamLogo';
 
 interface ValueBet {
   id: string; home_team: string; away_team: string; match_date: string;
@@ -119,11 +120,17 @@ export default function ValueBets() {
                 <CardContent className="p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1.5">
                         <Badge variant="outline" className="text-xs">{bet.league}</Badge>
                         <span className="text-xs text-muted-foreground">{new Date(bet.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                       </div>
-                      <p className="font-bold text-lg">{bet.home_team} vs {bet.away_team}</p>
+                      <div className="flex items-center gap-2 my-1">
+                        <TeamLogo team={bet.home_team} size="sm" />
+                        <span className="font-bold text-base text-foreground">{bet.home_team}</span>
+                        <span className="text-muted-foreground text-xs font-semibold">vs</span>
+                        <TeamLogo team={bet.away_team} size="sm" />
+                        <span className="font-bold text-base text-foreground">{bet.away_team}</span>
+                      </div>
                       <p className="text-sm text-muted-foreground mt-1">Market: <span className="font-medium text-foreground">{bet.market}</span></p>
                     </div>
                     <div className="flex gap-4 text-center">

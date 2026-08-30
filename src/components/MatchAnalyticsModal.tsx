@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { TeamLogo } from '@/components/TeamLogo';
+import { NotifyMeButton } from '@/components/NotifyMeButton';
 import {
   TrendingUp,
   Target,
@@ -98,22 +100,45 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                 {new Date(p.match_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            <Badge className="bg-primary text-primary-foreground font-black">
-              AI Confidence: {confidence}%
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-primary text-primary-foreground font-black">
+                AI Confidence: {confidence}%
+              </Badge>
+              <NotifyMeButton
+                match={{
+                  id: p.id,
+                  home_team: p.home_team,
+                  away_team: p.away_team,
+                  league: p.league,
+                  match_date: p.match_date,
+                  prediction: outcome,
+                  confidence,
+                  home_odds: p.home_odds,
+                  draw_odds: p.draw_odds,
+                  away_odds: p.away_odds,
+                }}
+                variant="compact"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-5 items-center text-center my-3">
-            <div className="col-span-2 text-left">
-              <h2 className="text-lg md:text-xl font-black truncate">{p.home_team}</h2>
-              <span className="text-xs text-muted-foreground font-medium">Home Team</span>
+          <div className="grid grid-cols-5 items-center text-center my-4">
+            <div className="col-span-2 flex items-center gap-3 text-left">
+              <TeamLogo team={p.home_team} size="lg" className="shadow-sm" />
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-black truncate">{p.home_team}</h2>
+                <span className="text-xs text-muted-foreground font-medium">Home Team</span>
+              </div>
             </div>
             <div className="col-span-1 flex flex-col items-center justify-center">
-              <span className="px-2.5 py-1 bg-muted rounded-full text-xs font-black text-muted-foreground">VS</span>
+              <span className="px-2.5 py-1 bg-muted rounded-full text-xs font-black text-muted-foreground border">VS</span>
             </div>
-            <div className="col-span-2 text-right">
-              <h2 className="text-lg md:text-xl font-black truncate">{p.away_team}</h2>
-              <span className="text-xs text-muted-foreground font-medium">Away Team</span>
+            <div className="col-span-2 flex items-center justify-end gap-3 text-right">
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-black truncate">{p.away_team}</h2>
+                <span className="text-xs text-muted-foreground font-medium">Away Team</span>
+              </div>
+              <TeamLogo team={p.away_team} size="lg" className="shadow-sm" />
             </div>
           </div>
 

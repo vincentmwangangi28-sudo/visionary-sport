@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Volume2, VolumeX, Sparkles, Trophy, Flame } from 'lucide-react';
+import { Bell, Volume2, VolumeX, Sparkles, Trophy, Flame, Clock, Trash2, Send, Radio, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMatchNotifications } from '@/hooks/useMatchNotifications';
+import { TeamLogo } from '@/components/TeamLogo';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface Notification {
   id: string;
@@ -54,6 +58,15 @@ const DEMO_NOTIFICATIONS: Notification[] = [
 
 export const NotificationBell = () => {
   const { user } = useAuth();
+  const {
+    subscriptions,
+    unsubscribe,
+    testAlert,
+    simulateResult,
+    permission,
+    requestPermission,
+  } = useMatchNotifications();
+
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     try {
       const saved = localStorage.getItem('predictpro_notifications');
@@ -63,6 +76,7 @@ export const NotificationBell = () => {
     }
   });
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'feed' | 'matches'>('feed');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     return localStorage.getItem('predictpro_sound_alerts') !== 'false';
   });
@@ -195,6 +209,7 @@ export const NotificationBell = () => {
   }, [user]);
 
   const unread = notifications.filter((n) => !n.read).length;
+  const totalAlertBadge = unread + subscriptions.length;
 
   return (
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) fetchSupabaseNotifications(); }}>
@@ -204,24 +219,24 @@ export const NotificationBell = () => {
           size="sm" 
           className="relative p-2 h-9 w-9 rounded-full" 
           title="Live Match & Tip Alerts"
-          aria-label={`Match and AI Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
+          aria-label={`Match and AI Notifications${totalAlertBadge > 0 ? `, ${totalAlertBadge} active` : ''}`}
         >
           <Bell className="h-5 w-5" aria-hidden="true" />
-          {unread > 0 && (
+          {totalAlertBadge > 0 && (
             <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse border-2 border-background" aria-hidden="true">
-              {unread > 9 ? '9+' : unread}
+              {totalAlertBadge > 9 ? '9+' : totalAlertBadge}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-84 sm:w-96 p-0 shadow-2xl border bg-card" align="end">
+      <PopoverContent className="w-84 sm:w-96 p-0 shadow-2xl border bg-card rounded-2xl overflow-hidden" align="end">
         {/* Header */}
-        <div className="flex items-center justify-between p-3.5 border-b bg-card">
+        <div className="flex items-center justify-between p-3.5 border-b bg-muted/20">
           <div className="flex items-center gap-2">
             <span className="font-bold text-sm">Match & AI Alerts</span>
-            {unread > 0 && (
-              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-black">
-                {unread} new
+            {subscriptions.length > 0 && (
+              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-black bg-primary/10 text-primary">
+                {subscriptions.length} match{subscriptions.length > 1 ? 'es' : ''} tracked
               </Badge>
             )}
           </div>
@@ -237,62 +252,153 @@ export const NotificationBell = () => {
             >
               {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" aria-hidden="true" /> : <VolumeX className="h-4 w-4" aria-hidden="true" />}
             </Button>
-            {unread > 0 && (
+            {activeTab === 'feed' && unread > 0 && (
               <button 
                 type="button" 
                 onClick={markAllRead} 
                 className="text-xs text-primary font-semibold hover:underline"
                 aria-label="Mark all notifications as read"
               >
-                Mark all read
+                Mark read
               </button>
             )}
           </div>
         </div>
 
-        {/* List */}
-        <div className="max-h-80 overflow-y-auto divide-y">
-          {notifications.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">
-              <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
-              No notifications yet
-            </div>
-          ) : (
-            notifications.map((n) => (
-              <div
-                key={n.id}
-                className={`flex gap-3 p-3 hover:bg-muted/30 transition-colors ${
-                  !n.read ? 'bg-primary/5' : ''
-                }`}
-              >
-                <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICON[n.type] ?? TYPE_ICON.default}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-xs leading-snug ${!n.read ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-                    {n.message}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                  </p>
-                </div>
-                {!n.read && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
-              </div>
-            ))
-          )}
-        </div>
+        {/* Tabs: Feed vs Subscribed Matches */}
+        <Tabs defaultValue="feed" value={activeTab} onValueChange={(v) => setActiveTab(v as 'feed' | 'matches')}>
+          <div className="px-3 pt-2 bg-muted/10 border-b">
+            <TabsList className="grid w-full grid-cols-2 h-8">
+              <TabsTrigger value="feed" className="text-xs font-bold gap-1.5">
+                Feed {unread > 0 && <span className="px-1.5 py-0.2 bg-red-500 text-white rounded-full text-[9px]">{unread}</span>}
+              </TabsTrigger>
+              <TabsTrigger value="matches" className="text-xs font-bold gap-1.5">
+                Notify Me ({subscriptions.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        {/* Footer with test simulation */}
+          {/* Feed Tab */}
+          <TabsContent value="feed" className="m-0 max-h-80 overflow-y-auto divide-y">
+            {notifications.length === 0 ? (
+              <div className="py-10 text-center text-sm text-muted-foreground">
+                <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                No notifications yet
+              </div>
+            ) : (
+              notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`flex gap-3 p-3 hover:bg-muted/30 transition-colors ${
+                    !n.read ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICON[n.type] ?? TYPE_ICON.default}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs leading-snug ${!n.read ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+                      {n.message}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                  {!n.read && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
+                </div>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Subscribed Matches Tab */}
+          <TabsContent value="matches" className="m-0 max-h-80 overflow-y-auto divide-y">
+            {subscriptions.length === 0 ? (
+              <div className="py-8 px-4 text-center">
+                <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
+                <p className="text-sm font-bold text-foreground">No Subscribed Matches</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-[240px] mx-auto">
+                  Click <b>"Notify Me"</b> on any upcoming match to get push notifications for kickoff & results.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => testAlert()}
+                  className="mt-3 text-xs font-bold gap-1.5"
+                >
+                  <Send className="h-3 w-3" /> Test Browser Push
+                </Button>
+              </div>
+            ) : (
+              subscriptions.map((sub) => {
+                const matchTime = new Date(sub.matchDate);
+                const isUpcoming = matchTime.getTime() > Date.now();
+                return (
+                  <div key={sub.matchId} className="p-3 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <Badge variant="outline" className="text-[10px] font-bold py-0">
+                        {sub.league}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {matchTime.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' })} · {matchTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 my-1">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <TeamLogo team={sub.homeTeam} logoUrl={sub.homeLogo} size="xs" />
+                        <span className="font-bold text-xs truncate">{sub.homeTeam}</span>
+                        <span className="text-[10px] text-muted-foreground font-normal">v</span>
+                        <TeamLogo team={sub.awayTeam} logoUrl={sub.awayLogo} size="xs" />
+                        <span className="font-bold text-xs truncate">{sub.awayTeam}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => unsubscribe(sub.matchId)}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        title="Remove alert subscription"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+
+                    {sub.prediction && (
+                      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
+                        <span className="text-muted-foreground flex items-center gap-1 truncate">
+                          <Sparkles className="h-3 w-3 text-primary" /> AI: <b className="text-foreground">{sub.prediction}</b>
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => simulateResult(sub.matchId)}
+                            className="text-[10px] text-primary font-bold hover:underline"
+                            title="Simulate FT Push notification"
+                          >
+                            Simulate Result
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer with browser push trigger */}
         <div className="p-2.5 bg-muted/40 border-t flex items-center justify-between text-xs">
           <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-primary" /> Live Push & Alerts Active
+            <Sparkles className="h-3 w-3 text-primary" /> Browser Push {permission === 'granted' ? 'Active ✅' : 'Ready'}
           </span>
           <button
-            onClick={simulateAlert}
-            className="text-[11px] font-bold text-primary hover:underline"
+            onClick={activeTab === 'matches' ? () => testAlert() : simulateAlert}
+            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
           >
-            Test Live Alert
+            <Send className="h-3 w-3" /> Test Live Push
           </button>
         </div>
       </PopoverContent>
     </Popover>
   );
 };
+

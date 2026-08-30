@@ -17,6 +17,7 @@ import {
   Flame,
   CheckCheck
 } from 'lucide-react';
+import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 
 export const BetSlipDrawer = () => {
@@ -155,14 +156,20 @@ export const BetSlipDrawer = () => {
                     className="p-3 bg-muted/40 hover:bg-muted/60 transition-colors rounded-xl border relative group"
                   >
                     <div className="flex items-start justify-between gap-2 pr-6">
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-0.5">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 mb-1">
                           <span className="text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded">
                             #{idx + 1}
                           </span>
                           <span className="text-xs text-muted-foreground truncate max-w-[170px]">{s.league}</span>
                         </div>
-                        <p className="font-bold text-sm leading-snug">{s.homeTeam} vs {s.awayTeam}</p>
+                        <div className="flex items-center gap-1.5 text-sm font-bold leading-snug">
+                          <TeamLogo team={s.homeTeam} size="xs" />
+                          <span className="truncate">{s.homeTeam}</span>
+                          <span className="text-muted-foreground text-xs font-normal">v</span>
+                          <TeamLogo team={s.awayTeam} size="xs" />
+                          <span className="truncate">{s.awayTeam}</span>
+                        </div>
                       </div>
                       <button
                         type="button"

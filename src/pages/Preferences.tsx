@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useUserPreferences, RiskProfile, OddsFormat } from '@/hooks/useUserPreferences';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { toast } from '@/hooks/use-toast';
 import {
   SlidersHorizontal,
@@ -18,7 +19,11 @@ import {
   Coins,
   Globe,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Wifi,
+  WifiOff,
+  DownloadCloud,
+  HardDrive
 } from 'lucide-react';
 
 const AVAILABLE_LEAGUES = [
@@ -356,10 +361,73 @@ export default function Preferences() {
               </div>
             </CardContent>
           </Card>
+
+          {/* 6. Offline Match Mode & Service Worker Cache */}
+          <OfflineCacheSettingsCard />
         </div>
       </main>
 
       <Footer />
     </div>
+  );
+}
+
+function OfflineCacheSettingsCard() {
+  const { isOnline, hasCachedData, lastSyncedAt, syncOfflineData, isSyncing } = useNetworkStatus();
+
+  return (
+    <Card className="border-border/70">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <HardDrive className="h-5 w-5 text-primary" aria-hidden="true" />
+            6. Offline Match Mode & Team Crests Cache
+          </CardTitle>
+          <Badge variant="outline" className={isOnline ? "text-green-500 border-green-500/30 bg-green-500/10" : "text-amber-500 border-amber-500/30 bg-amber-500/10"}>
+            {isOnline ? (
+              <span className="flex items-center gap-1"><Wifi className="h-3 w-3" /> Online</span>
+            ) : (
+              <span className="flex items-center gap-1"><WifiOff className="h-3 w-3" /> Offline (Cache Active)</span>
+            )}
+          </Badge>
+        </div>
+        <CardDescription className="text-xs">
+          Service Worker caches critical fixture predictions, AI algorithm insights, and high-definition team logos locally so you can research match tips without internet or on intermittent cellular connections.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-xl bg-muted/30 border border-border/60 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm">Offline Cache Snapshot Status</span>
+              {hasCachedData ? (
+                <Badge className="bg-green-600 text-white text-[10px] py-0 px-2 font-bold">
+                  ✓ Ready for Offline
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground text-[10px]">
+                  Needs First Sync
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {lastSyncedAt
+                ? `Last synchronized: ${new Date(lastSyncedAt).toLocaleDateString()} at ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                : 'Initial pre-warming cache ready on network connection.'}
+            </p>
+          </div>
+
+          <Button
+            onClick={syncOfflineData}
+            disabled={isSyncing || !isOnline}
+            size="sm"
+            className="gap-2 shrink-0 font-bold"
+          >
+            <DownloadCloud className={`h-4 w-4 ${isSyncing ? 'animate-bounce' : ''}`} />
+            {isSyncing ? 'Caching Matches...' : 'Download Latest for Offline'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

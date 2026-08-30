@@ -19,7 +19,9 @@ import {
   savePrediction 
 } from '@/services/predictionStorage';
 import type { Prediction } from '@/types/prediction';
-import { Zap, ChevronLeft, AlertCircle, RefreshCw, Sparkles, Trophy, Calendar, ArrowRight } from 'lucide-react';
+import { Zap, ChevronLeft, AlertCircle, RefreshCw, Sparkles, Trophy, Calendar, ArrowRight, BellRing, Bell } from 'lucide-react';
+import { TeamLogo } from '@/components/TeamLogo';
+import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
@@ -300,8 +302,8 @@ export default function MatchPrediction() {
           </Alert>
         )}
 
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="outline" className="text-xs">{prediction.league}</Badge>
+        <div className="flex items-center gap-2 mb-3">
+          <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">{prediction.league}</Badge>
           {isFallback && (
             <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary">
               <Sparkles className="h-3 w-3 mr-1" />
@@ -310,11 +312,51 @@ export default function MatchPrediction() {
           )}
         </div>
 
-        <h1 className="text-3xl font-black mb-2 tracking-tight">{prediction.home_team} vs {prediction.away_team}</h1>
-        <p className="text-muted-foreground text-sm mb-6 flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5" />
-          {new Date(prediction.match_date).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
+        {/* Team Matchup Header with Logos */}
+        <div className="bg-card border rounded-2xl p-6 mb-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col items-center text-center flex-1 min-w-0">
+              <TeamLogo team={prediction.home_team} size="lg" className="mb-2 shadow-sm" />
+              <h2 className="text-base sm:text-xl font-black text-foreground truncate w-full">{prediction.home_team}</h2>
+              <span className="text-[11px] text-muted-foreground uppercase font-semibold mt-0.5">Home</span>
+            </div>
+
+            <div className="flex flex-col items-center justify-center flex-shrink-0 px-2">
+              <span className="px-3 py-1 bg-muted/80 rounded-full text-xs font-black text-muted-foreground border">VS</span>
+              <span className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {new Date(prediction.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center text-center flex-1 min-w-0">
+              <TeamLogo team={prediction.away_team} size="lg" className="mb-2 shadow-sm" />
+              <h2 className="text-base sm:text-xl font-black text-foreground truncate w-full">{prediction.away_team}</h2>
+              <span className="text-[11px] text-muted-foreground uppercase font-semibold mt-0.5">Away</span>
+            </div>
+          </div>
+          <p className="text-center text-xs text-muted-foreground mt-4 pt-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>
+              {new Date(prediction.match_date).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+            <NotifyMeButton
+              match={{
+                id: prediction.id,
+                home_team: prediction.home_team,
+                away_team: prediction.away_team,
+                league: prediction.league,
+                match_date: prediction.match_date,
+                prediction: outcome,
+                confidence,
+                home_odds: prediction.home_odds,
+                draw_odds: prediction.draw_odds,
+                away_odds: prediction.away_odds,
+              }}
+              variant="button"
+              size="sm"
+            />
+          </p>
+        </div>
 
         {/* Main Prediction Card */}
         <Card className="border-primary/30 cursor-pointer hover:shadow-lg transition-all" onClick={() => setShowModal(true)}>
@@ -334,17 +376,23 @@ export default function MatchPrediction() {
             {/* Estimated Odds Display */}
             {(prediction.home_odds || prediction.draw_odds || prediction.away_odds) && (
               <div className="grid grid-cols-3 gap-2 pt-2">
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
-                  <p className="text-[11px] text-muted-foreground">1 ({prediction.home_team})</p>
-                  <p className="font-bold text-sm">{prediction.home_odds ? prediction.home_odds.toFixed(2) : '1.90'}</p>
+                <div className="bg-muted/50 rounded-lg p-2.5 text-center flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <TeamLogo team={prediction.home_team} size="xs" />
+                    <p className="text-[11px] text-muted-foreground font-medium truncate max-w-[80px]">1 ({prediction.home_team})</p>
+                  </div>
+                  <p className="font-black text-sm">{prediction.home_odds ? prediction.home_odds.toFixed(2) : '1.90'}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
-                  <p className="text-[11px] text-muted-foreground">X (Draw)</p>
-                  <p className="font-bold text-sm">{prediction.draw_odds ? prediction.draw_odds.toFixed(2) : '3.40'}</p>
+                <div className="bg-muted/50 rounded-lg p-2.5 text-center flex flex-col items-center justify-center">
+                  <p className="text-[11px] text-muted-foreground font-medium mb-1">X (Draw)</p>
+                  <p className="font-black text-sm">{prediction.draw_odds ? prediction.draw_odds.toFixed(2) : '3.40'}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
-                  <p className="text-[11px] text-muted-foreground">2 ({prediction.away_team})</p>
-                  <p className="font-bold text-sm">{prediction.away_odds ? prediction.away_odds.toFixed(2) : '2.80'}</p>
+                <div className="bg-muted/50 rounded-lg p-2.5 text-center flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <TeamLogo team={prediction.away_team} size="xs" />
+                    <p className="text-[11px] text-muted-foreground font-medium truncate max-w-[80px]">2 ({prediction.away_team})</p>
+                  </div>
+                  <p className="font-black text-sm">{prediction.away_odds ? prediction.away_odds.toFixed(2) : '2.80'}</p>
                 </div>
               </div>
             )}

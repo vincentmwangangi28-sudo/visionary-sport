@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { RealtimeIndicator } from '@/components/RealtimeIndicator';
+import { TeamLogo } from '@/components/TeamLogo';
+import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { Link } from 'react-router-dom';
 
 export default function LiveScores() {
@@ -85,27 +87,39 @@ export default function LiveScores() {
               </span>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
-            aria-label={expandedId === m.id ? `Hide match events for ${m.home_team} vs ${m.away_team}` : `Show match events for ${m.home_team} vs ${m.away_team}`}
-            aria-expanded={expandedId === m.id}
-            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {expandedId === m.id ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
-          </button>
+          <div className="flex items-center gap-1.5">
+            {m.status !== 'finished' && (
+              <NotifyMeButton
+                match={{
+                  id: String(m.id),
+                  home_team: m.home_team,
+                  away_team: m.away_team,
+                  league: m.league,
+                  match_date: m.match_date,
+                  prediction: m.prediction,
+                  confidence: m.confidence,
+                  home_odds: m.home_odds,
+                  draw_odds: m.draw_odds,
+                  away_odds: m.away_odds,
+                }}
+                variant="icon"
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
+              aria-label={expandedId === m.id ? `Hide match events for ${m.home_team} vs ${m.away_team}` : `Show match events for ${m.home_team} vs ${m.away_team}`}
+              aria-expanded={expandedId === m.id}
+              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {expandedId === m.id ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between gap-3 my-1">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {m.home_logo && (
-              <img 
-                src={m.home_logo} 
-                alt={m.home_team} 
-                className="w-5 h-5 object-contain flex-shrink-0" 
-                onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
-              />
-            )}
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="sm" />
             <p className={`font-bold text-sm sm:text-base truncate ${m.home_score != null && m.away_score != null && m.home_score > m.away_score ? 'text-primary' : ''}`}>
               {m.home_team}
             </p>
@@ -121,18 +135,11 @@ export default function LiveScores() {
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-2 flex-1 min-w-0 text-right">
+          <div className="flex items-center justify-end gap-2.5 flex-1 min-w-0 text-right">
             <p className={`font-bold text-sm sm:text-base truncate ${m.home_score != null && m.away_score != null && m.away_score > m.home_score ? 'text-primary' : ''}`}>
               {m.away_team}
             </p>
-            {m.away_logo && (
-              <img 
-                src={m.away_logo} 
-                alt={m.away_team} 
-                className="w-5 h-5 object-contain flex-shrink-0" 
-                onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
-              />
-            )}
+            <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="sm" />
           </div>
         </div>
 

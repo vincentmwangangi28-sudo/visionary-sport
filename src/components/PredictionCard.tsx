@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { SharePrediction } from '@/components/SharePrediction';
+import { TeamLogo } from '@/components/TeamLogo';
+import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { Lock, Clock, TrendingUp, BarChart3, Plus, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
@@ -60,7 +62,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
           } ${confidence >= 80 ? 'border-primary/40' : ''}`}
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-bold">
                 {p.league}
               </Badge>
@@ -68,9 +70,13 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                 {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            <p className="font-bold text-sm truncate text-foreground">
-              {p.home_team} <span className="text-muted-foreground font-normal">vs</span> {p.away_team}
-            </p>
+            <div className="flex items-center gap-2 text-sm">
+              <TeamLogo team={p.home_team} size="xs" />
+              <span className="font-bold truncate text-foreground">{p.home_team}</span>
+              <span className="text-muted-foreground text-xs font-normal">vs</span>
+              <TeamLogo team={p.away_team} size="xs" />
+              <span className="font-bold truncate text-foreground">{p.away_team}</span>
+            </div>
           </div>
 
           {/* AI Tip + Confidence */}
@@ -110,6 +116,24 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               )}
             </div>
           )}
+
+          <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+            <NotifyMeButton
+              match={{
+                id: p.id,
+                home_team: p.home_team,
+                away_team: p.away_team,
+                league: p.league,
+                match_date: p.match_date,
+                prediction: outcome,
+                confidence,
+                home_odds: p.home_odds,
+                draw_odds: p.draw_odds,
+                away_odds: p.away_odds,
+              }}
+              variant="icon"
+            />
+          </div>
         </div>
 
         <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
@@ -131,15 +155,40 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
             <Badge variant="outline" className="text-xs font-bold border-primary/30 text-primary">
               {p.league}
             </Badge>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              {new Date(p.match_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {new Date(p.match_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              <div onClick={(e) => e.stopPropagation()}>
+                <NotifyMeButton
+                  match={{
+                    id: p.id,
+                    home_team: p.home_team,
+                    away_team: p.away_team,
+                    league: p.league,
+                    match_date: p.match_date,
+                    prediction: outcome,
+                    confidence,
+                    home_odds: p.home_odds,
+                    draw_odds: p.draw_odds,
+                    away_odds: p.away_odds,
+                  }}
+                  variant="icon"
+                />
+              </div>
             </div>
           </div>
-          <div className="mt-2.5">
-            <p className="font-extrabold text-base leading-snug text-foreground">
-              {p.home_team} <span className="text-muted-foreground font-normal text-sm">vs</span> {p.away_team}
-            </p>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <TeamLogo team={p.home_team} size="sm" />
+              <span className="font-extrabold text-sm sm:text-base leading-snug text-foreground truncate">{p.home_team}</span>
+            </div>
+            <span className="text-muted-foreground font-bold text-xs px-1.5 py-0.5 bg-muted rounded">vs</span>
+            <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
+              <span className="font-extrabold text-sm sm:text-base leading-snug text-foreground truncate">{p.away_team}</span>
+              <TeamLogo team={p.away_team} size="sm" />
+            </div>
           </div>
         </CardHeader>
 
