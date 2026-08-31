@@ -22,7 +22,6 @@ interface StandingRow {
 
 // Fallback high-fidelity real standings data for 2026/2027 season kickoff (August Matchdays 1-2)
 const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
-  // Premier League (id: 39) - 2026/27 Matchday 2
   39: [
     { position: 1, team: 'Manchester City', logo: 'https://media.api-sports.io/football/teams/50.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 6, ga: 1, gd: 5, points: 6, form: 'WW' },
     { position: 2, team: 'Brighton & Hove Albion', logo: 'https://media.api-sports.io/football/teams/51.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 5, ga: 1, gd: 4, points: 6, form: 'WW' },
@@ -45,8 +44,6 @@ const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
     { position: 19, team: 'Wolverhampton Wanderers', logo: 'https://media.api-sports.io/football/teams/39.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 2, ga: 8, gd: -6, points: 0, form: 'LL' },
     { position: 20, team: 'Everton', logo: 'https://media.api-sports.io/football/teams/45.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 0, ga: 7, gd: -7, points: 0, form: 'LL' },
   ],
-
-  // La Liga (id: 140) - 2026/27 Matchday 2
   140: [
     { position: 1, team: 'Celta Vigo', logo: 'https://media.api-sports.io/football/teams/538.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 5, ga: 2, gd: 3, points: 6, form: 'WW' },
     { position: 2, team: 'Barcelona', logo: 'https://media.api-sports.io/football/teams/529.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 4, ga: 2, gd: 2, points: 6, form: 'WW' },
@@ -69,8 +66,6 @@ const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
     { position: 19, team: 'Espanyol', logo: 'https://media.api-sports.io/football/teams/540.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 0, ga: 2, gd: -2, points: 0, form: 'LL' },
     { position: 20, team: 'Valencia', logo: 'https://media.api-sports.io/football/teams/532.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 2, ga: 5, gd: -3, points: 0, form: 'LL' },
   ],
-
-  // Serie A (id: 135) - 2026/27 Matchday 2
   135: [
     { position: 1, team: 'Juventus', logo: 'https://media.api-sports.io/football/teams/496.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 6, ga: 0, gd: 6, points: 6, form: 'WW' },
     { position: 2, team: 'Inter Milan', logo: 'https://media.api-sports.io/football/teams/505.png', played: 2, won: 1, drawn: 1, lost: 0, gf: 4, ga: 2, gd: 2, points: 4, form: 'DW' },
@@ -93,8 +88,6 @@ const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
     { position: 19, team: 'Venezia', logo: 'https://media.api-sports.io/football/teams/517.png', played: 2, won: 0, drawn: 1, lost: 1, gf: 1, ga: 3, gd: -2, points: 1, form: 'LD' },
     { position: 20, team: 'Lecce', logo: 'https://media.api-sports.io/football/teams/867.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 0, ga: 6, gd: -6, points: 0, form: 'LL' },
   ],
-
-  // Bundesliga (id: 78) - 2026/27 Matchday 1
   78: [
     { position: 1, team: 'SC Freiburg', logo: 'https://media.api-sports.io/football/teams/160.png', played: 1, won: 1, drawn: 0, lost: 0, gf: 3, ga: 1, gd: 2, points: 3, form: 'W' },
     { position: 2, team: 'FC Heidenheim', logo: 'https://media.api-sports.io/football/teams/180.png', played: 1, won: 1, drawn: 0, lost: 0, gf: 2, ga: 0, gd: 2, points: 3, form: 'W' },
@@ -115,8 +108,6 @@ const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
     { position: 17, team: 'Eintracht Frankfurt', logo: 'https://media.api-sports.io/football/teams/169.png', played: 1, won: 0, drawn: 0, lost: 1, gf: 0, ga: 2, gd: -2, points: 0, form: 'L' },
     { position: 18, team: 'FC St. Pauli', logo: 'https://media.api-sports.io/football/teams/186.png', played: 1, won: 0, drawn: 0, lost: 1, gf: 0, ga: 2, gd: -2, points: 0, form: 'L' },
   ],
-
-  // Ligue 1 (id: 61) - 2026/27 Matchday 2
   61: [
     { position: 1, team: 'Paris Saint-Germain', logo: 'https://media.api-sports.io/football/teams/85.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 10, ga: 1, gd: 9, points: 6, form: 'WW' },
     { position: 2, team: 'Lille OSC', logo: 'https://media.api-sports.io/football/teams/79.png', played: 2, won: 2, drawn: 0, lost: 0, gf: 4, ga: 0, gd: 4, points: 6, form: 'WW' },
@@ -137,8 +128,6 @@ const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
     { position: 17, team: 'Olympique Lyonnais', logo: 'https://media.api-sports.io/football/teams/80.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 0, ga: 5, gd: -5, points: 0, form: 'LL' },
     { position: 18, team: 'Brest', logo: 'https://media.api-sports.io/football/teams/106.png', played: 2, won: 0, drawn: 0, lost: 2, gf: 1, ga: 7, gd: -6, points: 0, form: 'LL' },
   ],
-
-  // Champions League (id: 2) - 2026/27 36-Team League Phase Seeding
   2: [
     { position: 1, team: 'Real Madrid', logo: 'https://media.api-sports.io/football/teams/541.png', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0, form: '—' },
     { position: 2, team: 'Manchester City', logo: 'https://media.api-sports.io/football/teams/50.png', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0, form: '—' },
@@ -155,8 +144,6 @@ const LEAGUE_STANDINGS_DATA: Record<number, StandingRow[]> = {
     { position: 13, team: 'Juventus', logo: 'https://media.api-sports.io/football/teams/496.png', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0, form: '—' },
     { position: 14, team: 'Aston Villa', logo: 'https://media.api-sports.io/football/teams/66.png', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0, form: '—' },
   ],
-
-  // World Cup / Global (id: 1)
   1: [
     { position: 1, team: 'Argentina', logo: 'https://media.api-sports.io/football/teams/26.png', played: 12, won: 9, drawn: 1, lost: 2, gf: 21, ga: 7, gd: 14, points: 28, form: 'WWLWW' },
     { position: 2, team: 'Uruguay', logo: 'https://media.api-sports.io/football/teams/7.png', played: 12, won: 5, drawn: 5, lost: 2, gf: 17, ga: 9, gd: 8, points: 20, form: 'DDWDD' },
@@ -172,7 +159,7 @@ serve(async (req) => {
   }
 
   try {
-    let leagueId = 39; // default Premier League
+    let leagueId = 39;
     try {
       const url = new URL(req.url);
       const qId = url.searchParams.get('leagueId');
@@ -183,18 +170,27 @@ serve(async (req) => {
       }
     } catch (_) {}
 
-    // 1. Try external API if keys available
+    const apiSportsKey = Deno.env.get('API_SPORTS_KEY');
     const rapidKey = Deno.env.get('X_RAPIDAPI_KEY') || Deno.env.get('RAPIDAPI_KEY');
     const season = new Date().getFullYear();
 
+    const providers: { url: string; headers: Record<string, string> }[] = [];
+    if (apiSportsKey) {
+      providers.push({
+        url: `https://v3.football.api-sports.io/standings?league=${leagueId}&season=${season}`,
+        headers: { 'x-apisports-key': apiSportsKey },
+      });
+    }
     if (rapidKey) {
+      providers.push({
+        url: `https://api-football-v1.p.rapidapi.com/v3/standings?league=${leagueId}&season=${season}`,
+        headers: { 'X-RapidAPI-Key': rapidKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' },
+      });
+    }
+
+    for (const provider of providers) {
       try {
-        const res = await fetch(`https://api-football-v1.p.rapidapi.com/v3/standings?league=${leagueId}&season=${season}`, {
-          headers: {
-            'X-RapidAPI-Key': rapidKey,
-            'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
-          }
-        });
+        const res = await fetch(provider.url, { headers: provider.headers });
         if (res.ok) {
           const data = await res.json();
           const apiStandings = data?.response?.[0]?.league?.standings?.[0];
@@ -213,17 +209,24 @@ serve(async (req) => {
               points: item.points ?? 0,
               form: item.form ?? 'W',
             }));
-            return new Response(JSON.stringify({ success: true, leagueId, standings }), {
+            return new Response(JSON.stringify({
+              success: true,
+              leagueId,
+              standings,
+              source: 'live-api',
+              lastUpdated: new Date().toISOString(),
+            }), {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
           }
+        } else {
+          console.warn(`Standings provider HTTP ${res.status} for league ${leagueId} at ${provider.url}`);
         }
       } catch (err) {
-        console.warn('API-Football standings fetch failed, falling back:', err);
+        console.warn('Standings provider fetch failed, trying next:', err);
       }
     }
 
-    // 2. Return high-fidelity league standings
     const standings = LEAGUE_STANDINGS_DATA[leagueId] || LEAGUE_STANDINGS_DATA[39];
 
     return new Response(JSON.stringify({
