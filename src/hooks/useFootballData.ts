@@ -574,9 +574,12 @@ async function fetchStandingsQuery(leagueId: number, season?: number): Promise<{
     const edgeData = await callEdgeFn('fetch-standings', { leagueId, season: targetSeason }) as {
       standings?: StandingRow[];
       success?: boolean;
+      source?: string;
     };
     if (edgeData?.standings && Array.isArray(edgeData.standings) && edgeData.standings.length > 0) {
-      return { standings: edgeData.standings, isLive: true };
+      // Only the 'live-api' source is genuinely real-time; 'verified-feed' is the
+      // edge function's own static fallback and must not be labeled as live.
+      return { standings: edgeData.standings, isLive: edgeData.source === 'live-api' };
     }
   } catch {
     // Soft fail to fallback cache
@@ -790,5 +793,3 @@ export function useFootballData(options?: {
 }
 
 export default useFootballData;
-
-
