@@ -3,72 +3,175 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 
-// Well-spaced realistic 2026/27 season fixtures without schedule collisions
-const FIXTURES = [
-  // Day +1 (Friday / Early Weekend)
-  { home: 'Arsenal', away: 'Chelsea', league: 'Premier League', is_premium: false, dayOffset: 1, hour: 17 },
-  { home: 'Marseille', away: 'Lyon', league: 'Ligue 1', is_premium: false, dayOffset: 1, hour: 21 },
-  { home: 'Tusker FC', away: 'Bandari', league: 'KPL', is_premium: false, dayOffset: 1, hour: 15 },
-  { home: 'Morocco', away: 'Ivory Coast', league: 'AFCON Qualifier', is_premium: false, dayOffset: 1, hour: 20 },
-  { home: 'Inter Miami', away: 'LA Galaxy', league: 'MLS', is_premium: false, dayOffset: 1, hour: 23 },
-
-  // Day +2 (Saturday / Sunday)
-  { home: 'Liverpool', away: 'Manchester City', league: 'Premier League', is_premium: true, dayOffset: 2, hour: 16 },
-  { home: 'Real Madrid', away: 'Atlético Madrid', league: 'La Liga', is_premium: false, dayOffset: 2, hour: 21 },
-  { home: 'Borussia Dortmund', away: 'Bayer Leverkusen', league: 'Bundesliga', is_premium: true, dayOffset: 2, hour: 18 },
-  { home: 'Inter Milan', away: 'Juventus', league: 'Serie A', is_premium: false, dayOffset: 2, hour: 20 },
-  { home: 'Paris Saint-Germain', away: 'AS Monaco', league: 'Ligue 1', is_premium: false, dayOffset: 2, hour: 20 },
-  { home: 'Gor Mahia', away: 'AFC Leopards', league: 'KPL', is_premium: false, dayOffset: 2, hour: 15 },
-  { home: 'Nigeria', away: 'Senegal', league: 'AFCON Qualifier', is_premium: false, dayOffset: 2, hour: 17 },
-
-  // Day +3 & +4 (Midweek European fixtures)
-  { home: 'Bayern Munich', away: 'Eintracht Frankfurt', league: 'Bundesliga', is_premium: false, dayOffset: 3, hour: 15 },
-  { home: 'Barcelona', away: 'Athletic Club', league: 'La Liga', is_premium: false, dayOffset: 3, hour: 21 },
-  { home: 'AC Milan', away: 'AS Roma', league: 'Serie A', is_premium: false, dayOffset: 4, hour: 20 },
+// Top leagues we generate real predictions for (API-Football league IDs)
+const LEAGUES: { id: number; name: string; premiumEvery?: number }[] = [
+  { id: 39, name: 'Premier League', premiumEvery: 4 },
+  { id: 140, name: 'La Liga', premiumEvery: 4 },
+  { id: 78, name: 'Bundesliga', premiumEvery: 5 },
+  { id: 135, name: 'Serie A', premiumEvery: 5 },
+  { id: 61, name: 'Ligue 1', premiumEvery: 5 },
+  { id: 2, name: 'Champions League', premiumEvery: 3 },
 ];
 
-serve(async (req) => {
-  const CRON_SECRET = Deno.env.get('CRON_SECRET');
-  if (CRON_SECRET && req.headers.get('x-cron-secret') !== CRON_SECRET) return new Response('Unauthorized', { status: 401 });
+const DAYS_AHEAD = 5;
+const MAX_FIXTURES_PER_RUN = 24;
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-  const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-  const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+interface ApiFootballFixture {
+  fixture: { id: number; date: string };
+  league: { id: number; name: string };
+  teams: { home: { name: string }; away: { name: string } };
+}
 
-  const now = new Date();
-  const todayIso = now.toISOString().split('T')[0];
-
-  // Check if we already have sufficient fresh predictions
-  const { count } = await supabase.from('predictions').select('*', { count: 'exact', head: true }).gte('match_date', todayIso);
-  if ((count ?? 0) >= 12) {
-    return new Response(JSON.stringify({ message: 'Already populated', count }), { headers: { 'Content-Type': 'application/json' } });
-  }
-
-  let generated = 0;
-  for (const fixture of FIXTURES) {
+async function fetchLeagueFixtures(
+  leagueId: number,
+  from: string,
+  to: string,
+  rapidKey: string | null,
+  apiSportsKey: string | null
+): Promise<ApiFootballFixture[]> {
+  // Prefer a direct API-Sports key when available (no RapidAPI proxy overhead/limits)
+  if (apiSportsKey) {
     try {
-      const matchDateObj = new Date(now);
-      matchDateObj.setDate(matchDateObj.getDate() + fixture.dayOffset);
-      matchDateObj.setHours(fixture.hour, 0, 0, 0);
-      const matchDateIso = matchDateObj.toISOString();
-
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-prediction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SERVICE_KEY}` },
-        body: JSON.stringify({
-          home_team: fixture.home,
-          away_team: fixture.away,
-          league: fixture.league,
-          is_premium: fixture.is_premium,
-          match_date: matchDateIso,
-        }),
-      });
-      if (res.ok) generated++;
-      await new Promise(r => setTimeout(r, 400));
+      const res = await fetch(
+        `https://v3.football.api-sports.io/fixtures?league=${leagueId}&season=${new Date().getFullYear()}&from=${from}&to=${to}`,
+        { headers: { 'x-apisports-key': apiSportsKey } }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.response)) return json.response;
+      } else {
+        console.warn(`API-Sports fixtures HTTP ${res.status} for league ${leagueId}`);
+      }
     } catch (e) {
-      console.error('Failed to generate fixture:', fixture.home, 'vs', fixture.away, e);
+      console.warn(`API-Sports fixtures fetch failed for league ${leagueId}:`, e);
     }
   }
 
-  return new Response(JSON.stringify({ success: true, generated, total: FIXTURES.length }), { headers: { 'Content-Type': 'application/json' } });
+  if (rapidKey) {
+    try {
+      const res = await fetch(
+        `https://api-football-v1.p.rapidapi.com/v3/fixtures?league=${leagueId}&season=${new Date().getFullYear()}&from=${from}&to=${to}`,
+        { headers: { 'X-RapidAPI-Key': rapidKey, 'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com' } }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.response)) return json.response;
+      } else {
+        console.warn(`RapidAPI fixtures HTTP ${res.status} for league ${leagueId}`);
+      }
+    } catch (e) {
+      console.warn(`RapidAPI fixtures fetch failed for league ${leagueId}:`, e);
+    }
+  }
+
+  return [];
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+
+  const CRON_SECRET = Deno.env.get('CRON_SECRET');
+  if (CRON_SECRET && req.headers.get('x-cron-secret') !== CRON_SECRET) {
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+  }
+
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+  const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+
+  const rapidKey = Deno.env.get('X_RAPIDAPI_KEY') || Deno.env.get('RAPIDAPI_KEY') || null;
+  const apiSportsKey = Deno.env.get('API_SPORTS_KEY') || null;
+
+  if (!rapidKey && !apiSportsKey) {
+    console.error('No fixtures provider configured (missing X_RAPIDAPI_KEY / RAPIDAPI_KEY / API_SPORTS_KEY secret).');
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'No football fixtures API key configured. Set X_RAPIDAPI_KEY (RapidAPI) or API_SPORTS_KEY (direct API-Sports) as a Supabase secret.',
+        generated: 0,
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const now = new Date();
+  const from = now.toISOString().split('T')[0];
+  const toDate = new Date(now);
+  toDate.setDate(toDate.getDate() + DAYS_AHEAD);
+  const to = toDate.toISOString().split('T')[0];
+
+  // Pull existing match_ids so we never regenerate/duplicate a fixture we already have
+  const { data: existingRows } = await supabase
+    .from('predictions')
+    .select('match_id')
+    .not('match_id', 'is', null);
+  const existingIds = new Set((existingRows || []).map((r: { match_id: string }) => r.match_id));
+
+  let generated = 0;
+  let skippedExisting = 0;
+  let fetchedTotal = 0;
+  const errors: string[] = [];
+
+  for (const league of LEAGUES) {
+    if (generated >= MAX_FIXTURES_PER_RUN) break;
+
+    const fixtures = await fetchLeagueFixtures(league.id, from, to, rapidKey, apiSportsKey);
+    fetchedTotal += fixtures.length;
+
+    let leagueIdx = 0;
+    for (const fx of fixtures) {
+      if (generated >= MAX_FIXTURES_PER_RUN) break;
+
+      const matchId = `af-${fx.fixture?.id}`;
+      if (!fx.fixture?.id || existingIds.has(matchId)) {
+        skippedExisting++;
+        continue;
+      }
+
+      const homeTeam = fx.teams?.home?.name;
+      const awayTeam = fx.teams?.away?.name;
+      if (!homeTeam || !awayTeam) continue;
+
+      leagueIdx++;
+      const isPremium = !!league.premiumEvery && leagueIdx % league.premiumEvery === 0;
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-prediction`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SERVICE_KEY}` },
+          body: JSON.stringify({
+            home_team: homeTeam,
+            away_team: awayTeam,
+            league: league.name,
+            match_date: fx.fixture.date,
+            fixture_id: matchId,
+            is_premium: isPremium,
+          }),
+        });
+        if (res.ok) {
+          generated++;
+          existingIds.add(matchId);
+        } else {
+          errors.push(`${homeTeam} vs ${awayTeam}: generate-prediction HTTP ${res.status}`);
+        }
+      } catch (e) {
+        errors.push(`${homeTeam} vs ${awayTeam}: ${e instanceof Error ? e.message : 'unknown error'}`);
+      }
+
+      // Stay well under provider & downstream AI rate limits
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      generated,
+      skippedExisting,
+      fetchedTotal,
+      window: { from, to },
+      errors: errors.length > 0 ? errors.slice(0, 10) : undefined,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
 });
