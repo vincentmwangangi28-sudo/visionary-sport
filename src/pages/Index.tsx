@@ -94,8 +94,16 @@ export default function Index() {
             <h2 className="text-3xl font-black mb-3">Ready to Trade on Better Data?</h2>
             <p className="text-muted-foreground mb-6">10,000+ members running the model daily. Free to start.</p>
             <div className="flex gap-3 justify-center flex-wrap">
-              <Link to="/predict"><Button size="lg" className="gap-2"><Zap className="h-5 w-5" aria-hidden="true" />Run the Model</Button></Link>
-              <Link to="/shop"><Button size="lg" variant="outline">View Plans</Button></Link>
+              <Link to="/predict">
+                <Button size="lg" className="gap-2" aria-label="Run the AI prediction model">
+                  <Zap className="h-5 w-5" aria-hidden="true" />Run the Model
+                </Button>
+              </Link>
+              <Link to="/shop">
+                <Button size="lg" variant="outline" aria-label="View Subscription Plans">
+                  View Plans
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

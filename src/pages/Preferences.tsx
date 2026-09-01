@@ -223,6 +223,7 @@ export default function Preferences() {
                       type="button"
                       onClick={() => toggleFavoriteLeague(league)}
                       aria-pressed={isSelected}
+                      aria-label={`Toggle favorite league: ${league}`}
                       className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                         isSelected
                           ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -258,6 +259,7 @@ export default function Preferences() {
                       type="button"
                       onClick={() => togglePreferredMarket(market)}
                       aria-pressed={isSelected}
+                      aria-label={`Toggle preferred market: ${market}`}
                       className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                         isSelected
                           ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -285,12 +287,14 @@ export default function Preferences() {
                 {/* Odds format */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">Odds Format</Label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" role="group" aria-label="Select odds format">
                     {(['decimal', 'fractional', 'american'] as OddsFormat[]).map((fmt) => (
                       <button
                         key={fmt}
                         type="button"
                         onClick={() => updatePreferences({ oddsFormat: fmt })}
+                        aria-label={`Set odds format to ${fmt}`}
+                        aria-pressed={preferences.oddsFormat === fmt}
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold capitalize border transition-all ${
                           preferences.oddsFormat === fmt
                             ? 'bg-primary text-primary-foreground border-primary'
@@ -306,12 +310,14 @@ export default function Preferences() {
                 {/* Default Currency */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">Primary Currency</Label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" role="group" aria-label="Select primary currency">
                     {(['KES', 'USD', 'EUR', 'GBP', 'NGN'] as const).map((curr) => (
                       <button
                         key={curr}
                         type="button"
                         onClick={() => updatePreferences({ defaultCurrency: curr })}
+                        aria-label={`Set primary currency to ${curr}`}
+                        aria-pressed={preferences.defaultCurrency === curr}
                         className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold border transition-all ${
                           preferences.defaultCurrency === curr
                             ? 'bg-primary text-primary-foreground border-primary'

@@ -38,13 +38,13 @@ export const TelegramPromoBanner = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Join PredictPro Telegram channel for free daily Banker Bets"
-              className="relative flex-shrink-0 text-xs sm:text-sm font-semibold text-white px-3 py-1.5 rounded-full"
-              style={{ background: '#229ED9' }}
+              className="relative flex-shrink-0 text-xs sm:text-sm font-bold text-white px-3.5 py-1.5 rounded-full shadow-sm"
+              style={{ background: '#0284c7' }}
             >
               <motion.span
                 className="absolute inset-0 rounded-full"
-                style={{ background: '#229ED9' }}
-                animate={{ boxShadow: ['0 0 0 0 rgba(34,158,217,0.6)', '0 0 0 8px rgba(34,158,217,0)'] }}
+                style={{ background: '#0284c7' }}
+                animate={{ boxShadow: ['0 0 0 0 rgba(2,132,199,0.7)', '0 0 0 8px rgba(2,132,199,0)'] }}
                 transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
               />
               <span className="relative">Join Free</span>

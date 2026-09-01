@@ -70,14 +70,23 @@ export const Hero = () => {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
           <Link to="/best-bets">
-            <Button size="lg" className="gap-2 px-8 text-base font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-              <Zap className="h-5 w-5" />High-Probability Vectors
+            <Button
+              size="lg"
+              className="gap-2 px-8 text-base font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform"
+              aria-label="View High-Probability Vectors and Best Bets"
+            >
+              <Zap className="h-5 w-5" aria-hidden="true" />High-Probability Vectors
             </Button>
           </Link>
           <Link to="/predict">
-            <Button variant="outline" size="lg" className="gap-2 px-8 text-base hover:scale-105 transition-transform">
-              <TrendingUp className="h-5 w-5" />Run the Model
-              <ChevronRight className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2 px-8 text-base hover:scale-105 transition-transform"
+              aria-label="Run the AI prediction model"
+            >
+              <TrendingUp className="h-5 w-5" aria-hidden="true" />Run the Model
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </Link>
         </div>

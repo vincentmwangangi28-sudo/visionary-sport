@@ -82,14 +82,24 @@ export default function Shop() {
             Join 10,000+ football fans worldwide using AI predictions to stay ahead.
           </p>
           {/* Currency toggle */}
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <button onClick={() => setCurrency("usd")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${currency === "usd" ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}>
-              <Globe className="h-4 w-4" /> USD ($)
+          <div className="flex items-center justify-center gap-3 mt-4" role="group" aria-label="Select store display currency">
+            <button
+              type="button"
+              onClick={() => setCurrency("usd")}
+              aria-label="Switch display currency to USD ($)"
+              aria-pressed={currency === "usd"}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${currency === "usd" ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}
+            >
+              <Globe className="h-4 w-4" aria-hidden="true" /> USD ($)
             </button>
-            <button onClick={() => setCurrency("kes")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${currency === "kes" ? "bg-green-600 text-white border-green-600" : "hover:bg-muted"}`}>
-              <Smartphone className="h-4 w-4" /> KES (M-Pesa)
+            <button
+              type="button"
+              onClick={() => setCurrency("kes")}
+              aria-label="Switch display currency to KES (M-Pesa)"
+              aria-pressed={currency === "kes"}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${currency === "kes" ? "bg-green-600 text-white border-green-600" : "hover:bg-muted"}`}
+            >
+              <Smartphone className="h-4 w-4" aria-hidden="true" /> KES (M-Pesa)
             </button>
           </div>
         </div>

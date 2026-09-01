@@ -231,11 +231,13 @@ export default function MatchPredictor() {
         {/* Quick picks */}
         <div className="mb-6">
           <p className="text-xs text-muted-foreground mb-2">Quick simulations:</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Quick match simulations">
             {POPULAR.map(m => (
               <button
+                type="button"
                 key={m.home + m.away}
                 onClick={() => { setHome(m.home); setAway(m.away); setLeague(m.league); }}
+                aria-label={`Simulate match: ${m.home} vs ${m.away}`}
                 className="text-xs px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-full border transition-colors"
               >
                 {m.home} vs {m.away}

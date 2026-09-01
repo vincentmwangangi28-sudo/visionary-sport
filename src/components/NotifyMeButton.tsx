@@ -103,6 +103,7 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
           type="button"
           onClick={handleClick}
           title={subscribed ? 'Subscribed (Click to customize)' : 'Click to enable match push alerts'}
+          aria-label={subscribed ? `Manage match alerts for ${match.home_team} vs ${match.away_team}` : `Enable match alerts for ${match.home_team} vs ${match.away_team}`}
           className={cn(
             'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all border select-none',
             subscribed
@@ -113,13 +114,13 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
         >
           {subscribed ? (
             <>
-              <BellRing className="h-3.5 w-3.5 text-primary" />
+              <BellRing className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
               <span>Subscribed</span>
-              <Check className="h-3 w-3 text-primary ml-0.5" />
+              <Check className="h-3 w-3 text-primary ml-0.5" aria-hidden="true" />
             </>
           ) : (
             <>
-              <Bell className="h-3.5 w-3.5" />
+              <Bell className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Notify Me</span>
             </>
           )}
@@ -131,6 +132,7 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
             variant={subscribed ? 'secondary' : 'outline'}
             size="sm"
             onClick={handleClick}
+            aria-label={subscribed ? `Match alerts active for ${match.home_team} vs ${match.away_team}` : `Enable notifications for ${match.home_team} vs ${match.away_team}`}
             className={cn(
               'h-7 px-2.5 text-xs font-bold gap-1.5 rounded-lg transition-all',
               subscribed
@@ -141,12 +143,12 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
           >
             {subscribed ? (
               <>
-                <BellRing className="h-3.5 w-3.5 text-primary" />
+                <BellRing className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Alerts On</span>
               </>
             ) : (
               <>
-                <Bell className="h-3.5 w-3.5" />
+                <Bell className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Notify Me</span>
               </>
             )}
@@ -159,8 +161,9 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
               onClick={handleOpenSettings}
               className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg"
               title="Customize match alerts"
+              aria-label={`Customize match alerts for ${match.home_team} vs ${match.away_team}`}
             >
-              <Settings2 className="h-3.5 w-3.5" />
+              <Settings2 className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -171,6 +174,7 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
             variant={subscribed ? 'default' : 'outline'}
             size={size === 'xs' ? 'sm' : size}
             onClick={handleClick}
+            aria-label={subscribed ? `Match alerts active for ${match.home_team} vs ${match.away_team}` : `Enable notifications for ${match.home_team} vs ${match.away_team}`}
             className={cn(
               'font-bold gap-2 transition-all shadow-sm',
               subscribed
@@ -181,13 +185,13 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
           >
             {subscribed ? (
               <>
-                <BellRing className="h-4 w-4" />
+                <BellRing className="h-4 w-4" aria-hidden="true" />
                 <span>Alerts Active</span>
-                <Check className="h-3.5 w-3.5 opacity-80" />
+                <Check className="h-3.5 w-3.5 opacity-80" aria-hidden="true" />
               </>
             ) : (
               <>
-                <Bell className="h-4 w-4" />
+                <Bell className="h-4 w-4" aria-hidden="true" />
                 <span>Notify Me</span>
               </>
             )}
@@ -200,8 +204,9 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
               onClick={handleOpenSettings}
               className="h-9 w-9 text-muted-foreground hover:text-foreground rounded-lg"
               title="Customize notification settings for this match"
+              aria-label={`Customize notification settings for ${match.home_team} vs ${match.away_team}`}
             >
-              <Settings2 className="h-4 w-4" />
+              <Settings2 className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
         </div>

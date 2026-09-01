@@ -321,9 +321,10 @@ export const NotificationBell = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => testAlert()}
+                  aria-label="Test browser push notification"
                   className="mt-3 text-xs font-bold gap-1.5"
                 >
-                  <Send className="h-3 w-3" /> Test Browser Push
+                  <Send className="h-3 w-3" aria-hidden="true" /> Test Browser Push
                 </Button>
               </div>
             ) : (
@@ -337,7 +338,7 @@ export const NotificationBell = () => {
                         {sub.league}
                       </Badge>
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                        <Clock className="h-3 w-3" aria-hidden="true" />
                         {matchTime.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' })} · {matchTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -356,15 +357,16 @@ export const NotificationBell = () => {
                         onClick={() => unsubscribe(sub.matchId)}
                         className="h-6 w-6 text-muted-foreground hover:text-destructive flex-shrink-0"
                         title="Remove alert subscription"
+                        aria-label={`Remove alert subscription for ${sub.homeTeam} vs ${sub.awayTeam}`}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     </div>
 
                     {sub.prediction && (
                       <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
                         <span className="text-muted-foreground flex items-center gap-1 truncate">
-                          <Sparkles className="h-3 w-3 text-primary" /> AI: <b className="text-foreground">{sub.prediction}</b>
+                          <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" /> AI: <b className="text-foreground">{sub.prediction}</b>
                         </span>
                         <div className="flex items-center gap-1.5">
                           <button
@@ -372,6 +374,7 @@ export const NotificationBell = () => {
                             onClick={() => simulateResult(sub.matchId)}
                             className="text-[10px] text-primary font-bold hover:underline"
                             title="Simulate FT Push notification"
+                            aria-label={`Simulate full-time push notification for ${sub.homeTeam} vs ${sub.awayTeam}`}
                           >
                             Simulate Result
                           </button>
@@ -388,13 +391,15 @@ export const NotificationBell = () => {
         {/* Footer with browser push trigger */}
         <div className="p-2.5 bg-muted/40 border-t flex items-center justify-between text-xs">
           <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-primary" /> Browser Push {permission === 'granted' ? 'Active ✅' : 'Ready'}
+            <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" /> Browser Push {permission === 'granted' ? 'Active ✅' : 'Ready'}
           </span>
           <button
+            type="button"
             onClick={activeTab === 'matches' ? () => testAlert() : simulateAlert}
+            aria-label="Test sending a live push notification"
             className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
           >
-            <Send className="h-3 w-3" /> Test Live Push
+            <Send className="h-3 w-3" aria-hidden="true" /> Test Live Push
           </button>
         </div>
       </PopoverContent>

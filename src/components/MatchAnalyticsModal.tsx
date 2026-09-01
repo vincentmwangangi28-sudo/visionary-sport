@@ -122,6 +122,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
             <button
               type="button"
               onClick={() => handleAddBet('Home Win', baseHome)}
+              aria-label={`Select 1 (${p.home_team}) outcome at odds ${baseHome.toFixed(2)}`}
               className={`p-2 rounded-xl border text-center transition-all ${
                 isSelected('Home Win')
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -138,6 +139,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
             <button
               type="button"
               onClick={() => handleAddBet('Draw', baseDraw)}
+              aria-label={`Select X (Draw) outcome at odds ${baseDraw.toFixed(2)}`}
               className={`p-2 rounded-xl border text-center transition-all ${
                 isSelected('Draw')
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -154,6 +156,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
             <button
               type="button"
               onClick={() => handleAddBet('Away Win', baseAway)}
+              aria-label={`Select 2 (${p.away_team}) outcome at odds ${baseAway.toFixed(2)}`}
               className={`p-2 rounded-xl border text-center transition-all ${
                 isSelected('Away Win')
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'

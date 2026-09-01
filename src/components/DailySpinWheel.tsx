@@ -67,9 +67,12 @@ export const DailySpinWheel = () => {
               <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary drop-shadow-lg" />
             </div>
             <div
-              className="relative w-64 h-64 rounded-full border-4 border-primary shadow-xl transition-transform duration-[4000ms] ease-out"
+              className="relative w-64 h-64 rounded-full border-4 border-primary shadow-xl ease-out"
               style={{
                 transform: `rotate(${rotation}deg)`,
+                transitionProperty: 'transform',
+                transitionDuration: '4000ms',
+                transitionTimingFunction: 'cubic-bezier(0.1, 0.9, 0.2, 1)',
                 background: `conic-gradient(${SPIN_PRIZES.map(
                   (p, i) => `${p.color} ${(i * 100) / SPIN_PRIZES.length}% ${((i + 1) * 100) / SPIN_PRIZES.length}%`
                 ).join(', ')})`,
@@ -96,12 +99,30 @@ export const DailySpinWheel = () => {
           )}
 
           {!user ? (
-            <Button asChild className="w-full"><Link to="/auth"><Lock className="mr-2 h-4 w-4" />Login to Spin</Link></Button>
+            <Button asChild className="w-full" aria-label="Login to Spin Daily Prize Wheel">
+              <Link to="/auth">
+                <Lock className="mr-2 h-4 w-4" aria-hidden="true" />Login to Spin
+              </Link>
+            </Button>
           ) : (
-            <Button onClick={handleSpin} disabled={!canSpin || spinning || isAnimating}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90" size="lg">
-              {(spinning || isAnimating) ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Spinning...</>
-                : canSpin ? <><Gift className="mr-2 h-4 w-4" />Spin Now!</> : 'Come back tomorrow!'}
+            <Button
+              onClick={handleSpin}
+              disabled={!canSpin || spinning || isAnimating}
+              aria-label="Spin the prize wheel for daily coins"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              size="lg"
+            >
+              {(spinning || isAnimating) ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />Spinning...
+                </>
+              ) : canSpin ? (
+                <>
+                  <Gift className="mr-2 h-4 w-4" aria-hidden="true" />Spin Now!
+                </>
+              ) : (
+                'Come back tomorrow!'
+              )}
             </Button>
           )}
           {user && !canSpin && !spinning && !isAnimating && (

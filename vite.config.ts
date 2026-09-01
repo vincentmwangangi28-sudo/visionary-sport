@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => ({
   server: { host: "0.0.0.0", port: 3000 },
   plugins: [react()],
   resolve: { 
-    alias: { "@": path.resolve(__dirname, "./src") },
+    alias: { "@": path.resolve(import.meta.dirname, "./src") },
     dedupe: ["react", "react-dom", "react-router-dom"],
   },
   build: {

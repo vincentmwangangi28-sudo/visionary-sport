@@ -55,9 +55,19 @@ export default function PlayerSearch() {
         </div>
         {!searched && (
           <div>
-            <p className="text-sm text-muted-foreground mb-3 flex items-center gap-2"><Star className="h-3.5 w-3.5 text-primary" />Popular searches:</p>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR.map(p => <button key={p} onClick={() => search(p)} className="px-3 py-1.5 bg-muted hover:bg-muted/70 rounded-full text-sm border transition-colors">{p}</button>)}
+            <p className="text-sm text-muted-foreground mb-3 flex items-center gap-2"><Star className="h-3.5 w-3.5 text-primary" aria-hidden="true" />Popular searches:</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Popular player searches">
+              {POPULAR.map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => search(p)}
+                  aria-label={`Search player: ${p}`}
+                  className="px-3 py-1.5 bg-muted hover:bg-muted/70 rounded-full text-sm border transition-colors"
+                >
+                  {p}
+                </button>
+              ))}
             </div>
           </div>
         )}

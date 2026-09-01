@@ -225,6 +225,7 @@ export const BetSlipDrawer = () => {
                         variant={selectedBookmaker === bookie ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleGenerateCode(bookie)}
+                        aria-label={`Generate booking code for ${bookie}`}
                         className="text-xs h-7 px-2"
                       >
                         {bookie}
@@ -242,9 +243,10 @@ export const BetSlipDrawer = () => {
                         size="sm"
                         variant="secondary"
                         onClick={() => handleCopyCode(generatedCode)}
+                        aria-label={`Copy ${selectedBookmaker} slip code: ${generatedCode}`}
                         className="h-8 gap-1 text-xs"
                       >
-                        {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
                         {copied ? 'Copied' : 'Copy'}
                       </Button>
                     </div>

@@ -264,7 +264,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       </div>
 
       {/* League Selection Horizontal Scroll */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+      <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none" role="group" aria-label="Filter predictions by league">
         {LEAGUES.map((l) => (
           <Button
             key={l}
@@ -274,6 +274,8 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               setLeague(l === 'All' ? undefined : l);
               setPage(1);
             }}
+            aria-label={`Filter predictions by ${l} league`}
+            aria-pressed={league === l || (l === 'All' && !league)}
             className="text-xs h-7 px-3 flex-shrink-0 font-medium"
           >
             {l}
@@ -335,17 +337,18 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-4">
+            <div className="flex items-center justify-center gap-3 pt-4" role="navigation" aria-label="Predictions pagination">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setPage((p) => p - 1)}
                 disabled={page <= 1 || isFetching}
+                aria-label="Go to previous page of predictions"
                 className="h-8 gap-1 text-xs"
               >
-                <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" /> Previous
               </Button>
-              <span className="text-xs text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-medium" aria-current="page">
                 Page {page} of {totalPages}
               </span>
               <Button
@@ -353,9 +356,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
                 size="sm"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= totalPages || isFetching}
+                aria-label="Go to next page of predictions"
                 className="h-8 gap-1 text-xs"
               >
-                Next <ChevronRight className="h-3.5 w-3.5" />
+                Next <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
             </div>
           )}
