@@ -37,7 +37,7 @@ If asked about specific odds, remind users to gamble responsibly.`;
     { role: 'user', parts: [{ text: message }] },
   ];
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ systemInstruction: { parts: [{ text: systemContext }] }, contents, generationConfig: { temperature: 0.7, maxOutputTokens: 300 } }),
