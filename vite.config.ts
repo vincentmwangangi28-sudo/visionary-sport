@@ -22,11 +22,22 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: "assets/[name]-[hash][extname]",
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
-            if (["react", "react-dom", "react-router-dom"].some(p => id.includes(`/${p}/`))) return "vendor-react";
-            if (id.includes("@supabase")) return "vendor-supabase";
-            if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
-            if (id.includes("@tanstack")) return "vendor-query";
-            if (id.includes("@radix-ui") || id.includes("lucide-react")) return "vendor-ui";
+            if (["react", "react-dom", "react-router-dom"].some(p => id.includes(`/${p}/`))) {
+              return "vendor-framework";
+            }
+            if (id.includes("@supabase")) {
+              return "vendor-supabase";
+            }
+            if (id.includes("recharts") || id.includes("d3-") || id.includes("victory")) {
+              return "vendor-charts";
+            }
+            if (id.includes("@radix-ui") || id.includes("lucide-react") || id.includes("motion") || id.includes("framer-motion")) {
+              return "vendor-ui";
+            }
+            if (id.includes("@tanstack") || id.includes("sonner") || id.includes("date-fns") || id.includes("clsx") || id.includes("tailwind-merge")) {
+              return "vendor-utils";
+            }
+            return "vendor-libs";
           }
         },
       },

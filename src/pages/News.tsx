@@ -229,7 +229,7 @@ export default function News() {
                 <Card className="h-full hover:border-primary/40 transition-all hover:shadow-md">
                   {a.imageUrl && (
                     <div className="h-36 overflow-hidden rounded-t-lg bg-muted">
-                      <img src={a.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy"
+                      <img src={a.imageUrl} alt={a.title || 'Football news article thumbnail'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy"
                         onError={e => { (e.target as HTMLImageElement).parentElement!.style.display='none'; }} />
                     </div>
                   )}

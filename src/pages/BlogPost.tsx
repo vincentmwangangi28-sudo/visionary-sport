@@ -119,14 +119,50 @@ If gambling affects your life, call **0800 723 253** (Kenya Responsible Gambling
 };
 
 function renderMarkdown(text: string) {
-  return text.split('\n').map((line, i) => {
-    if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold mt-6 mb-3">{line.slice(3)}</h2>;
-    if (line.startsWith('> ')) return <blockquote key={i} className="border-l-4 border-primary pl-4 italic text-muted-foreground my-3">{line.slice(2)}</blockquote>;
-    if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold my-1">{line.replace(/\*\*/g, '')}</p>;
-    if (line.startsWith('- ')) return <li key={i} className="ml-4 text-muted-foreground list-disc">{line.slice(2).replace(/\*\*(.*?)\*\*/g, (_, t) => t)}</li>;
-    if (line === '') return <div key={i} className="h-2" />;
-    return <p key={i} className="text-muted-foreground leading-relaxed my-1.5">{line.replace(/\*\*(.*?)\*\*/g, (_, t) => `<strong>${t}</strong>`)}</p>;
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let currentList: React.ReactNode[] = [];
+
+  const flushList = () => {
+    if (currentList.length > 0) {
+      elements.push(
+        <ul key={`ul-${elements.length}`} className="list-disc pl-6 space-y-1.5 my-3 text-muted-foreground">
+          {currentList}
+        </ul>
+      );
+      currentList = [];
+    }
+  };
+
+  lines.forEach((line, i) => {
+    if (line.startsWith('- ')) {
+      currentList.push(
+        <li key={`li-${i}`}>
+          {line.slice(2).replace(/\*\*(.*?)\*\*/g, (_, t) => t)}
+        </li>
+      );
+    } else {
+      flushList();
+      if (line.startsWith('## ')) {
+        elements.push(<h2 key={i} className="text-xl font-bold mt-6 mb-3">{line.slice(3)}</h2>);
+      } else if (line.startsWith('> ')) {
+        elements.push(<blockquote key={i} className="border-l-4 border-primary pl-4 italic text-muted-foreground my-3">{line.slice(2)}</blockquote>);
+      } else if (line.startsWith('**') && line.endsWith('**')) {
+        elements.push(<p key={i} className="font-bold my-1">{line.replace(/\*\*/g, '')}</p>);
+      } else if (line.trim() === '') {
+        elements.push(<div key={i} className="h-2" />);
+      } else {
+        elements.push(
+          <p key={i} className="text-muted-foreground leading-relaxed my-1.5">
+            {line.replace(/\*\*(.*?)\*\*/g, (_, t) => t)}
+          </p>
+        );
+      }
+    }
   });
+
+  flushList();
+  return elements;
 }
 
 export default function BlogPost() {

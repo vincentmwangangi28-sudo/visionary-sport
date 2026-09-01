@@ -190,6 +190,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <button
               type="button"
               onClick={() => setQuickFilter('all')}
+              aria-label="Show all predictions"
               className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
                 quickFilter === 'all'
                   ? 'bg-background text-foreground shadow-sm'
@@ -201,24 +202,26 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <button
               type="button"
               onClick={() => setQuickFilter('high_confidence')}
+              aria-label="Filter predictions with greater than 80% confidence"
               className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
                 quickFilter === 'high_confidence'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Sparkles className="h-3 w-3" /> &gt;80% AI
+              <Sparkles className="h-3 w-3" aria-hidden="true" /> &gt;80% AI
             </button>
             <button
               type="button"
               onClick={() => setQuickFilter('value_bets')}
+              aria-label="Filter positive expected value bets"
               className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
                 quickFilter === 'value_bets'
-                  ? 'bg-green-600 text-white shadow-sm'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <TrendingUp className="h-3 w-3" /> Value Bets
+              <TrendingUp className="h-3 w-3" aria-hidden="true" /> Value Bets
             </button>
           </div>
 

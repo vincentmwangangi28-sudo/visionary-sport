@@ -300,7 +300,7 @@ export const TeamFormTrendsChart = ({
                     {row.logo && (
                       <img
                         src={row.logo}
-                        alt=""
+                        alt={`${row.team} logo`}
                         className="w-3.5 h-3.5 object-contain"
                         onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
                       />
@@ -414,7 +414,7 @@ export const TeamFormTrendsChart = ({
                       return (
                         <div className="bg-popover border border-border text-popover-foreground p-3 rounded-lg shadow-lg text-xs space-y-1.5 min-w-[170px]">
                           <div className="flex items-center gap-2 border-b border-border pb-1">
-                            {item.logo && <img src={item.logo} alt="" className="w-4 h-4 object-contain" />}
+                            {item.logo && <img src={item.logo} alt={`${item.team} logo`} className="w-4 h-4 object-contain" />}
                             <span className="font-bold text-foreground">{item.team}</span>
                           </div>
                           <div className="space-y-1 text-[11px]">

@@ -17,10 +17,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Pitch Green - Primary brand color */
-    --primary: 142 76% 36%;
+    /* Pitch Green - Primary brand color (WCAG AA compliant contrast ratio >= 5.2:1 with white) */
+    --primary: 142 76% 28%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 76% 46%;
+    --primary-glow: 142 76% 38%;
 
     /* Victory Gold - Secondary accent */
     --secondary: 38 92% 50%;
@@ -38,17 +38,17 @@ All colors MUST be HSL.
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 142 76% 36%;
+    --ring: 142 76% 28%;
 
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-victory: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%), hsl(38 92% 50%));
-    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 36% / 0.1), hsl(142 76% 36% / 0));
+    --gradient-victory: linear-gradient(135deg, hsl(142 76% 28%), hsl(142 76% 38%));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 28%), hsl(38 92% 50%));
+    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 28% / 0.1), hsl(142 76% 28% / 0));
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(142 76% 46% / 0.3);
+    --shadow-glow: 0 0 40px hsl(142 76% 38% / 0.3);
     --shadow-card: 0 10px 30px -10px hsl(240 10% 3.9% / 0.1);
   }
 

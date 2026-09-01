@@ -8,6 +8,7 @@ import { PredictionsDashboard } from "@/components/PredictionsDashboard";
 import { AdBannerHorizontal } from "@/components/AdBanner";
 import { PastResultsArchive } from "@/components/PastResultsArchive";
 import { TelegramPromoBanner } from "@/components/TelegramPromoBanner";
+import { LiveMomentumRadar } from "@/components/LiveMomentumRadar";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,13 @@ export default function Index() {
 
         {/* Upcoming with AI */}
         <UpcomingMatches />
+
+        {/* Live In-Play Momentum Radar */}
+        <section className="py-8 bg-muted/10">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <LiveMomentumRadar />
+          </div>
+        </section>
 
         <AdBannerHorizontal className="container mx-auto px-4 max-w-6xl my-4" />
 
