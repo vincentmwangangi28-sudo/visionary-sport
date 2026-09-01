@@ -68,22 +68,30 @@ Respond ONLY with this exact JSON (no markdown):
   let aiResult: Record<string, unknown> = {};
   if (GEMINI_KEY) {
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 400 } }),
       });
       const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) aiResult = JSON.parse(jsonMatch[0]);
-    } catch { /* use fallback */ }
+      if (!res.ok) {
+        console.error('Gemini API error', res.status, JSON.stringify(data).slice(0, 500));
+      } else {
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) aiResult = JSON.parse(jsonMatch[0]);
+        else console.error('Gemini response had no parseable JSON', JSON.stringify(data).slice(0, 500));
+      }
+    } catch (e) {
+      console.error('Gemini call threw', e instanceof Error ? e.message : String(e));
+    }
   }
 
   const outcome = aiResult.predicted_outcome as string || 'Home Win';
   const confidence = Math.min(95, Math.max(40, (aiResult.confidence_score as number) || 65));
+  const usedFallback = Object.keys(aiResult).length === 0;
 
-  const { data, error } = await supabase.from('predictions').insert({
+  const record = {
     match_id: fixture_id ?? `ai-${Date.now()}`,
     home_team, away_team, league: league ?? 'Unknown',
     match_date: match_date ?? new Date().toISOString(),
@@ -104,10 +112,20 @@ Respond ONLY with this exact JSON (no markdown):
       draw_probability: aiResult.draw_probability,
       away_win_probability: aiResult.away_win_probability,
       correct_score: aiResult.correct_score,
+      ai_fallback_used: usedFallback,
     },
-    ai_model: 'gemini-1.5-flash',
-  }).select().single();
+    ai_model: usedFallback ? 'fallback-heuristic' : 'gemini-flash-latest',
+  };
 
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
-  return new Response(JSON.stringify({ success: true, prediction: data }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  // Only persist to the shared predictions table when this was called for a
+  // real, identified fixture (fixture_id supplied by the fixtures pipeline).
+  // Ad-hoc "what-if" lookups (Match Predictor tool, Other Sports demo page)
+  // must NOT be written into the table that powers the real fixtures feed.
+  if (fixture_id) {
+    const { data, error } = await supabase.from('predictions').insert(record).select().single();
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true, prediction: data, ai_fallback_used: usedFallback }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+
+  return new Response(JSON.stringify({ success: true, prediction: record, ai_fallback_used: usedFallback, persisted: false }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 });
