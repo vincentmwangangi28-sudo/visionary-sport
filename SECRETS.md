@@ -6,8 +6,8 @@ Add these at: **github.com/vincentmwangangi28-sudo/visionary-sport → Settings 
 | Secret Name | Value | Where to get it |
 |---|---|---|
 | `SUPABASE_ACCESS_TOKEN` | `sbp_xxxx` | supabase.com → Account → Access Tokens → Generate |
-| `SUPABASE_PROJECT_ID` | `yofhrfahhzsxbtuhuwqf` | Already known |
-| `VITE_SUPABASE_URL` | `https://yofhrfahhzsxbtuhuwqf.supabase.co` | Already known |
+| `SUPABASE_PROJECT_ID` | `bhgjlhgevyggkhyytulv` | Already known |
+| `VITE_SUPABASE_URL` | `https://bhgjlhgevyggkhyytulv.supabase.co` | Already known |
 | `VITE_SUPABASE_ANON_KEY` | `eyJ...` | Supabase Dashboard → Settings → API → anon key |
 | `MPESA_WEBHOOK_SECRET` | _(auto-generated on first deploy)_ | Run `openssl rand -hex 32` |
 | `CRON_SECRET` | _(auto-generated on first deploy)_ | Run `openssl rand -hex 32` |
@@ -58,12 +58,12 @@ Then update `VITE_SUPABASE_ANON_KEY` in GitHub secrets.
 1. Go to **vercel.com** → Add New Project → Import from GitHub
 2. Select **vincentmwangangi28-sudo/visionary-sport**
 3. Set environment variables:
-   - `VITE_SUPABASE_URL` = `https://yofhrfahhzsxbtuhuwqf.supabase.co`
+   - `VITE_SUPABASE_URL` = `https://bhgjlhgevyggkhyytulv.supabase.co`
    - `VITE_SUPABASE_ANON_KEY` = your anon key from Supabase
 4. Deploy — Vercel auto-detects Vite
 5. Copy Project ID + Team ID into GitHub secrets above
 
 ### Vercel Environment Variables (set in Vercel Dashboard)
 Go to: **vercel.com → Project → Settings → Environment Variables**
-- `VITE_SUPABASE_URL` = `https://yofhrfahhzsxbtuhuwqf.supabase.co`
+- `VITE_SUPABASE_URL` = `https://bhgjlhgevyggkhyytulv.supabase.co`
 - `VITE_SUPABASE_ANON_KEY` = _(from Supabase Dashboard → Settings → API)_
