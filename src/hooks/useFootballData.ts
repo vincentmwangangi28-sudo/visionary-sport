@@ -582,6 +582,16 @@ async function fetchStandingsQuery(leagueId: number, season?: number): Promise<{
       return { standings: edgeData.standings, isLive: edgeData.source === 'live-api' };
     }
   } catch {
+    // Soft fail to realtime table attempt
+  }
+
+  // Realtime provider & ESPN fallback table attempt
+  try {
+    const realtimeStandings = await fetchRealtimeStandingsTable(leagueId);
+    if (Array.isArray(realtimeStandings) && realtimeStandings.length > 0) {
+      return { standings: realtimeStandings, isLive: true };
+    }
+  } catch {
     // Soft fail to fallback cache
   }
 

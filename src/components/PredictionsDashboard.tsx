@@ -1,11 +1,14 @@
 import { useState, useMemo, Fragment } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
 import {
   Zap,
@@ -21,26 +24,10 @@ import {
   Calendar,
   Sparkles,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  MapPin,
 } from 'lucide-react';
 import { AdBannerFluid } from '@/components/AdBanner';
-
-const LEAGUES = [
-  'All',
-  'Premier League',
-  'La Liga',
-  'Champions League',
-  'Serie A',
-  'Bundesliga',
-  'Ligue 1',
-  'Copa Libertadores',
-  'AFC Champions League',
-  'FA Cup',
-  'AFCON Qualifier',
-  'KPL',
-  'MLS',
-  'World Cup',
-];
 
 interface PredictionsDashboardProps {
   initialLeague?: string;
@@ -53,11 +40,13 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
   const [league, setLeague] = useState<string | undefined>(initialLeague);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [enableRegionalSort, setEnableRegionalSort] = useState(true);
   const [viewMode, setViewMode] = useState<'card' | 'compact'>(() => {
     return (localStorage.getItem('predictpro_view_mode') as 'card' | 'compact') || 'card';
   });
 
   const { preferences, setRiskProfile } = useUserPreferences();
+  const { region, prioritizedLeagues, sortPredictions, getLeagueBadge } = useGeoRegion();
   const { predictions, isLoading, totalPages, isFetching, refetch } = usePredictions(page, league);
 
   const handleSetViewMode = (mode: 'card' | 'compact') => {
@@ -65,9 +54,29 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     localStorage.setItem('predictpro_view_mode', mode);
   };
 
-  // Client-side filtering for quick filters, risk profiles, and search
+  // Build dynamic league options prioritizing user's detected region + favorites
+  const dynamicLeagueTabs = useMemo(() => {
+    const list: Array<{ id: string; name: string; flag?: string; badge?: string }> = [
+      { id: 'All', name: 'All Leagues' }
+    ];
+
+    for (const pl of prioritizedLeagues) {
+      if (!list.some(item => item.name.toLowerCase() === pl.name.toLowerCase())) {
+        list.push({
+          id: pl.name,
+          name: pl.name,
+          flag: pl.flag,
+          badge: pl.badge,
+        });
+      }
+    }
+
+    return list;
+  }, [prioritizedLeagues]);
+
+  // Client-side filtering for quick filters, risk profiles, search and regional boost
   const filteredPredictions = useMemo(() => {
-    return predictions.filter((p) => {
+    const rawFiltered = predictions.filter((p) => {
       // Search match
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -100,14 +109,20 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
       return true;
     });
-  }, [predictions, searchQuery, quickFilter, preferences.riskProfile]);
+
+    if (enableRegionalSort && !league) {
+      return sortPredictions(rawFiltered);
+    }
+
+    return rawFiltered;
+  }, [predictions, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex gap-2 flex-wrap mb-4">
-          {LEAGUES.slice(0, 6).map((l) => (
-            <div key={l} className="h-7 w-24 bg-muted rounded animate-pulse" />
+          {dynamicLeagueTabs.slice(0, 6).map((l) => (
+            <div key={l.id} className="h-7 w-24 bg-muted rounded animate-pulse" />
           ))}
         </div>
         <PredictionListSkeleton count={6} />
@@ -263,24 +278,58 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         </div>
       </div>
 
+      {/* Geographic Region & Strategy Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-muted/20 border border-border/60 p-2.5 rounded-xl">
+        <div className="flex items-center gap-2 flex-wrap">
+          <GeoRegionSelector variant="compact" />
+          <div className="h-4 w-px bg-border/80 hidden sm:block" />
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+            <Switch
+              checked={enableRegionalSort}
+              onCheckedChange={setEnableRegionalSort}
+              className="scale-75 origin-left"
+              aria-label="Toggle Regional Priority Match Sorting"
+            />
+            <span className="font-semibold text-[11px] text-foreground">
+              {enableRegionalSort ? `Prioritizing ${region.shortLabel} & Favorites` : 'Standard Global Order'}
+            </span>
+          </label>
+        </div>
+
+        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 self-end sm:self-auto">
+          <span>{filteredPredictions.length} Fixtures Analyzed</span>
+        </div>
+      </div>
+
       {/* League Selection Horizontal Scroll */}
       <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none" role="group" aria-label="Filter predictions by league">
-        {LEAGUES.map((l) => (
-          <Button
-            key={l}
-            size="sm"
-            variant={(league === l || (l === 'All' && !league)) ? 'default' : 'outline'}
-            onClick={() => {
-              setLeague(l === 'All' ? undefined : l);
-              setPage(1);
-            }}
-            aria-label={`Filter predictions by ${l} league`}
-            aria-pressed={league === l || (l === 'All' && !league)}
-            className="text-xs h-7 px-3 flex-shrink-0 font-medium"
-          >
-            {l}
-          </Button>
-        ))}
+        {dynamicLeagueTabs.map((l) => {
+          const isSelected = (league === l.id || (l.id === 'All' && !league) || (league === l.name));
+          return (
+            <Button
+              key={l.id}
+              size="sm"
+              variant={isSelected ? 'default' : 'outline'}
+              onClick={() => {
+                setLeague(l.id === 'All' ? undefined : l.id);
+                setPage(1);
+              }}
+              aria-label={`Filter predictions by ${l.name}`}
+              aria-pressed={isSelected}
+              className={`text-xs h-7 px-2.5 flex-shrink-0 font-medium gap-1.5 transition-all ${
+                isSelected ? 'shadow-sm' : 'hover:border-primary/40'
+              }`}
+            >
+              {l.flag && <span className="text-xs">{l.flag}</span>}
+              <span>{l.name}</span>
+              {l.badge && !isSelected && (
+                <span className="text-[9px] px-1 py-0 rounded bg-muted text-muted-foreground font-mono">
+                  {l.badge}
+                </span>
+              )}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Predictions Rendering */}

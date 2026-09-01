@@ -6,8 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useUserPreferences, RiskProfile, OddsFormat } from '@/hooks/useUserPreferences';
+import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { GeographicRegionId } from '@/services/geoRegionService';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { SUPPORTED_LANGUAGES, SupportedLanguage } from '@/services/i18n';
+import { POPULAR_TIMEZONES } from '@/services/timezoneService';
+import { ODDS_FORMATS, SupportedOddsFormat } from '@/services/oddsConverter';
+import { REGIONAL_BOOKMAKERS } from '@/services/bookmakerBookingCodes';
 import { toast } from '@/hooks/use-toast';
 import {
   SlidersHorizontal,
@@ -23,7 +29,12 @@ import {
   Wifi,
   WifiOff,
   DownloadCloud,
-  HardDrive
+  HardDrive,
+  Clock,
+  Percent,
+  Gauge,
+  Check,
+  MapPin,
 } from 'lucide-react';
 
 const AVAILABLE_LEAGUES = [
@@ -33,43 +44,55 @@ const AVAILABLE_LEAGUES = [
   'Serie A',
   'Bundesliga',
   'Ligue 1',
-  'KPL',
+  'FKF Premier League',
   'AFCON',
   'MLS',
+  'Saudi Pro League',
+  'Brasileirão',
+  'Eredivisie',
   'World Cup',
 ];
 
 const AVAILABLE_MARKETS = [
-  '1X2',
+  '1X2 (Match Winner)',
   'Over/Under 2.5',
-  'BTTS',
+  'BTTS (Both Teams to Score)',
   'Double Chance',
-  'Correct Score',
   'Draw No Bet',
+  'Correct Score',
+  'First Half 1X2',
+  'Over/Under 1.5 Goals',
 ];
 
 export default function Preferences() {
   const {
     preferences,
     updatePreferences,
+    setLanguage,
+    setTimezone,
+    setOddsFormat,
+    setDataSaver,
     setRiskProfile,
     toggleFavoriteLeague,
     togglePreferredMarket,
     resetPreferences,
+    t,
   } = useUserPreferences();
+
+  const { region, regionId, setRegion, allRegions, isAutoDetected } = useGeoRegion();
 
   const handleSave = () => {
     toast({
       title: 'Preferences Saved',
-      description: `Your ${preferences.riskProfile.toUpperCase()} betting profile and feeds have been updated.`,
+      description: `Your global preferences and ${preferences.riskProfile.toUpperCase()} betting profile have been updated.`,
     });
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Personalization & Risk Profile Settings | PredictPro"
-        description="Customize your football prediction feed, configure risk appetite (Conservative, Balanced, Aggressive), favorite competitions, and odds formats."
+        title="Global Customization & Betting Profile Settings | PredictPro"
+        description="Configure your language, kickoff timezone, odds format, regional bookmaker, risk profile, and favorite leagues on PredictPro AI."
         canonical="/preferences"
       />
       <Navbar />
@@ -80,18 +103,18 @@ export default function Preferences() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Badge variant="outline" className="text-primary border-primary/30 gap-1.5 px-3 py-1 font-semibold text-xs">
-                <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-                Personalized Algorithm Feed
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                {t('pref.title', 'Global Platform & AI Customization')}
               </Badge>
               <Badge variant="secondary" className="text-xs">
-                Phase 3 Retention
+                Worldwide Engine
               </Badge>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Betting Strategy & Account Preferences
+              {t('pref.title', 'Global Preferences & Strategy')}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Tailor PredictPro to your specific risk tolerance, favorite football leagues, and odds formatting.
+              {t('pref.subtitle', 'Configure language, kickoff timezones, odds format, and bookmakers.')}
             </p>
           </div>
 
@@ -108,12 +131,278 @@ export default function Preferences() {
         </div>
 
         <div className="space-y-6">
-          {/* 1. Risk Profile Selection */}
+          {/* 1. Global Localization & Region Settings */}
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" aria-hidden="true" />
+                1. {t('nav.language', 'Language')} & Internationalization
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Choose your preferred interface language.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {SUPPORTED_LANGUAGES.map((lang) => {
+                  const isSelected = preferences.language === lang.code;
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => setLanguage(lang.code as SupportedLanguage)}
+                      aria-pressed={isSelected}
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                          : 'border-border hover:border-primary/40 bg-muted/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl">{lang.flag}</span>
+                        <div>
+                          <div className="text-xs font-bold text-foreground">{lang.nativeName}</div>
+                          <div className="text-[10px] text-muted-foreground">{lang.name}</div>
+                        </div>
+                      </div>
+                      {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 2. Kickoff Timezone Engine */}
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
+                2. {t('nav.timezone', 'Kickoff Timezone Engine')}
+              </CardTitle>
+              <CardDescription className="text-xs">
+                All match start times, live countdowns, and alerts are adjusted to this timezone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {POPULAR_TIMEZONES.map((tz) => {
+                  const isSelected = preferences.timezone === tz.value;
+                  return (
+                    <button
+                      key={tz.value}
+                      type="button"
+                      onClick={() => setTimezone(tz.value)}
+                      aria-pressed={isSelected}
+                      className={`p-2.5 rounded-lg border text-left flex items-center justify-between transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                          : 'border-border hover:border-primary/40 bg-muted/10'
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-foreground flex items-center gap-1.5 truncate">
+                          <span>{tz.flag}</span>
+                          <span className="truncate">{tz.label}</span>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                          <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono">
+                            {tz.offset}
+                          </Badge>
+                          <span className="truncate">{tz.region}</span>
+                        </div>
+                      </div>
+                      {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-1" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 3. Geographic Region & Domestic League Priority */}
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" aria-hidden="true" />
+                  3. Geographic Region & Domestic League Priority
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                    {isAutoDetected ? '📍 Auto-Detected' : '⚙️ Custom Selected'}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setRegion('auto')}
+                    className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Auto Detect
+                  </Button>
+                </div>
+              </div>
+              <CardDescription className="text-xs">
+                Automatically determines which domestic and continental leagues are prioritized at the top of LiveScores and Predictions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                {allRegions.map((r) => {
+                  const isSelected = regionId === r.id;
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setRegion(r.id)}
+                      aria-pressed={isSelected}
+                      className={`p-3 rounded-xl border text-left flex items-start justify-between transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                          : 'border-border hover:border-primary/40 bg-muted/10'
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{r.flag}</span>
+                          <span className="text-xs font-bold text-foreground truncate">{r.name}</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-tight">
+                          {r.description}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {r.topLeagues.slice(0, 3).map((l) => (
+                            <span key={l.name} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+                              {l.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-1 mt-1" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 4. Global Odds System & Regional Bookmakers */}
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Percent className="h-5 w-5 text-primary" aria-hidden="true" />
+                4. {t('nav.odds_format', 'Global Odds Format')} & Bookmakers
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Select how odds values are rendered across all algorithm tables and your default bookmaker.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Odds formats */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Odds Format
+                </Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {ODDS_FORMATS.map((fmt) => {
+                    const isSelected = preferences.oddsFormat === fmt.id;
+                    return (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        onClick={() => setOddsFormat(fmt.id as SupportedOddsFormat)}
+                        aria-pressed={isSelected}
+                        className={`p-2.5 rounded-lg border text-left transition-all ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                            : 'border-border hover:border-primary/40 bg-muted/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold">{fmt.name}</span>
+                          {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
+                        </div>
+                        <div className="text-[11px] text-primary font-mono mt-0.5">{fmt.example}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{fmt.region}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Default Regional Bookmaker */}
+              <div className="space-y-2 border-t pt-3">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Default Regional Bookmaker (for 1-Click Code Generation)
+                </Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {REGIONAL_BOOKMAKERS.map((b) => {
+                    const isSelected = preferences.defaultBookmaker === b.id;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => updatePreferences({ defaultBookmaker: b.id })}
+                        aria-pressed={isSelected}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between text-xs transition-all ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                            : 'border-border hover:border-primary/40 bg-muted/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span>{b.flag}</span>
+                          <span className="truncate">{b.name}</span>
+                        </div>
+                        {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 5. Data Saver / Performance Optimizer */}
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" aria-hidden="true" />
+                  5. {t('nav.data_saver', 'Data Saver & Bandwidth Optimizer')}
+                </CardTitle>
+                <Switch
+                  checked={preferences.dataSaverMode}
+                  onCheckedChange={(checked) => setDataSaver(checked)}
+                  aria-label="Toggle Data Saver Mode"
+                />
+              </div>
+              <CardDescription className="text-xs">
+                {t('pref.data_saver_desc', 'Optimizes payload sizes, reduces background polling, and lazy loads high-res crests for low-speed mobile connections.')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted/20 border rounded-xl p-3 text-xs space-y-1.5">
+                <div className="flex items-center justify-between font-semibold">
+                  <span>Data Saver Status</span>
+                  <Badge variant={preferences.dataSaverMode ? 'default' : 'outline'} className="text-[10px]">
+                    {preferences.dataSaverMode ? 'ACTIVE (Saving Data)' : 'DISABLED (Full Assets)'}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-[11px]">
+                  Ideal for cellular roaming, intermittent connections in emerging markets, or mobile data plans.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 6. Risk Profile Selection */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-                1. Select Your Risk Tolerance Profile
+                6. Risk Tolerance Profile
               </CardTitle>
               <CardDescription className="text-xs">
                 This dictates which picks are highlighted on your homepage and daily notifications.
@@ -179,18 +468,18 @@ export default function Preferences() {
                   onClick={() => setRiskProfile('aggressive')}
                   className={`p-4 rounded-xl border text-left transition-all ${
                     preferences.riskProfile === 'aggressive'
-                      ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30'
-                      : 'border-border hover:border-amber-500/50 bg-muted/20'
+                      ? 'border-red-500 bg-red-500/10 ring-2 ring-red-500/30'
+                      : 'border-border hover:border-red-500/50 bg-muted/20'
                   }`}
                   aria-pressed={preferences.riskProfile === 'aggressive'}
                   aria-label="Select Aggressive Risk Profile"
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <Badge variant="outline" className="border-amber-500 text-amber-600 bg-amber-500/10 text-xs font-bold">
-                      High Yield
+                    <Badge variant="outline" className="border-red-500 text-red-600 bg-red-500/10 text-xs font-bold">
+                      High Multipliers
                     </Badge>
                     {preferences.riskProfile === 'aggressive' && (
-                      <CheckCircle2 className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                      <CheckCircle2 className="h-4 w-4 text-red-600" aria-hidden="true" />
                     )}
                   </div>
                   <div className="font-bold text-sm text-foreground">Aggressive Profile</div>
@@ -202,12 +491,12 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
-          {/* 2. Favorite Competitions */}
+          {/* 7. Favorite Competitions */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Globe className="h-5 w-5 text-primary" aria-hidden="true" />
-                2. Favorite Leagues & Competitions
+                7. Favorite Leagues & Global Competitions
               </CardTitle>
               <CardDescription className="text-xs">
                 Select the leagues you follow most closely to prioritize them across dashboards.
@@ -238,12 +527,12 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
-          {/* 3. Preferred Betting Markets */}
+          {/* 8. Preferred Betting Markets */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Zap className="h-5 w-5 text-primary" aria-hidden="true" />
-                3. Preferred Betting Markets
+                8. Preferred Betting Markets
               </CardTitle>
               <CardDescription className="text-xs">
                 Toggle your preferred bet types for personalized multi-builder selections.
@@ -274,71 +563,12 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
-          {/* 4. Display & Formatting */}
-          <Card className="border-border/70">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Coins className="h-5 w-5 text-primary" aria-hidden="true" />
-                4. Currency & Odds Formatting
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                {/* Odds format */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Odds Format</Label>
-                  <div className="flex gap-2" role="group" aria-label="Select odds format">
-                    {(['decimal', 'fractional', 'american'] as OddsFormat[]).map((fmt) => (
-                      <button
-                        key={fmt}
-                        type="button"
-                        onClick={() => updatePreferences({ oddsFormat: fmt })}
-                        aria-label={`Set odds format to ${fmt}`}
-                        aria-pressed={preferences.oddsFormat === fmt}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold capitalize border transition-all ${
-                          preferences.oddsFormat === fmt
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-muted/20 border-border hover:bg-muted'
-                        }`}
-                      >
-                        {fmt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Default Currency */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Primary Currency</Label>
-                  <div className="flex gap-2" role="group" aria-label="Select primary currency">
-                    {(['KES', 'USD', 'EUR', 'GBP', 'NGN'] as const).map((curr) => (
-                      <button
-                        key={curr}
-                        type="button"
-                        onClick={() => updatePreferences({ defaultCurrency: curr })}
-                        aria-label={`Set primary currency to ${curr}`}
-                        aria-pressed={preferences.defaultCurrency === curr}
-                        className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold border transition-all ${
-                          preferences.defaultCurrency === curr
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-muted/20 border-border hover:bg-muted'
-                        }`}
-                      >
-                        {curr}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 5. Alerts & Notifications */}
+          {/* 9. Alerts & Notifications */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
-                5. Alerts & Retention Digest
+                9. Alerts & Retention Digest
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -368,7 +598,7 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
-          {/* 6. Offline Match Mode & Service Worker Cache */}
+          {/* 9. Offline Match Mode & Service Worker Cache */}
           <OfflineCacheSettingsCard />
         </div>
       </main>
@@ -387,7 +617,7 @@ function OfflineCacheSettingsCard() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <HardDrive className="h-5 w-5 text-primary" aria-hidden="true" />
-            6. Offline Match Mode & Team Crests Cache
+            9. Offline Match Mode & Crests Cache
           </CardTitle>
           <Badge variant="outline" className={isOnline ? "text-green-500 border-green-500/30 bg-green-500/10" : "text-amber-500 border-amber-500/30 bg-amber-500/10"}>
             {isOnline ? (

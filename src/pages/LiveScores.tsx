@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -6,8 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert, MapPin, Sparkles } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { RealtimeIndicator } from '@/components/RealtimeIndicator';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
@@ -15,6 +18,9 @@ import { Link } from 'react-router-dom';
 
 export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
+  const [enableRegionalSort, setEnableRegionalSort] = useState<boolean>(true);
+  const { region, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
+
   const { 
     liveFixtures: matches, 
     isLiveLoading: loading, 
@@ -36,12 +42,19 @@ export default function LiveScores() {
     setLastSyncTime(new Date());
   }, [matches]);
 
-  const filteredMatches = selectedLeague === 'all'
-    ? matches
-    : matches.filter(m => 
-        m.league.toLowerCase().includes(selectedLeague.toLowerCase()) || 
-        String(m.league_id) === selectedLeague
-      );
+  const filteredMatches = useMemo(() => {
+    const raw = selectedLeague === 'all'
+      ? matches
+      : matches.filter(m => 
+          m.league.toLowerCase().includes(selectedLeague.toLowerCase()) || 
+          String(m.league_id) === selectedLeague
+        );
+
+    if (enableRegionalSort && selectedLeague === 'all') {
+      return sortLiveFixtures(raw);
+    }
+    return raw;
+  }, [matches, selectedLeague, enableRegionalSort, sortLiveFixtures]);
 
   const live = filteredMatches.filter(m => m.status === 'live' || m.status === 'halftime');
   const upcoming = filteredMatches.filter(m => m.status === 'upcoming');
@@ -69,109 +82,118 @@ export default function LiveScores() {
     );
   };
 
-  const MatchCard = ({ m }: { m: ApiFootballLiveFixture }) => (
-    <Card className={`${m.status === 'live' ? 'border-red-500/40 bg-red-500/5 shadow-md shadow-red-500/5' : 'hover:border-primary/30'} transition-all`}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="text-xs font-semibold">{m.league}</Badge>
-            {statusBadge(m)}
-            {m.is_realtime && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-medium">
-                Live Feed
-              </Badge>
-            )}
-            {m.venue && (
-              <span className="text-[11px] text-muted-foreground hidden sm:inline">
-                📍 {m.venue}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5">
-            {m.status !== 'finished' && (
-              <NotifyMeButton
-                match={{
-                  id: String(m.id),
-                  home_team: m.home_team,
-                  away_team: m.away_team,
-                  league: m.league,
-                  match_date: m.match_date,
-                  prediction: m.prediction,
-                  confidence: m.confidence,
-                  home_odds: m.home_odds,
-                  draw_odds: m.draw_odds,
-                  away_odds: m.away_odds,
-                }}
-                variant="icon"
-              />
-            )}
-            <button
-              type="button"
-              onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
-              aria-label={expandedId === m.id ? `Hide match events for ${m.home_team} vs ${m.away_team}` : `Show match events for ${m.home_team} vs ${m.away_team}`}
-              aria-expanded={expandedId === m.id}
-              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {expandedId === m.id ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
-            </button>
-          </div>
-        </div>
+  const MatchCard = ({ m }: { m: ApiFootballLiveFixture }) => {
+    const regionalMeta = getLeagueBadge(m.league);
 
-        <div className="flex items-center justify-between gap-3 my-1">
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="sm" />
-            <p className={`font-bold text-sm sm:text-base truncate ${m.home_score != null && m.away_score != null && m.home_score > m.away_score ? 'text-primary' : ''}`}>
-              {m.home_team}
-            </p>
-          </div>
-
-          <div className="text-center px-3 py-1 rounded bg-muted/40 min-w-[70px]">
-            {m.home_score != null && m.away_score != null ? (
-              <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-foreground">
-                {m.home_score} – {m.away_score}
-              </span>
-            ) : (
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">VS</span>
-            )}
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 flex-1 min-w-0 text-right">
-            <p className={`font-bold text-sm sm:text-base truncate ${m.home_score != null && m.away_score != null && m.away_score > m.home_score ? 'text-primary' : ''}`}>
-              {m.away_team}
-            </p>
-            <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="sm" />
-          </div>
-        </div>
-
-        {expandedId === m.id && (
-          <div className="mt-3 pt-3 border-t space-y-2 text-xs sm:text-sm">
-            {m.prediction && (
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-muted-foreground">AI Prediction:</span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20">{m.prediction}</Badge>
-                </div>
-                {m.confidence && (
-                  <span className="text-primary font-bold">{m.confidence}% Confidence</span>
-                )}
-              </div>
-            )}
-            {m.home_odds && (
-              <div className="flex items-center justify-between text-muted-foreground pt-1">
-                <span>Live Odds:</span>
-                <span className="space-x-3">
-                  <span>1: <b className="text-foreground">{m.home_odds.toFixed(2)}</b></span>
-                  {m.draw_odds && <span>X: <b className="text-foreground">{m.draw_odds.toFixed(2)}</b></span>}
-                  {m.away_odds && <span>2: <b className="text-foreground">{m.away_odds.toFixed(2)}</b></span>}
+    return (
+      <Card className={`${m.status === 'live' ? 'border-red-500/40 bg-red-500/5 shadow-md shadow-red-500/5' : 'hover:border-primary/30'} transition-all`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="text-xs font-semibold">{m.league}</Badge>
+              {regionalMeta.badgeLabel && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20 font-medium">
+                  {regionalMeta.badgeLabel}
+                </Badge>
+              )}
+              {statusBadge(m)}
+              {m.is_realtime && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-medium">
+                  Live Feed
+                </Badge>
+              )}
+              {m.venue && (
+                <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                  📍 {m.venue}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {m.status !== 'finished' && (
+                <NotifyMeButton
+                  match={{
+                    id: String(m.id),
+                    home_team: m.home_team,
+                    away_team: m.away_team,
+                    league: m.league,
+                    match_date: m.match_date,
+                    prediction: m.prediction,
+                    confidence: m.confidence,
+                    home_odds: m.home_odds,
+                    draw_odds: m.draw_odds,
+                    away_odds: m.away_odds,
+                  }}
+                  variant="icon"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
+                aria-label={expandedId === m.id ? `Hide match events for ${m.home_team} vs ${m.away_team}` : `Show match events for ${m.home_team} vs ${m.away_team}`}
+                aria-expanded={expandedId === m.id}
+                className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {expandedId === m.id ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
+              </button>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+
+          <div className="flex items-center justify-between gap-3 my-1">
+            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="sm" />
+              <p className={`font-bold text-sm sm:text-base truncate ${m.home_score != null && m.away_score != null && m.home_score > m.away_score ? 'text-primary' : ''}`}>
+                {m.home_team}
+              </p>
+            </div>
+
+            <div className="text-center px-3 py-1 rounded bg-muted/40 min-w-[70px]">
+              {m.home_score != null && m.away_score != null ? (
+                <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-foreground">
+                  {m.home_score} – {m.away_score}
+                </span>
+              ) : (
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">VS</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 flex-1 min-w-0 text-right">
+              <p className={`font-bold text-sm sm:text-base truncate ${m.home_score != null && m.away_score != null && m.away_score > m.home_score ? 'text-primary' : ''}`}>
+                {m.away_team}
+              </p>
+              <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="sm" />
+            </div>
+          </div>
+
+          {expandedId === m.id && (
+            <div className="mt-3 pt-3 border-t space-y-2 text-xs sm:text-sm">
+              {m.prediction && (
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-muted-foreground">AI Prediction:</span>
+                    <Badge className="bg-primary/10 text-primary border-primary/20">{m.prediction}</Badge>
+                  </div>
+                  {m.confidence && (
+                    <span className="text-primary font-bold">{m.confidence}% Confidence</span>
+                  )}
+                </div>
+              )}
+              {m.home_odds && (
+                <div className="flex items-center justify-between text-muted-foreground pt-1">
+                  <span>Live Odds:</span>
+                  <span className="space-x-3">
+                    <span>1: <b className="text-foreground">{m.home_odds.toFixed(2)}</b></span>
+                    {m.draw_odds && <span>X: <b className="text-foreground">{m.draw_odds.toFixed(2)}</b></span>}
+                    {m.away_odds && <span>2: <b className="text-foreground">{m.away_odds.toFixed(2)}</b></span>}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -257,35 +279,45 @@ export default function LiveScores() {
           </div>
         )}
 
+        {/* Geographic Region Prioritization Bar */}
+        <div className="mb-4">
+          <GeoRegionSelector variant="full" />
+        </div>
+
         {/* League Quick Filters */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
-          <Button
-            size="sm"
-            variant={selectedLeague === 'all' ? 'default' : 'outline'}
-            onClick={() => setSelectedLeague('all')}
-            className="text-xs h-8 flex-shrink-0"
-          >
-            All Competitions ({matches.length})
-          </Button>
-          {[
-            { id: '39', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-            { id: '140', name: 'La Liga', flag: '🇪🇸' },
-            { id: '135', name: 'Serie A', flag: '🇮🇹' },
-            { id: '78', name: 'Bundesliga', flag: '🇩🇪' },
-            { id: '61', name: 'Ligue 1', flag: '🇫🇷' },
-            { id: '2', name: 'Champions League', flag: '🏆' },
-          ].map(lg => (
+        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
+          <div className="flex gap-1.5 flex-shrink-0">
             <Button
-              key={lg.id}
               size="sm"
-              variant={selectedLeague === lg.id || selectedLeague === lg.name ? 'default' : 'outline'}
-              onClick={() => setSelectedLeague(selectedLeague === lg.id ? 'all' : lg.id)}
-              className="text-xs h-8 gap-1.5 flex-shrink-0"
+              variant={selectedLeague === 'all' ? 'default' : 'outline'}
+              onClick={() => setSelectedLeague('all')}
+              className="text-xs h-8 flex-shrink-0 font-medium"
             >
-              <span>{lg.flag}</span>
-              <span>{lg.name}</span>
+              All Matches ({matches.length})
             </Button>
-          ))}
+            {prioritizedLeagues.map((lg) => {
+              const isSelected = selectedLeague === lg.id || selectedLeague === lg.name;
+              return (
+                <Button
+                  key={lg.id}
+                  size="sm"
+                  variant={isSelected ? 'default' : 'outline'}
+                  onClick={() => setSelectedLeague(isSelected ? 'all' : lg.id)}
+                  className={`text-xs h-8 gap-1.5 flex-shrink-0 font-medium ${
+                    isSelected ? 'shadow-sm' : 'hover:border-primary/40'
+                  }`}
+                >
+                  <span>{lg.flag}</span>
+                  <span>{lg.name}</span>
+                  {lg.badge && !isSelected && (
+                    <span className="text-[9px] px-1 py-0 rounded bg-muted text-muted-foreground font-mono">
+                      {lg.badge}
+                    </span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
         </div>
 
         {loading ? (

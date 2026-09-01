@@ -1,21 +1,29 @@
 import { PredictionCard } from "./PredictionCard";
 import { usePredictions } from "@/hooks/usePredictions";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useGeoRegion } from "@/hooks/useGeoRegion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Zap } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export const TodaysPredictions = () => {
   const { predictions, loading } = usePredictions();
+  const { t } = useUserPreferences();
+  const { region, sortPredictions } = useGeoRegion();
   const [newPredictionId, setNewPredictionId] = useState<string | null>(null);
+
+  const prioritizedPredictions = useMemo(() => {
+    return sortPredictions(predictions);
+  }, [predictions, sortPredictions]);
 
   // Highlight new predictions temporarily
   useEffect(() => {
-    if (predictions.length > 0 && predictions[0]) {
-      setNewPredictionId(predictions[0].id);
+    if (prioritizedPredictions.length > 0 && prioritizedPredictions[0]) {
+      setNewPredictionId(prioritizedPredictions[0].id);
       const timer = setTimeout(() => setNewPredictionId(null), 3000);
       return () => clearTimeout(timer);
     }
-  }, [predictions.length]);
+  }, [prioritizedPredictions.length]);
 
   if (loading) {
     return (
@@ -23,7 +31,7 @@ export const TodaysPredictions = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-              Today's AI Predictions
+              {t('nav.predictions', "Today's AI Predictions")}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Advanced machine learning predictions for today's biggest matches
@@ -31,7 +39,7 @@ export const TodaysPredictions = () => {
           </div>
           <div className="max-w-5xl mx-auto space-y-6">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-48 w-full" />
+              <Skeleton key={i} className="h-48 w-full rounded-2xl" />
             ))}
           </div>
         </div>
@@ -45,7 +53,7 @@ export const TodaysPredictions = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-              Today's AI Predictions
+              {t('nav.predictions', "Today's AI Predictions")}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Advanced machine learning predictions for today's biggest matches
@@ -69,7 +77,7 @@ export const TodaysPredictions = () => {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Zap className="h-8 w-8 text-primary animate-pulse-glow" />
             <h2 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Live AI Predictions
+              {t('nav.predictions', 'Live AI Predictions')}
             </h2>
             <Zap className="h-8 w-8 text-primary animate-pulse-glow" />
           </div>
@@ -83,7 +91,7 @@ export const TodaysPredictions = () => {
         </div>
 
         <div className="max-w-5xl mx-auto space-y-6">
-          {predictions.map((prediction, index) => (
+          {prioritizedPredictions.map((prediction, index) => (
             <div
               key={prediction.id}
               className={`animate-slide-up hover-lift transition-all duration-500 ${
@@ -94,17 +102,7 @@ export const TodaysPredictions = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <PredictionCard
-                homeTeam={prediction.home_team}
-                awayTeam={prediction.away_team}
-                league={prediction.league}
-                prediction={prediction.prediction}
-                confidence={prediction.confidence}
-                reasoning={prediction.reasoning}
-                matchDate={new Date(prediction.match_date).toLocaleDateString()}
-                matchTime={new Date(prediction.match_date).toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
+                prediction={prediction}
               />
             </div>
           ))}
@@ -113,3 +111,4 @@ export const TodaysPredictions = () => {
     </section>
   );
 };
+

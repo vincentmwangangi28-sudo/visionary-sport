@@ -55,6 +55,8 @@ export const LEAGUES_LIST: LeagueDefinition[] = [
   { name: 'Scottish Premiership', espnCode: 'sco.1', apiFootballId: 179, country: 'Scotland' },
   { name: 'Liga MX', espnCode: 'mex.1', apiFootballId: 262, country: 'Mexico' },
   { name: 'Championship', espnCode: 'eng.2', apiFootballId: 40, country: 'England' },
+  { name: 'Kenyan Premier League', espnCode: 'ken.1', apiFootballId: 276, country: 'Kenya' },
+  { name: 'FKF Premier League', espnCode: 'ken.1', apiFootballId: 276, country: 'Kenya' },
 ];
 
 export interface RealtimeMatchResult {

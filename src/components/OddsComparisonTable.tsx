@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { Copy, Check, TrendingUp, Sparkles, Zap, DollarSign, ExternalLink } from 'lucide-react';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { Copy, Check, TrendingUp, Sparkles, Zap, DollarSign, ExternalLink, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OddsProps {
@@ -29,24 +31,27 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
   baseDrawOdds = 3.35,
   baseAwayOdds = 3.60,
 }) => {
-  const { addSelection, selections } = useBetSlip();
+  const { addSelection } = useBetSlip();
+  const { formatOdds, preferences } = useUserPreferences();
+  const { region } = useGeoRegion();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
 
-  // Generate realistic competitive odds with variance across real global and African sportsbooks
+  // Generate realistic competitive odds with variance across real global and regional sportsbooks
   const bookmakers = [
-    { name: 'Pinnacle', home: Number((baseHomeOdds * 1.04).toFixed(2)), draw: Number((baseDrawOdds * 1.03).toFixed(2)), away: Number((baseAwayOdds * 1.05).toFixed(2)), payout: '98.5%', popularIn: 'Global/Pro' },
-    { name: 'Bet365', home: Number((baseHomeOdds * 1.01).toFixed(2)), draw: Number((baseDrawOdds * 1.02).toFixed(2)), away: Number((baseAwayOdds * 1.02).toFixed(2)), payout: '96.4%', popularIn: 'UK/Europe' },
+    { name: 'Pinnacle', home: Number((baseHomeOdds * 1.04).toFixed(2)), draw: Number((baseDrawOdds * 1.03).toFixed(2)), away: Number((baseAwayOdds * 1.05).toFixed(2)), payout: '98.5%', popularIn: 'Global / Pro' },
+    { name: 'Bet365', home: Number((baseHomeOdds * 1.01).toFixed(2)), draw: Number((baseDrawOdds * 1.02).toFixed(2)), away: Number((baseAwayOdds * 1.02).toFixed(2)), payout: '96.4%', popularIn: 'UK / Europe' },
     { name: '1xBet', home: Number((baseHomeOdds * 1.05).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.06).toFixed(2)), payout: '98.1%', popularIn: 'Global' },
-    { name: 'SportPesa', home: Number((baseHomeOdds * 1.02).toFixed(2)), draw: Number((baseDrawOdds * 0.99).toFixed(2)), away: Number((baseAwayOdds * 1.01).toFixed(2)), payout: '95.9%', popularIn: 'Kenya/Africa' },
-    { name: 'Betika', home: Number((baseHomeOdds * 1.03).toFixed(2)), draw: Number((baseDrawOdds * 1.00).toFixed(2)), away: Number((baseAwayOdds * 1.02).toFixed(2)), payout: '96.5%', popularIn: 'Kenya/East Africa' },
-    { name: 'Betway', home: Number((baseHomeOdds * 1.00).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.01).toFixed(2)), payout: '95.6%', popularIn: 'Global/Africa' },
-    { name: 'MozzartBet', home: Number((baseHomeOdds * 1.02).toFixed(2)), draw: Number((baseDrawOdds * 1.04).toFixed(2)), away: Number((baseAwayOdds * 1.00).toFixed(2)), payout: '96.8%', popularIn: 'Global/Africa' },
+    { name: 'SportPesa', home: Number((baseHomeOdds * 1.02).toFixed(2)), draw: Number((baseDrawOdds * 0.99).toFixed(2)), away: Number((baseAwayOdds * 1.01).toFixed(2)), payout: '95.9%', popularIn: 'Kenya / Africa' },
+    { name: 'Betika', home: Number((baseHomeOdds * 1.03).toFixed(2)), draw: Number((baseDrawOdds * 1.00).toFixed(2)), away: Number((baseAwayOdds * 1.02).toFixed(2)), payout: '96.5%', popularIn: 'East Africa' },
+    { name: 'Bet9ja', home: Number((baseHomeOdds * 1.02).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.03).toFixed(2)), payout: '96.0%', popularIn: 'Nigeria / W. Africa' },
+    { name: 'Betway', home: Number((baseHomeOdds * 1.00).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.01).toFixed(2)), payout: '95.6%', popularIn: 'Africa / UK' },
+    { name: 'DraftKings', home: Number((baseHomeOdds * 0.99).toFixed(2)), draw: Number((baseDrawOdds * 1.02).toFixed(2)), away: Number((baseAwayOdds * 1.03).toFixed(2)), payout: '95.8%', popularIn: 'North America' },
   ];
 
-  const maxHome = Math.max(...bookmakers.map(b => b.home));
-  const maxDraw = Math.max(...bookmakers.map(b => b.draw));
-  const maxAway = Math.max(...bookmakers.map(b => b.away));
+  const maxHome = Math.max(...bookmakers.map((b) => b.home));
+  const maxDraw = Math.max(...bookmakers.map((b) => b.draw));
+  const maxAway = Math.max(...bookmakers.map((b) => b.away));
 
   // Generate deterministic booking codes based on match
   const hash = (homeTeam + awayTeam).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
@@ -56,7 +61,7 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
     { bookie: '1xBet', code: `1X${((hash * 19) % 899999 + 100000).toString(36).toUpperCase()}` },
     { bookie: 'Bet365', code: `B365-${((hash * 23) % 89999 + 10000).toString()}` },
     { bookie: 'Betway', code: `BW${((hash * 29) % 899999 + 100000).toString(36).toUpperCase()}` },
-    { bookie: 'Mozzart', code: `MZ-${((hash * 31) % 89999 + 10000).toString()}` },
+    { bookie: 'Bet9ja', code: `9JA-${((hash * 31) % 89999 + 10000).toString()}` },
   ];
 
   const copyToClipboard = (code: string, bookie: string) => {
@@ -77,7 +82,7 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
       odds,
       confidence: 75,
     });
-    toast.success(`Added ${homeTeam} vs ${awayTeam} - ${market} @ ${odds.toFixed(2)} to Bet Slip`);
+    toast.success(`Added ${homeTeam} vs ${awayTeam} - ${market} @ ${formatOdds(odds)} to Bet Slip`);
   };
 
   return (
@@ -88,8 +93,13 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-emerald-500" />
               <h3 className="font-bold text-base">Multi-Bookmaker Odds Matrix</h3>
+              <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">
+                {region.flag} {region.name}
+              </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">Compare live lines & pick best value price</p>
+            <p className="text-xs text-muted-foreground">
+              Compare live bookmaker lines • Displayed in <span className="font-bold text-foreground capitalize">{preferences.oddsFormat}</span> format
+            </p>
           </div>
 
           <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
@@ -158,14 +168,14 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddBet('Home Win', b.home, b.name)}
-                      aria-label={`Bet Home Win on ${homeTeam} at ${b.home.toFixed(2)} with ${b.name}`}
+                      aria-label={`Bet Home Win on ${homeTeam} at ${formatOdds(b.home)} with ${b.name}`}
                       className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                         b.home === maxHome
-                          ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40 shadow-sm'
+                          ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40 shadow-sm font-black'
                           : 'bg-muted/60 hover:bg-primary/20 text-foreground'
                       }`}
                     >
-                      {b.home.toFixed(2)}
+                      {formatOdds(b.home)}
                       {b.home === maxHome && <span className="ml-1 text-[9px]" aria-label="Best odds">★</span>}
                     </button>
                   </TableCell>
@@ -175,14 +185,14 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddBet('Draw', b.draw, b.name)}
-                      aria-label={`Bet Draw at ${b.draw.toFixed(2)} with ${b.name}`}
+                      aria-label={`Bet Draw at ${formatOdds(b.draw)} with ${b.name}`}
                       className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                         b.draw === maxDraw
-                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/40 shadow-sm'
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/40 shadow-sm font-black'
                           : 'bg-muted/60 hover:bg-primary/20 text-foreground'
                       }`}
                     >
-                      {b.draw.toFixed(2)}
+                      {formatOdds(b.draw)}
                       {b.draw === maxDraw && <span className="ml-1 text-[9px]" aria-label="Best odds">★</span>}
                     </button>
                   </TableCell>
@@ -192,14 +202,14 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddBet('Away Win', b.away, b.name)}
-                      aria-label={`Bet Away Win on ${awayTeam} at ${b.away.toFixed(2)} with ${b.name}`}
+                      aria-label={`Bet Away Win on ${awayTeam} at ${formatOdds(b.away)} with ${b.name}`}
                       className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                         b.away === maxAway
-                          ? 'bg-sky-500/20 text-sky-700 dark:text-sky-400 border border-sky-500/40 shadow-sm'
+                          ? 'bg-sky-500/20 text-sky-700 dark:text-sky-400 border border-sky-500/40 shadow-sm font-black'
                           : 'bg-muted/60 hover:bg-primary/20 text-foreground'
                       }`}
                     >
-                      {b.away.toFixed(2)}
+                      {formatOdds(b.away)}
                       {b.away === maxAway && <span className="ml-1 text-[9px]" aria-label="Best odds">★</span>}
                     </button>
                   </TableCell>
@@ -214,10 +224,13 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
-          <span className="flex items-center gap-1.5"><span className="text-emerald-500 font-bold">★</span> Best Odds in Market highlighted</span>
-          <span>Click any odds box to add directly to Bet Slip</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-emerald-500 font-bold">★</span> Best Market Price highlighted
+          </span>
+          <span>Click any odds pill to add directly to Bet Slip</span>
         </div>
       </CardContent>
     </Card>
   );
 };
+

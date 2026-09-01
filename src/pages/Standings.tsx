@@ -239,62 +239,72 @@ export default function Standings() {
                     </tr>
                   </thead>
                   <tbody>
-                    {standings.map((row, i) => (
-                      <tr
-                        key={row.team}
-                        className={`border-b hover:bg-muted/20 transition-colors ${
-                          i < 4
-                            ? 'border-l-2 border-l-blue-500'
-                            : i === 4 || i === 5
-                            ? 'border-l-2 border-l-amber-500'
-                            : i >= standings.length - 3
-                            ? 'border-l-2 border-l-red-500'
-                            : ''
-                        }`}
-                      >
-                        <td className="py-2.5 px-3 text-muted-foreground font-medium">{row.position}</td>
-                        <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2.5">
-                            <TeamLogo team={row.team} logoUrl={row.logo} size="xs" />
-                            <span className="font-medium truncate max-w-[140px] sm:max-w-none">{row.team}</span>
-                          </div>
-                        </td>
-                        <td className="text-center py-2.5 px-2 hidden sm:table-cell text-muted-foreground">{row.played}</td>
-                        <td className="text-center py-2.5 px-2 hidden sm:table-cell text-green-600 font-medium">{row.won}</td>
-                        <td className="text-center py-2.5 px-2 hidden sm:table-cell text-muted-foreground">{row.drawn}</td>
-                        <td className="text-center py-2.5 px-2 hidden sm:table-cell text-red-500">{row.lost}</td>
-                        <td
-                          className={`text-center py-2.5 px-2 hidden md:table-cell font-medium ${
-                            row.gd > 0 ? 'text-green-600' : row.gd < 0 ? 'text-red-500' : 'text-muted-foreground'
+                    {standings.map((row, i) => {
+                      const isTopTier = league.id === 276 ? i === 0 : i < 4;
+                      const isContinental = league.id === 276 ? i === 1 : (i === 4 || i === 5);
+                      const isRelegation = league.id === 276 
+                        ? i >= standings.length - 2 
+                        : league.id === 78 || league.id === 61 
+                        ? i >= standings.length - 2 
+                        : i >= standings.length - 3;
+
+                      return (
+                        <tr
+                          key={`${row.team}-${i}`}
+                          className={`border-b hover:bg-muted/20 transition-colors ${
+                            isTopTier
+                              ? 'border-l-2 border-l-blue-500'
+                              : isContinental
+                              ? 'border-l-2 border-l-amber-500'
+                              : isRelegation
+                              ? 'border-l-2 border-l-red-500'
+                              : ''
                           }`}
                         >
-                          {row.gd > 0 ? '+' : ''}
-                          {row.gd}
-                        </td>
-                        <td className="text-center py-2.5 px-3 font-black text-primary">{row.points}</td>
-                        <td className="py-2.5 px-2 hidden lg:table-cell">
-                          <div className="flex gap-0.5 justify-center">
-                            {(row.form ?? '').split('').map((r, idx) => (
-                              <FormBit key={idx} r={r} />
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="py-2.5 px-3 text-muted-foreground font-medium">{row.position}</td>
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center gap-2.5">
+                              <TeamLogo team={row.team} logoUrl={row.logo} size="xs" />
+                              <span className="font-medium truncate max-w-[140px] sm:max-w-none">{row.team}</span>
+                            </div>
+                          </td>
+                          <td className="text-center py-2.5 px-2 hidden sm:table-cell text-muted-foreground">{row.played}</td>
+                          <td className="text-center py-2.5 px-2 hidden sm:table-cell text-green-600 font-medium">{row.won}</td>
+                          <td className="text-center py-2.5 px-2 hidden sm:table-cell text-muted-foreground">{row.drawn}</td>
+                          <td className="text-center py-2.5 px-2 hidden sm:table-cell text-red-500">{row.lost}</td>
+                          <td
+                            className={`text-center py-2.5 px-2 hidden md:table-cell font-medium ${
+                              row.gd > 0 ? 'text-green-600' : row.gd < 0 ? 'text-red-500' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {row.gd > 0 ? '+' : ''}
+                            {row.gd}
+                          </td>
+                          <td className="text-center py-2.5 px-3 font-black text-primary">{row.points}</td>
+                          <td className="py-2.5 px-2 hidden lg:table-cell">
+                            <div className="flex gap-0.5 justify-center">
+                              {(row.form ?? '').split('').map((r, idx) => (
+                                <FormBit key={idx} r={r} />
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
                 <div className="flex flex-wrap gap-4 px-4 py-3 text-xs text-muted-foreground border-t bg-muted/10">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-4 bg-blue-500 rounded-sm inline-block" />
-                    Champions League / Top Tier
+                    {league.id === 276 ? 'CAF Champions League (1st)' : 'Champions League / Top Tier'}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-4 bg-amber-500 rounded-sm inline-block" />
-                    Europa League / Continental
+                    {league.id === 276 ? 'CAF Confederation Cup (2nd)' : 'Europa League / Continental'}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-4 bg-red-500 rounded-sm inline-block" />
-                    Relegation Zone
+                    {league.id === 276 ? 'Relegation to NSL (Bottom 2)' : 'Relegation Zone'}
                   </span>
                 </div>
               </div>

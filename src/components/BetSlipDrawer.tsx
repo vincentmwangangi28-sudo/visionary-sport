@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { REGIONAL_BOOKMAKERS, generateRegionalBookingCode } from '@/services/bookmakerBookingCodes';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +17,8 @@ import {
   ChevronRight,
   Calculator,
   Flame,
-  CheckCheck
+  CheckCheck,
+  Globe
 } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
@@ -36,20 +39,22 @@ export const BetSlipDrawer = () => {
     potentialReturn,
     boostedReturn,
     combinedConfidence,
-    generateBookingCode,
   } = useBetSlip();
 
-  const [selectedBookmaker, setSelectedBookmaker] = useState('SportyBet');
+  const { formatOdds, t, preferences } = useUserPreferences();
+  const [selectedBookmakerId, setSelectedBookmakerId] = useState(preferences.defaultBookmaker || 'sportybet');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const bookmakers = ['SportyBet', 'Betway', '1xBet', 'Bet365', '22Bet'];
+  const activeBookmaker =
+    REGIONAL_BOOKMAKERS.find((b) => b.id === selectedBookmakerId) || REGIONAL_BOOKMAKERS[0];
 
-  const handleGenerateCode = (bookie: string) => {
-    setSelectedBookmaker(bookie);
-    const code = generateBookingCode(bookie);
+  const handleGenerateCode = (bookieId: string) => {
+    setSelectedBookmakerId(bookieId);
+    const bookie = REGIONAL_BOOKMAKERS.find((b) => b.id === bookieId) || REGIONAL_BOOKMAKERS[0];
+    const code = generateRegionalBookingCode(bookieId, selections.length);
     setGeneratedCode(code);
-    toast.success(`Generated ${bookie} booking code: ${code}`);
+    toast.success(`Generated ${bookie.name} booking code: ${code}`);
   };
 
   const handleCopyCode = (code: string) => {
@@ -61,11 +66,11 @@ export const BetSlipDrawer = () => {
 
   const handleShareSlip = async () => {
     const slipText = `⚽ 𝗣𝗿𝗲𝗱𝗶𝗰𝘁𝗣𝗿𝗼 𝗔𝗜 𝗕𝗲𝘁 𝗦𝗹𝗶𝗽 (${selections.length} Picks)\n\n` +
-      selections.map((s, idx) => `${idx + 1}. ${s.homeTeam} vs ${s.awayTeam}\n   👉 Pick: ${s.market} @ ${s.odds.toFixed(2)} (AI: ${s.confidence}%)\n   🏆 ${s.league}`).join('\n\n') +
-      `\n\n📊 𝗧𝗼𝘁𝗮𝗹 𝗢𝗱𝗱𝘀: ${totalOdds.toFixed(2)}\n` +
+      selections.map((s, idx) => `${idx + 1}. ${s.homeTeam} vs ${s.awayTeam}\n   👉 Pick: ${s.market} @ ${formatOdds(s.odds)} (AI: ${s.confidence}%)\n   🏆 ${s.league}`).join('\n\n') +
+      `\n\n📊 𝗧𝗼𝘁𝗮𝗹 𝗢𝗱𝗱𝘀: ${formatOdds(totalOdds)}\n` +
       (bonusMultiplier > 0 ? `🎁 𝗔𝗰𝗰𝗮 𝗕𝗼𝗻𝘂𝘀: +${(bonusMultiplier * 100).toFixed(0)}%\n` : '') +
       `🎯 𝗖𝗼𝗺𝗯𝗶𝗻𝗲𝗱 𝗖𝗼𝗻𝗳𝗶𝗱𝗲𝗻𝗰𝗲: ${combinedConfidence}%\n` +
-      (generatedCode ? `🎟️ 𝗕𝗼𝗼𝗸𝗶𝗻𝗴 𝗖𝗼𝗱𝗲 (${selectedBookmaker}): ${generatedCode}\n` : '') +
+      (generatedCode ? `🎟️ 𝗕𝗼𝗼𝗸𝗶𝗻𝗴 𝗖𝗼𝗱𝗲 (${activeBookmaker.name}): ${generatedCode}\n` : '') +
       `\n🔗 Built with PredictPro AI — https://predictpro.guru`;
 
     if (navigator.share) {
@@ -190,7 +195,7 @@ export const BetSlipDrawer = () => {
                         <span className="text-muted-foreground text-[11px]">AI: {s.confidence}%</span>
                       </div>
                       <div className="font-black text-sm text-foreground">
-                        @ {s.odds.toFixed(2)}
+                        @ {formatOdds(s.odds)}
                       </div>
                     </div>
                   </div>
@@ -202,7 +207,7 @@ export const BetSlipDrawer = () => {
                     <Flame className="h-5 w-5 text-amber-500 flex-shrink-0 animate-bounce" />
                     <div>
                       <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                        +{(bonusMultiplier * 100).toFixed(0)}% Accumulator Payout Boost Active!
+                        +{(bonusMultiplier * 100).toFixed(0)}% {t('slip.acca_boost', 'Accumulator Payout Boost Active!')}
                       </p>
                       <p className="text-[11px] text-muted-foreground">
                         {selections.length >= 8 ? 'Master Booster tier applied' : 'Add more legs for up to 50% extra bonus'}
@@ -211,24 +216,25 @@ export const BetSlipDrawer = () => {
                   </div>
                 )}
 
-                {/* 1-Click Booking Codes Across Bookmakers */}
-                <div className="mt-4 pt-3 border-t">
-                  <div className="flex items-center justify-between mb-2">
+                {/* 1-Click Booking Codes Across Global Bookmakers */}
+                <div className="mt-4 pt-3 border-t space-y-2">
+                  <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-primary" /> Bookmaker Code Exporter
+                      <Globe className="h-3.5 w-3.5 text-primary" /> {t('slip.export_code', 'Global Bookmaker Code Exporter')}
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5 mb-2">
-                    {bookmakers.slice(0, 3).map((bookie) => (
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-muted/20 rounded-lg border">
+                    {REGIONAL_BOOKMAKERS.map((bookie) => (
                       <Button
-                        key={bookie}
-                        variant={selectedBookmaker === bookie ? 'default' : 'outline'}
+                        key={bookie.id}
+                        variant={selectedBookmakerId === bookie.id ? 'default' : 'outline'}
                         size="sm"
-                        onClick={() => handleGenerateCode(bookie)}
-                        aria-label={`Generate booking code for ${bookie}`}
-                        className="text-xs h-7 px-2"
+                        onClick={() => handleGenerateCode(bookie.id)}
+                        aria-label={`Generate booking code for ${bookie.name}`}
+                        className="text-[11px] h-6 px-2 gap-1"
                       >
-                        {bookie}
+                        <span>{bookie.flag}</span>
+                        <span>{bookie.name}</span>
                       </Button>
                     ))}
                   </div>
@@ -236,19 +242,31 @@ export const BetSlipDrawer = () => {
                   {generatedCode && (
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 flex items-center justify-between gap-2 mt-2 animate-in fade-in">
                       <div>
-                        <p className="text-[10px] text-muted-foreground font-semibold">{selectedBookmaker} Slip Code</p>
+                        <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
+                          <span>{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
+                        </p>
                         <p className="font-mono font-bold text-sm tracking-wider text-primary">{generatedCode}</p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleCopyCode(generatedCode)}
-                        aria-label={`Copy ${selectedBookmaker} slip code: ${generatedCode}`}
-                        className="h-8 gap-1 text-xs"
-                      >
-                        {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-                        {copied ? 'Copied' : 'Copy'}
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleCopyCode(generatedCode)}
+                          aria-label={`Copy ${activeBookmaker.name} slip code: ${generatedCode}`}
+                          className="h-8 gap-1 text-xs font-semibold"
+                        >
+                          {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                          {copied ? t('slip.copied', 'Copied') : 'Copy'}
+                        </Button>
+                        <a
+                          href={activeBookmaker.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-md text-xs font-medium border bg-background hover:bg-muted h-8 px-2"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -258,11 +276,11 @@ export const BetSlipDrawer = () => {
               <div className="p-4 border-t bg-card/90 backdrop-blur space-y-3">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-muted/40 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[11px]">Combined Odds</span>
-                    <span className="text-base font-black text-foreground">{totalOdds.toFixed(2)}</span>
+                    <span className="text-muted-foreground block text-[11px]">{t('slip.total_odds', 'Combined Odds')}</span>
+                    <span className="text-base font-black text-foreground">{formatOdds(totalOdds)}</span>
                   </div>
                   <div className="bg-muted/40 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[11px]">AI Probability</span>
+                    <span className="text-muted-foreground block text-[11px]">{t('slip.ai_probability', 'AI Probability')}</span>
                     <span className={`text-base font-black ${combinedConfidence > 40 ? 'text-green-600' : 'text-amber-600'}`}>
                       {combinedConfidence}%
                     </span>
@@ -272,7 +290,7 @@ export const BetSlipDrawer = () => {
                 {/* Stake Input */}
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-xs">
-                    <label htmlFor="betslip-stake-input" className="font-medium text-muted-foreground">Stake Amount</label>
+                    <label htmlFor="betslip-stake-input" className="font-medium text-muted-foreground">{t('slip.stake', 'Stake Amount')}</label>
                     <div className="flex gap-1" role="group" aria-label="Select currency">
                       {['KES', 'USD', 'NGN'].map((c) => (
                         <button
@@ -305,7 +323,7 @@ export const BetSlipDrawer = () => {
                 {/* Payout Calculation */}
                 <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground font-medium">Estimated Return</span>
+                    <span className="text-muted-foreground font-medium">{t('slip.est_return', 'Estimated Return')}</span>
                     <span className="text-sm font-bold">
                       {currency} {potentialReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                     </span>
@@ -323,15 +341,15 @@ export const BetSlipDrawer = () => {
                 {/* Action Buttons */}
                 <div className="flex gap-2">
                   <Button onClick={handleShareSlip} className="flex-1 gap-2 h-10 font-bold shadow-md">
-                    <Share2 className="h-4 w-4" /> Share Slip
+                    <Share2 className="h-4 w-4" /> {t('slip.share', 'Share Slip')}
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => handleGenerateCode(selectedBookmaker)}
+                    onClick={() => handleGenerateCode(selectedBookmakerId)}
                     className="gap-2 h-10"
                     title="Export Booking Code"
                   >
-                    <Copy className="h-4 w-4" /> Export
+                    <Copy className="h-4 w-4" /> {t('slip.export_code', 'Export')}
                   </Button>
                 </div>
               </div>

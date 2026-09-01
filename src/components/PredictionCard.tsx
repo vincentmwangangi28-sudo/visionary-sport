@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 interface Props {
   prediction: Prediction;
@@ -26,12 +27,14 @@ const OUTCOME_COLOR: Record<string, string> = {
 export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
   const { isPremium } = useSubscription();
   const { addSelection, selections } = useBetSlip();
+  const { formatKickoff, getKickoffRelative, formatOdds, t } = useUserPreferences();
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   const outcome = getPrediction(p);
   const confidence = getConfidence(p);
   const analysis = getAnalysis(p);
   const locked = p.is_premium && !isPremium() && outcome.includes('🔒');
+  const relativeKickoff = getKickoffRelative(p.match_date);
 
   const isMarketInSlip = (market: string) => {
     return selections.some(s => s.homeTeam === p.home_team && s.awayTeam === p.away_team && s.market === market);
@@ -66,9 +69,14 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-bold">
                 {p.league}
               </Badge>
-              <span className="text-[11px] text-muted-foreground">
-                {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {formatKickoff(p.match_date, { includeTimezone: true })}
               </span>
+              {relativeKickoff.status === 'live' && (
+                <Badge className="bg-red-500 text-white text-[9px] px-1.5 py-0 animate-pulse font-extrabold">
+                  {relativeKickoff.label}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-2 text-sm">
               <TeamLogo team={p.home_team} size="xs" />
@@ -102,7 +110,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                     type="button"
                     key={key}
                     onClick={(e) => handleOddsClick(e, label, odds)}
-                    aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${odds.toFixed(2)} to betslip`}
+                    aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${formatOdds(odds)} to betslip`}
                     className={`px-2 py-1 rounded text-xs font-bold border transition-all ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary'
@@ -110,7 +118,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                     }`}
                   >
                     <span className="opacity-70 text-[9px] block">{key}</span>
-                    <span>{odds.toFixed(2)}</span>
+                    <span>{formatOdds(odds)}</span>
                   </button>
                 ) : null
               )}
@@ -156,9 +164,14 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               {p.league}
             </Badge>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                {new Date(p.match_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                <Clock className="h-3 w-3 text-primary/70" />
+                <span>{formatKickoff(p.match_date, { includeDate: true, includeTimezone: true })}</span>
+                {relativeKickoff.status === 'live' && (
+                  <span className="text-[10px] bg-red-500 text-white font-extrabold px-1.5 py-0.2 rounded animate-pulse">
+                    LIVE
+                  </span>
+                )}
               </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <NotifyMeButton
@@ -226,7 +239,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                     type="button"
                     key={label}
                     onClick={(e) => handleOddsClick(e, label, odds)}
-                    aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${odds.toFixed(2)} to betslip`}
+                    aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${formatOdds(odds)} to betslip`}
                     className={`py-1.5 px-2 rounded-lg border text-center transition-all ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary shadow-sm font-black'
@@ -235,7 +248,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                   >
                     <p className="text-[10px] opacity-70 font-medium">{name}</p>
                     <p className="font-black text-sm flex items-center justify-center gap-0.5">
-                      {odds.toFixed(2)}
+                      {formatOdds(odds)}
                       {isMarketInSlip(label) && <Check className="h-3 w-3" />}
                     </p>
                   </button>
@@ -270,7 +283,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               aria-label={`View match analytics, head-to-head statistics and predicted lineups for ${p.home_team} vs ${p.away_team}`}
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
-              <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> Analytics & Lineups
+              <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> {t('pred.view_analysis', 'Analytics & Lineups')}
             </button>
 
             <SharePrediction
@@ -291,3 +304,4 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
     </>
   );
 };
+
