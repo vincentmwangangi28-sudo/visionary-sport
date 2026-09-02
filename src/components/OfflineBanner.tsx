@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { WifiOff, RefreshCw, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 export const OfflineBanner: React.FC = () => {
   const { isOffline, hasCachedData, lastSyncedAt, syncOfflineData, isSyncing } = useNetworkStatus();
+  const { formatKickoff } = useUserPreferences();
   const [dismissed, setDismissed] = useState(false);
 
   if (!isOffline || dismissed) {
@@ -32,7 +34,7 @@ export const OfflineBanner: React.FC = () => {
             </div>
             <p className="text-muted-foreground text-[11px] truncate mt-0.5">
               Service Worker is serving cached fixtures, AI predictions, and team crests seamlessly.
-              {lastSyncedAt && ` (Cached ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`}
+              {lastSyncedAt && ` (Cached ${formatKickoff(lastSyncedAt, { includeTimezone: true })})`}
             </p>
           </div>
         </div>

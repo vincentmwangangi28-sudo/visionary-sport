@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -19,7 +20,25 @@ const FormBit = ({ r }: { r: string }) => (
 );
 
 export default function Standings() {
-  const [league, setLeague] = useState<LeagueConfig>(LEAGUES[0]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const leagueParam = searchParams.get('league');
+
+  const [league, setLeague] = useState<LeagueConfig>(() => {
+    if (leagueParam) {
+      const match = LEAGUES.find((l) => l.id === Number(leagueParam));
+      if (match) return match;
+    }
+    return LEAGUES[0];
+  });
+
+  useEffect(() => {
+    if (leagueParam) {
+      const match = LEAGUES.find((l) => l.id === Number(leagueParam));
+      if (match && match.id !== league.id) {
+        setLeague(match);
+      }
+    }
+  }, [leagueParam, league.id]);
   const [showChart, setShowChart] = useState(true);
   const { data, isLoading: loading, isFetching, refetch } = useStandings(league.id);
 

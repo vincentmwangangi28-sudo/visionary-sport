@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { useLocaleDetection } from '@/hooks/useLocaleDetection';
 import { GeographicRegionId } from '@/services/geoRegionService';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '@/services/i18n';
@@ -71,13 +72,23 @@ export default function Preferences() {
     setLanguage,
     setTimezone,
     setOddsFormat,
+    setDateFormat,
+    setTimeFormat,
     setDataSaver,
     setRiskProfile,
     toggleFavoriteLeague,
     togglePreferredMarket,
     resetPreferences,
+    formatKickoff,
     t,
   } = useUserPreferences();
+
+  const {
+    profile,
+    applyDetectedSettings,
+    formatDate,
+    formatTime,
+  } = useLocaleDetection();
 
   const { region, regionId, setRegion, allRegions, isAutoDetected } = useGeoRegion();
 
@@ -134,12 +145,29 @@ export default function Preferences() {
           {/* 1. Global Localization & Region Settings */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" aria-hidden="true" />
-                1. {t('nav.language', 'Language')} & Internationalization
-              </CardTitle>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-primary" aria-hidden="true" />
+                  1. {t('nav.language', 'Language')} & Internationalization
+                </CardTitle>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    applyDetectedSettings();
+                    toast({
+                      title: 'Device Locale Applied',
+                      description: `Language set to ${profile.supportedLanguage.toUpperCase()} and timezone/date formats synced to browser.`,
+                    });
+                  }}
+                  className="h-7 text-xs font-semibold gap-1.5 border-primary/40 hover:bg-primary/10"
+                >
+                  <RotateCcw className="h-3 w-3 text-primary" />
+                  Auto-Detect ({profile.rawLocale})
+                </Button>
+              </div>
               <CardDescription className="text-xs">
-                Choose your preferred interface language.
+                Choose your preferred interface language. Auto-detected from your browser environment on first load.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -173,18 +201,86 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
-          {/* 2. Kickoff Timezone Engine */}
+          {/* 2. Kickoff Timezone Engine & Date Formatting */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
-                2. {t('nav.timezone', 'Kickoff Timezone Engine')}
-              </CardTitle>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
+                  2. {t('nav.timezone', 'Kickoff Timezone & Date Formatting')}
+                </CardTitle>
+                <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30">
+                  {profile.timezone} ({profile.timezoneOffset})
+                </Badge>
+              </div>
               <CardDescription className="text-xs">
-                All match start times, live countdowns, and alerts are adjusted to this timezone.
+                All match start times, live countdowns, and date displays adjust according to your selected time zone and locale formatting standards.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
+              {/* Date & Time Format Sub-controls */}
+              <div className="p-3.5 rounded-xl bg-muted/30 border border-border/80 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-foreground">Date Order & Clock System</span>
+                    <Badge variant="secondary" className="text-[10px]">
+                      Auto-detected: {profile.dateFormat} ({profile.timeFormat})
+                    </Badge>
+                  </div>
+                  <span className="text-xs font-mono font-medium text-foreground bg-background px-2.5 py-1 rounded border">
+                    Format Preview: <span className="text-primary font-bold">{formatDate(new Date())} · {formatTime(new Date())}</span>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block font-semibold">Date Format Standard</Label>
+                    <div className="flex rounded-lg border bg-background p-1 text-xs gap-1">
+                      {(['auto', 'DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'] as const).map((fmt) => (
+                        <button
+                          key={fmt}
+                          type="button"
+                          onClick={() => {
+                            setDateFormat(fmt);
+                            toast({ title: 'Date Format Updated', description: `Format set to ${fmt}` });
+                          }}
+                          className={`flex-1 py-1 px-1.5 text-[11px] font-medium rounded transition-all ${
+                            preferences.dateFormat === fmt
+                              ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          {fmt === 'auto' ? `Auto (${profile.dateFormat})` : fmt.replace('/YYYY', '')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1.5 block font-semibold">Clock Display</Label>
+                    <div className="flex rounded-lg border bg-background p-1 text-xs gap-1">
+                      {(['auto', '24h', '12h'] as const).map((clk) => (
+                        <button
+                          key={clk}
+                          type="button"
+                          onClick={() => {
+                            setTimeFormat(clk);
+                            toast({ title: 'Clock Display Updated', description: `Clock set to ${clk}` });
+                          }}
+                          className={`flex-1 py-1 px-2 text-[11px] font-medium rounded transition-all ${
+                            preferences.timeFormat === clk
+                              ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                        >
+                          {clk === 'auto' ? `Auto (${profile.timeFormat})` : clk === '12h' ? '12-Hour (AM/PM)' : '24-Hour (Standard)'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {POPULAR_TIMEZONES.map((tz) => {
                   const isSelected = preferences.timezone === tz.value;
@@ -648,7 +744,7 @@ function OfflineCacheSettingsCard() {
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {lastSyncedAt
-                ? `Last synchronized: ${new Date(lastSyncedAt).toLocaleDateString()} at ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                ? `Last synchronized: ${formatKickoff(lastSyncedAt, { includeDate: true, includeTimezone: true })}`
                 : 'Initial pre-warming cache ready on network connection.'}
             </p>
           </div>

@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
-import { Zap, Globe, Twitter, Youtube, Mail } from "lucide-react";
+import { Zap, Globe, Twitter, Youtube, Mail, SlidersHorizontal } from "lucide-react";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useGeoRegion } from "@/hooks/useGeoRegion";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const LINKS = {
   Predictions: [
@@ -40,10 +43,15 @@ const LINKS = {
   ],
 };
 
-export const Footer = () => (
-  <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
-    <div className="container mx-auto px-4 py-12 max-w-7xl">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
+export const Footer = () => {
+  const { preferences } = useUserPreferences();
+  const { region } = useGeoRegion();
+  const { currentConfig } = useCurrency();
+
+  return (
+    <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
+      <div className="container mx-auto px-4 py-12 max-w-7xl">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
         {/* Brand */}
         <div className="col-span-2 md:col-span-1">
           <Link to="/" className="flex items-center gap-2 mb-3">
@@ -90,15 +98,27 @@ export const Footer = () => (
 
       <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} PredictPro. All rights reserved. <span className="mx-1">·</span> predictpro.guru</p>
-        <div className="flex gap-4">
-          <span className="flex items-center gap-1.5"><Globe className="h-3.5 w-3.5" />Available worldwide</span>
-          <span>|</span>
-          <span>⚽ 40+ leagues</span>
-          <span>|</span>
-          <span>🤖 AI-powered</span>
+        
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          <Link
+            to="/preferences"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/80 hover:bg-primary/10 hover:text-primary transition-colors text-[11px] font-medium border border-border/70"
+            title="Configure Language, Region, Currency and Timezone"
+          >
+            <span>{region.flag} {region.name}</span>
+            <span>·</span>
+            <span>{currentConfig.code} ({currentConfig.symbol})</span>
+            <span>·</span>
+            <span>{preferences.timezone === 'auto' ? 'Local Time' : preferences.timezone.split('/')[1]?.replace('_', ' ') || preferences.timezone}</span>
+            <SlidersHorizontal className="h-3 w-3 ml-0.5 opacity-60" />
+          </Link>
         </div>
-        <p className="text-center md:text-right">Gamble responsibly · 18+ only · For entertainment purposes</p>
+
+        <p className="text-center md:text-right text-[11px]">
+          {currentConfig.responsibleGambling?.helpline ? `${currentConfig.responsibleGambling.helpline} · ` : ''}18+ only · Gamble responsibly
+        </p>
       </div>
     </div>
   </footer>
-);
+  );
+};

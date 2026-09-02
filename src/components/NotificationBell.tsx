@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMatchNotifications } from '@/hooks/useMatchNotifications';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { TeamLogo } from '@/components/TeamLogo';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -80,6 +81,7 @@ export const NotificationBell = () => {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     return localStorage.getItem('predictpro_sound_alerts') !== 'false';
   });
+  const { formatKickoff } = useUserPreferences();
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
@@ -339,7 +341,7 @@ export const NotificationBell = () => {
                       </Badge>
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                         <Clock className="h-3 w-3" aria-hidden="true" />
-                        {matchTime.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' })} · {matchTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        {formatKickoff(sub.matchDate, { includeDate: true, includeTimezone: true })}
                       </span>
                     </div>
 

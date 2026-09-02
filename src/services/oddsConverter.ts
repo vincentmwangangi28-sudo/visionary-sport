@@ -22,6 +22,8 @@ export const ODDS_FORMATS: OddsFormatMetadata[] = [
   { id: 'malay', name: 'Malay (MY Odds)', example: '+0.85', region: 'Malaysia, Singapore' },
 ];
 
+export const SUPPORTED_ODDS_FORMATS = ODDS_FORMATS;
+
 /**
  * Converts a decimal odds number into the target format string
  */
@@ -116,3 +118,5 @@ function decimalToFractional(decimal: number): string {
 
   return `${num}/${den}`;
 }
+
+export const formatOdds = formatOddsValue;

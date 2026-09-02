@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   GeographicRegionId,
   RegionDefinition,
@@ -82,3 +82,7 @@ export function useGeoRegion() {
     allRegions,
   };
 }
+
+export const GeoRegionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return React.createElement(React.Fragment, null, children);
+};

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { useCurrency } from '@/hooks/useCurrency';
 import { REGIONAL_BOOKMAKERS, generateRegionalBookingCode } from '@/services/bookmakerBookingCodes';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -42,12 +44,24 @@ export const BetSlipDrawer = () => {
   } = useBetSlip();
 
   const { formatOdds, t, preferences } = useUserPreferences();
-  const [selectedBookmakerId, setSelectedBookmakerId] = useState(preferences.defaultBookmaker || 'sportybet');
+  const { region } = useGeoRegion();
+  const { currentConfig, setCurrency: setGlobalCurrency } = useCurrency();
+  const [selectedBookmakerId, setSelectedBookmakerId] = useState(preferences.defaultBookmaker || 'sportpesa');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Dynamically prioritize bookmakers matching the user's active geographic region
+  const sortedBookmakers = useMemo(() => {
+    return [...REGIONAL_BOOKMAKERS].sort((a, b) => {
+      const aLocal = a.countryCodes?.includes(region.id) ? 1 : 0;
+      const bLocal = b.countryCodes?.includes(region.id) ? 1 : 0;
+      if (aLocal !== bLocal) return bLocal - aLocal;
+      return 0;
+    });
+  }, [region.id]);
+
   const activeBookmaker =
-    REGIONAL_BOOKMAKERS.find((b) => b.id === selectedBookmakerId) || REGIONAL_BOOKMAKERS[0];
+    sortedBookmakers.find((b) => b.id === selectedBookmakerId) || sortedBookmakers[0];
 
   const handleGenerateCode = (bookieId: string) => {
     setSelectedBookmakerId(bookieId);
@@ -224,19 +238,25 @@ export const BetSlipDrawer = () => {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-muted/20 rounded-lg border">
-                    {REGIONAL_BOOKMAKERS.map((bookie) => (
-                      <Button
-                        key={bookie.id}
-                        variant={selectedBookmakerId === bookie.id ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => handleGenerateCode(bookie.id)}
-                        aria-label={`Generate booking code for ${bookie.name}`}
-                        className="text-[11px] h-6 px-2 gap-1"
-                      >
-                        <span>{bookie.flag}</span>
-                        <span>{bookie.name}</span>
-                      </Button>
-                    ))}
+                    {sortedBookmakers.map((bookie) => {
+                      const isRegional = bookie.countryCodes?.includes(region.id);
+                      return (
+                        <Button
+                          key={bookie.id}
+                          variant={selectedBookmakerId === bookie.id ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handleGenerateCode(bookie.id)}
+                          aria-label={`Generate booking code for ${bookie.name}`}
+                          className={`text-[11px] h-6 px-2 gap-1 ${isRegional ? 'border-primary/40 font-semibold' : ''}`}
+                        >
+                          <span>{bookie.flag}</span>
+                          <span>{bookie.name}</span>
+                          {isRegional && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block ml-0.5" />
+                          )}
+                        </Button>
+                      );
+                    })}
                   </div>
 
                   {generatedCode && (
@@ -292,13 +312,16 @@ export const BetSlipDrawer = () => {
                   <div className="flex justify-between items-center text-xs">
                     <label htmlFor="betslip-stake-input" className="font-medium text-muted-foreground">{t('slip.stake', 'Stake Amount')}</label>
                     <div className="flex gap-1" role="group" aria-label="Select currency">
-                      {['KES', 'USD', 'NGN'].map((c) => (
+                      {Array.from(new Set([currentConfig.code, 'USD', 'EUR', 'GBP', 'KES', 'NGN'])).slice(0, 4).map((c) => (
                         <button
                           type="button"
                           key={c}
-                          onClick={() => setCurrency(c)}
+                          onClick={() => {
+                            setCurrency(c);
+                            setGlobalCurrency(c as any);
+                          }}
                           aria-label={`Set currency to ${c}`}
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c || currentConfig.code === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                         >
                           {c}
                         </button>

@@ -37,32 +37,53 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
 
-  // Generate realistic competitive odds with variance across real global and regional sportsbooks
-  const bookmakers = [
-    { name: 'Pinnacle', home: Number((baseHomeOdds * 1.04).toFixed(2)), draw: Number((baseDrawOdds * 1.03).toFixed(2)), away: Number((baseAwayOdds * 1.05).toFixed(2)), payout: '98.5%', popularIn: 'Global / Pro' },
-    { name: 'Bet365', home: Number((baseHomeOdds * 1.01).toFixed(2)), draw: Number((baseDrawOdds * 1.02).toFixed(2)), away: Number((baseAwayOdds * 1.02).toFixed(2)), payout: '96.4%', popularIn: 'UK / Europe' },
-    { name: '1xBet', home: Number((baseHomeOdds * 1.05).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.06).toFixed(2)), payout: '98.1%', popularIn: 'Global' },
-    { name: 'SportPesa', home: Number((baseHomeOdds * 1.02).toFixed(2)), draw: Number((baseDrawOdds * 0.99).toFixed(2)), away: Number((baseAwayOdds * 1.01).toFixed(2)), payout: '95.9%', popularIn: 'Kenya / Africa' },
-    { name: 'Betika', home: Number((baseHomeOdds * 1.03).toFixed(2)), draw: Number((baseDrawOdds * 1.00).toFixed(2)), away: Number((baseAwayOdds * 1.02).toFixed(2)), payout: '96.5%', popularIn: 'East Africa' },
-    { name: 'Bet9ja', home: Number((baseHomeOdds * 1.02).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.03).toFixed(2)), payout: '96.0%', popularIn: 'Nigeria / W. Africa' },
-    { name: 'Betway', home: Number((baseHomeOdds * 1.00).toFixed(2)), draw: Number((baseDrawOdds * 1.01).toFixed(2)), away: Number((baseAwayOdds * 1.01).toFixed(2)), payout: '95.6%', popularIn: 'Africa / UK' },
-    { name: 'DraftKings', home: Number((baseHomeOdds * 0.99).toFixed(2)), draw: Number((baseDrawOdds * 1.02).toFixed(2)), away: Number((baseAwayOdds * 1.03).toFixed(2)), payout: '95.8%', popularIn: 'North America' },
+  // Comprehensive multi-regional sportsbook database
+  const ALL_BOOKMAKERS = [
+    { name: 'SportPesa', regions: ['ke', 'ea', 'tz'], homeRatio: 1.02, drawRatio: 0.99, awayRatio: 1.01, payout: '95.9%', popularIn: 'Kenya & East Africa' },
+    { name: 'Betika', regions: ['ke', 'ea'], homeRatio: 1.03, drawRatio: 1.00, awayRatio: 1.02, payout: '96.5%', popularIn: 'Kenya / East Africa' },
+    { name: 'SportyBet', regions: ['ke', 'ng', 'gh'], homeRatio: 1.03, drawRatio: 1.01, awayRatio: 1.04, payout: '96.8%', popularIn: 'Nigeria, Kenya & Ghana' },
+    { name: 'Bet9ja', regions: ['ng', 'wa'], homeRatio: 1.02, drawRatio: 1.01, awayRatio: 1.03, payout: '96.0%', popularIn: 'Nigeria / W. Africa' },
+    { name: 'Hollywoodbets', regions: ['za'], homeRatio: 1.02, drawRatio: 1.00, awayRatio: 1.03, payout: '95.7%', popularIn: 'South Africa' },
+    { name: 'Betway', regions: ['ke', 'ng', 'za', 'gh', 'uk'], homeRatio: 1.00, drawRatio: 1.01, awayRatio: 1.01, payout: '95.6%', popularIn: 'Pan-African & UK' },
+    { name: 'Betano', regions: ['br', 'eu'], homeRatio: 1.04, drawRatio: 1.01, awayRatio: 1.03, payout: '96.9%', popularIn: 'Brazil & Europe' },
+    { name: 'Bet365', regions: ['uk', 'eu', 'global'], homeRatio: 1.01, drawRatio: 1.02, awayRatio: 1.02, payout: '96.4%', popularIn: 'UK & Europe' },
+    { name: 'Pinnacle', regions: ['global', 'uk', 'eu'], homeRatio: 1.04, drawRatio: 1.03, awayRatio: 1.05, payout: '98.5%', popularIn: 'Global / Pro' },
+    { name: '1xBet', regions: ['global', 'ke', 'ng', 'ea', 'wa', 'br'], homeRatio: 1.05, drawRatio: 1.01, awayRatio: 1.06, payout: '98.1%', popularIn: 'Global & Africa' },
+    { name: 'DraftKings', regions: ['us'], homeRatio: 0.99, drawRatio: 1.02, awayRatio: 1.03, payout: '95.8%', popularIn: 'North America' },
+    { name: 'FanDuel', regions: ['us'], homeRatio: 1.01, drawRatio: 1.00, awayRatio: 1.02, payout: '95.9%', popularIn: 'North America' },
   ];
+
+  // Dynamically prioritize bookmakers tailored to the user's active region
+  const bookmakers = ALL_BOOKMAKERS.map((b) => {
+    const isRegional = b.regions.includes(region.id);
+    return {
+      name: b.name,
+      home: Number((baseHomeOdds * b.homeRatio).toFixed(2)),
+      draw: Number((baseDrawOdds * b.drawRatio).toFixed(2)),
+      away: Number((baseAwayOdds * b.awayRatio).toFixed(2)),
+      payout: b.payout,
+      popularIn: b.popularIn,
+      isRegional,
+    };
+  }).sort((a, b) => {
+    if (a.isRegional && !b.isRegional) return -1;
+    if (!a.isRegional && b.isRegional) return 1;
+    return 0;
+  });
 
   const maxHome = Math.max(...bookmakers.map((b) => b.home));
   const maxDraw = Math.max(...bookmakers.map((b) => b.draw));
   const maxAway = Math.max(...bookmakers.map((b) => b.away));
 
-  // Generate deterministic booking codes based on match
+  // Generate deterministic booking codes based on match and prioritized bookmakers
   const hash = (homeTeam + awayTeam).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const bookingCodes = [
-    { bookie: 'SportPesa', code: `SP-${((hash * 13) % 89999 + 10000).toString()}` },
-    { bookie: 'Betika', code: `BTK-${((hash * 17) % 89999 + 10000).toString()}` },
-    { bookie: '1xBet', code: `1X${((hash * 19) % 899999 + 100000).toString(36).toUpperCase()}` },
-    { bookie: 'Bet365', code: `B365-${((hash * 23) % 89999 + 10000).toString()}` },
-    { bookie: 'Betway', code: `BW${((hash * 29) % 899999 + 100000).toString(36).toUpperCase()}` },
-    { bookie: 'Bet9ja', code: `9JA-${((hash * 31) % 89999 + 10000).toString()}` },
-  ];
+  const bookingCodes = bookmakers.slice(0, 6).map((b, idx) => {
+    const mults = [13, 17, 19, 23, 29, 31];
+    const m = mults[idx % mults.length];
+    const prefix = b.name.substring(0, 3).toUpperCase();
+    const code = `${prefix}-${((hash * m) % 89999 + 10000).toString()}`;
+    return { bookie: b.name, code, isRegional: b.isRegional };
+  });
 
   const copyToClipboard = (code: string, bookie: string) => {
     navigator.clipboard.writeText(code);
@@ -157,8 +178,15 @@ export const OddsComparisonTable: React.FC<OddsProps> = ({
               {bookmakers.map((b) => (
                 <TableRow key={b.name} className="hover:bg-muted/30">
                   <TableCell className="font-semibold text-xs py-2.5">
-                    <div className="flex flex-col">
-                      <span>{b.name}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span>{b.name}</span>
+                        {b.isRegional && (
+                          <Badge variant="secondary" className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20 font-bold">
+                            Local Top
+                          </Badge>
+                        )}
+                      </div>
                       <span className="text-[10px] text-muted-foreground">{b.popularIn}</span>
                     </div>
                   </TableCell>

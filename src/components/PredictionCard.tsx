@@ -36,6 +36,12 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
   const locked = p.is_premium && !isPremium() && outcome.includes('🔒');
   const relativeKickoff = getKickoffRelative(p.match_date);
 
+  const displayOutcome = 
+    outcome === 'Home Win' ? t('pred.home_win', 'Home Win') :
+    outcome === 'Draw' ? t('pred.draw', 'Draw') :
+    outcome === 'Away Win' ? t('pred.away_win', 'Away Win') :
+    outcome;
+
   const isMarketInSlip = (market: string) => {
     return selections.some(s => s.homeTeam === p.home_team && s.awayTeam === p.away_team && s.market === market);
   };
@@ -90,7 +96,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
           {/* AI Tip + Confidence */}
           <div className="text-center flex-shrink-0">
             <Badge className={`${OUTCOME_COLOR[outcome] ?? 'bg-muted text-foreground'} text-xs font-bold`}>
-              {locked ? <Lock className="h-3 w-3" /> : outcome}
+              {locked ? <Lock className="h-3 w-3" /> : displayOutcome}
             </Badge>
             {!locked && (
               <p className="text-[11px] font-extrabold text-primary mt-0.5">{confidence}%</p>
@@ -209,7 +215,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
           {/* Prediction + Confidence */}
           <div className="flex items-center justify-between gap-2">
             <Badge className={`${OUTCOME_COLOR[outcome] ?? 'bg-muted text-foreground'} border font-black px-3 py-1 text-xs`}>
-              {locked ? <><Lock className="h-3 w-3 mr-1" />Premium</> : outcome}
+              {locked ? <><Lock className="h-3 w-3 mr-1" />Premium</> : displayOutcome}
             </Badge>
             {!locked && (
               <div className="flex items-center gap-2">
@@ -230,9 +236,9 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
           {!locked && (p.home_odds || p.draw_odds || p.away_odds) && (
             <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
               {[
-                { label: 'Home Win', name: '1 (Home)', odds: p.home_odds },
-                { label: 'Draw', name: 'X (Draw)', odds: p.draw_odds },
-                { label: 'Away Win', name: '2 (Away)', odds: p.away_odds },
+                { label: 'Home Win', name: `1 (${t('pred.home_win', 'Home')})`, odds: p.home_odds },
+                { label: 'Draw', name: `X (${t('pred.draw', 'Draw')})`, odds: p.draw_odds },
+                { label: 'Away Win', name: `2 (${t('pred.away_win', 'Away')})`, odds: p.away_odds },
               ].map(({ label, name, odds }) =>
                 odds ? (
                   <button

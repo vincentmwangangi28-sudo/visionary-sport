@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert, MapPin, Sparkles } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { RealtimeIndicator } from '@/components/RealtimeIndicator';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -20,6 +21,7 @@ export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
   const [enableRegionalSort, setEnableRegionalSort] = useState<boolean>(true);
   const { region, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
+  const { formatKickoff, formatOdds, t, preferences } = useUserPreferences();
 
   const { 
     liveFixtures: matches, 
@@ -77,7 +79,7 @@ export default function LiveScores() {
     }
     return (
       <span className="px-2.5 py-0.5 bg-blue-600/90 text-white text-xs rounded-full font-medium">
-        {new Date(m.match_date).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+        {formatKickoff(m.match_date)}
       </span>
     );
   };
@@ -181,10 +183,10 @@ export default function LiveScores() {
               {m.home_odds && (
                 <div className="flex items-center justify-between text-muted-foreground pt-1">
                   <span>Live Odds:</span>
-                  <span className="space-x-3">
-                    <span>1: <b className="text-foreground">{m.home_odds.toFixed(2)}</b></span>
-                    {m.draw_odds && <span>X: <b className="text-foreground">{m.draw_odds.toFixed(2)}</b></span>}
-                    {m.away_odds && <span>2: <b className="text-foreground">{m.away_odds.toFixed(2)}</b></span>}
+                  <span className="space-x-3 font-semibold">
+                    <span>1: <b className="text-foreground">{formatOdds(m.home_odds)}</b></span>
+                    {m.draw_odds && <span>X: <b className="text-foreground">{formatOdds(m.draw_odds)}</b></span>}
+                    {m.away_odds && <span>2: <b className="text-foreground">{formatOdds(m.away_odds)}</b></span>}
                   </span>
                 </div>
               )}
@@ -211,7 +213,7 @@ export default function LiveScores() {
             </h1>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-primary" />
-              Real-time API-Football feed active · Auto-refreshes every 15s · {isLiveFetching ? 'Fetching updates...' : `Synced ${lastSyncTime.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
+              Real-time API-Football feed active · Auto-refreshes every 15s · {isLiveFetching ? 'Fetching updates...' : `Synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
             </p>
           </div>
           <div className="flex items-center gap-2">

@@ -38,6 +38,9 @@ import { TimezoneSelector } from "./TimezoneSelector";
 import { OddsFormatSelector } from "./OddsFormatSelector";
 import { DataSaverToggle } from "./DataSaverToggle";
 import { GeoRegionSelector } from "./GeoRegionSelector";
+import { CurrencySelector } from "./CurrencySelector";
+import { GlobalSettingsModal } from "./GlobalSettingsModal";
+import { UnifiedSearchTrigger } from "./UnifiedSearchTrigger";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -47,6 +50,7 @@ export const Navbar = () => {
 
   const navLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions"),    icon: Zap },
+    { to: "/tournaments",   label: "Global Tournaments",                  icon: Globe },
     { to: "/screener",      label: t('nav.screener', "Match Screener"), icon: SlidersHorizontal },
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds"),  icon: TrendingDown },
     { to: "/track-record",  label: t('nav.track_record', "Track Record"),   icon: ShieldCheck },
@@ -75,6 +79,7 @@ export const Navbar = () => {
 
   const topNavLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions") },
+    { to: "/tournaments",   label: "Tournaments" },
     { to: "/screener",      label: t('nav.screener', "Screener") },
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },
     { to: "/track-record",  label: t('nav.track_record', "Track Record") },
@@ -109,8 +114,24 @@ export const Navbar = () => {
             ))}
           </nav>
 
+          {/* Unified Global Search Trigger */}
+          <div className="hidden lg:flex items-center">
+            <UnifiedSearchTrigger variant="full" className="w-48 xl:w-64" />
+          </div>
+
           {/* Global Controls & Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Mobile / Tablet search icon button */}
+            <div className="lg:hidden">
+              <UnifiedSearchTrigger variant="icon" />
+            </div>
+
+            {/* Global Settings & Personalization Hub */}
+            <GlobalSettingsModal triggerClassName="hidden xl:flex" />
+
+            {/* Currency Selector */}
+            <CurrencySelector variant="outline" className="hidden sm:flex" />
+
             {/* Global Language Selector */}
             <LanguageSwitcher />
 
@@ -167,12 +188,28 @@ export const Navbar = () => {
                   </SheetTitle>
                 </SheetHeader>
 
+                {/* Mobile Search Trigger */}
+                <div className="mt-3">
+                  <UnifiedSearchTrigger
+                    variant="full"
+                    placeholder="Search matches, leagues, teams..."
+                    className="w-full max-w-none"
+                  />
+                </div>
+
                 {/* Mobile Quick Global Settings */}
                 <div className="bg-muted/40 p-3 rounded-xl border my-3 space-y-2.5">
-                  <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Regional & Global Config</div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Regional & Global Config</span>
+                    <GlobalSettingsModal triggerClassName="h-6 px-2 text-[10px]" />
+                  </div>
                   <div>
                     <span className="text-[10px] text-muted-foreground block mb-1">Football Priority Region</span>
                     <GeoRegionSelector variant="compact" className="w-full justify-between bg-background border px-2.5 h-8" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block mb-1">Currency & Staking</span>
+                    <CurrencySelector variant="outline" className="w-full justify-between bg-background border px-2.5 h-8" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/50">
                     <div>

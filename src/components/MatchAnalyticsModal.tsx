@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
@@ -32,6 +33,7 @@ interface Props {
 
 export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onClose }) => {
   const { addSelection, selections } = useBetSlip();
+  const { formatKickoff, formatOdds } = useUserPreferences();
   const [activeTab, setActiveTab] = useState('analytics');
 
   const outcome = getPrediction(p);
@@ -72,7 +74,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               </Badge>
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                {new Date(p.match_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {new Date(p.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                {formatKickoff(p.match_date, { includeWeekday: true, includeDate: true, includeTimezone: true })}
               </span>
             </div>
             <div className="flex items-center gap-2">

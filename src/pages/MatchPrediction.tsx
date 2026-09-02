@@ -19,6 +19,9 @@ import {
   generateDeterministicPrediction, 
   savePrediction 
 } from '@/services/predictionStorage';
+import { useBetSlip } from '@/hooks/useBetSlip';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
 import type { Prediction } from '@/types/prediction';
 import { 
   Zap, 
@@ -40,7 +43,6 @@ import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
-import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
@@ -100,6 +102,8 @@ export default function MatchPrediction() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const { addSelection } = useBetSlip();
+  const { formatKickoff, formatOdds, preferences } = useUserPreferences();
+  const { region } = useGeoRegion();
 
   const loadPrediction = useCallback(async () => {
     if (!matchSlug) {
@@ -302,9 +306,9 @@ export default function MatchPrediction() {
             <div className="flex flex-col items-center justify-center flex-shrink-0 px-2">
               <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 mb-1.5">{prediction.league}</Badge>
               <span className="px-3 py-1 bg-muted/80 rounded-full text-xs font-black text-muted-foreground border">VS</span>
-              <span className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+              <span className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1 font-medium">
                 <Calendar className="h-3 w-3" />
-                {new Date(prediction.match_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                {formatKickoff(prediction.match_date, { includeTimezone: true })}
               </span>
             </div>
 
@@ -316,8 +320,11 @@ export default function MatchPrediction() {
           </div>
 
           <div className="text-center text-xs text-muted-foreground mt-4 pt-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span>
-              {new Date(prediction.match_date).toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            <span className="flex items-center gap-2">
+              <span>{formatKickoff(prediction.match_date, { includeWeekday: true, includeDate: true, includeTimezone: true })}</span>
+              <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-muted-foreground border-border">
+                {region.flag} {region.name}
+              </Badge>
             </span>
             <NotifyMeButton
               match={{
@@ -392,7 +399,7 @@ export default function MatchPrediction() {
                     className="h-16 flex flex-col items-center justify-center p-2 hover:border-primary/60"
                   >
                     <span className="text-[11px] text-muted-foreground truncate max-w-full font-medium">1 ({prediction.home_team})</span>
-                    <strong className="text-sm font-black text-foreground">{prediction.home_odds?.toFixed(2) || '1.95'}</strong>
+                    <strong className="text-sm font-black text-foreground">{formatOdds(prediction.home_odds || 1.95)}</strong>
                   </Button>
 
                   <Button
@@ -413,7 +420,7 @@ export default function MatchPrediction() {
                     className="h-16 flex flex-col items-center justify-center p-2 hover:border-primary/60"
                   >
                     <span className="text-[11px] text-muted-foreground font-medium">X (Draw)</span>
-                    <strong className="text-sm font-black text-foreground">{prediction.draw_odds?.toFixed(2) || '3.35'}</strong>
+                    <strong className="text-sm font-black text-foreground">{formatOdds(prediction.draw_odds || 3.35)}</strong>
                   </Button>
 
                   <Button
@@ -434,7 +441,7 @@ export default function MatchPrediction() {
                     className="h-16 flex flex-col items-center justify-center p-2 hover:border-primary/60"
                   >
                     <span className="text-[11px] text-muted-foreground truncate max-w-full font-medium">2 ({prediction.away_team})</span>
-                    <strong className="text-sm font-black text-foreground">{prediction.away_odds?.toFixed(2) || '2.75'}</strong>
+                    <strong className="text-sm font-black text-foreground">{formatOdds(prediction.away_odds || 2.75)}</strong>
                   </Button>
                 </div>
 

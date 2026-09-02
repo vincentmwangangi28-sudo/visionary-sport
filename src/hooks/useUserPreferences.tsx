@@ -2,6 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SupportedLanguage, TRANSLATIONS, SUPPORTED_LANGUAGES } from '@/services/i18n';
 import { SupportedOddsFormat, formatOddsValue } from '@/services/oddsConverter';
 import { formatKickoffDateTime, getDeviceTimezone, getRelativeKickoffLabel } from '@/services/timezoneService';
+import {
+  detectNavigatorLanguage,
+  detectDateFormat,
+  detectTimeFormat,
+  DetectedDateFormat,
+  DetectedTimeFormat,
+} from '@/services/localeDetectionService';
 
 export type RiskProfile = 'conservative' | 'balanced' | 'aggressive';
 export type OddsFormat = SupportedOddsFormat;
@@ -13,6 +20,8 @@ export interface UserPreferences {
   oddsFormat: OddsFormat;
   language: SupportedLanguage;
   timezone: string; // 'auto' or IANA identifier like 'Africa/Nairobi'
+  dateFormat: 'auto' | DetectedDateFormat;
+  timeFormat: 'auto' | DetectedTimeFormat;
   dataSaverMode: boolean;
   defaultBookmaker: string;
   defaultCurrency: 'KES' | 'USD' | 'EUR' | 'GBP' | 'NGN';
@@ -20,19 +29,29 @@ export interface UserPreferences {
   kickoffAlertsEnabled: boolean;
 }
 
-const DEFAULT_PREFERENCES: UserPreferences = {
-  riskProfile: 'balanced',
-  favoriteLeagues: ['Premier League', 'Champions League', 'La Liga', 'KPL'],
-  preferredMarkets: ['1X2', 'Over/Under 2.5', 'BTTS'],
-  oddsFormat: 'decimal',
-  language: 'en',
-  timezone: 'auto',
-  dataSaverMode: false,
-  defaultBookmaker: 'sportybet',
-  defaultCurrency: 'KES',
-  dailyDigestEnabled: true,
-  kickoffAlertsEnabled: true,
+const getDefaultPreferencesWithAutoLocale = (): UserPreferences => {
+  const detectedLang = detectNavigatorLanguage();
+  const detectedDate = detectDateFormat(detectedLang.rawLocale);
+  const detectedTime = detectTimeFormat(detectedLang.rawLocale);
+
+  return {
+    riskProfile: 'balanced',
+    favoriteLeagues: ['Premier League', 'Champions League', 'La Liga', 'KPL'],
+    preferredMarkets: ['1X2', 'Over/Under 2.5', 'BTTS'],
+    oddsFormat: 'decimal',
+    language: detectedLang.isSupported ? detectedLang.supportedLanguage : 'en',
+    timezone: 'auto',
+    dateFormat: detectedDate.format,
+    timeFormat: detectedTime.format,
+    dataSaverMode: false,
+    defaultBookmaker: 'sportybet',
+    defaultCurrency: 'KES',
+    dailyDigestEnabled: true,
+    kickoffAlertsEnabled: true,
+  };
 };
+
+const DEFAULT_PREFERENCES: UserPreferences = getDefaultPreferencesWithAutoLocale();
 
 const STORAGE_KEY = 'predictpro_user_preferences_v2';
 
@@ -43,12 +62,25 @@ interface UserPreferencesContextType {
   setLanguage: (lang: SupportedLanguage) => void;
   setTimezone: (tz: string) => void;
   setOddsFormat: (format: OddsFormat) => void;
+  setDateFormat: (format: 'auto' | DetectedDateFormat) => void;
+  setTimeFormat: (format: 'auto' | DetectedTimeFormat) => void;
   toggleDataSaver: () => void;
+  setDataSaver: (enabled: boolean) => void;
   toggleFavoriteLeague: (league: string) => void;
   togglePreferredMarket: (market: string) => void;
   resetPreferences: () => void;
   formatOdds: (decimalOdds: number | undefined | null) => string;
-  formatKickoff: (dateInput: string | Date | number, options?: { includeDate?: boolean; includeWeekday?: boolean; includeTimezone?: boolean }) => string;
+  formatKickoff: (
+    dateInput: string | Date | number,
+    options?: {
+      includeDate?: boolean;
+      includeWeekday?: boolean;
+      includeTimezone?: boolean;
+      locale?: string;
+      dateFormat?: 'auto' | DetectedDateFormat;
+      timeFormat?: 'auto' | DetectedTimeFormat;
+    }
+  ) => string;
   getKickoffRelative: (dateInput: string | Date | number) => { label: string; status: 'live' | 'upcoming' | 'finished' | 'today'; urgency: 'high' | 'medium' | 'low' };
   t: (key: string, defaultText?: string) => string;
   currentLanguageMeta: typeof SUPPORTED_LANGUAGES[0];
@@ -108,6 +140,18 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     updatePreferences({ dataSaverMode: !preferences.dataSaverMode });
   };
 
+  const setDataSaver = (enabled: boolean) => {
+    updatePreferences({ dataSaverMode: enabled });
+  };
+
+  const setDateFormat = (format: 'auto' | DetectedDateFormat) => {
+    updatePreferences({ dateFormat: format });
+  };
+
+  const setTimeFormat = (format: 'auto' | DetectedTimeFormat) => {
+    updatePreferences({ timeFormat: format });
+  };
+
   const toggleFavoriteLeague = (league: string) => {
     setPreferences((prev) => {
       const exists = prev.favoriteLeagues.includes(league);
@@ -138,9 +182,21 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
   const formatKickoff = (
     dateInput: string | Date | number,
-    options?: { includeDate?: boolean; includeWeekday?: boolean; includeTimezone?: boolean }
+    options?: {
+      includeDate?: boolean;
+      includeWeekday?: boolean;
+      includeTimezone?: boolean;
+      locale?: string;
+      dateFormat?: 'auto' | DetectedDateFormat;
+      timeFormat?: 'auto' | DetectedTimeFormat;
+    }
   ): string => {
-    return formatKickoffDateTime(dateInput, preferences.timezone, options);
+    return formatKickoffDateTime(dateInput, preferences.timezone, {
+      locale: options?.locale || preferences.language,
+      dateFormat: options?.dateFormat || preferences.dateFormat,
+      timeFormat: options?.timeFormat || preferences.timeFormat,
+      ...options,
+    });
   };
 
   const getKickoffRelative = (dateInput: string | Date | number) => {
@@ -164,7 +220,10 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         setLanguage,
         setTimezone,
         setOddsFormat,
+        setDateFormat,
+        setTimeFormat,
         toggleDataSaver,
+        setDataSaver,
         toggleFavoriteLeague,
         togglePreferredMarket,
         resetPreferences,

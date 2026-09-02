@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useLocaleDetection } from '@/hooks/useLocaleDetection';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '@/services/i18n';
 import { POPULAR_TIMEZONES, getDeviceTimezone } from '@/services/timezoneService';
 import { SUPPORTED_ODDS_FORMATS, SupportedOddsFormat } from '@/services/oddsConverter';
@@ -30,6 +31,7 @@ import {
   RotateCcw,
   Zap,
   SlidersHorizontal,
+  Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -52,8 +54,17 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
     setLanguage,
     setTimezone,
     setOddsFormat,
+    setDateFormat,
+    setTimeFormat,
     toggleDataSaver,
   } = useUserPreferences();
+
+  const {
+    profile,
+    applyDetectedSettings,
+    formatDate,
+    formatTime,
+  } = useLocaleDetection();
 
   const {
     region,
@@ -237,6 +248,30 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
 
           {/* TAB 3: LANGUAGE */}
           <TabsContent value="language" className="space-y-4 pt-3">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+              <div className="flex items-center gap-2">
+                <Languages className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <span className="font-semibold text-foreground">Detected Browser Locale: </span>
+                  <span className="font-mono text-primary font-bold">{profile.rawLocale}</span>
+                  {profile.isLanguageSupported && (
+                    <span className="text-muted-foreground ml-1">({profile.supportedLanguage.toUpperCase()})</span>
+                  )}
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[11px] px-2.5 font-bold border-primary/40 hover:bg-primary/10"
+                onClick={() => {
+                  applyDetectedSettings();
+                  toast.success(`Applied detected language: ${profile.supportedLanguage.toUpperCase()}`);
+                }}
+              >
+                Sync to Device
+              </Button>
+            </div>
+
             <p className="text-xs text-muted-foreground">
               Select your preferred language. Includes native translation dictionaries with RTL support.
             </p>
@@ -277,7 +312,7 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
             </div>
           </TabsContent>
 
-          {/* TAB 4: TIMEZONE */}
+          {/* TAB 4: TIMEZONE & DATE FORMATTING */}
           <TabsContent value="timezone" className="space-y-4 pt-3">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
@@ -288,7 +323,9 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
                 variant="ghost"
                 onClick={() => {
                   setTimezone('auto');
-                  toast.success('Timezone reset to Auto-Detect');
+                  setDateFormat('auto');
+                  setTimeFormat('auto');
+                  toast.success('Timezone and date formatting reset to Auto-Detect');
                 }}
                 className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
               >
@@ -296,7 +333,65 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1">
+            {/* Date & Time Format Sub-controls */}
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/70 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-primary" /> Date & Time Conventions
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground bg-background px-2 py-0.5 rounded border">
+                  Preview: {formatDate(new Date())} · {formatTime(new Date())}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-[11px] text-muted-foreground mb-1 block">Date Order</Label>
+                  <div className="flex rounded-lg border bg-background p-0.5 text-xs">
+                    {(['auto', 'DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'] as const).map((fmt) => (
+                      <button
+                        key={fmt}
+                        type="button"
+                        onClick={() => {
+                          setDateFormat(fmt);
+                          toast.success(`Date format set to ${fmt}`);
+                        }}
+                        className={`flex-1 py-1 px-1.5 text-[10px] font-medium rounded ${
+                          preferences.dateFormat === fmt
+                            ? 'bg-primary text-primary-foreground font-bold'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {fmt === 'auto' ? `Auto (${profile.dateFormat})` : fmt.replace('/YYYY', '')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[11px] text-muted-foreground mb-1 block">Clock Display</Label>
+                  <div className="flex rounded-lg border bg-background p-0.5 text-xs">
+                    {(['auto', '24h', '12h'] as const).map((clk) => (
+                      <button
+                        key={clk}
+                        type="button"
+                        onClick={() => {
+                          setTimeFormat(clk);
+                          toast.success(`Clock display set to ${clk}`);
+                        }}
+                        className={`flex-1 py-1 px-1.5 text-[10px] font-medium rounded ${
+                          preferences.timeFormat === clk
+                            ? 'bg-primary text-primary-foreground font-bold'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {clk === 'auto' ? `Auto (${profile.timeFormat})` : clk}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[340px] overflow-y-auto pr-1">
               <button
                 type="button"
                 onClick={() => {
@@ -319,13 +414,14 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
               </button>
 
               {POPULAR_TIMEZONES.map((tz) => {
-                const isSelected = preferences.timezone === tz.iana;
+                const tzVal = tz.value || tz.iana;
+                const isSelected = preferences.timezone === tzVal;
                 return (
                   <button
-                    key={tz.iana}
+                    key={tzVal}
                     type="button"
                     onClick={() => {
-                      setTimezone(tz.iana);
+                      setTimezone(tzVal);
                       toast.success(`Timezone updated to ${tz.label}`);
                     }}
                     className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${

@@ -8,8 +8,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { UserPreferencesProvider } from "@/hooks/useUserPreferences";
 import { GeoRegionProvider } from "@/hooks/useGeoRegion";
 import { CurrencyProvider } from "@/hooks/useCurrency";
+import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
+import { useLocaleDetection } from "@/hooks/useLocaleDetection";
 import { BetSlipDrawer } from "@/components/BetSlipDrawer";
+import { UnifiedSearchModal } from "@/components/UnifiedSearchModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AIChatbot } from "@/components/AIChatbot";
@@ -73,6 +76,11 @@ const PageLoader = () => (
   </div>
 );
 
+const LocaleDetectionInitializer: React.FC = () => {
+  useLocaleDetection();
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
@@ -81,69 +89,73 @@ const App = () => (
           <AuthProvider>
             <GeoRegionProvider>
               <CurrencyProvider>
-                <UserPreferencesProvider>
-                  <BetSlipProvider>
-                    <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
-                      Skip to content
-                    </a>
-                    <OfflineBanner />
-                    <Toaster />
-                    <Sonner />
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        <Route path="/"              element={<Index />} />
-                        <Route path="/auth"          element={<Auth />} />
-                        <Route path="/about"         element={<About />} />
-                        <Route path="/archive"       element={<Archive />} />
-                        <Route path="/results"       element={<Archive />} />
-                        <Route path="/methodology"   element={<Methodology />} />
-                        <Route path="/preferences"   element={<Preferences />} />
-                        <Route path="/leaderboard"   element={<Leaderboard />} />
-                        <Route path="/insights"      element={<Insights />} />
-                        <Route path="/news"          element={<News />} />
-                        <Route path="/live"          element={<LiveScores />} />
-                        <Route path="/value-bets"    element={<ValueBets />} />
-                        <Route path="/dropping-odds" element={<DroppingOddsPage />} />
-                        <Route path="/screener"      element={<MatchScreenerPage />} />
-                        <Route path="/track-record"  element={<TrackRecordPage />} />
-                        <Route path="/tournaments"   element={<GlobalTournaments />} />
-                        <Route path="/global-tournaments" element={<GlobalTournaments />} />
-                        <Route path="/accumulator"   element={<AccumulatorBuilder />} />
-                        <Route path="/tipsters"      element={<Tipsters />} />
-                        <Route path="/bankroll"      element={<BankrollManager />} />
-                        <Route path="/predict"       element={<MatchPredictor />} />
-                        <Route path="/predict/:matchSlug" element={<MatchPrediction />} />
-                        <Route path="/best-bets"     element={<BestBets />} />
-                        <Route path="/performance"   element={<ProtectedRoute><Performance /></ProtectedRoute>} />
-                        <Route path="/shop"          element={<ProtectedRoute><Shop /></ProtectedRoute>} />
-                        <Route path="/rewards"       element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-                        <Route path="/admin"         element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                        <Route path="/correct-score" element={<CorrectScore />} />
-                        <Route path="/btts"          element={<BTTS />} />
-                        <Route path="/sports"        element={<OtherSports />} />
-                        <Route path="/statistics"    element={<Statistics />} />
-                        <Route path="/highlights"    element={<Highlights />} />
-                        <Route path="/players"       element={<PlayerSearch />} />
-                        <Route path="/standings"                    element={<Standings />} />
-                        <Route path="/premier-league-predictions"   element={<PremierLeaguePredictions />} />
-                        <Route path="/champions-league-predictions" element={<ChampionsLeaguePredictions />} />
-                        <Route path="/kpl-predictions"              element={<KPLPredictions />} />
-                        <Route path="/la-liga-predictions"          element={<LaLigaPredictions />} />
-                        <Route path="/bundesliga-predictions"       element={<BundesligaPredictions />} />
-                        <Route path="/serie-a-predictions"          element={<SerieAPredictions />} />
-                        <Route path="/world-cup-predictions"        element={<WorldCupPredictions />} />
-                        <Route path="/afcon-predictions"            element={<AFCONPredictions />} />
-                        <Route path="/blog"                         element={<Blog />} />
-                        <Route path="/blog/:slug"                   element={<BlogPost />} />
-                        <Route path="/sitemap"                      element={<Sitemap />} />
-                        <Route path="*"                             element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                    <BetSlipDrawer />
-                    <MobileBottomNav />
-                    <AIChatbot />
-                  </BetSlipProvider>
-                </UserPreferencesProvider>
+                <UnifiedSearchProvider>
+                  <UserPreferencesProvider>
+                    <LocaleDetectionInitializer />
+                    <BetSlipProvider>
+                      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
+                        Skip to content
+                      </a>
+                      <OfflineBanner />
+                      <Toaster />
+                      <Sonner />
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/"              element={<Index />} />
+                          <Route path="/auth"          element={<Auth />} />
+                          <Route path="/about"         element={<About />} />
+                          <Route path="/archive"       element={<Archive />} />
+                          <Route path="/results"       element={<Archive />} />
+                          <Route path="/methodology"   element={<Methodology />} />
+                          <Route path="/preferences"   element={<Preferences />} />
+                          <Route path="/leaderboard"   element={<Leaderboard />} />
+                          <Route path="/insights"      element={<Insights />} />
+                          <Route path="/news"          element={<News />} />
+                          <Route path="/live"          element={<LiveScores />} />
+                          <Route path="/value-bets"    element={<ValueBets />} />
+                          <Route path="/dropping-odds" element={<DroppingOddsPage />} />
+                          <Route path="/screener"      element={<MatchScreenerPage />} />
+                          <Route path="/track-record"  element={<TrackRecordPage />} />
+                          <Route path="/tournaments"   element={<GlobalTournaments />} />
+                          <Route path="/global-tournaments" element={<GlobalTournaments />} />
+                          <Route path="/accumulator"   element={<AccumulatorBuilder />} />
+                          <Route path="/tipsters"      element={<Tipsters />} />
+                          <Route path="/bankroll"      element={<BankrollManager />} />
+                          <Route path="/predict"       element={<MatchPredictor />} />
+                          <Route path="/predict/:matchSlug" element={<MatchPrediction />} />
+                          <Route path="/best-bets"     element={<BestBets />} />
+                          <Route path="/performance"   element={<ProtectedRoute><Performance /></ProtectedRoute>} />
+                          <Route path="/shop"          element={<ProtectedRoute><Shop /></ProtectedRoute>} />
+                          <Route path="/rewards"       element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+                          <Route path="/admin"         element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                          <Route path="/correct-score" element={<CorrectScore />} />
+                          <Route path="/btts"          element={<BTTS />} />
+                          <Route path="/sports"        element={<OtherSports />} />
+                          <Route path="/statistics"    element={<Statistics />} />
+                          <Route path="/highlights"    element={<Highlights />} />
+                          <Route path="/players"       element={<PlayerSearch />} />
+                          <Route path="/standings"                    element={<Standings />} />
+                          <Route path="/premier-league-predictions"   element={<PremierLeaguePredictions />} />
+                          <Route path="/champions-league-predictions" element={<ChampionsLeaguePredictions />} />
+                          <Route path="/kpl-predictions"              element={<KPLPredictions />} />
+                          <Route path="/la-liga-predictions"          element={<LaLigaPredictions />} />
+                          <Route path="/bundesliga-predictions"       element={<BundesligaPredictions />} />
+                          <Route path="/serie-a-predictions"          element={<SerieAPredictions />} />
+                          <Route path="/world-cup-predictions"        element={<WorldCupPredictions />} />
+                          <Route path="/afcon-predictions"            element={<AFCONPredictions />} />
+                          <Route path="/blog"                         element={<Blog />} />
+                          <Route path="/blog/:slug"                   element={<BlogPost />} />
+                          <Route path="/sitemap"                      element={<Sitemap />} />
+                          <Route path="*"                             element={<NotFound />} />
+                        </Routes>
+                      </Suspense>
+                      <UnifiedSearchModal />
+                      <BetSlipDrawer />
+                      <MobileBottomNav />
+                      <AIChatbot />
+                    </BetSlipProvider>
+                  </UserPreferencesProvider>
+                </UnifiedSearchProvider>
               </CurrencyProvider>
             </GeoRegionProvider>
           </AuthProvider>
