@@ -29,16 +29,12 @@ jobs:
       - name: Test
         run: npm test --if-present
 
-      - name: Validate required secrets for build
-        if: always()
+      - name: Validate required environment variables
         run: |
           missing=""
-          if [ -z "${VITE_SUPABASE_URL}" ]; then missing="${missing} VITE_SUPABASE_URL"; fi
-          if [ -z "${VITE_SUPABASE_ANON_KEY}" ]; then missing="${missing} VITE_SUPABASE_ANON_KEY"; fi
-          if [ -n "${missing}" ]; then echo "Missing required secrets:${missing}"; exit 1; fi
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then missing="${missing} VITE_SUPABASE_URL"; fi
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then missing="${missing} VITE_SUPABASE_ANON_KEY"; fi
+          if [ -n "${missing}" ]; then echo "ERROR: Missing required secrets:${missing}"; exit 1; fi
 
       - name: Build
         run: npm run build
