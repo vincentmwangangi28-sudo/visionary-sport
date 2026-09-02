@@ -160,8 +160,13 @@ export default function Shop() {
                         ) : isCurrentPlan ? (
                           <Button className="w-full" disabled variant="outline">Current Plan ✓</Button>
                         ) : currency === "kes" ? (
-                          <MpesaPaymentDialog purpose="premium_subscription" amount={plan.priceKes}
-                            title={`${plan.name} Plan — M-Pesa`} buttonText={`Pay KES ${plan.priceKes}`}>
+                          <MpesaPaymentDialog
+                            plan={plan.id}
+                            purpose="premium_subscription"
+                            amount={plan.priceKes}
+                            title={`${plan.name} Plan — M-Pesa / Mobile Money`}
+                            buttonText={`Pay KES ${plan.priceKes}`}
+                          >
                             <Button className="w-full" variant={isPopular ? "default" : "outline"}>
                               <Smartphone className="h-4 w-4 mr-2" />Pay KES {plan.priceKes}
                             </Button>

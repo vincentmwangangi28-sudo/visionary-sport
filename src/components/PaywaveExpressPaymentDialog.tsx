@@ -52,11 +52,21 @@ export const PaywaveExpressPaymentDialog = ({ open, onClose, plan, price }: Prop
     setLoading(true);
     try {
       const session = (await supabase.auth.getSession()).data.session;
-      const data = await callEdgeFn(
-        'paywave-express',
-        { phone: formatted, amount: price, purpose: 'premium_subscription', plan },
-        session?.access_token
-      ) as { success?: boolean; error?: string; data?: { reference: string } };
+      let data: { success?: boolean; error?: string; data?: { reference: string } } | null = null;
+      try {
+        data = await callEdgeFn(
+          'paywave-express',
+          { phone: formatted, amount: price, purpose: 'premium_subscription', plan },
+          session?.access_token
+        );
+      } catch (err) {
+        // Fallback to wavave-express if paywave-express function is not active
+        data = await callEdgeFn(
+          'wavave-express',
+          { phone: formatted, amount: price, purpose: 'premium_subscription', plan },
+          session?.access_token
+        );
+      }
 
       if (data?.success) {
         setSent(true);

@@ -46,6 +46,7 @@ export const PremiumUpgradeCard = () => {
         </ul>
 
         <MpesaPaymentDialog
+          plan="pro"
           purpose="premium_subscription"
           amount={500}
           title="Upgrade to Premium"

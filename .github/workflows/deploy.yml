@@ -77,7 +77,10 @@ jobs:
             LIPANA_SECRET_KEY="${{ secrets.LIPANA_SECRET_KEY }}" \
             LOVABLE_API_KEY="${{ secrets.LOVABLE_API_KEY }}" \
             X_RAPIDAPI_KEY="${{ secrets.X_RAPIDAPI_KEY }}" \
-            RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}"
+            RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}" \
+            WAVAVE_API_KEY="${{ secrets.WAVAVE_API_KEY }}" \
+            WAVAVE_MERCHANT_CODE="${{ secrets.WAVAVE_MERCHANT_CODE }}" \
+            WAVAVE_WEBHOOK_SECRET="${{ secrets.WAVAVE_WEBHOOK_SECRET }}"
         continue-on-error: true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -90,7 +93,8 @@ jobs:
             mpesa-webhook generate-sitemap fetch-api-football cron-hourly-fixtures \
             cron-daily-predictions daily-predictions-automation update-prediction-results \
             cron-subscription-reminders apply-referral-on-signup spin-wheel activate-subscription \
-            ai-chat fetch-match-context fetch-sports-news fetch-standings stripe-payment stripe-webhook; do
+            ai-chat fetch-match-context fetch-sports-news fetch-standings stripe-payment stripe-webhook \
+            find-value-bets wavave-express wavave-webhook paywave-express; do
             echo "→ Deploying $FN"
             supabase functions deploy "$FN" 2>&1 || echo "⚠ $FN failed, continuing"
           done
