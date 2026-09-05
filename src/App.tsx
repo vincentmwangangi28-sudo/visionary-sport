@@ -87,10 +87,10 @@ const App = () => (
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <GeoRegionProvider>
-              <CurrencyProvider>
-                <UnifiedSearchProvider>
-                  <UserPreferencesProvider>
+            <UserPreferencesProvider>
+              <GeoRegionProvider>
+                <CurrencyProvider>
+                  <UnifiedSearchProvider>
                     <LocaleDetectionInitializer />
                     <BetSlipProvider>
                       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
@@ -154,10 +154,10 @@ const App = () => (
                       <MobileBottomNav />
                       <AIChatbot />
                     </BetSlipProvider>
-                  </UserPreferencesProvider>
-                </UnifiedSearchProvider>
-              </CurrencyProvider>
-            </GeoRegionProvider>
+                  </UnifiedSearchProvider>
+                </CurrencyProvider>
+              </GeoRegionProvider>
+            </UserPreferencesProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
