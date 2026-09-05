@@ -82,8 +82,20 @@ export function getCustomApiKey(type: 'api_football' | 'football_data' | 'rapida
   if (type === 'football_data') {
     return envKey?.VITE_FOOTBALL_DATA_TOKEN || null;
   }
-  if (type === 'rapidapi' || type === 'sofascore' || type === 'livescore' || type === 'free_football' || type === 'bet365' || type === 'football_prediction') {
+  // NOTE (2026-09-05): the hardcoded fallback key below is only ever subscribed
+  // to the "free-api-live-football-data-cheaper-version" RapidAPI product -
+  // confirmed directly against RapidAPI. It has never worked for the official
+  // API-Football product, sofascore, livescore6, bet365data, or
+  // football-prediction-api (all confirmed 403/429 in production logs), so it
+  // must not be silently reused as their fallback - that only guarantees wasted
+  // requests and error-log spam for every single visitor. Each of those needs
+  // its own real, explicitly-configured key (env var or localStorage) before
+  // it will ever be attempted.
+  if (type === 'free_football') {
     return envKey?.VITE_RAPIDAPI_KEY || '634f376987mshcc08c0be647a479p196325jsn87def99b6aac';
+  }
+  if (type === 'rapidapi' || type === 'sofascore' || type === 'livescore' || type === 'bet365' || type === 'football_prediction') {
+    return envKey?.VITE_RAPIDAPI_KEY || null;
   }
   return null;
 }
@@ -243,7 +255,6 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     const rapidHosts = [
       'free-api-live-football-data-cheaper-version.p.rapidapi.com',
       'free-api-live-football-data.p.rapidapi.com',
-      'free-football-api-data.p.rapidapi.com'
     ];
     for (const rapidHost of rapidHosts) {
       if (isHostInCooldown(rapidHost)) continue;
@@ -307,8 +318,9 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     }
   }
 
-  // Check RapidAPI LiveScore Hub if key is present
-  const liveScoreKey = getCustomApiKey('livescore') || getCustomApiKey('rapidapi');
+  // Check RapidAPI LiveScore Hub if a real key is present (never falls back to
+  // the generic hardcoded key, which is not subscribed to this product)
+  const liveScoreKey = getCustomApiKey('livescore');
   if (liveScoreKey) {
     try {
       const res = await fetch('https://livescore6.p.rapidapi.com/matches/v2/list-live?Category=soccer', {
@@ -369,8 +381,9 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     }
   }
 
-  // Check RapidAPI Bet365Data if key is present
-  const bet365Key = getCustomApiKey('bet365') || getCustomApiKey('rapidapi');
+  // Check RapidAPI Bet365Data if a real key is present (never falls back to
+  // the generic hardcoded key, which is not subscribed to this product)
+  const bet365Key = getCustomApiKey('bet365');
   if (bet365Key) {
     try {
       const res = await fetch('https://bet365data.p.rapidapi.com/events/inplay', {
@@ -644,7 +657,6 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     const rapidHosts = [
       'free-api-live-football-data-cheaper-version.p.rapidapi.com',
       'free-api-live-football-data.p.rapidapi.com',
-      'free-football-api-data.p.rapidapi.com'
     ];
     const datesToQuery = [
       `${y}${m}${d}`,
@@ -715,8 +727,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Also query RapidAPI Bet365Data upcoming fixtures if key is present
-  const bet365UpKey = getCustomApiKey('bet365') || getCustomApiKey('rapidapi');
+  // Also query RapidAPI Bet365Data upcoming fixtures if a real key is present
+  const bet365UpKey = getCustomApiKey('bet365');
   if (bet365UpKey) {
     try {
       const res = await fetch('https://bet365data.p.rapidapi.com/events/upcoming?sport_id=1', {
@@ -768,8 +780,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Also query RapidAPI Football Prediction API if key is present
-  const predApiKey = getCustomApiKey('football_prediction') || getCustomApiKey('rapidapi');
+  // Also query RapidAPI Football Prediction API if a real key is present
+  const predApiKey = getCustomApiKey('football_prediction');
   if (predApiKey) {
     try {
       const res = await fetch('https://football-prediction-api.p.rapidapi.com/api/v2/predictions', {
@@ -975,7 +987,6 @@ export async function fetchRealtimeStandingsTable(leagueId: number | string): Pr
       const rapidHosts = [
         'free-api-live-football-data-cheaper-version.p.rapidapi.com',
         'free-api-live-football-data.p.rapidapi.com',
-        'free-football-api-data.p.rapidapi.com'
       ];
       for (const rapidHost of rapidHosts) {
         if (isHostInCooldown(rapidHost)) continue;
@@ -1017,7 +1028,7 @@ export async function fetchRealtimeStandingsTable(leagueId: number | string): Pr
       }
     }
 
-    const rapidKey = getCustomApiKey('sofascore') || getCustomApiKey('rapidapi');
+    const rapidKey = getCustomApiKey('sofascore');
     if (rapidKey && (leagueObj.apiFootballId === 39 || leagueObj.name.includes('Premier')) && !isHostInCooldown('sofascore.p.rapidapi.com')) {
       try {
         const sofaRes = await fetch('https://sofascore.p.rapidapi.com/tournaments/get-standings?tournamentId=17&seasonId=52186', {
