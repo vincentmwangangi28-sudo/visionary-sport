@@ -16,14 +16,16 @@ export const TodaysPredictions = () => {
     return sortPredictions(predictions);
   }, [predictions, sortPredictions]);
 
+  const topPredictionId = prioritizedPredictions[0]?.id;
+
   // Highlight new predictions temporarily
   useEffect(() => {
-    if (prioritizedPredictions.length > 0 && prioritizedPredictions[0]) {
-      setNewPredictionId(prioritizedPredictions[0].id);
+    if (topPredictionId) {
+      setNewPredictionId(topPredictionId);
       const timer = setTimeout(() => setNewPredictionId(null), 3000);
       return () => clearTimeout(timer);
     }
-  }, [prioritizedPredictions.length]);
+  }, [topPredictionId]);
 
   if (loading) {
     return (

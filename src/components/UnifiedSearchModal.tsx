@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   ExternalLink,
   Zap,
+  Sparkles,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -268,7 +269,44 @@ export const UnifiedSearchModal: React.FC = () => {
         >
           {/* 1. ZERO-STATE: Popular & Recent Searches */}
           {!query.trim() && (
-            <div className="p-3 sm:p-4 space-y-5">
+            <div className="p-3 sm:p-4 space-y-4">
+              {/* AI Recommendations Hub Shortcut Banner */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  closeSearch();
+                  navigate('/recommendations');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    closeSearch();
+                    navigate('/recommendations');
+                  }
+                }}
+                className="p-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent hover:border-primary/60 cursor-pointer transition-all flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-primary/20 text-primary">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                        AI Recommendations Hub
+                      </span>
+                      <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20 py-0 px-1.5 h-4">
+                        Daily Banker & +EV
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Browse algorithmic banker tips, goal machines & high-EV picks
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+              </div>
+
               {recentSearches.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">

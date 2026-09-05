@@ -20,8 +20,10 @@ import {
   Calculator,
   Flame,
   CheckCheck,
-  Globe
+  Globe,
+  Plus
 } from 'lucide-react';
+import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 
@@ -34,6 +36,7 @@ export const BetSlipDrawer = () => {
     setStake,
     currency,
     setCurrency,
+    addSelection,
     removeSelection,
     clearSlip,
     totalOdds,
@@ -62,6 +65,48 @@ export const BetSlipDrawer = () => {
 
   const activeBookmaker =
     sortedBookmakers.find((b) => b.id === selectedBookmakerId) || sortedBookmakers[0];
+
+  const { predictions } = usePredictions(1);
+
+  // AI Recommended Next Leg Enhancer to boost the existing accumulator
+  const recommendedEnhancer = useMemo(() => {
+    if (selections.length === 0 || selections.length >= 15 || predictions.length === 0) return null;
+    const existingTeams = new Set(
+      selections.flatMap((s) => [s.homeTeam.toLowerCase(), s.awayTeam.toLowerCase()])
+    );
+    const candidate = predictions.find(
+      (p) =>
+        !existingTeams.has(p.home_team.toLowerCase()) &&
+        !existingTeams.has(p.away_team.toLowerCase()) &&
+        (p.confidence_score ?? p.confidence ?? 60) >= 70
+    );
+    if (!candidate) return null;
+    const odds = candidate.home_odds ?? 1.85;
+    const outcome = candidate.predicted_outcome || candidate.prediction || 'Home Win';
+    const conf = candidate.confidence_score ?? candidate.confidence ?? 70;
+    const newTotalOdds = totalOdds * odds;
+    const boostPercent = Math.round(((newTotalOdds - totalOdds) / (totalOdds || 1)) * 100);
+
+    return {
+      prediction: candidate,
+      market: outcome,
+      odds,
+      confidence: conf,
+      newTotalOdds,
+      boostPercent,
+    };
+  }, [selections, predictions, totalOdds]);
+
+  // AI Recommended Stake based on fractional Kelly Criterion & currency tier
+  const aiRecommendedStake = useMemo(() => {
+    const p = Math.max(0.05, Math.min(0.95, combinedConfidence / 100));
+    const b = Math.max(0.1, totalOdds - 1);
+    const kelly = Math.max(0.02, Math.min(0.15, (p * (b + 1) - 1) / b));
+    const isMajorCurrency = ['USD', 'EUR', 'GBP'].includes(currency);
+    const baseBankroll = isMajorCurrency ? 100 : 5000;
+    const rec = Math.round((baseBankroll * (kelly * 0.4)) / 10) * 10;
+    return isMajorCurrency ? Math.max(5, Math.round(baseBankroll * (kelly * 0.25))) : Math.max(50, rec);
+  }, [combinedConfidence, totalOdds, currency]);
 
   const handleGenerateCode = (bookieId: string) => {
     setSelectedBookmakerId(bookieId);
@@ -230,6 +275,53 @@ export const BetSlipDrawer = () => {
                   </div>
                 )}
 
+                {/* AI Recommended Acca Enhancer */}
+                {recommendedEnhancer && (
+                  <div className="bg-primary/5 border border-primary/25 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        AI Acca Enhancer
+                      </span>
+                      <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                        +{recommendedEnhancer.boostPercent}% Payout Boost
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate text-foreground">
+                          {recommendedEnhancer.prediction.home_team} vs {recommendedEnhancer.prediction.away_team}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Pick: <strong className="text-foreground">{recommendedEnhancer.market}</strong> @ {formatOdds(recommendedEnhancer.odds)} · AI {recommendedEnhancer.confidence}%
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => {
+                          addSelection({
+                            match: `${recommendedEnhancer.prediction.home_team} vs ${recommendedEnhancer.prediction.away_team}`,
+                            homeTeam: recommendedEnhancer.prediction.home_team,
+                            awayTeam: recommendedEnhancer.prediction.away_team,
+                            league: recommendedEnhancer.prediction.league,
+                            matchDate: recommendedEnhancer.prediction.match_date,
+                            market: recommendedEnhancer.market,
+                            odds: recommendedEnhancer.odds,
+                            confidence: recommendedEnhancer.confidence,
+                          });
+                          toast.success(`Added ${recommendedEnhancer.market} to accumulator!`);
+                        }}
+                        className="h-7 px-2.5 text-xs font-bold shrink-0 gap-1"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add Leg
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* 1-Click Booking Codes Across Global Bookmakers */}
                 <div className="mt-4 pt-3 border-t space-y-2">
                   <div className="flex items-center justify-between">
@@ -311,21 +403,34 @@ export const BetSlipDrawer = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-xs">
                     <label htmlFor="betslip-stake-input" className="font-medium text-muted-foreground">{t('slip.stake', 'Stake Amount')}</label>
-                    <div className="flex gap-1" role="group" aria-label="Select currency">
-                      {Array.from(new Set([currentConfig.code, 'USD', 'EUR', 'GBP', 'KES', 'NGN'])).slice(0, 4).map((c) => (
-                        <button
-                          type="button"
-                          key={c}
-                          onClick={() => {
-                            setCurrency(c);
-                            setGlobalCurrency(c as any);
-                          }}
-                          aria-label={`Set currency to ${c}`}
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c || currentConfig.code === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-                        >
-                          {c}
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStake(aiRecommendedStake);
+                          toast.success(`AI Recommended Stake applied: ${currency} ${aiRecommendedStake}`);
+                        }}
+                        className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded transition-colors"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        AI Stake: {currency} {aiRecommendedStake}
+                      </button>
+                      <div className="flex gap-1" role="group" aria-label="Select currency">
+                        {Array.from(new Set([currentConfig.code, 'USD', 'EUR', 'GBP', 'KES', 'NGN'])).slice(0, 4).map((c) => (
+                          <button
+                            type="button"
+                            key={c}
+                            onClick={() => {
+                              setCurrency(c);
+                              setGlobalCurrency(c as any);
+                            }}
+                            aria-label={`Set currency to ${c}`}
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c || currentConfig.code === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className="relative">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, Volume2, VolumeX, Sparkles, Trophy, Flame, Clock, Trash2, Send, Radio, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -35,18 +35,25 @@ const TYPE_ICON: Record<string, string> = {
 // Default sample notifications for instant preview
 const DEMO_NOTIFICATIONS: Notification[] = [
   {
+    id: 'demo-rec-1',
+    type: 'new_prediction',
+    message: '⭐ Daily AI Recommendations Hub updated: 4 Banker Tips and 3 +EV Value Edges are ready for today!',
+    read: false,
+    created_at: new Date(Date.now() - 5 * 60000).toISOString(),
+  },
+  {
     id: 'demo-1',
     type: 'new_prediction',
     message: '🔥 High Confidence Pick: Real Madrid vs Real Sociedad (86% Confidence Win)',
     read: false,
-    created_at: new Date(Date.now() - 15 * 60000).toISOString(),
+    created_at: new Date(Date.now() - 25 * 60000).toISOString(),
   },
   {
     id: 'demo-2',
     type: 'match_alert',
     message: '⚽ Crystal Palace vs Man City kickoff in 1 hour. Starting lineups confirmed.',
     read: false,
-    created_at: new Date(Date.now() - 45 * 60000).toISOString(),
+    created_at: new Date(Date.now() - 55 * 60000).toISOString(),
   },
   {
     id: 'demo-3',
@@ -85,7 +92,7 @@ export const NotificationBell = () => {
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  const playChime = () => {
+  const playChime = useCallback(() => {
     if (!soundEnabled) return;
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -111,7 +118,7 @@ export const NotificationBell = () => {
     } catch (e) {
       console.warn('Audio playback error', e);
     }
-  };
+  }, [soundEnabled]);
 
   const toggleSound = () => {
     const next = !soundEnabled;
@@ -125,7 +132,7 @@ export const NotificationBell = () => {
     }
   };
 
-  const fetchSupabaseNotifications = async () => {
+  const fetchSupabaseNotifications = useCallback(async () => {
     if (!user) return;
     try {
       const { data } = await supabase
@@ -140,7 +147,7 @@ export const NotificationBell = () => {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [user]);
 
   const markAllRead = async () => {
     setNotifications((prev) => {
@@ -189,7 +196,7 @@ export const NotificationBell = () => {
 
   useEffect(() => {
     fetchSupabaseNotifications();
-  }, [user]);
+  }, [fetchSupabaseNotifications]);
 
   // Realtime updates if logged in
   useEffect(() => {
@@ -208,7 +215,7 @@ export const NotificationBell = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, playChime]);
 
   const unread = notifications.filter((n) => !n.read).length;
   const totalAlertBadge = unread + subscriptions.length;
@@ -390,10 +397,24 @@ export const NotificationBell = () => {
           </TabsContent>
         </Tabs>
 
+        {/* Recommendations banner shortcut */}
+        <div className="px-3 py-2 bg-primary/5 border-t border-border/40 flex items-center justify-between text-xs">
+          <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-medium">
+            <Sparkles className="h-3 w-3 text-primary shrink-0" /> Fresh picks available
+          </span>
+          <Link
+            to="/recommendations"
+            onClick={() => setOpen(false)}
+            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5"
+          >
+            Recommendations Hub <ExternalLink className="h-2.5 w-2.5" />
+          </Link>
+        </div>
+
         {/* Footer with browser push trigger */}
         <div className="p-2.5 bg-muted/40 border-t flex items-center justify-between text-xs">
           <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" /> Browser Push {permission === 'granted' ? 'Active ✅' : 'Ready'}
+            Browser Push {permission === 'granted' ? 'Active ✅' : 'Ready'}
           </span>
           <button
             type="button"

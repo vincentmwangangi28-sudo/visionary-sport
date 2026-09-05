@@ -33,7 +33,7 @@ interface PredictionsDashboardProps {
   initialLeague?: string;
 }
 
-type QuickFilter = 'all' | 'high_confidence' | 'value_bets' | 'today';
+type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 'today';
 
 export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProps = {}) => {
   const [page, setPage] = useState(1);
@@ -96,7 +96,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       }
 
       // Quick filter
-      if (quickFilter === 'high_confidence') {
+      if (quickFilter === 'recommended') {
+        const hasValueOdds = (p.home_odds && p.home_odds >= 1.80) || (p.away_odds && p.away_odds >= 1.80);
+        if (conf < 74 && !(conf >= 65 && hasValueOdds)) return false;
+      } else if (quickFilter === 'high_confidence') {
         if (conf < 80) return false;
       } else if (quickFilter === 'value_bets') {
         const hasHighOdds = (p.home_odds && p.home_odds >= 1.85) || (p.away_odds && p.away_odds >= 1.85);
@@ -213,6 +216,18 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               }`}
             >
               All
+            </button>
+            <button
+              type="button"
+              onClick={() => setQuickFilter('recommended')}
+              aria-label="Filter AI recommended predictions"
+              className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
+                quickFilter === 'recommended'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Sparkles className="h-3 w-3" aria-hidden="true" /> Recommended
             </button>
             <button
               type="button"

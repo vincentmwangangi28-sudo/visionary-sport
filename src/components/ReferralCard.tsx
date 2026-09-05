@@ -49,7 +49,7 @@ export const ReferralCard = () => {
       setTotalEarned((earned ?? []).reduce((s, r) => s + (r.coins_earned ?? 0), 0));
       setLoading(false);
     })();
-  }, [user?.id]);
+  }, [user]);
 
   if (!user) {
     return (

@@ -20,6 +20,7 @@ export default function AccumulatorBuilder() {
     currency,
     setCurrency,
     addSelection: addToSlip,
+    addSelections,
     removeSelection,
     clearSlip,
     totalOdds,
@@ -54,6 +55,47 @@ export default function AccumulatorBuilder() {
     else { navigator.clipboard.writeText(text); toast.success('Copied to clipboard!'); }
   };
 
+  const handleGenerateRecommendedAcca = (preset: 'bankers' | 'value' | 'longshot') => {
+    if (predictions.length === 0) {
+      toast.error('No predictions available right now.');
+      return;
+    }
+
+    const picks = [...predictions];
+    let selected: typeof predictions = [];
+
+    if (preset === 'bankers') {
+      // 3 safest picks: confidence >= 72%
+      picks.sort((a, b) => ((b.confidence_score ?? b.confidence ?? 0) - (a.confidence_score ?? a.confidence ?? 0)));
+      selected = picks.slice(0, 3);
+    } else if (preset === 'value') {
+      // 4 picks with balanced odds and confidence
+      selected = picks
+        .filter(p => ((p.home_odds ?? 2) >= 1.70 || (p.away_odds ?? 2) >= 1.70))
+        .slice(0, 4);
+      if (selected.length < 4) selected = picks.slice(0, 4);
+    } else {
+      // 5 picks for high odds
+      selected = picks
+        .filter(p => ((p.home_odds ?? 2) >= 1.85 || (p.away_odds ?? 2) >= 1.85 || (p.draw_odds ?? 3) >= 3.0))
+        .slice(0, 5);
+      if (selected.length < 5) selected = picks.slice(0, 5);
+    }
+
+    const bets = selected.map(p => ({
+      match: `${p.home_team} vs ${p.away_team}`,
+      homeTeam: p.home_team,
+      awayTeam: p.away_team,
+      league: p.league,
+      matchDate: p.match_date,
+      market: p.predicted_outcome || p.prediction || 'Home Win',
+      odds: p.home_odds || 1.95,
+      confidence: p.confidence_score ?? p.confidence ?? 70,
+    }));
+
+    addSelections(bets);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title="Football Accumulator Builder | Acca Calculator | PredictPro" description="Build football accumulators from AI predictions. Calculate potential returns, combine multiple bets and share your acca with friends." keywords="football accumulator builder, acca calculator, football acca tips, accumulator bet builder, multiple bet calculator" />
@@ -62,6 +104,60 @@ export default function AccumulatorBuilder() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-3"><Calculator className="h-8 w-8 text-primary" />Accumulator Builder & Multi-Slip</h1>
           <p className="text-muted-foreground mt-1">Build multi-bet accumulators from AI predictions with real-time multi-bookmaker odds comparison and booking codes.</p>
+        </div>
+
+        {/* AI Recommended Acca Generator Shortcuts */}
+        <div className="mb-6 bg-card border rounded-2xl p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <span className="font-bold text-sm">AI Recommended Acca Generators</span>
+            </div>
+            <span className="text-xs text-muted-foreground">1-Click algorithmically selected multis</span>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleGenerateRecommendedAcca('bankers')}
+              className="justify-start gap-2 h-auto py-2.5 px-3 border-emerald-500/30 hover:border-emerald-500/60 hover:bg-emerald-500/5 text-left"
+            >
+              <span className="text-lg">🛡️</span>
+              <div className="min-w-0 flex-1">
+                <span className="font-bold text-xs block text-foreground">Safe 3-Fold Banker</span>
+                <span className="text-[10px] text-muted-foreground">High accuracy (~3.2x)</span>
+              </div>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleGenerateRecommendedAcca('value')}
+              className="justify-start gap-2 h-auto py-2.5 px-3 border-blue-500/30 hover:border-blue-500/60 hover:bg-blue-500/5 text-left"
+            >
+              <span className="text-lg">💎</span>
+              <div className="min-w-0 flex-1">
+                <span className="font-bold text-xs block text-foreground">Balanced 4-Fold Value</span>
+                <span className="text-[10px] text-muted-foreground">High EV (~6.8x)</span>
+              </div>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleGenerateRecommendedAcca('longshot')}
+              className="justify-start gap-2 h-auto py-2.5 px-3 border-purple-500/30 hover:border-purple-500/60 hover:bg-purple-500/5 text-left"
+            >
+              <span className="text-lg">🚀</span>
+              <div className="min-w-0 flex-1">
+                <span className="font-bold text-xs block text-foreground">High Yield 5-Fold</span>
+                <span className="text-[10px] text-muted-foreground">Maximum multiplier (~14.5x)</span>
+              </div>
+            </Button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">

@@ -25,7 +25,8 @@ import {
   Layers,
   Globe,
   Clock,
-  Percent
+  Percent,
+  Sparkles
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,6 +51,7 @@ export const Navbar = () => {
 
   const navLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions"),    icon: Zap },
+    { to: "/recommendations", label: "AI Recommended",                    icon: Sparkles },
     { to: "/tournaments",   label: "Global Tournaments",                  icon: Globe },
     { to: "/screener",      label: t('nav.screener', "Match Screener"), icon: SlidersHorizontal },
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds"),  icon: TrendingDown },
@@ -79,6 +81,7 @@ export const Navbar = () => {
 
   const topNavLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions") },
+    { to: "/recommendations", label: "Recommended" },
     { to: "/tournaments",   label: "Tournaments" },
     { to: "/screener",      label: t('nav.screener', "Screener") },
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },

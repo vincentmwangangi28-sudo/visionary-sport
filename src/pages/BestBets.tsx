@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -7,9 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Zap, RefreshCw, TrendingUp, Trophy } from 'lucide-react';
+import { Zap, RefreshCw, TrendingUp, Trophy, Sparkles } from 'lucide-react';
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from '@/components/WhatsAppShare';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import type { Prediction } from '@/types/prediction';
 import { getPrediction, getConfidence } from '@/types/prediction';
 import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
@@ -43,6 +45,22 @@ export default function BestBets() {
   const [bets, setBets] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [minConf, setMinConf] = useState(70);
+  const { addSelections } = useBetSlip();
+
+  const handleLoadTopPicks = () => {
+    if (bets.length === 0) return;
+    const top3 = bets.slice(0, 3).map(b => ({
+      match: `${b.home_team} vs ${b.away_team}`,
+      homeTeam: b.home_team,
+      awayTeam: b.away_team,
+      league: b.league,
+      matchDate: b.match_date,
+      market: b.predicted_outcome || b.prediction || 'Home Win',
+      odds: b.home_odds || 1.90,
+      confidence: getConfidence(b) || 75,
+    }));
+    addSelections(top3);
+  };
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
@@ -123,9 +141,24 @@ export default function BestBets() {
             </h1>
             <p className="text-muted-foreground mt-1">Outcome vectors ranked by confidence-weighted probability · {minConf}%+ threshold · Rolling 7-day window</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
+            <Link to="/recommendations">
+              <Button variant="outline" size="sm" className="gap-1.5 border-primary/30 hover:border-primary/60 text-xs">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                AI Recommendations
+              </Button>
+            </Link>
+            <Button
+              size="sm"
+              onClick={handleLoadTopPicks}
+              disabled={bets.length === 0}
+              className="gap-1.5 font-bold text-xs"
+            >
+              <Zap className="h-3.5 w-3.5" />
+              Load Top 3 to Slip
+            </Button>
             <WhatsAppShare text={shareText} />
-            <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
+            <Button variant="outline" size="sm" onClick={fetch_} disabled={loading} aria-label="Refresh bets">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
           </div>

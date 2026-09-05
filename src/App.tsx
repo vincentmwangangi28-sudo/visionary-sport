@@ -66,6 +66,7 @@ const DroppingOddsPage  = lazyWithRetry(() => import("./pages/DroppingOddsPage")
 const MatchScreenerPage = lazyWithRetry(() => import("./pages/MatchScreenerPage"));
 const TrackRecordPage   = lazyWithRetry(() => import("./pages/TrackRecordPage"));
 const GlobalTournaments  = lazyWithRetry(() => import("./pages/GlobalTournaments"));
+const Recommendations    = lazyWithRetry(() => import("./pages/Recommendations"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -124,6 +125,7 @@ const App = () => (
                           <Route path="/predict"       element={<MatchPredictor />} />
                           <Route path="/predict/:matchSlug" element={<MatchPrediction />} />
                           <Route path="/best-bets"     element={<BestBets />} />
+                          <Route path="/recommendations" element={<Recommendations />} />
                           <Route path="/performance"   element={<ProtectedRoute><Performance /></ProtectedRoute>} />
                           <Route path="/shop"          element={<ProtectedRoute><Shop /></ProtectedRoute>} />
                           <Route path="/rewards"       element={<ProtectedRoute><Rewards /></ProtectedRoute>} />

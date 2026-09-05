@@ -23,6 +23,7 @@ interface BetSlipContextType {
   currency: string;
   setCurrency: (cur: string) => void;
   addSelection: (selection: Omit<BetSelection, 'id'>) => void;
+  addSelections: (selections: Omit<BetSelection, 'id'>[]) => void;
   removeSelection: (id: string) => void;
   clearSlip: () => void;
   totalOdds: number;
@@ -88,6 +89,43 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsOpen(true);
   };
 
+  const addSelections = (newSels: Omit<BetSelection, 'id'>[]) => {
+    if (!newSels || newSels.length === 0) return;
+
+    setSelections(prev => {
+      const updated = [...prev];
+      let addedCount = 0;
+
+      for (const sel of newSels) {
+        if (updated.length >= 15) break;
+        const id = `${sel.homeTeam}-${sel.awayTeam}-${sel.market}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        
+        // If exact selection exists, skip
+        if (updated.some(s => s.id === id)) continue;
+
+        // If same match exists, update market
+        const matchIdx = updated.findIndex(s => s.homeTeam === sel.homeTeam && s.awayTeam === sel.awayTeam);
+        if (matchIdx >= 0) {
+          updated[matchIdx] = { ...sel, id };
+          addedCount++;
+        } else {
+          updated.push({ ...sel, id });
+          addedCount++;
+        }
+      }
+
+      if (addedCount > 0) {
+        toast.success(`Loaded ${addedCount} recommended pick${addedCount > 1 ? 's' : ''} into Bet Slip!`);
+      } else {
+        toast.info('Selected picks are already in your Bet Slip');
+      }
+
+      return updated;
+    });
+
+    setIsOpen(true);
+  };
+
   const removeSelection = (id: string) => {
     setSelections(prev => prev.filter(s => s.id !== id));
   };
@@ -136,6 +174,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       currency,
       setCurrency,
       addSelection,
+      addSelections,
       removeSelection,
       clearSlip,
       totalOdds,
@@ -159,6 +198,7 @@ const defaultFallbackContext: BetSlipContextType = {
   currency: 'KES',
   setCurrency: () => {},
   addSelection: () => {},
+  addSelections: () => {},
   removeSelection: () => {},
   clearSlip: () => {},
   totalOdds: 1,

@@ -9,6 +9,8 @@ import { AdBannerHorizontal } from "@/components/AdBanner";
 import { PastResultsArchive } from "@/components/PastResultsArchive";
 import { TelegramPromoBanner } from "@/components/TelegramPromoBanner";
 import { LiveMomentumRadar } from "@/components/LiveMomentumRadar";
+import { AIRecommendationsHub } from "@/components/AIRecommendationsHub";
+import { usePredictions } from "@/hooks/usePredictions";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,8 @@ const FEATURES = [
 ];
 
 export default function Index() {
+  const { predictions, isLoading: isPredsLoading } = usePredictions(1);
+
   return (
     <div className="min-h-screen bg-background">
       <SEO
@@ -45,6 +49,17 @@ export default function Index() {
         <section className="py-8 bg-muted/10">
           <div className="container mx-auto px-4 max-w-6xl">
             <LiveMomentumRadar />
+          </div>
+        </section>
+
+        {/* AI Recommendations Section */}
+        <section className="py-8 bg-muted/15 border-y border-border/50">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <AIRecommendationsHub
+              predictions={predictions}
+              isLoading={isPredsLoading}
+              maxItems={4}
+            />
           </div>
         </section>
 

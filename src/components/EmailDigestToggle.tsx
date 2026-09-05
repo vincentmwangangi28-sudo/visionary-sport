@@ -18,7 +18,7 @@ export const EmailDigestToggle = () => {
         setEnabled(data?.email_digest_opt_in ?? true);
         setLoading(false);
       });
-  }, [user?.id]);
+  }, [user]);
 
   const toggle = async (val: boolean) => {
     if (!user) return;

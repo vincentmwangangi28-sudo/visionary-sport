@@ -79,14 +79,14 @@ export type UnifiedSearchResult =
 
 // Popular search suggestions for fast zero-state discovery
 export const POPULAR_SEARCH_SUGGESTIONS = [
+  { label: '⭐ Recommendations', type: 'match' as const, query: 'recommendations' },
+  { label: '🛡️ Banker Tips', type: 'match' as const, query: 'Banker' },
   { label: 'Arsenal', type: 'team' as const, query: 'Arsenal' },
   { label: 'Premier League', type: 'league' as const, query: 'Premier League' },
   { label: 'Real Madrid', type: 'team' as const, query: 'Real Madrid' },
   { label: 'Champions League', type: 'league' as const, query: 'Champions League' },
-  { label: 'Value Betting', type: 'blog' as const, query: 'Value Betting' },
-  { label: 'Gor Mahia', type: 'team' as const, query: 'Gor Mahia' },
   { label: 'Over 2.5 Goals', type: 'match' as const, query: 'Over 2.5' },
-  { label: 'Kelly Criterion', type: 'blog' as const, query: 'Bankroll' },
+  { label: 'Gor Mahia', type: 'team' as const, query: 'Gor Mahia' },
 ];
 
 /**
@@ -317,6 +317,16 @@ export function executeUnifiedSearch(
       m.tags.forEach((t) => {
         score += calculateTextScore(t, cleanQuery, terms) * 0.5;
       });
+    }
+
+    if (cleanQuery.includes('banker') && m.confidence >= 75) {
+      score += 50 + (m.confidence - 75);
+    }
+    if (cleanQuery.includes('value') && (m.odds.home >= 1.85 || m.odds.away >= 1.85)) {
+      score += 45;
+    }
+    if ((cleanQuery.includes('recommend') || cleanQuery.includes('best')) && m.confidence >= 72) {
+      score += 40;
     }
 
     if (score > 0) {

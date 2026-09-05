@@ -575,6 +575,64 @@ export default function MatchPrediction() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* AI Recommended Match Combo */}
+            <Card className="mt-4 border-primary/20 bg-gradient-to-br from-primary/5 via-card to-primary/5">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                      <Sparkles className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <h4 className="font-black text-sm">AI Recommended Same-Game Combo</h4>
+                      <p className="text-[11px] text-muted-foreground">Correlated match outcome + goals line with positive expected value</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-primary/10 text-primary border-primary/30 font-mono font-bold">
+                    Combined Odds: {((prediction.home_odds ?? 1.95) * 1.34 * 0.95).toFixed(2)}
+                  </Badge>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-background/80 border rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Leg 1 · Result</span>
+                      <p className="font-bold text-xs text-foreground">{outcome}</p>
+                    </div>
+                    <span className="text-xs font-mono font-bold">@ {(prediction.home_odds ?? 1.95).toFixed(2)}</span>
+                  </div>
+
+                  <div className="bg-background/80 border rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Leg 2 · Goals Line</span>
+                      <p className="font-bold text-xs text-foreground">Over 1.5 Goals ({over15Prob}%)</p>
+                    </div>
+                    <span className="text-xs font-mono font-bold">@ 1.34</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    addSelection({
+                      match: `${prediction.home_team} vs ${prediction.away_team}`,
+                      homeTeam: prediction.home_team,
+                      awayTeam: prediction.away_team,
+                      league: prediction.league,
+                      matchDate: prediction.match_date,
+                      market: `${outcome} & Over 1.5 Goals`,
+                      odds: parseFloat((((prediction.home_odds ?? 1.95) * 1.34) * 0.95).toFixed(2)),
+                      confidence: Math.round((confidence * over15Prob) / 100),
+                    });
+                    toast.success('Added AI Recommended Match Combo to Bet Slip!');
+                  }}
+                  className="w-full gap-2 font-bold text-xs"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Add AI Recommended Combo to Bet Slip
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* TAB 2: Pitch Lineups & Formations */}

@@ -13,6 +13,23 @@ export const CoinBalance = () => {
   useEffect(() => {
     if (!user) return;
 
+    const loadCoins = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('coins')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+        setCoins(data.coins);
+      } catch (error) {
+        console.error('Error loading coins:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadCoins();
 
     // Subscribe to real-time coin updates
@@ -29,15 +46,14 @@ export const CoinBalance = () => {
         (payload) => {
           console.log('💰 Coin balance updated:', payload);
           const newCoins = payload.new.coins;
-          const oldCoins = coins;
-          setCoins(newCoins);
-          
-          // Show toast for coin changes
-          if (newCoins > oldCoins) {
-            toast.success(`+${newCoins - oldCoins} coins earned! 🎉`);
-          } else if (newCoins < oldCoins) {
-            toast.info(`${oldCoins - newCoins} coins spent`);
-          }
+          setCoins((prev) => {
+            if (newCoins > prev) {
+              toast.success(`+${newCoins - prev} coins earned! 🎉`);
+            } else if (newCoins < prev) {
+              toast.info(`${prev - newCoins} coins spent`);
+            }
+            return newCoins;
+          });
         }
       )
       .subscribe((status) => {
@@ -50,25 +66,6 @@ export const CoinBalance = () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
-
-  const loadCoins = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-      setCoins(data.coins);
-    } catch (error) {
-      console.error('Error loading coins:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!user) return null;
 
