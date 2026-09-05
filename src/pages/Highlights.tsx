@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VideoHighlightListSkeleton } from '@/components/PredictionCardSkeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { fetchRealtimeFinishedMatches } from '@/services/realtimeFootball';
 import { Film, Play, ExternalLink, RefreshCw, Youtube } from 'lucide-react';
@@ -90,14 +91,7 @@ export default function Highlights() {
         </div>
 
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({length:6}).map((_,i) => (
-              <Card key={i}><CardContent className="p-0">
-                <Skeleton className="h-44 w-full rounded-t-lg"/>
-                <div className="p-3 space-y-2"><Skeleton className="h-4 w-3/4"/><Skeleton className="h-3 w-1/2"/></div>
-              </CardContent></Card>
-            ))}
-          </div>
+          <VideoHighlightListSkeleton count={6} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {highlights.map(h => (

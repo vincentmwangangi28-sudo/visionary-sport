@@ -6,7 +6,8 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, ChevronLeft, Zap, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Clock, ChevronLeft, Zap } from "lucide-react";
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from "@/components/WhatsAppShare";
 import { supabase } from "@/integrations/supabase/client";
@@ -193,8 +194,29 @@ export default function BlogPost() {
   if (loading) return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-24 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <main className="container mx-auto px-4 py-24 max-w-3xl space-y-6">
+        <Skeleton className="h-4 w-28" />
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-24 rounded-full" />
+          </div>
+          <Skeleton className="h-9 w-4/5" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+        <Card className="border bg-card">
+          <CardContent className="p-6 space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <div className="py-2">
+              <Skeleton className="h-32 w-full rounded-xl" />
+            </div>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-4 w-3/4" />
+          </CardContent>
+        </Card>
       </main>
       <Footer />
     </div>

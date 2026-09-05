@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CurrencySelector } from '@/components/CurrencySelector';
+import { BankrollPortfolioTracker } from '@/components/BankrollPortfolioTracker';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { Wallet, TrendingUp, Shield, Calculator, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
+import { Wallet, TrendingUp, Shield, Calculator, AlertTriangle, CheckCircle, ExternalLink, BarChart2 } from 'lucide-react';
 
 export default function BankrollManager() {
   const { currency, currencyConfig, format, responsibleGambling } = useCurrency();
@@ -85,179 +87,198 @@ export default function BankrollManager() {
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Calculator */}
-          <Card className="border-border/70">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Calculator className="h-5 w-5 text-primary" />
-                Stake Calculator ({currencyConfig.code})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-1.5">
-                <Label htmlFor="bankroll-input">Total Bankroll ({currencyConfig.code} - {currencyConfig.symbol})</Label>
-                <Input
-                  id="bankroll-input"
-                  type="number"
-                  value={bankroll}
-                  onChange={(e) => setBankroll(e.target.value)}
-                  aria-label={`Total Bankroll in ${currencyConfig.code}`}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label id="stake-percent-label">
-                  Stake per bet: <span className="text-primary font-bold">{stakePercent[0]}%</span> = {format(stake)}
-                </Label>
-                <Slider
-                  value={stakePercent}
-                  onValueChange={setStakePercent}
-                  min={0.5}
-                  max={10}
-                  step={0.5}
-                  className="w-full"
-                  aria-labelledby="stake-percent-label"
-                  aria-label="Stake percentage per bet"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0.5% Safe</span>
-                  <span>5% Aggressive</span>
-                  <span>10% Risky</span>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="decimal-odds-input">Odds</Label>
-                  <span className="text-xs font-mono text-muted-foreground">
-                    Formatted: <b className="text-foreground">{formatOdds(numOdds)}</b>
-                  </span>
-                </div>
-                <Input
-                  id="decimal-odds-input"
-                  type="number"
-                  step="0.05"
-                  value={odds}
-                  onChange={(e) => setOdds(e.target.value)}
-                  aria-label="Odds"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label id="confidence-percent-label">
-                  Model / Pick Confidence: <span className="text-primary font-bold">{confidence[0]}%</span>
-                </Label>
-                <Slider
-                  value={confidence}
-                  onValueChange={setConfidence}
-                  min={30}
-                  max={95}
-                  step={1}
-                  aria-labelledby="confidence-percent-label"
-                  aria-label="Confidence percentage"
-                />
-              </div>
+        <Tabs defaultValue="portfolio" className="space-y-6">
+          <TabsList className="grid grid-cols-2 max-w-md">
+            <TabsTrigger value="portfolio" className="gap-1.5 font-bold">
+              <BarChart2 className="h-4 w-4" />
+              P&L Portfolio Tracker
+            </TabsTrigger>
+            <TabsTrigger value="calculator" className="gap-1.5 font-bold">
+              <Calculator className="h-4 w-4" />
+              Stake & Kelly Calculator
+            </TabsTrigger>
+          </TabsList>
 
-              {/* Results */}
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                <div className="bg-muted/50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted-foreground">Recommended Stake</p>
-                  <p className="text-lg font-black text-primary truncate mt-0.5">{format(stake)}</p>
-                </div>
-                <div className="bg-muted/50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted-foreground">Kelly Criterion Stake</p>
-                  <p className="text-lg font-bold text-foreground truncate mt-0.5">{format(kellyStake)}</p>
-                </div>
-                <div className={`rounded-xl p-3 text-center ${ev > 0 ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                  <p className="text-xs text-muted-foreground">Expected Value (EV)</p>
-                  <p className={`text-lg font-bold ${ev > 0 ? 'text-green-600' : 'text-red-600'} truncate mt-0.5`}>
-                    {ev > 0 ? '+' : ''}{format(ev)}
-                  </p>
-                </div>
-                <div
-                  className={`rounded-xl p-3 text-center ${
-                    riskLevel === 'low'
-                      ? 'bg-green-500/10'
-                      : riskLevel === 'medium'
-                      ? 'bg-amber-500/10'
-                      : 'bg-red-500/10'
-                  }`}
-                >
-                  <p className="text-xs text-muted-foreground">Risk Variance</p>
-                  <p
-                    className={`text-lg font-bold capitalize ${
-                      riskLevel === 'low'
-                        ? 'text-green-600'
-                        : riskLevel === 'medium'
-                        ? 'text-amber-600'
-                        : 'text-red-600'
-                    } mt-0.5`}
-                  >
-                    {riskLevel}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TabsContent value="portfolio" className="space-y-6">
+            <BankrollPortfolioTracker />
+          </TabsContent>
 
-          {/* Strategy guide */}
-          <div className="space-y-4">
-            <Card className="border-border/70">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Staking Strategies
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2.5">
-                {strategies.map((s) => (
-                  <div
-                    key={s.name}
-                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer hover:bg-muted/30 transition-colors ${
-                      stakePercent[0] === s.percent ? 'border-primary bg-primary/5' : ''
-                    }`}
-                    onClick={() => setStakePercent([s.percent])}
-                  >
-                    <div>
-                      <p className={`font-semibold text-sm ${s.color}`}>{s.name}</p>
-                      <p className="text-xs text-muted-foreground">{s.desc}</p>
+          <TabsContent value="calculator" className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Calculator */}
+              <Card className="border-border/70">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Calculator className="h-5 w-5 text-primary" />
+                    Stake Calculator ({currencyConfig.code})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="bankroll-input">Total Bankroll ({currencyConfig.code} - {currencyConfig.symbol})</Label>
+                    <Input
+                      id="bankroll-input"
+                      type="number"
+                      value={bankroll}
+                      onChange={(e) => setBankroll(e.target.value)}
+                      aria-label={`Total Bankroll in ${currencyConfig.code}`}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label id="stake-percent-label">
+                      Stake per bet: <span className="text-primary font-bold">{stakePercent[0]}%</span> = {format(stake)}
+                    </Label>
+                    <Slider
+                      value={stakePercent}
+                      onValueChange={setStakePercent}
+                      min={0.5}
+                      max={10}
+                      step={0.5}
+                      className="w-full"
+                      aria-labelledby="stake-percent-label"
+                      aria-label="Stake percentage per bet"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>0.5% Safe</span>
+                      <span>5% Aggressive</span>
+                      <span>10% Risky</span>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm">{s.percent}%</p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {format((numBankroll * s.percent) / 100)}
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="decimal-odds-input">Odds</Label>
+                      <span className="text-xs font-mono text-muted-foreground">
+                        Formatted: <b className="text-foreground">{formatOdds(numOdds)}</b>
+                      </span>
+                    </div>
+                    <Input
+                      id="decimal-odds-input"
+                      type="number"
+                      step="0.05"
+                      value={odds}
+                      onChange={(e) => setOdds(e.target.value)}
+                      aria-label="Odds"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label id="confidence-percent-label">
+                      Model / Pick Confidence: <span className="text-primary font-bold">{confidence[0]}%</span>
+                    </Label>
+                    <Slider
+                      value={confidence}
+                      onValueChange={setConfidence}
+                      min={30}
+                      max={95}
+                      step={1}
+                      aria-labelledby="confidence-percent-label"
+                      aria-label="Confidence percentage"
+                    />
+                  </div>
+
+                  {/* Results */}
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                    <div className="bg-muted/50 rounded-xl p-3 text-center">
+                      <p className="text-xs text-muted-foreground">Recommended Stake</p>
+                      <p className="text-lg font-black text-primary truncate mt-0.5">{format(stake)}</p>
+                    </div>
+                    <div className="bg-muted/50 rounded-xl p-3 text-center">
+                      <p className="text-xs text-muted-foreground">Kelly Criterion Stake</p>
+                      <p className="text-lg font-bold text-foreground truncate mt-0.5">{format(kellyStake)}</p>
+                    </div>
+                    <div className={`rounded-xl p-3 text-center ${ev > 0 ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                      <p className="text-xs text-muted-foreground">Expected Value (EV)</p>
+                      <p className={`text-lg font-bold ${ev > 0 ? 'text-green-600' : 'text-red-600'} truncate mt-0.5`}>
+                        {ev > 0 ? '+' : ''}{format(ev)}
+                      </p>
+                    </div>
+                    <div
+                      className={`rounded-xl p-3 text-center ${
+                        riskLevel === 'low'
+                          ? 'bg-green-500/10'
+                          : riskLevel === 'medium'
+                          ? 'bg-amber-500/10'
+                          : 'bg-red-500/10'
+                      }`}
+                    >
+                      <p className="text-xs text-muted-foreground">Risk Variance</p>
+                      <p
+                        className={`text-lg font-bold capitalize ${
+                          riskLevel === 'low'
+                            ? 'text-green-600'
+                            : riskLevel === 'medium'
+                            ? 'text-amber-600'
+                            : 'text-red-600'
+                        } mt-0.5`}
+                      >
+                        {riskLevel}
                       </p>
                     </div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="border-border/70">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-green-500" />
-                  Capital Preservation Golden Rules
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {[
-                    'Never stake more than 5% on a single bet',
-                    'Only wager capital you can afford to lose completely',
-                    'Keep meticulous records of all bets and unit yield',
-                    'Stick to your sizing plan — strictly avoid emotional loss-chasing',
-                    'Take a mandatory 48-hour cool-off break after drawdown streaks',
-                    'Regularly withdraw profits to lock in returns',
-                  ].map((rule, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs">
-                      <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span>{rule}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              {/* Strategy guide */}
+              <div className="space-y-4">
+                <Card className="border-border/70">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Staking Strategies
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2.5">
+                    {strategies.map((s) => (
+                      <div
+                        key={s.name}
+                        className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer hover:bg-muted/30 transition-colors ${
+                          stakePercent[0] === s.percent ? 'border-primary bg-primary/5' : ''
+                        }`}
+                        onClick={() => setStakePercent([s.percent])}
+                      >
+                        <div>
+                          <p className={`font-semibold text-sm ${s.color}`}>{s.name}</p>
+                          <p className="text-xs text-muted-foreground">{s.desc}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-sm">{s.percent}%</p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {format((numBankroll * s.percent) / 100)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/70">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-green-500" />
+                      Capital Preservation Golden Rules
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {[
+                        'Never stake more than 5% on a single bet',
+                        'Only wager capital you can afford to lose completely',
+                        'Keep meticulous records of all bets and unit yield',
+                        'Stick to your sizing plan — strictly avoid emotional loss-chasing',
+                        'Take a mandatory 48-hour cool-off break after drawdown streaks',
+                        'Regularly withdraw profits to lock in returns',
+                      ].map((rule, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs">
+                          <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0 mt-0.5" />
+                          <span>{rule}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
       <Footer />
     </div>

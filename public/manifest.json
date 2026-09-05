@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "PredictPro — AI Football Predictions",
   "short_name": "PredictPro",
   "description": "AI-powered football predictions for 40+ leagues. Free daily tips with confidence scores, H2H stats and value bets.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0f0a1e",
   "theme_color": "#6d28d9",

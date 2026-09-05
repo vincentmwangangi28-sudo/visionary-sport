@@ -27,4 +27,10 @@ export default tseslint.config(
       "no-empty": "off",
     },
   },
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/hooks/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

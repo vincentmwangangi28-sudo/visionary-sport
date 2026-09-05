@@ -348,7 +348,9 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       </div>
 
       {/* Predictions Rendering */}
-      {filteredPredictions.length === 0 ? (
+      {isLoading ? (
+        <PredictionListSkeleton count={6} viewMode={viewMode} />
+      ) : filteredPredictions.length === 0 ? (
         <div className="text-center py-16 space-y-3 bg-muted/20 rounded-2xl border border-dashed p-8">
           <Zap className="h-10 w-10 mx-auto text-muted-foreground opacity-50" />
           <p className="font-bold text-foreground">

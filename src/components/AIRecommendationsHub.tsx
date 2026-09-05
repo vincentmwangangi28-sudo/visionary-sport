@@ -239,17 +239,55 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-8 w-32" />
+      <section className="space-y-6" aria-label="Loading AI recommendations">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border rounded-2xl p-5 shadow-xs">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-7 w-64" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-28 rounded-md" />
+            <Skeleton className="h-9 w-32 rounded-md" />
+          </div>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-24 rounded-full shrink-0" />
+          ))}
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-xl" />
+            <Card key={i} className="border bg-card p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-5 w-24 rounded-full" />
+                <Skeleton className="h-3.5 w-16" />
+              </div>
+              <div className="space-y-2 py-1">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-muted/40 space-y-1.5">
+                <div className="flex justify-between">
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+                <Skeleton className="h-1.5 w-full rounded-full" />
+              </div>
+              <Skeleton className="h-8 w-full rounded-md" />
+            </Card>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 

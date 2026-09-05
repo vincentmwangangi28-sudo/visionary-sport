@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -586,7 +587,37 @@ export default function Archive() {
             )}
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="grid gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="border-l-4 border-l-muted bg-card">
+                  <CardContent className="p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-24 rounded-full" />
+                          <Skeleton className="h-3 w-20" />
+                        </div>
+                        <Skeleton className="h-5 w-56 font-bold" />
+                        <div className="flex items-center gap-3 pt-1">
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 sm:text-right">
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3 w-16 sm:ml-auto" />
+                          <Skeleton className="h-6 w-16 rounded-md sm:ml-auto" />
+                        </div>
+                        <Skeleton className="h-7 w-20 rounded-full" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <Card className="p-8 text-center border-dashed">
               <p className="text-muted-foreground text-sm">No predictions matched your selected criteria.</p>
               <Button

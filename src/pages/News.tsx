@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NewsGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
@@ -203,14 +204,7 @@ export default function News() {
         <AdBannerHorizontal className="mb-6" />
 
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({length: 9}).map((_,i) => (
-              <Card key={i}><CardContent className="p-4 space-y-2">
-                <Skeleton className="h-36 w-full rounded" />
-                <Skeleton className="h-4 w-3/4" /><Skeleton className="h-3 w-full" />
-              </CardContent></Card>
-            ))}
-          </div>
+          <NewsGridSkeleton count={6} />
         ) : error ? (
           <div className="text-center py-16">
             <Newspaper className="h-12 w-12 mx-auto text-muted-foreground mb-3"/>

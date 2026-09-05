@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
@@ -258,7 +259,44 @@ export default function MatchPredictor() {
         )}
 
         {/* Result */}
-        {result && (
+        {loading && (
+          <Card className="border-primary/20 bg-card/70 shadow-md">
+            <CardHeader className="pb-3 border-b bg-muted/10">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/30 rounded-xl p-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-8 w-32 rounded-lg" />
+                </div>
+                <div className="space-y-2 text-right">
+                  <Skeleton className="h-3.5 w-20 ml-auto" />
+                  <Skeleton className="h-8 w-20 rounded-lg" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3.5 w-36" />
+                <Skeleton className="h-3 w-full rounded-full" />
+                <div className="flex justify-between pt-1">
+                  <Skeleton className="h-3.5 w-16" />
+                  <Skeleton className="h-3.5 w-16" />
+                  <Skeleton className="h-3.5 w-16" />
+                </div>
+              </div>
+              <div className="p-4 bg-muted/20 rounded-xl border space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3.5 w-full" />
+                <Skeleton className="h-3.5 w-4/5" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {result && !loading && (
           <Card className="border-primary/30 shadow-lg">
             <CardHeader className="pb-3 border-b bg-muted/10">
               <div className="flex items-center justify-between">

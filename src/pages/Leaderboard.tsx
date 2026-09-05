@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { LeaderboardSkeleton } from '@/components/PredictionCardSkeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Trophy, Medal, Star, TrendingUp, Users } from 'lucide-react';
@@ -107,7 +108,9 @@ export default function Leaderboard() {
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4 text-primary" />All Rankings</CardTitle></CardHeader>
           <CardContent className="p-0">
-            {loading ? <div className="p-6 text-center text-muted-foreground">Loading...</div> : (
+            {loading ? (
+              <LeaderboardSkeleton />
+            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead><tr className="border-b bg-muted/30">

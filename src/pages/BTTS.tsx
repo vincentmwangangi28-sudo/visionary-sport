@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BTTSListSkeleton } from '@/components/PredictionCardSkeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
@@ -87,7 +88,7 @@ export default function BTTS() {
         <AdBannerHorizontal className="mb-6" />
 
         {loading ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}</div>
+          <BTTSListSkeleton count={6} />
         ) : sorted.length === 0 ? (
           <div className="text-center py-20"><BarChart2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><p className="font-semibold">No predictions available</p></div>
         ) : (

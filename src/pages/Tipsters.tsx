@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { TipsterFeedSkeleton } from '@/components/PredictionCardSkeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -121,7 +122,7 @@ export default function Tipsters() {
 
             {/* Tips list */}
             {loading ? (
-              <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Card key={i}><CardContent className="p-4 h-28 animate-pulse bg-muted/30" /></Card>)}</div>
+              <TipsterFeedSkeleton count={4} />
             ) : tips.length === 0 ? (
               <EmptyState icon={TrendingUp} title="No tips yet" description="Be the first to share a tip with the community!" actionLabel="Share a Tip" onAction={() => setShowForm(true)} />
             ) : tips.map(tip => (

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ValueBetListSkeleton } from '@/components/PredictionCardSkeleton';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info } from 'lucide-react';
@@ -107,7 +108,7 @@ export default function ValueBets() {
         </Card>
 
         {loading ? (
-          <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}</div>
+          <ValueBetListSkeleton count={5} />
         ) : bets.length === 0 ? (
           <div className="text-center py-20">
             <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

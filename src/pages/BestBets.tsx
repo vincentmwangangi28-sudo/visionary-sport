@@ -4,6 +4,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { PredictionCard } from '@/components/PredictionCard';
+import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -178,9 +179,7 @@ export default function BestBets() {
         </div>
 
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-xl" />)}
-          </div>
+          <PredictionListSkeleton count={6} />
         ) : bets.length === 0 ? (
           <div className="text-center py-20">
             <Zap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

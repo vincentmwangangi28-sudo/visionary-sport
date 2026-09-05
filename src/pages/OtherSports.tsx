@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Zap } from 'lucide-react';
@@ -90,7 +91,20 @@ export default function OtherSports() {
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-lg">{match.home} <span className="text-muted-foreground text-base font-normal">vs</span> {match.away}</p>
-                      {pred && (
+                      {isLoading && (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-5 w-24 rounded-full" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                          <Skeleton className="h-3.5 w-full" />
+                          <div className="flex gap-3">
+                            <Skeleton className="h-3.5 w-16" />
+                            <Skeleton className="h-3.5 w-16" />
+                          </div>
+                        </div>
+                      )}
+                      {pred && !isLoading && (
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             <Badge className={`${outcome === 'Home Win' ? 'bg-green-500' : outcome === 'Away Win' ? 'bg-red-500' : 'bg-amber-500'} text-white`}>

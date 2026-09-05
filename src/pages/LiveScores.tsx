@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LiveMatchListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Switch } from '@/components/ui/switch';
 import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert, MapPin, Sparkles } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
@@ -323,11 +324,7 @@ export default function LiveScores() {
         </div>
 
         {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
+          <LiveMatchListSkeleton count={6} />
         ) : (
           <div className="space-y-6">
             {live.length > 0 && (

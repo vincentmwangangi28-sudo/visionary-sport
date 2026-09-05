@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, Target, Globe, Zap, BarChart2, Trophy, Clock, CheckCircle } from 'lucide-react';
 
@@ -73,8 +74,61 @@ export default function Insights() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-5 h-24 animate-pulse bg-muted/30" /></Card>)}
+          <div className="space-y-6">
+            {/* Stats grid skeleton */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="border bg-card">
+                  <CardContent className="p-5 flex items-center gap-3">
+                    <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-6 w-14" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Distribution panels skeleton */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="border bg-card">
+                <CardHeader>
+                  <Skeleton className="h-5 w-32" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                      <Skeleton className="h-1.5 w-full rounded-full" />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="border bg-card">
+                <CardHeader>
+                  <Skeleton className="h-5 w-40" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-6 w-24 rounded-full" />
+                      <Skeleton className="h-2 flex-1 rounded-full" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+                  ))}
+                  <div className="pt-4 border-t space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         ) : data && (
           <>
