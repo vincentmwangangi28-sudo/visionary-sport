@@ -46,7 +46,7 @@ const LINKS = {
 export const Footer = () => {
   const { preferences } = useUserPreferences();
   const { region } = useGeoRegion();
-  const { currentConfig } = useCurrency();
+  const { currencyConfig, responsibleGambling } = useCurrency();
 
   return (
     <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
@@ -107,7 +107,7 @@ export const Footer = () => {
           >
             <span>{region.flag} {region.name}</span>
             <span>·</span>
-            <span>{currentConfig.code} ({currentConfig.symbol})</span>
+            <span>{currencyConfig.code} ({currencyConfig.symbol})</span>
             <span>·</span>
             <span>{preferences.timezone === 'auto' ? 'Local Time' : preferences.timezone.split('/')[1]?.replace('_', ' ') || preferences.timezone}</span>
             <SlidersHorizontal className="h-3 w-3 ml-0.5 opacity-60" />
@@ -115,7 +115,7 @@ export const Footer = () => {
         </div>
 
         <p className="text-center md:text-right text-[11px]">
-          {currentConfig.responsibleGambling?.helpline ? `${currentConfig.responsibleGambling.helpline} · ` : ''}18+ only · Gamble responsibly
+          {responsibleGambling?.helpline ? `${responsibleGambling.helpline} · ` : ''}18+ only · Gamble responsibly
         </p>
       </div>
     </div>
