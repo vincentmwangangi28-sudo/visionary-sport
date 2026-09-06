@@ -1,6 +1,6 @@
 import { Prediction } from '@/types/prediction';
 
-// Authentic upcoming football matches matching verified real schedules (August - September 2026)
+// Authentic upcoming football matches matching verified real schedules (September 2026)
 export const DEFAULT_PREDICTIONS: Prediction[] = [
   // ==================== PREMIER LEAGUE ====================
   {
@@ -9,7 +9,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Crystal Palace',
     away_team: 'Manchester City',
     league: 'Premier League',
-    match_date: '2026-08-28T19:00:00.000Z',
+    match_date: '2026-09-11T19:00:00.000Z',
     prediction: 'Away Win',
     predicted_outcome: 'Away Win',
     confidence: 84,
@@ -22,7 +22,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-epl-02',
@@ -30,7 +30,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Liverpool',
     away_team: 'Nottingham Forest',
     league: 'Premier League',
-    match_date: '2026-08-29T11:30:00.000Z',
+    match_date: '2026-09-12T11:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 88,
@@ -43,7 +43,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-epl-03',
@@ -51,7 +51,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Tottenham Hotspur',
     away_team: 'Newcastle United',
     league: 'Premier League',
-    match_date: '2026-08-29T16:30:00.000Z',
+    match_date: '2026-09-12T16:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 72,
@@ -64,7 +64,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-epl-04',
@@ -72,7 +72,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Chelsea',
     away_team: 'Brighton & Hove Albion',
     league: 'Premier League',
-    match_date: '2026-08-30T13:00:00.000Z',
+    match_date: '2026-09-13T13:00:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 76,
@@ -85,7 +85,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-epl-05',
@@ -93,7 +93,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Manchester United',
     away_team: 'Ipswich Town',
     league: 'Premier League',
-    match_date: '2026-08-30T15:30:00.000Z',
+    match_date: '2026-09-13T15:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 85,
@@ -106,7 +106,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-epl-06',
@@ -114,7 +114,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Aston Villa',
     away_team: 'Arsenal',
     league: 'Premier League',
-    match_date: '2026-08-31T19:00:00.000Z',
+    match_date: '2026-09-14T19:00:00.000Z',
     prediction: 'Away Win',
     predicted_outcome: 'Away Win',
     confidence: 74,
@@ -127,7 +127,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-epl-07',
@@ -135,7 +135,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Arsenal',
     away_team: 'Chelsea',
     league: 'Premier League',
-    match_date: '2026-09-06T15:30:00.000Z',
+    match_date: '2026-09-20T15:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 78,
@@ -148,7 +148,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== LA LIGA ====================
@@ -158,7 +158,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Real Madrid',
     away_team: 'Real Sociedad',
     league: 'La Liga',
-    match_date: '2026-08-28T19:30:00.000Z',
+    match_date: '2026-09-11T19:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 86,
@@ -171,7 +171,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-laliga-02',
@@ -179,7 +179,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Barcelona',
     away_team: 'Athletic Club',
     league: 'La Liga',
-    match_date: '2026-08-29T19:30:00.000Z',
+    match_date: '2026-09-12T19:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 80,
@@ -192,7 +192,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-laliga-03',
@@ -200,7 +200,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Sevilla',
     away_team: 'Atlético Madrid',
     league: 'La Liga',
-    match_date: '2026-08-30T19:30:00.000Z',
+    match_date: '2026-09-13T19:30:00.000Z',
     prediction: 'Away Win',
     predicted_outcome: 'Away Win',
     confidence: 75,
@@ -213,7 +213,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== SERIE A ====================
@@ -223,7 +223,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'AC Milan',
     away_team: 'Venezia',
     league: 'Serie A',
-    match_date: '2026-08-28T18:45:00.000Z',
+    match_date: '2026-09-11T18:45:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 87,
@@ -236,7 +236,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-seriea-02',
@@ -244,7 +244,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Juventus',
     away_team: 'Parma',
     league: 'Serie A',
-    match_date: '2026-08-29T18:45:00.000Z',
+    match_date: '2026-09-12T18:45:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 83,
@@ -257,7 +257,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-seriea-03',
@@ -265,7 +265,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Cagliari',
     away_team: 'Internazionale',
     league: 'Serie A',
-    match_date: '2026-08-30T18:45:00.000Z',
+    match_date: '2026-09-13T18:45:00.000Z',
     prediction: 'Away Win',
     predicted_outcome: 'Away Win',
     confidence: 82,
@@ -278,7 +278,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== BUNDESLIGA ====================
@@ -288,7 +288,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Bayern Munich',
     away_team: 'VfB Stuttgart',
     league: 'Bundesliga',
-    match_date: '2026-08-28T18:30:00.000Z',
+    match_date: '2026-09-11T18:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 84,
@@ -301,7 +301,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-bun-02',
@@ -309,7 +309,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Borussia Dortmund',
     away_team: 'Hamburg SV',
     league: 'Bundesliga',
-    match_date: '2026-08-29T13:30:00.000Z',
+    match_date: '2026-09-12T13:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 85,
@@ -322,7 +322,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-bun-03',
@@ -330,7 +330,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'RB Leipzig',
     away_team: 'Borussia Mönchengladbach',
     league: 'Bundesliga',
-    match_date: '2026-08-29T13:30:00.000Z',
+    match_date: '2026-09-12T13:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 78,
@@ -343,7 +343,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== LIGUE 1 ====================
@@ -353,7 +353,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Lille',
     away_team: 'Paris Saint-Germain',
     league: 'Ligue 1',
-    match_date: '2026-08-28T18:45:00.000Z',
+    match_date: '2026-09-11T18:45:00.000Z',
     prediction: 'Away Win',
     predicted_outcome: 'Away Win',
     confidence: 80,
@@ -366,7 +366,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-ligue1-02',
@@ -374,7 +374,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'AS Monaco',
     away_team: 'Marseille',
     league: 'Ligue 1',
-    match_date: '2026-08-30T18:45:00.000Z',
+    match_date: '2026-09-13T18:45:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 73,
@@ -387,7 +387,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== CHAMPIONS LEAGUE ====================
@@ -397,7 +397,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Real Madrid',
     away_team: 'Manchester City',
     league: 'Champions League',
-    match_date: '2026-09-15T19:00:00.000Z',
+    match_date: '2026-09-29T19:00:00.000Z',
     prediction: 'Draw',
     predicted_outcome: 'Draw',
     confidence: 68,
@@ -410,7 +410,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-ucl-02',
@@ -418,7 +418,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Bayern Munich',
     away_team: 'Barcelona',
     league: 'Champions League',
-    match_date: '2026-09-16T19:00:00.000Z',
+    match_date: '2026-09-30T19:00:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 76,
@@ -431,7 +431,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== AFCON / CAF QUALIFIERS ====================
@@ -441,7 +441,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Senegal',
     away_team: 'Egypt',
     league: 'AFCON Qualifier',
-    match_date: '2026-09-04T18:00:00.000Z',
+    match_date: '2026-09-18T18:00:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 79,
@@ -454,7 +454,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-afcon-02',
@@ -462,7 +462,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Morocco',
     away_team: 'Nigeria',
     league: 'AFCON Qualifier',
-    match_date: '2026-09-05T19:00:00.000Z',
+    match_date: '2026-09-19T19:00:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 81,
@@ -475,7 +475,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== KPL (KENYA PREMIER LEAGUE) ====================
@@ -485,7 +485,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Gor Mahia',
     away_team: 'AFC Leopards',
     league: 'KPL',
-    match_date: '2026-08-30T12:00:00.000Z',
+    match_date: '2026-09-13T12:00:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 82,
@@ -498,7 +498,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-kpl-02',
@@ -506,7 +506,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Tusker FC',
     away_team: 'Bandari FC',
     league: 'KPL',
-    match_date: '2026-08-31T12:00:00.000Z',
+    match_date: '2026-09-14T12:00:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 76,
@@ -519,7 +519,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== WORLD CUP ====================
@@ -529,7 +529,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Brazil',
     away_team: 'Argentina',
     league: 'World Cup',
-    match_date: '2026-09-08T20:30:00.000Z',
+    match_date: '2026-09-22T20:30:00.000Z',
     prediction: 'Draw',
     predicted_outcome: 'Draw',
     confidence: 70,
@@ -542,7 +542,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: true,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 
   // ==================== MLS ====================
@@ -552,7 +552,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Inter Miami CF',
     away_team: 'CF Montréal',
     league: 'MLS',
-    match_date: '2026-08-29T23:30:00.000Z',
+    match_date: '2026-09-12T23:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 86,
@@ -565,7 +565,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
   {
     id: 'pred-mls-02',
@@ -573,7 +573,7 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     home_team: 'Seattle Sounders FC',
     away_team: 'Chicago Fire FC',
     league: 'MLS',
-    match_date: '2026-08-29T20:30:00.000Z',
+    match_date: '2026-09-12T20:30:00.000Z',
     prediction: 'Home Win',
     predicted_outcome: 'Home Win',
     confidence: 79,
@@ -586,6 +586,6 @@ export const DEFAULT_PREDICTIONS: Prediction[] = [
     is_premium: false,
     status: 'pending',
     created_at: new Date().toISOString(),
-    ai_model: 'gemini-1.5-flash',
+    ai_model: 'gemini-flash-latest',
   },
 ];
