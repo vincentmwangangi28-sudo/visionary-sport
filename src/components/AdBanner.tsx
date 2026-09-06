@@ -41,17 +41,18 @@ export const AdBanner = ({ slot = '', format = 'auto', className = '', style }: 
   );
 };
 
-// Horizontal banner (728x90 leaderboard area)
+// Horizontal banner (728x90 leaderboard area) - real AdSense ad unit slot
 export const AdBannerHorizontal = ({ className = '' }: { className?: string }) => (
-  <AdBanner slot="auto" format="horizontal" className={`w-full min-h-[90px] ${className}`} />
+  <AdBanner slot="3324487082" format="horizontal" className={`w-full min-h-[90px] ${className}`} />
 );
 
-// Rectangle (300x250 medium rectangle)
+// Rectangle (300x250 medium rectangle) - reuses the same ad unit; create a
+// dedicated slot in AdSense if you want independent rectangle-format serving
 export const AdBannerRect = ({ className = '' }: { className?: string }) => (
-  <AdBanner slot="auto" format="rectangle" className={`min-h-[250px] ${className}`} />
+  <AdBanner slot="3324487082" format="rectangle" className={`min-h-[250px] ${className}`} />
 );
 
-// Fluid (responsive, fits container)
+// Fluid (responsive, fits container) - reuses the same ad unit
 export const AdBannerFluid = ({ className = '' }: { className?: string }) => (
-  <AdBanner slot="auto" format="fluid" className={`w-full ${className}`} />
+  <AdBanner slot="3324487082" format="fluid" className={`w-full ${className}`} />
 );
