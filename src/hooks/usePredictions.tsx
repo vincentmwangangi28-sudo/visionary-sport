@@ -17,6 +17,21 @@ export { getPrediction, getConfidence };
 const PAGE_SIZE = 9;
 const queryKeys = { predictions: { list: (p: number) => ['predictions', 'list', p] } };
 
+// A match still counts as "present day" for up to 3 hours after kickoff (covers
+// a full 90 minutes plus stoppage/extra time), after which it's treated as an
+// outdated/finished fixture and should never surface as an active prediction -
+// regardless of which data source (live feed, DB, or cached/default fallback)
+// it came from.
+const OUTDATED_MATCH_GRACE_MS = 3 * 3600 * 1000;
+
+function excludeOutdatedMatches(list: Prediction[]): Prediction[] {
+  const cutoff = Date.now() - OUTDATED_MATCH_GRACE_MS;
+  return list.filter(p => {
+    const t = new Date(p.match_date).getTime();
+    return !isNaN(t) && t >= cutoff;
+  });
+}
+
 // Filter out duplicate or conflicting schedule matches
 function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
   const seenTeams = new Map<string, number>(); // team -> timestamp ms
@@ -56,7 +71,7 @@ export const usePredictions = (page = 1, league?: string) => {
     placeholderData: () => {
       // Instantly provide cached predictions or default schedule while background refresh runs
       const saved = getSavedPredictionsList();
-      const list = saved.length > 0 ? saved : DEFAULT_PREDICTIONS;
+      const list = excludeOutdatedMatches(saved.length > 0 ? saved : DEFAULT_PREDICTIONS);
       let filtered = list;
       if (league && league !== 'All' && league !== 'all') {
         filtered = list.filter(p => p.league?.toLowerCase().includes(league.toLowerCase()));
@@ -141,8 +156,12 @@ export const usePredictions = (page = 1, league?: string) => {
       // Merge with persistent prediction registry to lock values across key refreshes
       const preserved = mergeAndPreservePredictions(combinedPredictions);
 
-      // Final deduplication & sorting by date and confidence
-      const cleanList = sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : getSavedPredictionsList());
+      // Final deduplication, present-day filtering & sorting by date and confidence.
+      // excludeOutdatedMatches runs last so it applies no matter which source(s)
+      // (live feed, DB, cache, or default mock schedule) contributed each entry.
+      const cleanList = excludeOutdatedMatches(
+        sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : getSavedPredictionsList())
+      );
       cleanList.sort((a, b) => {
         const dateA = new Date(a.match_date).getTime();
         const dateB = new Date(b.match_date).getTime();
