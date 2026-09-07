@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LiveMatchGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { Activity, RefreshCw, Radio, Zap, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -17,7 +18,7 @@ export const LiveMatches = () => {
     serviceUnavailableMessage,
     hasAuthError,
   } = useFootballData({
-    livePollInterval: 15_000,
+    livePollInterval: 45_000,
   });
 
   const live = matches.filter(m => m.status === 'live' || m.status === 'halftime');
@@ -26,9 +27,7 @@ export const LiveMatches = () => {
     <section className="py-12 bg-muted/20 border-y border-border/40">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="flex items-center gap-3 mb-5"><Skeleton className="h-7 w-48"/></div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Array.from({length:3}).map((_,i)=><Skeleton key={i} className="h-28 rounded-xl"/>)}
-        </div>
+        <LiveMatchGridSkeleton count={3} />
       </div>
     </section>
   );

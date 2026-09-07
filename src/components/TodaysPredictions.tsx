@@ -1,4 +1,5 @@
 import { PredictionCard } from "./PredictionCard";
+import { PredictionListSkeleton } from "./PredictionCardSkeleton";
 import { usePredictions } from "@/hooks/usePredictions";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useGeoRegion } from "@/hooks/useGeoRegion";
@@ -39,10 +40,8 @@ export const TodaysPredictions = () => {
               Advanced machine learning predictions for today's biggest matches
             </p>
           </div>
-          <div className="max-w-5xl mx-auto space-y-6">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-2xl" />
-            ))}
+          <div className="max-w-5xl mx-auto">
+            <PredictionListSkeleton count={3} viewMode="card" />
           </div>
         </div>
       </section>

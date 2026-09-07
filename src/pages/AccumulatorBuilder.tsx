@@ -8,11 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, CheckCheck, Flame } from 'lucide-react';
+import { AccaFixtureListSkeleton } from '@/components/PredictionCardSkeleton';
+import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, CheckCheck, Flame, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { broadcastAcca } from '@/services/telegramTasksService';
+import { curateAccaWithGemini } from '@/services/geminiTasksService';
 
 export default function AccumulatorBuilder() {
-  const { predictions } = usePredictions(1);
+  const { predictions, isLoading } = usePredictions(1);
   const {
     selections,
     stake,
@@ -34,6 +37,79 @@ export default function AccumulatorBuilder() {
   const [selectedBookmaker, setSelectedBookmaker] = useState('SportyBet');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [broadcastingToTelegram, setBroadcastingToTelegram] = useState(false);
+  const [optimizingWithGemini, setOptimizingWithGemini] = useState(false);
+
+  const handleBroadcastToTelegram = async () => {
+    if (selections.length === 0) {
+      toast.error('Add selections to your slip first');
+      return;
+    }
+    setBroadcastingToTelegram(true);
+    try {
+      const res = await broadcastAcca({
+        title: `${selections.length}-Fold Accumulator`,
+        totalOdds: totalOdds.toFixed(2),
+        estimatedPayout: potentialReturn.toFixed(0),
+        selections: selections.map(s => ({
+          homeTeam: s.homeTeam,
+          awayTeam: s.awayTeam,
+          match: `${s.homeTeam} vs ${s.awayTeam}`,
+          market: s.market,
+          odds: s.odds,
+          confidence: s.confidence,
+        })),
+      });
+      if (res.success) {
+        toast.success(res.simulated ? 'Acca broadcast simulated & previewed!' : 'Accumulator slip posted to Telegram channel!');
+      } else {
+        toast.error(res.error || 'Failed to broadcast');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Error broadcasting');
+    } finally {
+      setBroadcastingToTelegram(false);
+    }
+  };
+
+  const handleGeminiOptimizeAcca = async () => {
+    if (predictions.length === 0) {
+      toast.error('No predictions available right now.');
+      return;
+    }
+    setOptimizingWithGemini(true);
+    try {
+      const fixtures = predictions.slice(0, 8).map(p => ({
+        homeTeam: p.home_team,
+        awayTeam: p.away_team,
+        league: p.league,
+        homeOdds: p.home_odds,
+        awayOdds: p.away_odds,
+        drawOdds: p.draw_odds,
+      }));
+      const aiSlip = await curateAccaWithGemini(fixtures, 'banker');
+      if (aiSlip?.legs && aiSlip.legs.length > 0) {
+        const bets = aiSlip.legs.map(leg => {
+          const parts = leg.match.split(' vs ');
+          return {
+            match: leg.match,
+            homeTeam: parts[0] || leg.match,
+            awayTeam: parts[1] || '',
+            league: leg.league,
+            market: leg.market,
+            odds: leg.odds,
+            confidence: leg.confidence,
+          };
+        });
+        addSelections(bets);
+        toast.success(`Gemini AI curated ${bets.length}-leg accumulator!`);
+      }
+    } catch {
+      toast.error('Failed to optimize with Gemini');
+    } finally {
+      setOptimizingWithGemini(false);
+    }
+  };
 
   const handleGenerateCode = (bookie: string) => {
     setSelectedBookmaker(bookie);
@@ -118,7 +194,21 @@ export default function AccumulatorBuilder() {
             <span className="text-xs text-muted-foreground">1-Click algorithmically selected multis</span>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-4 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGeminiOptimizeAcca}
+              disabled={optimizingWithGemini}
+              className="justify-start gap-2 h-auto py-2.5 px-3 border-primary/40 bg-primary/5 hover:bg-primary/10 text-left"
+            >
+              <Sparkles className={`h-5 w-5 text-primary shrink-0 ${optimizingWithGemini ? 'animate-spin' : ''}`} />
+              <div className="min-w-0 flex-1">
+                <span className="font-bold text-xs block text-primary">Gemini Optimizer</span>
+                <span className="text-[10px] text-muted-foreground">{optimizingWithGemini ? 'Analyzing...' : 'AI curated multi-leg'}</span>
+              </div>
+            </Button>
+
             <Button
               type="button"
               variant="outline"
@@ -164,50 +254,58 @@ export default function AccumulatorBuilder() {
           {/* Predictions to pick from */}
           <div className="lg:col-span-2 space-y-3">
             <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Today's Fixtures — Click to Add</h2>
-            {predictions.slice(0, 15).map(pred => (
-              <Card key={pred.id} className="hover:border-primary/30 transition-all">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="font-semibold">{pred.home_team} vs {pred.away_team}</p>
-                      <p className="text-xs text-muted-foreground">{pred.league} • {new Date(pred.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                    </div>
-                    <Badge variant="secondary">{pred.confidence_score ?? pred.confidence ?? 60}% AI</Badge>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    {[
-                      { label: 'Home Win', odds: pred.home_odds ?? 2.0 },
-                      { label: 'Draw', odds: pred.draw_odds ?? 3.2 },
-                      { label: 'Away Win', odds: pred.away_odds ?? 3.8 },
-                    ].map(({ label, odds }) => {
-                      const isAdded = selections.some(s => s.homeTeam === pred.home_team && s.awayTeam === pred.away_team && s.market === label);
-                      return (
-                        <button
-                          type="button"
-                          key={label}
-                          onClick={() => {
-                            addToSlip({
-                              match: `${pred.home_team} vs ${pred.away_team}`,
-                              homeTeam: pred.home_team,
-                              awayTeam: pred.away_team,
-                              league: pred.league,
-                              matchDate: pred.match_date,
-                              market: label,
-                              odds,
-                              confidence: pred.confidence_score ?? pred.confidence ?? 60,
-                            });
-                          }}
-                          aria-label={`Select ${label} at ${odds.toFixed(2)} odds for ${pred.home_team} vs ${pred.away_team}`}
-                          className={`flex-1 min-w-[80px] py-2 px-3 rounded-lg text-sm font-medium border transition-all ${isAdded ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary hover:bg-primary/5'}`}>
-                          <div className="text-xs opacity-70">{label}</div>
-                          <div className="font-bold">{odds.toFixed(2)}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </CardContent>
+            {isLoading ? (
+              <AccaFixtureListSkeleton count={6} />
+            ) : predictions.length === 0 ? (
+              <Card className="p-8 text-center border-dashed">
+                <p className="text-muted-foreground text-sm">No fixtures available right now.</p>
               </Card>
-            ))}
+            ) : (
+              predictions.slice(0, 15).map(pred => (
+                <Card key={pred.id} className="hover:border-primary/30 transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-semibold">{pred.home_team} vs {pred.away_team}</p>
+                        <p className="text-xs text-muted-foreground">{pred.league} • {new Date(pred.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                      </div>
+                      <Badge variant="secondary">{pred.confidence_score ?? pred.confidence ?? 60}% AI</Badge>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { label: 'Home Win', odds: pred.home_odds ?? 2.0 },
+                        { label: 'Draw', odds: pred.draw_odds ?? 3.2 },
+                        { label: 'Away Win', odds: pred.away_odds ?? 3.8 },
+                      ].map(({ label, odds }) => {
+                        const isAdded = selections.some(s => s.homeTeam === pred.home_team && s.awayTeam === pred.away_team && s.market === label);
+                        return (
+                          <button
+                            type="button"
+                            key={label}
+                            onClick={() => {
+                              addToSlip({
+                                match: `${pred.home_team} vs ${pred.away_team}`,
+                                homeTeam: pred.home_team,
+                                awayTeam: pred.away_team,
+                                league: pred.league,
+                                matchDate: pred.match_date,
+                                market: label,
+                                odds,
+                                confidence: pred.confidence_score ?? pred.confidence ?? 60,
+                              });
+                            }}
+                            aria-label={`Select ${label} at ${odds.toFixed(2)} odds for ${pred.home_team} vs ${pred.away_team}`}
+                            className={`flex-1 min-w-[80px] py-2 px-3 rounded-lg text-sm font-medium border transition-all ${isAdded ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary hover:bg-primary/5'}`}>
+                            <div className="text-xs opacity-70">{label}</div>
+                            <div className="font-bold">{odds.toFixed(2)}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Accumulator slip */}
@@ -321,9 +419,19 @@ export default function AccumulatorBuilder() {
                         )}
                       </div>
 
-                      <Button onClick={shareAcca} className="w-full gap-2 font-bold">
-                        <Share2 className="h-4 w-4" />Share Accumulator
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button onClick={shareAcca} className="gap-2 font-bold">
+                          <Share2 className="h-4 w-4" />Share Slip
+                        </Button>
+                        <Button
+                          onClick={handleBroadcastToTelegram}
+                          disabled={broadcastingToTelegram}
+                          className="gap-2 font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                        >
+                          <Send className="h-4 w-4" />
+                          {broadcastingToTelegram ? 'Posting...' : 'Telegram'}
+                        </Button>
+                      </div>
                       <Button variant="outline" onClick={clearSlip} className="w-full gap-2">
                         <Trash2 className="h-4 w-4" />Clear All
                       </Button>

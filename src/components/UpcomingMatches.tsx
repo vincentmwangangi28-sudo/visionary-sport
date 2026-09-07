@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UpcomingMatchListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Calendar, Zap, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -22,7 +23,7 @@ export const UpcomingMatches = () => {
     <section className="py-12">
       <div className="container mx-auto px-4 max-w-6xl">
         <Skeleton className="h-7 w-52 mb-5"/>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{Array.from({length:6}).map((_,i)=><Skeleton key={i} className="h-32 rounded-xl"/>)}</div>
+        <UpcomingMatchListSkeleton count={6} />
       </div>
     </section>
   );

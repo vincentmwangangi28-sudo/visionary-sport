@@ -11,16 +11,16 @@ import { CurrencyProvider } from "@/hooks/useCurrency";
 import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
-import { BetSlipDrawer } from "@/components/BetSlipDrawer";
-import { UnifiedSearchModal } from "@/components/UnifiedSearchModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AIChatbot } from "@/components/AIChatbot";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { queryClient } from "@/lib/queryClient";
 import { Suspense } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
+
+const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
+const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
 
 const Index             = lazyWithRetry(() => import("./pages/Index"));
 const MatchPrediction   = lazyWithRetry(() => import("./pages/MatchPrediction"));
@@ -151,10 +151,11 @@ const App = () => (
                           <Route path="*"                             element={<NotFound />} />
                         </Routes>
                       </Suspense>
-                      <UnifiedSearchModal />
-                      <BetSlipDrawer />
+                      <Suspense fallback={null}>
+                        <UnifiedSearchModal />
+                        <BetSlipDrawer />
+                      </Suspense>
                       <MobileBottomNav />
-                      <AIChatbot />
                     </BetSlipProvider>
                   </UnifiedSearchProvider>
                 </CurrencyProvider>

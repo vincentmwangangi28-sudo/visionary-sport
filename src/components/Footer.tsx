@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
-import { Zap, Globe, Twitter, Youtube, Mail, SlidersHorizontal } from "lucide-react";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { useGeoRegion } from "@/hooks/useGeoRegion";
-import { useCurrency } from "@/hooks/useCurrency";
+import { Zap, Mail, SlidersHorizontal } from "lucide-react";
 
 const LINKS = {
   Predictions: [
@@ -44,10 +41,6 @@ const LINKS = {
 };
 
 export const Footer = () => {
-  const { preferences } = useUserPreferences();
-  const { region } = useGeoRegion();
-  const { currencyConfig, responsibleGambling } = useCurrency();
-
   return (
     <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
@@ -62,14 +55,6 @@ export const Footer = () => {
             AI-powered football predictions covering 40+ leagues worldwide. Powered by Google Gemini AI.
           </p>
           <div className="flex gap-2">
-            <a 
-              href="https://twitter.com/PredictProAI" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              aria-label="Follow PredictPro on Twitter / X"
-              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors">
-              <Twitter className="h-4 w-4" aria-hidden="true" />
-            </a>
             <a 
               href="mailto:support@predictpro.guru"
               aria-label="Contact PredictPro Support via Email"
@@ -102,20 +87,16 @@ export const Footer = () => {
         <div className="flex items-center gap-2 flex-wrap justify-center">
           <Link
             to="/preferences"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/80 hover:bg-primary/10 hover:text-primary transition-colors text-[11px] font-medium border border-border/70"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/80 hover:bg-primary/10 hover:text-primary transition-colors text-[11px] font-medium border border-border/70"
             title="Configure Language, Region, Currency and Timezone"
           >
-            <span>{region.flag} {region.name}</span>
-            <span>·</span>
-            <span>{currencyConfig.code} ({currencyConfig.symbol})</span>
-            <span>·</span>
-            <span>{preferences.timezone === 'auto' ? 'Local Time' : preferences.timezone.split('/')[1]?.replace('_', ' ') || preferences.timezone}</span>
-            <SlidersHorizontal className="h-3 w-3 ml-0.5 opacity-60" />
+            <SlidersHorizontal className="h-3 w-3 opacity-70" />
+            <span>Preferences & Regional Settings</span>
           </Link>
         </div>
 
         <p className="text-center md:text-right text-[11px]">
-          {responsibleGambling?.helpline ? `${responsibleGambling.helpline} · ` : ''}18+ only · Gamble responsibly
+          18+ only · Gamble responsibly
         </p>
       </div>
     </div>

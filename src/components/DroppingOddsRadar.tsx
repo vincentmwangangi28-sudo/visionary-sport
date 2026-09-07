@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TeamLogo } from '@/components/TeamLogo';
+import { DroppingOddsGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { TrendingDown, Flame, Zap, ArrowDownRight, Activity, Filter, RefreshCw } from 'lucide-react';
@@ -151,11 +152,7 @@ export const DroppingOddsRadar: React.FC = () => {
 
       {/* Dropping Odds Cards */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="h-40 rounded-xl bg-muted/40 animate-pulse border" />
-          ))}
-        </div>
+        <DroppingOddsGridSkeleton count={4} />
       ) : filteredItems.length === 0 ? (
         <Card className="p-8 text-center border-dashed">
           <p className="text-muted-foreground text-sm">No matches meeting the current {minDrop}% drop criteria.</p>

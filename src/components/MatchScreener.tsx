@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TeamLogo } from '@/components/TeamLogo';
+import { ScreenerMatchGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
@@ -262,11 +263,7 @@ export const MatchScreener: React.FC = () => {
 
       {/* Screened Match Cards Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="h-44 rounded-xl bg-muted/40 animate-pulse border" />
-          ))}
-        </div>
+        <ScreenerMatchGridSkeleton count={6} />
       ) : filtered.length === 0 ? (
         <Card className="p-12 text-center border-dashed">
           <Filter className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-50" />

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LiveMatchListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Switch } from '@/components/ui/switch';
-import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert, MapPin, Sparkles } from 'lucide-react';
+import { Activity, RefreshCw, Clock, ChevronDown, ChevronUp, Zap, Radio, CheckCircle2, Trophy, AlertTriangle, ShieldAlert, MapPin, Sparkles, Send, Flame, Gauge } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
@@ -17,6 +17,10 @@ import { RealtimeIndicator } from '@/components/RealtimeIndicator';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { evaluateLiveMomentumWithGemini, GeminiLiveMomentumResult } from '@/services/geminiTasksService';
+import { broadcastLiveInPlay } from '@/services/telegramTasksService';
 
 export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
@@ -40,6 +44,60 @@ export default function LiveScores() {
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+
+  const [inplayMatch, setInplayMatch] = useState<ApiFootballLiveFixture | null>(null);
+  const [inplayResult, setInplayResult] = useState<GeminiLiveMomentumResult | null>(null);
+  const [loadingInplay, setLoadingInplay] = useState(false);
+  const [broadcastingInplay, setBroadcastingInplay] = useState(false);
+
+  const handleOpenInPlayPulse = async (match: ApiFootballLiveFixture) => {
+    setInplayMatch(match);
+    setInplayResult(null);
+    setLoadingInplay(true);
+
+    try {
+      const scoreStr = match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : '0 - 0';
+      const result = await evaluateLiveMomentumWithGemini({
+        match: `${match.home_team} vs ${match.away_team}`,
+        minute: match.minute || (match.status === 'halftime' ? 'HT' : match.status === 'live' ? 'Live' : 'Upcoming'),
+        score: scoreStr,
+        league: match.league,
+      });
+      setInplayResult(result);
+    } catch {
+      toast.error('Failed to calculate in-play momentum');
+    } finally {
+      setLoadingInplay(false);
+    }
+  };
+
+  const handleBroadcastInPlay = async () => {
+    if (!inplayMatch || !inplayResult) return;
+    setBroadcastingInplay(true);
+    try {
+      const scoreStr = inplayMatch.home_score != null && inplayMatch.away_score != null ? `${inplayMatch.home_score} - ${inplayMatch.away_score}` : '0 - 0';
+      const res = await broadcastLiveInPlay({
+        home_team: inplayMatch.home_team,
+        away_team: inplayMatch.away_team,
+        league: inplayMatch.league,
+        minute: inplayMatch.minute,
+        score: scoreStr,
+        tip: inplayResult.inplay_tip,
+        confidence: inplayResult.confidence,
+        tacticalPulse: inplayResult.tactical_pulse,
+      });
+
+      if (res.success) {
+        toast.success(res.simulated ? 'In-play alert simulated!' : 'In-play alert broadcast to Telegram channel!');
+      } else {
+        toast.error(res.error || 'Failed to broadcast alert');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Error broadcasting');
+    } finally {
+      setBroadcastingInplay(false);
+    }
+  };
 
   useEffect(() => {
     setLastSyncTime(new Date());
@@ -191,6 +249,17 @@ export default function LiveScores() {
                   </span>
                 </div>
               )}
+              <div className="pt-2 flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleOpenInPlayPulse(m)}
+                  className="h-7 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Gemini In-Play Pulse & Alert
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
@@ -413,6 +482,90 @@ export default function LiveScores() {
             )}
           </div>
         )}
+
+        {/* Gemini AI In-Play Pulse Modal */}
+        <Dialog open={!!inplayMatch} onOpenChange={(open) => !open && setInplayMatch(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-md bg-red-500/10 text-red-500">
+                  <Activity className="h-4 w-4" />
+                </span>
+                <DialogTitle className="text-base font-bold">
+                  {inplayMatch ? `${inplayMatch.home_team} vs ${inplayMatch.away_team}` : 'In-Play Pulse'}
+                </DialogTitle>
+              </div>
+              <DialogDescription className="text-xs">
+                {inplayMatch?.league} • Status: {inplayMatch?.minute ? `${inplayMatch.minute}'` : inplayMatch?.status?.toUpperCase()}
+                {inplayMatch?.home_score != null && ` • Score: ${inplayMatch.home_score} - ${inplayMatch.away_score}`}
+              </DialogDescription>
+            </DialogHeader>
+
+            {loadingInplay ? (
+              <div className="py-8 text-center space-y-3">
+                <Sparkles className="h-7 w-7 animate-spin mx-auto text-primary" />
+                <p className="text-xs font-semibold text-muted-foreground">
+                  Running Gemini In-Play Momentum Radar...
+                </p>
+                <p className="text-[11px] text-muted-foreground/80 max-w-xs mx-auto">
+                  Analyzing match tempo, territorial control, and live expected goal conversion likelihood.
+                </p>
+              </div>
+            ) : inplayResult ? (
+              <div className="space-y-4 pt-2">
+                <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                      <Flame className="h-4 w-4 text-orange-500" />
+                      {inplayResult.game_phase}
+                    </span>
+                    <Badge variant="outline" className="text-[11px] bg-background">
+                      Pressure Index: {inplayResult.pressure_index}%
+                    </Badge>
+                  </div>
+
+                  <div className="bg-background/80 p-3 rounded-lg border flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Recommended In-Play Call</p>
+                      <p className="text-sm font-black text-foreground">{inplayResult.inplay_tip}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Model Confidence</p>
+                      <p className="text-sm font-black text-primary">{inplayResult.confidence}%</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {inplayResult.tactical_pulse}
+                  </p>
+
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-primary/10">
+                    <span>Projected Outcome:</span>
+                    <span className="font-bold text-foreground">Score: {inplayResult.projected_final_score}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => setInplayMatch(null)}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    className="flex-1 text-xs gap-1.5 bg-sky-600 hover:bg-sky-500 text-white"
+                    onClick={handleBroadcastInPlay}
+                    disabled={broadcastingInplay}
+                  >
+                    <Send className={`h-3.5 w-3.5 ${broadcastingInplay ? 'animate-pulse' : ''}`} />
+                    {broadcastingInplay ? 'Broadcasting...' : 'Broadcast to Telegram'}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
       </main>
       <Footer />
     </div>

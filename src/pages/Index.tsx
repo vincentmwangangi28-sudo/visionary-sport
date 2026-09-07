@@ -1,14 +1,10 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
-import { LiveLeagueTicker } from "@/components/LiveLeagueTicker";
 import { LiveMatches } from "@/components/LiveMatches";
 import { UpcomingMatches } from "@/components/UpcomingMatches";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
-import { AdBannerHorizontal } from "@/components/AdBanner";
 import { PastResultsArchive } from "@/components/PastResultsArchive";
-import { TelegramPromoBanner } from "@/components/TelegramPromoBanner";
-import { LiveMomentumRadar } from "@/components/LiveMomentumRadar";
 import { AIRecommendationsHub } from "@/components/AIRecommendationsHub";
 import { usePredictions } from "@/hooks/usePredictions";
 import { SEO } from "@/components/SEO";
@@ -34,8 +30,6 @@ export default function Index() {
         canonical="/"
       />
       <Navbar />
-      <TelegramPromoBanner />
-      <LiveLeagueTicker />
       <main id="main-content" tabIndex={-1}>
         <Hero />
 
@@ -44,13 +38,6 @@ export default function Index() {
 
         {/* Upcoming with AI */}
         <UpcomingMatches />
-
-        {/* Live In-Play Momentum Radar */}
-        <section className="py-8 bg-muted/10">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <LiveMomentumRadar />
-          </div>
-        </section>
 
         {/* AI Recommendations Section */}
         <section className="py-8 bg-muted/15 border-y border-border/50">
@@ -62,8 +49,6 @@ export default function Index() {
             />
           </div>
         </section>
-
-        <AdBannerHorizontal className="container mx-auto px-4 max-w-6xl my-4" />
 
         {/* Predictions grid */}
         <section className="py-12">

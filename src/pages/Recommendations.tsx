@@ -24,8 +24,10 @@ import {
   Calculator,
   Trophy,
   CheckCircle2,
+  Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { broadcastBanker } from '@/services/telegramTasksService';
 
 export default function Recommendations() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -171,6 +173,38 @@ export default function Recommendations() {
     toast.success(`Generated ${targetLegs}-fold ${selectedStrategy} recommendation slip!`);
   };
 
+  const [broadcastingBanker, setBroadcastingBanker] = useState(false);
+
+  const handleBroadcastBanker = async () => {
+    const banker = predictions[0];
+    if (!banker) {
+      toast.error('No predictions loaded to broadcast');
+      return;
+    }
+    setBroadcastingBanker(true);
+    try {
+      const res = await broadcastBanker({
+        homeTeam: banker.home_team,
+        awayTeam: banker.away_team,
+        league: banker.league,
+        matchDate: banker.match_date,
+        tip: banker.predicted_outcome || banker.prediction || 'Home Win',
+        odds: banker.home_odds || 1.85,
+        confidence: getConfidence(banker) || 85,
+        reasoning: banker.analysis || 'Algorithmic consensus with high expected value based on Poisson matrix and historical team performance.',
+      });
+      if (res.success) {
+        toast.success(res.simulated ? 'Banker broadcast simulated & previewed!' : 'Banker posted to Telegram channel!');
+      } else {
+        toast.error(res.error || 'Failed to post banker');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error broadcasting banker');
+    } finally {
+      setBroadcastingBanker(false);
+    }
+  };
+
   const shareText = useMemo(() => {
     const topPicks = predictions.slice(0, 3).map(p => 
       `• ${p.home_team} vs ${p.away_team} ➔ ${p.predicted_outcome || p.prediction || 'Home Win'} (${getConfidence(p) || 75}% Conf)`
@@ -211,6 +245,16 @@ export default function Recommendations() {
 
           <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
             <WhatsAppShare text={shareText} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBroadcastBanker}
+              disabled={broadcastingBanker || predictions.length === 0}
+              className="gap-1.5 border-sky-500/40 text-sky-600 hover:bg-sky-500/10"
+            >
+              <Send className={`h-4 w-4 ${broadcastingBanker ? 'animate-pulse' : ''}`} />
+              {broadcastingBanker ? 'Posting...' : 'Post Banker to Telegram'}
+            </Button>
             <Button
               variant="outline"
               size="sm"

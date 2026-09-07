@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CurrencySelector } from '@/components/CurrencySelector';
 import { BankrollPortfolioTracker } from '@/components/BankrollPortfolioTracker';
+import { BankrollDrawdownSimulator } from '@/components/BankrollDrawdownSimulator';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { Wallet, TrendingUp, Shield, Calculator, AlertTriangle, CheckCircle, ExternalLink, BarChart2 } from 'lucide-react';
+import { Wallet, TrendingUp, Shield, Calculator, AlertTriangle, CheckCircle, ExternalLink, BarChart2, Activity } from 'lucide-react';
 
 export default function BankrollManager() {
   const { currency, currencyConfig, format, responsibleGambling } = useCurrency();
@@ -88,14 +89,18 @@ export default function BankrollManager() {
         </div>
 
         <Tabs defaultValue="portfolio" className="space-y-6">
-          <TabsList className="grid grid-cols-2 max-w-md">
-            <TabsTrigger value="portfolio" className="gap-1.5 font-bold">
+          <TabsList className="grid grid-cols-3 max-w-xl">
+            <TabsTrigger value="portfolio" className="gap-1.5 font-bold text-xs sm:text-sm">
               <BarChart2 className="h-4 w-4" />
-              P&L Portfolio Tracker
+              P&L Portfolio
             </TabsTrigger>
-            <TabsTrigger value="calculator" className="gap-1.5 font-bold">
+            <TabsTrigger value="calculator" className="gap-1.5 font-bold text-xs sm:text-sm">
               <Calculator className="h-4 w-4" />
-              Stake & Kelly Calculator
+              Kelly Calculator
+            </TabsTrigger>
+            <TabsTrigger value="simulation" className="gap-1.5 font-bold text-xs sm:text-sm">
+              <Activity className="h-4 w-4" />
+              Monte Carlo Drawdown
             </TabsTrigger>
           </TabsList>
 
@@ -277,6 +282,25 @@ export default function BankrollManager() {
                 </Card>
               </div>
             </div>
+
+            {/* In-tab Drawdown preview */}
+            <div className="pt-2">
+              <BankrollDrawdownSimulator
+                initialBankroll={numBankroll}
+                stakePercent={stakePercent[0]}
+                odds={numOdds}
+                winProbability={confidence[0]}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="simulation" className="space-y-6">
+            <BankrollDrawdownSimulator
+              initialBankroll={numBankroll}
+              stakePercent={stakePercent[0]}
+              odds={numOdds}
+              winProbability={confidence[0]}
+            />
           </TabsContent>
         </Tabs>
       </main>

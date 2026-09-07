@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PastResultsGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { Flame, CheckCircle2, TrendingUp } from 'lucide-react';
 import { fetchRealtimeFinishedMatches } from '@/services/realtimeFootball';
@@ -85,7 +87,21 @@ export const PastResultsArchive = () => {
     })();
   }, []);
 
-  if (loading || results.length === 0) return null;
+  if (loading) {
+    return (
+      <section className="py-10">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="flex items-center justify-between mb-5">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-6 w-44 rounded-full" />
+          </div>
+          <PastResultsGridSkeleton count={6} />
+        </div>
+      </section>
+    );
+  }
+
+  if (results.length === 0) return null;
 
   const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 85;
 

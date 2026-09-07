@@ -36,13 +36,18 @@ import {
   Activity, 
   DollarSign, 
   Flame, 
-  Target 
+  Target,
+  Layers,
+  History
 } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
+import { PredictionDetailSkeleton } from '@/components/PredictionCardSkeleton';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
+import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
+import { MatchHeadToHeadTimeline } from '@/components/MatchHeadToHeadTimeline';
 import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
@@ -211,20 +216,7 @@ export default function MatchPrediction() {
       <div className="min-h-screen bg-background flex flex-col justify-between">
         <Navbar />
         <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
-          <div className="flex items-center gap-2 mb-6">
-            <Skeleton className="h-4 w-28" />
-          </div>
-          <div className="space-y-3 mb-6">
-            <Skeleton className="h-6 w-24 rounded-full" />
-            <Skeleton className="h-9 w-3/4" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-          <Card className="border-border">
-            <CardContent className="p-6 space-y-5">
-              <Skeleton className="h-28 w-full rounded-xl" />
-              <Skeleton className="h-64 w-full rounded-xl" />
-            </CardContent>
-          </Card>
+          <PredictionDetailSkeleton />
         </main>
         <Footer />
       </div>
@@ -345,20 +337,26 @@ export default function MatchPrediction() {
           </div>
         </div>
 
-        {/* Feature Tabs: Overview, Lineups, Tactics/xG, Multi-Bookmaker Odds */}
+        {/* Feature Tabs: Overview, Markets, H2H, Lineups, Tactics/xG, Multi-Bookmaker Odds */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto p-1 bg-muted/60">
-            <TabsTrigger value="overview" className="text-xs py-2.5 font-bold gap-1.5">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-6 w-full h-auto p-1 bg-muted/60">
+            <TabsTrigger value="overview" className="text-xs py-2.5 font-bold gap-1">
               <Sparkles className="h-3.5 w-3.5" /> AI Prediction
             </TabsTrigger>
-            <TabsTrigger value="lineups" className="text-xs py-2.5 font-bold gap-1.5">
-              <Shield className="h-3.5 w-3.5" /> Pitch Lineups
+            <TabsTrigger value="markets" className="text-xs py-2.5 font-bold gap-1">
+              <Layers className="h-3.5 w-3.5" /> Asian & Props
             </TabsTrigger>
-            <TabsTrigger value="tactics" className="text-xs py-2.5 font-bold gap-1.5">
-              <Activity className="h-3.5 w-3.5" /> Tactics & $xG$
+            <TabsTrigger value="h2h" className="text-xs py-2.5 font-bold gap-1">
+              <History className="h-3.5 w-3.5" /> H2H & Flow
             </TabsTrigger>
-            <TabsTrigger value="odds" className="text-xs py-2.5 font-bold gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" /> Odds & Bookmakers
+            <TabsTrigger value="lineups" className="text-xs py-2.5 font-bold gap-1">
+              <Shield className="h-3.5 w-3.5" /> Lineups
+            </TabsTrigger>
+            <TabsTrigger value="tactics" className="text-xs py-2.5 font-bold gap-1">
+              <Activity className="h-3.5 w-3.5" /> Tactics & xG
+            </TabsTrigger>
+            <TabsTrigger value="odds" className="text-xs py-2.5 font-bold gap-1">
+              <DollarSign className="h-3.5 w-3.5" /> Bookmakers
             </TabsTrigger>
           </TabsList>
 
@@ -635,7 +633,30 @@ export default function MatchPrediction() {
             </Card>
           </TabsContent>
 
-          {/* TAB 2: Pitch Lineups & Formations */}
+          {/* TAB 2: Asian Handicap, Cards & Corners, and Poisson xG */}
+          <TabsContent value="markets" className="space-y-6">
+            <AdvancedMarketsTab
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+              league={prediction.league}
+              matchDate={prediction.match_date}
+              homeOdds={prediction.home_odds}
+              awayOdds={prediction.away_odds}
+              drawOdds={prediction.draw_odds}
+              confidence={confidence}
+            />
+          </TabsContent>
+
+          {/* TAB 3: Historical Head-to-Head & Game Flow Momentum */}
+          <TabsContent value="h2h" className="space-y-6">
+            <MatchHeadToHeadTimeline
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+              league={prediction.league}
+            />
+          </TabsContent>
+
+          {/* TAB 4: Pitch Lineups & Formations */}
           <TabsContent value="lineups">
             <PitchLineupVisualizer homeTeam={prediction.home_team} awayTeam={prediction.away_team} />
           </TabsContent>

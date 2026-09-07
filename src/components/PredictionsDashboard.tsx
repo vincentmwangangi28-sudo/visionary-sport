@@ -27,7 +27,6 @@ import {
   CheckCircle2,
   MapPin,
 } from 'lucide-react';
-import { AdBannerFluid } from '@/components/AdBanner';
 
 interface PredictionsDashboardProps {
   initialLeague?: string;
@@ -379,24 +378,14 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         <>
           {viewMode === 'card' ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPredictions.map((p, i) => (
-                <Fragment key={p.id}>
-                  <PredictionCard prediction={p} viewMode="card" />
-                  {i === 5 && (
-                    <div className="sm:col-span-2 lg:col-span-3">
-                      <AdBannerFluid />
-                    </div>
-                  )}
-                </Fragment>
+              {filteredPredictions.map((p) => (
+                <PredictionCard key={p.id} prediction={p} viewMode="card" />
               ))}
             </div>
           ) : (
             <div className="space-y-2.5">
-              {filteredPredictions.map((p, i) => (
-                <Fragment key={p.id}>
-                  <PredictionCard prediction={p} viewMode="compact" />
-                  {i === 5 && <AdBannerFluid />}
-                </Fragment>
+              {filteredPredictions.map((p) => (
+                <PredictionCard key={p.id} prediction={p} viewMode="compact" />
               ))}
             </div>
           )}

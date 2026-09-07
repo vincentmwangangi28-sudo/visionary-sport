@@ -11,6 +11,7 @@ import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
+import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import {
   TrendingUp,
   Target,
@@ -177,18 +178,21 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
         {/* Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6 pt-3 border-b bg-card">
-            <TabsList className="grid grid-cols-4 w-full h-9">
-              <TabsTrigger value="analytics" className="text-xs gap-1.5 font-semibold">
+            <TabsList className="grid grid-cols-5 w-full h-9">
+              <TabsTrigger value="analytics" className="text-xs gap-1 font-semibold">
                 <Target className="h-3.5 w-3.5" /> AI Model
               </TabsTrigger>
-              <TabsTrigger value="lineups" className="text-xs gap-1.5 font-semibold">
-                <Users className="h-3.5 w-3.5" /> Tactical Pitch
+              <TabsTrigger value="markets" className="text-xs gap-1 font-semibold">
+                <Layers className="h-3.5 w-3.5" /> Markets & xG
               </TabsTrigger>
-              <TabsTrigger value="tactics" className="text-xs gap-1.5 font-semibold">
-                <Activity className="h-3.5 w-3.5" /> xG & Referee
+              <TabsTrigger value="lineups" className="text-xs gap-1 font-semibold">
+                <Users className="h-3.5 w-3.5" /> Pitch
               </TabsTrigger>
-              <TabsTrigger value="odds" className="text-xs gap-1.5 font-semibold">
-                <Scale className="h-3.5 w-3.5" /> Best Bookies
+              <TabsTrigger value="tactics" className="text-xs gap-1 font-semibold">
+                <Activity className="h-3.5 w-3.5" /> Referee
+              </TabsTrigger>
+              <TabsTrigger value="odds" className="text-xs gap-1 font-semibold">
+                <Scale className="h-3.5 w-3.5" /> Bookies
               </TabsTrigger>
             </TabsList>
           </div>
@@ -239,7 +243,21 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               </div>
             </TabsContent>
 
-            {/* Tab 2: Tactical Pitch & Lineup Visualizer */}
+            {/* Tab 2: Advanced Markets & Poisson xG */}
+            <TabsContent value="markets" className="mt-0 space-y-4">
+              <AdvancedMarketsTab
+                homeTeam={p.home_team}
+                awayTeam={p.away_team}
+                league={p.league}
+                matchDate={p.match_date}
+                homeOdds={baseHome}
+                awayOdds={baseAway}
+                drawOdds={baseDraw}
+                confidence={confidence}
+              />
+            </TabsContent>
+
+            {/* Tab 3: Tactical Pitch & Lineup Visualizer */}
             <TabsContent value="lineups" className="mt-0 space-y-4">
               <PitchLineupVisualizer homeTeam={p.home_team} awayTeam={p.away_team} />
             </TabsContent>

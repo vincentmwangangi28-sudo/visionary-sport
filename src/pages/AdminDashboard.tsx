@@ -6,8 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
-import { DollarSign, Users, TrendingUp, ShoppingCart } from 'lucide-react';
+import { DollarSign, Users, TrendingUp, ShoppingCart, Sparkles, LayoutDashboard } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
+import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomationHub';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DailyStat { date: string; revenue: number; transactions: number; }
 
@@ -113,53 +115,79 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-7xl">
-        <h1 className="text-3xl font-bold mb-8">Revenue Dashboard</h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Operations & Control</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage platform revenue metrics, trigger Gemini AI tasks, and broadcast to Telegram.
+            </p>
+          </div>
+        </div>
 
-        {fetching ? (
-          <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
-        ) : stats.totalTransactions === 0 ? (
-          <EmptyState icon={TrendingUp} title="No revenue data yet" description="Transactions will appear here once users start making payments." />
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <StatCard icon={DollarSign} label="MRR" value={`KES ${stats.mrr.toLocaleString()}`} sub="Monthly recurring revenue" />
-              <StatCard icon={TrendingUp} label="Total Revenue" value={`KES ${stats.totalRevenue.toLocaleString()}`} sub="All time" />
-              <StatCard icon={Users} label="Active Users" value={stats.activeUsers.toLocaleString()} sub="Last 30 days" />
-              <StatCard icon={ShoppingCart} label="Transactions" value={stats.totalTransactions.toLocaleString()} sub="Completed payments" />
-            </div>
+        <Tabs defaultValue="automation" className="w-full space-y-6">
+          <TabsList className="grid grid-cols-2 max-w-md">
+            <TabsTrigger value="automation" className="gap-2 text-xs md:text-sm">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>AI & Telegram Tasks</span>
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="gap-2 text-xs md:text-sm">
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Revenue Metrics</span>
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <Card className="lg:col-span-2">
-                <CardHeader><CardTitle>Daily Revenue (30 days)</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <LineChart data={dailyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={d => d.slice(5)} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip formatter={(v: number) => [`KES ${v.toLocaleString()}`, 'Revenue']} />
-                      <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+          <TabsContent value="automation" className="space-y-6">
+            <GeminiTelegramAutomationHub />
+          </TabsContent>
 
-              <Card>
-                <CardHeader><CardTitle>Plan Breakdown</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={planBreakdown} layout="vertical">
-                      <XAxis type="number" tick={{ fontSize: 11 }} />
-                      <YAxis type="category" dataKey="plan" tick={{ fontSize: 12 }} width={50} />
-                      <Tooltip formatter={(v: number) => [v, 'Subscribers']} />
-                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        )}
+          <TabsContent value="revenue" className="space-y-6">
+            {fetching ? (
+              <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
+            ) : stats.totalTransactions === 0 ? (
+              <EmptyState icon={TrendingUp} title="No revenue data yet" description="Transactions will appear here once users start making payments." />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  <StatCard icon={DollarSign} label="MRR" value={`KES ${stats.mrr.toLocaleString()}`} sub="Monthly recurring revenue" />
+                  <StatCard icon={TrendingUp} label="Total Revenue" value={`KES ${stats.totalRevenue.toLocaleString()}`} sub="All time" />
+                  <StatCard icon={Users} label="Active Users" value={stats.activeUsers.toLocaleString()} sub="Last 30 days" />
+                  <StatCard icon={ShoppingCart} label="Transactions" value={stats.totalTransactions.toLocaleString()} sub="Completed payments" />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                  <Card className="lg:col-span-2">
+                    <CardHeader><CardTitle>Daily Revenue (30 days)</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <LineChart data={dailyData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                          <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={d => d.slice(5)} />
+                          <YAxis tick={{ fontSize: 11 }} />
+                          <Tooltip formatter={(v: number) => [`KES ${v.toLocaleString()}`, 'Revenue']} />
+                          <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Plan Breakdown</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <BarChart data={planBreakdown} layout="vertical">
+                          <XAxis type="number" tick={{ fontSize: 11 }} />
+                          <YAxis type="category" dataKey="plan" tick={{ fontSize: 12 }} width={50} />
+                          <Tooltip formatter={(v: number) => [v, 'Subscribers']} />
+                          <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
       <Footer />
     </div>

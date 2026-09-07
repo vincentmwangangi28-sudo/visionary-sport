@@ -24,28 +24,20 @@ import {
   ShieldCheck, 
   Layers,
   Globe,
-  Clock,
-  Percent,
-  Sparkles
+  Sparkles,
+  Settings
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { CoinBalance } from "./CoinBalance";
 import { NotificationBell } from "./NotificationBell";
-import { RealtimeStatus } from "./RealtimeStatus";
-import { LanguageSwitcher } from "./LanguageSwitcher";
-import { TimezoneSelector } from "./TimezoneSelector";
-import { OddsFormatSelector } from "./OddsFormatSelector";
-import { DataSaverToggle } from "./DataSaverToggle";
-import { GeoRegionSelector } from "./GeoRegionSelector";
-import { CurrencySelector } from "./CurrencySelector";
-import { GlobalSettingsModal } from "./GlobalSettingsModal";
 import { UnifiedSearchTrigger } from "./UnifiedSearchTrigger";
+import { PWAInstallButton } from "./PWAInstallButton";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
-  const { preferences, t } = useUserPreferences();
+  const { t } = useUserPreferences();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -98,13 +90,12 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-16 gap-2">
-          {/* Logo & Status */}
+          {/* Logo */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-sm">PP</div>
               <span className="text-lg font-bold hidden sm:block">PredictPro</span>
             </Link>
-            <RealtimeStatus />
           </div>
 
           {/* Desktop nav */}
@@ -129,38 +120,20 @@ export const Navbar = () => {
               <UnifiedSearchTrigger variant="icon" />
             </div>
 
-            {/* Global Settings & Personalization Hub */}
-            <GlobalSettingsModal triggerClassName="hidden xl:flex" />
-
-            {/* Currency Selector */}
-            <CurrencySelector variant="outline" className="hidden sm:flex" />
-
-            {/* Global Language Selector */}
-            <LanguageSwitcher />
-
-            {/* Timezone Selector */}
-            <TimezoneSelector />
-
-            {/* Odds Format Selector */}
-            <div className="hidden md:block">
-              <OddsFormatSelector />
+            {/* PWA In-App Install Button */}
+            <div className="hidden sm:flex items-center">
+              <PWAInstallButton variant="outline" size="sm" />
             </div>
 
-            {/* Data Saver Mode Toggle */}
-            <div className="hidden lg:block">
-              <DataSaverToggle />
-            </div>
-
-            {/* Risk profile shortcut */}
-            <Link to="/preferences" className="hidden 2xl:block">
+            {/* Quick Preferences Shortcut */}
+            <Link to="/preferences" title="Customize Strategy, Region, Odds & Currency">
               <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs font-semibold px-2.5 capitalize"
-                aria-label={`Betting profile: ${preferences.riskProfile}. Click to customize.`}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                aria-label="Open Preferences and Regional Settings"
               >
-                <SlidersHorizontal className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                <span>{preferences.riskProfile}</span>
+                <Settings className="h-4 w-4" />
               </Button>
             </Link>
 
@@ -200,30 +173,22 @@ export const Navbar = () => {
                   />
                 </div>
 
-                {/* Mobile Quick Global Settings */}
-                <div className="bg-muted/40 p-3 rounded-xl border my-3 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Regional & Global Config</span>
-                    <GlobalSettingsModal triggerClassName="h-6 px-2 text-[10px]" />
+                {/* Mobile Preferences Shortcut */}
+                <div className="my-3 space-y-2">
+                  <div className="w-full">
+                    <PWAInstallButton className="w-full justify-center" size="sm" variant="outline" />
                   </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block mb-1">Football Priority Region</span>
-                    <GeoRegionSelector variant="compact" className="w-full justify-between bg-background border px-2.5 h-8" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block mb-1">Currency & Staking</span>
-                    <CurrencySelector variant="outline" className="w-full justify-between bg-background border px-2.5 h-8" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/50">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block mb-1">Odds Format</span>
-                      <OddsFormatSelector compact />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block mb-1">Data Saver</span>
-                      <DataSaverToggle compact />
-                    </div>
-                  </div>
+                  <Link
+                    to="/preferences"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors text-xs font-semibold text-foreground"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-primary" />
+                      Preferences & Regional Settings
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">Configure</span>
+                  </Link>
                 </div>
 
                 <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
