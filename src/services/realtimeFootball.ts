@@ -221,7 +221,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
               competition: item.league?.name || 'Football League',
               match_date: item.fixture?.date ? toIsoUtc(item.fixture.date) : new Date().toISOString(),
               status: normalizeStatus(item.fixture?.status?.short || 'live'),
-              minute: item.fixture?.status?.elapsed || 45,
+              minute: item.fixture?.status?.elapsed ?? 45,
               home_score: item.goals?.home ?? null,
               away_score: item.goals?.away ?? null,
               home_logo: item.teams?.home?.logo || null,
@@ -278,7 +278,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
             if (!h || !a) continue;
             const hScore = item.home?.score !== undefined ? parseInt(String(item.home.score), 10) : 0;
             const aScore = item.away?.score !== undefined ? parseInt(String(item.away.score), 10) : 0;
-            const minute = item.status?.minute || (item.status?.liveTime?.short?.includes('HT') ? 45 : 60);
+            const minute = item.status?.minute ?? (item.status?.liveTime?.short?.includes('HT') ? 45 : 60);
             const pred = computeLivePrediction(h, a, hScore, aScore);
 
             matches.push({
@@ -401,7 +401,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
           if (!h || !a) continue;
           const hScore = ev.home_score !== undefined ? parseInt(String(ev.home_score), 10) : (ev.ss ? parseInt(String(ev.ss).split('-')[0] || '0', 10) : 0);
           const aScore = ev.away_score !== undefined ? parseInt(String(ev.away_score), 10) : (ev.ss ? parseInt(String(ev.ss).split('-')[1] || '0', 10) : 0);
-          const minute = ev.timer?.tm || ev.minute || 45;
+          const minute = ev.timer?.tm ?? ev.minute ?? 45;
           const pred = computeLivePrediction(h, a, hScore, aScore);
 
           matches.push({
@@ -572,15 +572,18 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
   const rangeParam = `${y}${m}${d}-${y2}${m2}${d2}`;
 
-  const ESPN_SCOREBOARD_SUPPORTED = new Set([
-    'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1',
-    'uefa.champions', 'uefa.europa', 'uefa.europa.conf',
-    'usa.1', 'bra.1', 'ned.1', 'por.1', 'sco.1', 'mex.1', 'eng.2'
-  ]);
+  // Every league we track has a verified ESPN scoreboard code (see LEAGUES_LIST
+  // above) - widened from a 15-league subset so upcoming fixtures actually
+  // cover AFCON, CAF Champions League, cup competitions (FA Cup, Copa del Rey,
+  // DFB-Pokal, Coppa Italia, Coupe de France), Saudi Pro League, Copa
+  // Libertadores, AFC Champions League, World Cup, and the Kenyan Premier
+  // League, none of which were previously queried here even though they were
+  // already configured and used elsewhere in this file.
+  const ESPN_SCOREBOARD_SUPPORTED = new Set(LEAGUES_LIST.map(l => l.espnCode));
 
   const fetchPromises = selectedLeagues
     .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-    .slice(0, 8)
+    .slice(0, 12)
     .map(async (league) => {
       try {
         const controller = new AbortController();
