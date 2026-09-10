@@ -230,6 +230,22 @@ export interface ApiFootballLiveFixture {
   is_realtime: boolean;
 }
 
+// A match still counts as "present day" for up to 3 hours after kickoff (covers
+// a full 90 minutes plus stoppage/extra time), after which it's treated as an
+// outdated/finished fixture and should never surface as an upcoming match -
+// regardless of which data source (live feed, Sportmonks, SportScore, cache,
+// or default fallback) it came from. Kept in sync with the identical filter
+// in src/hooks/usePredictions.tsx.
+const OUTDATED_MATCH_GRACE_MS = 3 * 3600 * 1000;
+
+function excludeOutdatedMatches(list: Prediction[]): Prediction[] {
+  const cutoff = Date.now() - OUTDATED_MATCH_GRACE_MS;
+  return list.filter(p => {
+    const t = new Date(p.match_date).getTime();
+    return !isNaN(t) && t >= cutoff;
+  });
+}
+
 // 1. Fetch live fixtures from Sportmonks / API-Football / RapidAPI / Live Scoreboard Feed
 async function fetchLiveFixturesQuery(leagueId?: number | string): Promise<ApiFootballLiveFixture[]> {
   // 1. Diagnostic check: verify VITE_SPORTMONKS_API_KEY is properly loaded and defined before attempting fetch
@@ -318,7 +334,7 @@ async function fetchLiveFixturesQuery(leagueId?: number | string): Promise<ApiFo
                 home_score: item.goals?.home ?? null,
                 away_score: item.goals?.away ?? null,
                 status,
-                minute: item.fixture?.status?.elapsed || 45,
+                minute: item.fixture?.status?.elapsed ?? 45,
                 league: item.league?.name || 'Football League',
                 league_id: item.league?.id,
                 match_date: item.fixture?.date || new Date().toISOString(),
@@ -471,11 +487,11 @@ async function fetchUpcomingFixturesQuery(league?: string, _daysAhead: number = 
 
   // Combine, preserve saved predictions, and deduplicate
   const combined = [...sportscorePredictions, ...sportmonksPredictions, ...realtimePredictions];
-  const preserved = mergeAndPreservePredictions(combined);
+  const preserved = excludeOutdatedMatches(mergeAndPreservePredictions(combined));
 
   if (preserved.length === 0) {
-    const savedFallback = getSavedPredictionsList();
-    const activeList = savedFallback.length > 0 ? savedFallback : DEFAULT_PREDICTIONS;
+    const savedFallback = excludeOutdatedMatches(getSavedPredictionsList());
+    const activeList = savedFallback.length > 0 ? savedFallback : excludeOutdatedMatches(DEFAULT_PREDICTIONS);
     return league && league !== 'All'
       ? activeList.filter(p => p.league.toLowerCase().includes(league.toLowerCase()))
       : activeList;
