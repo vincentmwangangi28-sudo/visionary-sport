@@ -39,7 +39,7 @@ export async function callEdgeFn(name: string, body?: unknown, userToken?: strin
   } catch (e: any) {
     clearTimeout(timeoutId);
     if (e?.name === 'AbortError' || e?.message?.includes?.('aborted')) {
-      console.warn(`[callEdgeFn] Call to ${name} timed out or was aborted.`);
+      console.debug(`[callEdgeFn] Call to ${name} timed out or was aborted.`);
     }
     throw e;
   }

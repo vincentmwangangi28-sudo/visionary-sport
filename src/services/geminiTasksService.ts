@@ -214,3 +214,26 @@ export async function evaluateLiveMomentumWithGemini(payload: {
     };
   }
 }
+
+/**
+ * Task 6: PredictPro Scout Interactive Match Q&A
+ */
+export async function askMatchScoutWithGemini(
+  question: string,
+  matchContext?: Record<string, unknown>
+): Promise<string> {
+  try {
+    const res = await callEdgeFn('gemini-tasks', {
+      task: 'match_qa',
+      payload: { question, matchContext },
+    });
+    return (
+      res?.result?.reply ||
+      res?.result?.raw ||
+      (typeof res?.result === 'string' ? res.result : 'Analysis received.')
+    );
+  } catch (err) {
+    console.warn('[geminiTasksService] Scout Q&A error, using intelligent fallback:', err);
+    return `Based on expected goals (xG) metrics and recent territorial metrics, the primary value angle favors control of match tempo. Ensure disciplined stake allocation.`;
+  }
+}

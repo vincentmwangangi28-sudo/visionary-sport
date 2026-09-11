@@ -108,17 +108,19 @@ export const LiveMatches = () => {
                       {m.status === 'halftime' ? 'HT' : `${m.minute ?? 45}'`}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between my-2 gap-2">
+                  <div className="flex items-center justify-between my-2.5 gap-2 bg-background/60 p-2.5 rounded-xl border border-red-500/20">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="xs" />
-                      <span className="font-bold text-sm truncate">{m.home_team}</span>
+                      <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="sm" />
+                      <span className="font-extrabold text-sm truncate">{m.home_team}</span>
                     </div>
-                    <span className="text-xl font-black px-2 tabular-nums">
-                      {m.home_score ?? 0} – {m.away_score ?? 0}
-                    </span>
+                    <div className="px-2.5 py-1 bg-red-500/10 rounded-lg border border-red-500/20 text-center shrink-0">
+                      <span className="text-lg font-black tabular-nums text-foreground">
+                        {m.home_score ?? 0} – {m.away_score ?? 0}
+                      </span>
+                    </div>
                     <div className="flex items-center justify-end gap-2 flex-1 min-w-0 text-right">
-                      <span className="font-bold text-sm truncate">{m.away_team}</span>
-                      <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="xs" />
+                      <span className="font-extrabold text-sm truncate">{m.away_team}</span>
+                      <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="sm" />
                     </div>
                   </div>
                   {m.prediction && (

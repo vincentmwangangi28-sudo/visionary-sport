@@ -11,6 +11,8 @@ import { CurrencyProvider } from "@/hooks/useCurrency";
 import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
+import { useAutoIndexing } from "@/hooks/useAutoIndexing";
+import { useGeminiDailyCron } from "@/hooks/useGeminiDailyCron";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -21,8 +23,11 @@ import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
 const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
+const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m => ({ default: m.AIChatbot })));
+const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 
 const Index             = lazyWithRetry(() => import("./pages/Index"));
+const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
 const MatchPrediction   = lazyWithRetry(() => import("./pages/MatchPrediction"));
 const Auth              = lazyWithRetry(() => import("./pages/Auth"));
 const Leaderboard       = lazyWithRetry(() => import("./pages/Leaderboard"));
@@ -67,6 +72,10 @@ const MatchScreenerPage = lazyWithRetry(() => import("./pages/MatchScreenerPage"
 const TrackRecordPage   = lazyWithRetry(() => import("./pages/TrackRecordPage"));
 const GlobalTournaments  = lazyWithRetry(() => import("./pages/GlobalTournaments"));
 const Recommendations    = lazyWithRetry(() => import("./pages/Recommendations"));
+const UpcomingFixturesPage = lazyWithRetry(() => import("./pages/UpcomingFixturesPage"));
+const SEOIndexingPage        = lazyWithRetry(() => import("./pages/SEOIndexingPage"));
+const JackpotPredictions     = lazyWithRetry(() => import("./pages/JackpotPredictions"));
+const USSoccerPredictions    = lazyWithRetry(() => import("./pages/USSoccerPredictions"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -82,17 +91,29 @@ const LocaleDetectionInitializer: React.FC = () => {
   return null;
 };
 
+const AutoIndexingInitializer: React.FC = () => {
+  useAutoIndexing();
+  return null;
+};
+
+const GeminiDailyCronInitializer: React.FC = () => {
+  useGeminiDailyCron();
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthProvider>
             <UserPreferencesProvider>
               <GeoRegionProvider>
                 <CurrencyProvider>
                   <UnifiedSearchProvider>
                     <LocaleDetectionInitializer />
+                    <AutoIndexingInitializer />
+                    <GeminiDailyCronInitializer />
                     <BetSlipProvider>
                       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
                         Skip to content
@@ -103,6 +124,8 @@ const App = () => (
                       <Suspense fallback={<PageLoader />}>
                         <Routes>
                           <Route path="/"              element={<Index />} />
+                          <Route path="/dashboard"     element={<PersonalizedDashboard />} />
+                          <Route path="/my-dashboard"  element={<PersonalizedDashboard />} />
                           <Route path="/auth"          element={<Auth />} />
                           <Route path="/about"         element={<About />} />
                           <Route path="/archive"       element={<Archive />} />
@@ -125,6 +148,8 @@ const App = () => (
                           <Route path="/predict"       element={<MatchPredictor />} />
                           <Route path="/predict/:matchSlug" element={<MatchPrediction />} />
                           <Route path="/best-bets"     element={<BestBets />} />
+                          <Route path="/upcoming"      element={<UpcomingFixturesPage />} />
+                          <Route path="/upcoming-fixtures" element={<UpcomingFixturesPage />} />
                           <Route path="/recommendations" element={<Recommendations />} />
                           <Route path="/performance"   element={<ProtectedRoute><Performance /></ProtectedRoute>} />
                           <Route path="/shop"          element={<ProtectedRoute><Shop /></ProtectedRoute>} />
@@ -140,6 +165,8 @@ const App = () => (
                           <Route path="/premier-league-predictions"   element={<PremierLeaguePredictions />} />
                           <Route path="/champions-league-predictions" element={<ChampionsLeaguePredictions />} />
                           <Route path="/kpl-predictions"              element={<KPLPredictions />} />
+                          <Route path="/jackpot-predictions"          element={<JackpotPredictions />} />
+                          <Route path="/us-soccer-predictions"        element={<USSoccerPredictions />} />
                           <Route path="/la-liga-predictions"          element={<LaLigaPredictions />} />
                           <Route path="/bundesliga-predictions"       element={<BundesligaPredictions />} />
                           <Route path="/serie-a-predictions"          element={<SerieAPredictions />} />
@@ -147,6 +174,7 @@ const App = () => (
                           <Route path="/afcon-predictions"            element={<AFCONPredictions />} />
                           <Route path="/blog"                         element={<Blog />} />
                           <Route path="/blog/:slug"                   element={<BlogPost />} />
+                          <Route path="/seo-indexing"                 element={<SEOIndexingPage />} />
                           <Route path="/sitemap"                      element={<Sitemap />} />
                           <Route path="*"                             element={<NotFound />} />
                         </Routes>
@@ -154,6 +182,8 @@ const App = () => (
                       <Suspense fallback={null}>
                         <UnifiedSearchModal />
                         <BetSlipDrawer />
+                        <AIChatbot />
+                        <PWAInstallPrompt />
                       </Suspense>
                       <MobileBottomNav />
                     </BetSlipProvider>

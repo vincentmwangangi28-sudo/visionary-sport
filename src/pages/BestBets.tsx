@@ -129,10 +129,12 @@ export default function BestBets() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Today's Best Football Bets | Free AI Tips | PredictPro"
-        description="Today's highest-confidence AI football predictions. Free daily tips with 60%+ accuracy scores, odds comparison and expert analysis."
+      <SEO
+        title="Free Guru Tips Today & Sure Banker Bets Football Predictions | PredictPro"
+        description="Free daily guru tips today and sure banker football predictions with 75%+ statistical confidence. High win-rate accumulator legs, double chance, and match outcome analysis."
         canonical="/best-bets"
-        keywords="best football bets today, free football tips today, sure bets today, high confidence football predictions" />
+        keywords="free guru tips today football prediction, guru predictions for today, best football bets today, sure bets today, banker bet of the day, high confidence football predictions"
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">

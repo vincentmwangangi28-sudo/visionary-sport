@@ -12,8 +12,10 @@ if ('serviceWorker' in navigator) {
         if (navigator.onLine) {
           prewarmOfflineCaches().catch(() => {});
         }
-        // Check for updates every hour
-        setInterval(() => reg.update(), 60 * 60 * 1000);
+        // Check for updates every hour (safely handle network interruptions in iframe)
+        setInterval(() => {
+          reg.update().catch(() => {});
+        }, 60 * 60 * 1000);
       })
       .catch(err => console.warn('SW registration failed:', err));
   });

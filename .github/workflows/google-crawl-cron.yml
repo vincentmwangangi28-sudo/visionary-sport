@@ -1,0 +1,40 @@
+name: 'Google Crawl & Indexing Cron'
+
+on:
+  schedule:
+    # Runs every 2 hours (00:00, 02:00, 04:00, 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00 UTC)
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Force full re-index ping to all search engines'
+        required: false
+        default: 'true'
+
+jobs:
+  google-crawl-and-index:
+    name: 'Run Google Crawl & Search Engine Indexing'
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 10
+
+    steps:
+      - name: 'Checkout Repository'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Node.js'
+        uses: 'actions/setup-node@v4'
+        with:
+          node-version: '20'
+
+      - name: 'Run Google Crawl Cron Script'
+        env:
+          SITE_URL: 'https://predictpro.guru'
+          INDEXNOW_KEY: 'predictpro789xyz456indexnow'
+        run: |
+          node scripts/google-crawl-cron.mjs
+
+      - name: 'Ping Googlebot & Sitemaps Endpoint'
+        run: |
+          echo "Verifying Sitemap Reachability..."
+          curl -I -A "Googlebot/2.1 (+http://www.google.com/bot.html)" https://predictpro.guru/sitemap.xml || true
+          curl -I -A "Google-InspectionTool/1.0" https://predictpro.guru/robots.txt || true

@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { AIRecommendationsHub, RecommendationCategory } from '@/components/AIRecommendationsHub';
+import { DailyAIDigestBanner } from '@/components/DailyAIDigestBanner';
 import { WhatsAppShare } from '@/components/WhatsAppShare';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -267,6 +268,9 @@ export default function Recommendations() {
             </Button>
           </div>
         </div>
+
+        {/* Gemini Daily Briefing Banner */}
+        <DailyAIDigestBanner predictions={predictions} />
 
         {/* Quick Acca Presets */}
         <div className="grid sm:grid-cols-3 gap-3">

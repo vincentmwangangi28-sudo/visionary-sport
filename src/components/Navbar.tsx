@@ -25,7 +25,8 @@ import {
   Layers,
   Globe,
   Sparkles,
-  Settings
+  Settings,
+  Pin
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +44,7 @@ export const Navbar = () => {
 
   const navLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions"),    icon: Zap },
+    { to: "/dashboard",     label: "My Dashboard",                        icon: Pin },
     { to: "/recommendations", label: "AI Recommended",                    icon: Sparkles },
     { to: "/tournaments",   label: "Global Tournaments",                  icon: Globe },
     { to: "/screener",      label: t('nav.screener', "Match Screener"), icon: SlidersHorizontal },
@@ -73,15 +75,13 @@ export const Navbar = () => {
 
   const topNavLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions") },
-    { to: "/recommendations", label: "Recommended" },
-    { to: "/tournaments",   label: "Tournaments" },
-    { to: "/screener",      label: t('nav.screener', "Screener") },
-    { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },
-    { to: "/track-record",  label: t('nav.track_record', "Track Record") },
+    { to: "/recommendations", label: "AI Picks" },
     { to: "/value-bets",    label: t('nav.value_bets', "Value Bets") },
     { to: "/live",          label: t('nav.live', "Live") },
-    { to: "/accumulator",   label: t('nav.acca', "Acca") },
-    { to: "/archive",       label: t('nav.archive', "Archive") },
+    { to: "/accumulator",   label: t('nav.acca', "Acca Builder") },
+    { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },
+    { to: "/tournaments",   label: "Tournaments" },
+    { to: "/track-record",  label: t('nav.track_record', "Track Record") },
   ];
 
   const visibleLinks = navLinks.filter(l => !l.protected || user);
@@ -124,6 +124,23 @@ export const Navbar = () => {
             <div className="hidden sm:flex items-center">
               <PWAInstallButton variant="outline" size="sm" />
             </div>
+
+            {/* Quick My Dashboard Shortcut */}
+            <Link to="/dashboard" title="Personalized Match Dashboard & Pinned Stats">
+              <Button
+                variant={location.pathname === '/dashboard' ? 'default' : 'ghost'}
+                size="sm"
+                className={`h-8 gap-1.5 text-xs font-semibold px-2.5 ${
+                  location.pathname === '/dashboard'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                aria-label="Open Personalized Dashboard"
+              >
+                <Pin className="h-3.5 w-3.5 fill-current" />
+                <span className="hidden md:inline">My Dashboard</span>
+              </Button>
+            </Link>
 
             {/* Quick Preferences Shortcut */}
             <Link to="/preferences" title="Customize Strategy, Region, Odds & Currency">
@@ -173,11 +190,22 @@ export const Navbar = () => {
                   />
                 </div>
 
-                {/* Mobile Preferences Shortcut */}
+                {/* Mobile Dashboard & Preferences Shortcuts */}
                 <div className="my-3 space-y-2">
                   <div className="w-full">
                     <PWAInstallButton className="w-full justify-center" size="sm" variant="outline" />
                   </div>
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-xl border bg-primary/5 border-primary/20 hover:bg-primary/10 transition-colors text-xs font-semibold text-foreground"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Pin className="h-4 w-4 text-primary fill-primary/30" />
+                      My Pinned Dashboard
+                    </span>
+                    <span className="text-[10px] text-primary font-bold">Open &rarr;</span>
+                  </Link>
                   <Link
                     to="/preferences"
                     onClick={() => setOpen(false)}

@@ -9,8 +9,22 @@
       "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/generate-sitemap"
     },
     {
+      "source": "/api/ping-search-engines",
+      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/indexing-cron",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/google-crawl-cron",
+      "schedule": "0 */4 * * *"
     }
   ],
   "headers": [

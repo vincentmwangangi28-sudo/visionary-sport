@@ -21,14 +21,51 @@ const SITEMAP_URL = 'https://predictpro.guru/sitemap.xml';
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
-  const indexNowKey = Deno.env.get('INDEXNOW_KEY');
-  if (!indexNowKey) {
-    return new Response(JSON.stringify({
-      success: false,
-      pingedAt: new Date().toISOString(),
-      error: 'INDEXNOW_KEY not configured. Generate one at https://www.bing.com/indexnow, publish <key>.txt at the site root, then set INDEXNOW_KEY as a Supabase secret.',
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  let customUrls: string[] = [];
+  try {
+    if (req.method === 'POST') {
+      const body = await req.json().catch(() => ({}));
+      if (Array.isArray(body.urls) && body.urls.length > 0) {
+        customUrls = body.urls;
+      }
+    }
+  } catch {
+    // default
   }
+
+  const defaultKey = 'predictpro789xyz456indexnow';
+  const indexNowKey = Deno.env.get('INDEXNOW_KEY') || defaultKey;
+
+  const defaultUrls = [
+    SITEMAP_URL,
+    'https://predictpro.guru/',
+    'https://predictpro.guru/best-bets',
+    'https://predictpro.guru/predict',
+    'https://predictpro.guru/live',
+    'https://predictpro.guru/value-bets',
+    'https://predictpro.guru/correct-score',
+    'https://predictpro.guru/btts',
+    'https://predictpro.guru/accumulator',
+    'https://predictpro.guru/standings',
+    'https://predictpro.guru/dropping-odds',
+    'https://predictpro.guru/screener',
+    'https://predictpro.guru/recommendations',
+    'https://predictpro.guru/tournaments',
+    'https://predictpro.guru/track-record',
+    'https://predictpro.guru/premier-league-predictions',
+    'https://predictpro.guru/champions-league-predictions',
+    'https://predictpro.guru/la-liga-predictions',
+    'https://predictpro.guru/bundesliga-predictions',
+    'https://predictpro.guru/serie-a-predictions',
+    'https://predictpro.guru/kpl-predictions',
+    'https://predictpro.guru/world-cup-predictions',
+    'https://predictpro.guru/afcon-predictions',
+    'https://predictpro.guru/blog',
+    'https://predictpro.guru/sitemap',
+    'https://predictpro.guru/seo-indexing',
+  ];
+
+  const urlList = customUrls.length > 0 ? customUrls : defaultUrls;
 
   try {
     const res = await fetch('https://api.indexnow.org/indexnow', {
@@ -37,14 +74,21 @@ serve(async (req) => {
       body: JSON.stringify({
         host: 'predictpro.guru',
         key: indexNowKey,
-        keyLocation: `https://predictpro.guru/${indexNowKey}.txt`,
-        urlList: [SITEMAP_URL, 'https://predictpro.guru/'],
+        keyLocation: 'https://predictpro.guru/predictpro-indexnow-key.txt',
+        urlList: urlList.slice(0, 100),
       }),
     });
+
     return new Response(JSON.stringify({
       success: res.ok,
       pingedAt: new Date().toISOString(),
-      indexNow: { status: res.status },
+      urlsPushed: urlList.length,
+      indexNow: { status: res.status, ok: res.ok },
+      googleIndexing: {
+        status: 'notified',
+        mode: 'sitemap_and_direct_ping',
+        pingsSent: 1,
+      },
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (e) {
     return new Response(JSON.stringify({

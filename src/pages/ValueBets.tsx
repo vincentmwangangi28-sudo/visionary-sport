@@ -147,11 +147,58 @@ export default function ValueBets() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Football Value Bets | Statistical Edge Finder | PredictPro" description="Find value bets where AI probability exceeds bookmaker odds. Statistical edge calculator for Premier League, La Liga, Bundesliga. Beat the bookmakers with data." keywords="football value bets, value betting football, beating bookmakers, positive expected value bets, football betting edge" />
+      <SEO
+        title="Daily Value Bets Today (+EV): Beat Bookmakers With AI Odds | PredictPro"
+        description="Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in long-term statistical edges."
+        canonical="/value-bets"
+        keywords="daily value bets today, value bets (+ev), positive expected value football, beating bookmakers, football betting edge, ai odds discrepancies, aiprotips value"
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Daily Value Bets (+EV)', item: '/value-bets' }
+        ]}
+        structuredData={{
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'What is a positive expected value (+EV) bet in football?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'A positive expected value (+EV) bet occurs when our AI probability model calculates that an outcome has a higher true likelihood of happening than the implied probability of the bookmaker odds. Over hundreds of wagers, placing +EV bets generates sustained mathematical profit.'
+              }
+            },
+            {
+              '@type': 'Question',
+              name: 'How does PredictPro calculate value bet edges?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'PredictPro compares our Poisson xG model fair probability against live market odds from major global bookmakers. If our fair odds are significantly shorter than the market odds (Edge > 8%), it is flagged as a high-value bet.'
+              }
+            }
+          ]
+        }}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
+        {/* Visual Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+          <a href="/" className="hover:text-primary transition-colors">Home</a>
+          <span>/</span>
+          <span className="text-foreground font-medium">Daily Value Bets (+EV)</span>
+        </nav>
+
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <h1 className="text-3xl font-bold flex items-center gap-3"><TrendingUp className="h-8 w-8 text-primary" />Value Bets</h1>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-semibold">
+                <Sparkles className="h-3 w-3 mr-1" /> Mathematical Edge Finder · Live +EV Scanner
+              </Badge>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-3">
+              <TrendingUp className="h-8 w-8 text-primary" />
+              Daily Value Bets Today (+EV)
+            </h1>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -168,7 +215,19 @@ export default function ValueBets() {
             </Button>
           </div>
         </div>
-        <p className="text-muted-foreground mb-6">Fixtures where our Expected Goals (xG) Matrix diverges from the market's implied probability — quantifying the statistical edge before it closes.</p>
+        <p className="text-muted-foreground text-sm mb-4">
+          Fixtures where our Expected Goals (xG) Matrix diverges from the bookmaker's implied probability — quantifying the statistical edge (+EV) before lines adjust.
+        </p>
+
+        {/* High Equity Cross-Linking Ribbon */}
+        <div className="mb-6 p-3.5 rounded-xl bg-muted/40 border text-xs flex flex-wrap items-center justify-between gap-3">
+          <span className="text-muted-foreground">
+            Looking for match outcome simulations? Try our <a href="/predict" className="font-bold text-primary underline">AI Pro Tips Today</a> or check high-scoring picks on <a href="/btts" className="font-bold text-primary underline">BTTS AI Predictions</a>.
+          </span>
+          <a href="/best-bets" className="text-primary font-bold hover:underline flex items-center gap-1">
+            View Today's Banker Picks &rarr;
+          </a>
+        </div>
 
         {/* Gemini AI EV Screener Report */}
         {geminiScreenResult && (

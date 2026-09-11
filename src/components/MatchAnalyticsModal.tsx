@@ -12,6 +12,7 @@ import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
+import { GeminiMatchIntelligenceTab } from '@/components/GeminiMatchIntelligenceTab';
 import {
   TrendingUp,
   Target,
@@ -178,12 +179,15 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
         {/* Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6 pt-3 border-b bg-card">
-            <TabsList className="grid grid-cols-5 w-full h-9">
+            <TabsList className="grid grid-cols-6 w-full h-9">
+              <TabsTrigger value="gemini" className="text-xs gap-1 font-semibold text-primary">
+                <Sparkles className="h-3.5 w-3.5" /> Gemini AI
+              </TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs gap-1 font-semibold">
-                <Target className="h-3.5 w-3.5" /> AI Model
+                <Target className="h-3.5 w-3.5" /> Model
               </TabsTrigger>
               <TabsTrigger value="markets" className="text-xs gap-1 font-semibold">
-                <Layers className="h-3.5 w-3.5" /> Markets & xG
+                <Layers className="h-3.5 w-3.5" /> Markets
               </TabsTrigger>
               <TabsTrigger value="lineups" className="text-xs gap-1 font-semibold">
                 <Users className="h-3.5 w-3.5" /> Pitch
@@ -198,6 +202,11 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
           </div>
 
           <div className="p-6">
+            {/* Tab 0: Gemini AI Tactical Deep Dive & Scout */}
+            <TabsContent value="gemini" className="mt-0 space-y-4">
+              <GeminiMatchIntelligenceTab prediction={p} />
+            </TabsContent>
+
             {/* Tab 1: AI Prediction & Deep Analysis */}
             <TabsContent value="analytics" className="mt-0 space-y-4">
               <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center justify-between">

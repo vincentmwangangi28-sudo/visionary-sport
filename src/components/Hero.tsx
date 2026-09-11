@@ -31,7 +31,7 @@ export const Hero = () => {
   }, []);
 
   return (
-    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
+    <section className="relative flex items-center justify-center overflow-hidden border-b border-border/40">
       {/* Background */}
       <picture className="absolute inset-0">
         <source srcSet={heroStadiumWebP} type="image/webp" />
@@ -43,52 +43,52 @@ export const Hero = () => {
           fetchpriority="high" 
         />
       </picture>
-      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/85 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
 
-      <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl py-20">
+      <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl pt-24 pb-12 sm:pt-28 sm:pb-16">
         {/* Live badge */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Badge className="bg-green-500/15 text-green-600 border-green-500/30 px-3 py-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2 inline-block" />
-            Live AI Predictions
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-3 py-1 font-semibold text-xs">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2 inline-block" />
+            Live AI Inference Feed
           </Badge>
-          <Badge variant="outline" className="px-3 py-1">
-            <Globe className="h-3 w-3 mr-1.5" />Global Coverage
+          <Badge variant="outline" className="px-3 py-1 text-xs font-semibold">
+            <Globe className="h-3 w-3 mr-1.5 text-primary" />40+ Global Leagues
           </Badge>
         </div>
 
         {/* Headline */}
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.05]">
-          The Algorithmic Edge in
-          <span className="block bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-3 leading-[1.1]">
+          The Algorithmic Edge in{' '}
+          <span className="bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent">
             Football Markets
           </span>
         </h1>
 
-        <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed">
           Real-time Expected Goals (xG) modelling across 40+ leagues worldwide.
-          Confidence-scored outcome vectors, H2H regression, form-weighted signals and value-bet detection — before every kickoff.
+          Confidence-scored outcome vectors, H2H regression, form-weighted signals, and value-bet detection before kickoff.
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+        <div className="flex flex-col sm:flex-row gap-2.5 justify-center mb-8">
           <Link to="/best-bets">
             <Button
               size="lg"
-              className="gap-2 px-8 text-base font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform"
+              className="gap-2 px-6 h-11 text-sm font-bold shadow-md shadow-primary/20 hover:scale-102 transition-transform"
               aria-label="View High-Probability Vectors and Best Bets"
             >
-              <Zap className="h-5 w-5" aria-hidden="true" />High-Probability Vectors
+              <Zap className="h-4 w-4" aria-hidden="true" />High-Probability Vectors
             </Button>
           </Link>
           <Link to="/predict">
             <Button
               variant="outline"
               size="lg"
-              className="gap-2 px-8 text-base hover:scale-105 transition-transform"
+              className="gap-2 px-6 h-11 text-sm font-bold hover:scale-102 transition-transform"
               aria-label="Run the AI prediction model"
             >
-              <TrendingUp className="h-5 w-5" aria-hidden="true" />Run the Model
+              <TrendingUp className="h-4 w-4" aria-hidden="true" />Run the Model
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </Link>

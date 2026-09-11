@@ -19,6 +19,7 @@ interface CurrencyContextType {
   allCurrencies: CurrencyConfig[];
   convert: (amount: number, fromCurrency?: string, toCurrency?: string) => number;
   format: (amount: number | string, options?: { compact?: boolean; includeCode?: boolean; customDecimals?: number }) => string;
+  formatAmount: (amount: number | string, options?: { compact?: boolean; includeCode?: boolean; customDecimals?: number }) => string;
   formatWithCurrency: (amount: number | string, currencyCode: string, options?: { compact?: boolean; includeCode?: boolean; customDecimals?: number }) => string;
   responsibleGambling: ResponsibleGamblingResource;
 }
@@ -84,6 +85,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         allCurrencies: SUPPORTED_CURRENCIES,
         convert,
         format,
+        formatAmount: format,
         formatWithCurrency,
         responsibleGambling,
       }}

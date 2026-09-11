@@ -217,6 +217,20 @@ export const NotificationBell = () => {
     };
   }, [user, playChime]);
 
+  // Sync with local automated alert feed updates
+  useEffect(() => {
+    const handleLocalUpdate = (e: Event) => {
+      const custom = e as CustomEvent<Notification[]>;
+      if (custom.detail) {
+        setNotifications(custom.detail);
+      }
+    };
+    window.addEventListener('predictpro:notifications_updated', handleLocalUpdate);
+    return () => {
+      window.removeEventListener('predictpro:notifications_updated', handleLocalUpdate);
+    };
+  }, []);
+
   const unread = notifications.filter((n) => !n.read).length;
   const totalAlertBadge = unread + subscriptions.length;
 
@@ -411,18 +425,22 @@ export const NotificationBell = () => {
           </Link>
         </div>
 
-        {/* Footer with browser push trigger */}
+        {/* Footer with browser push trigger & automated rules link */}
         <div className="p-2.5 bg-muted/40 border-t flex items-center justify-between text-xs">
-          <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-            Browser Push {permission === 'granted' ? 'Active ✅' : 'Ready'}
-          </span>
+          <Link
+            to="/preferences"
+            onClick={() => setOpen(false)}
+            className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+          >
+            ⚙️ Alert Rules
+          </Link>
           <button
             type="button"
             onClick={activeTab === 'matches' ? () => testAlert() : simulateAlert}
             aria-label="Test sending a live push notification"
             className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
           >
-            <Send className="h-3 w-3" aria-hidden="true" /> Test Live Push
+            <Send className="h-3 w-3" aria-hidden="true" /> Test Live Alert
           </button>
         </div>
       </PopoverContent>

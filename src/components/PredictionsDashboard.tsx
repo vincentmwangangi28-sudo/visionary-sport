@@ -5,6 +5,8 @@ import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
+import { LeagueDateFilterBar, DateFilterType } from '@/components/LeagueDateFilterBar';
+import { matchesDateFilter, calculateDateFilterCounts } from '@/lib/dateFilterUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +39,7 @@ type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 't
 export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProps = {}) => {
   const [page, setPage] = useState(1);
   const [league, setLeague] = useState<string | undefined>(initialLeague);
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [enableRegionalSort, setEnableRegionalSort] = useState(true);
@@ -73,9 +76,19 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     return list;
   }, [prioritizedLeagues]);
 
-  // Client-side filtering for quick filters, risk profiles, search and regional boost
+  // Date filter counts computed from currently loaded league predictions
+  const dateCounts = useMemo(() => {
+    return calculateDateFilterCounts(predictions);
+  }, [predictions]);
+
+  // Client-side filtering for date filters, quick filters, risk profiles, search and regional boost
   const filteredPredictions = useMemo(() => {
     const rawFiltered = predictions.filter((p) => {
+      // Date filter (Today, Tomorrow, Weekend)
+      if (dateFilter !== 'all') {
+        if (!matchesDateFilter(p.match_date, dateFilter)) return false;
+      }
+
       // Search match
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -104,9 +117,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         const hasHighOdds = (p.home_odds && p.home_odds >= 1.85) || (p.away_odds && p.away_odds >= 1.85);
         if (!hasHighOdds || conf < 70) return false;
       } else if (quickFilter === 'today') {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const matchStr = String(p.match_date).split('T')[0];
-        if (matchStr !== todayStr) return false;
+        if (!matchesDateFilter(p.match_date, 'today')) return false;
       }
 
       return true;
@@ -117,7 +128,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     }
 
     return rawFiltered;
-  }, [predictions, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
+  }, [predictions, dateFilter, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
 
   if (isLoading) {
     return (
@@ -346,6 +357,16 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         })}
       </div>
 
+      {/* Quick-Filter Swipeable Date Bar (Today, Tomorrow, Weekend) */}
+      <LeagueDateFilterBar
+        selectedFilter={dateFilter}
+        onFilterChange={(filter) => {
+          setDateFilter(filter);
+          setPage(1);
+        }}
+        counts={dateCounts}
+      />
+
       {/* Predictions Rendering */}
       {isLoading ? (
         <PredictionListSkeleton count={6} viewMode={viewMode} />
@@ -362,6 +383,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <Button
               onClick={() => {
                 setLeague(undefined);
+                setDateFilter('all');
                 setQuickFilter('all');
                 setSearchQuery('');
                 setPage(1);

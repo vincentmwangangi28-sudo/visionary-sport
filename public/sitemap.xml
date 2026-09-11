@@ -1,318 +1,587 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
     <loc>https://predictpro.guru/</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.00</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro - AI Football Predictions &amp; Live Match Intelligence</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/premier-league-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Premier League Predictions &amp; AI Betting Tips</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/champions-league-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>UEFA Champions League Predictions &amp; Odds</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/la-liga-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>La Liga AI Predictions &amp; Match Previews</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/bundesliga-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bundesliga Predictions &amp; Form Analysis</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/serie-a-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Serie A Predictions &amp; Tactical Insights</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/world-cup-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>FIFA World Cup 2026 Predictions &amp; Qualifying Tips</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/afcon-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AFCON Predictions &amp; African Football Odds</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/kpl-predictions</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>FKF Kenya Premier League Predictions &amp; M-Pesa Tips</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/jackpot-predictions</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>SportPesa Mega Jackpot &amp; Betika Grand AI Predictions (17 Games)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/us-soccer-predictions</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>US Soccer Picks, MLS Moneyline &amp; Champions League Odds</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/predict</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Match Predictor &amp; Custom Football Simulator</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/live</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Live Football Scores, In-Play AI Odds &amp; Minute Trackers</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/standings</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Real-Time Football League Standings &amp; Form Tables</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/best-bets</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Best AI Football Bets Today - Top Confidence Picks</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/value-bets</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Value Bets &amp; Expected Value (EV) Football Calculator</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/correct-score</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Correct Score Predictions &amp; Exact Scoreline Probabilities</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/btts</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Both Teams to Score (BTTS) &amp; Goal Market Tips</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/accumulator</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Accumulator Builder &amp; Multibet Optimizer</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/recommendations</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Curated AI Football Picks &amp; Top Value Match Locks</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/tournaments</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Global Football Tournaments, Cups &amp; International Leagues</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/dropping-odds</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Dropping Odds Radar &amp; Market Steam Move Tracker</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/screener</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Match Screener &amp; Multi-Filter Football Stats Scanner</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/track-record</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Verified AI Prediction Track Record &amp; Strike Rate History</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/statistics</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Football Statistics, Head-to-Head &amp; Team Metrics</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/highlights</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Match Video Highlights &amp; Goal Clips</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/players</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Player Search, Form Stats &amp; Goalscorer Trends</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/insights</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Deep Match Insights &amp; Tactical Previews</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/news</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Latest Football News, Transfers &amp; Breaking Updates</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/tipsters</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Top AI Tipster Profiles &amp; Verified Track Records</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/bankroll</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bankroll Manager &amp; Kelly Criterion Staking Calculator</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/leaderboard</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro Global Leaderboard &amp; Tipster Rankings</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/sports</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Multi-Sports Predictions: Basketball, Tennis, NFL &amp; Rugby</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/archive</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Past Match Prediction Archive &amp; Result Verification</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/results</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Historical Football Results &amp; Prediction Outcomes</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/methodology</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Prediction Methodology, Expected Goals &amp; Data Science</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/about</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>About PredictPro - AI Football Intelligence Platform</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog</loc>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro Football Betting Strategy Blog &amp; Analysis</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/seo-indexing</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro SEO Command Center &amp; Google Indexing Cron Dashboard</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/sitemap</loc>
-    <lastmod>2026-08-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.60</priority>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.65</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro HTML Sitemap &amp; Indexed Directory</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/crystal-palace-vs-manchester-city-2026-08-28</loc>
-    <lastmod>2026-08-28</lastmod>
+    <loc>https://predictpro.guru/predict/arsenal-vs-chelsea-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Arsenal vs Chelsea Prediction, AI Odds &amp; Lineups (Premier League)</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/liverpool-vs-nottingham-forest-2026-08-29</loc>
-    <lastmod>2026-08-29</lastmod>
+    <loc>https://predictpro.guru/predict/manchester-city-vs-liverpool-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Manchester City vs Liverpool Prediction, AI Odds &amp; Lineups (Premier League)</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/tottenham-hotspur-vs-newcastle-united-2026-08-29</loc>
-    <lastmod>2026-08-29</lastmod>
+    <loc>https://predictpro.guru/predict/real-madrid-vs-barcelona-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Real Madrid vs Barcelona Prediction &amp; Head-to-Head (La Liga)</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/brighton-vs-fulham-2026-08-29</loc>
-    <lastmod>2026-08-29</lastmod>
+    <loc>https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bayern Munich vs Borussia Dortmund Prediction &amp; Form (Bundesliga)</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/chelsea-vs-brentford-2026-08-29</loc>
-    <lastmod>2026-08-29</lastmod>
+    <loc>https://predictpro.guru/predict/inter-milan-vs-juventus-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Inter Milan vs Juventus Prediction &amp; Tactical Odds (Serie A)</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/arsenal-vs-chelsea-2026-08-30</loc>
-    <lastmod>2026-08-30</lastmod>
+    <loc>https://predictpro.guru/predict/paris-saint-germain-vs-marseille-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Paris Saint-Germain vs Marseille Prediction (Ligue 1)</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://predictpro.guru/predict/real-madrid-vs-barcelona-2026-08-30</loc>
-    <lastmod>2026-08-30</lastmod>
+    <loc>https://predictpro.guru/predict/gor-mahia-vs-afc-leopards-2026-09-09</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/inter-milan-vs-juventus-2026-08-30</loc>
-    <lastmod>2026-08-30</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund-2026-08-30</loc>
-    <lastmod>2026-08-30</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/paris-saint-germain-vs-marseille-2026-08-30</loc>
-    <lastmod>2026-08-30</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/gor-mahia-vs-afc-leopards-2026-08-30</loc>
-    <lastmod>2026-08-30</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Gor Mahia vs AFC Leopards Prediction (Kenya Premier League)</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/how-to-read-football-predictions</loc>
-    <lastmod>2026-06-04</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>How to Read AI Football Predictions Like a Pro</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/value-betting-explained</loc>
-    <lastmod>2026-06-03</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Value Betting in Football: A Complete Guide</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/bankroll-management-football</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bankroll Management for Football Bettors</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/premier-league-prediction-guide-2026</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Premier League 2025/26 Prediction Guide</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/champions-league-group-stage-tips</loc>
-    <lastmod>2026-05-31</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Champions League Group Stage: How to Bet Smart</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/btts-over-under-strategy</loc>
-    <lastmod>2026-05-30</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>BTTS and Over/Under: The Stats Behind Goal Markets</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/kpl-betting-guide-kenya</loc>
-    <lastmod>2026-05-29</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Kenya Premier League Betting Guide 2026</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/accumulator-building-strategy</loc>
-    <lastmod>2026-05-28</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>How to Build a Winning Football Accumulator</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/correct-score-prediction-tips</loc>
-    <lastmod>2026-05-27</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Correct Score Betting: Can AI Really Predict the Scoreline?</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/blog/sportpesa-mega-jackpot-prediction-17-games</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/blog/us-soccer-betting-guide-mls-odds</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>US Soccer &amp; MLS Betting Guide: Moneyline, Spreads &amp; AI Picks</image:title>
+    </image:image>
   </url>
 </urlset>

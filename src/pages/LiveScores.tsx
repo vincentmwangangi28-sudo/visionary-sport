@@ -270,11 +270,24 @@ export default function LiveScores() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Live Football Scores Today | Real-Time Updates | PredictPro"
-        description="Live football scores updating in real time with API-Football data feeds. Follow live matches, goal alerts, in-play statistics and instant AI predictions."
+        title="Live Football Scores Today & Real-Time In-Play AI Predictions | PredictPro"
+        description="Follow live football scores updating every 15s with instant in-play AI predictions, live match momentum radar, goal alerts, and real-time win probabilities."
+        canonical="/live"
+        keywords="live football scores today, in-play football predictions, live score predict, real time football scores, live betting tips, live match tracker, ai pro tips today"
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Live Football Scores & In-Play AI', item: '/live' }
+        ]}
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
+        {/* Visual Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <span>/</span>
+          <span className="text-foreground font-medium">Live Scores &amp; In-Play AI</span>
+        </nav>
+
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">

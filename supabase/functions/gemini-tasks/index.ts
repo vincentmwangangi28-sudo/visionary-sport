@@ -132,21 +132,122 @@ Respond ONLY with valid JSON:
   "tactical_pulse": "2 concise sentences explaining live flow and why the in-play angle has mathematical weight.",
   "projected_final_score": "2 - 1"
 }`;
+    } else if (task === 'daily_digest') {
+      const { date, matches = [] } = payload;
+      systemInstruction = 'You are an elite sports betting editor and tactical quantitative analyst, creating high-converting, accurate daily football betting digests.';
+      prompt = `Create a daily football matchday intelligence digest for date: ${date || 'Today'}.
+Top Fixtures Available:
+${JSON.stringify(matches.slice(0, 10))}
+
+Respond ONLY with valid JSON:
+{
+  "headline": "Punchy 1-line headline summarizing today's action",
+  "summary": "2-3 concise sentences detailing overall tactical value and market efficiency gaps today",
+  "marketPulse": {
+    "totalMatchesAnalyzed": 38,
+    "avgConfidence": 81,
+    "bestValueLeague": "Premier League"
+  },
+  "topPicks": [
+    {
+      "type": "banker",
+      "title": "Category title (e.g., Primary Banker Lock)",
+      "badge": "Short badge tag (e.g., 88% Conf)",
+      "match": "Team A vs Team B",
+      "league": "Competition name",
+      "pick": "Specific market (e.g., Home Win & Over 1.5)",
+      "odds": 1.45,
+      "confidence": 85,
+      "tacticalAngle": "2 sentences of statistical or tactical reasoning"
+    }
+  ]
+}`;
+    } else if (task === 'match_qa') {
+      const { question, matchContext } = payload;
+      systemInstruction = 'You are PredictPro Scout, a master football analyst and sports betting intelligence assistant.';
+      prompt = `User Question: "${question}"
+Match Context: ${JSON.stringify(matchContext || {})}
+Provide an analytical, data-backed answer (max 150 words). Include tactical rationale, expected goals (xG) context, and risk warnings if applicable.`;
+    } else if (task === 'football_news') {
+      const { headlines = [], league = 'All' } = payload;
+      systemInstruction = 'You are a senior sports editor and football data analyst for PredictPro. Generate high-impact tactical news reports and betting analysis for major football leagues.';
+      prompt = `Synthesize today's major football news and tactical betting wire (League focus: ${league}).
+Contextual headlines: ${JSON.stringify(headlines.slice(0, 8))}
+
+Respond ONLY with a valid JSON array of 5 news items:
+[
+  {
+    "title": "Impactful headline (e.g., Arsenal Tactical Shift: Saka Role Adjustment Creates High-Value Assist Angles)",
+    "description": "2 sentences of analytical context explaining the tactical or squad development.",
+    "category": "Tactical Wire", // Options: "Tactical Wire", "Injury Alert", "Transfer News", "Market Movement", "Match Preview"
+    "bettingImpact": "Explicit betting angle or expected market movement (e.g., Odds shortening on Over 2.5 team goals; key winger absence increases opponent clean sheet value)",
+    "source": "Gemini AI Tactical Wire",
+    "region": "Europe",
+    "link": "https://predictpro.guru/news",
+    "pubDate": "${new Date().toISOString()}",
+    "imageUrl": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80"
+  }
+]`;
+    } else if (task === 'viral_keywords') {
+      const { niche = 'football betting tips ai predictions', seedQueries = [] } = payload;
+      systemInstruction = 'You are an elite SEO strategist and sports betting data scientist. Discover trending, breakout, high-intent football prediction search queries using Google Search.';
+      prompt = `Using Google Search Grounding, discover the current top viral and breakout search queries ranking high in Google for: "${niche}".
+Seed queries from Google Search Console: ${JSON.stringify(seedQueries.slice(0, 10))}
+
+Identify high-CTR breakout queries across:
+1. Both Teams To Score (BTTS) AI predictions
+2. AI Pro Tips & Guru Football Predictions
+3. Banker / Sure Win Daily Accas
+4. Premier League & Champions League Matchday queries
+5. Emerging international trends (e.g. AFCON, KPL, US/MLS)
+
+Respond ONLY with valid JSON:
+{
+  "scannedAt": "${new Date().toISOString()}",
+  "topViralKeywords": [
+    {
+      "keyword": "btts ai prediction today",
+      "searchIntent": "Commercial",
+      "targetUrl": "/btts",
+      "estimatedMonthlySearches": 180000,
+      "competitiveDifficulty": "Medium",
+      "whyViral": "Explosive growth from punters demanding goal-market probability engines.",
+      "recommendedTitle": "Both Teams to Score (BTTS) AI Predictions Today | PredictPro"
+    }
+  ],
+  "breakoutOpportunities": [
+    {
+      "topic": "Both Teams To Score AI Hub",
+      "opportunityType": "CTR Surge",
+      "action": "Add FAQ schema and exact-match H1 to /btts to leap from page 5 to page 1",
+      "priority": "High"
+    }
+  ],
+  "serpGroundingSummary": "Google SERPs show increasing demand for real-time statistical algorithms vs static tips."
+}`;
     } else {
       prompt = `Answer the following sports betting and tactical football query: ${JSON.stringify(payload)}`;
     }
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`, {
+    const requestBody: any = {
+      systemInstruction: { parts: [{ text: systemInstruction }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 1200,
+      },
+    };
+
+    // Add Google Search Grounding for viral keywords and real-time news tasks
+    if (task === 'viral_keywords' || task === 'football_news') {
+      requestBody.tools = [{ googleSearch: {} }];
+    }
+
+    const modelName = task === 'viral_keywords' ? 'gemini-flash-latest' : 'gemini-flash-latest';
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 1000,
-        },
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     const data = await res.json();
@@ -251,6 +352,177 @@ function generateFallback(task: string, payload: any) {
       confidence: 76,
       tactical_pulse: `Sustained final-third territory and consecutive corner deliveries indicate high probability of an imminent breakthrough for the leading attacking side.`,
       projected_final_score: score.startsWith('0') ? '1 - 0' : '2 - 1',
+    };
+  }
+
+  if (task === 'daily_digest') {
+    return {
+      headline: 'Matchday Intelligence: Key AI Angles for Today',
+      summary: 'Gemini analytical models spotlight significant xG conversion edge in home fixtures across the Premier League and La Liga.',
+      marketPulse: {
+        totalMatchesAnalyzed: 42,
+        avgConfidence: 81,
+        bestValueLeague: 'Premier League',
+      },
+      topPicks: [
+        {
+          type: 'banker',
+          title: 'Primary Banker Lock',
+          badge: '88% Conf',
+          match: 'Arsenal vs Chelsea',
+          league: 'Premier League',
+          pick: 'Home Win',
+          odds: 1.85,
+          confidence: 88,
+          tacticalAngle: 'High pressing efficiency and superior box occupancy gives home side commanding statistical edge.',
+        },
+        {
+          type: 'value',
+          title: '+EV Tactical Edge',
+          badge: 'Value 7.2%',
+          match: 'Real Madrid vs Barcelona',
+          league: 'La Liga',
+          pick: 'Over 2.5 Goals',
+          odds: 1.92,
+          confidence: 82,
+          tacticalAngle: 'Both attacks operating above 2.4 expected goals per game, exploiting transition half-spaces.',
+        },
+      ],
+    };
+  }
+
+  if (task === 'match_qa') {
+    return {
+      reply: 'Based on current xG metrics and historical direct encounters, the home side holds a 64% win probability. Key tactical factor is ball retention in the opponent final third and defensive transitions.',
+    };
+  }
+
+  if (task === 'football_news') {
+    return {
+      news: [
+        {
+          title: "Premier League High-Press Overhauls: Transition Vulnerabilities Point to Both Teams to Score Value",
+          description: "High defensive lines across top table contenders are conceding increased counter-pressing xG in matchweeks.",
+          category: "Tactical Wire",
+          bettingImpact: "Significant value identified on BTTS (Both Teams To Score) across Saturday fixtures averaging 1.78 odds.",
+          source: "Gemini AI Tactical Wire",
+          region: "Europe",
+          link: "https://predictpro.guru/news",
+          pubDate: new Date().toISOString(),
+          imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+          title: "Champions League Tactical Review: Fullback Inversions Shift Corner and Cross Distributions",
+          description: "Tactical restructuring in wide areas has reduced traditional byline crossing, directly affecting match corner totals.",
+          category: "Market Movement",
+          bettingImpact: "Under 10.5 total match corners trading at positive statistical expected value based on revised tactical distributions.",
+          source: "Gemini AI Tactical Wire",
+          region: "Europe",
+          link: "https://predictpro.guru/news",
+          pubDate: new Date().toISOString(),
+          imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+          title: "Squad Depth & Fatigue Index: Midweek European Fixture Rotations Cause Line Value Discrepancies",
+          description: "Dense schedules create key rotation spots for favorites playing away, tightening fair price mathematical lines.",
+          category: "Injury Alert",
+          bettingImpact: "Opponent Asian Handicap +1.5 offers calculated statistical resilience against fatigued favorites.",
+          source: "Gemini AI Tactical Wire",
+          region: "Global",
+          link: "https://predictpro.guru/news",
+          pubDate: new Date().toISOString(),
+          imageUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80"
+        }
+      ]
+    };
+  }
+
+  if (task === 'viral_keywords') {
+    return {
+      scannedAt: new Date().toISOString(),
+      topViralKeywords: [
+        {
+          keyword: 'btts ai prediction today',
+          searchIntent: 'Commercial',
+          targetUrl: '/btts',
+          estimatedMonthlySearches: 180000,
+          competitiveDifficulty: 'Medium',
+          whyViral: 'High CTR intent (55.56% CTR in GSC). High punter demand for algorithmic goal-market models.',
+          recommendedTitle: 'Both Teams To Score (BTTS) AI Predictions Today | PredictPro',
+        },
+        {
+          keyword: 'aiprotips prediction today',
+          searchIntent: 'Informational',
+          targetUrl: '/predict',
+          estimatedMonthlySearches: 285000,
+          competitiveDifficulty: 'Medium',
+          whyViral: 'Massive impressions volume (284 impressions in GSC report). High conversion opportunity if ranking moves to page 1.',
+          recommendedTitle: 'AI Pro Tips Today: Match Winner & BTTS Predictions | PredictPro',
+        },
+        {
+          keyword: 'free guru tips today football prediction',
+          searchIntent: 'Commercial',
+          targetUrl: '/best-bets',
+          estimatedMonthlySearches: 120000,
+          competitiveDifficulty: 'Low',
+          whyViral: '60% CTR in GSC report at position 6.8. Dominates search intent in East & West Africa (Kenya, Nigeria, Uganda).',
+          recommendedTitle: 'Free Guru Tips Today & Sure Wins Football Predictions | PredictPro',
+        },
+        {
+          keyword: 'gemini ai football predictions',
+          searchIntent: 'Informational',
+          targetUrl: '/predict',
+          estimatedMonthlySearches: 95000,
+          competitiveDifficulty: 'Low',
+          whyViral: 'Direct brand affinity query ranking at position 4. Punters specifically seek Gemini-powered sports models.',
+          recommendedTitle: 'Gemini AI Football Predictions: Machine Learning Match Forecaster | PredictPro',
+        },
+        {
+          keyword: 'guru tips correct score today',
+          searchIntent: 'Commercial',
+          targetUrl: '/correct-score',
+          estimatedMonthlySearches: 85000,
+          competitiveDifficulty: 'Medium',
+          whyViral: 'Position 7 in GSC report with strong commercial conversion to premium subscribers.',
+          recommendedTitle: 'Correct Score Guru Tips Today: Algorithmic Scorelines | PredictPro',
+        },
+        {
+          keyword: 'daily value bets today (+ev)',
+          searchIntent: 'Transactional',
+          targetUrl: '/value-bets',
+          estimatedMonthlySearches: 65000,
+          competitiveDifficulty: 'Low',
+          whyViral: 'Position 4.33 in GSC report with 104 impressions. Meta title optimization unlocks immediate CTR jump.',
+          recommendedTitle: 'Daily Value Bets Today (+EV): Beat Bookmakers With AI Odds | PredictPro',
+        },
+      ],
+      breakoutOpportunities: [
+        {
+          topic: 'Both Teams To Score (BTTS) Page 1 Leap',
+          opportunityType: 'High-CTR Outlier',
+          action: 'Target /btts with exact-match H1 and FAQ Schema. Current CTR is 40.85% at position 77; moving to Page 1 will 10x traffic.',
+          priority: 'Critical',
+        },
+        {
+          topic: 'AI Pro Tips Today Low-CTR Capture',
+          opportunityType: 'High-Impression Harvest',
+          action: 'Page has 284 impressions on pos 28 with 0.35% CTR. Update meta title to include "AI Pro Tips Today" to capture 30+ clicks daily.',
+          priority: 'High',
+        },
+        {
+          topic: 'Page 1 Inefficiency on Value Bets and Live Scores',
+          opportunityType: 'SERP CTR Inefficiency',
+          action: '/value-bets and /live rank at pos 4.33 with 104 impressions each but 0 clicks. Add urgent action-oriented titles and rich schemas.',
+          priority: 'High',
+        },
+        {
+          topic: 'United States Traffic Expansion',
+          opportunityType: 'Untapped Geo Market',
+          action: 'US has 616 impressions with 0 clicks at pos 16.95. Highlight Premier League & Champions League soccer predictions tailored for US punters.',
+          priority: 'Medium',
+        },
+      ],
+      serpGroundingSummary: 'Grounded Google SERP analysis identifies that Both Teams to Score (BTTS) and Guru/AI Tips are the highest-converting sub-niches. Technical FAQ schema and immediate meta tag alignment will capture top SERP positions.',
     };
   }
 

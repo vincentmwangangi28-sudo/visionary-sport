@@ -4,39 +4,52 @@ import { Zap, Mail, SlidersHorizontal } from "lucide-react";
 const LINKS = {
   Predictions: [
     { to: "/", label: "Today's Predictions" },
-    { to: "/archive", label: "Results Archive (Ledger)" },
-    { to: "/methodology", label: "Mathematical Methodology" },
-    { to: "/best-bets", label: "Best Bets" },
+    { to: "/best-bets", label: "Best Banker Bets" },
     { to: "/predict", label: "Match Predictor" },
-    { to: "/correct-score", label: "Correct Score" },
-    { to: "/btts", label: "BTTS / Over-Under" },
+    { to: "/btts", label: "BTTS (Both Teams Score)" },
     { to: "/value-bets", label: "Value Bets" },
-    { to: "/blog", label: "Betting Strategy Blog" },
+    { to: "/correct-score", label: "Correct Score" },
+    { to: "/accumulator", label: "Acca Builder" },
+    { to: "/archive", label: "Results Archive" },
+    { to: "/methodology", label: "Mathematical Methodology" },
+  ],
+  "Leagues & Hubs": [
+    { to: "/premier-league-predictions", label: "Premier League Tips" },
+    { to: "/champions-league-predictions", label: "Champions League" },
+    { to: "/la-liga-predictions", label: "La Liga Predictions" },
+    { to: "/bundesliga-predictions", label: "Bundesliga Analysis" },
+    { to: "/serie-a-predictions", label: "Serie A Predictions" },
+    { to: "/kpl-predictions", label: "Kenya Premier League" },
+    { to: "/jackpot-predictions", label: "Mega Jackpot Picks (SportPesa/Betika)" },
+    { to: "/us-soccer-predictions", label: "US Soccer & MLS Moneyline" },
+    { to: "/world-cup-predictions", label: "FIFA World Cup" },
+    { to: "/afcon-predictions", label: "AFCON Predictions" },
   ],
   Tools: [
-    { to: "/preferences", label: "Strategy & Risk Feeds" },
-    { to: "/accumulator", label: "Acca Builder" },
+    { to: "/live", label: "Live Scores & Odds" },
+    { to: "/dropping-odds", label: "Dropping Odds Radar" },
+    { to: "/screener", label: "Match Screener" },
+    { to: "/recommendations", label: "AI Recommended" },
+    { to: "/track-record", label: "Verified Track Record" },
+    { to: "/standings", label: "League Standings" },
     { to: "/bankroll", label: "Bankroll Manager" },
-    { to: "/statistics", label: "Statistics" },
-    { to: "/standings", label: "Standings" },
-    { to: "/players", label: "Player Search" },
-    { to: "/highlights", label: "Highlights" },
+    { to: "/statistics", label: "H2H Statistics" },
   ],
-  Community: [
-    { to: "/tipsters", label: "Community Tips" },
-    { to: "/leaderboard", label: "Leaderboard" },
-    { to: "/live", label: "Live Scores" },
+  Insights: [
+    { to: "/blog", label: "Betting Strategy Blog" },
     { to: "/news", label: "Football News" },
-    { to: "/sports", label: "More Sports" },
-    { to: "/insights", label: "Insights" },
+    { to: "/insights", label: "Match Insights" },
+    { to: "/highlights", label: "Video Highlights" },
+    { to: "/tournaments", label: "Global Tournaments" },
+    { to: "/sports", label: "Multi-Sports" },
+    { to: "/leaderboard", label: "Tipster Leaderboard" },
   ],
-  Account: [
+  Platform: [
     { to: "/shop", label: "Upgrade to Pro" },
-    { to: "/rewards", label: "Rewards" },
-    { to: "/performance", label: "My Performance" },
-    { to: "/auth", label: "Sign In / Register" },
+    { to: "/rewards", label: "Rewards & Coins" },
     { to: "/about", label: "About PredictPro" },
-    { to: "/sitemap", label: "Sitemap & Index" },
+    { to: "/sitemap", label: "HTML Sitemap" },
+    { to: "/seo-indexing", label: "Google Indexing Console" },
   ],
 };
 
@@ -44,9 +57,9 @@ export const Footer = () => {
   return (
     <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 mb-10">
         {/* Brand */}
-        <div className="col-span-2 md:col-span-1">
+        <div className="col-span-2 sm:col-span-3 md:col-span-1">
           <Link to="/" className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm">PP</div>
             <span className="font-bold text-lg">PredictPro</span>

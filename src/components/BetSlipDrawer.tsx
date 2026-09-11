@@ -21,7 +21,8 @@ import {
   Flame,
   CheckCheck,
   Globe,
-  Plus
+  Plus,
+  Vibrate,
 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -44,6 +45,8 @@ export const BetSlipDrawer = () => {
     potentialReturn,
     boostedReturn,
     combinedConfidence,
+    triggerHaptic,
+    isHapticSupported,
   } = useBetSlip();
 
   const { formatOdds, t, preferences } = useUserPreferences();
@@ -184,16 +187,30 @@ export const BetSlipDrawer = () => {
                   {selections.length} {selections.length === 1 ? 'Pick' : 'Picks'}
                 </Badge>
               </SheetTitle>
-              {selections.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSlip}
-                  className="h-8 text-xs text-muted-foreground hover:text-destructive gap-1"
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('selection');
+                    toast.info('Mobile haptic tactile response is active');
+                  }}
+                  title="Mobile Haptic Tactile Response Active"
+                  className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-md active:scale-90"
+                  aria-label="Mobile Haptic Feedback Active"
                 >
-                  <Trash2 className="h-3.5 w-3.5" /> Clear
-                </Button>
-              )}
+                  <Vibrate className="h-4 w-4" />
+                </button>
+                {selections.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSlip}
+                    className="h-8 text-xs text-muted-foreground hover:text-destructive gap-1"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Clear
+                  </Button>
+                )}
+              </div>
             </div>
           </SheetHeader>
 
@@ -311,7 +328,6 @@ export const BetSlipDrawer = () => {
                             odds: recommendedEnhancer.odds,
                             confidence: recommendedEnhancer.confidence,
                           });
-                          toast.success(`Added ${recommendedEnhancer.market} to accumulator!`);
                         }}
                         className="h-7 px-2.5 text-xs font-bold shrink-0 gap-1"
                       >

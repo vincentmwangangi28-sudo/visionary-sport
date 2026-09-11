@@ -172,11 +172,63 @@ export default function AccumulatorBuilder() {
     addSelections(bets);
   };
 
+  const shareWhatsApp = () => {
+    if (selections.length === 0) {
+      toast.error('Add selections to your slip first');
+      return;
+    }
+    const text = `🎯 *PredictPro AI ${selections.length}-Fold Accumulator*\n\n` +
+      selections.map((s, i) => `*${i + 1}.* ${s.homeTeam} vs ${s.awayTeam}\n👉 Pick: *${s.market}* @ ${s.odds.toFixed(2)} (${s.confidence}% conf)`).join('\n\n') +
+      `\n\n💰 *Total Odds:* ${totalOdds.toFixed(2)}\n📊 *AI Combined Confidence:* ${combinedConfidence}%\n` +
+      (generatedCode ? `🎟️ *Booking Code (${selectedBookmaker}):* ${generatedCode}\n` : '') +
+      `\n🔥 Build free at https://predictpro.guru/accumulator`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  };
+
+  const accaFaqSchema = {
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is a football accumulator (acca)?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'A football accumulator combines multiple selections into a single wager. The odds of each selection multiply together, resulting in exponentially higher payouts, but all legs must win for the accumulator to pay out.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How do PredictPro booking codes work?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'PredictPro generates booking codes compatible with top African and global sportsbooks (SportyBet, Bet9ja, Betway, 1xBet). Enter the generated alphanumeric code on your bookmaker app to populate the entire multi-bet slip instantly.'
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Football Accumulator Builder | Acca Calculator | PredictPro" description="Build football accumulators from AI predictions. Calculate potential returns, combine multiple bets and share your acca with friends." keywords="football accumulator builder, acca calculator, football acca tips, accumulator bet builder, multiple bet calculator" />
+      <SEO
+        title="Football Accumulator Tips Today & AI Acca Builder (+EV Multi-Bets) | PredictPro"
+        description="Build winning football accumulators today with AI odds modeling. Generate booking codes for SportyBet, Bet9ja, Betway, calculate parlay payouts, and share via WhatsApp."
+        canonical="/accumulator"
+        keywords="football accumulator tips today, ai acca builder, weekend accumulator tips, sportybet booking code today, bet9ja booking code, football parlay calculator"
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Football Accumulator Builder', item: '/accumulator' }
+        ]}
+        structuredData={accaFaqSchema}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+          <a href="/" className="hover:text-primary transition-colors">Home</a>
+          <span>/</span>
+          <span className="text-foreground font-medium">Accumulator Builder</span>
+        </nav>
+
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-3"><Calculator className="h-8 w-8 text-primary" />Accumulator Builder & Multi-Slip</h1>
           <p className="text-muted-foreground mt-1">Build multi-bet accumulators from AI predictions with real-time multi-bookmaker odds comparison and booking codes.</p>
@@ -420,8 +472,11 @@ export default function AccumulatorBuilder() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        <Button onClick={shareAcca} className="gap-2 font-bold">
-                          <Share2 className="h-4 w-4" />Share Slip
+                        <Button
+                          onClick={shareWhatsApp}
+                          className="gap-2 font-bold bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Share2 className="h-4 w-4" />WhatsApp
                         </Button>
                         <Button
                           onClick={handleBroadcastToTelegram}
@@ -432,9 +487,14 @@ export default function AccumulatorBuilder() {
                           {broadcastingToTelegram ? 'Posting...' : 'Telegram'}
                         </Button>
                       </div>
-                      <Button variant="outline" onClick={clearSlip} className="w-full gap-2">
-                        <Trash2 className="h-4 w-4" />Clear All
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" onClick={shareAcca} className="gap-2 font-medium">
+                          <Copy className="h-4 w-4" />Copy / Share
+                        </Button>
+                        <Button variant="outline" onClick={clearSlip} className="gap-2 text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />Clear All
+                        </Button>
+                      </div>
                     </div>
                   </>
                 )}

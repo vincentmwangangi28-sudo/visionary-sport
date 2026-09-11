@@ -139,6 +139,32 @@ serve(async (req) => {
     console.log('✅ Daily automation completed successfully');
     console.log(`📊 Summary: ${results.liveMatches.length} live, ${results.upcomingFixtures.length} upcoming, ${results.errors.length} errors`);
 
+    // ── 5. Push Updated Fixture URLs to Search Engines (Google & IndexNow) ──
+    try {
+      const matchUrls = [
+        'https://predictpro.guru/',
+        'https://predictpro.guru/live',
+        'https://predictpro.guru/best-bets',
+        'https://predictpro.guru/value-bets',
+        'https://predictpro.guru/premier-league-predictions',
+        'https://predictpro.guru/champions-league-predictions',
+        'https://predictpro.guru/la-liga-predictions',
+        ...results.upcomingFixtures.map((f: any) => `https://predictpro.guru/predict/${f.id || f.fixture_id}`),
+      ];
+
+      await fetch(`${SUPABASE_URL}/functions/v1/ping-search-engines`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({ urls: matchUrls }),
+      }).catch((e) => console.warn('Search engine ping background note:', e));
+      console.log(`🚀 Triggered search engine indexing push for ${matchUrls.length} URLs.`);
+    } catch (e) {
+      console.warn('Search engine indexing dispatch caught:', e);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

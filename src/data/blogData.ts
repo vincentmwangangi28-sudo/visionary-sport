@@ -92,4 +92,22 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     date: "2026-05-27",
     keywords: "correct score, exact score, scoreline, probability matrix"
   },
+  {
+    slug: "sportpesa-mega-jackpot-prediction-17-games",
+    title: "SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI",
+    excerpt: "The ultimate mathematical guide to tackling the 17-game SportPesa Mega Jackpot and Betika Midweek. Banker selection criteria, double chance hedging math, and bonus targets.",
+    category: "Jackpots",
+    readTime: "8 min",
+    date: "2026-06-05",
+    keywords: "sportpesa mega jackpot prediction 17 games, betika midweek jackpot, mozzart grand jackpot, jackpot bonus tips, double chance combinations"
+  },
+  {
+    slug: "us-soccer-betting-guide-mls-odds",
+    title: "US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks",
+    excerpt: "Master Major League Soccer, Concacaf Champions Cup, and US Open Cup betting with American odds (+/-), travel fatigue modeling, and altitude differentials.",
+    category: "US Soccer",
+    readTime: "7 min",
+    date: "2026-06-06",
+    keywords: "mls predictions, us soccer betting picks, american odds moneyline, spread betting mls, inter miami la galaxy odds"
+  },
 ];

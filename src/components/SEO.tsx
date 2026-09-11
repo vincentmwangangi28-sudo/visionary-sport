@@ -1,5 +1,10 @@
 import { Helmet } from 'react-helmet-async';
 
+interface BreadcrumbItem {
+  name: string;
+  item: string;
+}
+
 interface SEOProps {
   title?: string;
   description?: string;
@@ -9,6 +14,7 @@ interface SEOProps {
   keywords?: string;
   noIndex?: boolean;
   structuredData?: object;
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 const BASE_URL = 'https://predictpro.guru';
@@ -24,6 +30,7 @@ export const SEO = ({
   keywords = 'football predictions today, AI football tips, best football bets, soccer predictions, Premier League predictions, Champions League tips, KPL predictions, football betting tips, correct score predictions, BTTS predictions',
   noIndex = false,
   structuredData,
+  breadcrumbs,
 }: SEOProps) => {
   const fullTitle = title.includes('PredictPro') ? title : `${title} | PredictPro`;
   const canonicalUrl = canonical
@@ -31,6 +38,17 @@ export const SEO = ({
     : typeof window !== 'undefined'
       ? `${BASE_URL}${window.location.pathname}`
       : BASE_URL;
+
+  const breadcrumbListSchema = breadcrumbs && breadcrumbs.length > 0 ? {
+    '@type': 'BreadcrumbList',
+    '@id': `${canonicalUrl}#breadcrumb`,
+    itemListElement: breadcrumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: crumb.item.startsWith('http') ? crumb.item : `${BASE_URL}${crumb.item}`,
+    })),
+  } : null;
 
   const defaultStructuredData = {
     '@context': 'https://schema.org',
@@ -63,6 +81,7 @@ export const SEO = ({
         url: BASE_URL,
         description: 'AI-powered football predictions platform covering 40+ leagues worldwide',
       },
+      ...(breadcrumbListSchema ? [breadcrumbListSchema] : []),
       ...(structuredData ? [structuredData] : []),
     ],
   };

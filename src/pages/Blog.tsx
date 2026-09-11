@@ -17,6 +17,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Champions League": "bg-yellow-500/10 text-yellow-800 border-yellow-500/30",
   Markets: "bg-orange-500/10 text-orange-700 border-orange-500/30",
   KPL: "bg-red-500/10 text-red-700 border-red-500/30",
+  Jackpots: "bg-rose-500/10 text-rose-700 border-rose-500/30",
+  "US Soccer": "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
   "Match Preview": "bg-primary/10 text-primary border-primary/30",
 };
 

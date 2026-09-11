@@ -11,7 +11,7 @@ export const AIChatbot = () => {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([{
     role: 'assistant',
-    content: "Hi! I'm PredictPro AI 🤖 Ask me about any match, today's best bets, or betting strategy!",
+    content: "Hi! I'm **PredictPro Scout** powered by Gemini AI 🤖. Ask me about any match, tactical lineups, banker accas, value bets, or today's top picks!",
   }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -88,9 +88,11 @@ export const AIChatbot = () => {
               <Bot className="h-4 w-4 text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">PredictPro AI</p>
+              <p className="font-semibold text-sm flex items-center gap-1">
+                PredictPro Scout <Sparkles className="h-3 w-3 text-primary" />
+              </p>
               <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" aria-hidden="true" />Online
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" aria-hidden="true" />Gemini Grounded
               </p>
             </div>
             <div className="flex items-center gap-1.5">
@@ -144,7 +146,7 @@ export const AIChatbot = () => {
 
           {/* Quick prompts */}
           <div className="px-3 pb-1.5 flex gap-1.5 overflow-x-auto flex-shrink-0">
-            {['⭐ Recommendations', '🛡️ 3 Bankers', '💎 High EV', "Today's picks"].map(q => (
+            {['⭐ AI Briefing', '🛡️ 3 Bankers', '💎 High EV Value', '⚽ Goal Machines', 'Tactical Analysis'].map(q => (
               <button
                 key={q}
                 onClick={() => { setInput(q); }}

@@ -9,6 +9,7 @@ import {
   DetectedDateFormat,
   DetectedTimeFormat,
 } from '@/services/localeDetectionService';
+import { hapticService } from '@/services/hapticService';
 
 export type RiskProfile = 'conservative' | 'balanced' | 'aggressive';
 export type OddsFormat = SupportedOddsFormat;
@@ -27,6 +28,7 @@ export interface UserPreferences {
   defaultCurrency: 'KES' | 'USD' | 'EUR' | 'GBP' | 'NGN';
   dailyDigestEnabled: boolean;
   kickoffAlertsEnabled: boolean;
+  hapticFeedbackEnabled: boolean;
 }
 
 const getDefaultPreferencesWithAutoLocale = (): UserPreferences => {
@@ -48,6 +50,7 @@ const getDefaultPreferencesWithAutoLocale = (): UserPreferences => {
     defaultCurrency: 'KES',
     dailyDigestEnabled: true,
     kickoffAlertsEnabled: true,
+    hapticFeedbackEnabled: true,
   };
 };
 
@@ -66,6 +69,7 @@ interface UserPreferencesContextType {
   setTimeFormat: (format: 'auto' | DetectedTimeFormat) => void;
   toggleDataSaver: () => void;
   setDataSaver: (enabled: boolean) => void;
+  setHapticFeedback: (enabled: boolean) => void;
   toggleFavoriteLeague: (league: string) => void;
   togglePreferredMarket: (market: string) => void;
   resetPreferences: () => void;
@@ -105,6 +109,10 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
       
+      if (typeof preferences.hapticFeedbackEnabled === 'boolean') {
+        hapticService.setEnabled(preferences.hapticFeedbackEnabled);
+      }
+
       // Update HTML direction for RTL languages like Arabic
       const langMeta = SUPPORTED_LANGUAGES.find((l) => l.code === preferences.language);
       if (langMeta) {
@@ -142,6 +150,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
   const setDataSaver = (enabled: boolean) => {
     updatePreferences({ dataSaverMode: enabled });
+  };
+
+  const setHapticFeedback = (enabled: boolean) => {
+    hapticService.setEnabled(enabled);
+    updatePreferences({ hapticFeedbackEnabled: enabled });
   };
 
   const setDateFormat = (format: 'auto' | DetectedDateFormat) => {
@@ -224,6 +237,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         setTimeFormat,
         toggleDataSaver,
         setDataSaver,
+        setHapticFeedback,
         toggleFavoriteLeague,
         togglePreferredMarket,
         resetPreferences,

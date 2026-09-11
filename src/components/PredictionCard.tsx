@@ -5,13 +5,14 @@ import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/p
 import { SharePrediction } from '@/components/SharePrediction';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
-import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles } from 'lucide-react';
+import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles, Pin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { usePersonalizedDashboard } from '@/hooks/usePersonalizedDashboard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,6 +31,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
   const { isPremium } = useSubscription();
   const { addSelection, selections } = useBetSlip();
   const { formatKickoff, getKickoffRelative, formatOdds, t } = useUserPreferences();
+  const { isLeaguePinned, togglePinLeague, isTeamPinned, togglePinTeam } = usePersonalizedDashboard();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [unlockingCoin, setUnlockingCoin] = useState(false);
 
@@ -229,7 +231,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                     key={key}
                     onClick={(e) => handleOddsClick(e, label, odds)}
                     aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${formatOdds(odds)} to betslip`}
-                    className={`px-2 py-1 rounded text-xs font-bold border transition-all ${
+                    className={`px-2 py-1 rounded text-xs font-bold border transition-all active:scale-95 duration-75 select-none touch-manipulation ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-muted/60 hover:bg-primary/10 hover:border-primary/50'
@@ -272,7 +274,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
     <>
       <Card
         onClick={() => !locked && setShowAnalytics(true)}
-        className={`overflow-hidden cursor-pointer transition-all hover:shadow-lg border bg-card ${
+        className={`group overflow-hidden cursor-pointer transition-all hover:shadow-lg border bg-card ${
           locked ? 'opacity-85' : ''
         } ${confidence >= 80 ? 'border-primary/40 ring-1 ring-primary/20' : ''}`}
       >
@@ -282,6 +284,18 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               <Badge variant="outline" className="text-xs font-bold border-primary/30 text-primary">
                 {p.league}
               </Badge>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePinLeague(p.league);
+                }}
+                title={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}
+                className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Pin league"
+              >
+                <Pin className={`h-3 w-3 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} />
+              </button>
               {clvData?.isPositiveEV && !locked && (
                 <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> +{clvData.edge}% Value Edge
@@ -317,14 +331,59 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               </div>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="mt-3 flex items-center justify-between gap-3 bg-muted/20 p-2.5 rounded-xl border border-border/40">
+            {/* Home team */}
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <TeamLogo team={p.home_team} size="sm" />
-              <span className="font-extrabold text-sm sm:text-base leading-snug text-foreground truncate">{p.home_team}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                  <span className="font-extrabold text-sm sm:text-base leading-tight text-foreground truncate">{p.home_team}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePinTeam(p.home_team);
+                    }}
+                    title={isTeamPinned(p.home_team) ? `Unpin ${p.home_team} from My Dashboard` : `Pin ${p.home_team} to My Dashboard`}
+                    className={`p-0.5 rounded text-muted-foreground hover:text-primary transition-opacity shrink-0 ${
+                      isTeamPinned(p.home_team) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
+                    aria-label={`Pin ${p.home_team}`}
+                  >
+                    <Pin className={`h-3 w-3 ${isTeamPinned(p.home_team) ? 'fill-primary text-primary' : ''}`} />
+                  </button>
+                </div>
+              </div>
             </div>
-            <span className="text-muted-foreground font-bold text-xs px-1.5 py-0.5 bg-muted rounded">vs</span>
-            <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
-              <span className="font-extrabold text-sm sm:text-base leading-snug text-foreground truncate">{p.away_team}</span>
+
+            {/* Match center VS */}
+            <div className="shrink-0 flex flex-col items-center justify-center px-1">
+              <span className="text-[10px] font-black text-muted-foreground bg-muted/80 px-2 py-0.5 rounded uppercase tracking-wider">
+                VS
+              </span>
+            </div>
+
+            {/* Away team */}
+            <div className="flex items-center justify-end gap-2.5 min-w-0 flex-1 text-right">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePinTeam(p.away_team);
+                    }}
+                    title={isTeamPinned(p.away_team) ? `Unpin ${p.away_team} from My Dashboard` : `Pin ${p.away_team} to My Dashboard`}
+                    className={`p-0.5 rounded text-muted-foreground hover:text-primary transition-opacity shrink-0 ${
+                      isTeamPinned(p.away_team) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
+                    aria-label={`Pin ${p.away_team}`}
+                  >
+                    <Pin className={`h-3 w-3 ${isTeamPinned(p.away_team) ? 'fill-primary text-primary' : ''}`} />
+                  </button>
+                  <span className="font-extrabold text-sm sm:text-base leading-tight text-foreground truncate">{p.away_team}</span>
+                </div>
+              </div>
               <TeamLogo team={p.away_team} size="sm" />
             </div>
           </div>
@@ -365,7 +424,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                     key={label}
                     onClick={(e) => handleOddsClick(e, label, odds)}
                     aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${formatOdds(odds)} to betslip`}
-                    className={`py-1.5 px-2 rounded-lg border text-center transition-all ${
+                    className={`py-1.5 px-2 rounded-lg border text-center transition-all active:scale-95 duration-75 select-none touch-manipulation ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary shadow-sm font-black'
                         : 'bg-muted/40 hover:bg-primary/10 hover:border-primary/50 text-foreground'
@@ -453,17 +512,20 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
 
           {/* Footer Actions: Analytics Trigger + Share */}
           <div className="flex items-center justify-between pt-1 border-t">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAnalytics(true);
-              }}
-              aria-label={`View match analytics, head-to-head statistics and predicted lineups for ${p.home_team} vs ${p.away_team}`}
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
-              <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> {t('pred.view_analysis', 'Analytics & Lineups')}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAnalytics(true);
+                }}
+                aria-label={`View match analytics, head-to-head statistics and predicted lineups for ${p.home_team} vs ${p.away_team}`}
+                className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>Gemini Intel & Lineups</span>
+              </button>
+            </div>
 
             <SharePrediction
               prediction={{

@@ -24,6 +24,8 @@ export const BLOG_POSTS_METADATA = [
   { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League Betting Guide 2026', date: '2026-05-29' },
   { slug: 'accumulator-building-strategy', title: 'How to Build a Winning Football Accumulator', date: '2026-05-28' },
   { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: Can AI Really Predict the Scoreline?', date: '2026-05-27' },
+  { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', date: '2026-06-05' },
+  { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', date: '2026-06-06' },
 ];
 
 /**
@@ -63,6 +65,8 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/world-cup-predictions', title: 'FIFA World Cup 2026 Predictions & Qualifying Tips', priority: 0.90 },
     { path: '/afcon-predictions', title: 'AFCON Predictions & African Football Odds', priority: 0.90 },
     { path: '/kpl-predictions', title: 'FKF Kenya Premier League Predictions & M-Pesa Tips', priority: 0.90 },
+    { path: '/jackpot-predictions', title: 'SportPesa Mega Jackpot & Betika Grand AI Predictions (17 Games)', priority: 0.95 },
+    { path: '/us-soccer-predictions', title: 'US Soccer Picks, MLS Moneyline & Champions League Odds', priority: 0.90 },
   ];
 
   for (const hub of leagueHubs) {
@@ -101,7 +105,13 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/methodology', title: 'AI Prediction Methodology, Expected Goals & Data Science', priority: 0.75, changeFreq: 'monthly' },
     { path: '/about', title: 'About PredictPro - AI Football Intelligence Platform', priority: 0.70, changeFreq: 'monthly' },
     { path: '/blog', title: 'PredictPro Football Betting Strategy Blog & Analysis', priority: 0.85, changeFreq: 'daily' },
-    { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.60, changeFreq: 'weekly' },
+    { path: '/recommendations', title: 'Curated AI Football Picks & Top Value Match Locks', priority: 0.90, changeFreq: 'daily' },
+    { path: '/tournaments', title: 'Global Football Tournaments, Cups & International Leagues', priority: 0.85, changeFreq: 'daily' },
+    { path: '/dropping-odds', title: 'Dropping Odds Radar & Market Steam Move Tracker', priority: 0.85, changeFreq: 'hourly' },
+    { path: '/screener', title: 'Match Screener & Multi-Filter Football Stats Scanner', priority: 0.85, changeFreq: 'daily' },
+    { path: '/track-record', title: 'Verified AI Prediction Track Record & Strike Rate History', priority: 0.85, changeFreq: 'daily' },
+    { path: '/seo-indexing', title: 'PredictPro SEO Command Center & Google Indexing Cron Dashboard', priority: 0.70, changeFreq: 'daily' },
+    { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.65, changeFreq: 'daily' },
   ];
 
   for (const page of featurePages) {
@@ -186,17 +196,25 @@ export function generateSitemapXml(baseUrl: string = BASE_URL): string {
 
   const xmlUrls = entries
     .map((entry) => {
+      const defaultImgXml = entry.category === 'core' || entry.category === 'league' || entry.category === 'match'
+        ? `\n    <image:image>
+      <image:loc>${baseUrl}/og-image.jpg</image:loc>
+      <image:title>${escapeXml(entry.title)}</image:title>
+    </image:image>`
+        : '';
+
       return `  <url>
     <loc>${escapeXml(entry.url)}</loc>
     <lastmod>${entry.lastModified}</lastmod>
     <changefreq>${entry.changeFrequency}</changefreq>
-    <priority>${entry.priority.toFixed(2)}</priority>
+    <priority>${entry.priority.toFixed(2)}</priority>${defaultImgXml}
   </url>`;
     })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">

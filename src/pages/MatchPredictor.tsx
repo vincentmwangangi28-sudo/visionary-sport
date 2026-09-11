@@ -235,19 +235,85 @@ export default function MatchPredictor() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="AI Match Predictor | Predict Any Football Match | PredictPro"
-        description="Enter any two teams and get an instant AI prediction. Confidence scores, win probabilities, odds and detailed analysis powered by sports modeling."
+        title="AI Pro Tips Today: Match Winner & BTTS Predictions | PredictPro"
+        description="Get verified AI Pro Tips today and Gemini AI football match predictions for any fixture. Win probabilities, expected goals (xG), Poisson BTTS, fair bookmaker odds, and score projections."
         canonical="/predict"
+        keywords="aiprotips prediction today, ai pro tips today, btts ai prediction today, gemini ai football predictions, ai match predictor, football prediction engine, soccer match outcome probabilities"
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'AI Pro Tips & Match Predictor', item: '/predict' }
+        ]}
+        structuredData={{
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'What are AI Pro Tips today on PredictPro?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'AI Pro Tips today are algorithmic mathematical forecasts combining Poisson distribution, xG metrics, and sharp market line movements to project 1X2 outcomes, Both Teams To Score (BTTS), and positive expected value (+EV) edges across 40+ leagues worldwide.'
+              }
+            },
+            {
+              '@type': 'Question',
+              name: 'How do I read the confidence score in Match Predictor?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Confidence scores above 75% indicate statistically decisive favorites with low variance. Matches between 50-65% represent highly competitive fixtures where markets like BTTS or Over/Under 2.5 goals often yield higher expected value than straight 1X2.'
+              }
+            }
+          ]
+        }}
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
+        {/* Breadcrumb Visual Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+          <a href="/" className="hover:text-primary transition-colors">Home</a>
+          <span>/</span>
+          <span className="text-foreground font-medium">AI Pro Tips &amp; Match Predictor</span>
+        </nav>
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold flex items-center justify-center gap-3 mb-2">
-            <Zap className="h-8 w-8 text-primary" />Match Predictor
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-3">
+            <Sparkles className="h-3.5 w-3.5" /> AI Pro Tips Today · Updated Daily 06:00 UTC
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black flex items-center justify-center gap-3 mb-2 tracking-tight">
+            <Zap className="h-8 w-8 text-primary" />AI Pro Tips &amp; Match Predictor
           </h1>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            Simulate any fixture through our statistical analysis engine for instant outcome projections, probabilities, and odds.
+          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+            Simulate any upcoming match worldwide through our Poisson xG model for instant win probabilities, fair odds, correct score projections, and BTTS confidence.
           </p>
+        </div>
+
+        {/* Featured High-Intent Quick Hub */}
+        <div className="mb-6 p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+              <Flame className="h-4 w-4 text-amber-500" /> High-Traffic Prediction Hubs
+            </span>
+            <Badge variant="outline" className="text-[10px] bg-background">Free Daily Access</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Looking for specialized markets? Explore our algorithmically verified pillars:
+          </p>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <a href="/btts" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
+              ⚽ <strong>BTTS AI prediction today</strong>
+            </a>
+            <a href="/value-bets" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
+              📈 <strong>Daily Value Bets (+EV)</strong>
+            </a>
+            <a href="/best-bets" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
+              ⭐ <strong>Best Banker Bets</strong>
+            </a>
+            <a href="/jackpot-predictions" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
+              🇰🇪 <strong>Jackpot Predictions (SportPesa/Betika)</strong>
+            </a>
+            <a href="/us-soccer-predictions" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
+              🇺🇸 <strong>US Soccer &amp; MLS Moneyline</strong>
+            </a>
+          </div>
         </div>
 
         <Card className="mb-6 border-border shadow-sm">

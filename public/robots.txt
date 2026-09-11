@@ -1,10 +1,23 @@
-# PredictPro robots.txt
-# https://predictpro.guru
+# PredictPro Robots.txt & Search Engine Directives
+# Domain: https://predictpro.guru
+# Optimized for Googlebot & Multi-Engine Crawlers
 
 User-agent: *
 Allow: /
 
-# Disallow private pages
+# Explicitly permit crawling of essential asset resources so Googlebot can render pages
+Allow: /assets/
+Allow: /public/
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+Allow: /*.svg$
+Allow: /*.json$
+
+# Disallow private user/admin routes
 Disallow: /admin
 Disallow: /api/
 Disallow: /_vercel/
@@ -12,17 +25,42 @@ Disallow: /auth
 Disallow: /performance
 Disallow: /rewards
 
-# Allow Google specific bots
+# Googlebot & Google Search Console Live URL Inspection
+# Note: Googlebot does NOT support Crawl-delay
 User-agent: Googlebot
+Allow: /
+
+User-agent: Google-InspectionTool
+Allow: /
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /assets/
+Allow: /public/
+
+User-agent: Mediapartners-Google
+Allow: /
+
+# Bingbot & IndexNow Multi-Engine Indexers
+User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
 
-User-agent: Googlebot-Image
-Allow: /assets/
-Allow: /public/
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# IndexNow Verification
+# Verification Key: predictpro789xyz456indexnow
+IndexNow: https://predictpro.guru/predictpro-indexnow-key.txt
 
 # Sitemaps
 Sitemap: https://predictpro.guru/sitemap.xml
 
-# Host
+# Canonical Host
 Host: predictpro.guru

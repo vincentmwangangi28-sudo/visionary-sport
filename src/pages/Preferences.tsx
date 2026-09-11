@@ -15,6 +15,7 @@ import { SUPPORTED_LANGUAGES, SupportedLanguage } from '@/services/i18n';
 import { POPULAR_TIMEZONES } from '@/services/timezoneService';
 import { ODDS_FORMATS, SupportedOddsFormat } from '@/services/oddsConverter';
 import { REGIONAL_BOOKMAKERS } from '@/services/bookmakerBookingCodes';
+import { AutomatedAlertsSettingsCard } from '@/components/AutomatedAlertsSettingsCard';
 import { toast } from '@/hooks/use-toast';
 import {
   SlidersHorizontal,
@@ -36,7 +37,10 @@ import {
   Gauge,
   Check,
   MapPin,
+  Smartphone,
+  Vibrate,
 } from 'lucide-react';
+import { hapticService } from '@/services/hapticService';
 
 const AVAILABLE_LEAGUES = [
   'Premier League',
@@ -75,6 +79,7 @@ export default function Preferences() {
     setDateFormat,
     setTimeFormat,
     setDataSaver,
+    setHapticFeedback,
     setRiskProfile,
     toggleFavoriteLeague,
     togglePreferredMarket,
@@ -493,6 +498,99 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
+          {/* 5.1 Mobile Haptic Tactile Feedback */}
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Vibrate className="h-5 w-5 text-primary animate-pulse" aria-hidden="true" />
+                  <span>Mobile Haptic Tactile Response</span>
+                </CardTitle>
+                <Switch
+                  checked={preferences.hapticFeedbackEnabled !== false}
+                  onCheckedChange={(checked) => {
+                    setHapticFeedback(checked);
+                    if (checked) {
+                      hapticService.selection();
+                      toast({
+                        title: 'Haptic Feedback Enabled',
+                        description: 'Tactile vibrations will trigger when adding legs to your bet slip.',
+                      });
+                    } else {
+                      toast({
+                        title: 'Haptic Feedback Muted',
+                        description: 'Tactile vibrations disabled.',
+                      });
+                    }
+                  }}
+                  aria-label="Toggle Mobile Haptic Feedback"
+                />
+              </div>
+              <CardDescription className="text-xs">
+                Provides real-time physical vibrations and crisp click pulses when selecting odds, building accumulators, and loading AI smart slips on mobile devices.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="bg-muted/20 border rounded-xl p-3 text-xs space-y-2">
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Smartphone className="h-4 w-4 text-primary" />
+                    Device Sensor Status
+                  </span>
+                  <Badge variant={preferences.hapticFeedbackEnabled !== false ? 'default' : 'outline'} className="text-[10px]">
+                    {preferences.hapticFeedbackEnabled !== false
+                      ? (hapticService.isSupported() ? 'HAPTICS ACTIVE (Vibration API)' : 'TACTILE ACTIVE (Impulse Engine)')
+                      : 'MUTED'}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-[11px]">
+                  {hapticService.isSupported()
+                    ? 'Native HTML5 Vibration API detected on this device. Motor vibrations fire automatically upon selection.'
+                    : 'Tactile psychoacoustic impulse active for WebKit / iOS Safari touch environments.'}
+                </p>
+              </div>
+
+              {/* Interactive Haptic Test Controls */}
+              {preferences.hapticFeedbackEnabled !== false && (
+                <div className="space-y-1.5 pt-1">
+                  <p className="text-xs font-semibold text-foreground">Test Mobile Tactile Patterns:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => hapticService.selection()}
+                      className="text-xs py-1.5 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
+                    >
+                      <span className="font-bold">Light Tap</span>
+                      <span className="text-[10px] text-muted-foreground">Single Odd</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => hapticService.success()}
+                      className="text-xs py-1.5 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
+                    >
+                      <span className="font-bold text-primary">Multi-Pulse</span>
+                      <span className="text-[10px] text-muted-foreground">AI Smart Slip</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => hapticService.boost()}
+                      className="text-xs py-1.5 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
+                    >
+                      <span className="font-bold text-amber-500">Acca Boost</span>
+                      <span className="text-[10px] text-muted-foreground">Milestone</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* 6. Risk Profile Selection */}
           <Card className="border-border/70">
             <CardHeader className="pb-3">
@@ -659,42 +757,10 @@ export default function Preferences() {
             </CardContent>
           </Card>
 
-          {/* 9. Alerts & Notifications */}
-          <Card className="border-border/70">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
-                9. Alerts & Retention Digest
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-1">
-                <div>
-                  <div className="text-sm font-semibold">Daily Top Picks Morning Digest</div>
-                  <div className="text-xs text-muted-foreground">Receive top high-confidence predictions at 8:00 AM UTC.</div>
-                </div>
-                <Switch
-                  checked={preferences.dailyDigestEnabled}
-                  onCheckedChange={(c) => updatePreferences({ dailyDigestEnabled: c })}
-                  aria-label="Toggle Daily Digest"
-                />
-              </div>
+          {/* 9. Automated Alerts & Match Push Engine */}
+          <AutomatedAlertsSettingsCard />
 
-              <div className="flex items-center justify-between py-1 border-t border-border/60 pt-3">
-                <div>
-                  <div className="text-sm font-semibold">Kickoff Value Odds Alerts</div>
-                  <div className="text-xs text-muted-foreground">Get notified 1 hour prior to kickoff when bookmaker lines move into positive value (+EV).</div>
-                </div>
-                <Switch
-                  checked={preferences.kickoffAlertsEnabled}
-                  onCheckedChange={(c) => updatePreferences({ kickoffAlertsEnabled: c })}
-                  aria-label="Toggle Kickoff Alerts"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 9. Offline Match Mode & Service Worker Cache */}
+          {/* 10. Offline Match Mode & Service Worker Cache */}
           <OfflineCacheSettingsCard />
         </div>
       </main>
@@ -706,6 +772,7 @@ export default function Preferences() {
 
 function OfflineCacheSettingsCard() {
   const { isOnline, hasCachedData, lastSyncedAt, syncOfflineData, isSyncing } = useNetworkStatus();
+  const { formatKickoff } = useUserPreferences();
 
   return (
     <Card className="border-border/70">
@@ -713,7 +780,7 @@ function OfflineCacheSettingsCard() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <HardDrive className="h-5 w-5 text-primary" aria-hidden="true" />
-            9. Offline Match Mode & Crests Cache
+            10. Offline Match Mode & Crests Cache
           </CardTitle>
           <Badge variant="outline" className={isOnline ? "text-green-500 border-green-500/30 bg-green-500/10" : "text-amber-500 border-amber-500/30 bg-amber-500/10"}>
             {isOnline ? (

@@ -47,10 +47,12 @@ export default function CorrectScore() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Correct Score Predictions Today | AI Scoreline Tips | PredictPro"
-        description="AI-powered correct score predictions for today's matches. Exact scoreline forecasts with odds for Premier League, Champions League, La Liga and more."
+      <SEO
+        title="Correct Score Guru Tips Today: AI Exact Scoreline Predictions | PredictPro"
+        description="Daily correct score guru tips today and exact scoreline predictions powered by Monte Carlo goal probability models. Top 3 probable scores with verified odds."
         canonical="/correct-score"
-        keywords="correct score predictions today, exact score football tips, scoreline predictions, correct score odds" />
+        keywords="guru tips correct score today, correct score predictions today, exact score football tips, a league bettingpro correct score prediction today, scoreline predictions, correct score odds"
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">

@@ -405,16 +405,16 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
                 </div>
 
                 {/* Match Teams */}
-                <div className="pt-1">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <TeamLogo teamName={item.prediction.home_team} size="sm" className="w-5 h-5 shrink-0" />
-                    <span className="font-semibold text-sm truncate">{item.prediction.home_team}</span>
+                <div className="pt-1 space-y-2">
+                  <div className="flex items-center gap-2.5">
+                    <TeamLogo team={item.prediction.home_team} size="sm" />
+                    <span className="font-bold text-sm truncate text-foreground">{item.prediction.home_team}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TeamLogo teamName={item.prediction.away_team} size="sm" className="w-5 h-5 shrink-0" />
-                    <span className="font-semibold text-sm truncate">{item.prediction.away_team}</span>
+                  <div className="flex items-center gap-2.5">
+                    <TeamLogo team={item.prediction.away_team} size="sm" />
+                    <span className="font-bold text-sm truncate text-foreground">{item.prediction.away_team}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-2">
+                  <p className="text-[11px] text-muted-foreground pt-0.5">
                     {formatKickoff(item.prediction.match_date)}
                   </p>
                 </div>

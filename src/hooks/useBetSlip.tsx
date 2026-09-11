@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { hapticService, HapticPattern } from '@/services/hapticService';
 
 export interface BetSelection {
   id: string;
@@ -32,6 +33,8 @@ interface BetSlipContextType {
   boostedReturn: number;
   combinedConfidence: number;
   generateBookingCode: (bookmaker: string) => string;
+  triggerHaptic: (pattern?: HapticPattern) => boolean;
+  isHapticSupported: boolean;
 }
 
 const BetSlipContext = createContext<BetSlipContextType | undefined>(undefined);
@@ -65,6 +68,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     // Check if already in bet slip
     if (selections.some(s => s.id === id)) {
+      hapticService.warning();
       toast.info(`Already added to bet slip: ${sel.market}`);
       return;
     }
@@ -74,14 +78,24 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (existingMatch) {
       // Replace with new market selection
       setSelections(prev => prev.map(s => s.id === existingMatch.id ? { ...sel, id } : s));
+      hapticService.selection();
       toast.success(`Updated ${sel.homeTeam} vs ${sel.awayTeam} to ${sel.market}`);
       setIsOpen(true);
       return;
     }
 
     if (selections.length >= 15) {
+      hapticService.error();
       toast.error('Maximum 15 selections per accumulator slip.');
       return;
+    }
+
+    // Check for accumulator bonus boost tier trigger
+    const newCount = selections.length + 1;
+    if (newCount === 3 || newCount === 5 || newCount === 8 || newCount === 12) {
+      hapticService.boost();
+    } else {
+      hapticService.selection();
     }
 
     setSelections(prev => [...prev, { ...sel, id }]);
@@ -115,8 +129,10 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       if (addedCount > 0) {
+        hapticService.success();
         toast.success(`Loaded ${addedCount} recommended pick${addedCount > 1 ? 's' : ''} into Bet Slip!`);
       } else {
+        hapticService.warning();
         toast.info('Selected picks are already in your Bet Slip');
       }
 
@@ -127,10 +143,12 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const removeSelection = (id: string) => {
+    hapticService.remove();
     setSelections(prev => prev.filter(s => s.id !== id));
   };
 
   const clearSlip = () => {
+    hapticService.clear();
     setSelections([]);
     toast.info('Bet slip cleared');
   };
@@ -183,6 +201,8 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       boostedReturn,
       combinedConfidence,
       generateBookingCode,
+      triggerHaptic: (pattern?: HapticPattern) => hapticService.trigger(pattern),
+      isHapticSupported: hapticService.isSupported(),
     }}>
       {children}
     </BetSlipContext.Provider>
@@ -207,6 +227,8 @@ const defaultFallbackContext: BetSlipContextType = {
   boostedReturn: 0,
   combinedConfidence: 0,
   generateBookingCode: () => '',
+  triggerHaptic: () => false,
+  isHapticSupported: false,
 };
 
 export const useBetSlip = () => {

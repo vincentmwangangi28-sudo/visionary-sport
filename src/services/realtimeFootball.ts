@@ -313,6 +313,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
           }
         }
       } catch (e) {
+        setHostCooldown(rapidHost);
         console.debug(`Free API Live Football fallback on ${rapidHost}:`, e);
       }
     }
@@ -723,6 +724,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
             }
           }
         } catch (e) {
+          setHostCooldown(rapidHost);
           console.debug(`RapidAPI fixtures query on ${rapidHost} error:`, e);
         }
       }
@@ -1026,6 +1028,7 @@ export async function fetchRealtimeStandingsTable(leagueId: number | string): Pr
             }
           }
         } catch (e) {
+          setHostCooldown(rapidHost);
           console.debug(`Free API standings fetch fallback on ${rapidHost}:`, e);
         }
       }
