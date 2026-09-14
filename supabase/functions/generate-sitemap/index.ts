@@ -14,7 +14,10 @@ serve(async () => {
     .select('slug, published_at, created_at')
     .order('published_at', { ascending: false });
 
-  // Every real route in the app (kept in sync with src/App.tsx)
+  // Every real, publicly-indexable route in the app (kept in sync with
+  // src/App.tsx). Deliberately excluded: /dashboard, /my-dashboard
+  // (personalized/empty for anonymous visitors - thin content risk) and
+  // /seo-indexing (an internal indexing admin console, not content).
   const staticPages = [
     { url: '/', priority: '1.0', freq: 'hourly' },
     { url: '/best-bets', priority: '0.95', freq: 'daily' },
@@ -34,19 +37,23 @@ serve(async () => {
     { url: '/statistics', priority: '0.8', freq: 'daily' },
     { url: '/tipsters', priority: '0.8', freq: 'hourly' },
     { url: '/tournaments', priority: '0.8', freq: 'daily' },
+    { url: '/upcoming', priority: '0.8', freq: 'daily' },
     { url: '/insights', priority: '0.75', freq: 'daily' },
     { url: '/players', priority: '0.75', freq: 'weekly' },
     { url: '/leaderboard', priority: '0.75', freq: 'daily' },
     { url: '/sports', priority: '0.75', freq: 'daily' },
+    { url: '/recommendations', priority: '0.75', freq: 'daily' },
     { url: '/archive', priority: '0.7', freq: 'daily' },
     { url: '/methodology', priority: '0.65', freq: 'monthly' },
     { url: '/bankroll', priority: '0.7', freq: 'monthly' },
     { url: '/shop', priority: '0.8', freq: 'weekly' },
     { url: '/about', priority: '0.6', freq: 'monthly' },
-    // Dedicated league prediction hub pages
+    // Dedicated league / trending prediction hub pages
     { url: '/premier-league-predictions', priority: '0.9', freq: 'daily' },
     { url: '/champions-league-predictions', priority: '0.9', freq: 'daily' },
     { url: '/kpl-predictions', priority: '0.9', freq: 'daily' },
+    { url: '/jackpot-predictions', priority: '0.9', freq: 'daily' },
+    { url: '/us-soccer-predictions', priority: '0.9', freq: 'daily' },
     { url: '/la-liga-predictions', priority: '0.9', freq: 'daily' },
     { url: '/bundesliga-predictions', priority: '0.9', freq: 'daily' },
     { url: '/serie-a-predictions', priority: '0.9', freq: 'daily' },
