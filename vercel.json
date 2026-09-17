@@ -3,11 +3,14 @@
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [
+  "redirects": [
     {
       "source": "/sitemap.xml",
-      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/generate-sitemap"
-    },
+      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/generate-sitemap",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
     {
       "source": "/api/ping-search-engines",
       "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
