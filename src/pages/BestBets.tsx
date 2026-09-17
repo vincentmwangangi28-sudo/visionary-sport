@@ -146,9 +146,14 @@ export default function BestBets() {
           </div>
           <div className="flex gap-2 flex-wrap items-center">
             <Link to="/recommendations">
-              <Button variant="outline" size="sm" className="gap-1.5 border-primary/30 hover:border-primary/60 text-xs">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                AI Recommendations
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1.5 border-primary/30 hover:border-primary/60 text-xs"
+                aria-label="Navigate to AI Recommendations Hub"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>AI Recommendations</span>
               </Button>
             </Link>
             <Button
@@ -156,23 +161,39 @@ export default function BestBets() {
               onClick={handleLoadTopPicks}
               disabled={bets.length === 0}
               className="gap-1.5 font-bold text-xs"
+              aria-label="Load top 3 banker picks into Bet Slip"
             >
-              <Zap className="h-3.5 w-3.5" />
-              Load Top 3 to Slip
+              <Zap className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Load Top 3 to Slip</span>
             </Button>
             <WhatsAppShare text={shareText} />
-            <Button variant="outline" size="sm" onClick={fetch_} disabled={loading} aria-label="Refresh bets">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={fetch_} 
+              disabled={loading} 
+              aria-label="Refresh best bets predictions"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <span className="sr-only">Refresh bets</span>
             </Button>
           </div>
         </div>
 
         {/* Confidence filter */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+        <div className="flex gap-2 mb-6 flex-wrap" role="group" aria-label="Confidence threshold filters">
           {[60, 70, 75, 80].map(c => (
-            <Button key={c} size="sm" variant={minConf === c ? 'default' : 'outline'}
-              onClick={() => setMinConf(c)} className="gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5" />{c}%+
+            <Button 
+              key={c} 
+              size="sm" 
+              variant={minConf === c ? 'default' : 'outline'}
+              onClick={() => setMinConf(c)} 
+              className="gap-1.5"
+              aria-label={`Filter predictions with ${c}% or higher confidence`}
+              aria-pressed={minConf === c}
+            >
+              <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{c}%+</span>
             </Button>
           ))}
           <Badge variant="outline" className="ml-auto self-center px-3 py-1.5">

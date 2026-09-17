@@ -13,6 +13,7 @@ import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { GeminiMatchIntelligenceTab } from '@/components/GeminiMatchIntelligenceTab';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import {
   TrendingUp,
   Target,
@@ -23,7 +24,8 @@ import {
   Sparkles,
   Check,
   Calendar,
-  Layers
+  Layers,
+  Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -80,9 +82,13 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className="bg-primary text-primary-foreground font-black text-xs">
-                AI Win Prob: {confidence}%
-              </Badge>
+              <ConfidenceMeter
+                confidence={confidence}
+                variant="inline"
+                predictionTip={outcome}
+                homeTeam={p.home_team}
+                awayTeam={p.away_team}
+              />
               <NotifyMeButton
                 match={{
                   id: p.id,
@@ -181,7 +187,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
           <div className="px-6 pt-3 border-b bg-card">
             <TabsList className="grid grid-cols-6 w-full h-9">
               <TabsTrigger value="gemini" className="text-xs gap-1 font-semibold text-primary">
-                <Sparkles className="h-3.5 w-3.5" /> Gemini AI
+                <Search className="h-3.5 w-3.5" /> Google AI
               </TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs gap-1 font-semibold">
                 <Target className="h-3.5 w-3.5" /> Model
@@ -209,16 +215,37 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
 
             {/* Tab 1: AI Prediction & Deep Analysis */}
             <TabsContent value="analytics" className="mt-0 space-y-4">
-              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-                    <Sparkles className="h-3.5 w-3.5 text-primary" /> Primary AI Recommendation
-                  </span>
-                  <p className="text-xl font-black text-foreground mt-0.5">{outcome}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2 bg-primary/5 border border-primary/20 rounded-2xl p-5 flex flex-col justify-between">
+                  <div>
+                    <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4 text-primary" /> Primary AI Recommendation
+                    </span>
+                    <p className="text-2xl font-black text-foreground mt-1">{outcome}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Synthesized from Dixon-Coles Poisson modeling, home/away xG splits, and market odds velocity.
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-semibold text-muted-foreground">Certainty Level</span>
+                    <ConfidenceMeter
+                      confidence={confidence}
+                      variant="card"
+                      predictionTip={outcome}
+                      homeTeam={p.home_team}
+                      awayTeam={p.away_team}
+                    />
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs text-muted-foreground font-semibold">Confidence</span>
-                  <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">{confidence}%</p>
+
+                <div className="md:col-span-1">
+                  <ConfidenceMeter
+                    confidence={confidence}
+                    variant="gauge"
+                    predictionTip={outcome}
+                    homeTeam={p.home_team}
+                    awayTeam={p.away_team}
+                  />
                 </div>
               </div>
 

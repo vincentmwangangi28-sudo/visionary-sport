@@ -166,15 +166,21 @@ export const MatchHeadToHeadTimeline: React.FC<Props> = ({
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 font-bold">
-                    <span className={m.winner === homeTeam ? 'text-primary' : 'text-foreground'}>
-                      {homeTeam}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <TeamLogo team={homeTeam} league={league} size="xs" />
+                      <span className={m.winner === homeTeam ? 'text-primary' : 'text-foreground'}>
+                        {homeTeam}
+                      </span>
+                    </div>
                     <span className="px-2 py-0.5 bg-background border rounded font-mono font-black">
                       {m.homeScore} - {m.awayScore}
                     </span>
-                    <span className={m.winner === awayTeam ? 'text-rose-500' : 'text-foreground'}>
-                      {awayTeam}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={m.winner === awayTeam ? 'text-rose-500' : 'text-foreground'}>
+                        {awayTeam}
+                      </span>
+                      <TeamLogo team={awayTeam} league={league} size="xs" />
+                    </div>
                   </div>
                 </div>
               ))}

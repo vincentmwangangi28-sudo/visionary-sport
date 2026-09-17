@@ -42,6 +42,7 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
           className
         )}
         title="Search (⌘K or /)"
+        aria-label="Search matches, leagues, teams, and articles"
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         <span className="truncate">Search...</span>

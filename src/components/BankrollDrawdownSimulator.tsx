@@ -26,9 +26,11 @@ export const BankrollDrawdownSimulator: React.FC<Props> = ({
   // Run Monte Carlo simulation of 100 paths
   const simulationResults = useMemo(() => {
     const totalSimulations = 150;
-    const betsCount = numBets[0];
-    const winRate = winProbability / 100;
-    const stakeFraction = stakePercent / 100;
+    const betsCount = Math.max(1, numBets[0] || 50);
+    const validInitial = Math.max(1, Number.isFinite(initialBankroll) ? initialBankroll : 1000);
+    const validOdds = Math.max(1.01, Number.isFinite(odds) ? odds : 1.5);
+    const winRate = Math.min(1, Math.max(0, (winProbability || 50) / 100));
+    const stakeFraction = Math.min(1, Math.max(0.01, (stakePercent || 2) / 100));
 
     const finalBankrolls: number[] = [];
     let maxDrawdownObserved = 0;
@@ -46,7 +48,7 @@ export const BankrollDrawdownSimulator: React.FC<Props> = ({
     };
 
     for (let sim = 0; sim < totalSimulations; sim++) {
-      let current = initialBankroll;
+      let current = validInitial;
       let peak = current;
       let maxSimDrawdown = 0;
       const path: number[] = [current];
@@ -55,13 +57,13 @@ export const BankrollDrawdownSimulator: React.FC<Props> = ({
         const betStake = current * stakeFraction;
         const rand = nextRandom();
         if (rand < winRate) {
-          current += betStake * (odds - 1);
+          current += betStake * (validOdds - 1);
         } else {
           current -= betStake;
         }
 
         if (current > peak) peak = current;
-        const currentDrawdown = ((peak - current) / peak) * 100;
+        const currentDrawdown = peak > 0 ? ((peak - current) / peak) * 100 : 0;
         if (currentDrawdown > maxSimDrawdown) maxSimDrawdown = currentDrawdown;
 
         path.push(Math.round(current));
@@ -69,19 +71,19 @@ export const BankrollDrawdownSimulator: React.FC<Props> = ({
       }
 
       if (maxSimDrawdown > maxDrawdownObserved) maxDrawdownObserved = maxSimDrawdown;
-      if (current >= initialBankroll * 2) bankrollDoubledCount++;
-      if (current <= initialBankroll * 0.5) bankrollHalvedCount++;
+      if (current >= validInitial * 2) bankrollDoubledCount++;
+      if (current <= validInitial * 0.5) bankrollHalvedCount++;
       finalBankrolls.push(current);
 
       if (sim < 5) samplePaths.push(path);
     }
 
     finalBankrolls.sort((a, b) => a - b);
-    const medianFinal = finalBankrolls[Math.floor(finalBankrolls.length / 2)];
-    const top10Final = finalBankrolls[Math.floor(finalBankrolls.length * 0.9)];
-    const bottom10Final = finalBankrolls[Math.floor(finalBankrolls.length * 0.1)];
+    const medianFinal = finalBankrolls[Math.floor(finalBankrolls.length / 2)] ?? validInitial;
+    const top10Final = finalBankrolls[Math.floor(finalBankrolls.length * 0.9)] ?? validInitial;
+    const bottom10Final = finalBankrolls[Math.floor(finalBankrolls.length * 0.1)] ?? validInitial;
 
-    const roi = ((medianFinal - initialBankroll) / initialBankroll) * 100;
+    const roi = validInitial > 0 ? ((medianFinal - validInitial) / validInitial) * 100 : 0;
 
     return {
       medianFinal,

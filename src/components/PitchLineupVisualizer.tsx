@@ -39,6 +39,7 @@ interface TeamTactics {
 interface PitchProps {
   homeTeam: string;
   awayTeam: string;
+  league?: string | null;
   customTactics?: {
     home?: Partial<TeamTactics>;
     away?: Partial<TeamTactics>;
@@ -89,7 +90,7 @@ function generateTeamTactics(teamName: string, isHome: boolean): TeamTactics {
   };
 }
 
-export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam }) => {
+export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam, league }) => {
   const [activeView, setActiveView] = useState<'both' | 'home' | 'away'>('both');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
@@ -260,7 +261,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between border-b pb-2">
               <div className="flex items-center gap-2">
-                <TeamLogo team={homeTeam} size="sm" />
+                <TeamLogo team={homeTeam} league={league} size="sm" />
                 <span className="font-bold text-xs">{homeTeam} Missing Squad</span>
               </div>
               <span className="text-[11px] text-muted-foreground">Tactical Impact</span>
@@ -293,7 +294,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between border-b pb-2">
               <div className="flex items-center gap-2">
-                <TeamLogo team={awayTeam} size="sm" />
+                <TeamLogo team={awayTeam} league={league} size="sm" />
                 <span className="font-bold text-xs">{awayTeam} Missing Squad</span>
               </div>
               <span className="text-[11px] text-muted-foreground">Tactical Impact</span>

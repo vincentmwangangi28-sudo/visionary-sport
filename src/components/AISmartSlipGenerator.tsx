@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/TeamLogo';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { toast } from 'sonner';
 
 type SlipStrategy = 'banker' | 'value' | 'moonshot';
@@ -343,13 +344,11 @@ export const AISmartSlipGenerator: React.FC = () => {
                 <Badge variant="secondary" className="font-bold text-xs">
                   {leg.market}
                 </Badge>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end gap-0.5">
                   <span className="font-mono font-black text-sm text-emerald-500">
                     @{leg.odds.toFixed(2)}
                   </span>
-                  <div className="text-[10px] text-muted-foreground font-semibold">
-                    {leg.confidence}% Conf
-                  </div>
+                  <ConfidenceMeter confidence={leg.confidence} variant="compact" />
                 </div>
               </div>
             </div>

@@ -238,28 +238,61 @@ Respond ONLY with valid JSON:
       },
     };
 
-    // Add Google Search Grounding for viral keywords and real-time news tasks
-    if (task === 'viral_keywords' || task === 'football_news') {
-      requestBody.tools = [{ googleSearch: {} }];
-    }
+    // Add Google Search Grounding for match analysis, Q&A, viral keywords, and news
+    requestBody.tools = [{ googleSearch: {} }];
 
-    const modelName = task === 'viral_keywords' ? 'gemini-flash-latest' : 'gemini-flash-latest';
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_KEY}`, {
+    const modelName = 'gemini-3.5-flash';
+    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
     });
 
-    const data = await res.json();
+    let data = await res.json();
     if (!res.ok) {
-      console.error('[gemini-tasks] Gemini API error:', res.status, data);
-      const fallback = generateFallback(task, payload);
-      return new Response(JSON.stringify({ success: true, fallback_used: true, result: fallback }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // If 429 quota on tools or error, retry without tools
+      if (res.status === 429 || res.status === 400 || res.status === 503) {
+        delete requestBody.tools;
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        });
+        data = await res.json();
+      }
+
+      if (!res.ok) {
+        const fallback = generateFallback(task, payload);
+        return new Response(JSON.stringify({ success: true, fallback_used: true, result: fallback }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const candidate = data.candidates?.[0];
+    const rawText = candidate?.content?.parts?.[0]?.text ?? '';
+    const groundingMetadataRaw = candidate?.groundingMetadata;
+
+    const sources: Array<{ title: string; uri: string }> = [];
+    if (groundingMetadataRaw?.groundingChunks) {
+      for (const chunk of groundingMetadataRaw.groundingChunks) {
+        if (chunk.web?.uri) {
+          sources.push({
+            title: chunk.web.title || 'Google Search Source',
+            uri: chunk.web.uri,
+          });
+        }
+      }
+    }
+
+    const groundingMetadata = {
+      webSearchQueries: groundingMetadataRaw?.webSearchQueries || [],
+      sources,
+      groundedWithGoogleSearch: true,
+      modelUsed: 'gemini-3.5-flash',
+      searchEntryPoint: groundingMetadataRaw?.searchEntryPoint?.renderedContent || null,
+    };
+
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     let parsed: any = null;
     if (jsonMatch) {
@@ -272,7 +305,7 @@ Respond ONLY with valid JSON:
       parsed = { raw: rawText };
     }
 
-    return new Response(JSON.stringify({ success: true, result: parsed }), {
+    return new Response(JSON.stringify({ success: true, result: parsed, groundingMetadata }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {

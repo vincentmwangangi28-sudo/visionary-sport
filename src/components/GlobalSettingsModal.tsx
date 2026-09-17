@@ -20,6 +20,7 @@ import { SUPPORTED_LANGUAGES, SupportedLanguage } from '@/services/i18n';
 import { POPULAR_TIMEZONES, getDeviceTimezone } from '@/services/timezoneService';
 import { SUPPORTED_ODDS_FORMATS, SupportedOddsFormat } from '@/services/oddsConverter';
 import { SupportedCurrencyCode } from '@/services/currencyService';
+import { Link } from 'react-router-dom';
 import {
   Globe,
   Languages,
@@ -32,6 +33,7 @@ import {
   Zap,
   SlidersHorizontal,
   Calendar,
+  HardDrive,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -503,10 +505,18 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
           </TabsContent>
         </Tabs>
 
-        <div className="pt-4 mt-2 border-t flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">
-            Settings persist across your browser session.
-          </span>
+        <div className="pt-4 mt-2 border-t flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+            <span>Settings persist across your browser session.</span>
+            <span>•</span>
+            <Link
+              to="/preferences"
+              onClick={() => setOpen(false)}
+              className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
+            >
+              <HardDrive className="h-3 w-3" /> Storage & Cache
+            </Link>
+          </div>
           <Button size="sm" onClick={() => setOpen(false)} className="h-8 px-4 text-xs font-bold">
             Done
           </Button>

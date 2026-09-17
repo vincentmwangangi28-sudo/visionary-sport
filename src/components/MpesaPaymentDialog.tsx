@@ -51,16 +51,23 @@ export const MpesaPaymentDialog: React.FC<MpesaPaymentDialogProps> = ({
   const effectivePrice = price ?? amount ?? 500;
 
   const pay = async () => {
+    if (loading) return;
+
     const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length < 9) {
-      toast.error(provider === 'mpesa' ? 'Enter a valid Safaricom number' : 'Enter a valid mobile number');
+    let formatted = cleaned;
+
+    if (cleaned.startsWith('0')) {
+      formatted = '254' + cleaned.slice(1);
+    } else if (cleaned.startsWith('254')) {
+      formatted = cleaned;
+    } else if (cleaned.length === 9) {
+      formatted = '254' + cleaned;
+    }
+
+    if (formatted.length !== 12 || !formatted.startsWith('254')) {
+      toast.error('Please enter a valid Kenyan phone number (e.g. 0712 345 678 or 0112 345 678)');
       return;
     }
-    const formatted = cleaned.startsWith('0')
-      ? '254' + cleaned.slice(1)
-      : cleaned.startsWith('254')
-      ? cleaned
-      : '254' + cleaned;
 
     setLoading(true);
     try {
@@ -146,9 +153,14 @@ export const MpesaPaymentDialog: React.FC<MpesaPaymentDialogProps> = ({
               <p className="text-sm text-muted-foreground">
                 Check your phone screen and enter your PIN to authorize the payment.
               </p>
-              <Button onClick={handleClose} variant="outline" className="w-full mt-2">
-                Done
-              </Button>
+              <div className="flex gap-2 pt-2">
+                <Button onClick={() => setSent(false)} variant="outline" className="flex-1 text-xs">
+                  Change Number
+                </Button>
+                <Button onClick={handleClose} className="flex-1 text-xs">
+                  Done
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">

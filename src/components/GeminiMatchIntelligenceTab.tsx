@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import {
   GeminiMatchAnalysis,
+  GroundingMetadata,
   analyzeMatchWithGemini,
   askMatchScoutWithGemini,
 } from '@/services/geminiTasksService';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
+import { GoogleSearchGroundingCard } from '@/components/GoogleSearchGroundingCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +38,7 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
   const [question, setQuestion] = useState('');
   const [askingScout, setAskingScout] = useState(false);
   const [scoutReply, setScoutReply] = useState<string | null>(null);
+  const [scoutGrounding, setScoutGrounding] = useState<GroundingMetadata | null>(null);
 
   const outcome = getPrediction(p);
   const confidence = getConfidence(p);
@@ -59,7 +62,7 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
         },
       });
       setAnalysis(res);
-      toast.success('Gemini tactical intelligence refreshed!');
+      toast.success('Grounded with Google Search (gemini-3.5-flash)!');
     } catch (err) {
       console.warn('Gemini analysis error:', err);
       toast.error('Could not complete Gemini analysis. Using statistical heuristics.');
@@ -73,9 +76,10 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
     if (!q || askingScout) return;
     setAskingScout(true);
     setScoutReply(null);
+    setScoutGrounding(null);
 
     try {
-      const reply = await askMatchScoutWithGemini(q, {
+      const res = await askMatchScoutWithGemini(q, {
         match: `${p.home_team} vs ${p.away_team}`,
         league: p.league,
         kickoff: p.match_date,
@@ -83,7 +87,8 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
         prediction: outcome,
         confidence,
       });
-      setScoutReply(reply);
+      setScoutReply(res.reply);
+      setScoutGrounding(res.groundingMetadata || null);
       if (!promptText) setQuestion('');
     } catch (err) {
       console.warn('Scout query error:', err);
@@ -101,17 +106,24 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-card rounded-2xl border border-primary/20 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-primary text-primary-foreground font-black text-xs gap-1">
-                <Sparkles className="h-3 w-3" /> Gemini 2.5 Flash Grounded
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className="bg-primary text-primary-foreground font-black text-xs gap-1.5 py-1">
+                <Search className="h-3 w-3" /> Grounded with Google Search
               </Badge>
-              <span className="text-xs text-muted-foreground font-medium">Real-time Search Context</span>
+              <Badge variant="outline" className="text-[11px] font-mono font-semibold text-muted-foreground border-primary/30">
+                gemini-3.5-flash
+              </Badge>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-xs text-muted-foreground font-medium">Live Squad & Injury News</span>
             </div>
             <h3 className="text-base sm:text-lg font-black text-foreground">
               Deep Tactical Intelligence & Lineup Analytics
             </h3>
             <p className="text-xs text-muted-foreground max-w-xl">
-              Calculates non-linear Expected Goals (xG) vectors, tactical formations, transition pace, and bookmaker odds discrepancies.
+              Live Google Search Grounding verifies starting XI fitness, manager press comments, suspensions, and real-time market value before calculating mathematical xG vectors.
             </p>
           </div>
 
@@ -153,6 +165,12 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
       {/* Intelligence Cards */}
       {analysis && !loading && (
         <div className="space-y-4 animate-in fade-in duration-300">
+          {/* Google Search Grounding Card displaying real queries & web citations */}
+          <GoogleSearchGroundingCard
+            metadata={analysis.groundingMetadata}
+            newsSummary={analysis.grounded_factors?.latest_news_summary}
+          />
+
           {/* Main Forecast Card */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Card className="border-border/60 bg-card/60">
@@ -298,13 +316,19 @@ export const GeminiMatchIntelligenceTab: React.FC<Props> = ({ prediction: p }) =
 
           {/* Scout Answer Stream */}
           {scoutReply && (
-            <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-1 animate-in fade-in">
+            <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-2 animate-in fade-in">
               <div className="text-[11px] font-bold text-primary flex items-center gap-1">
                 <Bot className="h-3.5 w-3.5" /> Scout Response:
               </div>
               <p className="text-xs sm:text-sm text-foreground leading-relaxed">
                 {scoutReply}
               </p>
+              {scoutGrounding && (
+                <GoogleSearchGroundingCard
+                  metadata={scoutGrounding}
+                  variant="compact"
+                />
+              )}
             </div>
           )}
 

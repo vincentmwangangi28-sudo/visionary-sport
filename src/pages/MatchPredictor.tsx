@@ -18,6 +18,7 @@ import { AdBannerHorizontal } from '@/components/AdBanner';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { broadcastPrediction } from '@/services/telegramTasksService';
 import { analyzeMatchWithGemini, GeminiMatchAnalysis } from '@/services/geminiTasksService';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 
 const LEAGUES = ['Premier League','La Liga','Champions League','Bundesliga','Serie A','Ligue 1','KPL','AFCON Qualifier','MLS','Europa League'];
 
@@ -457,23 +458,30 @@ export default function MatchPredictor() {
             </CardHeader>
             <CardContent className="p-6 space-y-5">
               {/* Main prediction */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/30 rounded-xl p-4 text-center sm:text-left">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Projected Outcome</p>
-                  <Badge className={`text-base px-4 py-1.5 font-bold ${result.predicted_outcome === 'Home Win' ? 'bg-green-600' : result.predicted_outcome === 'Away Win' ? 'bg-red-600' : 'bg-amber-600'} text-white`}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/30 rounded-xl p-4 items-center">
+                <div className="text-center md:text-left space-y-2">
+                  <p className="text-xs text-muted-foreground">Projected Outcome Tip</p>
+                  <Badge className={`text-base px-4 py-1.5 font-bold ${result.predicted_outcome === 'Home Win' ? 'bg-green-600' : result.predicted_outcome === 'Away Win' ? 'bg-red-600' : 'bg-amber-600'} text-white shadow-xs`}>
                     {result.predicted_outcome ?? 'Draw'}
                   </Badge>
+                  {result.correct_score && (
+                    <div className="pt-1">
+                      <span className="text-xs text-muted-foreground mr-2">Projected Score:</span>
+                      <span className="text-sm font-black text-foreground bg-background px-2 py-0.5 rounded border">{result.correct_score}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-                  <p className="text-3xl font-black text-primary">{result.confidence_score ?? 65}%</p>
+
+                <div className="flex justify-center md:col-span-2">
+                  <ConfidenceMeter
+                    confidence={result.confidence_score ?? 65}
+                    variant="card"
+                    predictionTip={result.predicted_outcome ?? 'Draw'}
+                    homeTeam={homeTeam}
+                    awayTeam={awayTeam}
+                    showBreakdownInline={true}
+                  />
                 </div>
-                {result.correct_score && (
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Projected Score</p>
-                    <p className="text-2xl font-black">{result.correct_score}</p>
-                  </div>
-                )}
               </div>
 
               {/* Probabilities */}

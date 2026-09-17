@@ -94,21 +94,22 @@ export const Footer = () => {
         ))}
       </div>
 
-      <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
         <p>© {new Date().getFullYear()} PredictPro. All rights reserved. <span className="mx-1">·</span> predictpro.guru</p>
         
         <div className="flex items-center gap-2 flex-wrap justify-center">
           <Link
             to="/preferences"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/80 hover:bg-primary/10 hover:text-primary transition-colors text-[11px] font-medium border border-border/70"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background hover:bg-primary/10 text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors text-xs font-semibold border border-border shadow-xs"
             title="Configure Language, Region, Currency and Timezone"
+            aria-label="Open Preferences and Regional Settings"
           >
-            <SlidersHorizontal className="h-3 w-3 opacity-70" />
-            <span>Preferences & Regional Settings</span>
+            <SlidersHorizontal className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+            <span className="text-zinc-900 dark:text-zinc-100 font-semibold">Preferences & Regional Settings</span>
           </Link>
         </div>
 
-        <p className="text-center md:text-right text-[11px]">
+        <p className="text-center md:text-right text-xs text-zinc-700 dark:text-zinc-300 font-medium">
           18+ only · Gamble responsibly
         </p>
       </div>

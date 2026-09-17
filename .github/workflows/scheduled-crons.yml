@@ -1,0 +1,52 @@
+name: 'PredictPro Scheduled Maintenance & Automation'
+
+on:
+  schedule:
+    # Run every 30 minutes during active fixture hours, and at least once every hour
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task to execute (settle, daily, broadcast, crawl, all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - settle
+          - daily
+          - broadcast
+          - recap
+          - value-bets
+          - odds-drift
+          - jackpot
+          - standings
+          - reminders
+          - cleanup
+          - crawl
+
+jobs:
+  run-cron-tasks:
+    name: 'Execute Scheduled Predictions & Settlement Tasks'
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 15
+
+    steps:
+      - name: 'Checkout Repository'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Node.js'
+        uses: 'actions/setup-node@v4'
+        with:
+          node-version: '20'
+
+      - name: 'Run Scheduled Maintenance'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: 'https://predictpro.guru'
+          INDEXNOW_KEY: 'predictpro789xyz456indexnow'
+        run: |
+          TASK="${{ github.event.inputs.task || 'all' }}"
+          node scripts/run-scheduled-tasks.mjs --task="$TASK"

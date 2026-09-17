@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Trophy, Sparkles, Share2, Copy, CheckCheck, Flame, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
@@ -284,9 +285,14 @@ export default function JackpotPredictions() {
                   </div>
 
                   {/* AI Pick & Projected Score */}
-                  <div className="text-right">
-                    <div className="font-extrabold text-sm text-primary">
-                      Pick: {coverageMode === 'double_chance' ? g.doubleChance : g.recommendedPick}
+                  <div className="text-right flex flex-col items-end gap-1">
+                    <div className="font-extrabold text-sm text-primary flex items-center gap-1.5">
+                      <span>Pick: {coverageMode === 'double_chance' ? g.doubleChance : g.recommendedPick}</span>
+                      <ConfidenceMeter
+                        confidence={Math.max(g.homeProb, g.drawProb, g.awayProb)}
+                        variant="compact"
+                        predictionTip={`Pick ${coverageMode === 'double_chance' ? g.doubleChance : g.recommendedPick} (${g.scoreline})`}
+                      />
                     </div>
                     <div className="text-[10px] text-muted-foreground">
                       Pred: {g.scoreline}

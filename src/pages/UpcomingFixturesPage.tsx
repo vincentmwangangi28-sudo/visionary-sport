@@ -212,10 +212,11 @@ export default function UpcomingFixturesPage() {
         <div className="mb-6 space-y-3 bg-card border border-border/80 rounded-xl p-3.5 sm:p-4 shadow-xs">
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
             {/* Timeframe tabs */}
-            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50 text-xs overflow-x-auto">
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50 text-xs overflow-x-auto" role="group" aria-label="Filter fixtures by timeframe">
               <button
                 type="button"
                 onClick={() => setTimeframe('all')}
+                aria-pressed={timeframe === 'all'}
                 className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
                   timeframe === 'all'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -227,6 +228,7 @@ export default function UpcomingFixturesPage() {
               <button
                 type="button"
                 onClick={() => setTimeframe('today')}
+                aria-pressed={timeframe === 'today'}
                 className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
                   timeframe === 'today'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -238,6 +240,7 @@ export default function UpcomingFixturesPage() {
               <button
                 type="button"
                 onClick={() => setTimeframe('tomorrow')}
+                aria-pressed={timeframe === 'tomorrow'}
                 className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
                   timeframe === 'tomorrow'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -249,6 +252,7 @@ export default function UpcomingFixturesPage() {
               <button
                 type="button"
                 onClick={() => setTimeframe('weekend')}
+                aria-pressed={timeframe === 'weekend'}
                 className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
                   timeframe === 'weekend'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -297,13 +301,15 @@ export default function UpcomingFixturesPage() {
 
           {/* Quick League pills */}
           {availableLeagues.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar">
+            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar" role="group" aria-label="Filter fixtures by competition">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
-                <Filter className="h-3 w-3" /> Competitions:
+                <Filter className="h-3 w-3" aria-hidden="true" /> Competitions:
               </span>
               <button
                 type="button"
                 onClick={() => setSelectedLeague('all')}
+                aria-pressed={selectedLeague === 'all'}
+                aria-label={`Show fixtures from all competitions (${matches.length} matches)`}
                 className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium ${
                   selectedLeague === 'all'
                     ? 'bg-primary text-primary-foreground border-primary font-bold'
@@ -319,6 +325,8 @@ export default function UpcomingFixturesPage() {
                     key={lg}
                     type="button"
                     onClick={() => setSelectedLeague(lg)}
+                    aria-pressed={selectedLeague.toLowerCase() === lg.toLowerCase()}
+                    aria-label={`Filter by ${lg} (${count} matches)`}
                     className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1 ${
                       selectedLeague.toLowerCase() === lg.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-bold'

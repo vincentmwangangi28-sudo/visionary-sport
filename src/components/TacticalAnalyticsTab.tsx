@@ -79,14 +79,14 @@ export const TacticalAnalyticsTab: React.FC<TacticalProps> = ({ homeTeam, awayTe
           <div className="space-y-2">
             <div className="flex justify-between items-end text-sm">
               <div className="flex items-center gap-2">
-                <TeamLogo team={homeTeam} size="sm" />
+                <TeamLogo team={homeTeam} league={league} size="sm" />
                 <span className="font-bold">{homeTeam}</span>
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold">{stats.homeXG} xG</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-sky-600 dark:text-sky-400 font-extrabold">{stats.awayXG} xG</span>
                 <span className="font-bold">{awayTeam}</span>
-                <TeamLogo team={awayTeam} size="sm" />
+                <TeamLogo team={awayTeam} league={league} size="sm" />
               </div>
             </div>
 

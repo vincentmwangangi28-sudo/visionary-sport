@@ -366,7 +366,7 @@ self.addEventListener('message', async event => {
     return;
   }
 
-  // Clear offline cache request
+  // Clear offline cache request (Legacy support)
   if (event.data.type === 'CLEAR_OFFLINE_CACHE') {
     event.waitUntil(
       Promise.all([
@@ -375,6 +375,232 @@ self.addEventListener('message', async event => {
         caches.delete(CACHE_DATA),
       ])
     );
+    return;
+  }
+
+  // Inspect detailed cache breakdown and stale asset metrics
+  if (event.data.type === 'GET_CACHE_STATS') {
+    event.waitUntil(
+      (async () => {
+        try {
+          const allKeys = await caches.keys();
+          const staleKeys = allKeys.filter(key => !ALL_CACHES.includes(key));
+          
+          let staticCount = 0;
+          let imagesCount = 0;
+          let dataCount = 0;
+          let staleEntriesCount = 0;
+
+          if (allKeys.includes(CACHE_STATIC)) {
+            const staticCache = await caches.open(CACHE_STATIC);
+            const keys = await staticCache.keys();
+            staticCount = keys.length;
+          }
+
+          if (allKeys.includes(CACHE_IMAGES)) {
+            const imagesCache = await caches.open(CACHE_IMAGES);
+            const keys = await imagesCache.keys();
+            imagesCount = keys.length;
+          }
+
+          if (allKeys.includes(CACHE_DATA)) {
+            const dataCache = await caches.open(CACHE_DATA);
+            const keys = await dataCache.keys();
+            dataCount = keys.length;
+          }
+
+          for (const staleKey of staleKeys) {
+            try {
+              const cache = await caches.open(staleKey);
+              const keys = await cache.keys();
+              staleEntriesCount += keys.length;
+            } catch {
+              // ignore unreadable legacy cache
+            }
+          }
+
+          const responseData = {
+            type: 'CACHE_STATS_RESPONSE',
+            success: true,
+            version: CACHE_VERSION,
+            staticCount,
+            imagesCount,
+            dataCount,
+            staleKeys,
+            staleEntriesCount,
+            totalEntries: staticCount + imagesCount + dataCount + staleEntriesCount,
+          };
+
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(responseData);
+          } else if (event.source && 'postMessage' in event.source) {
+            event.source.postMessage(responseData);
+          }
+        } catch (err) {
+          const errorResp = {
+            type: 'CACHE_STATS_RESPONSE',
+            success: false,
+            error: err && err.message ? err.message : 'Failed to inspect cache',
+          };
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(errorResp);
+          }
+        }
+      })()
+    );
+    return;
+  }
+
+  // Clear stale cache assets (older versions, obsolete keys, expired snapshots, excess image bloat)
+  if (event.data.type === 'CLEAR_STALE_CACHE') {
+    event.waitUntil(
+      (async () => {
+        try {
+          const allKeys = await caches.keys();
+          const staleKeys = allKeys.filter(key => !ALL_CACHES.includes(key));
+          let deletedCachesCount = 0;
+          let purgedEntriesCount = 0;
+
+          // 1. Delete all non-active legacy caches
+          await Promise.all(
+            staleKeys.map(async key => {
+              try {
+                const cache = await caches.open(key);
+                const keys = await cache.keys();
+                purgedEntriesCount += keys.length;
+                const deleted = await caches.delete(key);
+                if (deleted) deletedCachesCount++;
+              } catch {
+                await caches.delete(key);
+              }
+            })
+          );
+
+          // 2. Prune images cache if it exceeds 100 entries to optimize storage efficiency
+          if (allKeys.includes(CACHE_IMAGES)) {
+            try {
+              const imgCache = await caches.open(CACHE_IMAGES);
+              const imgKeys = await imgCache.keys();
+              if (imgKeys.length > 80) {
+                const toTrim = imgKeys.slice(0, imgKeys.length - 80);
+                for (const k of toTrim) {
+                  await imgCache.delete(k);
+                  purgedEntriesCount++;
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
+
+          // 3. Clear stale snapshot if timestamp is old
+          if (allKeys.includes(CACHE_DATA)) {
+            try {
+              const dataCache = await caches.open(CACHE_DATA);
+              const snapshotUrl = new URL('/api/offline-matches-snapshot', self.location.origin).href;
+              const match = await dataCache.match(snapshotUrl);
+              if (match) {
+                const data = await match.json().catch(() => null);
+                if (data && data.timestamp) {
+                  const ageMs = Date.now() - new Date(data.timestamp).getTime();
+                  // Stale if older than 48 hours
+                  if (ageMs > 48 * 60 * 60 * 1000) {
+                    await dataCache.delete(snapshotUrl);
+                    purgedEntriesCount++;
+                  }
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
+
+          const responseData = {
+            type: 'CLEAR_STALE_CACHE_RESPONSE',
+            success: true,
+            deletedCachesCount,
+            staleKeysDeleted: staleKeys,
+            purgedEntriesCount,
+            timestamp: new Date().toISOString(),
+          };
+
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(responseData);
+          } else if (event.source && 'postMessage' in event.source) {
+            event.source.postMessage(responseData);
+          }
+        } catch (err) {
+          const errorResp = {
+            type: 'CLEAR_STALE_CACHE_RESPONSE',
+            success: false,
+            error: err && err.message ? err.message : 'Failed to clear stale cache',
+          };
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(errorResp);
+          }
+        }
+      })()
+    );
+    return;
+  }
+
+  // Clear specific cache category (e.g. 'images', 'data', 'all')
+  if (event.data.type === 'CLEAR_CACHE_CATEGORY') {
+    const category = event.data.category || 'stale';
+    event.waitUntil(
+      (async () => {
+        try {
+          let freedCount = 0;
+          if (category === 'images') {
+            const cache = await caches.open(CACHE_IMAGES);
+            const keys = await cache.keys();
+            freedCount = keys.length;
+            await caches.delete(CACHE_IMAGES);
+            await caches.open(CACHE_IMAGES); // Re-open clean
+          } else if (category === 'data') {
+            const cache = await caches.open(CACHE_DATA);
+            const keys = await cache.keys();
+            freedCount = keys.length;
+            await caches.delete(CACHE_DATA);
+            await caches.open(CACHE_DATA); // Re-open clean
+          } else if (category === 'all') {
+            const allKeys = await caches.keys();
+            for (const k of allKeys) {
+              const cache = await caches.open(k);
+              const keys = await cache.keys();
+              freedCount += keys.length;
+              await caches.delete(k);
+            }
+            // Re-warm core shell so app remains functional
+            const newStatic = await caches.open(CACHE_STATIC);
+            await newStatic.addAll(STATIC_SHELL_ASSETS).catch(() => {});
+          }
+
+          const responseData = {
+            type: 'CLEAR_CACHE_CATEGORY_RESPONSE',
+            success: true,
+            category,
+            freedCount,
+          };
+
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(responseData);
+          } else if (event.source && 'postMessage' in event.source) {
+            event.source.postMessage(responseData);
+          }
+        } catch (err) {
+          const errorResp = {
+            type: 'CLEAR_CACHE_CATEGORY_RESPONSE',
+            success: false,
+            error: err && err.message ? err.message : 'Error clearing category',
+          };
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(errorResp);
+          }
+        }
+      })()
+    );
+    return;
   }
 });
 

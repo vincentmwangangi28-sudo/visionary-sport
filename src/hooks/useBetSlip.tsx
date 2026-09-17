@@ -153,7 +153,13 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     toast.info('Bet slip cleared');
   };
 
-  const totalOdds = selections.reduce((acc, s) => acc * (s.odds || 1), 1);
+  const rawTotalOdds = selections.reduce((acc, s) => {
+    const o = Number(s.odds);
+    return acc * (Number.isFinite(o) && o > 0 ? o : 1);
+  }, 1);
+  const totalOdds = selections.length > 0 && Number.isFinite(rawTotalOdds)
+    ? Math.max(1, Math.round(rawTotalOdds * 100) / 100)
+    : 1;
 
   // Dynamic accumulator bonus
   const getBonusMultiplier = (count: number) => {
@@ -165,8 +171,9 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const bonusMultiplier = getBonusMultiplier(selections.length);
-  const potentialReturn = (stake || 0) * totalOdds;
-  const boostedReturn = potentialReturn * (1 + bonusMultiplier);
+  const safeStake = Number.isFinite(stake) ? Math.max(0, stake) : 0;
+  const potentialReturn = Math.round(safeStake * totalOdds * 100) / 100;
+  const boostedReturn = Math.round(potentialReturn * (1 + bonusMultiplier) * 100) / 100;
 
   const combinedConfidence = selections.length > 0
     ? Math.round(selections.reduce((acc, s) => acc * ((s.confidence || 65) / 100), 1) * 100)

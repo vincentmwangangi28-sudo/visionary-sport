@@ -13,6 +13,7 @@ import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info, Sparkles, Send, Plus, 
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { broadcastValueBet } from '@/services/telegramTasksService';
 import { screenValueWithGemini, GeminiValueResult } from '@/services/geminiTasksService';
 
@@ -206,12 +207,21 @@ export default function ValueBets() {
               onClick={handleGeminiScreenTopBet}
               disabled={loadingGemini || bets.length === 0}
               className="gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10"
+              aria-label="Screen top value bets with Gemini AI"
             >
-              <Sparkles className={`h-4 w-4 ${loadingGemini ? 'animate-spin' : ''}`} />
-              {loadingGemini ? 'Screening...' : 'Gemini EV Screener'}
+              <Sparkles className={`h-4 w-4 ${loadingGemini ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <span>{loadingGemini ? 'Screening...' : 'Gemini EV Screener'}</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={fetch_} disabled={loading} className="gap-2 text-xs">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={fetch_} 
+              disabled={loading} 
+              className="gap-2 text-xs font-semibold"
+              aria-label="Refresh Value Bets data"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <span>Refresh</span>
             </Button>
           </div>
         </div>
@@ -315,9 +325,9 @@ export default function ValueBets() {
                         <p className="text-xs text-muted-foreground">Odds</p>
                         <p className="text-xl font-bold text-primary">{bet.odds.toFixed(2)}</p>
                       </div>
-                      <div className="bg-muted/50 rounded-lg p-3 min-w-[80px]">
-                        <p className="text-xs text-muted-foreground">AI Prob.</p>
-                        <p className="text-xl font-bold">{bet.aiProbability}%</p>
+                      <div className="bg-muted/50 rounded-lg p-3 min-w-[80px] flex flex-col items-center justify-center">
+                        <p className="text-xs text-muted-foreground mb-1">AI Prob.</p>
+                        <ConfidenceMeter confidence={bet.aiProbability} variant="compact" />
                       </div>
                       <div className={`rounded-lg p-3 min-w-[80px] ${bet.edge === 'strong' ? 'bg-green-500/10' : 'bg-amber-500/10'}`}>
                         <p className="text-xs text-muted-foreground">Value</p>
@@ -332,14 +342,26 @@ export default function ValueBets() {
                   {/* Actions */}
                   <div className="mt-3 pt-3 border-t flex items-center justify-end gap-2">
                     {selections.some(s => s.match === `${bet.home_team} vs ${bet.away_team}`) ? (
-                      <Button size="sm" variant="secondary" disabled className="h-7 text-xs gap-1.5">
-                        <CheckCheck className="h-3.5 w-3.5 text-primary" />
-                        In Slip
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        disabled 
+                        className="h-7 text-xs gap-1.5"
+                        aria-label={`Match already added to bet slip: ${bet.home_team} vs ${bet.away_team}`}
+                      >
+                        <CheckCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                        <span>In Slip</span>
                       </Button>
                     ) : (
-                      <Button size="sm" variant="outline" onClick={() => handleAddToSlip(bet)} className="h-7 text-xs gap-1.5">
-                        <Plus className="h-3.5 w-3.5" />
-                        Add to Slip
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleAddToSlip(bet)} 
+                        className="h-7 text-xs gap-1.5 font-semibold"
+                        aria-label={`Add ${bet.home_team} vs ${bet.away_team} (+EV ${bet.valuePct}%) to Bet Slip`}
+                      >
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span>Add to Slip</span>
                       </Button>
                     )}
 
@@ -348,10 +370,11 @@ export default function ValueBets() {
                       variant="outline"
                       onClick={() => handleBroadcast(bet)}
                       disabled={broadcastingId === bet.id}
-                      className="h-7 text-xs gap-1.5 border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10"
+                      className="h-7 text-xs gap-1.5 border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 font-semibold"
+                      aria-label={`Broadcast ${bet.home_team} vs ${bet.away_team} to Telegram channel`}
                     >
-                      <Send className={`h-3.5 w-3.5 ${broadcastingId === bet.id ? 'animate-pulse' : ''}`} />
-                      {broadcastingId === bet.id ? 'Posting...' : 'Post to Telegram'}
+                      <Send className={`h-3.5 w-3.5 ${broadcastingId === bet.id ? 'animate-pulse' : ''}`} aria-hidden="true" />
+                      <span>{broadcastingId === bet.id ? 'Posting...' : 'Post to Telegram'}</span>
                     </Button>
                   </div>
                 </CardContent>

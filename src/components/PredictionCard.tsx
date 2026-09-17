@@ -9,6 +9,7 @@ import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles
 import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
@@ -213,7 +214,15 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               {locked ? <Lock className="h-3 w-3" /> : displayOutcome}
             </Badge>
             {!locked && (
-              <p className="text-[11px] font-extrabold text-primary mt-0.5">{confidence}%</p>
+              <div className="mt-1 flex justify-center">
+                <ConfidenceMeter
+                  confidence={confidence}
+                  variant="compact"
+                  predictionTip={displayOutcome}
+                  homeTeam={p.home_team}
+                  awayTeam={p.away_team}
+                />
+              </div>
             )}
           </div>
 
@@ -396,17 +405,13 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               {locked ? <><Lock className="h-3 w-3 mr-1" />Premium Match</> : displayOutcome}
             </Badge>
             {!locked && (
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-20 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${confidence >= 80 ? 'bg-green-500' : confidence >= 65 ? 'bg-primary' : 'bg-amber-500'}`}
-                    style={{ width: `${confidence}%` }}
-                  />
-                </div>
-                <span className={`text-xs font-black ${confidence >= 80 ? 'text-green-600' : confidence >= 65 ? 'text-primary' : 'text-amber-600'}`}>
-                  {confidence}%
-                </span>
-              </div>
+              <ConfidenceMeter
+                confidence={confidence}
+                variant="card"
+                predictionTip={displayOutcome}
+                homeTeam={p.home_team}
+                awayTeam={p.away_team}
+              />
             )}
           </div>
 

@@ -4,6 +4,8 @@
  * and deterministic color/initials fallback for any football team worldwide.
  */
 
+import { CURRENT_SEASON_STANDINGS, LEAGUES } from '@/data/standingsData';
+
 export interface TeamLogoInfo {
   name: string;
   logo: string;
@@ -1203,3 +1205,380 @@ export function getTeamLogoUrl(teamName: string, customLogo?: string | null): st
 
   return null;
 }
+
+// ==========================================
+// Multi-Tier Logo Cache Engine
+// Tier 1: In-Memory Map (Instant O(1) synchronous lookup)
+// Tier 2: Persistent localStorage (Cross-session preservation)
+// Tier 3: Browser Cache API (Service Worker predictpro-images-v6)
+// ==========================================
+
+const memoryLogoCache = new Map<string, string>();
+const LOCAL_STORAGE_CACHE_KEY = 'predictpro_league_team_logos_v2';
+
+// Hydrate memory cache from localStorage on browser startup
+if (typeof window !== 'undefined') {
+  try {
+    const stored = localStorage.getItem(LOCAL_STORAGE_CACHE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') {
+        Object.entries(parsed).forEach(([k, v]) => {
+          if (typeof v === 'string') {
+            memoryLogoCache.set(k, v);
+          }
+        });
+      }
+    }
+  } catch {
+    // Ignore storage parse issues
+  }
+}
+
+/**
+ * Persists logo URL to local storage with quota protection
+ */
+function persistLogoToStorage(key: string, url: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_CACHE_KEY);
+    const existing = raw ? JSON.parse(raw) : {};
+    existing[key] = url;
+
+    // Keep storage lean (cap at 400 entries)
+    const keys = Object.keys(existing);
+    if (keys.length > 400) {
+      delete existing[keys[0]];
+    }
+    localStorage.setItem(LOCAL_STORAGE_CACHE_KEY, JSON.stringify(existing));
+  } catch {
+    // Safely swallow quota exceptions
+  }
+}
+
+/**
+ * Pre-warms Service Worker image cache for instant offline rendering
+ */
+async function prewarmBrowserCache(url: string): Promise<void> {
+  if (typeof window === 'undefined' || !('caches' in window) || !url.startsWith('http')) return;
+  try {
+    const cache = await caches.open('predictpro-images-v6');
+    const existing = await cache.match(url);
+    if (!existing) {
+      // Fire-and-forget image fetch into cache
+      fetch(url, { mode: 'no-cors' })
+        .then((res) => {
+          if (res && (res.ok || res.type === 'opaque')) {
+            cache.put(url, res);
+          }
+        })
+        .catch(() => {});
+    }
+  } catch {
+    // Ignore cache write errors
+  }
+}
+
+/**
+ * Comprehensive mapping of standard league identifiers, codes, and tournament labels
+ */
+export const LEAGUE_NAME_TO_ID_MAP: Record<string, number> = {
+  // English Premier League
+  'premier league': 39,
+  'epl': 39,
+  'english premier league': 39,
+  'barclays premier league': 39,
+  'england premier league': 39,
+  // Spanish La Liga
+  'la liga': 140,
+  'laliga': 140,
+  'primera division': 140,
+  'spanish la liga': 140,
+  'spain la liga': 140,
+  // Italian Serie A
+  'serie a': 135,
+  'italian serie a': 135,
+  'italy serie a': 135,
+  'calcio': 135,
+  // German Bundesliga
+  'bundesliga': 78,
+  'german bundesliga': 78,
+  'germany bundesliga': 78,
+  // French Ligue 1
+  'ligue 1': 61,
+  'french ligue 1': 61,
+  'france ligue 1': 61,
+  // European Continental Competitions
+  'champions league': 2,
+  'uefa champions league': 2,
+  'ucl': 2,
+  'europa league': 3,
+  'uefa europa league': 3,
+  'uel': 3,
+  // African Domestic Leagues & AFCON
+  'kenyan premier league': 276,
+  'kpl': 276,
+  'fkf': 276,
+  'fkf premier league': 276,
+  'kenya premier league': 276,
+  'afcon': 6,
+  'africa cup of nations': 6,
+  'afcon qualifier': 6,
+  // International & World Cups
+  'world cup': 1,
+  'fifa world cup': 1,
+  'world cup qualifiers': 1,
+  'world cup qualification': 1,
+  // Americas
+  'mls': 253,
+  'major league soccer': 253,
+  // Secondary European leagues
+  'eredivisie': 88,
+  'primeira liga': 94,
+  'liga portugal': 94,
+  'championship': 40,
+  'english championship': 40,
+  'saudi pro league': 307,
+};
+
+/**
+ * Normalizes any league identifier (number, numeric string, or descriptive text) to its canonical numeric ID
+ */
+export function normalizeLeagueId(leagueIdOrName?: number | string | null): number | null {
+  if (leagueIdOrName === undefined || leagueIdOrName === null || leagueIdOrName === '') {
+    return null;
+  }
+  if (typeof leagueIdOrName === 'number') {
+    return leagueIdOrName;
+  }
+
+  const trimmed = String(leagueIdOrName).trim();
+  if (/^\d+$/.test(trimmed)) {
+    return parseInt(trimmed, 10);
+  }
+
+  const lower = trimmed.toLowerCase();
+  if (LEAGUE_NAME_TO_ID_MAP[lower] !== undefined) {
+    return LEAGUE_NAME_TO_ID_MAP[lower];
+  }
+
+  // Substring / fuzzy check against mapped league aliases
+  for (const [alias, id] of Object.entries(LEAGUE_NAME_TO_ID_MAP)) {
+    if (lower.includes(alias) || alias.includes(lower)) {
+      return id;
+    }
+  }
+
+  // Check against LEAGUES configuration
+  const foundLeague = LEAGUES.find(
+    (l) => l.name.toLowerCase().includes(lower) || lower.includes(l.name.toLowerCase())
+  );
+  if (foundLeague) {
+    return foundLeague.id;
+  }
+
+  return null;
+}
+
+/**
+ * Synchronous resolver for team logos using league context and the multi-tier cache.
+ * Resolves with 0ms latency for smooth rendering.
+ */
+export function getTeamLogoWithLeague(
+  teamName: string,
+  leagueIdOrName?: number | string | null,
+  customLogo?: string | null
+): string | null {
+  if (customLogo && customLogo.startsWith('http')) {
+    return customLogo;
+  }
+  if (!teamName) return null;
+
+  const normId = normalizeLeagueId(leagueIdOrName);
+  const cleanedName = cleanTeamName(teamName);
+  const rawKey = teamName.toLowerCase().trim();
+
+  // 1. Check in-memory cache with league-specific key
+  if (normId !== null) {
+    const leagueKey = `${normId}:${cleanedName}`;
+    if (memoryLogoCache.has(leagueKey)) {
+      return memoryLogoCache.get(leagueKey)!;
+    }
+  }
+
+  // 2. Check in-memory cache with raw/cleaned team keys
+  if (memoryLogoCache.has(cleanedName)) {
+    return memoryLogoCache.get(cleanedName)!;
+  }
+  if (memoryLogoCache.has(rawKey)) {
+    return memoryLogoCache.get(rawKey)!;
+  }
+
+  // 3. Match against league standings if league ID is provided
+  if (normId !== null && CURRENT_SEASON_STANDINGS[normId]) {
+    const standings = CURRENT_SEASON_STANDINGS[normId];
+    const match = standings.find((row) => {
+      if (!row.team) return false;
+      const rowClean = cleanTeamName(row.team);
+      const rowRaw = row.team.toLowerCase().trim();
+
+      // Exact match
+      if (rowRaw === rawKey || rowClean === cleanedName) return true;
+
+      // Alias match
+      if (ALIASES[rawKey] && ALIASES[rawKey] === rowClean) return true;
+      if (ALIASES[cleanedName] && ALIASES[cleanedName] === rowClean) return true;
+
+      // Substring match
+      if (rowClean.length > 3 && (rowClean.includes(cleanedName) || cleanedName.includes(rowClean))) {
+        return true;
+      }
+      return false;
+    });
+
+    if (match?.logo) {
+      // Store in memory cache
+      if (normId !== null) memoryLogoCache.set(`${normId}:${cleanedName}`, match.logo);
+      memoryLogoCache.set(cleanedName, match.logo);
+      return match.logo;
+    }
+  }
+
+  // 4. Fallback to canonical lookup
+  const canonicalUrl = getTeamLogoUrl(teamName, customLogo);
+  if (canonicalUrl) {
+    if (normId !== null) memoryLogoCache.set(`${normId}:${cleanedName}`, canonicalUrl);
+    memoryLogoCache.set(cleanedName, canonicalUrl);
+    return canonicalUrl;
+  }
+
+  return null;
+}
+
+/**
+ * Intelligently fetches and caches team logos based on league ID.
+ * - Prioritizes official league standings records for high accuracy.
+ * - Stores resolved crests in memory, localStorage, and Service Worker Cache API.
+ * - Provides seamless visual consistency across match prediction pages.
+ */
+export async function fetchAndCacheTeamLogoByLeague(
+  teamName: string,
+  leagueIdOrName?: number | string | null,
+  customLogo?: string | null
+): Promise<string | null> {
+  if (!teamName) return null;
+
+  // 1. Try fast synchronous path first
+  const syncResult = getTeamLogoWithLeague(teamName, leagueIdOrName, customLogo);
+  const normId = normalizeLeagueId(leagueIdOrName);
+  const cleanedName = cleanTeamName(teamName);
+
+  if (syncResult) {
+    // Asynchronously pre-warm storage and browser cache
+    if (normId !== null) {
+      persistLogoToStorage(`${normId}:${cleanedName}`, syncResult);
+    }
+    persistLogoToStorage(cleanedName, syncResult);
+    prewarmBrowserCache(syncResult);
+    return syncResult;
+  }
+
+  // 2. If not found in current league, search across all known standings
+  for (const [leagueKey, standings] of Object.entries(CURRENT_SEASON_STANDINGS)) {
+    const standingLeagueId = parseInt(leagueKey, 10);
+    const match = standings.find((row) => {
+      if (!row.team) return false;
+      const rowClean = cleanTeamName(row.team);
+      const rowRaw = row.team.toLowerCase().trim();
+      const rawKey = teamName.toLowerCase().trim();
+
+      if (rowRaw === rawKey || rowClean === cleanedName) return true;
+      if (ALIASES[rawKey] === rowClean || ALIASES[cleanedName] === rowClean) return true;
+      if (rowClean.length > 3 && (rowClean.includes(cleanedName) || cleanedName.includes(rowClean))) {
+        return true;
+      }
+      return false;
+    });
+
+    if (match?.logo) {
+      const resolved = match.logo;
+      if (normId !== null) {
+        memoryLogoCache.set(`${normId}:${cleanedName}`, resolved);
+        persistLogoToStorage(`${normId}:${cleanedName}`, resolved);
+      }
+      memoryLogoCache.set(`${standingLeagueId}:${cleanedName}`, resolved);
+      memoryLogoCache.set(cleanedName, resolved);
+      persistLogoToStorage(cleanedName, resolved);
+      prewarmBrowserCache(resolved);
+      return resolved;
+    }
+  }
+
+  // 3. Fuzzy search in CANONICAL_TEAM_LOGOS by word tokens
+  const words = cleanedName.split(' ').filter((w) => w.length >= 4);
+  for (const word of words) {
+    for (const [canonicalKey, info] of Object.entries(CANONICAL_TEAM_LOGOS)) {
+      if (canonicalKey.includes(word) || word.includes(canonicalKey)) {
+        const resolved = info.logo;
+        if (normId !== null) {
+          memoryLogoCache.set(`${normId}:${cleanedName}`, resolved);
+          persistLogoToStorage(`${normId}:${cleanedName}`, resolved);
+        }
+        memoryLogoCache.set(cleanedName, resolved);
+        persistLogoToStorage(cleanedName, resolved);
+        prewarmBrowserCache(resolved);
+        return resolved;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Preloads and caches all team logos for an entire league in batch.
+ * Ensures instant, flicker-free rendering of match lineups, odds tables, and predictions.
+ */
+export async function preloadLeagueTeamLogos(
+  leagueIdOrName: number | string
+): Promise<Record<string, string>> {
+  const normId = normalizeLeagueId(leagueIdOrName);
+  const results: Record<string, string> = {};
+
+  if (normId === null || !CURRENT_SEASON_STANDINGS[normId]) {
+    return results;
+  }
+
+  const standings = CURRENT_SEASON_STANDINGS[normId];
+  for (const row of standings) {
+    if (row.team && row.logo) {
+      const clean = cleanTeamName(row.team);
+      const raw = row.team.toLowerCase().trim();
+
+      results[row.team] = row.logo;
+      memoryLogoCache.set(`${normId}:${clean}`, row.logo);
+      memoryLogoCache.set(`${normId}:${raw}`, row.logo);
+      memoryLogoCache.set(clean, row.logo);
+
+      persistLogoToStorage(`${normId}:${clean}`, row.logo);
+      prewarmBrowserCache(row.logo);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Clears the team logo caches (memory and localStorage)
+ */
+export function clearTeamLogosCache(): void {
+  memoryLogoCache.clear();
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_CACHE_KEY);
+    } catch {
+      // Ignore
+    }
+  }
+}
+

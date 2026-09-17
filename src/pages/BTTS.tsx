@@ -150,8 +150,15 @@ export default function BTTS() {
               Poisson goal expectancy &amp; defensive vulnerability modeling · Refreshed hourly
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetch_} disabled={loading} className="gap-1.5 text-xs">
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetch_} 
+            disabled={loading} 
+            className="gap-1.5 text-xs font-semibold"
+            aria-label="Refresh BTTS Prediction Model"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
             <span>Refresh Model</span>
           </Button>
         </div>
@@ -167,11 +174,23 @@ export default function BTTS() {
         </div>
 
         {/* Market Tabs */}
-        <div className="flex gap-2 mb-6">
-          <Button variant={tab === 'btts' ? 'default' : 'outline'} size="sm" onClick={() => setTab('btts')}>
+        <div className="flex gap-2 mb-6" role="group" aria-label="Goal prediction markets">
+          <Button 
+            variant={tab === 'btts' ? 'default' : 'outline'} 
+            size="sm" 
+            onClick={() => setTab('btts')}
+            aria-label="Filter by Both Teams to Score (BTTS)"
+            aria-pressed={tab === 'btts'}
+          >
             Both Teams to Score (BTTS)
           </Button>
-          <Button variant={tab === 'over25' ? 'default' : 'outline'} size="sm" onClick={() => setTab('over25')}>
+          <Button 
+            variant={tab === 'over25' ? 'default' : 'outline'} 
+            size="sm" 
+            onClick={() => setTab('over25')}
+            aria-label="Filter by Over or Under 2.5 Goals"
+            aria-pressed={tab === 'over25'}
+          >
             Over / Under 2.5 Goals
           </Button>
         </div>
@@ -236,14 +255,17 @@ export default function BTTS() {
                         variant={isAdded ? "secondary" : "outline"}
                         className={`w-full text-xs h-8 gap-1.5 ${isAdded ? 'text-primary font-bold' : ''}`}
                         onClick={() => handleAddToSlip(p, val, label)}
+                        aria-label={isAdded ? `Match already added to slip: ${p.home_team} vs ${p.away_team}` : `Add ${p.home_team} vs ${p.away_team} ${label} to Bet Slip`}
                       >
                         {isAdded ? (
                           <>
-                            <Check className="h-3.5 w-3.5 text-emerald-500" /> In Bet Slip
+                            <Check className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />
+                            <span>In Bet Slip</span>
                           </>
                         ) : (
                           <>
-                            <Plus className="h-3.5 w-3.5" /> Add to Slip
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                            <span>Add to Slip</span>
                           </>
                         )}
                       </Button>

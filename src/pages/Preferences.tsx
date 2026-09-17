@@ -10,12 +10,12 @@ import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useLocaleDetection } from '@/hooks/useLocaleDetection';
 import { GeographicRegionId } from '@/services/geoRegionService';
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '@/services/i18n';
 import { POPULAR_TIMEZONES } from '@/services/timezoneService';
 import { ODDS_FORMATS, SupportedOddsFormat } from '@/services/oddsConverter';
 import { REGIONAL_BOOKMAKERS } from '@/services/bookmakerBookingCodes';
 import { AutomatedAlertsSettingsCard } from '@/components/AutomatedAlertsSettingsCard';
+import { OfflineCacheSettingsCard } from '@/components/OfflineCacheSettingsCard';
 import { toast } from '@/hooks/use-toast';
 import {
   SlidersHorizontal,
@@ -28,10 +28,6 @@ import {
   Globe,
   RotateCcw,
   Sparkles,
-  Wifi,
-  WifiOff,
-  DownloadCloud,
-  HardDrive,
   Clock,
   Percent,
   Gauge,
@@ -770,63 +766,3 @@ export default function Preferences() {
   );
 }
 
-function OfflineCacheSettingsCard() {
-  const { isOnline, hasCachedData, lastSyncedAt, syncOfflineData, isSyncing } = useNetworkStatus();
-  const { formatKickoff } = useUserPreferences();
-
-  return (
-    <Card className="border-border/70">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <HardDrive className="h-5 w-5 text-primary" aria-hidden="true" />
-            10. Offline Match Mode & Crests Cache
-          </CardTitle>
-          <Badge variant="outline" className={isOnline ? "text-green-500 border-green-500/30 bg-green-500/10" : "text-amber-500 border-amber-500/30 bg-amber-500/10"}>
-            {isOnline ? (
-              <span className="flex items-center gap-1"><Wifi className="h-3 w-3" /> Online</span>
-            ) : (
-              <span className="flex items-center gap-1"><WifiOff className="h-3 w-3" /> Offline (Cache Active)</span>
-            )}
-          </Badge>
-        </div>
-        <CardDescription className="text-xs">
-          Service Worker caches critical fixture predictions, AI algorithm insights, and high-definition team logos locally so you can research match tips without internet or on intermittent cellular connections.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="rounded-xl bg-muted/30 border border-border/60 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm">Offline Cache Snapshot Status</span>
-              {hasCachedData ? (
-                <Badge className="bg-green-600 text-white text-[10px] py-0 px-2 font-bold">
-                  ✓ Ready for Offline
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-muted-foreground text-[10px]">
-                  Needs First Sync
-                </Badge>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {lastSyncedAt
-                ? `Last synchronized: ${formatKickoff(lastSyncedAt, { includeDate: true, includeTimezone: true })}`
-                : 'Initial pre-warming cache ready on network connection.'}
-            </p>
-          </div>
-
-          <Button
-            onClick={syncOfflineData}
-            disabled={isSyncing || !isOnline}
-            size="sm"
-            className="gap-2 shrink-0 font-bold"
-          >
-            <DownloadCloud className={`h-4 w-4 ${isSyncing ? 'animate-bounce' : ''}`} />
-            {isSyncing ? 'Caching Matches...' : 'Download Latest for Offline'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

@@ -6,9 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
-import { DollarSign, Users, TrendingUp, ShoppingCart, Sparkles, LayoutDashboard } from 'lucide-react';
+import { DollarSign, Users, TrendingUp, ShoppingCart, Sparkles, LayoutDashboard, Clock } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomationHub';
+import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DailyStat { date: string; revenue: number; transactions: number; }
@@ -125,19 +126,27 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="automation" className="w-full space-y-6">
-          <TabsList className="grid grid-cols-2 max-w-md">
+          <TabsList className="grid grid-cols-3 max-w-xl">
             <TabsTrigger value="automation" className="gap-2 text-xs md:text-sm">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span>AI & Telegram Tasks</span>
+              <span>AI & Telegram</span>
+            </TabsTrigger>
+            <TabsTrigger value="crons" className="gap-2 text-xs md:text-sm">
+              <Clock className="h-4 w-4 text-emerald-500" />
+              <span>Scheduled Crons</span>
             </TabsTrigger>
             <TabsTrigger value="revenue" className="gap-2 text-xs md:text-sm">
               <LayoutDashboard className="h-4 w-4" />
-              <span>Revenue Metrics</span>
+              <span>Revenue</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="automation" className="space-y-6">
             <GeminiTelegramAutomationHub />
+          </TabsContent>
+
+          <TabsContent value="crons" className="space-y-6">
+            <AdminCronJobsManager />
           </TabsContent>
 
           <TabsContent value="revenue" className="space-y-6">

@@ -87,9 +87,10 @@ export function PinnedTeamCard({ team, onUnpin }: PinnedTeamCardProps) {
             size="icon"
             onClick={() => onUnpin(team.name)}
             title="Unpin this club from your dashboard"
+            aria-label={`Unpin ${team.name} from dashboard`}
             className="h-8 w-8 text-primary hover:text-destructive hover:bg-destructive/10 -mr-1 -mt-1 flex-shrink-0"
           >
-            <Pin className="h-4 w-4 fill-primary" />
+            <Pin className="h-4 w-4 fill-primary" aria-hidden="true" />
           </Button>
         </div>
 

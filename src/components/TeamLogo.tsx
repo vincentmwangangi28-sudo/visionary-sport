@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { getTeamLogoUrl, getTeamInitialsAndColor } from '@/services/teamLogos';
+import React, { useState, useEffect } from 'react';
+import {
+  getTeamLogoWithLeague,
+  fetchAndCacheTeamLogoByLeague,
+  getTeamInitialsAndColor,
+} from '@/services/teamLogos';
 
 export interface TeamLogoProps {
   team?: string;
   teamName?: string;
   logoUrl?: string | null;
+  leagueId?: number | string | null;
+  league?: string | null;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
   className?: string;
   showName?: boolean;
@@ -25,6 +31,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   team: rawTeam,
   teamName,
   logoUrl,
+  leagueId,
+  league,
   size = 'md',
   className = '',
   showName = false,
@@ -32,10 +40,33 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   alt,
 }) => {
   const team = rawTeam || teamName || '';
+  const effectiveLeague = leagueId ?? league ?? null;
   const [imageError, setImageError] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const resolvedUrl = !imageError && team ? getTeamLogoUrl(team, logoUrl) : null;
+  const [asyncLogoUrl, setAsyncLogoUrl] = useState<string | null>(null);
+
+  // Synchronous resolution path using league context and multi-tier memory cache
+  const syncUrl = !imageError && team ? getTeamLogoWithLeague(team, effectiveLeague, logoUrl) : null;
+  const resolvedUrl = !imageError ? (syncUrl || asyncLogoUrl) : null;
   const { initials, bgColor, textColor } = getTeamInitialsAndColor(team);
+
+  // Intelligent background fetch & cache if not already found synchronously
+  useEffect(() => {
+    let isMounted = true;
+    setImageError(false);
+
+    if (team) {
+      fetchAndCacheTeamLogoByLeague(team, effectiveLeague, logoUrl).then((fetched) => {
+        if (isMounted && fetched && fetched !== syncUrl) {
+          setAsyncLogoUrl(fetched);
+        }
+      });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [team, effectiveLeague, logoUrl, syncUrl]);
 
   const sizeConfig = typeof size === 'number'
     ? { container: `w-[${size}px] h-[${size}px] rounded-lg p-1`, img: `w-[${size - 8}px] h-[${size - 8}px]`, text: 'text-xs' }

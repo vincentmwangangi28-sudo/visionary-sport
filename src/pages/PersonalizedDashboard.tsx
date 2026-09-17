@@ -212,8 +212,9 @@ export default function PersonalizedDashboard() {
                 onClick={() => setModalOpen(true)}
                 className="h-8 w-8 text-primary"
                 title="Add More Pins"
+                aria-label="Add More Pins to Dashboard"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           </div>

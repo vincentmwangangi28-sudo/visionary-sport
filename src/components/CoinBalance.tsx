@@ -22,7 +22,7 @@ export const CoinBalance = () => {
           .single();
 
         if (error) throw error;
-        setCoins(data.coins);
+        setCoins(typeof data?.coins === 'number' ? data.coins : 0);
       } catch (error) {
         console.error('Error loading coins:', error);
       } finally {
@@ -45,7 +45,8 @@ export const CoinBalance = () => {
         },
         (payload) => {
           console.log('💰 Coin balance updated:', payload);
-          const newCoins = payload.new.coins;
+          const rawCoins = (payload.new as { coins?: number })?.coins;
+          const newCoins = typeof rawCoins === 'number' ? rawCoins : 0;
           setCoins((prev) => {
             if (newCoins > prev) {
               toast.success(`+${newCoins - prev} coins earned! 🎉`);

@@ -41,6 +41,7 @@ import {
   History
 } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
+import { fetchAndCacheTeamLogoByLeague, preloadLeagueTeamLogos } from '@/services/teamLogos';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { PredictionDetailSkeleton } from '@/components/PredictionCardSkeleton';
@@ -48,6 +49,8 @@ import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { MatchHeadToHeadTimeline } from '@/components/MatchHeadToHeadTimeline';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { QuickInsightCard } from '@/components/QuickInsightCard';
 import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
@@ -205,6 +208,21 @@ export default function MatchPrediction() {
     loadPrediction();
   }, [loadPrediction]);
 
+  // Intelligently pre-warm and cache team logos based on league ID for visual consistency
+  useEffect(() => {
+    if (prediction) {
+      if (prediction.home_team) {
+        fetchAndCacheTeamLogoByLeague(prediction.home_team, prediction.league);
+      }
+      if (prediction.away_team) {
+        fetchAndCacheTeamLogoByLeague(prediction.away_team, prediction.league);
+      }
+      if (prediction.league) {
+        preloadLeagueTeamLogos(prediction.league).catch(() => {});
+      }
+    }
+  }, [prediction]);
+
   const handleRetry = () => {
     setRetrying(true);
     toast.info('Connecting to live match feed...');
@@ -290,7 +308,13 @@ export default function MatchPrediction() {
         <div className="bg-card border rounded-2xl p-6 mb-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
-              <TeamLogo team={prediction.home_team} size="lg" className="mb-2 shadow-sm" />
+              <TeamLogo
+                team={prediction.home_team}
+                leagueId={prediction.league}
+                league={prediction.league}
+                size="lg"
+                className="mb-2 shadow-sm"
+              />
               <h2 className="text-base sm:text-2xl font-black text-foreground truncate w-full">{prediction.home_team}</h2>
               <span className="text-[11px] text-muted-foreground uppercase font-bold mt-0.5">Home Team</span>
             </div>
@@ -305,7 +329,13 @@ export default function MatchPrediction() {
             </div>
 
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
-              <TeamLogo team={prediction.away_team} size="lg" className="mb-2 shadow-sm" />
+              <TeamLogo
+                team={prediction.away_team}
+                leagueId={prediction.league}
+                league={prediction.league}
+                size="lg"
+                className="mb-2 shadow-sm"
+              />
               <h2 className="text-base sm:text-2xl font-black text-foreground truncate w-full">{prediction.away_team}</h2>
               <span className="text-[11px] text-muted-foreground uppercase font-bold mt-0.5">Away Team</span>
             </div>
@@ -335,6 +365,16 @@ export default function MatchPrediction() {
               size="sm"
             />
           </div>
+        </div>
+
+        {/* AI Quick Insight: Key Injuries & H2H Tactical Trends (Gemini API) */}
+        <div className="mb-6">
+          <QuickInsightCard
+            homeTeam={prediction.home_team}
+            awayTeam={prediction.away_team}
+            league={prediction.league}
+            matchDate={prediction.match_date}
+          />
         </div>
 
         {/* Feature Tabs: Overview, Markets, H2H, Lineups, Tactics/xG, Multi-Bookmaker Odds */}
@@ -372,9 +412,14 @@ export default function MatchPrediction() {
                   </Badge>
                 </div>
 
-                <div className="py-2">
-                  <p className="text-5xl font-black text-primary tracking-tight">{confidence}%</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Statistical Model Confidence</p>
+                <div className="py-2 flex justify-center">
+                  <ConfidenceMeter
+                    confidence={confidence}
+                    variant="gauge"
+                    predictionTip={outcome}
+                    homeTeam={prediction.home_team}
+                    awayTeam={prediction.away_team}
+                  />
                 </div>
 
                 {/* 1X2 Odds Quick Actions */}
@@ -658,7 +703,7 @@ export default function MatchPrediction() {
 
           {/* TAB 4: Pitch Lineups & Formations */}
           <TabsContent value="lineups">
-            <PitchLineupVisualizer homeTeam={prediction.home_team} awayTeam={prediction.away_team} />
+            <PitchLineupVisualizer homeTeam={prediction.home_team} awayTeam={prediction.away_team} league={prediction.league} />
           </TabsContent>
 
           {/* TAB 3: Tactical & xG Breakdown */}

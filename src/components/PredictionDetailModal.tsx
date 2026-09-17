@@ -7,6 +7,7 @@ import { TeamFormBadge } from '@/components/TeamFormBadge';
 import { H2HWidget } from '@/components/H2HWidget';
 import { SharePrediction } from '@/components/SharePrediction';
 import { TeamLogo } from '@/components/TeamLogo';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, TrendingUp, Target } from 'lucide-react';
@@ -62,9 +63,15 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
               <p className="text-xs text-muted-foreground mb-1">AI Prediction</p>
               <Badge className={`${OUTCOME_COLOR[outcome] ?? 'bg-primary'} text-white text-base px-4 py-1.5`}>{outcome}</Badge>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Confidence</p>
-              <p className="text-3xl font-black text-primary">{confidence}%</p>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-muted-foreground mb-1">AI Certainty</span>
+              <ConfidenceMeter
+                confidence={confidence}
+                variant="card"
+                predictionTip={outcome}
+                homeTeam={p.home_team}
+                awayTeam={p.away_team}
+              />
             </div>
             <SharePrediction prediction={{ ...p, predicted_outcome: outcome, confidence_score: confidence, status: p.status ?? 'pending', is_premium: p.is_premium, created_at: p.created_at }} />
           </div>

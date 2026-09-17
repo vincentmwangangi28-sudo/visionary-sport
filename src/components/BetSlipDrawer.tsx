@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
+import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { toast } from 'sonner';
 
 export const BetSlipDrawer = () => {
@@ -268,7 +269,9 @@ export const BetSlipDrawer = () => {
                         <Badge variant="outline" className="bg-background font-semibold text-primary">
                           {s.market}
                         </Badge>
-                        <span className="text-muted-foreground text-[11px]">AI: {s.confidence}%</span>
+                        {s.confidence ? (
+                          <ConfidenceMeter confidence={s.confidence} variant="compact" />
+                        ) : null}
                       </div>
                       <div className="font-black text-sm text-foreground">
                         @ {formatOdds(s.odds)}

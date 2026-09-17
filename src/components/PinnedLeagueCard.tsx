@@ -50,9 +50,10 @@ export function PinnedLeagueCard({ league, onUnpin }: PinnedLeagueCardProps) {
               size="icon"
               onClick={() => onUnpin(league.name)}
               title="Unpin this league from your dashboard"
+              aria-label={`Unpin ${league.name} from dashboard`}
               className="h-8 w-8 text-primary hover:text-destructive hover:bg-destructive/10 -mr-1 -mt-1 flex-shrink-0"
             >
-              <Pin className="h-4 w-4 fill-primary" />
+              <Pin className="h-4 w-4 fill-primary" aria-hidden="true" />
             </Button>
           </div>
 

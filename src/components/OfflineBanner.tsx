@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { WifiOff, RefreshCw, CheckCircle2, ShieldCheck, X } from 'lucide-react';
@@ -9,6 +9,13 @@ export const OfflineBanner: React.FC = () => {
   const { isOffline, hasCachedData, lastSyncedAt, syncOfflineData, isSyncing } = useNetworkStatus();
   const { formatKickoff } = useUserPreferences();
   const [dismissed, setDismissed] = useState(false);
+
+  // If user comes back online, reset dismissed so future offline states are alerted
+  useEffect(() => {
+    if (!isOffline) {
+      setDismissed(false);
+    }
+  }, [isOffline]);
 
   if (!isOffline || dismissed) {
     return null;
