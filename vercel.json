@@ -17,6 +17,12 @@
       "destination": "/index.html"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/indexing-cron",
+      "schedule": "0 5 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
