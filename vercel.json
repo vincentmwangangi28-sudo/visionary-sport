@@ -17,16 +17,6 @@
       "destination": "/index.html"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/indexing-cron",
-      "schedule": "0 */2 * * *"
-    },
-    {
-      "path": "/api/google-crawl-cron",
-      "schedule": "0 */4 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/assets/(.*)",
