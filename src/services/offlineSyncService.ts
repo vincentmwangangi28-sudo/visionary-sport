@@ -79,6 +79,44 @@ export function sendSWMessage(message: Record<string, unknown>): boolean {
 }
 
 /**
+ * Triggers revalidation of cached match data using the Stale-While-Revalidate pattern.
+ * Notifies the active Service Worker to fetch fresh fixtures/predictions in the background
+ * and update the offline snapshot, while ensuring cached data remains immediately accessible.
+ */
+export async function triggerMatchDataRevalidation(): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Request background revalidation from Service Worker
+  const sent = sendSWMessage({
+    type: 'REVALIDATE_MATCH_DATA',
+    timestamp: new Date().toISOString(),
+  });
+
+  // 2. Also refresh the offline snapshot payload in Cache Storage if online
+  if (navigator.onLine && 'caches' in window) {
+    try {
+      const savedMatches = getSavedPredictionsList();
+      const matchPayload = savedMatches.length > 0 ? savedMatches : DEFAULT_PREDICTIONS;
+      const dataCache = await caches.open(CACHE_DATA_NAME);
+      const snapshotUrl = new URL('/api/offline-matches-snapshot', window.location.origin).href;
+      const snapshotResponse = new Response(JSON.stringify(matchPayload), {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-PredictPro-Strategy': 'stale-while-revalidate',
+          'X-PredictPro-Updated': new Date().toISOString(),
+        },
+      });
+      await dataCache.put(snapshotUrl, snapshotResponse);
+      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+    } catch {
+      // non-blocking
+    }
+  }
+
+  return sent;
+}
+
+/**
  * Proactively pre-warms the Service Worker Image & Data caches with
  * all canonical team crests and active match predictions.
  */

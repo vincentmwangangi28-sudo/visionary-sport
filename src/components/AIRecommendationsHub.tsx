@@ -516,3 +516,6 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
     </section>
   );
 };
+
+export default AIRecommendationsHub;
+

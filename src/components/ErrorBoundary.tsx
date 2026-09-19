@@ -1,6 +1,7 @@
 import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Trash2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[PredictPro ErrorBoundary caught an unhandled exception]:', error, info);
+    try {
+      logger.logErrorBoundary(error, info, {
+        compact: this.props.compact,
+      });
+    } catch {
+      // Never let logging failure impede ErrorBoundary
+    }
   }
 
   resetError = () => {

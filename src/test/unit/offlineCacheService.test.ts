@@ -21,4 +21,11 @@ describe('Offline cache helpers and storage utilities', () => {
     expect(urls.length).toBeGreaterThan(0);
     expect(urls.every(u => u.startsWith('http'))).toBe(true);
   });
+
+  it('safely handles triggerMatchDataRevalidation in environment without crashing', async () => {
+    const { triggerMatchDataRevalidation } = await import('@/services/offlineSyncService');
+    const result = await triggerMatchDataRevalidation();
+    // In node/vitest environment without an active serviceWorker controller, it returns false safely
+    expect(typeof result).toBe('boolean');
+  });
 });

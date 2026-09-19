@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
-import { AIRecommendationsHub, RecommendationCategory } from '@/components/AIRecommendationsHub';
+import { AIRecommendationsHub, type RecommendationCategory } from '@/components/AIRecommendationsHub';
 import { DailyAIDigestBanner } from '@/components/DailyAIDigestBanner';
 import { WhatsAppShare } from '@/components/WhatsAppShare';
 import { Button } from '@/components/ui/button';
@@ -481,3 +481,6 @@ export default function Recommendations() {
     </div>
   );
 }
+
+export { Recommendations };
+

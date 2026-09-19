@@ -88,6 +88,18 @@ function isDataOrApiRequest(request, url) {
   return false;
 }
 
+// Check if request is specifically for football match data, fixtures, or predictions
+function isMatchDataRequest(request, url) {
+  if (url.pathname.includes('/api/offline-matches-snapshot')) return true;
+  if (url.pathname.includes('predictions') || url.pathname.includes('matches')) return true;
+  if (url.pathname.includes('fixtures') || url.pathname.includes('scoreboard')) return true;
+  if (url.pathname.includes('standings') || url.pathname.includes('odds')) return true;
+  if (url.searchParams && (url.searchParams.has('league') || url.searchParams.has('date') || url.searchParams.has('season'))) return true;
+  if (url.hostname.includes('supabase.co') && url.pathname.includes('/rest/v1/')) return true;
+  if (url.hostname.includes('api-sports.io') || url.hostname.includes('football-data.org')) return true;
+  return isDataOrApiRequest(request, url);
+}
+
 // Helper: Network fetch with timeout
 function fetchWithTimeout(request, timeoutMs = 3500) {
   return new Promise((resolve, reject) => {
@@ -194,25 +206,55 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // C. Match Predictions & API Data - Network-First with Timeout & Cache Fallback
-  if (isDataOrApiRequest(req, url)) {
+  // C. Match Predictions & Dynamic Sports Data - Stale-While-Revalidate (SWR) Strategy
+  if (isMatchDataRequest(req, url)) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_DATA);
-        try {
-          const netRes = await fetchWithTimeout(req.clone(), 3000);
-          if (netRes && netRes.ok) {
-            cache.put(req, netRes.clone()).catch(() => {});
-            return netRes;
-          }
-        } catch (err) {
-          // Network failed or timed out
-        }
-
         const cached = await cache.match(req);
+
+        // Helper: broadcast background revalidation update to all clients
+        const notifyClients = async (urlStr, status) => {
+          const payload = {
+            type: 'MATCH_DATA_REVALIDATED',
+            url: urlStr,
+            status,
+            timestamp: new Date().toISOString(),
+          };
+          try {
+            const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+            for (const client of clients) {
+              client.postMessage(payload);
+            }
+          } catch {
+            // non-blocking
+          }
+        };
+
+        // Background revalidation task: fetch fresh data from network and update cache
+        const revalidatePromise = (async () => {
+          try {
+            const netRes = await fetchWithTimeout(req.clone(), 5000);
+            if (netRes && (netRes.ok || netRes.status === 200 || netRes.type === 'opaque')) {
+              await cache.put(req, netRes.clone());
+              await notifyClients(req.url, netRes.status);
+              return netRes;
+            }
+          } catch {
+            // Background revalidation failed (offline or timeout); cached stale data remains safely served
+          }
+          return null;
+        })();
+
+        // 1. If cached match data is present, serve it immediately (Stale-While-Revalidate)!
         if (cached) {
+          event.waitUntil(revalidatePromise);
+
           const newHeaders = new Headers(cached.headers);
-          newHeaders.set('X-PredictPro-Offline', 'true');
+          newHeaders.set('X-PredictPro-Strategy', 'stale-while-revalidate');
+          newHeaders.set('X-PredictPro-Cache', 'STALE');
+          newHeaders.set('X-PredictPro-Offline', navigator.onLine ? 'false' : 'true');
+
           return new Response(cached.body, {
             status: cached.status,
             statusText: cached.statusText,
@@ -220,12 +262,49 @@ self.addEventListener('fetch', event => {
           });
         }
 
-        // Return empty JSON structure instead of failing
+        // 2. If not yet in cache, await network fetch
+        try {
+          const freshRes = await revalidatePromise;
+          if (freshRes) {
+            return freshRes;
+          }
+        } catch {
+          // ignore
+        }
+
+        // 3. Fallback to offline matches snapshot if available
+        const snapshotUrl = new URL('/api/offline-matches-snapshot', self.location.origin).href;
+        const snapshotCached = await cache.match(snapshotUrl);
+        if (snapshotCached) {
+          const snapHeaders = new Headers(snapshotCached.headers);
+          snapHeaders.set('X-PredictPro-Strategy', 'stale-while-revalidate');
+          snapHeaders.set('X-PredictPro-Cache', 'SNAPSHOT-FALLBACK');
+          snapHeaders.set('X-PredictPro-Offline', 'true');
+          return new Response(snapshotCached.body, {
+            status: 200,
+            statusText: 'OK',
+            headers: snapHeaders,
+          });
+        }
+
+        // 4. Safe fallback JSON response
         return new Response(
-          JSON.stringify({ ok: true, offline: true, data: [], cached_matches: [] }),
+          JSON.stringify({
+            ok: true,
+            offline: true,
+            data: [],
+            cached_matches: [],
+            strategy: 'stale-while-revalidate',
+            message: 'PredictPro offline match cache fallback'
+          }),
           {
             status: 200,
-            headers: { 'Content-Type': 'application/json', 'X-PredictPro-Offline': 'true' }
+            headers: {
+              'Content-Type': 'application/json',
+              'X-PredictPro-Offline': 'true',
+              'X-PredictPro-Strategy': 'stale-while-revalidate',
+              'X-PredictPro-Cache': 'EMPTY-FALLBACK'
+            }
           }
         );
       })()
@@ -343,12 +422,54 @@ self.addEventListener('message', async event => {
       const cache = await caches.open(CACHE_DATA);
       const snapshotUrl = new URL('/api/offline-matches-snapshot', self.location.origin).href;
       const response = new Response(JSON.stringify(event.data.payload), {
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'X-PredictPro-Strategy': 'stale-while-revalidate',
+          'X-PredictPro-Prewarmed': 'true',
+        }
       });
       await cache.put(snapshotUrl, response);
     } catch {
       // ignore
     }
+    return;
+  }
+
+  // Stale-While-Revalidate handshake & active confirmation
+  if (event.data.type === 'ENABLE_MATCH_SWR') {
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({ type: 'MATCH_SWR_ACTIVE', success: true });
+    }
+    return;
+  }
+
+  // Trigger immediate background revalidation of match data
+  if (event.data.type === 'REVALIDATE_MATCH_DATA') {
+    event.waitUntil(
+      (async () => {
+        try {
+          const cache = await caches.open(CACHE_DATA);
+          const snapshotUrl = new URL('/api/offline-matches-snapshot', self.location.origin).href;
+          if (navigator.onLine) {
+            const netRes = await fetchWithTimeout(snapshotUrl, 5000).catch(() => null);
+            if (netRes && netRes.ok) {
+              await cache.put(snapshotUrl, netRes.clone());
+            }
+          }
+          const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+          for (const client of clients) {
+            client.postMessage({
+              type: 'MATCH_DATA_REVALIDATED',
+              url: snapshotUrl,
+              timestamp: new Date().toISOString(),
+              manual: true,
+            });
+          }
+        } catch {
+          // ignore
+        }
+      })()
+    );
     return;
   }
 

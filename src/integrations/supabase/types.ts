@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      error_logs: {
+        Row: {
+          id: string
+          created_at: string
+          error_message: string
+          error_stack: string | null
+          component_stack: string | null
+          error_type: string | null
+          url: string | null
+          user_id: string | null
+          user_agent: string | null
+          severity: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          error_message: string
+          error_stack?: string | null
+          component_stack?: string | null
+          error_type?: string | null
+          url?: string | null
+          user_id?: string | null
+          user_agent?: string | null
+          severity?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          error_message?: string
+          error_stack?: string | null
+          component_stack?: string | null
+          error_type?: string | null
+          url?: string | null
+          user_id?: string | null
+          user_agent?: string | null
+          severity?: string | null
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       coin_packages: {
         Row: {
           bonus_coins: number | null

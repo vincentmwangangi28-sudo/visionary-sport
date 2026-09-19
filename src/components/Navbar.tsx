@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { CoinBalance } from "./CoinBalance";
 import { NotificationBell } from "./NotificationBell";
@@ -38,11 +39,13 @@ import { PWAInstallButton } from "./PWAInstallButton";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const { t } = useUserPreferences();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
   const navLinks = [
+    ...(isAdmin ? [{ to: "/admin", label: "Admin Operations", icon: ShieldCheck, protected: true }] : []),
     { to: "/",              label: t('nav.predictions', "Predictions"),    icon: Zap },
     { to: "/dashboard",     label: "My Dashboard",                        icon: Pin },
     { to: "/recommendations", label: "AI Recommended",                    icon: Sparkles },
@@ -154,6 +157,25 @@ export const Navbar = () => {
               </Button>
             </Link>
 
+            {/* Quick Admin Shortcut if user has admin privileges */}
+            {isAdmin && (
+              <Link to="/admin" title="PredictPro Admin Operations Hub">
+                <Button
+                  variant={location.pathname === '/admin' ? 'default' : 'outline'}
+                  size="sm"
+                  className={`h-8 gap-1.5 text-xs font-semibold px-2.5 ${
+                    location.pathname === '/admin'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'
+                      : 'text-emerald-500 hover:text-emerald-600 border-emerald-500/30 bg-emerald-500/5'
+                  }`}
+                  aria-label="Open Admin Dashboard"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Admin</span>
+                </Button>
+              </Link>
+            )}
+
             {user ? (
               <>
                 <CoinBalance />
@@ -217,6 +239,20 @@ export const Navbar = () => {
                     </span>
                     <span className="text-[10px] text-muted-foreground">Configure</span>
                   </Link>
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-between p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 transition-colors text-xs font-semibold text-foreground"
+                    >
+                      <span className="flex items-center gap-2 text-emerald-500">
+                        <ShieldCheck className="h-4 w-4" />
+                        Admin Operations Hub
+                      </span>
+                      <span className="text-[10px] text-emerald-500 font-bold">Open &rarr;</span>
+                    </Link>
+                  )}
                 </div>
 
                 <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
