@@ -3,6 +3,13 @@
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist",
   "framework": "vite",
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/generate-sitemap",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/ping-search-engines",
@@ -16,55 +23,7 @@
   "crons": [
     {
       "path": "/api/indexing-cron",
-      "schedule": "0 */2 * * *"
-    },
-    {
-      "path": "/api/google-crawl-cron",
-      "schedule": "0 */4 * * *"
-    },
-    {
-      "path": "/api/settle-results-cron",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/value-bets-cron",
-      "schedule": "*/20 * * * *"
-    },
-    {
-      "path": "/api/odds-drift-cron",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/daily-predictions-cron",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/jackpot-cron",
-      "schedule": "0 12 * * 4"
-    },
-    {
-      "path": "/api/standings-cron",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/telegram-broadcast-cron",
-      "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/evening-recap-cron",
-      "schedule": "0 22 * * *"
-    },
-    {
-      "path": "/api/subscription-reminders-cron",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cleanup-cron",
-      "schedule": "0 3 * * 1"
-    },
-    {
-      "path": "/api/sitemap-cron",
-      "schedule": "0 3 * * *"
+      "schedule": "0 5 * * *"
     }
   ],
   "headers": [
