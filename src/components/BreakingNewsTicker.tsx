@@ -82,12 +82,12 @@ export function BreakingNewsTicker() {
                 </h4>
 
                 {item.bettingImpact ? (
-                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 line-clamp-2 flex items-start gap-1 pt-0.5">
-                    <TrendingUp className="h-3 w-3 shrink-0 mt-0.5" />
+                  <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium line-clamp-2 flex items-start gap-1 pt-0.5">
+                    <TrendingUp className="h-3 w-3 shrink-0 mt-0.5 text-emerald-700 dark:text-emerald-400" />
                     <span>{item.bettingImpact}</span>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-muted-foreground line-clamp-2">
+                  <p className="text-[11px] text-foreground/80 dark:text-foreground/70 line-clamp-2">
                     {item.description}
                   </p>
                 )}

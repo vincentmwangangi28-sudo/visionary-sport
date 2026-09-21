@@ -97,7 +97,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
           prediction: p,
           category: 'banker',
           categoryLabel: 'Banker Lock',
-          categoryBadgeClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+          categoryBadgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 font-bold',
           categoryIcon: ShieldCheck,
           market,
           odds,
@@ -112,7 +112,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
           prediction: p,
           category: 'value',
           categoryLabel: 'Value Edge',
-          categoryBadgeClass: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+          categoryBadgeClass: 'bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/30 font-bold',
           categoryIcon: TrendingUp,
           market,
           odds,
@@ -127,7 +127,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
           prediction: p,
           category: 'goals',
           categoryLabel: 'Goals Machine',
-          categoryBadgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+          categoryBadgeClass: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 font-bold',
           categoryIcon: Flame,
           market: outcome.includes('Win') ? 'Over 2.5 Goals' : outcome,
           odds: outcome.includes('Win') ? 1.85 : odds,
@@ -142,7 +142,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
           prediction: p,
           category: 'moonshot',
           categoryLabel: 'High Multiplier',
-          categoryBadgeClass: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+          categoryBadgeClass: 'bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30 font-bold',
           categoryIcon: Zap,
           market,
           odds,
@@ -158,7 +158,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
           prediction: p,
           category: 'value',
           categoryLabel: 'Value Pick',
-          categoryBadgeClass: 'bg-primary/15 text-primary border-primary/30',
+          categoryBadgeClass: 'bg-primary/15 text-primary border-primary/30 font-bold',
           categoryIcon: Sparkles,
           market,
           odds,
@@ -442,14 +442,14 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
                 {/* Probabilities & EV Stats */}
                 <div className="grid grid-cols-2 gap-2 text-center text-xs py-1 px-2 bg-background rounded-lg border">
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">AI Win Prob</span>
-                    <span className="font-black text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[10px] text-foreground/75 font-medium block">AI Win Prob</span>
+                    <span className="font-black text-emerald-800 dark:text-emerald-300">
                       {item.confidence}%
                     </span>
                   </div>
                   <div className="border-l pl-2">
-                    <span className="text-[10px] text-muted-foreground block">Edge vs Bookie</span>
-                    <span className="font-black text-blue-600 dark:text-blue-400">
+                    <span className="text-[10px] text-foreground/75 font-medium block">Edge vs Bookie</span>
+                    <span className="font-black text-blue-800 dark:text-blue-300">
                       +{item.evPercent}% EV
                     </span>
                   </div>

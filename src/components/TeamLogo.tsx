@@ -19,12 +19,12 @@ export interface TeamLogoProps {
   badgeOnly?: boolean;
 }
 
-const SIZE_MAP: Record<string, { container: string; img: string; text: string }> = {
-  xs: { container: 'w-5 h-5 rounded-md p-0.5', img: 'w-3.5 h-3.5', text: 'text-[8px]' },
-  sm: { container: 'w-7 h-7 rounded-lg p-0.5', img: 'w-5 h-5', text: 'text-[10px]' },
-  md: { container: 'w-9 h-9 rounded-xl p-1', img: 'w-6.5 h-6.5', text: 'text-xs' },
-  lg: { container: 'w-12 h-12 rounded-xl p-1.5', img: 'w-8.5 h-8.5', text: 'text-sm font-bold' },
-  xl: { container: 'w-16 h-16 rounded-2xl p-2', img: 'w-11 h-11', text: 'text-base font-black' },
+const SIZE_MAP: Record<string, { container: string; img: string; text: string; dim: number }> = {
+  xs: { container: 'w-5 h-5 rounded-md p-0.5', img: 'w-3.5 h-3.5', text: 'text-[8px]', dim: 14 },
+  sm: { container: 'w-7 h-7 rounded-lg p-0.5', img: 'w-5 h-5', text: 'text-[10px]', dim: 20 },
+  md: { container: 'w-9 h-9 rounded-xl p-1', img: 'w-6.5 h-6.5', text: 'text-xs', dim: 26 },
+  lg: { container: 'w-12 h-12 rounded-xl p-1.5', img: 'w-8.5 h-8.5', text: 'text-sm font-bold', dim: 34 },
+  xl: { container: 'w-16 h-16 rounded-2xl p-2', img: 'w-11 h-11', text: 'text-base font-black', dim: 44 },
 };
 
 export const TeamLogo: React.FC<TeamLogoProps> = ({
@@ -69,7 +69,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   }, [team, effectiveLeague, logoUrl, syncUrl]);
 
   const sizeConfig = typeof size === 'number'
-    ? { container: `w-[${size}px] h-[${size}px] rounded-lg p-1`, img: `w-[${size - 8}px] h-[${size - 8}px]`, text: 'text-xs' }
+    ? { container: `w-[${size}px] h-[${size}px] rounded-lg p-1`, img: `w-[${size - 8}px] h-[${size - 8}px]`, text: 'text-xs', dim: Math.max(12, size - 8) }
     : SIZE_MAP[size] || SIZE_MAP.md;
 
   const logoElement = (
@@ -84,8 +84,10 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
           src={resolvedUrl}
           alt={alt || `${team} crest`}
           loading="lazy"
+          decoding="async"
+          width={sizeConfig.dim}
+          height={sizeConfig.dim}
           referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
           className={`object-contain transition-opacity duration-200 ${
             loaded ? 'opacity-100' : 'opacity-80'
           } ${sizeConfig.img}`}

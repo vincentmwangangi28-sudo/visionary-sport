@@ -35,9 +35,9 @@ import { toast } from 'sonner';
 type TimeframeFilter = 'all' | 'today' | 'tomorrow' | 'weekend';
 
 const OUTCOME_STYLES: Record<string, string> = {
-  'Home Win': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-  'Away Win': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30',
-  'Draw': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
+  'Home Win': 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 font-bold',
+  'Away Win': 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30 font-bold',
+  'Draw': 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 font-bold',
 };
 
 export const UpcomingMatches: React.FC = () => {
@@ -206,11 +206,11 @@ export const UpcomingMatches: React.FC = () => {
         <div className="mb-6 space-y-3 bg-card border border-border/70 rounded-xl p-3 sm:p-4 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
             {/* Timeframe selector */}
-            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50 text-xs overflow-x-auto">
+            <div className="flex items-center gap-1.5 bg-muted/40 p-1.5 rounded-lg border border-border/50 text-xs overflow-x-auto">
               <button
                 type="button"
                 onClick={() => setTimeframe('all')}
-                className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
+                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'all'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -221,7 +221,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('today')}
-                className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
+                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'today'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -232,7 +232,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('tomorrow')}
-                className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
+                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'tomorrow'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -243,7 +243,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('weekend')}
-                className={`px-3 py-1 rounded-md font-semibold transition-colors whitespace-nowrap ${
+                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'weekend'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -284,10 +284,10 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedLeague('all')}
-                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium ${
+                className={`text-[11px] px-3 py-1.5 min-h-[36px] rounded-full border transition-colors shrink-0 font-medium flex items-center justify-center ${
                   selectedLeague === 'all'
                     ? 'bg-primary text-primary-foreground border-primary font-bold'
-                    : 'bg-muted/30 border-border hover:bg-muted text-muted-foreground'
+                    : 'bg-muted/50 border-border hover:bg-muted text-foreground/85'
                 }`}
               >
                 All ({matches.length})
@@ -300,14 +300,15 @@ export const UpcomingMatches: React.FC = () => {
                     key={lg}
                     type="button"
                     onClick={() => setSelectedLeague(lg)}
-                    className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1 ${
+                    className={`text-[11px] px-3 py-1.5 min-h-[36px] rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1.5 justify-center ${
                       selectedLeague.toLowerCase() === lg.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-bold'
-                        : 'bg-muted/30 border-border hover:bg-muted text-muted-foreground'
+                        : 'bg-muted/50 border-border hover:bg-muted text-foreground/85'
                     }`}
                   >
+                    <span>{badge.flag}</span>
                     <span>{lg}</span>
-                    <span className="text-[9px] opacity-75 font-mono">({count})</span>
+                    <span className="text-[10px] font-mono text-foreground/80 font-bold">({count})</span>
                   </button>
                 );
               })}
@@ -345,7 +346,7 @@ export const UpcomingMatches: React.FC = () => {
                           {badgeMeta.badgeLabel && (
                             <Badge
                               variant="secondary"
-                              className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20 font-medium"
+                              className="text-[10px] px-1.5 py-0 bg-muted text-foreground font-bold border border-border"
                             >
                               {badgeMeta.badgeLabel}
                             </Badge>
@@ -403,7 +404,7 @@ export const UpcomingMatches: React.FC = () => {
                           </div>
 
                           <div className="text-center px-2 shrink-0">
-                            <span className="text-[10px] font-black text-muted-foreground bg-muted/80 px-2 py-0.5 rounded uppercase tracking-wider">
+                            <span className="text-[10px] font-black text-foreground/80 bg-muted px-2 py-0.5 rounded uppercase tracking-wider border border-border/60">
                               VS
                             </span>
                           </div>
@@ -438,7 +439,7 @@ export const UpcomingMatches: React.FC = () => {
                             {outcome}
                           </Badge>
                           {isBanker && (
-                            <Badge variant="secondary" className="text-[10px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 gap-1">
+                            <Badge variant="secondary" className="text-[10px] font-black bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 gap-1">
                               <Flame className="h-2.5 w-2.5" /> Banker
                             </Badge>
                           )}

@@ -55,10 +55,10 @@ Allow: /
 User-agent: YandexBot
 Allow: /
 
-# IndexNow Verification
-# Verification Key: predictpro789xyz456indexnow
-IndexNow: https://predictpro.guru/predictpro789xyz456indexnow.txt
-IndexNow: https://predictpro.guru/predictpro-indexnow-key.txt
+# IndexNow Verification Key & Location (Documented for search engines)
+# Key: predictpro789xyz456indexnow
+# Key Location: https://predictpro.guru/predictpro789xyz456indexnow.txt
+# Key Location: https://predictpro.guru/predictpro-indexnow-key.txt
 
 # Sitemaps
 Sitemap: https://predictpro.guru/sitemap.xml

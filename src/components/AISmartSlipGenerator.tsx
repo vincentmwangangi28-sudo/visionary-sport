@@ -248,9 +248,9 @@ export const AISmartSlipGenerator: React.FC = () => {
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold uppercase tracking-wider mb-1.5">
               <Zap className="w-3.5 h-3.5" /> Super AI Feature
             </div>
-            <CardTitle className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-2 tracking-tight">
               1-Click AI Smart Slip Generator
-            </CardTitle>
+            </h2>
             <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Select your risk appetite and let our neural network engineer the optimal mathematical multibet slip.
             </CardDescription>
@@ -345,7 +345,7 @@ export const AISmartSlipGenerator: React.FC = () => {
                   {leg.market}
                 </Badge>
                 <div className="text-right flex flex-col items-end gap-0.5">
-                  <span className="font-mono font-black text-sm text-emerald-500">
+                  <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-400">
                     @{leg.odds.toFixed(2)}
                   </span>
                   <ConfidenceMeter confidence={leg.confidence} variant="compact" />
@@ -378,7 +378,7 @@ export const AISmartSlipGenerator: React.FC = () => {
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
                 Potential on 500
               </div>
-              <div className="text-lg sm:text-xl font-black font-mono text-emerald-500">
+              <div className="text-lg sm:text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
                 {formatAmount(potentialReturn)}
               </div>
             </div>
