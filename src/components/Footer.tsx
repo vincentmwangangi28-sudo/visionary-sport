@@ -27,6 +27,8 @@ const LINKS = {
   ],
   Tools: [
     { to: "/live", label: "Live Scores & Odds" },
+    { to: "/streaks", label: "Streaks & Trends Radar" },
+    { to: "/h2h", label: "H2H Matchup Simulator" },
     { to: "/dropping-odds", label: "Dropping Odds Radar" },
     { to: "/screener", label: "Match Screener" },
     { to: "/recommendations", label: "AI Recommended" },

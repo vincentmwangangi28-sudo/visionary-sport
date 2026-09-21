@@ -57,6 +57,7 @@ Allow: /
 
 # IndexNow Verification
 # Verification Key: predictpro789xyz456indexnow
+IndexNow: https://predictpro.guru/predictpro789xyz456indexnow.txt
 IndexNow: https://predictpro.guru/predictpro-indexnow-key.txt
 
 # Sitemaps

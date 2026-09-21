@@ -9,12 +9,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ValueBetListSkeleton } from '@/components/PredictionCardSkeleton';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
-import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info, Sparkles, Send, Plus, CheckCheck } from 'lucide-react';
+import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info, Sparkles, Plus, CheckCheck } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
-import { broadcastValueBet } from '@/services/telegramTasksService';
 import { screenValueWithGemini, GeminiValueResult } from '@/services/geminiTasksService';
 
 interface ValueBet {
@@ -26,7 +25,6 @@ interface ValueBet {
 export default function ValueBets() {
   const [bets, setBets] = useState<ValueBet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [broadcastingId, setBroadcastingId] = useState<string | null>(null);
   const [geminiScreenResult, setGeminiScreenResult] = useState<GeminiValueResult | null>(null);
   const [loadingGemini, setLoadingGemini] = useState(false);
 
@@ -99,32 +97,6 @@ export default function ValueBets() {
       confidence: bet.aiProbability,
     });
     toast.success(`Added ${bet.home_team} vs ${bet.away_team} to Accumulator slip!`);
-  };
-
-  const handleBroadcast = async (bet: ValueBet) => {
-    setBroadcastingId(bet.id);
-    try {
-      const res = await broadcastValueBet({
-        home_team: bet.home_team,
-        away_team: bet.away_team,
-        league: bet.league,
-        market: bet.market,
-        odds: bet.odds,
-        aiProbability: bet.aiProbability,
-        valuePct: bet.valuePct,
-        edge: bet.edge,
-      });
-
-      if (res.success) {
-        toast.success(res.simulated ? 'Value bet broadcast simulated!' : 'Value bet posted to Telegram channel!');
-      } else {
-        toast.error(res.error || 'Failed to broadcast');
-      }
-    } catch (e: any) {
-      toast.error(e.message || 'Broadcast error');
-    } finally {
-      setBroadcastingId(null);
-    }
   };
 
   const handleGeminiScreenTopBet = async () => {
@@ -364,18 +336,6 @@ export default function ValueBets() {
                         <span>Add to Slip</span>
                       </Button>
                     )}
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleBroadcast(bet)}
-                      disabled={broadcastingId === bet.id}
-                      className="h-7 text-xs gap-1.5 border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 font-semibold"
-                      aria-label={`Broadcast ${bet.home_team} vs ${bet.away_team} to Telegram channel`}
-                    >
-                      <Send className={`h-3.5 w-3.5 ${broadcastingId === bet.id ? 'animate-pulse' : ''}`} aria-hidden="true" />
-                      <span>{broadcastingId === bet.id ? 'Posting...' : 'Post to Telegram'}</span>
-                    </Button>
                   </div>
                 </CardContent>
               </Card>

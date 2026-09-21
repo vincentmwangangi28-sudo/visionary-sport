@@ -213,7 +213,7 @@ async function runSubscriptionReminders() {
 }
 
 async function runCleanup() {
-  console.log('🧹 [11/11] Running Database & Cache Cleanup...');
+  console.log('🧹 [11/12] Running Database & Cache Cleanup...');
   try {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 14);
@@ -237,8 +237,25 @@ async function runCleanup() {
   }
 }
 
+async function runSitemap() {
+  console.log('🗺️ [12/12] Regenerating dynamic sitemap.xml...');
+  const { execSync } = await import('child_process');
+  try {
+    execSync('node scripts/generate-sitemap.mjs', { stdio: 'inherit' });
+    console.log('✅ Dynamic sitemap generated successfully');
+    return { success: true };
+  } catch (err) {
+    console.error('❌ Sitemap generation failed:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 async function main() {
   const results = {};
+
+  if (targetTask === 'sitemap' || targetTask === 'all') {
+    results.sitemap = await runSitemap();
+  }
 
   if (targetTask === 'settle' || targetTask === 'all') {
     results.settle = await runSettleResults();

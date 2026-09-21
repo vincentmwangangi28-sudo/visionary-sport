@@ -123,6 +123,16 @@ const CRON_JOBS: CronJobDef[] = [
     icon: Clock,
   },
   {
+    id: 'sitemap-generator',
+    name: 'Dynamic XML Sitemap Generator',
+    schedule: '0 3 * * *',
+    scheduleDescription: 'Daily at 03:00 UTC',
+    category: 'SEO',
+    endpoint: '/api/sitemap-cron',
+    description: 'Regenerates public/sitemap.xml with live timestamps, all leagues, tournament hubs, and latest betting predictions.',
+    icon: Search,
+  },
+  {
     id: 'google-crawl',
     name: 'Search Engine Indexing & IndexNow',
     schedule: '0 */4 * * *',
@@ -208,7 +218,7 @@ export function AdminCronJobsManager() {
 
   const triggerAllCrons = async () => {
     setRunningAll(true);
-    toast.info('Triggering all 11 scheduled tasks sequentially...');
+    toast.info(`Triggering all ${CRON_JOBS.length} scheduled tasks sequentially...`);
     for (const job of CRON_JOBS) {
       await triggerCron(job);
     }

@@ -96,9 +96,15 @@ async function runGoogleCrawlCron() {
     results.robotsStatus = 'network_notice';
   }
 
-  // 2. Verify Sitemap XML
+  // 2. Refresh & Verify Sitemap XML
   try {
-    console.log('\n🗺️ [2/4] Checking sitemap.xml for Google crawler inspection...');
+    console.log('\n🗺️ [2/4] Refreshing and checking sitemap.xml for Google crawler inspection...');
+    try {
+      const { execSync } = await import('child_process');
+      execSync('node scripts/generate-sitemap.mjs', { stdio: 'pipe' });
+    } catch {
+      // Ignore if cannot spawn process
+    }
     const sitemapRes = await fetch(`${BASE_URL}/sitemap.xml`, {
       headers: { 'User-Agent': 'Google-InspectionTool/1.0' }
     });
@@ -122,7 +128,7 @@ async function runGoogleCrawlCron() {
     const indexNowPayload = {
       host: new URL(BASE_URL).hostname,
       key: INDEXNOW_KEY,
-      keyLocation: `${BASE_URL}/predictpro-indexnow-key.txt`,
+      keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
       urlList: PRIORITY_CRAWL_URLS.slice(0, 100)
     };
 

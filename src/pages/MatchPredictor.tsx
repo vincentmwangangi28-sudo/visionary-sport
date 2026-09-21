@@ -12,11 +12,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
-import { Zap, Loader2, TrendingUp, Target, AlertCircle, Sparkles, Send, Plus, CheckCheck, ShieldCheck, Flame } from 'lucide-react';
+import { Zap, Loader2, TrendingUp, Target, AlertCircle, Sparkles, Plus, CheckCheck, ShieldCheck, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { broadcastPrediction } from '@/services/telegramTasksService';
 import { analyzeMatchWithGemini, GeminiMatchAnalysis } from '@/services/geminiTasksService';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 
@@ -87,7 +86,6 @@ export default function MatchPredictor() {
   const { addSelection, selections } = useBetSlip();
   const [geminiAnalysis, setGeminiAnalysis] = useState<GeminiMatchAnalysis | null>(null);
   const [loadingGemini, setLoadingGemini] = useState(false);
-  const [broadcastingTelegram, setBroadcastingTelegram] = useState(false);
 
   const handleDeepGeminiAnalysis = async () => {
     if (!home.trim() || !away.trim()) return;
@@ -129,34 +127,6 @@ export default function MatchPredictor() {
   };
 
   const isAlreadyInSlip = selections.some(s => s.match === `${home} vs ${away}`);
-
-  const handleBroadcastTelegram = async () => {
-    if (!result) return;
-    setBroadcastingTelegram(true);
-    try {
-      const res = await broadcastPrediction({
-        home_team: home,
-        away_team: away,
-        league,
-        predicted_outcome: result.predicted_outcome,
-        confidence_score: result.confidence_score,
-        correct_score: result.correct_score,
-        home_odds: result.home_odds,
-        draw_odds: result.draw_odds,
-        away_odds: result.away_odds,
-        analysis: geminiAnalysis?.tactical_breakdown || result.analysis,
-      });
-      if (res.success) {
-        toast.success(res.simulated ? 'Match prediction broadcast simulated!' : 'Prediction posted to Telegram channel!');
-      } else {
-        toast.error(res.error || 'Failed to broadcast to Telegram');
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Error broadcasting');
-    } finally {
-      setBroadcastingTelegram(false);
-    }
-  };
 
   const predict = async () => {
     if (!home.trim() || !away.trim()) {
@@ -539,17 +509,6 @@ export default function MatchPredictor() {
                 >
                   {isAlreadyInSlip ? <CheckCheck className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4" />}
                   {isAlreadyInSlip ? 'In Acca Slip' : 'Add to Slip'}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBroadcastTelegram}
-                  disabled={broadcastingTelegram}
-                  className="gap-2 text-xs border-sky-500/40 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 flex-1 sm:flex-initial"
-                >
-                  <Send className={`h-4 w-4 ${broadcastingTelegram ? 'animate-pulse' : ''}`} />
-                  {broadcastingTelegram ? 'Posting...' : 'Post to Telegram'}
                 </Button>
 
                 <Button

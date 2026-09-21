@@ -96,10 +96,20 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground;
+    touch-action: manipulation;
+  }
+
+  button, a, input, select {
+    touch-action: manipulation;
   }
   
   /* Smooth page transitions */
@@ -131,4 +141,14 @@ All colors MUST be HSL.
       transform: translateY(0);
     }
   }
+
+  /* Ergonomic Touch & Scroll utilities */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
+

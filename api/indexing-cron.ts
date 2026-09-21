@@ -64,7 +64,7 @@ export default async function handler(request: Request) {
       body: JSON.stringify({
         host: 'predictpro.guru',
         key: INDEXNOW_KEY,
-        keyLocation: `${BASE_URL}/predictpro-indexnow-key.txt`,
+        keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
         urlList: PRIORITY_URLS,
       }),
     });

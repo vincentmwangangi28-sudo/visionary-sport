@@ -9,9 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { AccaFixtureListSkeleton } from '@/components/PredictionCardSkeleton';
-import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, CheckCheck, Flame, Send } from 'lucide-react';
+import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, CheckCheck, Flame } from 'lucide-react';
 import { toast } from 'sonner';
-import { broadcastAcca } from '@/services/telegramTasksService';
 import { curateAccaWithGemini } from '@/services/geminiTasksService';
 
 export default function AccumulatorBuilder() {
@@ -37,40 +36,7 @@ export default function AccumulatorBuilder() {
   const [selectedBookmaker, setSelectedBookmaker] = useState('SportyBet');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [broadcastingToTelegram, setBroadcastingToTelegram] = useState(false);
   const [optimizingWithGemini, setOptimizingWithGemini] = useState(false);
-
-  const handleBroadcastToTelegram = async () => {
-    if (selections.length === 0) {
-      toast.error('Add selections to your slip first');
-      return;
-    }
-    setBroadcastingToTelegram(true);
-    try {
-      const res = await broadcastAcca({
-        title: `${selections.length}-Fold Accumulator`,
-        totalOdds: totalOdds.toFixed(2),
-        estimatedPayout: potentialReturn.toFixed(0),
-        selections: selections.map(s => ({
-          homeTeam: s.homeTeam,
-          awayTeam: s.awayTeam,
-          match: `${s.homeTeam} vs ${s.awayTeam}`,
-          market: s.market,
-          odds: s.odds,
-          confidence: s.confidence,
-        })),
-      });
-      if (res.success) {
-        toast.success(res.simulated ? 'Acca broadcast simulated & previewed!' : 'Accumulator slip posted to Telegram channel!');
-      } else {
-        toast.error(res.error || 'Failed to broadcast');
-      }
-    } catch (e: any) {
-      toast.error(e.message || 'Error broadcasting');
-    } finally {
-      setBroadcastingToTelegram(false);
-    }
-  };
 
   const handleGeminiOptimizeAcca = async () => {
     if (predictions.length === 0) {
@@ -471,27 +437,19 @@ export default function AccumulatorBuilder() {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <Button
                           onClick={shareWhatsApp}
                           className="gap-2 font-bold bg-green-600 hover:bg-green-700 text-white"
                         >
-                          <Share2 className="h-4 w-4" />WhatsApp
+                          <Share2 className="h-4 w-4" />Share via WhatsApp
                         </Button>
-                        <Button
-                          onClick={handleBroadcastToTelegram}
-                          disabled={broadcastingToTelegram}
-                          className="gap-2 font-bold bg-sky-600 hover:bg-sky-700 text-white"
-                        >
-                          <Send className="h-4 w-4" />
-                          {broadcastingToTelegram ? 'Posting...' : 'Telegram'}
+                        <Button variant="outline" onClick={shareAcca} className="gap-2 font-medium">
+                          <Copy className="h-4 w-4" />Copy Slip
                         </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button variant="outline" onClick={shareAcca} className="gap-2 font-medium">
-                          <Copy className="h-4 w-4" />Copy / Share
-                        </Button>
-                        <Button variant="outline" onClick={clearSlip} className="gap-2 text-destructive hover:bg-destructive/10">
+                      <div>
+                        <Button variant="outline" onClick={clearSlip} className="w-full gap-2 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />Clear All
                         </Button>
                       </div>

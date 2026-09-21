@@ -36,6 +36,33 @@ function geminiTasksPlugin(): Plugin {
   };
 }
 
+function cronTasksPlugin(): Plugin {
+  return {
+    name: "cron-tasks-api",
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url?.split("?")[0] || "";
+        if (url.startsWith("/api/") && (url.endsWith("-cron") || url.includes("/cron") || url === "/api/indexing-cron")) {
+          try {
+            const { handleCronTask } = await import("./src/server/cronApiHandler");
+            const result = await handleCronTask(url);
+            res.setHeader("Content-Type", "application/json");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(result));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: err?.message || "Cron execution failed" }));
+          }
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
@@ -45,7 +72,7 @@ export default defineConfig(({ mode }) => ({
       protocol: "ws",
     },
   },
-  plugins: [react(), geminiTasksPlugin()],
+  plugins: [react(), geminiTasksPlugin(), cronTasksPlugin()],
   resolve: { 
     alias: { "@": path.resolve(import.meta.dirname, "./src") },
     dedupe: ["react", "react-dom", "react-router-dom"],

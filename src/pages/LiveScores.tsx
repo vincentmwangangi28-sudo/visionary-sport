@@ -20,7 +20,6 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { evaluateLiveMomentumWithGemini, GeminiLiveMomentumResult } from '@/services/geminiTasksService';
-import { broadcastLiveInPlay } from '@/services/telegramTasksService';
 
 export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
@@ -48,7 +47,6 @@ export default function LiveScores() {
   const [inplayMatch, setInplayMatch] = useState<ApiFootballLiveFixture | null>(null);
   const [inplayResult, setInplayResult] = useState<GeminiLiveMomentumResult | null>(null);
   const [loadingInplay, setLoadingInplay] = useState(false);
-  const [broadcastingInplay, setBroadcastingInplay] = useState(false);
 
   const handleOpenInPlayPulse = async (match: ApiFootballLiveFixture) => {
     setInplayMatch(match);
@@ -68,34 +66,6 @@ export default function LiveScores() {
       toast.error('Failed to calculate in-play momentum');
     } finally {
       setLoadingInplay(false);
-    }
-  };
-
-  const handleBroadcastInPlay = async () => {
-    if (!inplayMatch || !inplayResult) return;
-    setBroadcastingInplay(true);
-    try {
-      const scoreStr = inplayMatch.home_score != null && inplayMatch.away_score != null ? `${inplayMatch.home_score} - ${inplayMatch.away_score}` : '0 - 0';
-      const res = await broadcastLiveInPlay({
-        home_team: inplayMatch.home_team,
-        away_team: inplayMatch.away_team,
-        league: inplayMatch.league,
-        minute: inplayMatch.minute,
-        score: scoreStr,
-        tip: inplayResult.inplay_tip,
-        confidence: inplayResult.confidence,
-        tacticalPulse: inplayResult.tactical_pulse,
-      });
-
-      if (res.success) {
-        toast.success(res.simulated ? 'In-play alert simulated!' : 'In-play alert broadcast to Telegram channel!');
-      } else {
-        toast.error(res.error || 'Failed to broadcast alert');
-      }
-    } catch (e: any) {
-      toast.error(e.message || 'Error broadcasting');
-    } finally {
-      setBroadcastingInplay(false);
     }
   };
 
@@ -561,18 +531,10 @@ export default function LiveScores() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 text-xs"
+                    className="w-full text-xs font-semibold"
                     onClick={() => setInplayMatch(null)}
                   >
                     Close
-                  </Button>
-                  <Button
-                    className="flex-1 text-xs gap-1.5 bg-sky-600 hover:bg-sky-500 text-white"
-                    onClick={handleBroadcastInPlay}
-                    disabled={broadcastingInplay}
-                  >
-                    <Send className={`h-3.5 w-3.5 ${broadcastingInplay ? 'animate-pulse' : ''}`} />
-                    {broadcastingInplay ? 'Broadcasting...' : 'Broadcast to Telegram'}
                   </Button>
                 </div>
               </div>

@@ -13,6 +13,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "cron:google-crawl": "node scripts/google-crawl-cron.mjs",
+    "cron:sitemap": "node scripts/run-scheduled-tasks.mjs --task=sitemap",
+    "sitemap:generate": "node scripts/generate-sitemap.mjs",
     "cron:settle": "node scripts/run-scheduled-tasks.mjs --task=settle",
     "cron:daily": "node scripts/run-scheduled-tasks.mjs --task=daily",
     "cron:broadcast": "node scripts/run-scheduled-tasks.mjs --task=broadcast",

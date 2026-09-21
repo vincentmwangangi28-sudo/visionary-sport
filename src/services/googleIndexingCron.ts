@@ -284,10 +284,11 @@ class GoogleIndexingCronService {
    * Dispatch IndexNow batch payload
    */
   private async dispatchIndexNow(urls: string[], trigger: 'auto' | 'manual'): Promise<IndexingLogEntry> {
+    const key = this.settings.indexNowKey || DEFAULT_INDEXNOW_KEY;
     const payload = {
       host: 'predictpro.guru',
-      key: this.settings.indexNowKey || DEFAULT_INDEXNOW_KEY,
-      keyLocation: 'https://predictpro.guru/predictpro-indexnow-key.txt',
+      key,
+      keyLocation: `https://predictpro.guru/${key}.txt`,
       urlList: urls.slice(0, 100), // IndexNow batch
     };
 

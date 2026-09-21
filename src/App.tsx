@@ -16,6 +16,7 @@ import { useGeminiDailyCron } from "@/hooks/useGeminiDailyCron";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { BackToTop } from "@/components/BackToTop";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
 import { queryClient } from "@/lib/queryClient";
@@ -81,6 +82,8 @@ const UpcomingFixturesPage = lazyWithRetry(() => import("./pages/UpcomingFixture
 const SEOIndexingPage        = lazyWithRetry(() => import("./pages/SEOIndexingPage"));
 const JackpotPredictions     = lazyWithRetry(() => import("./pages/JackpotPredictions"));
 const USSoccerPredictions    = lazyWithRetry(() => import("./pages/USSoccerPredictions"));
+const StreaksRadar           = lazyWithRetry(() => import("./pages/StreaksRadar"));
+const H2HComparisonPage      = lazyWithRetry(() => import("./pages/H2HComparisonPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -300,6 +303,8 @@ const App = () => (
                             <Route path="/news"          element={<RouteBoundary component={News} />} />
                             <Route path="/live"          element={<RouteBoundary component={LiveScores} />} />
                             <Route path="/value-bets"    element={<RouteBoundary component={ValueBets} />} />
+                            <Route path="/streaks"       element={<RouteBoundary component={StreaksRadar} />} />
+                            <Route path="/trends"        element={<RouteBoundary component={StreaksRadar} />} />
                             <Route path="/dropping-odds" element={<RouteBoundary component={DroppingOddsPage} />} />
                             <Route path="/screener"      element={<RouteBoundary component={MatchScreenerPage} />} />
                             <Route path="/track-record"  element={<RouteBoundary component={TrackRecordPage} />} />
@@ -321,6 +326,8 @@ const App = () => (
                             <Route path="/correct-score" element={<RouteBoundary component={CorrectScore} />} />
                             <Route path="/btts"          element={<RouteBoundary component={BTTS} />} />
                             <Route path="/sports"        element={<RouteBoundary component={OtherSports} />} />
+                            <Route path="/h2h"           element={<RouteBoundary component={H2HComparisonPage} />} />
+                            <Route path="/compare"       element={<RouteBoundary component={H2HComparisonPage} />} />
                             <Route path="/statistics"    element={<RouteBoundary component={Statistics} />} />
                             <Route path="/highlights"    element={<RouteBoundary component={Highlights} />} />
                             <Route path="/players"       element={<RouteBoundary component={PlayerSearch} />} />
@@ -364,6 +371,7 @@ const App = () => (
                         </ErrorBoundary>
                       </Suspense>
                       <MobileBottomNav />
+                      <BackToTop />
                     </BetSlipProvider>
                   </UnifiedSearchProvider>
                 </CurrencyProvider>

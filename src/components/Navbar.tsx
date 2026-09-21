@@ -7,7 +7,7 @@ import {
   Flame, 
   Activity, 
   TrendingUp, 
-  TrendingDown,
+  TrendingDown, 
   Calculator, 
   Users, 
   Wallet, 
@@ -26,8 +26,18 @@ import {
   Globe,
   Sparkles,
   Settings,
-  Pin
+  Pin,
+  ChevronDown,
+  ArrowLeftRight
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -54,6 +64,8 @@ export const Navbar = () => {
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds"),  icon: TrendingDown },
     { to: "/track-record",  label: t('nav.track_record', "Track Record"),   icon: ShieldCheck },
     { to: "/value-bets",    label: t('nav.value_bets', "Value Bets"),     icon: TrendingUp },
+    { to: "/streaks",       label: "Streaks & Trends Radar",              icon: Flame },
+    { to: "/h2h",           label: "H2H Matchup Simulator",               icon: ArrowLeftRight },
     { to: "/archive",       label: t('nav.archive', "Results Archive"),icon: CheckCircle2 },
     { to: "/live",          label: t('nav.live', "Live Scores"),    icon: Activity },
     { to: "/accumulator",   label: t('nav.acca', "Acca Builder"),   icon: Calculator },
@@ -76,12 +88,16 @@ export const Navbar = () => {
     { to: "/about",         label: "About",          icon: Info },
   ];
 
-  const topNavLinks = [
+  const primaryDesktopLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions") },
     { to: "/recommendations", label: "AI Picks" },
     { to: "/value-bets",    label: t('nav.value_bets', "Value Bets") },
-    { to: "/live",          label: t('nav.live', "Live") },
+    { to: "/live",          label: t('nav.live', "Live"), isLive: true },
     { to: "/accumulator",   label: t('nav.acca', "Acca Builder") },
+  ];
+
+  const extendedDesktopLinks = [
+    { to: "/streaks",       label: "Streaks Radar" },
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },
     { to: "/tournaments",   label: "Tournaments" },
     { to: "/track-record",  label: t('nav.track_record', "Track Record") },
@@ -90,25 +106,144 @@ export const Navbar = () => {
   const visibleLinks = navLinks.filter(l => !l.protected || user);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-xl border-b border-border">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-16 gap-2">
           {/* Logo */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-sm">PP</div>
-              <span className="text-lg font-bold hidden sm:block">PredictPro</span>
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-sm group-hover:scale-105 transition-transform">PP</div>
+              <span className="text-lg font-bold hidden sm:block tracking-tight">PredictPro</span>
             </Link>
           </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden xl:flex items-center gap-2">
-            {topNavLinks.map(({ to, label }) => (
-              <Link key={to} to={to}
-                className={`text-xs font-semibold px-2 py-1 rounded-md transition-colors hover:text-primary ${location.pathname === to ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}>
+          {/* Desktop nav (responsive for both tablets/laptops md: and wide desktops xl:) */}
+          <nav className="hidden md:flex items-center gap-1 xl:gap-1.5" aria-label="Main Navigation">
+            {primaryDesktopLinks.map(({ to, label, isLive }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`relative text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:text-primary ${
+                  location.pathname === to
+                    ? 'text-primary bg-primary/10 font-bold'
+                    : 'text-muted-foreground hover:bg-muted/50'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {label}
+                  {isLive && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  )}
+                </span>
+              </Link>
+            ))}
+
+            {/* Extended links visible on large desktop viewports */}
+            {extendedDesktopLinks.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`hidden xl:inline-flex text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:text-primary ${
+                  location.pathname === to
+                    ? 'text-primary bg-primary/10 font-bold'
+                    : 'text-muted-foreground hover:bg-muted/50'
+                }`}
+              >
                 {label}
               </Link>
             ))}
+
+            {/* Desktop Quick Directory Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  aria-label="More navigation links"
+                >
+                  <span>More</span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 p-1.5 shadow-xl bg-popover/95 backdrop-blur-md">
+                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                  Markets & Radar
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link to="/screener" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-purple-500" />
+                    <span>Match Screener</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/streaks" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Flame className="h-3.5 w-3.5 text-orange-500" />
+                    <span>Streaks &amp; Trends Radar</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/h2h" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <ArrowLeftRight className="h-3.5 w-3.5 text-sky-500" />
+                    <span>H2H Matchup Simulator</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/btts" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Flame className="h-3.5 w-3.5 text-amber-500" />
+                    <span>BTTS (Both Teams Score)</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/correct-score" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Layers className="h-3.5 w-3.5 text-blue-500" />
+                    <span>Correct Score Matrices</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/dropping-odds" className="flex xl:hidden items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <TrendingDown className="h-3.5 w-3.5 text-red-500" />
+                    <span>Dropping Odds Radar</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/tournaments" className="flex xl:hidden items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Globe className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Global Tournaments</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                  Analysis & Insights
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link to="/standings" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                    <span>League Standings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/archive" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <span>Results Archive</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/methodology" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                    <span>Mathematical Methodology</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/news" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Newspaper className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>News &amp; Tips</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Unified Global Search Trigger */}
