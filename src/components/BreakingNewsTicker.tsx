@@ -34,9 +34,9 @@ export function BreakingNewsTicker() {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-extrabold text-foreground tracking-tight">
+              <h2 className="text-sm font-extrabold text-foreground tracking-tight">
                 Breaking Football News & Gemini Tactical Wire
-              </h3>
+              </h2>
               <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <Zap className="h-2.5 w-2.5" /> Fast Backend Cache
               </span>

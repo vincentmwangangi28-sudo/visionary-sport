@@ -38,9 +38,9 @@ export default function WorldCupPredictions() {
           <div className="space-y-4">{FAQ.map((f,i)=><Card key={i}><CardContent className="p-5"><h3 className="font-semibold mb-2">{f.q}</h3><p className="text-sm text-muted-foreground">{f.a}</p></CardContent></Card>)}</div>
         </section>
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
-          <h3 className="font-semibold mb-3">More Predictions</h3>
+          <h2 className="text-xl font-semibold mb-3">More Predictions</h2>
           <div className="flex flex-wrap gap-2">
-            {[{to:'/premier-league-predictions',l:'Premier League'},{to:'/champions-league-predictions',l:'UCL'},{to:'/afcon-predictions',l:'AFCON'},{to:'/best-bets',l:'Best Bets'},{to:'/standings',l:'Standings'}].map(l=><Link key={l.to} to={l.to}><Button variant="outline" size="sm">{l.l}</Button></Link>)}
+            {[{to:'/premier-league-predictions',l:'Premier League'},{to:'/champions-league-predictions',l:'UCL'},{to:'/afcon-predictions',l:'AFCON'},{to:'/best-bets',l:'Best Bets'},{to:'/standings',l:'Standings'}].map(l=><Link key={l.to} to={l.to}><Button variant="outline" size="sm" className="min-h-[44px]">{l.l}</Button></Link>)}
           </div>
         </div>
       </main>

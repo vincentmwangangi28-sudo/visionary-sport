@@ -112,9 +112,9 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
                 Auto-Cron Synchronized
               </Badge>
             </div>
-            <h3 className="text-lg sm:text-xl font-black text-foreground pt-1">
+            <h2 className="text-lg sm:text-xl font-black text-foreground pt-1">
               {digest.headline}
-            </h3>
+            </h2>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-3xl">
               {digest.summary}
             </p>

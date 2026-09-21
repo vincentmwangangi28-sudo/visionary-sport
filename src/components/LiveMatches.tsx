@@ -40,7 +40,7 @@ export const LiveMatches = () => {
             <div className="flex items-center gap-3">
               <ShieldAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <div>
-                <h3 className="font-bold text-sm">Service Temporarily Unavailable</h3>
+                <h2 className="font-bold text-sm">Service Temporarily Unavailable</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">{serviceUnavailableMessage}</p>
               </div>
             </div>
@@ -49,7 +49,7 @@ export const LiveMatches = () => {
               variant="outline" 
               onClick={() => refresh()} 
               disabled={isLiveFetching}
-              className="text-xs h-8 gap-1.5"
+              className="text-xs min-h-[44px] px-3 gap-1.5"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLiveFetching ? 'animate-spin' : ''}`} />
               Retry Connection
@@ -82,13 +82,13 @@ export const LiveMatches = () => {
               size="sm"
               onClick={() => refresh()}
               disabled={isLiveFetching}
-              className="gap-1.5 text-xs h-8"
+              className="gap-1.5 text-xs min-h-[44px] px-3"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLiveFetching ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Sync</span>
             </Button>
             <Link to="/live">
-              <Button size="sm" className="text-xs h-8">
+              <Button size="sm" className="text-xs min-h-[44px] px-3">
                 All Scores
               </Button>
             </Link>

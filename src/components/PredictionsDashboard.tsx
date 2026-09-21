@@ -219,7 +219,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               type="button"
               onClick={() => setQuickFilter('all')}
               aria-label="Show all predictions"
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+              className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md transition-all flex items-center justify-center ${
                 quickFilter === 'all'
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -231,7 +231,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               type="button"
               onClick={() => setQuickFilter('recommended')}
               aria-label="Filter AI recommended predictions"
-              className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
+              className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md flex items-center justify-center gap-1 transition-all ${
                 quickFilter === 'recommended'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -243,7 +243,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               type="button"
               onClick={() => setQuickFilter('high_confidence')}
               aria-label="Filter predictions with greater than 80% confidence"
-              className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
+              className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md flex items-center justify-center gap-1 transition-all ${
                 quickFilter === 'high_confidence'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -255,7 +255,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               type="button"
               onClick={() => setQuickFilter('value_bets')}
               aria-label="Filter positive expected value bets"
-              className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 transition-all ${
+              className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md flex items-center justify-center gap-1 transition-all ${
                 quickFilter === 'value_bets'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -271,21 +271,21 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               size="icon"
               variant={viewMode === 'card' ? 'secondary' : 'ghost'}
               onClick={() => handleSetViewMode('card')}
-              className="h-7 w-7"
+              className="h-11 w-11 min-h-[44px] min-w-[44px]"
               title="Card Grid View"
               aria-label="Switch to Card Grid View"
             >
-              <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
             </Button>
             <Button
               size="icon"
               variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
               onClick={() => handleSetViewMode('compact')}
-              className="h-7 w-7"
+              className="h-11 w-11 min-h-[44px] min-w-[44px]"
               title="Compact List View"
               aria-label="Switch to Compact List View"
             >
-              <List className="h-3.5 w-3.5" aria-hidden="true" />
+              <List className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 
@@ -294,11 +294,11 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             variant="ghost"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+            className="min-h-[44px] min-w-[44px] px-3 text-muted-foreground hover:text-foreground flex items-center justify-center"
             title="Refresh Fixtures"
             aria-label="Refresh Fixtures"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -421,7 +421,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
                 onClick={() => setPage((p) => p - 1)}
                 disabled={page <= 1 || isFetching}
                 aria-label="Go to previous page of predictions"
-                className="h-8 gap-1 text-xs"
+                className="min-h-[44px] px-3.5 gap-1 text-xs"
               >
                 <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" /> Previous
               </Button>
@@ -434,7 +434,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= totalPages || isFetching}
                 aria-label="Go to next page of predictions"
-                className="h-8 gap-1 text-xs"
+                className="min-h-[44px] px-3.5 gap-1 text-xs"
               >
                 Next <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>

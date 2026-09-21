@@ -210,7 +210,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('all')}
-                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
+                className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'all'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -221,7 +221,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('today')}
-                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
+                className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'today'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -232,7 +232,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('tomorrow')}
-                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
+                className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'tomorrow'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -243,7 +243,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTimeframe('weekend')}
-                className={`px-3.5 py-2 min-h-[38px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
+                className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'weekend'
                     ? 'bg-background text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -261,13 +261,13 @@ export const UpcomingMatches: React.FC = () => {
                 placeholder="Search team or league..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 text-xs bg-background"
+                className="h-10 min-h-[44px] pl-8 text-xs bg-background"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                  className="absolute right-0 top-0 h-full w-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-xs text-muted-foreground hover:text-foreground"
                 >
                   ✕
                 </button>
@@ -284,7 +284,7 @@ export const UpcomingMatches: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedLeague('all')}
-                className={`text-[11px] px-3 py-1.5 min-h-[36px] rounded-full border transition-colors shrink-0 font-medium flex items-center justify-center ${
+                className={`text-[11px] px-3 py-1.5 min-h-[44px] rounded-full border transition-colors shrink-0 font-medium flex items-center justify-center ${
                   selectedLeague === 'all'
                     ? 'bg-primary text-primary-foreground border-primary font-bold'
                     : 'bg-muted/50 border-border hover:bg-muted text-foreground/85'
@@ -300,7 +300,7 @@ export const UpcomingMatches: React.FC = () => {
                     key={lg}
                     type="button"
                     onClick={() => setSelectedLeague(lg)}
-                    className={`text-[11px] px-3 py-1.5 min-h-[36px] rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1.5 justify-center ${
+                    className={`text-[11px] px-3 py-1.5 min-h-[44px] rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1.5 justify-center ${
                       selectedLeague.toLowerCase() === lg.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-bold'
                         : 'bg-muted/50 border-border hover:bg-muted text-foreground/85'

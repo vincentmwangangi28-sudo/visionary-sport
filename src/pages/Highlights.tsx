@@ -112,7 +112,7 @@ export default function Highlights() {
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-2">{h.title}</h3>
+                    <h2 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-2">{h.title}</h2>
                     {h.homeTeam && h.awayTeam && (
                       <p className="text-xs text-muted-foreground">{h.homeTeam} vs {h.awayTeam}</p>
                     )}

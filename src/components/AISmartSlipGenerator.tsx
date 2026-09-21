@@ -279,7 +279,7 @@ export const AISmartSlipGenerator: React.FC = () => {
                 key={st}
                 type="button"
                 onClick={() => setStrategy(st)}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 min-h-[48px] rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   isSelected
                     ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary'
                     : 'border-border/60 bg-card hover:bg-muted/30'
@@ -389,7 +389,7 @@ export const AISmartSlipGenerator: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleCopyCode}
-              className="gap-1.5 text-xs font-bold w-1/3 md:w-auto shrink-0"
+              className="gap-1.5 text-xs font-bold w-1/3 md:w-auto shrink-0 min-h-[44px]"
             >
               {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copiedCode ? 'Copied' : 'Share Slip'}</span>
@@ -399,7 +399,7 @@ export const AISmartSlipGenerator: React.FC = () => {
               variant="default"
               size="default"
               onClick={handleLoadSlip}
-              className="gap-2 font-black text-xs sm:text-sm w-2/3 md:w-auto flex-1 shadow-md bg-primary hover:bg-primary/90"
+              className="gap-2 font-black text-xs sm:text-sm w-2/3 md:w-auto flex-1 shadow-md bg-primary hover:bg-primary/90 min-h-[44px]"
             >
               <Zap className="w-4 h-4 fill-current" />
               <span>Load to BetSlip ({totalOdds.toFixed(2)}x)</span>

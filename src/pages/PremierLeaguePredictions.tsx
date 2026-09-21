@@ -73,10 +73,10 @@ export default function PremierLeaguePredictions() {
 
         {/* Internal links */}
         <section className="mt-10 p-6 bg-muted/30 rounded-xl">
-          <h3 className="font-semibold mb-4">More Prediction Markets</h3>
+          <h2 className="text-xl font-semibold mb-4">More Prediction Markets</h2>
           <div className="flex flex-wrap gap-2">
             {[{ to: '/correct-score', label: 'Correct Score' }, { to: '/btts', label: 'BTTS Tips' }, { to: '/value-bets', label: 'Value Bets' }, { to: '/accumulator', label: 'Acca Builder' }, { to: '/best-bets', label: 'Best Bets Today' }].map(l => (
-              <Link key={l.to} to={l.to}><Button variant="outline" size="sm">{l.label}</Button></Link>
+              <Link key={l.to} to={l.to}><Button variant="outline" size="sm" className="min-h-[44px]">{l.label}</Button></Link>
             ))}
           </div>
         </section>

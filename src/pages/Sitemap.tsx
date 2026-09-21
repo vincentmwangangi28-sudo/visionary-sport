@@ -215,6 +215,15 @@ export default function Sitemap() {
         </div>
 
         {/* Entries Grid */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
+            Indexed Application Routes ({filteredEntries.length})
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Full inventory of crawlable canonical URLs and deep-link destination hubs.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredEntries.map((entry) => (
             <Card key={entry.path} className="border hover:border-primary/40 hover:shadow-md transition-all group flex flex-col justify-between">

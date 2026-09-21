@@ -114,7 +114,7 @@ export const LiveMarketSteamTicker: React.FC = () => {
         {/* Action Link */}
         <Link 
           to={activeAlert.link} 
-          className="shrink-0 font-bold text-[11px] text-primary hover:underline flex items-center gap-0.5 ml-2"
+          className="shrink-0 font-bold text-[11px] text-primary hover:underline flex items-center justify-center gap-0.5 ml-2 min-h-[44px] min-w-[44px] px-2"
         >
           <span>View</span>
           <ChevronRight className="w-3 h-3" />

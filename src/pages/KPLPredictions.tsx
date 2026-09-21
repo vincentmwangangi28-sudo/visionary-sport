@@ -25,7 +25,7 @@ export default function KPLPredictions() {
         </div>
         <PredictionsDashboard initialLeague="KPL" />
         <div className="mt-10 p-6 bg-muted/30 rounded-xl">
-          <h3 className="font-semibold mb-4">More Predictions</h3>
+          <h2 className="text-xl font-semibold mb-4">More Predictions</h2>
           <div className="flex flex-wrap gap-2">
             {[
               {to:'/best-bets',l:'Best Bets Today'},
@@ -34,7 +34,7 @@ export default function KPLPredictions() {
               {to:'/btts',l:'BTTS Tips'},
               {to:'/accumulator',l:'Acca Builder'},
               {to:'/world-cup-predictions',l:'World Cup 2026'},
-            ].map(link=><Link key={link.to} to={link.to}><Button variant="outline" size="sm">{link.l}</Button></Link>)}
+            ].map(link=><Link key={link.to} to={link.to}><Button variant="outline" size="sm" className="min-h-[44px]">{link.l}</Button></Link>)}
           </div>
         </div>
       </main>
