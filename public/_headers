@@ -21,3 +21,20 @@
 
 /robots.txt
   Cache-Control: public, max-age=86400
+
+/ads.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+
+/yandex_6aab6592f8d8ca55.html
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/html; charset=UTF-8
+
+/6aab6592f8d8ca55.html
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/html; charset=UTF-8
+
+

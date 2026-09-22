@@ -811,6 +811,48 @@ export default function SEOIndexingPage() {
                       Authorized for Google Indexing API webhook payloads (<code>URL_UPDATED</code>).
                     </p>
                   </div>
+
+                  <div className="pt-2 border-t border-border/50">
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      Google AdSense &amp; Ads.txt Crawler Authorization
+                    </label>
+                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1.5 font-mono">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Crawler Rule:</span>
+                        <span className="text-emerald-500 font-bold">google.com, pub-1375386376692976, DIRECT</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Mediapartners-Google:</span>
+                        <span className="text-emerald-500 font-bold">Allowed in /robots.txt</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Live File:</span>
+                        <a href="/ads.txt" target="_blank" className="text-primary underline font-sans font-semibold">View Live /ads.txt</a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50">
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      Search Webmaster Domain Verification (Yandex / Multi-Engine)
+                    </label>
+                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1.5 font-mono">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Token Code:</span>
+                        <span className="text-primary font-bold">6aab6592f8d8ca55</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">HTML Verification File:</span>
+                        <a href="/yandex_6aab6592f8d8ca55.html" target="_blank" className="text-primary underline font-sans font-semibold">
+                          /yandex_6aab6592f8d8ca55.html
+                        </a>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Meta Tag Verification:</span>
+                        <span className="text-emerald-500 font-bold">Injected in &lt;head&gt;</span>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

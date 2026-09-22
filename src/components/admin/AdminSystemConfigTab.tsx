@@ -16,15 +16,25 @@ import {
   resetSystemConfig, 
   SystemConfig 
 } from '@/services/systemConfigService';
+import { 
+  getAdSenseConfig, 
+  saveAdSenseConfig, 
+  verifyAdsTxtStatus, 
+  AdSenseConfig 
+} from '@/services/adsenseService';
 import { logAdminAction } from '@/services/adminAuditService';
 
 export const AdminSystemConfigTab: React.FC = () => {
   const [config, setConfig] = useState<SystemConfig>(getSystemConfig());
+  const [adConfig, setAdConfig] = useState<AdSenseConfig>(getAdSenseConfig());
+  const [adsTxtChecking, setAdsTxtChecking] = useState(false);
+  const [adsTxtResult, setAdsTxtResult] = useState<{ valid: boolean; status: number; message: string } | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setConfig(getSystemConfig());
+    setAdConfig(getAdSenseConfig());
   }, []);
 
   const handleChange = <K extends keyof SystemConfig>(key: K, value: SystemConfig[K]) => {
@@ -32,23 +42,65 @@ export const AdminSystemConfigTab: React.FC = () => {
     setIsDirty(true);
   };
 
+  const handleAdConfigChange = <K extends keyof AdSenseConfig>(key: K, value: AdSenseConfig[K]) => {
+    setAdConfig(prev => ({ ...prev, [key]: value }));
+    setIsDirty(true);
+  };
+
+  const handleSlotChange = (slotKey: keyof AdSenseConfig['slots'], value: string) => {
+    setAdConfig(prev => ({
+      ...prev,
+      slots: { ...prev.slots, [slotKey]: value.trim() },
+    }));
+    setIsDirty(true);
+  };
+
+  const handleCheckAdsTxt = async () => {
+    setAdsTxtChecking(true);
+    try {
+      const res = await verifyAdsTxtStatus();
+      if (res.valid) {
+        setAdsTxtResult({
+          valid: true,
+          status: res.status,
+          message: `Verified: ${res.foundEntry}`,
+        });
+        toast.success('ads.txt is active and valid for Google AdSense!');
+      } else {
+        setAdsTxtResult({
+          valid: false,
+          status: res.status,
+          message: res.error || 'Verification failed',
+        });
+        toast.error('ads.txt verification warning', {
+          description: res.error,
+        });
+      }
+    } catch (e: any) {
+      toast.error('Failed to verify ads.txt', { description: e?.message });
+    } finally {
+      setAdsTxtChecking(false);
+    }
+  };
+
   const handleSave = () => {
     setSaving(true);
     try {
       saveSystemConfig(config, 'Vincent Mwangangi');
+      saveAdSenseConfig(adConfig);
       logAdminAction({
         actorName: 'Vincent Mwangangi',
         actorEmail: 'vincentmwangangi28@gmail.com',
         category: 'config',
-        action: 'Updated Platform System Configuration',
-        details: `Saved live config: VIP=${config.vipGateEnforced ? 'Strict' : 'Off'}, Model=${config.geminiModel}, AutoPublish=${config.autoPublishPredictions}, SpinMultiplier=${config.spinWheelMultiplier}x, SignupCoins=${config.signupBonusCoins}`,
+        action: 'Updated Platform System Configuration & AdSense',
+        details: `Saved live config: VIP=${config.vipGateEnforced ? 'Strict' : 'Off'}, Model=${config.geminiModel}, AdSense=${adConfig.enabled ? 'Enabled' : 'Disabled'}, PubID=${adConfig.publisherId}`,
         severity: config.maintenanceMode ? 'warning' : 'info',
         ipAddress: '197.237.142.88 (Nairobi, KE)',
       });
 
       setIsDirty(false);
-      toast.success('System configuration updated successfully', {
-        description: 'New feature flags and engine parameters are active across the app.',
+      toast.success('System & AdSense configuration updated successfully', {
+        description: 'New parameters and ad slots are active across all pages.',
       });
     } catch {
       toast.error('Failed to save configuration');
@@ -386,6 +438,164 @@ export const AdminSystemConfigTab: React.FC = () => {
                 <span>Authorized Modifier:</span>
                 <span className="font-medium text-foreground">{config.updatedBy}</span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+        {/* Section 5: Google AdSense & Monetization Architecture */}
+        <Card className="border-border/80 lg:col-span-2">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <CardTitle className="text-sm font-semibold">Google AdSense &amp; Ads.txt Monetization Architecture</CardTitle>
+              </div>
+              <Badge variant={adConfig.enabled ? 'default' : 'secondary'} className="text-[10px]">
+                {adConfig.enabled ? 'AdSense Active' : 'AdSense Disabled'}
+              </Badge>
+            </div>
+            <CardDescription className="text-xs">
+              Manage live Google publisher client IDs, responsive ad slot identifiers, test simulation mode, and ads.txt crawler compliance.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between rounded-lg border border-border/60 p-3 bg-muted/30">
+                <div className="space-y-0.5 pr-2">
+                  <Label className="text-xs font-medium cursor-pointer">Enable AdSense Globally</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Renders Google ad slots for non-VIP guest visitors. VIP users are automatically ad-free.
+                  </p>
+                </div>
+                <Switch
+                  checked={adConfig.enabled}
+                  onCheckedChange={(checked) => handleAdConfigChange('enabled', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-border/60 p-3 bg-muted/30">
+                <div className="space-y-0.5 pr-2">
+                  <Label className="text-xs font-medium cursor-pointer">Test / Preview Mode</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Displays styled placeholder banners indicating slots without triggering real ad impressions.
+                  </p>
+                </div>
+                <Switch
+                  checked={adConfig.testMode}
+                  onCheckedChange={(checked) => handleAdConfigChange('testMode', checked)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">AdSense Publisher ID (ca-pub-XXXXXXXXXX)</Label>
+                <Input
+                  value={adConfig.publisherId}
+                  onChange={(e) => handleAdConfigChange('publisherId', e.target.value.trim())}
+                  placeholder="ca-pub-1375386376692976"
+                  className="h-9 text-xs font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Must match the client ID in <code className="text-foreground font-mono">/ads.txt</code> and <code className="text-foreground font-mono">index.html</code>.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Horizontal Leaderboard Slot ID</Label>
+                <Input
+                  value={adConfig.slots.horizontal}
+                  onChange={(e) => handleSlotChange('horizontal', e.target.value)}
+                  placeholder="9842105432"
+                  className="h-9 text-xs font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Used on Match Predictor, BTTS, Best Bets, and News.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Medium Rectangle Slot ID</Label>
+                <Input
+                  value={adConfig.slots.rectangle}
+                  onChange={(e) => handleSlotChange('rectangle', e.target.value)}
+                  placeholder="8743209123"
+                  className="h-9 text-xs font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Used in sidebar widgets and post content breaks.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">In-Feed Responsive Slot ID</Label>
+                <Input
+                  value={adConfig.slots.feed}
+                  onChange={(e) => handleSlotChange('feed', e.target.value)}
+                  placeholder="6543210987"
+                  className="h-9 text-xs font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Integrated between list items and prediction cards.
+                </p>
+              </div>
+            </div>
+
+            {/* Ads.txt Live Health Check */}
+            <div className="rounded-xl border border-border/80 bg-card p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold">Google Ads.txt Crawler Status</span>
+                  {adsTxtResult ? (
+                    adsTxtResult.valid ? (
+                      <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                        HTTP {adsTxtResult.status} • Valid &amp; Verified
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive" className="text-[10px]">
+                        HTTP {adsTxtResult.status} • Discrepancy
+                      </Badge>
+                    )
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      Not Checked Yet
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCheckAdsTxt}
+                    disabled={adsTxtChecking}
+                    className="h-8 text-xs gap-1.5"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${adsTxtChecking ? 'animate-spin' : ''}`} />
+                    {adsTxtChecking ? 'Verifying...' : 'Verify /ads.txt'}
+                  </Button>
+                  <a
+                    href="/ads.txt"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-primary hover:underline font-semibold"
+                  >
+                    Open /ads.txt
+                  </a>
+                </div>
+              </div>
+
+              {adsTxtResult && (
+                <p className={`text-[11px] font-mono p-2 rounded-md ${
+                  adsTxtResult.valid ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-destructive/10 text-destructive'
+                }`}>
+                  {adsTxtResult.message}
+                </p>
+              )}
+
+              <p className="text-[11px] text-muted-foreground">
+                Googlebot and Mediapartners-Google require <code className="text-foreground font-mono">google.com, pub-1375386376692976, DIRECT, f08c47fec0942fa0</code> at the domain root with standard <code className="text-foreground font-mono">text/plain</code> headers to avoid earnings-at-risk flags.
+              </p>
             </div>
           </CardContent>
         </Card>

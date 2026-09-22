@@ -213,13 +213,22 @@ export default function BestBets() {
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {bets.map((p, i) => (
-                <div key={p.id}>
-                  <PredictionCard prediction={p} />
-                  {i === 5 && <AdBannerHorizontal className="sm:col-span-2 lg:col-span-3 mt-2" />}
-                </div>
+              {bets.slice(0, 6).map((p) => (
+                <PredictionCard key={p.id} prediction={p} />
               ))}
             </div>
+            {bets.length > 6 && (
+              <div className="my-4">
+                <AdBannerHorizontal />
+              </div>
+            )}
+            {bets.length > 6 && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+                {bets.slice(6).map((p) => (
+                  <PredictionCard key={p.id} prediction={p} />
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
