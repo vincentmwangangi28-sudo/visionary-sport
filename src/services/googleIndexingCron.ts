@@ -36,7 +36,7 @@ const SETTINGS_KEY = 'predictpro_seo_cron_settings';
 const LOGS_KEY = 'predictpro_seo_cron_logs';
 const TOTAL_INDEXED_KEY = 'predictpro_seo_total_indexed';
 
-export const DEFAULT_INDEXNOW_KEY = 'predictpro789xyz456indexnow';
+export const DEFAULT_INDEXNOW_KEY = 'ccf4ef0c532c4444b096f02474b4320a';
 
 export const DEFAULT_SETTINGS: GoogleIndexingSettings = {
   isEnabled: true,

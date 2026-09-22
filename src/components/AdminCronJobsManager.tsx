@@ -17,8 +17,12 @@ import {
   Activity,
   Layers,
   Sparkles,
+  Sliders,
+  Power,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMatchSync, SUGGESTED_TRIGGERS } from '@/hooks/useMatchSync';
+import { Switch } from '@/components/ui/switch';
 
 interface CronJobDef {
   id: string;
@@ -164,6 +168,7 @@ export function AdminCronJobsManager() {
   const [runningMap, setRunningMap] = useState<Record<string, boolean>>({});
   const [logsMap, setLogsMap] = useState<Record<string, ExecutionLog>>({});
   const [runningAll, setRunningAll] = useState(false);
+  const matchSync = useMatchSync();
 
   const triggerCron = async (job: CronJobDef) => {
     setRunningMap(prev => ({ ...prev, [job.id]: true }));
@@ -273,6 +278,116 @@ export function AdminCronJobsManager() {
             </Button>
           </div>
         </CardHeader>
+      </Card>
+
+      {/* Midnight Match Sync Hook Live Telemetry & Trigger Suggestion Center */}
+      <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
+        <CardContent className="p-4 sm:p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className={`h-2.5 w-2.5 rounded-full ${matchSync.isSyncing ? 'bg-amber-500 animate-ping' : matchSync.autoEnabled ? 'bg-emerald-500' : 'bg-muted-foreground'}`} />
+                <h3 className="text-sm font-bold text-foreground">useMatchSync — Autonomous Background Match & Prediction Engine</h3>
+                <Badge variant="outline" className={`text-[10px] font-mono ${matchSync.autoEnabled ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5' : 'border-amber-500/30 text-amber-500 bg-amber-500/5'}`}>
+                  {matchSync.autoEnabled ? 'Autonomous Auto-Sync Active' : 'Auto-Sync Paused'}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Runs automatically on its own across intelligent trigger vectors (Midnight rollover, confirmed lineups, odds shifts, and visibility wakeup).
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground font-mono pt-1">
+                <span>Last Synced Date: <strong className="text-foreground">{matchSync.lastSyncDate || 'Pending first sync'}</strong></span>
+                <span>•</span>
+                <span>Last Run: <strong className="text-foreground">{matchSync.lastSyncTime ? new Date(matchSync.lastSyncTime).toLocaleTimeString() : 'Awaiting trigger'}</strong></span>
+                <span>•</span>
+                <span>Trigger: <strong className="text-primary capitalize">{matchSync.lastTrigger || 'Autonomous'}</strong></span>
+                <span>•</span>
+                <span>Source: <strong className="text-foreground capitalize">{matchSync.syncSource || 'System'}</strong></span>
+                {matchSync.matchesCount > 0 && (
+                  <>
+                    <span>•</span>
+                    <span>Hydrated: <strong className="text-emerald-500">{matchSync.matchesCount} fixtures</strong></span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 pr-2 border-r border-border/60">
+                <span className="text-xs text-muted-foreground font-medium">Auto-Run</span>
+                <Switch
+                  checked={matchSync.autoEnabled}
+                  onCheckedChange={matchSync.toggleAutoSync}
+                  className="data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const ok = await matchSync.syncNow();
+                  if (ok) {
+                    toast.success('Match data and today predictions synced successfully');
+                  } else {
+                    toast.error('Match sync encountered an issue, check network status');
+                  }
+                }}
+                disabled={matchSync.isSyncing}
+                className="gap-1.5 text-xs font-semibold shrink-0"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${matchSync.isSyncing ? 'animate-spin text-primary' : ''}`} />
+                <span>{matchSync.isSyncing ? 'Syncing...' : 'Sync Today Matches Now'}</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Trigger Matrix & Suggestions */}
+          <div className="pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Sliders className="h-3.5 w-3.5 text-primary" />
+                Configured Autonomous Trigger Vectors &amp; Suggested Schedules
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {matchSync.triggerConfigs.filter(t => t.enabled).length} of {matchSync.triggerConfigs.length} Active
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {matchSync.triggerConfigs.map((t) => (
+                <div
+                  key={t.id}
+                  className={`p-2.5 rounded-lg border text-xs transition-colors flex flex-col justify-between gap-2 ${
+                    t.enabled
+                      ? 'bg-card/90 border-border/80 shadow-xs'
+                      : 'bg-muted/20 border-border/40 opacity-70'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5 mb-1">
+                      <span className="font-semibold text-foreground truncate">{t.name}</span>
+                      <Switch
+                        checked={t.enabled}
+                        onCheckedChange={(checked) => matchSync.toggleTrigger(t.id, checked)}
+                        className="scale-75 origin-right data-[state=checked]:bg-primary"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                      {t.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[10px] font-mono">
+                    <span className="text-primary font-medium">{t.frequency}</span>
+                    <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono">
+                      {t.recommendedSchedule}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Grid of Cron Cards */}

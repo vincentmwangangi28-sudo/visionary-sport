@@ -130,6 +130,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         };
       }
 
+      case 'match-sync':
+      case 'sync':
       case 'daily-predictions':
       case 'daily': {
         const res = await fetch(`${SUPABASE_BASE_URL}/functions/v1/cron-daily-predictions`, {
@@ -141,7 +143,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         return {
           success: res.ok,
           job: 'daily-predictions-batch',
-          schedule: '0 4 * * * (Daily at 04:00 UTC)',
+          schedule: '0 0 * * * (Daily at Midnight UTC / On Demand)',
           status: `http_${res.status}`,
           executedAt,
           durationMs: Date.now() - start,

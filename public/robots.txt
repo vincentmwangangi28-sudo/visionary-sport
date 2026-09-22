@@ -56,8 +56,8 @@ User-agent: YandexBot
 Allow: /
 
 # IndexNow Verification Key & Location (Documented for search engines)
-# Key: predictpro789xyz456indexnow
-# Key Location: https://predictpro.guru/predictpro789xyz456indexnow.txt
+# Key: ccf4ef0c532c4444b096f02474b4320a
+# Key Location: https://predictpro.guru/ccf4ef0c532c4444b096f02474b4320a.txt
 # Key Location: https://predictpro.guru/predictpro-indexnow-key.txt
 
 # Sitemaps

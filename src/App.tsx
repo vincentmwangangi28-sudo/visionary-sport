@@ -13,6 +13,7 @@ import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
 import { useAutoIndexing } from "@/hooks/useAutoIndexing";
 import { useGeminiDailyCron } from "@/hooks/useGeminiDailyCron";
+import { useMatchSync } from "@/hooks/useMatchSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -265,6 +266,11 @@ const GeminiDailyCronInitializer: React.FC = () => {
   return null;
 };
 
+const MatchSyncInitializer: React.FC = () => {
+  useMatchSync();
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
@@ -278,6 +284,7 @@ const App = () => (
                     <LocaleDetectionInitializer />
                     <AutoIndexingInitializer />
                     <GeminiDailyCronInitializer />
+                    <MatchSyncInitializer />
                     <BetSlipProvider>
                       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
                         Skip to content

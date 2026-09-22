@@ -838,13 +838,29 @@ export default function SEOIndexingPage() {
                     </label>
                     <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1.5 font-mono">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">Token Code:</span>
-                        <span className="text-primary font-bold">6aab6592f8d8ca55</span>
+                        <span className="text-muted-foreground">Active Tokens:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-primary font-bold">ccf4ef0c532c4444b096f02474b4320a</span>
+                          <span className="text-muted-foreground">|</span>
+                          <span className="text-muted-foreground">6aab6592f8d8ca55</span>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">HTML Verification File:</span>
-                        <a href="/yandex_6aab6592f8d8ca55.html" target="_blank" className="text-primary underline font-sans font-semibold">
-                          /yandex_6aab6592f8d8ca55.html
+                        <span className="text-muted-foreground">HTML Verification Files:</span>
+                        <div className="flex items-center gap-2">
+                          <a href="/ccf4ef0c532c4444b096f02474b4320a.html" target="_blank" className="text-primary underline font-sans font-semibold">
+                            /ccf4ef0c...html
+                          </a>
+                          <span className="text-muted-foreground">/</span>
+                          <a href="/yandex_6aab6592f8d8ca55.html" target="_blank" className="text-primary underline font-sans font-semibold">
+                            /yandex_6aab...html
+                          </a>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">IndexNow Key Endpoint:</span>
+                        <a href="/ccf4ef0c532c4444b096f02474b4320a.txt" target="_blank" className="text-emerald-500 underline font-sans font-semibold">
+                          /ccf4ef0c532c4444b096f02474b4320a.txt
                         </a>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
