@@ -20,7 +20,7 @@ export default function PremierLeaguePredictions() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Premier League Predictions Today 2025/26 | Free AI Tips | PredictPro"
-        description="Free Premier League predictions for today's matches. AI-powered tips with confidence scores, H2H stats and value bets. Arsenal, Man City, Liverpool, Chelsea predictions."
+        description="Free Premier League predictions for today's matches. AI tips with confidence scores, H2H stats, and value bets for Arsenal, Man City, and Chelsea."
         canonical="/premier-league-predictions"
         keywords="Premier League predictions today, EPL predictions, Premier League tips today, Arsenal predictions, Man City tips, Liverpool predictions, Chelsea prediction, Premier League AI tips free"
         structuredData={{

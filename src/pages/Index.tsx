@@ -37,8 +37,8 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="PredictPro — AI Football Predictions Today | Free Daily Betting Tips & xG Stats"
-        description="AI-powered football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, BTTS, and value bets for Premier League, Champions League, and 40+ leagues worldwide."
+        title="PredictPro — AI Football Predictions Today & Daily Tips"
+        description="Accurate AI football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, and value bets for 40+ global leagues."
         keywords="football predictions today, ai football predictions, free football betting tips, premier league predictions today, sure wins today, banker bet of the day, both teams to score btts tips, over 2.5 goals predictions, value bets today"
         canonical="/"
       />

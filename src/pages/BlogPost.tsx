@@ -308,6 +308,7 @@ export default function BlogPost() {
 
   if (!post) return (
     <div className="min-h-screen bg-background">
+      <SEO title="Article Not Found | PredictPro" description="The requested football betting strategy guide or preview was not found. Browse all our daily football tips and betting analysis on PredictPro." noIndex canonical={`/blog/${slug}`} />
       <Navbar />
       <main className="container mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-bold mb-4">Article not found</h1>
@@ -317,9 +318,15 @@ export default function BlogPost() {
     </div>
   );
 
+  const seoTitle = post.title.length + 13 <= 68
+    ? `${post.title} | PredictPro`
+    : post.title.length <= 68
+      ? post.title
+      : `${post.title.slice(0, 52)}... | PredictPro`;
+
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${post.title} | PredictPro`} description={post.description} keywords={post.keywords} canonical={`/blog/${slug}`}
+      <SEO title={seoTitle} description={post.description} keywords={post.keywords} canonical={`/blog/${slug}`}
         structuredData={{ '@type': 'Article', headline: post.title, description: post.description, datePublished: post.date, author: { '@type': 'Organization', name: 'PredictPro' }, publisher: { '@type': 'Organization', name: 'PredictPro', url: 'https://predictpro.guru' } }} />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">

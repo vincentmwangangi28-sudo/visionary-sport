@@ -10,7 +10,7 @@ export default function DroppingOddsPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Dropping Odds & Smart Money Radar | Real-Time Market Moves | PredictPro"
+        title="Dropping Odds & Smart Money Radar | Live Market Moves | PredictPro"
         description="Monitor sudden bookmaker odds drops, sharp betting syndicate movements, and market volume surges in real time across football fixtures."
         keywords="dropping odds, sharp betting money, market line movement, smart money football, odds movement radar, bookmaker odds drop"
       />

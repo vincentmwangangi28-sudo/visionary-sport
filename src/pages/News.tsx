@@ -135,7 +135,7 @@ export default function News() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Football News & Gemini AI Tactical Wire | Transfer News & Match Previews | PredictPro"
+        title="Football News & Gemini AI Tactical Wire | PredictPro"
         description="Latest football news and Gemini AI tactical intelligence. Breaking transfer updates, injury alerts, and betting impact breakdowns."
         canonical="/news"
       />

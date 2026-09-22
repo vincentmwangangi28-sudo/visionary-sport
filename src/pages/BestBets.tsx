@@ -130,8 +130,8 @@ export default function BestBets() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Free Guru Tips Today & Sure Banker Bets Football Predictions | PredictPro"
-        description="Free daily guru tips today and sure banker football predictions with 75%+ statistical confidence. High win-rate accumulator legs, double chance, and match outcome analysis."
+        title="Free Guru Tips Today & Sure Banker Bets | PredictPro"
+        description="Free daily guru tips today and sure banker football predictions with 75%+ confidence. High win-rate accumulator legs and match outcome analysis."
         canonical="/best-bets"
         keywords="free guru tips today football prediction, guru predictions for today, best football bets today, sure bets today, banker bet of the day, high confidence football predictions"
       />

@@ -62,7 +62,7 @@ export default function Standings() {
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
         title="Football League Standings 2025/26 | Live Tables | PredictPro"
-        description="Live football league standings for Premier League, La Liga, Bundesliga, Serie A, Ligue 1 and Champions League. Updated in real-time with form, goal difference and points."
+        description="Live football standings for Premier League, La Liga, Bundesliga, Serie A, and Champions League with real-time form, goal difference, and points."
         keywords="Premier League table 2026, La Liga standings, Bundesliga table, Serie A standings, Champions League table, football league tables"
       />
       <Navbar />

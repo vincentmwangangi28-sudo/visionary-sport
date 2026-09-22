@@ -121,8 +121,8 @@ export default function ValueBets() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Daily Value Bets Today (+EV): Beat Bookmakers With AI Odds | PredictPro"
-        description="Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in long-term statistical edges."
+        title="Daily Value Bets Today (+EV): Beat Bookmakers | PredictPro"
+        description="Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in edges."
         canonical="/value-bets"
         keywords="daily value bets today, value bets (+ev), positive expected value football, beating bookmakers, football betting edge, ai odds discrepancies, aiprotips value"
         breadcrumbs={[

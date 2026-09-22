@@ -83,7 +83,7 @@ export default function Methodology() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
         title="PredictPro AI Prediction Methodology & Mathematical Modeling"
-        description="Learn how PredictPro uses Expected Goals (xG), Bivariate Poisson distribution, Bayesian line updates, and +EV mathematical models to generate transparent football predictions."
+        description="Learn how PredictPro uses Expected Goals (xG), Poisson distributions, and +EV mathematical models to generate transparent football predictions."
         canonical="/methodology"
       />
       <Navbar />

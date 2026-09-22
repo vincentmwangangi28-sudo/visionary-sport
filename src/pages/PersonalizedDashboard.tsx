@@ -75,7 +75,7 @@ export default function PersonalizedDashboard() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Personalized Match Dashboard | Pinned Leagues & Team Stats | PredictPro"
+        title="Personalized Match Dashboard & Pinned Leagues | PredictPro"
         description="Your tailored football dashboard. Pin your preferred leagues, track real-time club form, clean sheets, and receive AI prediction alerts for your favorite teams."
         keywords="personalized football dashboard, pinned leagues, team stats tracker, football form guide, AI match predictions favorite teams"
       />

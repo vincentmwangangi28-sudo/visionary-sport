@@ -244,7 +244,12 @@ export default function MatchPrediction() {
   if (!prediction) {
     return (
       <div className="min-h-screen bg-background flex flex-col justify-between">
-        <SEO title="Prediction Not Found | PredictPro" noIndex canonical={`/predict/${matchSlug}`} />
+        <SEO
+          title="Prediction Not Found | PredictPro"
+          description="The requested football match prediction or fixture was not found. Browse daily AI football betting predictions, banker picks and odds on PredictPro."
+          noIndex
+          canonical={`/predict/${matchSlug}`}
+        />
         <Navbar />
         <main className="container mx-auto px-4 py-24 text-center max-w-lg">
           <div className="bg-muted/40 p-6 rounded-2xl border mb-6 inline-block">
@@ -274,8 +279,18 @@ export default function MatchPrediction() {
 
   const outcome = prediction.predicted_outcome ?? prediction.prediction ?? 'Draw';
   const confidence = prediction.confidence_score ?? prediction.confidence ?? 65;
-  const title = `${prediction.home_team} vs ${prediction.away_team} Lineups, AI Prediction & Tactical H2H - PredictPro`;
-  const description = `${prediction.home_team} vs ${prediction.away_team} match center: ${outcome} (${confidence}% confidence). Confirmed tactical formations, xG stats, multi-bookmaker odds & referee analysis.`;
+  // Keep title under 70 chars: "[Home] vs [Away] Prediction & H2H | PredictPro" or truncated if very long club names
+  const rawMatchTitle = `${prediction.home_team} vs ${prediction.away_team} Prediction`;
+  const title = rawMatchTitle.length + 13 <= 68
+    ? `${rawMatchTitle} | PredictPro`
+    : `${rawMatchTitle.slice(0, 52)}... | PredictPro`;
+
+  const baseMatchDesc = `${prediction.home_team} vs ${prediction.away_team} prediction: ${outcome} (${confidence}% conf). Lineups, xG data, H2H stats & betting tips.`;
+  const description = baseMatchDesc.length > 160
+    ? `${baseMatchDesc.slice(0, 157)}...`
+    : baseMatchDesc.length < 120
+      ? `${baseMatchDesc} Free AI football tips & odds.`
+      : baseMatchDesc;
 
   // Deterministic multi-market lines
   const hash = (prediction.home_team + prediction.away_team).split('').reduce((a, b) => a + b.charCodeAt(0), 0);

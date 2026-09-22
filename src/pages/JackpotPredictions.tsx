@@ -128,8 +128,8 @@ export default function JackpotPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="SportPesa & Betika Mega Jackpot Prediction Today (17 Games) | PredictPro"
-        description="Free SportPesa Mega Jackpot prediction (17 games), Betika Midweek & Grand jackpot tips, and Mozzart Super Grand picks. AI banker games, double chance analysis, and bonus combinations."
+        title="SportPesa & Betika Mega Jackpot Prediction Today | PredictPro"
+        description="Free SportPesa and Betika Mega Jackpot predictions (17 games). AI banker games, double chance analysis, and pool combinations."
         canonical="/jackpot-predictions"
         keywords="sportpesa mega jackpot prediction today, betika midweek jackpot prediction, betika grand jackpot prediction, mozzart super grand jackpot, sportybet jackpot nigeria, jackpot bonus predictions 17 games"
         breadcrumbs={[

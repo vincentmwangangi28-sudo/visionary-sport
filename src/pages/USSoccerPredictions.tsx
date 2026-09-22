@@ -184,8 +184,8 @@ export default function USSoccerPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="US Soccer Picks Today: MLS & Premier League AI Moneyline Predictions | PredictPro"
-        description="Daily US soccer picks, MLS moneyline predictions, Premier League morning picks, and Champions League +EV bets with American odds format (+/-), point spreads, and goal totals."
+        title="US Soccer Picks Today: MLS & Premier League | PredictPro"
+        description="Daily US soccer picks, MLS moneyline predictions, Premier League morning picks, and Champions League +EV bets with American odds format (+/-)."
         canonical="/us-soccer-predictions"
         keywords="us soccer picks today, epl soccer picks today, mls ai predictions, champions league moneyline picks, us soccer betting tips, soccer parlay picks today"
         breadcrumbs={[

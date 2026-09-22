@@ -115,8 +115,8 @@ export default function BTTS() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="BTTS AI Prediction Today: Both Teams to Score & Over 2.5 Goals | PredictPro"
-        description="Verified BTTS AI prediction today with 79% win rate. Daily Both Teams to Score and Over/Under 2.5 goals tips, Poisson expectancy distributions, and xG stats across 40+ leagues."
+        title="BTTS AI Prediction Today: Both Teams to Score | PredictPro"
+        description="Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson expectancy across 40+ leagues."
         canonical="/btts"
         keywords="btts ai prediction today, btts ai prediction, both teams to score tips, over 2.5 goals predictions, free btts tips today, sure btts picks, ai pro tips today"
         breadcrumbs={[
