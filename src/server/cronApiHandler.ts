@@ -58,7 +58,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           baseUrl + '/value-bets',
           baseUrl + '/standings',
         ];
-        const timeout = AbortSignal.timeout(12000);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
         let indexNowStatus = 'skipped';
         if (indexNowKey) {
           const indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
@@ -70,7 +71,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
               keyLocation: baseUrl + '/' + indexNowKey + '.txt',
               urlList: urls,
             }),
-            signal: timeout,
+            signal: controller.signal,
           });
           indexNowStatus = 'http_' + indexNowRes.status;
         }
@@ -78,8 +79,9 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           method: 'POST',
           headers: getSupabaseHeaders(),
           body: JSON.stringify({ urls }),
-          signal: timeout,
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
         return {
           success: pingRes.ok,
           job: 'google-crawl-indexing',
