@@ -46,17 +46,48 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
     switch (cleanTask) {
       case 'google-crawl':
       case 'indexing': {
-        const rootDir = process.cwd();
-        const scriptPath = path.join(rootDir, 'scripts', 'google-crawl-cron.mjs');
-        const { stdout } = await execAsync(`node "${scriptPath}"`);
+        // Keep the Vercel request lightweight. The full crawl/verification job runs in
+        // GitHub Actions; this endpoint performs only the fast indexing dispatch.
+        const baseUrl = process.env.SITE_URL || 'https://predictpro.guru';
+        const indexNowKey = process.env.INDEXNOW_KEY || '';
+        const urls = [
+          baseUrl + '/',
+          baseUrl + '/predict',
+          baseUrl + '/live',
+          baseUrl + '/best-bets',
+          baseUrl + '/value-bets',
+          baseUrl + '/standings',
+        ];
+        const timeout = AbortSignal.timeout(12000);
+        let indexNowStatus = 'skipped';
+        if (indexNowKey) {
+          const indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              host: new URL(baseUrl).hostname,
+              key: indexNowKey,
+              keyLocation: baseUrl + '/' + indexNowKey + '.txt',
+              urlList: urls,
+            }),
+            signal: timeout,
+          });
+          indexNowStatus = 'http_' + indexNowRes.status;
+        }
+        const pingRes = await fetch(`${SUPABASE_BASE_URL}/functions/v1/ping-search-engines`, {
+          method: 'POST',
+          headers: getSupabaseHeaders(),
+          body: JSON.stringify({ urls }),
+          signal: timeout,
+        });
         return {
-          success: true,
+          success: pingRes.ok,
           job: 'google-crawl-indexing',
           schedule: '0 */2 * * * (Every 2 Hours)',
-          status: 'success',
+          status: `indexnow_${indexNowStatus}_ping_http_${pingRes.status}`,
           executedAt,
           durationMs: Date.now() - start,
-          data: { output: stdout.slice(-600) },
+          data: { urlsSubmitted: urls.length },
         };
       }
 
