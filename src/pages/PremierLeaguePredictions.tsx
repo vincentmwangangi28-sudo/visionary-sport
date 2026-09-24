@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -34,6 +35,9 @@ export default function PremierLeaguePredictions() {
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
+        {/* Dynamic Hierarchy Breadcrumb Navigation */}
+        <Breadcrumbs className="mb-6" />
+
         {/* Hero */}
         <div className="text-center mb-10">
           <Badge className="mb-4 bg-blue-600 text-white">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</Badge>

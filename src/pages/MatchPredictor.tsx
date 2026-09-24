@@ -18,6 +18,7 @@ import { AdBannerHorizontal } from '@/components/AdBanner';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { analyzeMatchWithGemini, GeminiMatchAnalysis } from '@/services/geminiTasksService';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 
 const LEAGUES = ['Premier League','La Liga','Champions League','Bundesliga','Serie A','Ligue 1','KPL','AFCON Qualifier','MLS','Europa League'];
 
@@ -572,6 +573,8 @@ export default function MatchPredictor() {
             </CardContent>
           </Card>
         )}
+
+        <LeagueNavigationStrip className="mt-8" />
 
         <AdBannerHorizontal className="mt-6" />
       </main>

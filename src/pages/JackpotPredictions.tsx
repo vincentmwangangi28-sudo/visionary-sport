@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Trophy, Sparkles, Share2, Copy, CheckCheck, Flame, ShieldCheck, HelpCircle } from 'lucide-react';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { useBetSlip } from '@/hooks/useBetSlip';
@@ -140,12 +141,8 @@ export default function JackpotPredictions() {
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
-          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">Jackpot Predictions</span>
-        </nav>
+        {/* Dynamic Breadcrumbs */}
+        <Breadcrumbs className="mb-4" />
 
         {/* Hero Section */}
         <div className="text-center mb-8">

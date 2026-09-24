@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,7 @@ import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { GeminiMatchIntelligenceTab } from '@/components/GeminiMatchIntelligenceTab';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
   TrendingUp,
   Target,
@@ -26,6 +28,7 @@ import {
   Calendar,
   Layers,
   Search,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -43,6 +46,8 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
   const outcome = getPrediction(p);
   const confidence = getConfidence(p);
   const analysis = getAnalysis(p);
+  const matchSlug = formatMatchSlug(p.home_team, p.away_team, p.match_date);
+  const matchUrl = `/predict/${matchSlug}`;
 
   const baseHome = p.home_odds || 2.10;
   const baseDraw = p.draw_odds || 3.30;
@@ -89,6 +94,15 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                 homeTeam={p.home_team}
                 awayTeam={p.away_team}
               />
+              <Link
+                to={matchUrl}
+                onClick={onClose}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-muted/80 hover:bg-primary/10 hover:text-primary transition-colors border text-muted-foreground"
+                title={`Open full dedicated page for ${p.home_team} vs ${p.away_team}`}
+              >
+                <span>Full Page</span>
+                <ExternalLink className="h-3 w-3" />
+              </Link>
               <NotifyMeButton
                 match={{
                   id: p.id,

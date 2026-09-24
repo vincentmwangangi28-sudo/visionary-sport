@@ -5,7 +5,7 @@ import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/p
 import { SharePrediction } from '@/components/SharePrediction';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
-import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles, Pin } from 'lucide-react';
+import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles, Pin, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
@@ -15,6 +15,7 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { usePersonalizedDashboard } from '@/hooks/usePersonalizedDashboard';
 import { supabase } from '@/integrations/supabase/client';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { toast } from 'sonner';
 
 interface Props {
@@ -62,6 +63,8 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
   const isPremiumLocked = p.is_premium && !isPremium() && outcome.includes('🔒');
   const locked = isPremiumLocked && !coinUnlocked;
   const relativeKickoff = getKickoffRelative(p.match_date);
+  const matchSlug = formatMatchSlug(p.home_team, p.away_team, p.match_date);
+  const matchUrl = `/predict/${matchSlug}`;
 
   // Closing Line Value (CLV) & Implied Probability Edge
   const clvData = useMemo(() => {
@@ -199,13 +202,18 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2 text-sm">
+            <Link
+              to={matchUrl}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-2 text-sm hover:underline group/title min-w-0"
+              title={`View match analysis & prediction for ${p.home_team} vs ${p.away_team}`}
+            >
               <TeamLogo team={p.home_team} size="xs" />
-              <span className="font-bold truncate text-foreground">{p.home_team}</span>
+              <span className="font-bold truncate text-foreground group-hover/title:text-primary">{p.home_team}</span>
               <span className="text-muted-foreground text-xs font-normal">vs</span>
               <TeamLogo team={p.away_team} size="xs" />
-              <span className="font-bold truncate text-foreground">{p.away_team}</span>
-            </div>
+              <span className="font-bold truncate text-foreground group-hover/title:text-primary">{p.away_team}</span>
+            </Link>
           </div>
 
           {/* AI Tip + Confidence */}
@@ -366,11 +374,16 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
             </div>
 
             {/* Match center VS */}
-            <div className="shrink-0 flex flex-col items-center justify-center px-1">
-              <span className="text-[10px] font-black text-muted-foreground bg-muted/80 px-2 py-0.5 rounded uppercase tracking-wider">
+            <Link
+              to={matchUrl}
+              onClick={(e) => e.stopPropagation()}
+              title={`View ${p.home_team} vs ${p.away_team} dedicated match prediction`}
+              className="shrink-0 flex flex-col items-center justify-center px-1 group/vs"
+            >
+              <span className="text-[10px] font-black text-muted-foreground bg-muted/80 group-hover/vs:bg-primary group-hover/vs:text-primary-foreground transition-colors px-2 py-0.5 rounded uppercase tracking-wider">
                 VS
               </span>
-            </div>
+            </Link>
 
             {/* Away team */}
             <div className="flex items-center justify-end gap-2.5 min-w-0 flex-1 text-right">
@@ -515,8 +528,8 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
             </div>
           )}
 
-          {/* Footer Actions: Analytics Trigger + Share */}
-          <div className="flex items-center justify-between pt-1 border-t">
+          {/* Footer Actions: Analytics Trigger + Full Match Intel + Share */}
+          <div className="flex items-center justify-between pt-1 border-t gap-2 flex-wrap">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -530,6 +543,16 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                 <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Gemini Intel & Lineups</span>
               </button>
+
+              <Link
+                to={matchUrl}
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-semibold text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-0.5 transition-colors"
+                title={`Open full match intelligence page for ${p.home_team} vs ${p.away_team}`}
+              >
+                <span>Full Preview</span>
+                <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
 
             <SharePrediction

@@ -14,6 +14,7 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { Link } from 'react-router-dom';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
   Calendar,
   Zap,

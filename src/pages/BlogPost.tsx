@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -7,10 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ChevronLeft, Zap } from "lucide-react";
+import { Clock, ChevronLeft, Zap, ArrowRight, BookOpen } from "lucide-react";
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from "@/components/WhatsAppShare";
 import { supabase } from "@/integrations/supabase/client";
+import { STRATEGY_POSTS, BlogPostItem } from "@/data/blogData";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { LeagueNavigationStrip } from "@/components/LeagueNavigationStrip";
 
 const ARTICLES: Record<string, { title: string; description: string; keywords: string; category: string; readTime: string; date: string; content: string }> = {
   "how-to-read-football-predictions": {
@@ -163,6 +166,226 @@ By securing 6 bankers and hedging 4 competitive games, your expected return on h
 
 PredictPro updates the 17-game Mega Jackpot every Thursday evening on our **Jackpot Predictions** page, featuring both pure 1X2 banker slips and double chance combinations ready to export.`
   },
+  "bankroll-management-football": {
+    title: "Bankroll Management for Football Bettors: The Math That Protects Your Capital",
+    description: "The Kelly Criterion, proportional unit staking, and variance mitigation strategies. Learn how professional sports bettors safeguard their betting bankroll.",
+    keywords: "bankroll management football, kelly criterion football betting, unit staking strategy, flat staking vs proportional, football betting bankroll",
+    category: "Finance", readTime: "6 min", date: "2026-06-02",
+    content: `## The Core Law of Sports Betting
+
+No predictive algorithm, regardless of machine learning accuracy, can overcome undisciplined staking. In football betting, variance is inevitable. A model with a **65% win probability** can easily experience a 5-bet losing streak within any sample of 50 matches.
+
+Bankroll management is the mathematical system designed to absorb downward swings while compounding capital during winning streaks.
+
+## The 1-Unit Rule (Flat Staking)
+
+For 95% of recreational and semi-pro bettors, **Flat Staking** is the safest, most consistent approach:
+
+- Divide your total designated sports betting capital into **100 units**.
+- If your total bankroll is $1,000, **1 Unit = $10 (1%)**.
+- **Standard Pick (55-69% AI confidence):** Wager exactly 1.0 Unit ($10).
+- **High Value Pick (70-84% AI confidence):** Wager 1.5 to 2.0 Units ($15 - $20).
+- **Banker Lock (85%+ AI confidence):** Maximum 2.5 to 3.0 Units ($25 - $30).
+
+**Golden Rule:** Never stake more than 3% of your total bankroll on any single match, regardless of how guaranteed the outcome appears.
+
+## Fractional Kelly Criterion: The Professional Standard
+
+The Kelly Criterion calculates the mathematically optimal percentage of your bankroll to wager on a positive expected value (+EV) wager:
+
+> Kelly Fraction = (Edge) / (Decimal Odds - 1)
+> Where Edge = (Probability × Decimal Odds) - 1
+
+Because Full Kelly can produce volatile bankroll swings, professional quantitative syndicates use **Quarter-Kelly (0.25x)** or **Half-Kelly (0.5x)**.
+
+**Worked Example:**
+- AI Model Win Probability: **60% (0.60)**
+- Bookmaker Decimal Odds: **2.00 (Evens)**
+- Implied Probability: 50%
+- Net Edge: (0.60 × 2.00) - 1 = **+0.20 (20%)**
+- Full Kelly Wager: 0.20 / (2.00 - 1) = **20% of bankroll**
+- **Quarter-Kelly Recommended Wager:** 20% × 0.25 = **5% of bankroll**
+
+## Three Fatal Bankroll Mistakes to Avoid
+
+1. **Chasing Losses with Martingale:** Doubling your bet after each loss guarantees eventual catastrophic ruin when an unexpected run of 6 consecutive upsets occurs.
+2. **Emotional Stake Escalation:** Increasing your stake size following a winning streak because you feel "in the zone".
+3. **Betting Untracked Parlays:** Placing casual accumulators without recording odds, EV, or historical ROI in your betting tracker.
+
+Use PredictPro's built-in **Bankroll Manager** and **Verified Track Record** tools to record every wager and monitor your unit yield over time.`
+  },
+  "premier-league-prediction-guide-2026": {
+    title: "Premier League 2025/26 Prediction Guide: Tactical Stats & AI Exploits",
+    description: "Which EPL teams are most predictable? Home pitch advantage metrics, Expected Goals (xG) anomalies, and referee impact analysis for Premier League fixtures.",
+    keywords: "premier league prediction guide, epl betting tips, expected goals premier league, arsenal man city liverpool predictions, epl home advantage",
+    category: "Premier League", readTime: "10 min", date: "2026-06-01",
+    content: `## The Premier League Paradigm: Statistical Parity
+
+The English Premier League (EPL) is the most heavily traded sports betting market globally. Bookmaker liquidity is immense, meaning consensus lines (such as Arsenal vs Chelsea 1X2) are priced with razor-thin margins. To beat the market, bettors must look beyond league table position and analyze deeper underlying performance indicators.
+
+## 1. Expected Goals (xG) vs Actual Points
+
+League tables frequently lie across 10 to 15 game stretches due to finishing variance and goalkeeper hot streaks.
+
+- **Positive Regressors:** Teams whose Expected Points (xPTS) significantly exceed their actual points are prime buy-low candidates. When their results catch up to their underlying chance creation, they provide exceptional betting value.
+- **Negative Regressors:** Teams overperforming their Expected Goals Against (xGA) usually rely on unsustainable goalkeeper shot-stopping rates. When facing elite finishers, they are prime candidates for upsets or Over 2.5 goals.
+
+## 2. The Evolution of Home Advantage
+
+Historically, EPL home teams won approximately 48% of fixtures. Modern high-pressing tactical setups, combined with pristine pitch surfaces and video assistant referee (VAR) oversight, have narrowed home advantage:
+
+- Home win rate has shifted closer to **44-46%** in recent seasons.
+- However, specific tactical environments still yield overwhelming home splits: clubs with compact stadiums and hostile fan proximity maintain significantly higher win rates when playing bottom-half opponents.
+
+## 3. Set-Piece Efficiency & Corner Conversions
+
+Over 28% of all Premier League goals originate from dead-ball scenarios (corners, indirect free-kicks, and throw-in routines). When analyzing match matchups:
+- Compare the attacking set-piece xG of the favourite against the defensive aerial duel success percentage of the underdog.
+- Teams utilizing specialized set-piece coaches create consistent high-probability chances even when failing to break down stubborn low blocks in open play.
+
+## 4. Scheduling Density & European Fatigue
+
+Teams competing in the UEFA Champions League or Europa League experience substantial statistical drop-offs when playing away fixtures within 64 hours of a continental match. Monitor squad rotation announcements and midfield distance-covered statistics on PredictPro's **Match Screener** before placing matchday wagers.`
+  },
+  "champions-league-group-stage-tips": {
+    title: "Champions League Group Stage & League Phase: How to Bet Smart",
+    description: "Navigating the UEFA Champions League 36-team Swiss model. Tactical rotation, motivation factors, goal differentials, and knockout qualification dynamics.",
+    keywords: "champions league predictions, ucl betting tips, uefa swiss model betting, champions league group stage tips, real madrid bayern ucl",
+    category: "Champions League", readTime: "7 min", date: "2026-05-31",
+    content: `## The New UEFA League Phase Landscape
+
+The expansion of the UEFA Champions League to a 36-team single league phase has fundamentally altered match dynamics. Unlike the traditional 4-team groups where teams often qualified with 2 matches to spare, the new Swiss-style table places immense value on **goal difference and total points**:
+
+- Finishing in the **Top 8** grants direct qualification to the Round of 16 and home advantage in second legs.
+- Finishing **9th to 24th** forces clubs into an exhausting two-legged knockout play-off round.
+- Clubs now compete with relentless offensive urgency through all 8 fixtures.
+
+## Motivation & Dead Rubber Dynamics
+
+In previous formats, Matchday 5 and 6 frequently saw elite clubs like Real Madrid, Manchester City, or Bayern Munich field reserve lineups after securing top spot.
+
+In the 36-team format:
+- Every goal scored impacts seedings and potential Round of 16 opponents.
+- The occurrence of unmotivated "dead rubbers" has decreased by over 70%.
+- Favourites are incentivized to maintain high goal-scoring intensity even when leading by 2 goals in the second half.
+
+## Travel Burdens in Continental Clashes
+
+European away fixtures introduce severe physical variables:
+- Long-haul eastward flights (e.g., London or Lisbon to Istanbul, Athens, or Baku) disrupt sleep rhythms and tactical preparation.
+- Pitch condition variations and hostile continental atmosphere swing probability distributions by 5-8% toward competitive home underdogs.
+
+## Identifying Value in Goal Markets (Over/Under & BTTS)
+
+Champions League fixtures feature an average of **3.15 goals per match**, significantly higher than domestic leagues. Teams with dominant domestic records encounter defensive systems they rarely face domestically, frequently leading to open, end-to-end transitional encounters.
+
+Targeting **Over 2.5 Goals & BTTS** in fixtures pairing high-possession heavyweights against fast counter-attacking sides offers consistent statistical value across the tournament.`
+  },
+  "btts-over-under-strategy": {
+    title: "BTTS and Over/Under: The Stats Behind Goal Markets",
+    description: "Why Both Teams to Score (BTTS) is one of the most mathematically predictable betting markets. Poisson distributions, Expected Goals (xG), and key tactical metrics.",
+    keywords: "btts betting strategy, both teams to score tips, over under 2.5 goals strategy, poisson goal distribution, soccer goal markets",
+    category: "Markets", readTime: "6 min", date: "2026-05-30",
+    content: `## Why Professional Bettors Target Goal Markets
+
+Match outcome markets (1X2 Home/Draw/Away) carry ternary risk: a late deflection or disputed red card can overturn an otherwise solid selection. In contrast, goal markets like **Both Teams to Score (BTTS)** and **Over/Under 2.5 Goals** are binary and independent of which specific club secures all 3 points.
+
+When executed with proper statistical models, goal markets offer some of the highest long-term return-on-investment opportunities in sports betting.
+
+## The Poisson Distribution in Football
+
+Goal scoring in football is an arrival process that can be modeled using the **Poisson Distribution**:
+
+> P(k goals) = (λᵏ × e⁻λ) / k!
+> Where λ (lambda) represents the expected goals (xG) for that team.
+
+To calculate the exact probability of BTTS:
+1. Calculate the probability that Team A scores 0 goals: **P(A = 0) = e^(-λ_A)**
+2. Calculate the probability that Team B scores 0 goals: **P(B = 0) = e^(-λ_B)**
+3. The probability that at least one team fails to score is: **P(No BTTS) = P(A = 0) + P(B = 0) - (P(A = 0) × P(B = 0))**
+4. **Probability of BTTS = 1 - P(No BTTS)**
+
+When our calculated probability exceeds the bookmaker's implied odds by more than 7%, a high-value BTTS wager exists.
+
+## Key Indicators for High-Probability BTTS Fixtures
+
+- **High Pressing vs Fragile Transition Defense:** Teams that commit both full-backs forward consistently generate high xG while leaving expansive space for counter-attacks.
+- **Defensive Error Propensity:** Teams with high rates of individual defensive errors in their defensive third concede goals even when dominating overall possession.
+- **Goalkeeper Shot-Stopping Form:** Underperforming goalkeepers who concede more goals than post-shot expected goals (PSxG) indicate leaky defenses ready to concede.
+
+Explore our dedicated **BTTS & Over 2.5** hub on PredictPro to review daily match simulations sorted by Poisson probability edge.`
+  },
+  "accumulator-building-strategy": {
+    title: "How to Build a Winning Football Accumulator: The 5-Fold Formula",
+    description: "Why most accumulator multibets fail and how to use AI confidence filtering to engineer profitable 3-to-5 leg parlays with bookmaker bonus boosts.",
+    keywords: "accumulator betting strategy, winning football acca, parlay multibet tips, 5-fold accumulator guide, acca builder tips",
+    category: "Strategy", readTime: "7 min", date: "2026-05-28",
+    content: `## The Paradox of the Accumulator
+
+Accumulator bets (also known as multibets, parlays, or combo tickets) are beloved by football fans because they offer astronomical payouts from modest stakes. However, standard accumulators are also bookmakers' highest margin product:
+
+- In a single bet with a 5% bookmaker margin, you receive **95% fair value**.
+- In an uncalculated 8-leg accumulator, those margins compound: **(0.95)⁸ ≈ 66%**, handing the bookmaker a staggering 34% theoretical advantage.
+
+To build winning accumulators over the long term, you must apply rigorous quantitative criteria to select **only positive expected value (+EV) legs** where compound compounding works in your favor.
+
+## The 5-Fold Disciplined Formula
+
+Follow this structured protocol when assembling your daily slip:
+
+1. **Cap at 3 to 5 Legs Maximum:** Every additional leg beyond 5 exponentially increases variance without providing proportional value. A solid 4-fold at combined odds of 4.50 to 7.00 is exponentially more profitable over a season than a 15-game lottery ticket.
+2. **Diversify Match Times:** Avoid selecting 5 matches kicking off at the exact same hour. Staggering kickoff times allows you to utilize **Cash Out** hedging if the first 3 legs win comfortably.
+3. **Blend Markets Instead of Pure 1X2:** Combine Double Chance (1X/X2), Over 1.5 Goals, and BTTS alongside strong straight winners. Diversifying market types reduces exposure to single-event variance (e.g., early red cards).
+4. **Enforce a Minimum 75% AI Confidence Floor:** Never add filler selections just to inflate total odds. Every single leg must independently demonstrate strong statistical edge.
+
+## Utilizing Acca Boosts & Booking Codes
+
+Leading bookmakers (such as SportyBet, 1xBet, and Betway) provide accumulator win bonuses ranging from 10% to 50% for tickets with 4 or more selections.
+
+When you assemble 4 legs that all carry individual positive expected value (+EV) and combine them with a **15% bookmaker payout bonus**, you mathematically flip the compounding house edge completely onto your side.
+
+Use PredictPro's **Accumulator Builder** to generate 1-click booking codes optimized with algorithmic banker legs.`
+  },
+  "correct-score-prediction-tips": {
+    title: "Correct Score Betting: Can AI Really Predict the Exact Scoreline?",
+    description: "The mathematical realities of correct scoreline betting. Bivariate Poisson matrices, scoreline clustering, and when exact score odds offer genuine value.",
+    keywords: "correct score prediction tips, exact score football tips, scoreline betting guide, bivariate poisson football, correct score odds",
+    category: "Markets", readTime: "6 min", date: "2026-05-27",
+    content: `## The Reality of Correct Score Betting
+
+Correct Score is widely considered the ultimate test of football prediction. Because predicting an exact 90-minute outcome (e.g., 2-1 or 1-0) involves pinpoint accuracy, decimal odds routinely range between **6.50 to 18.00**.
+
+While high odds mean individual strike rates will naturally be lower (typically 12% to 22%), a systematic approach identifying mispriced scorelines delivers outstanding long-term yields.
+
+## How Machine Learning Models Predict Scorelines
+
+Rather than guessing scores based on intuition, modern prediction algorithms use a **Bivariate Poisson Distribution Matrix**:
+
+1. Calculate the attacking strength and defensive vulnerability indices for both clubs.
+2. Determine Expected Goals: e.g., **Home xG = 1.82**, **Away xG = 0.94**.
+3. Generate a 2D probability matrix for all scorelines from 0-0 up to 5-5.
+4. Account for scoreline correlation: In football, games do not behave as two completely independent Poisson processes; a goal by one team changes game state and tactical posture.
+
+## Common Scoreline Clusters
+
+Across the top 5 European leagues and international competitions, football match outcomes cluster tightly around a handful of frequent scorelines:
+
+- **1-1 Draw:** Accounts for approximately 11.5% of all professional football fixtures.
+- **1-0 Home Win:** Accounts for approximately 10.2% of fixtures.
+- **2-1 Home Win:** Accounts for approximately 8.8% of fixtures.
+- **2-0 Home Win:** Accounts for approximately 7.5% of fixtures.
+- **0-1 Away Win:** Accounts for approximately 6.9% of fixtures.
+
+Over **44% of all football matches finish in one of these top 5 scorelines**.
+
+## The Value Betting Angle: Dutching Correct Scores
+
+Instead of wagering on a single exact scoreline, professional syndicates frequently **Dutch** (split stakes across) the top 2 or 3 most probable scorelines.
+
+For example, if our matrix assigns a combined 42% probability to 2-1 (odds 8.50) and 2-0 (odds 7.00), staking across both outcomes guarantees profit if either scoreline hits, yielding an effective payout far higher than a standard straight win wager.
+
+Check our daily **Correct Score** tips page to inspect the top 3 algorithmic scoreline vectors for today's marquee fixtures.`
+  },
   "us-soccer-betting-guide-mls-odds": {
     title: "US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks",
     description: "How to bet on Major League Soccer, Concacaf Champions Cup, and US Open Cup. Understand American moneyline (+/-), goal spreads, travel fatigue, and altitude edges.",
@@ -269,11 +492,114 @@ export default function BlogPost() {
     })();
   }, [slug, staticPost]);
 
-  const post = staticPost
-    ? staticPost
-    : dbPost
-      ? { title: dbPost.title, description: dbPost.description, keywords: dbPost.title.toLowerCase(), category: dbPost.category, readTime: dbPost.read_time, date: dbPost.published_at, content: dbPost.content }
-      : null;
+  const post = useMemo(() => {
+    if (staticPost) return staticPost;
+    if (dbPost) {
+      return {
+        title: dbPost.title,
+        description: dbPost.description,
+        keywords: dbPost.title.toLowerCase(),
+        category: dbPost.category,
+        readTime: dbPost.read_time,
+        date: dbPost.published_at,
+        content: dbPost.content,
+      };
+    }
+    return null;
+  }, [staticPost, dbPost]);
+
+  // Fetch category-tagged related articles from Supabase (if available)
+  const [dbRelated, setDbRelated] = useState<BlogPostItem[]>([]);
+
+  useEffect(() => {
+    if (!post?.category) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('blog_posts')
+          .select('slug, title, description, category, read_time, published_at')
+          .ilike('category', post.category)
+          .neq('slug', slug || '')
+          .limit(6);
+
+        if (data && data.length > 0) {
+          setDbRelated(
+            data.map(d => ({
+              slug: d.slug,
+              title: d.title,
+              excerpt: d.description,
+              category: d.category,
+              readTime: d.read_time,
+              date: d.published_at,
+            }))
+          );
+        }
+      } catch {
+        // Fallback to static data
+      }
+    })();
+  }, [post?.category, slug]);
+
+  // Compute related articles prioritized by category tags
+  const relatedArticles = useMemo(() => {
+    if (!post) return [];
+
+    const pool: BlogPostItem[] = [
+      ...dbRelated,
+      ...STRATEGY_POSTS.map(p => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        category: p.category,
+        readTime: p.readTime,
+        date: p.date,
+        keywords: p.keywords,
+      })),
+      ...Object.entries(ARTICLES).map(([s, a]) => ({
+        slug: s,
+        title: a.title,
+        excerpt: a.description,
+        category: a.category,
+        readTime: a.readTime,
+        date: a.date,
+        keywords: a.keywords,
+      })),
+    ];
+
+    // Deduplicate by slug and filter out the current article
+    const seen = new Set<string>();
+    const uniquePool: BlogPostItem[] = [];
+    for (const item of pool) {
+      if (item.slug !== slug && !seen.has(item.slug)) {
+        seen.add(item.slug);
+        uniquePool.push(item);
+      }
+    }
+
+    const currentCatLower = (post.category || '').toLowerCase().trim();
+
+    // 1. Exact match on category tag
+    const sameCategory = uniquePool.filter(
+      item => (item.category || '').toLowerCase().trim() === currentCatLower
+    );
+
+    // 2. Keyword or partial tag match
+    const tagMatched = uniquePool.filter(
+      item =>
+        (item.category || '').toLowerCase().trim() !== currentCatLower &&
+        ((item.keywords || '').toLowerCase().includes(currentCatLower) ||
+          currentCatLower.includes((item.category || '').toLowerCase().trim()))
+    );
+
+    // 3. Fallback popular strategy posts
+    const fallbacks = uniquePool.filter(
+      item =>
+        (item.category || '').toLowerCase().trim() !== currentCatLower &&
+        !tagMatched.some(t => t.slug === item.slug)
+    );
+
+    return [...sameCategory, ...tagMatched, ...fallbacks].slice(0, 3);
+  }, [post, slug, dbRelated]);
 
   if (loading) return (
     <div className="min-h-screen bg-background">
@@ -330,10 +656,20 @@ export default function BlogPost() {
         structuredData={{ '@type': 'Article', headline: post.title, description: post.description, datePublished: post.date, author: { '@type': 'Organization', name: 'PredictPro' }, publisher: { '@type': 'Organization', name: 'PredictPro', url: 'https://predictpro.guru' } }} />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
-        <Link to="/blog" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary mb-6 transition-colors">
-          <ChevronLeft className="h-4 w-4" />Back to Blog
-        </Link>
-        <Badge className="mb-4">{post.category}</Badge>
+        {/* Dynamic Breadcrumbs */}
+        <Breadcrumbs
+          currentTitle={post.title}
+          category={post.category}
+          className="mb-6"
+        />
+
+        <div className="flex items-center gap-3 mb-4">
+          <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold">{post.category}</Badge>
+          <Link to="/blog" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors ml-auto">
+            <ChevronLeft className="h-3.5 w-3.5" />All Guides
+          </Link>
+        </div>
+
         <h1 className="text-3xl font-black mb-4 leading-tight">{post.title}</h1>
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-8 pb-6 border-b">
           <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />{post.readTime} read</span>
@@ -356,22 +692,61 @@ export default function BlogPost() {
           </CardContent>
         </Card>
 
-        {/* Related */}
-        <div className="mt-8">
-          <h3 className="font-semibold mb-4">Related Articles</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {Object.entries(ARTICLES).filter(([s]) => s !== slug).slice(0, 2).map(([s, a]) => (
-              <Link key={s} to={`/blog/${s}`} className="group">
-                <Card className="hover:border-primary/30 transition-all">
-                  <CardContent className="p-4">
-                    <Badge className="text-xs mb-2">{a.category}</Badge>
-                    <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</p>
-                  </CardContent>
-                </Card>
+        {/* Related Articles based on Category Tags */}
+        {relatedArticles.length > 0 && (
+          <div className="mt-12 pt-8 border-t border-border">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  Related {post.category ? `${post.category} Articles` : 'Articles'}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Explore related betting strategies, mathematical frameworks &amp; insights
+                </p>
+              </div>
+              <Link
+                to="/blog"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                <span>All Articles</span>
+                <ArrowRight className="h-3 w-3" />
               </Link>
-            ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {relatedArticles.map((article) => (
+                <Link
+                  key={article.slug}
+                  to={`/blog/${article.slug}`}
+                  className="group flex flex-col h-full bg-card hover:bg-muted/30 border rounded-xl overflow-hidden hover:border-primary/40 transition-all hover:shadow-sm p-4"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0.5 bg-primary/5 border-primary/20 text-primary">
+                      {article.category}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {article.readTime}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-xs sm:text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2">
+                    {article.title}
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-3 flex-1">
+                    {article.excerpt}
+                  </p>
+                  <div className="pt-2 border-t border-border/40 text-[11px] font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    <span>Read Guide</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        <LeagueNavigationStrip className="mt-12" />
       </main>
       <Footer />
     </div>

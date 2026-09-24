@@ -20,6 +20,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BackToTop } from "@/components/BackToTop";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
+import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
 import { queryClient } from "@/lib/queryClient";
 import React, { Suspense, memo, useState, useEffect, ComponentType, ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -291,6 +292,7 @@ const App = () => (
                       </a>
                       <OfflineBanner />
                       <SiteAnnouncementBanner />
+                      <BreadcrumbLayoutSchema />
                       <Toaster />
                       <Sonner />
                       <Suspense fallback={<RouteLoadingFallback />}>

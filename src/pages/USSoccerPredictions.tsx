@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Flag, Sparkles, Share2, Copy, CheckCheck, TrendingUp, DollarSign } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
@@ -196,12 +197,8 @@ export default function USSoccerPredictions() {
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
-        {/* Breadcrumb Visual */}
-        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
-          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">US Soccer &amp; MLS Picks</span>
-        </nav>
+        {/* Dynamic Breadcrumbs */}
+        <Breadcrumbs className="mb-4" />
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

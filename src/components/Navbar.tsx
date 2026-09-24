@@ -28,7 +28,10 @@ import {
   Settings,
   Pin,
   ChevronDown,
-  ArrowLeftRight
+  ArrowLeftRight,
+  BookOpen,
+  Calendar,
+  Map
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,6 +45,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { LEAGUE_HUBS } from "@/data/leagueHubs";
 import { CoinBalance } from "./CoinBalance";
 import { NotificationBell } from "./NotificationBell";
 import { UnifiedSearchTrigger } from "./UnifiedSearchTrigger";
@@ -57,6 +61,7 @@ export const Navbar = () => {
   const navLinks = [
     ...(isAdmin ? [{ to: "/admin", label: "Admin Operations", icon: ShieldCheck, protected: true }] : []),
     { to: "/",              label: t('nav.predictions', "Predictions"),    icon: Zap },
+    { to: "/upcoming",      label: "Upcoming Fixtures",                   icon: Calendar },
     { to: "/dashboard",     label: "My Dashboard",                        icon: Pin },
     { to: "/recommendations", label: "AI Recommended",                    icon: Sparkles },
     { to: "/tournaments",   label: "Global Tournaments",                  icon: Globe },
@@ -71,11 +76,25 @@ export const Navbar = () => {
     { to: "/accumulator",   label: t('nav.acca', "Acca Builder"),   icon: Calculator },
     { to: "/correct-score", label: t('nav.correct_score', "Correct Score"),  icon: Layers },
     { to: "/btts",          label: t('nav.btts', "BTTS (GG)"),      icon: Flame },
+    { to: "/blog",          label: "Strategy Blog Hub",                   icon: BookOpen },
+    { to: "/premier-league-predictions", label: "Premier League Tips",     icon: Trophy },
+    { to: "/champions-league-predictions", label: "Champions League",      icon: Trophy },
+    { to: "/la-liga-predictions", label: "La Liga Predictions",           icon: Trophy },
+    { to: "/bundesliga-predictions", label: "Bundesliga Analysis",        icon: Trophy },
+    { to: "/serie-a-predictions", label: "Serie A Predictions",           icon: Trophy },
+    { to: "/kpl-predictions", label: "Kenya Premier League",              icon: Trophy },
+    { to: "/jackpot-predictions", label: "Mega Jackpot Picks",            icon: Trophy },
+    { to: "/us-soccer-predictions", label: "US Soccer & MLS",             icon: Trophy },
+    { to: "/world-cup-predictions", label: "FIFA World Cup",              icon: Globe },
+    { to: "/afcon-predictions", label: "AFCON Predictions",               icon: Globe },
     { to: "/tipsters",      label: t('nav.tipsters', "Tipsters"),       icon: Users },
     { to: "/bankroll",      label: t('nav.bankroll', "Bankroll"),       icon: Wallet },
     { to: "/leaderboard",   label: t('nav.leaderboard', "Leaderboard"),    icon: Trophy },
     { to: "/news",          label: t('nav.news', "News"),           icon: Newspaper },
     { to: "/insights",      label: t('nav.insights', "Insights"),       icon: BarChart2 },
+    { to: "/statistics",    label: "H2H Statistics",                     icon: BarChart2 },
+    { to: "/highlights",    label: "Video Highlights",                   icon: Activity },
+    { to: "/sports",        label: "Multi-Sports",                       icon: Globe },
     { to: "/performance",   label: t('nav.performance', "Performance"),    icon: BarChart2, protected: true },
     { to: "/shop",          label: t('nav.shop', "Shop"),           icon: ShoppingBag, protected: true },
     { to: "/rewards",       label: t('nav.rewards', "Rewards"),        icon: Gift, protected: true },
@@ -83,6 +102,7 @@ export const Navbar = () => {
     { to: "/predict",       label: t('nav.predictor', "Predictor"),      icon: Zap },
     { to: "/standings",     label: t('nav.standings', "Standings"),       icon: Trophy },
     { to: "/players",       label: t('nav.players', "Player Search"),  icon: Search },
+    { to: "/sitemap",       label: "HTML Sitemap",                       icon: Map },
     { to: "/preferences",   label: t('nav.preferences', "Preferences"),  icon: SlidersHorizontal },
     { to: "/methodology",   label: "Methodology",    icon: ShieldCheck },
     { to: "/about",         label: "About",          icon: Info },
@@ -90,6 +110,7 @@ export const Navbar = () => {
 
   const primaryDesktopLinks = [
     { to: "/",              label: t('nav.predictions', "Predictions") },
+    { to: "/upcoming",      label: "Upcoming" },
     { to: "/recommendations", label: "AI Picks" },
     { to: "/value-bets",    label: t('nav.value_bets', "Value Bets") },
     { to: "/live",          label: t('nav.live', "Live"), isLive: true },
@@ -156,6 +177,34 @@ export const Navbar = () => {
               </Link>
             ))}
 
+            {/* Desktop Leagues Hub Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  aria-label="League Prediction Hubs"
+                >
+                  <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                  <span>Leagues</span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64 p-1.5 shadow-xl bg-popover/95 backdrop-blur-md">
+                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                  League Prediction Hubs
+                </DropdownMenuLabel>
+                {LEAGUE_HUBS.map((league) => (
+                  <DropdownMenuItem key={league.to} asChild>
+                    <Link to={league.to} className="flex items-center gap-2.5 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                      <span className="text-sm">{league.flag}</span>
+                      <span className="font-medium">{league.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Desktop Quick Directory Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -168,7 +217,7 @@ export const Navbar = () => {
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1.5 shadow-xl bg-popover/95 backdrop-blur-md">
+              <DropdownMenuContent align="start" className="w-60 p-1.5 shadow-xl bg-popover/95 backdrop-blur-md">
                 <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
                   Markets & Radar
                 </DropdownMenuLabel>
@@ -203,25 +252,61 @@ export const Navbar = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/dropping-odds" className="flex xl:hidden items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                  <Link to="/dropping-odds" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
                     <TrendingDown className="h-3.5 w-3.5 text-red-500" />
                     <span>Dropping Odds Radar</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/tournaments" className="flex xl:hidden items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                  <Link to="/tournaments" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
                     <Globe className="h-3.5 w-3.5 text-amber-500" />
                     <span>Global Tournaments</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
-                  Analysis & Insights
+                  Strategy & Insights
                 </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link to="/blog" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer font-semibold text-primary">
+                    <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    <span>Strategy Blog &amp; Guides</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/track-record" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                    <span>Verified Track Record</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/standings" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
                     <Trophy className="h-3.5 w-3.5 text-amber-500" />
                     <span>League Standings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/statistics" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <BarChart2 className="h-3.5 w-3.5 text-cyan-500" />
+                    <span>H2H Statistics</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/players" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Search className="h-3.5 w-3.5 text-indigo-500" />
+                    <span>Player Search</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/highlights" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Activity className="h-3.5 w-3.5 text-rose-500" />
+                    <span>Video Highlights</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/tipsters" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Users className="h-3.5 w-3.5 text-green-500" />
+                    <span>Verified Tipsters</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -237,9 +322,9 @@ export const Navbar = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/news" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Newspaper className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>News &amp; Tips</span>
+                  <Link to="/sitemap" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
+                    <Map className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>HTML Sitemap</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

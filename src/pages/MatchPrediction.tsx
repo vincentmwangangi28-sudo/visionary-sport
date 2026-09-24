@@ -40,6 +40,7 @@ import {
   Layers,
   History
 } from 'lucide-react';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
 import { fetchAndCacheTeamLogoByLeague, preloadLeagueTeamLogos } from '@/services/teamLogos';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
@@ -309,6 +310,10 @@ export default function MatchPrediction() {
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-12 max-w-5xl">
+        <Breadcrumbs
+          currentTitle={`${prediction.home_team} vs ${prediction.away_team}`}
+          className="mb-4"
+        />
         <div className="flex items-center justify-between mb-4">
           <Link to="/best-bets" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
             <ChevronLeft className="h-4 w-4" />All Predictions
