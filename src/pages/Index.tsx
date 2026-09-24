@@ -46,8 +46,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="AI Football Predictions Kenya - 85% Accuracy"
-        description="AI football predictions Kenya with 85%+ accuracy. Daily tips, match analysis & smart accumulators for Premier League, La Liga & Champions League."
+        title="AI Football Predictions Kenya - 87% Accuracy"
+        description="AI football predictions Kenya with 87% verified accuracy. Daily betting tips, live match analysis & smart accumulators for Premier League, La Liga, Serie A & Champions League."
         keywords={["AI predictions Kenya", "football predictions Nairobi", "betting tips Kenya", "Premier League predictions", "sports analysis Kenya", "accurate football tips"]}
         canonicalUrl="https://visionary-sport.lovable.app/"
         breadcrumbs={[{ name: "Home", url: "https://visionary-sport.lovable.app/" }]}
