@@ -4,10 +4,16 @@ import { PredictionPerformance } from "@/components/PredictionPerformance";
 import { AccuracyTracker } from "@/components/AccuracyTracker";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { RelatedContent } from "@/components/RelatedContent";
+import { SEOHead } from "@/components/SEOHead";
 
 const Performance = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Prediction Performance & Verified Accuracy Stats"
+        description="Transparent football prediction accuracy: verified win rates by league and confidence level, streak tracking, and detailed analytics for every tip we publish."
+        canonicalUrl="https://visionary-sport.lovable.app/performance"
+      />
       <Navbar />
       
       <main className="pt-24 pb-16">
