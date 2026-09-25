@@ -141,12 +141,12 @@ export async function prewarmOfflineCaches(): Promise<void> {
     },
   });
 
-  // 2. Direct browser Cache API pre-caching fallback (if SW controller isn't active yet)
-  if ('caches' in window) {
+  // 2. Direct browser Cache API pre-caching fallback (only if SW controller isn't active yet)
+  if ('caches' in window && (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller)) {
     try {
       const imgCache = await caches.open(CACHE_IMAGES_NAME);
-      // Pre-cache top 30 critical league logos immediately in batches
-      const priorityLogos = logoUrls.slice(0, 35);
+      // Pre-cache top 15 critical league logos immediately in batches
+      const priorityLogos = logoUrls.slice(0, 15);
       
       await Promise.allSettled(
         priorityLogos.map(async url => {
@@ -159,7 +159,7 @@ export async function prewarmOfflineCaches(): Promise<void> {
               }
             }
           } catch {
-            // non-blocking
+            // non-blocking for individual image
           }
         })
       );
@@ -173,8 +173,13 @@ export async function prewarmOfflineCaches(): Promise<void> {
       await dataCache.put(snapshotUrl, snapshotResponse);
 
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
-    } catch (err) {
-      console.warn('[OfflineSync] CacheStorage pre-warm warning:', err);
+    } catch (err: any) {
+      // Gracefully handle storage quota limits on constrained devices
+      if (err?.name === 'QuotaExceededError' || err?.message?.includes?.('Quota')) {
+        // Storage quota limit reached; skip non-essential prewarm
+        return;
+      }
+      console.debug('[OfflineSync] CacheStorage pre-warm notice:', err?.message || err);
     }
   }
 }

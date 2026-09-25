@@ -443,13 +443,19 @@ export const logger = {
       const norm = normalizeError(reason);
       const msg = norm.message || '';
 
-      // Ignore client-side blocked analytics and extension rejections
+      // Ignore client-side blocked analytics, ads, and extension rejections
       if (
         msg.includes('ERR_BLOCKED_BY_CLIENT') ||
         msg.includes('blocked by client') ||
         msg.includes('clarity') ||
         msg.includes('ahrefs') ||
-        msg.includes('adsbygoogle')
+        msg.includes('adsbygoogle') ||
+        msg.includes('doubleclick') ||
+        msg.includes('googleadservices') ||
+        msg.includes('pagead') ||
+        msg.includes('1p-user-list') ||
+        msg.includes('QuotaExceeded') ||
+        msg.includes('Quota exceeded')
       ) {
         return;
       }

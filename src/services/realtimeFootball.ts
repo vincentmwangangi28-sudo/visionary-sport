@@ -92,7 +92,7 @@ export function getCustomApiKey(type: 'api_football' | 'football_data' | 'rapida
   // its own real, explicitly-configured key (env var or localStorage) before
   // it will ever be attempted.
   if (type === 'free_football') {
-    return envKey?.VITE_RAPIDAPI_KEY || '634f376987mshcc08c0be647a479p196325jsn87def99b6aac';
+    return envKey?.VITE_FREE_FOOTBALL_API_KEY || envKey?.VITE_RAPIDAPI_KEY || null;
   }
   if (type === 'rapidapi' || type === 'sofascore' || type === 'livescore' || type === 'bet365' || type === 'football_prediction') {
     return envKey?.VITE_RAPIDAPI_KEY || null;
@@ -589,7 +589,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 2500);
-        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${rangeParam}`, {
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
           signal: controller.signal,
         });
         clearTimeout(timeout);
@@ -891,7 +891,7 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${pastRange}`, {
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
           signal: controller.signal,
         });
         clearTimeout(timeout);

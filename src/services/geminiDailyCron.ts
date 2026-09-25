@@ -118,10 +118,23 @@ class GeminiDailyCronService {
           })),
         };
 
-        const res = await callEdgeFn('gemini-tasks', {
-          task: 'daily_digest',
-          payload,
-        }, undefined, 3500);
+        let res: any = null;
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 3500);
+          const serverRes = await fetch('/api/gemini-tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task: 'daily_digest', payload }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+          if (serverRes.ok) {
+            res = await serverRes.json();
+          }
+        } catch {
+          // Fall back gracefully to local statistical digest
+        }
 
         if (res?.result && Array.isArray(res.result.topPicks)) {
           const digest: DailyAIDigest = {

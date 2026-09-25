@@ -683,14 +683,14 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'gor mahia': {
     name: 'Gor Mahia FC',
     shortName: 'GOR',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f6/Gor_Mahia_F.C._logo.svg/300px-Gor_Mahia_F.C._logo.svg.png',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="%23008751" stroke="%23ffffff" stroke-width="4"/><text x="50" y="58" font-size="24" font-weight="900" font-family="sans-serif" fill="%23ffffff" text-anchor="middle">GOR</text></svg>',
     primaryColor: '#008751',
     secondaryColor: '#FFFFFF',
   },
   'afc leopards': {
     name: 'AFC Leopards',
     shortName: 'AFC',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/AFC_Leopards_logo.png/250px-AFC_Leopards_logo.png',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="%23002B49" stroke="%23ffffff" stroke-width="4"/><text x="50" y="58" font-size="24" font-weight="900" font-family="sans-serif" fill="%23ffffff" text-anchor="middle">AFC</text></svg>',
     primaryColor: '#002B49',
     secondaryColor: '#FFFFFF',
   },

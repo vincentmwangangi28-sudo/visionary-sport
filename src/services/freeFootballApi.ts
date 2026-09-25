@@ -31,7 +31,7 @@ export function getFreeFootballApiKey(): string {
   } catch {}
 
   const envKey = (import.meta as { env?: Record<string, string> }).env;
-  return envKey?.VITE_FREE_FOOTBALL_API_KEY || envKey?.VITE_RAPIDAPI_KEY || DEFAULT_RAPIDAPI_KEY;
+  return envKey?.VITE_FREE_FOOTBALL_API_KEY || envKey?.VITE_RAPIDAPI_KEY || '';
 }
 
 /**

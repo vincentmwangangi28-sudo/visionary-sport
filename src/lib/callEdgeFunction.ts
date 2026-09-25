@@ -1,46 +1,54 @@
-export const SUPABASE_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co';
-export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
+import { supabase, DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY } from '@/integrations/supabase/client';
+
+export const SUPABASE_URL = DEFAULT_SUPABASE_URL;
+export const SUPABASE_ANON_KEY = DEFAULT_SUPABASE_ANON_KEY;
 
 export async function callEdgeFn(name: string, body?: unknown, userToken?: string, timeoutMs: number = 12000): Promise<any> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
+  // If the function is gemini-tasks and in browser, prefer local proxy /api/gemini-tasks
+  if (name === 'gemini-tasks' && typeof window !== 'undefined') {
     try {
-      controller.abort();
-    } catch {}
-  }, timeoutMs);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), Math.min(timeoutMs, 6000));
+      const proxyRes = await fetch('/api/gemini-tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (proxyRes.ok) {
+        return await proxyRes.json();
+      }
+    } catch {
+      // Continue to Supabase functions invoke
+    }
+  }
 
+  // Use configured supabase client with automatic token and origin handling
   try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken ?? SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      signal: controller.signal,
+    const headers: Record<string, string> = {};
+    if (userToken) {
+      headers.Authorization = `Bearer ${userToken}`;
+    }
+
+    const { data, error } = await supabase.functions.invoke(name, {
+      body,
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
     });
-    clearTimeout(timeoutId);
-    
-    if (!res.ok) {
-      let errDetail = `${name}: ${res.status}`;
-      try {
-        const errJson = await res.json();
-        if (errJson?.error || errJson?.message) {
-          errDetail = errJson.error || errJson.message;
-        }
-      } catch {}
-      const errObj: any = new Error(errDetail);
-      errObj.status = res.status;
+
+    if (error) {
+      const errObj: any = new Error(error.message || `Edge function ${name} invocation failed`);
+      errObj.status = (error as any).status || 500;
       throw errObj;
     }
 
-    return await res.json();
+    return data;
   } catch (e: any) {
-    clearTimeout(timeoutId);
-    if (e?.name === 'AbortError' || e?.message?.includes?.('aborted')) {
-      console.debug(`[callEdgeFn] Call to ${name} timed out or was aborted.`);
+    // If it's a network/abort error, keep debug quiet to prevent console noise
+    if (e?.name !== 'AbortError' && !e?.message?.includes?.('aborted') && !e?.message?.includes?.('Failed to fetch')) {
+      console.warn(`[callEdgeFn] Invocation notice for ${name}:`, e?.message || e);
     }
     throw e;
   }
 }
+
