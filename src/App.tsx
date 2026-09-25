@@ -20,6 +20,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BackToTop } from "@/components/BackToTop";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
+import { SupabaseWalkthroughIntegration } from "@/components/SupabaseWalkthroughIntegration";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
 import { queryClient } from "@/lib/queryClient";
 import React, { Suspense, memo, useState, useEffect, ComponentType, ReactNode } from "react";
@@ -290,6 +291,7 @@ const App = () => (
                       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
                         Skip to content
                       </a>
+                      <SupabaseWalkthroughIntegration />
                       <OfflineBanner />
                       <SiteAnnouncementBanner />
                       <BreadcrumbLayoutSchema />

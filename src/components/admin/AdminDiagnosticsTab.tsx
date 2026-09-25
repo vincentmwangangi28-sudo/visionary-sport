@@ -215,15 +215,27 @@ export const AdminDiagnosticsTab: React.FC = () => {
           </div>
         </div>
 
-        <Button 
-          onClick={runAllDiagnostics} 
-          disabled={running}
-          size="sm" 
-          className="text-xs h-9 gap-1.5 font-medium shrink-0 shadow-sm"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${running ? 'animate-spin' : ''}`} />
-          <span>{running ? 'Running Diagnostic Probes...' : 'Run Diagnostics Suite'}</span>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.openSupabaseWalkthrough?.()}
+            className="text-xs h-9 gap-1.5 font-medium border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Database className="h-3.5 w-3.5" />
+            <span>Configure Supabase</span>
+          </Button>
+
+          <Button 
+            onClick={runAllDiagnostics} 
+            disabled={running}
+            size="sm" 
+            className="text-xs h-9 gap-1.5 font-medium shadow-sm"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${running ? 'animate-spin' : ''}`} />
+            <span>{running ? 'Running Diagnostic Probes...' : 'Run Diagnostics Suite'}</span>
+          </Button>
+        </div>
       </div>
 
       {running && (

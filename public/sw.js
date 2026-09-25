@@ -1,5 +1,5 @@
-// PredictPro Service Worker v6 - Resilient Offline & Chunk Loading Strategy
-const CACHE_VERSION = 'v6';
+// PredictPro Service Worker v7 - Resilient Offline & Chunk Loading Strategy
+const CACHE_VERSION = 'v7';
 const CACHE_STATIC = `predictpro-static-${CACHE_VERSION}`;
 const CACHE_IMAGES = `predictpro-images-${CACHE_VERSION}`;
 const CACHE_DATA = `predictpro-data-${CACHE_VERSION}`;

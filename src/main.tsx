@@ -128,4 +128,34 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Automatic recovery from stale chunks across new deployments
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    if (
+      event.message?.includes('Loading chunk') ||
+      event.message?.includes('Failed to fetch dynamically imported module') ||
+      event.message?.includes('Missing Supabase configuration')
+    ) {
+      const hasReloaded = sessionStorage.getItem('predictpro_chunk_retry');
+      if (!hasReloaded) {
+        sessionStorage.setItem('predictpro_chunk_retry', 'true');
+        if ('caches' in window) {
+          caches.keys().then((keys) => {
+            return Promise.all(keys.filter((k) => !k.includes('v7')).map((k) => caches.delete(k)));
+          }).finally(() => {
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+      }
+    }
+  });
+
+  // Clear retry flag on fresh successful mount
+  setTimeout(() => {
+    sessionStorage.removeItem('predictpro_chunk_retry');
+  }, 10000);
+}
+
 createRoot(document.getElementById("root")!).render(<App />);

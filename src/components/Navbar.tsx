@@ -31,7 +31,8 @@ import {
   ArrowLeftRight,
   BookOpen,
   Calendar,
-  Map
+  Map,
+  Database
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -377,6 +378,19 @@ export const Navbar = () => {
               </Button>
             </Link>
 
+            {/* Supabase Environment & Session Setup Walkthrough */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => window.openSupabaseWalkthrough?.()}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              title="Supabase Environment & Session Setup Walkthrough (Ctrl+Shift+S)"
+              aria-label="Open Supabase Environment & Session Setup Walkthrough"
+            >
+              <Database className="h-4 w-4 text-primary" />
+            </Button>
+
             {/* Quick Admin Shortcut if user has admin privileges */}
             {isAdmin && (
               <Link to="/admin" title="PredictPro Admin Operations Hub">
@@ -455,10 +469,25 @@ export const Navbar = () => {
                   >
                     <span className="flex items-center gap-2">
                       <Settings className="h-4 w-4 text-primary" />
-                      Preferences & Regional Settings
+                      Preferences &amp; Regional Settings
                     </span>
                     <span className="text-[10px] text-muted-foreground">Configure</span>
                   </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      window.openSupabaseWalkthrough?.();
+                    }}
+                    className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors text-xs font-semibold text-foreground text-left w-full"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Database className="h-4 w-4 text-primary" />
+                      Supabase Environment &amp; Session Setup
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">Setup</span>
+                  </button>
 
                   {isAdmin && (
                     <Link

@@ -397,15 +397,34 @@ export const logger = {
 
     // Listen for uncaught runtime exceptions
     window.addEventListener('error', (event: ErrorEvent) => {
+      const filename = event.filename || '';
+      const message = event.message || '';
+
+      // Ignore client browser extensions, ad blockers, and third-party tracker blockages
+      if (
+        filename.includes('chrome-extension://') ||
+        filename.includes('moz-extension://') ||
+        filename.includes('safari-extension://') ||
+        filename.includes('chext_') ||
+        filename.includes('clarity.ms') ||
+        filename.includes('ahrefs.com') ||
+        filename.includes('googlesyndication.com') ||
+        filename.includes('pagead2') ||
+        message.includes('ERR_BLOCKED_BY_CLIENT') ||
+        message.includes('Permissions policy violation')
+      ) {
+        return;
+      }
+
       // Check if it's a script/chunk loading issue
       const isChunkFailure =
-        event.message?.includes('dynamically imported module') ||
-        event.message?.includes('Loading chunk') ||
-        event.message?.includes('Failed to fetch');
+        message.includes('dynamically imported module') ||
+        message.includes('Loading chunk') ||
+        message.includes('Failed to fetch');
 
       logger.log({
         error: {
-          message: event.message || 'Uncaught error event',
+          message: message || 'Uncaught error event',
           stack: event.error?.stack,
         },
         type: isChunkFailure ? 'chunk_load_error' : 'uncaught_exception',
@@ -422,12 +441,24 @@ export const logger = {
     window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       const norm = normalizeError(reason);
+      const msg = norm.message || '';
+
+      // Ignore client-side blocked analytics and extension rejections
+      if (
+        msg.includes('ERR_BLOCKED_BY_CLIENT') ||
+        msg.includes('blocked by client') ||
+        msg.includes('clarity') ||
+        msg.includes('ahrefs') ||
+        msg.includes('adsbygoogle')
+      ) {
+        return;
+      }
 
       const isNetworkIssue =
-        norm.message.includes('Failed to fetch') ||
-        norm.message.includes('NetworkError') ||
-        norm.message.includes('Load failed') ||
-        norm.message.includes('AbortError');
+        msg.includes('Failed to fetch') ||
+        msg.includes('NetworkError') ||
+        msg.includes('Load failed') ||
+        msg.includes('AbortError');
 
       logger.log({
         error: norm,

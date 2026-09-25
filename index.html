@@ -63,6 +63,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
+    <!-- Permissions Policy: permit unload to prevent browser extension violations (e.g. chext_loader) -->
+    <meta http-equiv="Permissions-Policy" content="unload=*" />
+
     <!-- Performance: Preconnect critical origins -->
     <link rel="preconnect" href="https://bhgjlhgevyggkhyytulv.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
@@ -72,23 +75,51 @@
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
     <link rel="dns-prefetch" href="https://www.clarity.ms" />
 
-    <!-- Google AdSense (Asynchronously loaded with ca-pub verification) -->
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976"
-      crossorigin="anonymous"
-    ></script>
+    <!-- Google AdSense (Loaded only on production with adblocker resilience) -->
+    <script>
+      (function() {
+        try {
+          var host = window.location.hostname;
+          if (host === 'predictpro.guru' || host === 'www.predictpro.guru') {
+            var ad = document.createElement('script');
+            ad.async = true;
+            ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+            ad.crossOrigin = 'anonymous';
+            ad.onerror = function(e) { if (e && e.preventDefault) e.preventDefault(); };
+            document.head.appendChild(ad);
+          }
+        } catch (e) {}
+      })();
+    </script>
 
-    <!-- Clarity tracking code for https://www.predictpro.guru/ (resilient against adblockers) -->
+    <!-- Clarity & Ahrefs tracking (only loaded on production predictpro.guru, with adblocker resilience) -->
     <script type="text/javascript">
-      try {
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
-            t.onerror=function(){/* gracefully suppressed when blocked by client */};
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "ym8cuj04ax");
-      } catch (e) {}
+      (function() {
+        try {
+          var host = window.location.hostname;
+          if (host !== 'predictpro.guru' && host !== 'www.predictpro.guru') return;
+
+          // Microsoft Clarity
+          (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
+              t.onerror=function(e){ if (e && e.preventDefault) e.preventDefault(); };
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+          })(window, document, "clarity", "script", "ym8cuj04ax");
+
+          // Ahrefs Analytics
+          window.addEventListener('load', function() {
+            try {
+              var ah = document.createElement('script');
+              ah.async = true;
+              ah.src = 'https://analytics.ahrefs.com/analytics.js';
+              ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
+              ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+              document.head.appendChild(ah);
+            } catch (e) {}
+          });
+        } catch (e) {}
+      })();
     </script>
 
     <!-- Google Analytics (deferred for performance, resilient against adblockers) -->
@@ -103,22 +134,8 @@
           const s = document.createElement('script');
           s.async = true;
           s.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-          s.onerror = function(){/* gracefully suppressed when blocked by client */};
+          s.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
           document.head.appendChild(s);
-        } catch (e) {}
-      });
-    </script>
-
-    <!-- Ahrefs Analytics (resilient against adblockers) -->
-    <script>
-      window.addEventListener('load', () => {
-        try {
-          const ah = document.createElement('script');
-          ah.async = true;
-          ah.src = 'https://analytics.ahrefs.com/analytics.js';
-          ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
-          ah.onerror = function(){/* gracefully suppressed when blocked by client */};
-          document.head.appendChild(ah);
         } catch (e) {}
       });
     </script>
