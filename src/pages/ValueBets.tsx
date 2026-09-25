@@ -9,7 +9,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ValueBetListSkeleton } from '@/components/PredictionCardSkeleton';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
-import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info, Sparkles, Plus, CheckCheck } from 'lucide-react';
+import { TrendingUp, Zap, AlertTriangle, RefreshCw, Info, Sparkles, Plus, CheckCheck, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 import { useBetSlip } from '@/hooks/useBetSlip';
@@ -274,7 +276,11 @@ export default function ValueBets() {
           </div>
         ) : (
           <div className="space-y-3">
-            {bets.map((bet, i) => (
+            {bets.map((bet, i) => {
+              const matchSlug = formatMatchSlug(bet.home_team, bet.away_team, bet.match_date);
+              const matchUrl = `/predict/${matchSlug}`;
+
+              return (
               <Card key={i} className={`border-l-4 ${bet.edge === 'strong' ? 'border-l-green-500' : 'border-l-amber-500'}`}>
                 <CardContent className="p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -283,13 +289,17 @@ export default function ValueBets() {
                         <Badge variant="outline" className="text-xs">{bet.league}</Badge>
                         <span className="text-xs text-muted-foreground">{new Date(bet.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                       </div>
-                      <div className="flex items-center gap-2 my-1">
+                      <Link
+                        to={matchUrl}
+                        className="flex items-center gap-2 my-1 group hover:text-primary transition-colors"
+                        title={`View ${bet.home_team} vs ${bet.away_team} AI match prediction & head-to-head`}
+                      >
                         <TeamLogo team={bet.home_team} size="sm" />
-                        <span className="font-bold text-base text-foreground">{bet.home_team}</span>
+                        <span className="font-bold text-base text-foreground group-hover:text-primary transition-colors">{bet.home_team}</span>
                         <span className="text-muted-foreground text-xs font-semibold">vs</span>
                         <TeamLogo team={bet.away_team} size="sm" />
-                        <span className="font-bold text-base text-foreground">{bet.away_team}</span>
-                      </div>
+                        <span className="font-bold text-base text-foreground group-hover:text-primary transition-colors">{bet.away_team}</span>
+                      </Link>
                       <p className="text-sm text-muted-foreground mt-1">Market: <span className="font-medium text-foreground">{bet.market}</span></p>
                     </div>
                     <div className="flex gap-4 text-center">
@@ -312,7 +322,16 @@ export default function ValueBets() {
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-3 pt-3 border-t flex items-center justify-end gap-2">
+                  <div className="mt-3 pt-3 border-t flex items-center justify-between gap-2">
+                    <Link
+                      to={matchUrl}
+                      className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1"
+                      title={`View full match preview for ${bet.home_team} vs ${bet.away_team}`}
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      <span>Full Match Intel &rarr;</span>
+                    </Link>
+                    <div>
                     {selections.some(s => s.match === `${bet.home_team} vs ${bet.away_team}`) ? (
                       <Button 
                         size="sm" 
@@ -336,10 +355,12 @@ export default function ValueBets() {
                         <span>Add to Slip</span>
                       </Button>
                     )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

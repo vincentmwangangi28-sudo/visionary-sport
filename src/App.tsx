@@ -324,6 +324,7 @@ const App = () => (
                             <Route path="/bankroll"      element={<RouteBoundary component={BankrollManager} />} />
                             <Route path="/predict"       element={<RouteBoundary component={MatchPredictor} />} />
                             <Route path="/predict/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
+                            <Route path="/match/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
                             <Route path="/best-bets"     element={<RouteBoundary component={BestBets} />} />
                             <Route path="/upcoming"      element={<RouteBoundary component={UpcomingFixturesPage} />} />
                             <Route path="/upcoming-fixtures" element={<RouteBoundary component={UpcomingFixturesPage} />} />

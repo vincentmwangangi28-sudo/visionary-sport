@@ -24,6 +24,7 @@ const TODAY = new Date().toISOString().split('T')[0];
 const CORE_PAGES = [
   { path: '/', priority: 1.0, freq: 'daily', title: 'PredictPro - AI Football Predictions & Live Match Intelligence' },
   { path: '/best-bets', priority: 0.95, freq: 'daily', title: 'Best AI Football Banker Bets Today - Top Confidence Picks' },
+  { path: '/upcoming', priority: 0.95, freq: 'daily', title: 'Upcoming Football Fixtures & Match Predictions' },
   { path: '/predict', priority: 0.95, freq: 'daily', title: 'AI Match Predictor & Custom Football Simulator' },
   { path: '/live', priority: 0.95, freq: 'hourly', title: 'Live Football Scores, In-Play AI Odds & Minute Trackers' },
   { path: '/value-bets', priority: 0.90, freq: 'daily', title: 'Value Bets (+EV) & Expected Value Football Calculator' },
@@ -154,7 +155,7 @@ export function buildSitemapXml() {
   // Match pages
   for (const slug of FEATURED_MATCH_SLUGS) {
     urlEntries.push({
-      loc: `${BASE_URL}/match/${slug}-${TODAY}`,
+      loc: `${BASE_URL}/predict/${slug}-${TODAY}`,
       lastmod: TODAY,
       changefreq: 'daily',
       priority: '0.80',

@@ -147,7 +147,7 @@ export async function subscribeToMatch(
     showBrowserNotification(`🔔 Subscribed: ${subData.homeTeam} vs ${subData.awayTeam}`, {
       body: `You'll receive alerts for ${subData.homeTeam} vs ${subData.awayTeam} (${subData.league}). AI Tip: ${subData.prediction || 'Available'}`,
       tag: `sub-confirm-${subData.matchId}`,
-      data: { url: `/match/${encodeURIComponent(subData.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(subData.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` }
+      data: { url: `/predict/${encodeURIComponent(subData.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(subData.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` }
     }).catch(() => {});
   }
 
@@ -254,7 +254,7 @@ export async function sendMatchResultNotification(
   return await showBrowserNotification(`🏁 FULL-TIME: ${sub.homeTeam} ${resultScore} ${sub.awayTeam}`, {
     body: `✅ AI Tip [${sub.prediction || 'Match Pick'}] ${outcomeWon ? 'WON 🎯' : 'ENDED'}! Final score: ${sub.homeTeam} ${resultScore} ${sub.awayTeam}.`,
     tag: `match-ft-${sub.matchId}`,
-    data: { url: `/match/${encodeURIComponent(sub.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(sub.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` },
+    data: { url: `/predict/${encodeURIComponent(sub.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(sub.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` },
   });
 }
 
@@ -286,7 +286,7 @@ export function checkUpcomingMatchAlerts(): void {
       showBrowserNotification(`⏰ Kickoff Soon: ${sub.homeTeam} vs ${sub.awayTeam}`, {
         body: `Match starts in ${Math.max(1, Math.round(diffMinutes))} mins (${sub.league}). AI Tip: ${sub.prediction || 'Available'} (${sub.confidence ? sub.confidence + '%' : 'High Edge'})`,
         tag: `kickoff-${sub.matchId}`,
-        data: { url: `/match/${encodeURIComponent(sub.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(sub.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` },
+        data: { url: `/predict/${encodeURIComponent(sub.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(sub.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` },
       });
       hasChanges = true;
       return { ...sub, kickoffNotified: true };
@@ -302,7 +302,7 @@ export function checkUpcomingMatchAlerts(): void {
       showBrowserNotification(`🏁 FT Result: ${sub.homeTeam} vs ${sub.awayTeam}`, {
         body: `Match finished! Check final stats and AI prediction performance for ${sub.homeTeam} vs ${sub.awayTeam}.`,
         tag: `ft-check-${sub.matchId}`,
-        data: { url: `/match/${encodeURIComponent(sub.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(sub.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` },
+        data: { url: `/predict/${encodeURIComponent(sub.homeTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(sub.awayTeam.toLowerCase().replace(/[^a-z0-9]/g, '-'))}` },
       });
       hasChanges = true;
       return { ...sub, resultNotified: true };

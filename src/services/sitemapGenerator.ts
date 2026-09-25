@@ -84,10 +84,13 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
   // 3. Feature Tools & Betting Markets
   const featurePages: Array<{ path: string; title: string; priority: number; changeFreq: SitemapEntry['changeFrequency'] }> = [
     { path: '/predict', title: 'AI Match Predictor & Custom Football Simulator', priority: 0.90, changeFreq: 'daily' },
+    { path: '/upcoming', title: 'Upcoming Football Fixtures & Match Predictions', priority: 0.90, changeFreq: 'daily' },
     { path: '/live', title: 'Live Football Scores, In-Play AI Odds & Minute Trackers', priority: 0.90, changeFreq: 'hourly' },
+    { path: '/value-bets', title: 'Value Bets & Expected Value (EV) Football Calculator', priority: 0.85, changeFreq: 'daily' },
+    { path: '/streaks', title: 'AI Football Streaks & Winning Trends Radar - Over 2.5 & BTTS', priority: 0.85, changeFreq: 'daily' },
+    { path: '/h2h', title: 'AI Football Head-to-Head (H2H) Comparison & Poisson Simulator', priority: 0.85, changeFreq: 'daily' },
     { path: '/standings', title: 'Real-Time Football League Standings & Form Tables', priority: 0.90, changeFreq: 'daily' },
     { path: '/best-bets', title: 'Best AI Football Bets Today - Top Confidence Picks', priority: 0.85, changeFreq: 'daily' },
-    { path: '/value-bets', title: 'Value Bets & Expected Value (EV) Football Calculator', priority: 0.85, changeFreq: 'daily' },
     { path: '/correct-score', title: 'AI Correct Score Predictions & Exact Scoreline Probabilities', priority: 0.85, changeFreq: 'daily' },
     { path: '/btts', title: 'Both Teams to Score (BTTS) & Goal Market Tips', priority: 0.85, changeFreq: 'daily' },
     { path: '/accumulator', title: 'AI Accumulator Builder & Multibet Optimizer', priority: 0.85, changeFreq: 'daily' },
@@ -101,7 +104,6 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/leaderboard', title: 'PredictPro Global Leaderboard & Tipster Rankings', priority: 0.75, changeFreq: 'daily' },
     { path: '/sports', title: 'Multi-Sports Predictions: Basketball, Tennis, NFL & Rugby', priority: 0.75, changeFreq: 'weekly' },
     { path: '/archive', title: 'Past Match Prediction Archive & Result Verification', priority: 0.70, changeFreq: 'weekly' },
-    { path: '/results', title: 'Historical Football Results & Prediction Outcomes', priority: 0.70, changeFreq: 'daily' },
     { path: '/methodology', title: 'AI Prediction Methodology, Expected Goals & Data Science', priority: 0.75, changeFreq: 'monthly' },
     { path: '/about', title: 'About PredictPro - AI Football Intelligence Platform', priority: 0.70, changeFreq: 'monthly' },
     { path: '/blog', title: 'PredictPro Football Betting Strategy Blog & Analysis', priority: 0.85, changeFreq: 'daily' },

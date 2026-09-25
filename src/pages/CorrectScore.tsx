@@ -12,6 +12,8 @@ import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { Target, RefreshCw, Zap, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
+import { TeamLogo } from '@/components/TeamLogo';
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import type { Prediction } from '@/types/prediction';
 
@@ -92,9 +94,21 @@ export default function CorrectScore() {
                         {new Date(p.match_date).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })}
                       </span>
                     </div>
-                    <p className="font-bold text-sm mb-1">{p.home_team}</p>
-                    <p className="text-xs text-muted-foreground mb-1">vs</p>
-                    <p className="font-bold text-sm mb-3">{p.away_team}</p>
+                    <Link
+                      to={`/predict/${formatMatchSlug(p.home_team, p.away_team, p.match_date)}`}
+                      className="block group hover:text-primary transition-colors mb-3"
+                      title={`View ${p.home_team} vs ${p.away_team} AI match prediction & scoreline probability`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <TeamLogo team={p.home_team} size="xs" />
+                        <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{p.home_team}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground ml-5">vs</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <TeamLogo team={p.away_team} size="xs" />
+                        <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{p.away_team}</span>
+                      </div>
+                    </Link>
                     {isPremium ? (
                       <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/20 rounded-lg p-3">
                         <Lock className="h-5 w-5 text-amber-500" />

@@ -265,7 +265,7 @@ export async function evaluateAutomatedAlerts(): Promise<number> {
         kickoff: match.match_date,
         confidence: match.confidence,
         timestamp: new Date().toISOString(),
-        url: `/match/${encodeURIComponent(match.home_team.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(match.away_team.toLowerCase().replace(/[^a-z0-9]/g, '-'))}`,
+        url: `/predict/${encodeURIComponent(match.home_team.toLowerCase().replace(/[^a-z0-9]/g, '-'))}-vs-${encodeURIComponent(match.away_team.toLowerCase().replace(/[^a-z0-9]/g, '-'))}`,
       });
       if (triggered) alertsCount++;
     }

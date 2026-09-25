@@ -60,7 +60,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   const crumbs = getBreadcrumbsForPath(currentPath, {
     items,
     category,
-    customTitle,
+    customTitle: currentTitle,
   });
 
   if (!crumbs || crumbs.length === 0) {

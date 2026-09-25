@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+export const PRIMARY_ADMIN_EMAIL = 'vincentmwangangi28@gmail.com';
+export const PRIMARY_ADMIN_NAME = 'Vincent Mwangangi';
 const AUTHORIZED_ADMIN_LABEL = 'Authorized Administrator';
 
 export function useAdmin() {

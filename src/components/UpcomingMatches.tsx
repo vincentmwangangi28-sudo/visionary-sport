@@ -328,7 +328,8 @@ export const UpcomingMatches: React.FC = () => {
               const isHomePinned = isTeamPinned(m.home_team);
               const isAwayPinned = isTeamPinned(m.away_team);
               const relativeKickoff = getKickoffRelative(m.match_date);
-              const matchSlug = `${m.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${m.away_team.toLowerCase().replace(/\s+/g, '-')}`;
+              const matchSlug = formatMatchSlug(m.home_team, m.away_team, m.match_date);
+              const matchUrl = `/predict/${matchSlug}`;
 
               return (
                 <Card
@@ -388,7 +389,12 @@ export const UpcomingMatches: React.FC = () => {
                       </div>
 
                       {/* Teams Row */}
-                      <div className="py-2.5 px-2.5 bg-muted/25 rounded-xl border border-border/40 my-1">
+                      <Link
+                        to={matchUrl}
+                        onClick={e => e.stopPropagation()}
+                        className="py-2.5 px-2.5 bg-muted/25 rounded-xl border border-border/40 my-1 block hover:border-primary/40 hover:bg-muted/40 transition-colors"
+                        title={`View ${m.home_team} vs ${m.away_team} AI match prediction`}
+                      >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <TeamLogo team={m.home_team} size="sm" />
@@ -424,7 +430,7 @@ export const UpcomingMatches: React.FC = () => {
                             <TeamLogo team={m.away_team} size="sm" />
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     </div>
 
                     {/* AI Prediction & Confidence pill */}
@@ -509,9 +515,14 @@ export const UpcomingMatches: React.FC = () => {
                           <BarChart3 className="h-3 w-3 text-primary" />
                           H2H & xG Model
                         </span>
-                        <div className="flex items-center gap-1 font-bold text-primary hover:underline text-[11px]">
+                        <Link
+                          to={matchUrl}
+                          onClick={e => e.stopPropagation()}
+                          className="flex items-center gap-1 font-bold text-primary hover:underline text-[11px]"
+                          title={`View ${m.home_team} vs ${m.away_team} AI match prediction & analytics`}
+                        >
                           <span>Analysis &rarr;</span>
-                        </div>
+                        </Link>
                       </div>
                     </div>
                   </CardContent>

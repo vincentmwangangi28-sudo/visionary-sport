@@ -11,6 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { BarChart2, RefreshCw, TrendingUp, Plus, Check, Info, ShieldCheck, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
+import { TeamLogo } from '@/components/TeamLogo';
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
@@ -225,9 +228,17 @@ export default function BTTS() {
                           {new Date(p.match_date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold mb-3">
-                        {p.home_team} <span className="text-muted-foreground font-normal">vs</span> {p.away_team}
-                      </p>
+                      <Link
+                        to={`/predict/${formatMatchSlug(p.home_team, p.away_team, p.match_date)}`}
+                        className="text-sm font-semibold mb-3 flex items-center gap-2 group hover:text-primary transition-colors"
+                        title={`View ${p.home_team} vs ${p.away_team} dedicated prediction and goal stats`}
+                      >
+                        <TeamLogo team={p.home_team} size="xs" />
+                        <span className="truncate group-hover:text-primary transition-colors">{p.home_team}</span>
+                        <span className="text-muted-foreground font-normal text-xs">vs</span>
+                        <TeamLogo team={p.away_team} size="xs" />
+                        <span className="truncate group-hover:text-primary transition-colors">{p.away_team}</span>
+                      </Link>
                     </div>
 
                     <div className="space-y-3">

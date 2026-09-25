@@ -38,6 +38,9 @@ const LINKS = {
     { to: "/bankroll", label: "Bankroll Manager" },
     { to: "/statistics", label: "H2H Statistics" },
     { to: "/players", label: "Player Search" },
+    { to: "/news", label: "Football News & Intel" },
+    { to: "/insights", label: "Tactical Match Insights" },
+    { to: "/highlights", label: "Video Highlights & Clips" },
   ],
   "Strategy & Guides": [
     { to: "/blog", label: "Strategy Blog Hub" },
@@ -67,7 +70,24 @@ const LINKS = {
   ],
 };
 
+const FEATURED_MATCHES = [
+  { slug: 'arsenal-vs-chelsea', label: 'Arsenal vs Chelsea' },
+  { slug: 'liverpool-vs-manchester-city', label: 'Liverpool vs Man City' },
+  { slug: 'real-madrid-vs-barcelona', label: 'Real Madrid vs Barcelona' },
+  { slug: 'bayern-munich-vs-borussia-dortmund', label: 'Bayern vs Dortmund' },
+  { slug: 'inter-milan-vs-ac-milan', label: 'Inter vs AC Milan' },
+  { slug: 'manchester-united-vs-tottenham', label: 'Man United vs Tottenham' },
+  { slug: 'psg-vs-marseille', label: 'PSG vs Marseille' },
+  { slug: 'gor-mahia-vs-afc-leopards', label: 'Gor Mahia vs AFC Leopards' },
+  { slug: 'juventus-vs-napoli', label: 'Juventus vs Napoli' },
+  { slug: 'atletico-madrid-vs-sevilla', label: 'Atletico vs Sevilla' },
+  { slug: 'la-galaxy-vs-lafc', label: 'LA Galaxy vs LAFC' },
+  { slug: 'inter-miami-vs-new-york-red-bulls', label: 'Inter Miami vs NY Red Bulls' },
+];
+
 export const Footer = () => {
+  const today = new Date().toISOString().split('T')[0];
+
   return (
     <footer className="bg-muted/20 border-t border-border mt-16 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
@@ -106,6 +126,29 @@ export const Footer = () => {
             </ul>
           </div>
         ))}
+      </div>
+
+      {/* Featured Match Deep Links for Crawlers and Users */}
+      <div className="border-t border-border/60 pt-6 pb-6 mb-2">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <p className="font-semibold text-xs text-foreground uppercase tracking-wider">
+            Top Clash Intelligence & Head-to-Head Previews Today
+          </p>
+          <Link to="/upcoming" className="text-xs text-primary font-semibold hover:underline">
+            View All Fixtures &rarr;
+          </Link>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
+          {FEATURED_MATCHES.map(m => (
+            <Link
+              key={m.slug}
+              to={`/predict/${m.slug}-${today}`}
+              className="text-muted-foreground hover:text-primary transition-colors hover:underline"
+            >
+              {m.label} Prediction
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
