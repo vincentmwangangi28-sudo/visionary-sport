@@ -81,8 +81,8 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <SEO title="Sign In | PredictPro" description="Sign in to PredictPro to access premium AI football predictions." canonical="/auth" noIndex />
+    <main id="main-content" className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
+      <SEO title="Sign In or Create Free Account | PredictPro" description="Sign in or create a free PredictPro account to access daily AI football predictions, banker picks, xG stats, and 50 welcome coins." canonical="/auth" />
       <div className="w-full max-w-md">
         {params.get('ref') && (
           <div className="mb-4 flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-2.5 text-sm">
@@ -135,66 +135,98 @@ export default function Auth() {
               </>
             )}
 
-            {/* Email/Password form */}
-            <div className="space-y-3">
-              {mode === 'register' && (
+            {/* Email/Password form with declarative WebMCP */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              toolname="authenticate_predictpro_user"
+              tooldescription="Sign in, create a free account, or request a password reset for PredictPro AI football predictions"
+              className="space-y-4"
+            >
+              <div className="space-y-3">
+                {mode === 'register' && (
+                  <div>
+                    <Label htmlFor="fullName" className="text-sm">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      toolparamdescription="Full name of the user creating a PredictPro account"
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      placeholder="Your name"
+                      className="mt-1"
+                    />
+                  </div>
+                )}
                 <div>
-                  <Label htmlFor="fullName" className="text-sm">Full Name</Label>
-                  <Input id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your name" className="mt-1" />
+                  <Label htmlFor="email" className="text-sm">Email</Label>
+                  <div className="relative mt-1">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      toolparamdescription="Email address for PredictPro account authentication"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="pl-9"
+                      autoComplete="email"
+                    />
+                  </div>
                 </div>
-              )}
-              <div>
-                <Label htmlFor="email" className="text-sm">Email</Label>
-                <div className="relative mt-1">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                    placeholder="you@example.com" className="pl-9" autoComplete="email" />
-                </div>
-              </div>
-              {mode !== 'forgot' && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <Label htmlFor="password" className="text-sm">Password</Label>
-                    {mode === 'login' && (
+                {mode !== 'forgot' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label htmlFor="password" className="text-sm">Password</Label>
+                      {mode === 'login' && (
+                        <button
+                          type="button"
+                          onClick={() => setMode('forgot')}
+                          aria-label="Forgot password? Switch to reset password screen"
+                          className="text-xs text-primary hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPass ? 'text' : 'password'}
+                        toolparamdescription="Account password (at least 6 characters)"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder={mode === 'register' ? 'Min 6 characters' : '••••••••'}
+                        className="pl-9 pr-10"
+                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      />
                       <button
                         type="button"
-                        onClick={() => setMode('forgot')}
-                        aria-label="Forgot password? Switch to reset password screen"
-                        className="text-xs text-primary hover:underline"
-                      >
-                        Forgot password?
+                        onClick={() => setShowPass(s => !s)}
+                        aria-label={showPass ? 'Hide password' : 'Show password'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                        {showPass ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                       </button>
-                    )}
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <Input id="password" type={showPass ? 'text' : 'password'} value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                      placeholder={mode === 'register' ? 'Min 6 characters' : '••••••••'}
-                      className="pl-9 pr-10" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} />
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(s => !s)}
-                      aria-label={showPass ? 'Hide password' : 'Show password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                      {showPass ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <Button
-              onClick={handleSubmit}
-              disabled={loading}
-              aria-label={mode === 'login' ? 'Sign In to PredictPro' : mode === 'register' ? 'Create Free PredictPro Account' : 'Send Password Reset Link'}
-              className="w-full h-11 font-semibold gap-2"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" aria-hidden="true" />}
-              {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'}
-            </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                aria-label={mode === 'login' ? 'Sign In to PredictPro' : mode === 'register' ? 'Create Free PredictPro Account' : 'Send Password Reset Link'}
+                className="w-full h-11 font-semibold gap-2"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" aria-hidden="true" />}
+                {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'}
+              </Button>
+            </form>
 
             {/* Mode switchers */}
             <div className="text-center text-sm pt-1">
@@ -219,10 +251,10 @@ export default function Auth() {
 
         <p className="text-center text-xs text-muted-foreground mt-4">
           By continuing you agree to our{' '}
-          <a href="/about" className="underline hover:text-foreground">Terms</a> and{' '}
-          <a href="/about" className="underline hover:text-foreground">Privacy Policy</a>
+          <Link to="/about" className="underline hover:text-foreground">Terms of Service</Link> and{' '}
+          <Link to="/about" className="underline hover:text-foreground">Privacy Policy</Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }

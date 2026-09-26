@@ -93,11 +93,18 @@ export const GeneratePredictionDialog = () => {
             Enter match details to get AI-powered predictions
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          toolname="generate_custom_match_prediction"
+          tooldescription="Generate an AI football prediction for a custom home vs away team fixture"
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="homeTeam">Home Team</Label>
             <Input
               id="homeTeam"
+              name="homeTeam"
+              toolparamdescription="Name of the home football club"
               placeholder="e.g., Arsenal"
               value={formData.homeTeam}
               onChange={(e) => setFormData({ ...formData, homeTeam: e.target.value })}
@@ -108,6 +115,8 @@ export const GeneratePredictionDialog = () => {
             <Label htmlFor="awayTeam">Away Team</Label>
             <Input
               id="awayTeam"
+              name="awayTeam"
+              toolparamdescription="Name of the away football club"
               placeholder="e.g., Chelsea"
               value={formData.awayTeam}
               onChange={(e) => setFormData({ ...formData, awayTeam: e.target.value })}
@@ -118,6 +127,8 @@ export const GeneratePredictionDialog = () => {
             <Label htmlFor="league">League</Label>
             <Input
               id="league"
+              name="league"
+              toolparamdescription="Name of the football league or competition"
               placeholder="e.g., Premier League"
               value={formData.league}
               onChange={(e) => setFormData({ ...formData, league: e.target.value })}
@@ -128,7 +139,9 @@ export const GeneratePredictionDialog = () => {
             <Label htmlFor="matchDate">Match Date</Label>
             <Input
               id="matchDate"
+              name="matchDate"
               type="date"
+              toolparamdescription="Scheduled match date in YYYY-MM-DD format"
               value={formData.matchDate}
               onChange={(e) => setFormData({ ...formData, matchDate: e.target.value })}
               required

@@ -258,11 +258,18 @@ export const BankrollPortfolioTracker = () => {
               <DialogHeader>
                 <DialogTitle>Log Bet into Portfolio</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleAddBet} className="space-y-4 pt-2">
+              <form
+                onSubmit={handleAddBet}
+                toolname="log_bankroll_portfolio_bet"
+                tooldescription="Log a football wager into the PredictPro bankroll portfolio tracker"
+                className="space-y-4 pt-2"
+              >
                 <div className="space-y-1.5">
                   <Label htmlFor="bet-match">Fixture / Match</Label>
                   <Input
                     id="bet-match"
+                    name="matchName"
+                    toolparamdescription="Football fixture name (e.g. Arsenal vs Liverpool)"
                     placeholder="e.g. Arsenal vs Liverpool"
                     value={matchName}
                     onChange={(e) => setMatchName(e.target.value)}
@@ -273,6 +280,8 @@ export const BankrollPortfolioTracker = () => {
                   <Label htmlFor="bet-selection">Selection / Market</Label>
                   <Input
                     id="bet-selection"
+                    name="selection"
+                    toolparamdescription="Betting market selection (e.g. Home Win or Over 2.5)"
                     placeholder="e.g. Home Win or Over 2.5"
                     value={selection}
                     onChange={(e) => setSelection(e.target.value)}
@@ -284,9 +293,11 @@ export const BankrollPortfolioTracker = () => {
                     <Label htmlFor="bet-odds">Odds</Label>
                     <Input
                       id="bet-odds"
+                      name="odds"
                       type="number"
                       step="0.01"
                       min="1.01"
+                      toolparamdescription="Decimal bookmaker odds for the selection"
                       value={oddsInput}
                       onChange={(e) => setOddsInput(e.target.value)}
                       required
@@ -296,9 +307,11 @@ export const BankrollPortfolioTracker = () => {
                     <Label htmlFor="bet-stake">Stake ({currencyConfig.symbol})</Label>
                     <Input
                       id="bet-stake"
+                      name="stake"
                       type="number"
                       step="1"
                       min="1"
+                      toolparamdescription="Wager stake amount"
                       value={stakeInput}
                       onChange={(e) => setStakeInput(e.target.value)}
                       required

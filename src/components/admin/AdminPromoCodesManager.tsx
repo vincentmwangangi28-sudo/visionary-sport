@@ -184,7 +184,12 @@ export function AdminPromoCodesManager() {
         <CardContent className="space-y-6">
           {/* Creation Form Collapse */}
           {isCreating && (
-            <form onSubmit={handleCreate} className="p-4 rounded-xl border bg-muted/20 space-y-4 animate-in fade-in duration-200">
+            <form
+              onSubmit={handleCreate}
+              toolname="create_promo_voucher"
+              tooldescription="Create a new promotional coin voucher code for PredictPro users"
+              className="p-4 rounded-xl border bg-muted/20 space-y-4 animate-in fade-in duration-200"
+            >
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-amber-500" />

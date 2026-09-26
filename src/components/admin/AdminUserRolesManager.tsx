@@ -825,7 +825,12 @@ export function AdminUserRolesManager() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleManualAddAdmin} className="space-y-4 py-2">
+          <form
+            onSubmit={handleManualAddAdmin}
+            toolname="promote_admin_user"
+            tooldescription="Assign administrative role access to a PredictPro user by email"
+            className="space-y-4 py-2"
+          >
             <div className="space-y-1.5">
               <Label className="text-xs">User Email Address</Label>
               <Input

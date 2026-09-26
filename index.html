@@ -73,70 +73,75 @@
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
-    <link rel="dns-prefetch" href="https://www.clarity.ms" />
 
-    <!-- Google AdSense (Loaded only on production with adblocker resilience) -->
+    <!-- Google AdSense (Loaded cleanly after idle on production with adblocker resilience) -->
     <script>
       (function() {
         try {
           var host = window.location.hostname;
           if (host === 'predictpro.guru' || host === 'www.predictpro.guru') {
-            var ad = document.createElement('script');
-            ad.async = true;
-            ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-            ad.crossOrigin = 'anonymous';
-            ad.onerror = function(e) { if (e && e.preventDefault) e.preventDefault(); };
-            document.head.appendChild(ad);
+            window.addEventListener('load', function() {
+              setTimeout(function() {
+                try {
+                  var ad = document.createElement('script');
+                  ad.async = true;
+                  ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+                  ad.crossOrigin = 'anonymous';
+                  ad.onerror = function(e) { if (e && e.preventDefault) e.preventDefault(); };
+                  document.head.appendChild(ad);
+                } catch (e) {}
+              }, 2500);
+            });
           }
         } catch (e) {}
       })();
     </script>
 
-    <!-- Clarity & Ahrefs tracking (only loaded on production predictpro.guru, with adblocker resilience) -->
+    <!-- Ahrefs Analytics (only loaded on production predictpro.guru after load) -->
     <script type="text/javascript">
       (function() {
         try {
           var host = window.location.hostname;
           if (host !== 'predictpro.guru' && host !== 'www.predictpro.guru') return;
 
-          // Microsoft Clarity
-          (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
-              t.onerror=function(e){ if (e && e.preventDefault) e.preventDefault(); };
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "ym8cuj04ax");
-
-          // Ahrefs Analytics
           window.addEventListener('load', function() {
-            try {
-              var ah = document.createElement('script');
-              ah.async = true;
-              ah.src = 'https://analytics.ahrefs.com/analytics.js';
-              ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
-              ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-              document.head.appendChild(ah);
-            } catch (e) {}
+            setTimeout(function() {
+              try {
+                var ah = document.createElement('script');
+                ah.async = true;
+                ah.src = 'https://analytics.ahrefs.com/analytics.js';
+                ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
+                ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+                document.head.appendChild(ah);
+              } catch (e) {}
+            }, 2000);
           });
         } catch (e) {}
       })();
     </script>
 
-    <!-- Google Analytics (deferred for performance, resilient against adblockers) -->
+    <!-- Google Analytics (deferred & configured without third-party ad remarketing cascades) -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('set', 'allow_google_signals', false);
+      gtag('set', 'allow_ad_personalization_signals', false);
       gtag('js', new Date());
-      gtag('config', 'G-M0VE8D3XLZ', { send_page_view: true });
-      // Defer GA load until after LCP
+      gtag('config', 'G-M0VE8D3XLZ', {
+        send_page_view: true,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false
+      });
       window.addEventListener('load', () => {
-        try {
-          const s = document.createElement('script');
-          s.async = true;
-          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-          s.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-          document.head.appendChild(s);
-        } catch (e) {}
+        setTimeout(() => {
+          try {
+            const s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+            s.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+            document.head.appendChild(s);
+          } catch (e) {}
+        }, 1500);
       });
     </script>
 
@@ -282,9 +287,11 @@
           <a href="/sitemap">HTML Sitemap</a> · 
           <a href="/seo-indexing">Google Indexing Console</a>
         </nav>
+      </header>
+      <main id="main-content" style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
         <h1>PredictPro — AI Football Predictions Today | Free Daily Betting Tips &amp; xG Stats</h1>
         <p>AI-powered football predictions today with 87% verified accuracy. Daily banker picks, xG statistics, Both Teams to Score (BTTS), and Expected Value bets across 40+ leagues worldwide.</p>
-      </header>
+      </main>
     </div>
     <noscript>
       <div style="padding: 24px; text-align: center; font-family: system-ui, -apple-system, sans-serif;">

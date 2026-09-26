@@ -433,7 +433,12 @@ export function AdminPredictionsTab() {
               Directly input an upcoming fixture analysis into the prediction catalog.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAddPrediction} className="space-y-3 py-2">
+          <form
+            onSubmit={handleAddPrediction}
+            toolname="publish_match_prediction"
+            tooldescription="Publish a new football match prediction into the PredictPro catalog"
+            className="space-y-3 py-2"
+          >
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Home Team</Label>

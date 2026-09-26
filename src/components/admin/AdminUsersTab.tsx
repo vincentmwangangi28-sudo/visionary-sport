@@ -529,7 +529,12 @@ export function AdminUsersTab() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleAdjustCoins} className="space-y-4 py-2">
+          <form
+            onSubmit={handleAdjustCoins}
+            toolname="adjust_user_coin_balance"
+            tooldescription="Credit or adjust reward coin balance for a PredictPro member"
+            className="space-y-4 py-2"
+          >
             <div className="p-3 rounded-lg bg-muted/40 text-xs flex items-center justify-between">
               <span className="text-muted-foreground">Current Balance:</span>
               <span className="font-bold text-foreground text-sm flex items-center gap-1">

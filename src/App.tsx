@@ -13,6 +13,7 @@ import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
 import { useAutoIndexing } from "@/hooks/useAutoIndexing";
 import { useSEOManager } from "@/hooks/useSEOManager";
+import { useWebMCPTools } from "@/hooks/useWebMCPTools";
 import { useGeminiDailyCron } from "@/hooks/useGeminiDailyCron";
 import { useMatchSync } from "@/hooks/useMatchSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -37,7 +38,7 @@ const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m =>
 const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 const FirstVisitSignupModal = lazyWithRetry(() => import("@/components/FirstVisitSignupModal").then(m => ({ default: m.FirstVisitSignupModal })));
 
-const Index             = lazyWithRetry(() => import("./pages/Index"));
+import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
 const MatchPrediction   = lazyWithRetry(() => import("./pages/MatchPrediction"));
 const Auth              = lazyWithRetry(() => import("./pages/Auth"));
@@ -106,10 +107,10 @@ const RouteLoadingFallback = memo(({ routePath }: RouteLoadingFallbackProps) => 
   }, []);
 
   return (
-    <div
-      role="status"
+    <main
+      id="main-content"
       aria-busy="true"
-      aria-label="Loading page content"
+      aria-label="Main page content"
       className="min-h-[85vh] bg-background w-full pb-24 animate-in fade-in duration-200"
     >
       {/* Top Indeterminate Streaming Progress Bar */}
@@ -162,7 +163,7 @@ const RouteLoadingFallback = memo(({ routePath }: RouteLoadingFallbackProps) => 
           <PredictionCardSkeleton />
         </div>
       </div>
-    </div>
+    </main>
   );
 });
 RouteLoadingFallback.displayName = "RouteLoadingFallback";
@@ -181,7 +182,7 @@ const RouteErrorFallback = memo(({ error, onReset }: RouteErrorFallbackProps) =>
     error.message?.includes("import()");
 
   return (
-    <div className="min-h-[65vh] flex items-center justify-center p-4 bg-background">
+    <main id="main-content" className="min-h-[65vh] flex items-center justify-center p-4 bg-background">
       <div className="max-w-md w-full bg-card border rounded-2xl p-6 shadow-sm text-center space-y-4 animate-in fade-in duration-200">
         <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
           {isChunkError ? <WifiOff className="h-6 w-6" /> : <AlertTriangle className="h-6 w-6" />}
@@ -216,7 +217,7 @@ const RouteErrorFallback = memo(({ error, onReset }: RouteErrorFallbackProps) =>
           </Button>
         </div>
       </div>
-    </div>
+    </main>
   );
 });
 RouteErrorFallback.displayName = "RouteErrorFallback";
@@ -270,6 +271,32 @@ const SEOManagerInitializer: React.FC = () => {
   return null;
 };
 
+const WebMCPInitializer: React.FC = () => {
+  useWebMCPTools();
+  return (
+    <form
+      action="/predict"
+      method="get"
+      role="search"
+      aria-label="Quick AI Football Prediction Search"
+      toolname="search_football_predictions"
+      tooldescription="Search daily AI football match predictions, Expected Goals (xG) statistics, and betting tips by club or league"
+      className="sr-only"
+    >
+      <label htmlFor="webmcp-global-search-query">Search Football Team or League Predictions</label>
+      <input
+        id="webmcp-global-search-query"
+        type="search"
+        name="q"
+        required
+        toolparamdescription="Football club name, matchup, or league name to search predictions for"
+        placeholder="Search team or league..."
+      />
+      <button type="submit">Search Predictions</button>
+    </form>
+  );
+};
+
 const GeminiDailyCronInitializer: React.FC = () => {
   useGeminiDailyCron();
   return null;
@@ -292,6 +319,7 @@ const App = () => (
                   <UnifiedSearchProvider>
                     <LocaleDetectionInitializer />
                     <SEOManagerInitializer />
+                    <WebMCPInitializer />
                     <AutoIndexingInitializer />
                     <GeminiDailyCronInitializer />
                     <MatchSyncInitializer />

@@ -112,7 +112,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-[50vh] flex items-center justify-center p-6 bg-background">
+        <main id="main-content" className="min-h-[50vh] flex items-center justify-center p-6 bg-background">
           <div className="max-w-md w-full bg-card border rounded-2xl p-6 shadow-lg text-center space-y-4 animate-in fade-in-50 duration-200">
             <div className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
               <AlertTriangle className="h-6 w-6" />
@@ -170,7 +170,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </Button>
             </div>
           </div>
-        </div>
+        </main>
       );
     }
 

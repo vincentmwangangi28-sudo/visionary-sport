@@ -1,5 +1,5 @@
-// PredictPro Service Worker v8 - Resilient Offline & Chunk Loading Strategy
-const CACHE_VERSION = 'v8';
+// PredictPro Service Worker v10 - Strict MIME, SEO & Agentic Crawler Fast-Path
+const CACHE_VERSION = 'v10';
 const CACHE_STATIC = `predictpro-static-${CACHE_VERSION}`;
 const CACHE_IMAGES = `predictpro-images-${CACHE_VERSION}`;
 const CACHE_DATA = `predictpro-data-${CACHE_VERSION}`;
@@ -11,12 +11,57 @@ const MAX_IMAGE_CACHE_ENTRIES = 250;
 const STATIC_SHELL_ASSETS = [
   '/',
   '/index.html',
+  '/robots.txt',
+  '/llms.txt',
   '/manifest.json',
   '/favicon.ico',
   '/favicon-32x32.png',
   '/icon-192.png',
   '/icon-512.png',
 ];
+
+const ROBOTS_TXT_FALLBACK = `# PredictPro Robots.txt & Search Engine Directives
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_vercel/
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://predictpro.guru/sitemap.xml
+`;
+
+const LLMS_TXT_FALLBACK = `# PredictPro — AI Football Predictions
+
+> PredictPro (https://predictpro.guru) is an AI-powered football prediction and quantitative sports analytics platform providing daily match predictions, Expected Goals (xG) models, bivariate Poisson scorelines, +EV value bets, 17-game jackpot picks, live scores, and league standings across 40+ global competitions.
+
+## Core Prediction Markets
+
+- [Today's AI Football Predictions](https://predictpro.guru/): Daily AI match predictions, confidence scores, and live fixtures across 40+ global leagues.
+- [Best Banker Bets Today](https://predictpro.guru/best-bets): High-confidence (75%+ to 92%) 1X2 straight win and Double Chance banker selections.
+- [Daily Value Bets (+EV)](https://predictpro.guru/value-bets): Positive Expected Value wagers where AI Poisson probability exceeds bookmaker implied odds.
+- [BTTS & Over 2.5 Goals Predictions](https://predictpro.guru/btts): Both Teams to Score and Over/Under 2.5 goal expectancy tips.
+- [Exact Correct Score Predictions](https://predictpro.guru/correct-score): Bivariate Poisson 90-minute scoreline probability matrices.
+- [Smart Accumulator Builder](https://predictpro.guru/accumulator): Low-correlation 3-fold and 5-fold multibet slip generator.
+
+## League Prediction Hubs
+
+- [English Premier League Predictions](https://predictpro.guru/premier-league-predictions): AI match previews, xG stats, and odds for every EPL fixture.
+- [UEFA Champions League Predictions](https://predictpro.guru/champions-league-predictions): 36-team league phase and knockout tie AI predictions.
+- [Spanish La Liga Predictions](https://predictpro.guru/la-liga-predictions): Tactical match forecasts and value picks for La Liga.
+- [German Bundesliga Predictions](https://predictpro.guru/bundesliga-predictions): High-tempo Over 2.5 goals, BTTS, and 1X2 Bundesliga tips.
+- [Italian Serie A Predictions](https://predictpro.guru/serie-a-predictions): Defensive xGA and match outcome forecasts for Serie A.
+- [FKF Kenya Premier League Predictions](https://predictpro.guru/kpl-predictions): Kenyan Premier League match predictions and M-Pesa VIP tips.
+- [17-Game Mega Jackpot Predictions](https://predictpro.guru/jackpot-predictions): SportPesa Mega Jackpot and Betika Midweek banker and Double Chance combinations.
+- [US Soccer & MLS Predictions](https://predictpro.guru/us-soccer-predictions): Major League Soccer moneyline (+/-), goal spreads, and AI picks.
+`;
 
 // Domains hosting official team logos & match media
 const TRUSTED_IMAGE_HOSTS = [
@@ -25,6 +70,21 @@ const TRUSTED_IMAGE_HOSTS = [
   'media.api-sports.io',
   'api-football.com',
   'images.unsplash.com',
+];
+
+// Third-party analytics, ads, and auth origins that must NEVER be intercepted by the Service Worker
+const BYPASS_EXTERNAL_HOSTS = [
+  'clarity.ms',
+  'googletagmanager.com',
+  'google-analytics.com',
+  'googlesyndication.com',
+  'googleadservices.com',
+  'doubleclick.net',
+  'adtrafficquality.google',
+  'google.com',
+  'google.co.ke',
+  'accounts.google.com',
+  'ahrefs.com',
 ];
 
 // Helper: Trim cache to avoid unbounded growth
@@ -70,33 +130,87 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Check if request is for team logos or images
+// Check if request is for compiled JS/CSS/Wasm/Font static code bundles
+function isStaticCodeOrStyleAsset(request, url) {
+  if (
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'worker' ||
+    request.destination === 'font' ||
+    request.destination === 'manifest'
+  ) {
+    return true;
+  }
+  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/src/')) {
+    return true;
+  }
+  return /\.(js|mjs|cjs|ts|tsx|css|wasm|map|woff2?|ttf|eot)(\?.*)?$/i.test(url.pathname);
+}
+
+// Check if request is for third-party analytics/ad tracking beacons
+function isBypassedExternalHost(url) {
+  if (url.origin === self.location.origin) return false;
+  return BYPASS_EXTERNAL_HOSTS.some(
+    host => url.hostname === host || url.hostname.endsWith('.' + host)
+  );
+}
+
+// Check if request is for team logos or same-origin/trusted images (never third-party tracking pixels)
 function isImageRequest(request, url) {
+  if (isStaticCodeOrStyleAsset(request, url)) return false;
+  if (isBypassedExternalHost(url)) return false;
+
+  const isSameOrigin = url.origin === self.location.origin;
+  const isTrustedHost = TRUSTED_IMAGE_HOSTS.some(host => url.hostname.includes(host));
+
+  if (!isSameOrigin && !isTrustedHost) {
+    return false;
+  }
+
   if (request.destination === 'image') return true;
-  if (TRUSTED_IMAGE_HOSTS.some(host => url.hostname.includes(host))) return true;
+  if (isTrustedHost) return true;
   return /\.(png|jpg|jpeg|svg|webp|gif|ico)(\?.*)?$/i.test(url.pathname);
 }
 
 // Check if request is for API / dynamic football data
 function isDataOrApiRequest(request, url) {
+  if (isStaticCodeOrStyleAsset(request, url)) return false;
+  if (isBypassedExternalHost(url)) return false;
   if (url.pathname.startsWith('/api/')) return true;
   if (url.pathname.startsWith('/functions/v1/')) return true;
   if (url.hostname.includes('supabase.co')) return true;
-  if (url.hostname.includes('api-sports.io') || url.hostname.includes('football-data.org')) return true;
+  if (
+    url.hostname.includes('api-sports.io') ||
+    url.hostname.includes('football-data.org') ||
+    url.hostname.includes('site.api.espn.com') ||
+    url.hostname.includes('thesportsdb.com')
+  ) {
+    return true;
+  }
   const acceptHeader = request.headers.get('accept') || '';
   if (acceptHeader.includes('application/json') && !url.pathname.endsWith('.json')) return true;
   return false;
 }
 
-// Check if request is specifically for football match data, fixtures, or predictions
+// Check if request is specifically for football match data, fixtures, or predictions API endpoints
 function isMatchDataRequest(request, url) {
-  if (url.pathname.includes('/api/offline-matches-snapshot')) return true;
-  if (url.pathname.includes('predictions') || url.pathname.includes('matches')) return true;
-  if (url.pathname.includes('fixtures') || url.pathname.includes('scoreboard')) return true;
-  if (url.pathname.includes('standings') || url.pathname.includes('odds')) return true;
-  if (url.searchParams && (url.searchParams.has('league') || url.searchParams.has('date') || url.searchParams.has('season'))) return true;
+  if (isStaticCodeOrStyleAsset(request, url)) return false;
+  if (isBypassedExternalHost(url)) return false;
+
+  // For same-origin requests, ONLY match explicit /api/ endpoints (never SPA routes or /assets/*.js chunks!)
+  if (url.origin === self.location.origin) {
+    return url.pathname.startsWith('/api/');
+  }
+
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/rest/v1/')) return true;
-  if (url.hostname.includes('api-sports.io') || url.hostname.includes('football-data.org')) return true;
+  if (
+    url.hostname.includes('api-sports.io') ||
+    url.hostname.includes('football-data.org') ||
+    url.hostname.includes('site.api.espn.com') ||
+    url.hostname.includes('thesportsdb.com')
+  ) {
+    return true;
+  }
   return isDataOrApiRequest(request, url);
 }
 
@@ -134,7 +248,12 @@ self.addEventListener('fetch', event => {
   if (!url.protocol.startsWith('http')) return;
   if (req.method !== 'GET') return;
 
-  // Let third-party external scripts (Google Ads, Stripe, analytics, extensions) pass directly through to browser
+  // Immediately bypass third-party analytics, ads, and tracking pixels
+  if (isBypassedExternalHost(url)) {
+    return;
+  }
+
+  // Let any other non-trusted external requests pass directly through to browser
   if (
     url.origin !== self.location.origin &&
     !isImageRequest(req, url) &&
@@ -142,6 +261,65 @@ self.addEventListener('fetch', event => {
     !url.hostname.includes('fonts.googleapis.com') &&
     !url.hostname.includes('fonts.gstatic.com')
   ) {
+    return;
+  }
+
+  // A0. Instant Fast-Path for /robots.txt and /llms.txt (SEO & Agentic Browsing Audits)
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname === '/robots.txt' || url.pathname === '/llms.txt')
+  ) {
+    event.respondWith(
+      (async () => {
+        const isRobots = url.pathname === '/robots.txt';
+        const fallbackBody = isRobots ? ROBOTS_TXT_FALLBACK : LLMS_TXT_FALLBACK;
+        const contentType = isRobots
+          ? 'text/plain; charset=utf-8'
+          : 'text/markdown; charset=utf-8';
+
+        try {
+          const cache = await caches.open(CACHE_STATIC);
+          const cached = await cache.match(url.pathname);
+          if (cached && cached.status === 200) {
+            // Revalidate in background without delaying response
+            fetchWithTimeout(req, 1500)
+              .then(res => {
+                if (res && res.status === 200) {
+                  cache.put(url.pathname, res.clone()).catch(() => {});
+                }
+              })
+              .catch(() => {});
+            return cached;
+          }
+
+          const netRes = await fetchWithTimeout(req, 1200);
+          if (netRes && netRes.status === 200) {
+            const text = await netRes.clone().text();
+            // Ensure static host did not return an HTML SPA fallback
+            if (!text.trim().toLowerCase().startsWith('<!doctype')) {
+              cache.put(url.pathname, netRes.clone()).catch(() => {});
+              return new Response(text, {
+                status: 200,
+                headers: {
+                  'Content-Type': contentType,
+                  'Cache-Control': 'public, max-age=3600',
+                },
+              });
+            }
+          }
+        } catch {
+          // Network timed out or offline; serve guaranteed valid fallback below
+        }
+
+        return new Response(fallbackBody, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=3600',
+          },
+        });
+      })()
+    );
     return;
   }
 
@@ -166,7 +344,7 @@ self.addEventListener('fetch', event => {
           return cached;
         }
 
-        return new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><title>PredictPro - Offline</title></head><body style="font-family:sans-serif;padding:2rem;text-align:center;background:#090d16;color:#e2e8f0;"><h2>PredictPro is Offline</h2><p>Please check your internet connection and reload.</p><button onclick="location.reload()" style="padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Retry</button></body></html>', {
+        return new Response('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>PredictPro - Offline</title></head><body style="font-family:sans-serif;padding:2rem;text-align:center;background:#090d16;color:#e2e8f0;"><main id="main-content"><h1>PredictPro is Offline</h1><p>Please check your internet connection and reload.</p><button onclick="location.reload()" style="padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Retry</button></main></body></html>', {
           status: 200,
           headers: { 'Content-Type': 'text/html' }
         });
@@ -175,7 +353,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // B. Team Logos & Images - Cache-First with fallback
+  // B. Team Logos & Trusted Images - Cache-First without forcing synthetic CORS mode
   if (isImageRequest(req, url)) {
     event.respondWith(
       (async () => {
@@ -186,7 +364,7 @@ self.addEventListener('fetch', event => {
         }
 
         try {
-          const netRes = await fetch(req, { mode: 'cors' }).catch(() => fetch(req));
+          const netRes = await fetch(req);
           if (netRes && (netRes.status === 200 || netRes.type === 'opaque')) {
             cache.put(req, netRes.clone()).catch(() => {});
             setTimeout(() => trimCache(CACHE_IMAGES, MAX_IMAGE_CACHE_ENTRIES), 1000);
@@ -316,12 +494,42 @@ self.addEventListener('fetch', event => {
   if (url.origin === self.location.origin || url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
     event.respondWith(
       (async () => {
+        const isJsScript = req.destination === 'script' || /\.(js|mjs)(\?.*)?$/i.test(url.pathname);
+        const isCssStyle = req.destination === 'style' || /\.css(\?.*)?$/i.test(url.pathname);
+
         const cache = await caches.open(CACHE_STATIC);
-        const cached = await cache.match(req);
+        let cached = await cache.match(req);
+
+        // Guard against any previously poisoned cache entry with wrong MIME type
+        if (cached && isJsScript) {
+          const cachedType = (cached.headers.get('content-type') || '').toLowerCase();
+          if (!cachedType.includes('javascript') && !cachedType.includes('ecmascript')) {
+            await cache.delete(req).catch(() => {});
+            cached = null;
+          }
+        }
+
+        // For hashed Vite assets (/assets/*), serve valid cached JS/CSS immediately for zero-latency module loading
+        if (cached && url.pathname.startsWith('/assets/')) {
+          return cached;
+        }
 
         try {
           const netRes = await fetch(req);
-          if (netRes && (netRes.status === 200 || netRes.type === 'opaque')) {
+          if (netRes && netRes.status === 200) {
+            const netType = (netRes.headers.get('content-type') || '').toLowerCase();
+            const validMime =
+              isJsScript
+                ? netType.includes('javascript') || netType.includes('ecmascript')
+                : isCssStyle
+                  ? netType.includes('css')
+                  : true;
+
+            if (validMime) {
+              cache.put(req, netRes.clone()).catch(() => {});
+              return netRes;
+            }
+          } else if (netRes && netRes.type === 'opaque') {
             cache.put(req, netRes.clone()).catch(() => {});
             return netRes;
           }
@@ -329,30 +537,22 @@ self.addEventListener('fetch', event => {
           // Network failed (offline or network glitch)
         }
 
-        // Return cached version if available
+        // Return verified cached version if available
         if (cached) {
           return cached;
         }
 
-        // Fallback for JS/CSS so dynamic import error handlers receive a valid HTTP status or clean module
-        if (req.destination === 'script' || url.pathname.endsWith('.js')) {
-          return new Response('/* PredictPro Offline Chunk Fallback */\nexport default {};', {
-            status: 200,
-            headers: { 'Content-Type': 'application/javascript' }
-          });
-        }
-
-        if (req.destination === 'style' || url.pathname.endsWith('.css')) {
+        if (isCssStyle) {
           return new Response('/* Offline CSS fallback */', {
             status: 200,
             headers: { 'Content-Type': 'text/css' }
           });
         }
 
-        // Generic 503 response guaranteed to be a valid Response object
-        return new Response('Resource offline', {
+        // For missing JS chunks or other offline assets, return 503 so lazyWithRetry can cleanly retry or refresh
+        return new Response('Resource offline or chunk rotated', {
           status: 503,
-          statusText: 'Offline',
+          statusText: 'Service Unavailable',
           headers: { 'Content-Type': 'text/plain' }
         });
       })()

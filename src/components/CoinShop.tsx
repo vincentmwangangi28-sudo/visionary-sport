@@ -105,8 +105,16 @@ export const CoinShop = () => {
               </p>
             </div>
 
-            <form onSubmit={handleRedeem} className="flex items-center gap-2 w-full sm:w-auto">
+            <form
+              onSubmit={handleRedeem}
+              toolname="redeem_predictpro_promo_code"
+              tooldescription="Redeem a PredictPro promotional voucher code for bonus prediction coins"
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
               <Input
+                name="promoCode"
+                aria-label="Promo voucher code"
+                toolparamdescription="Uppercase promotional voucher code to redeem for bonus coins"
                 value={promoInput}
                 onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
                 placeholder="e.g. VINCENT100"

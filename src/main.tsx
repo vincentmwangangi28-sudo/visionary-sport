@@ -65,10 +65,20 @@ if ('serviceWorker' in navigator) {
     }
   }
 
+  // Immediately purge any stale pre-v9 caches so old poisoned chunk entries are evicted
+  if ('caches' in window) {
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => !k.includes('v9')).map((k) => caches.delete(k))))
+      .catch(() => {});
+  }
+
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
       .then((reg) => {
+        reg.update().catch(() => {});
+
         // Handshake with active worker: configure Stale-While-Revalidate strategy
         const notifySWOfSWR = () => {
           if (reg.active) {
@@ -128,28 +138,43 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Automatic recovery from stale chunks across new deployments
+// Automatic recovery from stale chunks or MIME type mismatches across new deployments
 if (typeof window !== 'undefined') {
-  window.addEventListener('error', (event) => {
+  const handleChunkOrMimeError = (msg: string) => {
     if (
-      event.message?.includes('Loading chunk') ||
-      event.message?.includes('Failed to fetch dynamically imported module') ||
-      event.message?.includes('Missing Supabase configuration')
+      msg.includes('Loading chunk') ||
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Expected a JavaScript-or-Wasm module script') ||
+      msg.includes('MIME type') ||
+      msg.includes('Missing Supabase configuration')
     ) {
       const hasReloaded = sessionStorage.getItem('predictpro_chunk_retry');
       if (!hasReloaded) {
         sessionStorage.setItem('predictpro_chunk_retry', 'true');
         if ('caches' in window) {
-          caches.keys().then((keys) => {
-            return Promise.all(keys.filter((k) => !k.includes('v7')).map((k) => caches.delete(k)));
-          }).finally(() => {
-            window.location.reload();
-          });
+          caches
+            .keys()
+            .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+            .finally(() => {
+              window.location.reload();
+            });
         } else {
           window.location.reload();
         }
       }
     }
+  };
+
+  window.addEventListener('error', (event) => {
+    handleChunkOrMimeError(event.message || '');
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const reasonMsg =
+      typeof event.reason === 'string'
+        ? event.reason
+        : event.reason?.message || '';
+    handleChunkOrMimeError(reasonMsg);
   });
 
   // Clear retry flag on fresh successful mount

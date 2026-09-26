@@ -163,11 +163,18 @@ export default function Performance() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddBet} className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <form
+                onSubmit={handleAddBet}
+                toolname="record_performance_bet"
+                tooldescription="Record a football wager to track ROI, win rate, and betting performance"
+                className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3"
+              >
                 <div className="lg:col-span-2">
                   <label htmlFor="bet-match-input" className="text-xs font-semibold text-muted-foreground block mb-1">Match / Fixture</label>
                   <Input
                     id="bet-match-input"
+                    name="match"
+                    toolparamdescription="Football match or fixture name (e.g. Arsenal vs Chelsea)"
                     placeholder="e.g. Arsenal vs Chelsea"
                     value={form.match}
                     onChange={e => setForm(f => ({ ...f, match: e.target.value }))}
@@ -192,9 +199,11 @@ export default function Performance() {
                   <label htmlFor="bet-odds-input" className="text-xs font-semibold text-muted-foreground block mb-1">Odds</label>
                   <Input
                     id="bet-odds-input"
+                    name="odds"
                     type="number"
                     step="0.01"
                     min="1.01"
+                    toolparamdescription="Decimal odds for the recorded bet"
                     value={form.odds}
                     onChange={e => setForm(f => ({ ...f, odds: e.target.value }))}
                     required
@@ -204,9 +213,11 @@ export default function Performance() {
                   <label htmlFor="bet-stake-input" className="text-xs font-semibold text-muted-foreground block mb-1">Stake (KES)</label>
                   <Input
                     id="bet-stake-input"
+                    name="stake"
                     type="number"
                     step="10"
                     min="10"
+                    toolparamdescription="Wager stake amount"
                     value={form.stake}
                     onChange={e => setForm(f => ({ ...f, stake: e.target.value }))}
                     required

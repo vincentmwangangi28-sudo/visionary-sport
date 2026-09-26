@@ -38,5 +38,10 @@
 /tables                     /standings                    301
 /odds                       /dropping-odds                301
 
+# Static SEO & Agentic Crawler Files
+/robots.txt                 /robots.txt                   200
+/llms.txt                   /llms.txt                     200
+/sitemap.xml                /sitemap.xml                  200
+
 # SPA Fallback
 /*                          /index.html                   200

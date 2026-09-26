@@ -478,11 +478,19 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
 }
 
 /**
- * Helper to upsert a <meta> tag in document.head
+ * Helper to upsert a single deduplicated <meta> tag in document.head
  */
 function upsertMetaTag(attrName: 'name' | 'property' | 'http-equiv', attrValue: string, content: string) {
   if (typeof document === 'undefined') return;
-  let el = document.head.querySelector(`meta[${attrName}="${attrValue}"]`) as HTMLMetaElement | null;
+  const all = Array.from(
+    document.head.querySelectorAll(`meta[${attrName}="${attrValue}"]`)
+  ) as HTMLMetaElement[];
+  let el = all[0] || null;
+  if (all.length > 1) {
+    for (let i = 1; i < all.length; i++) {
+      all[i].remove();
+    }
+  }
   if (!el) {
     el = document.createElement('meta');
     el.setAttribute(attrName, attrValue);
@@ -494,14 +502,20 @@ function upsertMetaTag(attrName: 'name' | 'property' | 'http-equiv', attrValue: 
 }
 
 /**
- * Helper to upsert a <link> tag in document.head
+ * Helper to upsert a single deduplicated <link> tag in document.head
  */
 function upsertLinkTag(rel: string, href: string, hreflang?: string) {
   if (typeof document === 'undefined') return;
   const selector = hreflang
     ? `link[rel="${rel}"][hreflang="${hreflang}"]`
     : `link[rel="${rel}"]:not([hreflang])`;
-  let el = document.head.querySelector(selector) as HTMLLinkElement | null;
+  const all = Array.from(document.head.querySelectorAll(selector)) as HTMLLinkElement[];
+  let el = all[0] || null;
+  if (all.length > 1) {
+    for (let i = 1; i < all.length; i++) {
+      all[i].remove();
+    }
+  }
   if (!el) {
     el = document.createElement('link');
     el.setAttribute('rel', rel);
