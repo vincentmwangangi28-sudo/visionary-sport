@@ -133,7 +133,7 @@ export default function BTTS() {
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         {/* Visual Breadcrumb Trail */}
         <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
-          <a href="/" className="hover:text-primary transition-colors">Home</a>
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
           <span className="text-foreground font-medium">BTTS AI Prediction Today</span>
         </nav>
@@ -169,11 +169,11 @@ export default function BTTS() {
         {/* High Equity Cross-Linking Banner */}
         <div className="mb-6 p-3.5 rounded-xl bg-muted/40 border text-xs flex flex-wrap items-center justify-between gap-3">
           <span className="text-muted-foreground">
-            Looking for match winner simulations? Test our <a href="/predict" className="font-bold text-primary underline">AI Pro Tips Today</a> or browse <a href="/value-bets" className="font-bold text-primary underline">Daily Value Bets (+EV)</a>.
+            Explore related goal &amp; outcome markets: Check <Link to="/correct-score" className="font-bold text-primary underline">Exact Correct Score Poisson Matrices</Link>, <Link to="/value-bets" className="font-bold text-primary underline">Daily Positive Expected Value (+EV) Bets</Link>, or read our <Link to="/blog/btts-over-under-strategy" className="font-bold text-primary underline">BTTS &amp; Over 2.5 Poisson Strategy Guide</Link>.
           </span>
-          <a href="/accumulator" className="text-primary font-bold hover:underline flex items-center gap-1">
-            Build BTTS Acca &rarr;
-          </a>
+          <Link to="/accumulator" className="text-primary font-bold hover:underline flex items-center gap-1">
+            Build 5-Fold BTTS Accumulator Slip &rarr;
+          </Link>
         </div>
 
         {/* Market Tabs */}

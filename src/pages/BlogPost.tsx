@@ -20,7 +20,7 @@ const ARTICLES: Record<string, { title: string; description: string; keywords: s
     title: "How to Read AI Football Predictions Like a Pro",
     description: "Learn to interpret confidence scores, probability percentages and odds in football predictions. Complete guide to using AI tips in your betting strategy.",
     keywords: "how to read football predictions, confidence score meaning, football prediction probability, AI football tips guide",
-    category: "Strategy", readTime: "5 min", date: "2026-06-04",
+    category: "Strategy", readTime: "5 min", date: "2026-09-25",
     content: `## What is a Confidence Score?
 
 A confidence score is our AI's estimate of how certain it is about a prediction. A **74% confidence** on Arsenal to win means the AI has found strong statistical support — form, H2H, home advantage — pointing to that outcome.
@@ -60,10 +60,10 @@ Most prediction sites use simple form tables. PredictPro's AI analyses:
 The result is a confidence score backed by real data, not intuition.`
   },
   "value-betting-explained": {
-    title: "Value Betting in Football: A Complete Guide",
+    title: "Value Betting in Football: A Complete +EV Guide",
     description: "What is value betting, how to calculate expected value (EV) and why AI predictions help you find edges over bookmakers in football betting.",
     keywords: "value betting football guide, expected value football betting, beating bookmakers football, positive EV bets football",
-    category: "Strategy", readTime: "8 min", date: "2026-06-03",
+    category: "Strategy", readTime: "8 min", date: "2026-09-24",
     content: `## What is Value Betting?
 
 Value betting means placing bets where the **true probability is higher than what the odds imply**. If a coin flip pays 2.10 instead of 2.00, every flip has positive expected value — you'd be +5% on every bet.
@@ -88,6 +88,84 @@ The psychological trap: a 65% confidence prediction sounds risky. But over 100 b
 Our **Value Bets** page automatically calculates EV for every prediction with odds. Green means strong value (>15%), amber means moderate (5-15%).
 
 **Best value bet leagues:** La Liga and Bundesliga tend to offer the most bookmaker inefficiencies. EPL is heavily traded so edges are smaller.`
+  },
+  "asian-handicap-betting-explained": {
+    title: "Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines",
+    description: "Master Asian Handicap football betting. Learn how quarter-goal (-0.25, -0.75) and half-goal (-0.5, -1.5) lines eliminate the draw and lower bookmaker margins.",
+    keywords: "asian handicap explained, -0.5 asian handicap, -0.75 handicap meaning, football handicap tips, quarter goal handicap",
+    category: "Markets", readTime: "7 min", date: "2026-09-23",
+    content: `## Why Professional Bettors Prefer Asian Handicap
+
+In traditional 1X2 match betting, bookmakers charge an overround (margin) of **5% to 8%** across three outcomes (Home, Draw, Away). **Asian Handicap (AH)** reduces the match to a two-way market by applying a virtual goal deficit or head-start before kickoff, cutting bookmaker margins down to **1.8% – 3.0%**.
+
+## Understanding Half-Goal Lines (-0.5, -1.5, +0.5)
+
+Half-goal lines guarantee a decisive Win or Loss with no push (refund):
+- **Asian Handicap -0.5:** Identical to a straight Win. Your team must win the match by at least 1 goal.
+- **Asian Handicap +0.5:** Identical to **Double Chance (1X or X2)**, but typically offers 4% to 7% higher decimal odds due to lower Asian market margins.
+- **Asian Handicap -1.5:** Your team must win by **2 or more goals** (e.g., 2-0, 3-1).
+
+## Quarter-Goal Split Lines (-0.25 & -0.75)
+
+Quarter-goal handicaps automatically split your stake equally across two adjacent lines:
+- **Asian Handicap -0.25 (0, -0.5):** Half your stake is placed on **0.0 (Draw No Bet)** and half on **-0.5**. If the match ends in a draw, you lose only half your stake and the other half is refunded.
+- **Asian Handicap -0.75 (-0.5, -1.0):** Half your stake goes on **-0.5** and half on **-1.0**. If the favourite wins by exactly 1 goal (e.g., 1-0 or 2-1), you win half your bet at full odds and the other half is refunded. A win by 2+ goals pays out 100%.
+
+## How to Combine Expected Goals (xG) with Asian Handicaps
+
+When PredictPro's Poisson simulator projects a **Home xG differential of +1.35 or greater** (for instance, Home xG 2.25 vs Away xG 0.85), backing the **-1.0 or -0.75 Asian Handicap** captures substantially higher Expected Value (+EV) than taking a heavily juiced 1.35 straight win price.`
+  },
+  "draw-no-bet-vs-double-chance-strategy": {
+    title: "Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide",
+    description: "Compare Draw No Bet (DNB) and Double Chance (1X/X2) football markets. Learn exact implied probability formulas and when to hedge against the draw.",
+    keywords: "draw no bet explained, double chance 1x x2, dnb vs double chance, safe football betting markets, Asian handicap 0.0",
+    category: "Strategy", readTime: "6 min", date: "2026-09-22",
+    content: `## Eliminating the Draw Penalty in Football
+
+Approximately **24% to 27%** of top-flight European and African football matches end in a 90-minute draw. Both **Draw No Bet (DNB)** and **Double Chance (1X / X2)** protect your bankroll from late equalizers, but they serve completely different mathematical profiles.
+
+## How Draw No Bet (DNB / Asian Handicap 0.0) Works
+
+In a **Draw No Bet** wager:
+- If your selected team wins, your bet pays out at the quoted DNB odds.
+- If the match finishes in a draw, **100% of your stake is refunded** (void/push).
+- Mathematically, DNB is equivalent to placing a primary stake on the straight win and hedging a smaller fraction on the exact Draw so that the draw return equals your total stake.
+
+## How Double Chance (1X, X2, 12) Works
+
+In a **Double Chance** wager:
+- **1X (Home or Draw):** You win the full payout if the home team wins OR if the match draws.
+- **X2 (Away or Draw):** You win the full payout if the away team wins OR if the match draws.
+- Because you profit on two out of three possible outcomes, Double Chance odds are lower than DNB odds, making them ideal for **3-to-5 leg accumulator builders**.
+
+## Strategic Decision Matrix: Which Should You Pick?
+
+- **Choose Draw No Bet (DNB)** on single-match value bets when backing a slight away favourite or mid-table contender priced between **2.10 and 2.80** in the 1X2 market (giving DNB odds around 1.55 – 1.95).
+- **Choose Double Chance (1X / X2)** in multi-leg accumulators or high-variance derby matches (such as the Mashemeji Derby or Champions League knockout first legs) where draw probability exceeds 31%.`
+  },
+  "closing-line-value-clv-dropping-odds": {
+    title: "Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam",
+    description: "Why beating the Closing Line Value (CLV) is the #1 mathematical indicator of long-term sports betting profitability, and how to track dropping odds.",
+    keywords: "closing line value clv, dropping odds strategy, sharp money football, steam moves betting, beat the closing line",
+    category: "Markets", readTime: "8 min", date: "2026-09-21",
+    content: `## What is Closing Line Value (CLV)?
+
+The **Closing Line** is the final odds price offered by sharp market-making bookmakers (such as Pinnacle and Asian syndicates) at the exact second a match kicks off. By kickoff, injury news, confirmed starting XIs, weather conditions, and millions of dollars in sharp institutional liquidity are fully baked into the odds.
+
+**Closing Line Value (CLV)** measures whether the odds you locked in were higher than the final closing odds:
+> CLV % = ((Your Odds / Closing Odds) - 1) × 100
+
+If you backed Liverpool at **2.15** on Friday morning and they closed at **1.85** at kickoff, you achieved **+16.2% CLV**.
+
+## Why CLV Predicts Profit Better Than Short-Term Win Rate
+
+Over a small sample of 20 bets, luck and red cards dictate your balance. Over 500+ bets, if you consistently beat the no-vig closing line by **+4%**, you are mathematically guaranteed to earn roughly a **+4% long-term Return on Investment (ROI)**.
+
+## How to Use PredictPro's Dropping Odds Radar
+
+1. **Early Model Release:** Our AI publishes initial Poisson fair odds 48 hours before kickoff—before recreational money moves the market.
+2. **Sharp Steam Alerts:** Visit the **Dropping Odds Radar** (`/dropping-odds`) to spot fixtures where bookmaker prices have compressed by more than **8% to 15%**.
+3. **Catching Lagging Bookmakers:** When sharp exchanges slash a team's odds from 2.20 to 1.88, soft domestic bookmakers often take 15–45 minutes to adjust their lines—giving you a window to lock in positive CLV.`
   },
   "kpl-betting-guide-kenya": {
     title: "Kenya Premier League Betting Guide 2026",

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { 
   googleIndexingCronService, 
   CronInterval, 
@@ -305,10 +306,13 @@ export default function SEOIndexingPage() {
         </div>
 
         {/* Tabs for Console, Keywords, Configuration, and Schemas */}
-        <Tabs defaultValue="viral-intelligence" className="space-y-6">
+        <Tabs defaultValue="site-audit" className="space-y-6">
           <TabsList className="bg-muted/50 p-1 rounded-xl flex-wrap">
+            <TabsTrigger value="site-audit" className="text-xs font-bold gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Site Audit &amp; 12 SEO Pillars
+            </TabsTrigger>
             <TabsTrigger value="viral-intelligence" className="text-xs font-bold gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Viral Intelligence & GSC
+              <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Viral Intelligence &amp; GSC
             </TabsTrigger>
             <TabsTrigger value="keywords" className="text-xs font-bold gap-1.5">
               <Search className="w-3.5 h-3.5" /> Google Keywords (Top 5)
@@ -317,12 +321,17 @@ export default function SEOIndexingPage() {
               <Terminal className="w-3.5 h-3.5" /> Cron Logs ({logs.length})
             </TabsTrigger>
             <TabsTrigger value="settings" className="text-xs font-bold gap-1.5">
-              <Settings2 className="w-3.5 h-3.5" /> Schedule & Protocols
+              <Settings2 className="w-3.5 h-3.5" /> Schedule &amp; Protocols
             </TabsTrigger>
             <TabsTrigger value="rich-snippets" className="text-xs font-bold gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5" /> Google Rich Schemas
+              <Sparkles className="w-3.5 h-3.5" /> Google Rich Schemas
             </TabsTrigger>
           </TabsList>
+
+          {/* TAB -1: 12-Pillar Site Audit, Content Gap & Link Reclamation Suite */}
+          <TabsContent value="site-audit" className="space-y-6">
+            <SEOSiteAuditSuite onTriggerIndexNow={handleRunNow} />
+          </TabsContent>
 
           {/* TAB 0: Autonomous Viral Keywords & Google Search Console Intelligence */}
           <TabsContent value="viral-intelligence" className="space-y-6">

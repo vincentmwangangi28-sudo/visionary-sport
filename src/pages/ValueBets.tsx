@@ -157,7 +157,7 @@ export default function ValueBets() {
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         {/* Visual Breadcrumb Navigation */}
         <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
-          <a href="/" className="hover:text-primary transition-colors">Home</a>
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
           <span className="text-foreground font-medium">Daily Value Bets (+EV)</span>
         </nav>
@@ -206,11 +206,11 @@ export default function ValueBets() {
         {/* High Equity Cross-Linking Ribbon */}
         <div className="mb-6 p-3.5 rounded-xl bg-muted/40 border text-xs flex flex-wrap items-center justify-between gap-3">
           <span className="text-muted-foreground">
-            Looking for match outcome simulations? Try our <a href="/predict" className="font-bold text-primary underline">AI Pro Tips Today</a> or check high-scoring picks on <a href="/btts" className="font-bold text-primary underline">BTTS AI Predictions</a>.
+            Compare models: Run custom simulations in our <Link to="/predict" className="font-bold text-primary underline">Interactive AI Match Predictor</Link>, check <Link to="/btts" className="font-bold text-primary underline">Both Teams to Score (BTTS) Poisson Tips</Link>, or read our <Link to="/blog/closing-line-value-clv-dropping-odds" className="font-bold text-primary underline">Closing Line Value (CLV) &amp; Dropping Odds Guide</Link>.
           </span>
-          <a href="/best-bets" className="text-primary font-bold hover:underline flex items-center gap-1">
-            View Today's Banker Picks &rarr;
-          </a>
+          <Link to="/best-bets" className="text-primary font-bold hover:underline flex items-center gap-1">
+            View Today's 75%+ Banker Football Bets &rarr;
+          </Link>
         </div>
 
         {/* Gemini AI EV Screener Report */}

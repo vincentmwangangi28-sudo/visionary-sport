@@ -12,6 +12,7 @@ import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
 import { useAutoIndexing } from "@/hooks/useAutoIndexing";
+import { useSEOManager } from "@/hooks/useSEOManager";
 import { useGeminiDailyCron } from "@/hooks/useGeminiDailyCron";
 import { useMatchSync } from "@/hooks/useMatchSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -34,6 +35,7 @@ const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearc
 const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
 const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m => ({ default: m.AIChatbot })));
 const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
+const FirstVisitSignupModal = lazyWithRetry(() => import("@/components/FirstVisitSignupModal").then(m => ({ default: m.FirstVisitSignupModal })));
 
 const Index             = lazyWithRetry(() => import("./pages/Index"));
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -263,6 +265,11 @@ const AutoIndexingInitializer: React.FC = () => {
   return null;
 };
 
+const SEOManagerInitializer: React.FC = () => {
+  useSEOManager();
+  return null;
+};
+
 const GeminiDailyCronInitializer: React.FC = () => {
   useGeminiDailyCron();
   return null;
@@ -284,6 +291,7 @@ const App = () => (
                 <CurrencyProvider>
                   <UnifiedSearchProvider>
                     <LocaleDetectionInitializer />
+                    <SEOManagerInitializer />
                     <AutoIndexingInitializer />
                     <GeminiDailyCronInitializer />
                     <MatchSyncInitializer />
@@ -418,6 +426,11 @@ const App = () => (
                       <Suspense fallback={null}>
                         <ErrorBoundary fallback={null}>
                           <PWAInstallPrompt />
+                        </ErrorBoundary>
+                      </Suspense>
+                      <Suspense fallback={null}>
+                        <ErrorBoundary fallback={null}>
+                          <FirstVisitSignupModal />
                         </ErrorBoundary>
                       </Suspense>
                       <MobileBottomNav />

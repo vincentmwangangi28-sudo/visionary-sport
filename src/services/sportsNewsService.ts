@@ -200,11 +200,11 @@ class SportsNewsService {
     }
 
     this.inFlightPromise = (async () => {
-      // 1. Try backend edge function if not in cooldown
-      if (Date.now() > this.edgeUnavailableUntil) {
+      // 1. Only invoke backend edge function on explicit manual refresh when not in cooldown
+      if (forceRefresh && Date.now() > this.edgeUnavailableUntil) {
         try {
-          const urlParam = forceRefresh ? { refresh: 'true' } : undefined;
-          const res: NewsResponseData = await callEdgeFn('fetch-sports-news', urlParam, undefined, 3500);
+          const urlParam = { refresh: 'true' };
+          const res: NewsResponseData = await callEdgeFn('fetch-sports-news', urlParam, undefined, 5000);
 
           if (res?.success && Array.isArray(res.articles) && res.articles.length > 0) {
             this.saveToCache(res.articles);
@@ -212,12 +212,12 @@ class SportsNewsService {
             return res.articles;
           }
         } catch {
-          // Set 15-minute cooldown to prevent repetitive aborted calls
-          this.edgeUnavailableUntil = Date.now() + 15 * 60 * 1000;
+          // Set 30-minute cooldown to prevent repetitive aborted calls
+          this.edgeUnavailableUntil = Date.now() + 30 * 60 * 1000;
         }
       }
 
-      // 2. Direct high-speed download fallback via open ESPN endpoints
+      // 2. Direct high-speed download via open ESPN endpoints (~200ms, zero rate limits)
       try {
         const liveArticles = await this.fetchDirectESPNNews();
         if (liveArticles.length > 0) {
