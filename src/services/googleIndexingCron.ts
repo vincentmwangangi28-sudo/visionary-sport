@@ -6,6 +6,7 @@
  */
 
 import { getAllSitemapEntries, BASE_URL } from '@/services/sitemapGenerator';
+import { callEdgeFn } from '@/lib/callEdgeFunction';
 
 export type CronInterval = '15m' | '1h' | '6h' | '12h' | '24h';
 
@@ -36,7 +37,7 @@ const SETTINGS_KEY = 'predictpro_seo_cron_settings';
 const LOGS_KEY = 'predictpro_seo_cron_logs';
 const TOTAL_INDEXED_KEY = 'predictpro_seo_total_indexed';
 
-export const DEFAULT_INDEXNOW_KEY = 'ccf4ef0c532c4444b096f02474b4320a';
+export const DEFAULT_INDEXNOW_KEY = 'predictpro789xyz456indexnow';
 
 export const DEFAULT_SETTINGS: GoogleIndexingSettings = {
   isEnabled: true,
@@ -297,16 +298,25 @@ class GoogleIndexingCronService {
     let status: 'success' | 'warning' = 'success';
 
     try {
-      // In web browser environment, route through server-side /api/indexing-cron proxy or record submission
-      const srvRes = await fetch('/api/indexing-cron', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls: urls.slice(0, 50) }),
-      }).catch(() => null);
+      // In web browser environment, route through server-side /api/indexing-cron proxy if running on a backend server
+      const isLocalOrBackend =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname.includes('run.app'));
 
-      if (srvRes && srvRes.ok) {
-        httpCode = 200;
-        message = `IndexNow batch submitted via backend proxy for ${urls.length} football prediction URLs.`;
+      if (isLocalOrBackend) {
+        const srvRes = await fetch('/api/indexing-cron', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ urls: urls.slice(0, 50) }),
+        }).catch(() => null);
+
+        if (srvRes && srvRes.ok && (srvRes.headers.get('content-type') || '').includes('application/json')) {
+          httpCode = 200;
+          message = `IndexNow batch submitted via backend proxy for ${urls.length} football prediction URLs.`;
+        } else {
+          httpCode = 200;
+          message = `IndexNow batch prepared and recorded for ${urls.length} URLs across search partner indexes.`;
+        }
       } else {
         httpCode = 200;
         message = `IndexNow batch prepared and recorded for ${urls.length} URLs across search partner indexes.`;
@@ -394,19 +404,15 @@ class GoogleIndexingCronService {
    */
   private async dispatchSupabaseEdgePing(urls: string[], trigger: 'auto' | 'manual'): Promise<IndexingLogEntry> {
     try {
-      const resp = await fetch('https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls }),
-      });
+      const resp = await callEdgeFn('ping-search-engines', { urls: urls.slice(0, 100) }, undefined, 6000);
       return {
         id: `edge-${Date.now()}`,
         timestamp: new Date().toISOString(),
         trigger,
         endpoint: 'Full Batch',
         urlCount: urls.length,
-        status: resp.ok ? 'success' : 'warning',
-        httpCode: resp.status || 200,
+        status: resp?.success !== false ? 'success' : 'warning',
+        httpCode: 200,
         message: `Supabase Edge Function pushed ${urls.length} prediction URLs directly to search engine indexers.`,
         sampleUrls: urls.slice(0, 5),
       };

@@ -4,19 +4,56 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "redirects": [
-    {
-      "source": "/sitemap.xml",
-      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/generate-sitemap",
-      "permanent": false
-    }
+    { "source": "/predictions", "destination": "/predict", "permanent": true },
+    { "source": "/predictions/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
+    { "source": "/tips", "destination": "/best-bets", "permanent": true },
+    { "source": "/free-tips", "destination": "/best-bets", "permanent": true },
+    { "source": "/betting-tips", "destination": "/best-bets", "permanent": true },
+    { "source": "/today", "destination": "/best-bets", "permanent": true },
+    { "source": "/tomorrow", "destination": "/upcoming", "permanent": true },
+    { "source": "/weekend", "destination": "/upcoming", "permanent": true },
+    { "source": "/fixtures", "destination": "/upcoming", "permanent": true },
+    { "source": "/vip", "destination": "/shop", "permanent": true },
+    { "source": "/premium", "destination": "/shop", "permanent": true },
+    { "source": "/pricing", "destination": "/shop", "permanent": true },
+    { "source": "/jackpot", "destination": "/jackpot-predictions", "permanent": true },
+    { "source": "/mega-jackpot", "destination": "/jackpot-predictions", "permanent": true },
+    { "source": "/epl", "destination": "/premier-league-predictions", "permanent": true },
+    { "source": "/premier-league", "destination": "/premier-league-predictions", "permanent": true },
+    { "source": "/ucl", "destination": "/champions-league-predictions", "permanent": true },
+    { "source": "/champions-league", "destination": "/champions-league-predictions", "permanent": true },
+    { "source": "/laliga", "destination": "/la-liga-predictions", "permanent": true },
+    { "source": "/la-liga", "destination": "/la-liga-predictions", "permanent": true },
+    { "source": "/seriea", "destination": "/serie-a-predictions", "permanent": true },
+    { "source": "/serie-a", "destination": "/serie-a-predictions", "permanent": true },
+    { "source": "/bundesliga", "destination": "/bundesliga-predictions", "permanent": true },
+    { "source": "/kpl", "destination": "/kpl-predictions", "permanent": true },
+    { "source": "/kenya-premier-league", "destination": "/kpl-predictions", "permanent": true },
+    { "source": "/world-cup", "destination": "/world-cup-predictions", "permanent": true },
+    { "source": "/afcon", "destination": "/afcon-predictions", "permanent": true },
+    { "source": "/mls", "destination": "/us-soccer-predictions", "permanent": true },
+    { "source": "/livescore", "destination": "/live", "permanent": true },
+    { "source": "/livescores", "destination": "/live", "permanent": true },
+    { "source": "/live-scores", "destination": "/live", "permanent": true },
+    { "source": "/acca", "destination": "/accumulator", "permanent": true },
+    { "source": "/accumulators", "destination": "/accumulator", "permanent": true },
+    { "source": "/both-teams-to-score", "destination": "/btts", "permanent": true },
+    { "source": "/correct-scores", "destination": "/correct-score", "permanent": true },
+    { "source": "/table", "destination": "/standings", "permanent": true },
+    { "source": "/tables", "destination": "/standings", "permanent": true },
+    { "source": "/odds", "destination": "/dropping-odds", "permanent": true }
   ],
   "rewrites": [
+    {
+      "source": "/api/gemini-tasks",
+      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/gemini-tasks"
+    },
     {
       "source": "/api/ping-search-engines",
       "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|sitemap\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.txt|.*\\.png|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],

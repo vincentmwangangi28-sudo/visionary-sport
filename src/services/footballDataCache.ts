@@ -30,10 +30,10 @@ const hostCooldowns = new Map<string, number>();
 const SESSION_PREFIX = 'predictpro_fc_';
 const COOLDOWN_STORAGE_KEY = 'predictpro_host_cooldowns';
 
-// Initialize host cooldowns from sessionStorage on startup
+// Initialize host cooldowns from sessionStorage and localStorage on startup
 try {
   if (typeof window !== 'undefined') {
-    const raw = sessionStorage.getItem(COOLDOWN_STORAGE_KEY);
+    const raw = sessionStorage.getItem(COOLDOWN_STORAGE_KEY) || localStorage.getItem(COOLDOWN_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       const now = Date.now();
@@ -58,7 +58,9 @@ function persistHostCooldowns() {
           obj[host] = exp;
         }
       }
-      sessionStorage.setItem(COOLDOWN_STORAGE_KEY, JSON.stringify(obj));
+      const serialized = JSON.stringify(obj);
+      sessionStorage.setItem(COOLDOWN_STORAGE_KEY, serialized);
+      localStorage.setItem(COOLDOWN_STORAGE_KEY, serialized);
     }
   } catch {
     // Ignore storage write error
@@ -83,12 +85,17 @@ export function isHostInCooldown(host: string): boolean {
 
 /**
  * Place a host into cooldown to prevent redundant network spam when rate limits or quotas are hit.
+ * If one RapidAPI Free Football host hits 429/403, cool down its sibling mirror host as well since they share quota.
  */
-export function setHostCooldown(host: string, durationMs = 300_000) {
+export function setHostCooldown(host: string, durationMs = 1_800_000) {
   if (!host) return;
   const cleanHost = host.toLowerCase().trim();
   const expiresAt = Date.now() + durationMs;
   hostCooldowns.set(cleanHost, expiresAt);
+  if (cleanHost.includes('free-api-live-football-data')) {
+    hostCooldowns.set('free-api-live-football-data-cheaper-version.p.rapidapi.com', expiresAt);
+    hostCooldowns.set('free-api-live-football-data.p.rapidapi.com', expiresAt);
+  }
   persistHostCooldowns();
 }
 

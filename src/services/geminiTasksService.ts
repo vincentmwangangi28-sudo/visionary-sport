@@ -125,29 +125,11 @@ async function callServerGemini(task: string, payload: any): Promise<{ result: a
     throw new Error('Test environment: using local fallback');
   }
 
-  if (typeof window !== 'undefined') {
-    try {
-      const res = await fetch('/api/gemini-tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, payload }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.result) {
-          return {
-            result: data.result,
-            groundingMetadata: data.groundingMetadata,
-          };
-        }
-      }
-    } catch (err) {
-      console.debug('[geminiTasksService] /api/gemini-tasks call failed, falling back to edge function:', err);
-    }
-  }
-
-  // Fallback to Supabase Edge function
+  // callEdgeFn automatically tries /api/gemini-tasks first (with static host detection) and falls back to Supabase Edge Function with cooldown protection
   const edgeRes = await callEdgeFn('gemini-tasks', { task, payload });
+  if (!edgeRes || !edgeRes.result) {
+    throw new Error('Empty response from gemini-tasks');
+  }
   return {
     result: edgeRes.result,
     groundingMetadata: edgeRes.groundingMetadata,

@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-custom-timestamp, range, prefer',
+  'Access-Control-Max-Age': '86400',
+};
 
 const SITEMAP_URL = 'https://predictpro.guru/sitemap.xml';
 
@@ -19,7 +24,7 @@ const SITEMAP_URL = 'https://predictpro.guru/sitemap.xml';
 // Bing, Yandex, Seznam.cz, and Naver. It requires an INDEXNOW_KEY secret and
 // a matching <key>.txt file published at the site root for verification.
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') return new Response('ok', { status: 200, headers: corsHeaders });
 
   let customUrls: string[] = [];
   try {
@@ -70,11 +75,11 @@ serve(async (req) => {
   try {
     const res = await fetch('https://api.indexnow.org/indexnow', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
         host: 'predictpro.guru',
         key: indexNowKey,
-        keyLocation: 'https://predictpro.guru/predictpro-indexnow-key.txt',
+        keyLocation: `https://predictpro.guru/${indexNowKey}.txt`,
         urlList: urlList.slice(0, 100),
       }),
     });

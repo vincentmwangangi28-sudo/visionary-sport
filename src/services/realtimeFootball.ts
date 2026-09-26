@@ -254,7 +254,6 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
   if (freeApiKey) {
     const rapidHosts = [
       'free-api-live-football-data-cheaper-version.p.rapidapi.com',
-      'free-api-live-football-data.p.rapidapi.com',
     ];
     for (const rapidHost of rapidHosts) {
       if (isHostInCooldown(rapidHost)) continue;
@@ -655,22 +654,20 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     });
   }
 
-  // Also query RapidAPI Free API Live Football Data for schedule by date
+  // Also query RapidAPI Free API Live Football Data for schedule by date (only if ESPN returned few fixtures)
   const freeApiKey = getCustomApiKey('free_football') || getCustomApiKey('rapidapi');
-  if (freeApiKey) {
+  if (freeApiKey && predictions.length < 6) {
     const rapidHosts = [
       'free-api-live-football-data-cheaper-version.p.rapidapi.com',
-      'free-api-live-football-data.p.rapidapi.com',
     ];
     const datesToQuery = [
       `${y}${m}${d}`,
-      `${y2 > Number(y) ? y : y}${m2}${d2}`,
     ];
 
     for (const rapidHost of rapidHosts) {
       if (isHostInCooldown(rapidHost)) continue;
       let hostSuccess = false;
-      for (const queryDate of datesToQuery.slice(0, 2)) {
+      for (const queryDate of datesToQuery.slice(0, 1)) {
         try {
           const res = await fetch(`https://${rapidHost}/football-get-matches-by-date?date=${queryDate}`, {
             headers: {
@@ -991,7 +988,6 @@ export async function fetchRealtimeStandingsTable(leagueId: number | string): Pr
     if (freeApiKey && mappedFreeApiId) {
       const rapidHosts = [
         'free-api-live-football-data-cheaper-version.p.rapidapi.com',
-        'free-api-live-football-data.p.rapidapi.com',
       ];
       for (const rapidHost of rapidHosts) {
         if (isHostInCooldown(rapidHost)) continue;

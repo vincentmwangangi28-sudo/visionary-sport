@@ -2,7 +2,7 @@ import "./App.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
 import { UserPreferencesProvider } from "@/hooks/useUserPreferences";
@@ -358,6 +358,44 @@ const App = () => (
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
                             <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
+                            {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
+                            <Route path="/predictions"                  element={<Navigate to="/predict" replace />} />
+                            <Route path="/tips"                         element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/free-tips"                    element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/betting-tips"                 element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/today"                        element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/tomorrow"                     element={<Navigate to="/upcoming" replace />} />
+                            <Route path="/weekend"                      element={<Navigate to="/upcoming" replace />} />
+                            <Route path="/fixtures"                     element={<Navigate to="/upcoming" replace />} />
+                            <Route path="/vip"                          element={<Navigate to="/shop" replace />} />
+                            <Route path="/premium"                      element={<Navigate to="/shop" replace />} />
+                            <Route path="/pricing"                      element={<Navigate to="/shop" replace />} />
+                            <Route path="/jackpot"                      element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/mega-jackpot"                 element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/epl"                          element={<Navigate to="/premier-league-predictions" replace />} />
+                            <Route path="/premier-league"               element={<Navigate to="/premier-league-predictions" replace />} />
+                            <Route path="/ucl"                          element={<Navigate to="/champions-league-predictions" replace />} />
+                            <Route path="/champions-league"             element={<Navigate to="/champions-league-predictions" replace />} />
+                            <Route path="/laliga"                       element={<Navigate to="/la-liga-predictions" replace />} />
+                            <Route path="/la-liga"                      element={<Navigate to="/la-liga-predictions" replace />} />
+                            <Route path="/seriea"                       element={<Navigate to="/serie-a-predictions" replace />} />
+                            <Route path="/serie-a"                      element={<Navigate to="/serie-a-predictions" replace />} />
+                            <Route path="/bundesliga"                   element={<Navigate to="/bundesliga-predictions" replace />} />
+                            <Route path="/kpl"                          element={<Navigate to="/kpl-predictions" replace />} />
+                            <Route path="/kenya-premier-league"         element={<Navigate to="/kpl-predictions" replace />} />
+                            <Route path="/world-cup"                    element={<Navigate to="/world-cup-predictions" replace />} />
+                            <Route path="/afcon"                        element={<Navigate to="/afcon-predictions" replace />} />
+                            <Route path="/mls"                          element={<Navigate to="/us-soccer-predictions" replace />} />
+                            <Route path="/livescore"                    element={<Navigate to="/live" replace />} />
+                            <Route path="/livescores"                   element={<Navigate to="/live" replace />} />
+                            <Route path="/live-scores"                  element={<Navigate to="/live" replace />} />
+                            <Route path="/acca"                         element={<Navigate to="/accumulator" replace />} />
+                            <Route path="/accumulators"                 element={<Navigate to="/accumulator" replace />} />
+                            <Route path="/both-teams-to-score"          element={<Navigate to="/btts" replace />} />
+                            <Route path="/correct-scores"               element={<Navigate to="/correct-score" replace />} />
+                            <Route path="/table"                        element={<Navigate to="/standings" replace />} />
+                            <Route path="/tables"                       element={<Navigate to="/standings" replace />} />
+                            <Route path="/odds"                         element={<Navigate to="/dropping-odds" replace />} />
                             <Route path="*"                             element={<RouteBoundary component={NotFound} />} />
                           </Routes>
                         </ErrorBoundary>

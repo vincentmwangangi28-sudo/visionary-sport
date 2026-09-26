@@ -10,6 +10,7 @@ import { PredictionsDashboard } from "@/components/PredictionsDashboard";
 import { AIRecommendationsHub } from "@/components/AIRecommendationsHub";
 import { DailyAIDigestBanner } from "@/components/DailyAIDigestBanner";
 import { BreakingNewsTicker } from "@/components/BreakingNewsTicker";
+import { SEOAuthorityHub } from "@/components/SEOAuthorityHub";
 import { usePredictions } from "@/hooks/usePredictions";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
@@ -123,8 +124,8 @@ export default function Index() {
                   <MonteCarloMatchSimulatorModal />
                 </Suspense>
                 <Link to="/best-bets">
-                  <Button variant="outline" size="sm" className="gap-2 font-semibold" aria-label="View Best Bets">
-                    <Zap className="h-4 w-4 text-primary" aria-hidden="true" />Best Bets
+                  <Button variant="outline" size="sm" className="gap-2 font-semibold" aria-label="Explore Today's Best Banker Football Bets">
+                    <Zap className="h-4 w-4 text-primary" aria-hidden="true" />Today&apos;s Best Banker Bets
                   </Button>
                 </Link>
               </div>
@@ -159,6 +160,9 @@ export default function Index() {
           </div>
         </section>
 
+        {/* SEO Authority, Featured Snippets FAQ & Market Internal Linking Hub */}
+        <SEOAuthorityHub />
+
         {/* CTA */}
         <section className="py-14">
           <div className="container mx-auto px-4 max-w-3xl text-center">
@@ -166,13 +170,13 @@ export default function Index() {
             <p className="text-muted-foreground mb-6">10,000+ members running the model daily. Free to start.</p>
             <div className="flex gap-3 justify-center flex-wrap">
               <Link to="/predict">
-                <Button size="lg" className="gap-2" aria-label="Run the AI prediction model">
-                  <Zap className="h-5 w-5" aria-hidden="true" />Run the Model
+                <Button size="lg" className="gap-2" aria-label="Launch Interactive AI Football Match Predictor">
+                  <Zap className="h-5 w-5" aria-hidden="true" />Launch AI Match Predictor
                 </Button>
               </Link>
               <Link to="/shop">
-                <Button size="lg" variant="outline" aria-label="View Subscription Plans">
-                  View Plans
+                <Button size="lg" variant="outline" aria-label="Compare PredictPro VIP Subscription Plans">
+                  Compare VIP Subscription Plans
                 </Button>
               </Link>
             </div>

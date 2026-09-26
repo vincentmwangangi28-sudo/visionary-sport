@@ -64,7 +64,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         if (indexNowKey) {
           const indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
             body: JSON.stringify({
               host: new URL(baseUrl).hostname,
               key: indexNowKey,

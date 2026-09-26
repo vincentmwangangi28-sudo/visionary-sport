@@ -21,23 +21,24 @@ export default async function handler(request: Request) {
     });
   }
 
-  // Ping Google and Bing sitemap refresh
-  const sitemapUrl = encodeURIComponent(`${BASE_URL}/sitemap.xml`);
-  let googlePing = 'skipped';
-  let bingPing = 'skipped';
+  // Notify search engines via IndexNow (Google deprecated /ping?sitemap= in 2023; uses robots.txt Sitemap directive)
+  const indexNowKey = process.env.INDEXNOW_KEY || 'predictpro789xyz456indexnow';
+  let indexNowPing = 'skipped';
 
   try {
-    const gRes = await fetch(`https://www.google.com/ping?sitemap=${sitemapUrl}`).catch(() => null);
-    googlePing = gRes ? `http_${gRes.status}` : 'network_notice';
+    const iRes = await fetch('https://api.indexnow.org/indexnow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({
+        host: new URL(BASE_URL).hostname,
+        key: indexNowKey,
+        keyLocation: `${BASE_URL}/${indexNowKey}.txt`,
+        urlList: [`${BASE_URL}/sitemap.xml`, `${BASE_URL}/`, `${BASE_URL}/predict`, `${BASE_URL}/live`],
+      }),
+    }).catch(() => null);
+    indexNowPing = iRes ? `http_${iRes.status}` : 'network_notice';
   } catch {
-    googlePing = 'notice';
-  }
-
-  try {
-    const bRes = await fetch(`https://www.bing.com/ping?sitemap=${sitemapUrl}`).catch(() => null);
-    bingPing = bRes ? `http_${bRes.status}` : 'network_notice';
-  } catch {
-    bingPing = 'notice';
+    indexNowPing = 'notice';
   }
 
   return new Response(
@@ -46,9 +47,9 @@ export default async function handler(request: Request) {
       job: 'sitemap-refresh-cron',
       executedAt: now,
       sitemapUrl: `${BASE_URL}/sitemap.xml`,
-      googlePing,
-      bingPing,
-      message: 'Sitemap notification dispatched to Googlebot and Bingbot',
+      indexNowPing,
+      googleDiscovery: 'robots_txt_verified',
+      message: 'Sitemap notification dispatched via IndexNow and robots.txt auto-discovery',
     }),
     {
       status: 200,

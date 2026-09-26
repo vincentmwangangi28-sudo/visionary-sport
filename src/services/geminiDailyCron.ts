@@ -129,11 +129,14 @@ class GeminiDailyCronService {
             signal: controller.signal,
           });
           clearTimeout(timeout);
-          if (serverRes.ok) {
+          const contentType = serverRes.headers.get('content-type') || '';
+          if (serverRes.ok && contentType.includes('application/json')) {
             res = await serverRes.json();
+          } else {
+            this.edgeUnavailableUntil = Date.now() + 30 * 60 * 1000;
           }
         } catch {
-          // Fall back gracefully to local statistical digest
+          this.edgeUnavailableUntil = Date.now() + 30 * 60 * 1000;
         }
 
         if (res?.result && Array.isArray(res.result.topPicks)) {
