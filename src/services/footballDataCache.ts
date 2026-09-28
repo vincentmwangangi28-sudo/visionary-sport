@@ -100,6 +100,55 @@ export function setHostCooldown(host: string, durationMs = 1_800_000) {
 }
 
 /**
+ * Return all currently active host cooldowns with their expiration timestamps.
+ */
+export function getActiveHostCooldowns(): Array<{ host: string; expiresAt: number; remainingSeconds: number }> {
+  const now = Date.now();
+  const active: Array<{ host: string; expiresAt: number; remainingSeconds: number }> = [];
+  for (const [host, exp] of hostCooldowns.entries()) {
+    if (exp > now) {
+      active.push({
+        host,
+        expiresAt: exp,
+        remainingSeconds: Math.max(0, Math.round((exp - now) / 1000)),
+      });
+    } else {
+      hostCooldowns.delete(host);
+    }
+  }
+  return active;
+}
+
+/**
+ * Clear cooldown for a specific host or all hosts if none specified.
+ */
+export function clearHostCooldown(host?: string): void {
+  if (host) {
+    hostCooldowns.delete(host.toLowerCase().trim());
+  } else {
+    hostCooldowns.clear();
+  }
+  persistHostCooldowns();
+}
+
+/**
+ * Return current in-memory football cache statistics for admin monitoring.
+ */
+export function getFootballCacheStats(): { activeEntries: number; keys: string[] } {
+  const now = Date.now();
+  const validKeys: string[] = [];
+  for (const [key, record] of memoryCache.entries()) {
+    if (now < record.expiresAt) {
+      validKeys.push(key);
+    }
+  }
+  return {
+    activeEntries: validKeys.length,
+    keys: validKeys,
+  };
+}
+
+/**
  * Retrieve cached data from in-memory or sessionStorage.
  */
 export function getFootballCache<T>(key: string): T | null {

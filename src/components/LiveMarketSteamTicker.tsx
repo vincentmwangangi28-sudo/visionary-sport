@@ -25,7 +25,7 @@ const STEAM_ALERTS: SteamAlert[] = [
     id: '1',
     type: 'dropping_odds',
     badge: 'STEAM MOVE -14%',
-    badgeColor: 'bg-rose-500/15 text-rose-600 border-rose-500/30',
+    badgeColor: 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30 font-bold',
     text: 'Arsenal vs Chelsea: Arsenal Home Win odds shortened 1.95 → 1.68 (Heavy Sharp Volume)',
     link: '/dropping-odds',
   },
@@ -114,10 +114,11 @@ export const LiveMarketSteamTicker: React.FC = () => {
         {/* Action Link */}
         <Link 
           to={activeAlert.link} 
+          aria-label={`View market alert: ${activeAlert.badge} — ${activeAlert.text}`}
           className="shrink-0 font-bold text-[11px] text-primary hover:underline flex items-center justify-center gap-0.5 ml-2 min-h-[44px] min-w-[44px] px-2"
         >
           <span>View</span>
-          <ChevronRight className="w-3 h-3" />
+          <ChevronRight className="w-3 h-3" aria-hidden="true" />
         </Link>
       </div>
     </div>

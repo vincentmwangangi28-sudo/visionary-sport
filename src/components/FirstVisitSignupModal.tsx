@@ -164,6 +164,9 @@ export const FirstVisitSignupModal: React.FC = () => {
     const updateScrollDepth = () => {
       const now = Date.now();
       lastInteractionRef.current = now;
+      if (now - lastScrollRef.current < 1500) {
+        return;
+      }
       lastScrollRef.current = now;
 
       const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
@@ -258,7 +261,7 @@ export const FirstVisitSignupModal: React.FC = () => {
         timeSinceInteraction <= ACTIVE_INTERACTION_WINDOW_MS || engagedSecondsRef.current < 30;
 
       if (isActivelyReadingOrInteracting) {
-        engagedSecondsRef.current += 2;
+        engagedSecondsRef.current += 15;
         try {
           localStorage.setItem(STORAGE_ENGAGED_SECONDS_KEY, String(engagedSecondsRef.current));
         } catch {
@@ -301,7 +304,7 @@ export const FirstVisitSignupModal: React.FC = () => {
 
       setOpen(true);
       clearInterval(interval);
-    }, 2000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [authLoading, user, isAuthPage, open]);
@@ -405,6 +408,7 @@ export const FirstVisitSignupModal: React.FC = () => {
         className="pointer-events-none h-px w-px opacity-0"
       />
 
+      {open && (
       <Dialog open={open} onOpenChange={handleDismiss}>
         <DialogContent className="sm:max-w-[460px] p-0 overflow-hidden border-border/80 bg-background shadow-2xl">
           {/* Top Accent Header */}
@@ -656,6 +660,7 @@ export const FirstVisitSignupModal: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      )}
     </>
   );
 };

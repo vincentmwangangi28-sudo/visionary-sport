@@ -29,16 +29,16 @@ export function useAutoIndexing() {
       let timerHandle: any = null;
 
       const runIndexing = () => {
-        googleIndexingCronService.runCronNow('auto').catch((err) => {
-          console.debug('[AutoIndexing] Background push completed with note:', err);
-        });
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(() => {
+            googleIndexingCronService.runCronNow('auto').catch(() => {});
+          });
+        } else {
+          googleIndexingCronService.runCronNow('auto').catch(() => {});
+        }
       };
 
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        idleHandle = (window as any).requestIdleCallback(runIndexing, { timeout: 12000 });
-      } else {
-        timerHandle = setTimeout(runIndexing, 8000);
-      }
+      timerHandle = setTimeout(runIndexing, 45000);
 
       return () => {
         if (idleHandle && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {

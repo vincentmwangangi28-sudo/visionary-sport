@@ -37,7 +37,7 @@ const SETTINGS_KEY = 'predictpro_seo_cron_settings';
 const LOGS_KEY = 'predictpro_seo_cron_logs';
 const TOTAL_INDEXED_KEY = 'predictpro_seo_total_indexed';
 
-export const DEFAULT_INDEXNOW_KEY = 'predictpro789xyz456indexnow';
+export const DEFAULT_INDEXNOW_KEY = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
 
 export const DEFAULT_SETTINGS: GoogleIndexingSettings = {
   isEnabled: true,
@@ -122,7 +122,17 @@ class GoogleIndexingCronService {
   private loadSettings(): GoogleIndexingSettings {
     try {
       const stored = localStorage.getItem(SETTINGS_KEY);
-      if (stored) return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (
+          !parsed.indexNowKey ||
+          parsed.indexNowKey === 'predictpro789xyz456indexnow' ||
+          parsed.indexNowKey === 'ccf4ef0c532c4444b096f02474b4320a'
+        ) {
+          parsed.indexNowKey = DEFAULT_INDEXNOW_KEY;
+        }
+        return { ...DEFAULT_SETTINGS, ...parsed };
+      }
     } catch {
       // Fallback
     }
@@ -287,9 +297,9 @@ class GoogleIndexingCronService {
   private async dispatchIndexNow(urls: string[], trigger: 'auto' | 'manual'): Promise<IndexingLogEntry> {
     const key = this.settings.indexNowKey || DEFAULT_INDEXNOW_KEY;
     const payload = {
-      host: 'predictpro.guru',
+      host: 'www.predictpro.guru',
       key,
-      keyLocation: `https://predictpro.guru/${key}.txt`,
+      keyLocation: `https://www.predictpro.guru/${key}.txt`,
       urlList: urls.slice(0, 100), // IndexNow batch
     };
 

@@ -7,7 +7,7 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles, Pin, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -29,7 +29,7 @@ const OUTCOME_COLOR: Record<string, string> = {
   'Draw':     'bg-amber-100 text-amber-900 border-amber-500 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
 };
 
-export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
+export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props) => {
   const { isPremium } = useSubscription();
   const { addSelection, selections } = useBetSlip();
   const { formatKickoff, getKickoffRelative, formatOdds, t } = useUserPreferences();
@@ -192,7 +192,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                 {formatKickoff(p.match_date, { includeTimezone: true })}
               </span>
               {clvData?.isPositiveEV && !locked && (
-                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[9px] px-1 py-0 font-bold">
+                <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[9px] px-1 py-0 font-bold">
                   +{clvData.edge}% EV
                 </Badge>
               )}
@@ -281,7 +281,9 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
           </div>
         </div>
 
-        <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+        {showAnalytics && (
+          <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+        )}
       </>
     );
   }
@@ -309,12 +311,12 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                 }}
                 title={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}
                 className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
-                aria-label="Pin league"
+                aria-label={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}
               >
                 <Pin className={`h-3 w-3 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} />
               </button>
               {clvData?.isPositiveEV && !locked && (
-                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> +{clvData.edge}% Value Edge
                 </Badge>
               )}
@@ -378,6 +380,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
               to={matchUrl}
               onClick={(e) => e.stopPropagation()}
               title={`View ${p.home_team} vs ${p.away_team} dedicated match prediction`}
+              aria-label={`View ${p.home_team} vs ${p.away_team} match center`}
               className="shrink-0 flex flex-col items-center justify-center px-1 group/vs"
             >
               <span className="text-[10px] font-black text-muted-foreground bg-muted/80 group-hover/vs:bg-primary group-hover/vs:text-primary-foreground transition-colors px-2 py-0.5 rounded uppercase tracking-wider">
@@ -516,7 +519,7 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                   variant="outline"
                   onClick={handleCoinUnlock}
                   disabled={unlockingCoin}
-                  className="gap-1.5 font-bold border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                  className="gap-1.5 font-bold border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"
                 >
                   <Coins className="h-3.5 w-3.5 text-amber-500" />
                   {unlockingCoin ? 'Unlocking...' : 'Unlock (50 🪙)'}
@@ -549,9 +552,10 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
                 onClick={(e) => e.stopPropagation()}
                 className="text-xs font-semibold text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-0.5 transition-colors"
                 title={`Open full match intelligence page for ${p.home_team} vs ${p.away_team}`}
+                aria-label={`Open full match preview for ${p.home_team} vs ${p.away_team}`}
               >
                 <span>Full Preview</span>
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-3 w-3" aria-hidden="true" />
               </Link>
             </div>
 
@@ -569,9 +573,13 @@ export const PredictionCard = ({ prediction: p, viewMode = 'card' }: Props) => {
         </CardContent>
       </Card>
 
-      <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+      {showAnalytics && (
+        <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+      )}
     </>
   );
-};
+});
+
+PredictionCard.displayName = 'PredictionCard';
 
 

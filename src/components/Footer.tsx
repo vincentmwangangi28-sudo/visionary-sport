@@ -65,6 +65,7 @@ const LINKS = {
     { to: "/tournaments", label: "International Football Tournaments" },
     { to: "/sports", label: "Multi-Sport AI Predictions" },
     { to: "/about", label: "About PredictPro AI Intelligence" },
+    { to: "/responsible-gaming", label: "Responsible Gaming & 18+ Policy" },
     { to: "/sitemap", label: "Complete HTML Sitemap Directory" },
     { to: "/seo-indexing", label: "Search Engine Indexing Monitor" },
   ],
@@ -156,6 +157,12 @@ export const Footer = () => {
         
         <div className="flex items-center gap-2 flex-wrap justify-center">
           <Link
+            to="/responsible-gaming"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 transition-colors text-xs font-bold border border-rose-500/30"
+          >
+            <span>18+ Responsible Gaming &amp; Disclaimer</span>
+          </Link>
+          <Link
             to="/preferences"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background hover:bg-primary/10 text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors text-xs font-semibold border border-border shadow-xs"
             title="Configure Language, Region, Currency and Timezone"
@@ -167,7 +174,42 @@ export const Footer = () => {
         </div>
 
         <p className="text-center md:text-right text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-          18+ only · Gamble responsibly
+          18+ Only · Never for Minors · Play Responsibly
+        </p>
+      </div>
+
+      {/* Google Ads Destination Compliance: Responsible Gambling, Minor Protection & Non-Bookmaker Notice */}
+      <div
+        aria-label="Responsible Gambling and Informational Sports Analytics Disclosure"
+        className="mt-6 rounded-xl border border-border/80 bg-background/80 p-4 text-[11px] text-muted-foreground leading-relaxed space-y-2"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-bold text-foreground">
+            <span className="inline-block px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-[10px] mr-2">
+              18+
+            </span>
+            Informational Sports Statistics &amp; Responsible Gambling Notice (Never Intended for Minors)
+          </p>
+          <div className="flex flex-wrap items-center gap-3 font-semibold text-foreground">
+            <Link to="/responsible-gaming" className="text-primary hover:underline">
+              Responsible Gambling Policy
+            </Link>
+            <span>·</span>
+            <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              BeGambleAware.org
+            </a>
+            <span>·</span>
+            <a href="https://www.gamcare.org.uk" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              GamCare (0808 8020 133)
+            </a>
+            <span>·</span>
+            <span>US: 1-800-GAMBLER</span>
+            <span>·</span>
+            <span>KE Toll-Free: 0800 722 200</span>
+          </div>
+        </div>
+        <p>
+          <strong>Non-Gambling Operator Disclaimer:</strong> PredictPro (<code className="font-mono">predictpro.guru</code>) is an independent quantitative football statistics, Expected Goals (xG), and Bivariate Poisson match simulation platform for informational and educational purposes only. PredictPro is <strong>not</strong> an online bookmaker, sportsbook, or gambling operator, does <strong>not</strong> accept real-money bets or deposits, and does <strong>not</strong> offer promotional gambling vouchers or guaranteed outcomes. Past statistical performance does not guarantee future results. Must be 18+ (or 21+ where applicable).
         </p>
       </div>
     </div>

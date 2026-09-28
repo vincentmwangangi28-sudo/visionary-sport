@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Default SEO (Helmet overrides per-route) -->
-    <title>PredictPro — AI Football Predictions Today &amp; Free Daily Tips</title>
-    <meta name="description" content="Accurate AI football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, and value bets for 40+ global leagues." />
-    <meta name="keywords" content="btts ai prediction today, aiprotips prediction today, free guru tips today football prediction, gemini ai football predictions, football predictions today, ai football predictions, free football betting tips, premier league predictions today, sure wins today, banker bet of the day, both teams to score btts tips, over 2.5 goals predictions, correct score predictions today, champions league predictions, value bets today, mathematical football predictions, mega jackpot predictions, live football scores and odds" />
+    <title>PredictPro — AI Football Predictions Today, xG Statistics &amp; Match Analytics</title>
+    <meta name="description" content="Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) statistics, Bivariate Poisson match probabilities, and H2H analytics across 40+ leagues. 18+ Informational only." />
+    <meta name="keywords" content="btts ai prediction today, aiprotips prediction today, football match statistics today, gemini ai football predictions, football predictions today, ai football analytics, football match previews, premier league predictions today, expected goals xg model, both teams to score btts stats, over 2.5 goals probabilities, correct score poisson matrix, champions league predictions, mathematical football predictions, live football scores and stats" />
     <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
@@ -21,7 +21,38 @@
     <meta name="yandex-verification" content="ccf4ef0c532c4444b096f02474b4320a" />
     <meta name="verification" content="6aab6592f8d8ca55" />
     <meta name="verification" content="ccf4ef0c532c4444b096f02474b4320a" />
-    <meta name="indexnow-key" content="ccf4ef0c532c4444b096f02474b4320a" />
+    <meta name="indexnow-key" content="f7qprb5m24wrvjdmkspy56hhvjmhkcn5" />
+
+    <!-- Guard against insecure ws:// WebSocket construction over HTTPS (e.g. cached Vite HMR client) -->
+    <script>
+      (function () {
+        if (typeof window === 'undefined' || !window.WebSocket) return;
+        var NativeWebSocket = window.WebSocket;
+        function SafeWebSocket(url, protocols) {
+          var resolvedUrl = String(url || '');
+          if (window.location && window.location.protocol === 'https:' && /^ws:\/\//i.test(resolvedUrl)) {
+            resolvedUrl = resolvedUrl.replace(/^ws:\/\//i, 'wss://').replace(/:3000(\/|$)/, '$1');
+          }
+          try {
+            return protocols !== undefined
+              ? new NativeWebSocket(resolvedUrl, protocols)
+              : new NativeWebSocket(resolvedUrl);
+          } catch (err) {
+            var dummy = new EventTarget();
+            dummy.readyState = 3;
+            dummy.send = function () {};
+            dummy.close = function () {};
+            return dummy;
+          }
+        }
+        SafeWebSocket.prototype = NativeWebSocket.prototype;
+        SafeWebSocket.CONNECTING = NativeWebSocket.CONNECTING;
+        SafeWebSocket.OPEN = NativeWebSocket.OPEN;
+        SafeWebSocket.CLOSING = NativeWebSocket.CLOSING;
+        SafeWebSocket.CLOSED = NativeWebSocket.CLOSED;
+        window.WebSocket = SafeWebSocket;
+      })();
+    </script>
 
     <!-- Geo targeting: platform's primary market is East Africa / Kenya, serving 40+ leagues worldwide across 10 detected regions (see src/services/geoRegionService.ts) -->
     <meta name="geo.region" content="KE" />
@@ -34,8 +65,8 @@
     <!-- Open Graph defaults (Helmet overrides per-route) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PredictPro — AI Football Predictions" />
-    <meta property="og:title" content="PredictPro — AI Football Predictions Today &amp; Free Daily Tips" />
-    <meta property="og:description" content="Accurate AI football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, and value bets for 40+ global leagues." />
+    <meta property="og:title" content="PredictPro — AI Football Predictions Today, xG Statistics &amp; Match Analytics" />
+    <meta property="og:description" content="Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) statistics, Poisson match probabilities, and H2H analytics for 40+ global leagues. 18+ Informational only." />
     <meta property="og:image" content="https://predictpro.guru/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -45,8 +76,8 @@
     <!-- Twitter Card defaults -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@PredictProAI" />
-    <meta name="twitter:title" content="PredictPro — AI Football Predictions Today &amp; Free Daily Tips" />
-    <meta name="twitter:description" content="Accurate AI football predictions today with 87% accuracy. Free daily betting tips, banker picks, and value bets for 40+ leagues." />
+    <meta name="twitter:title" content="PredictPro — AI Football Predictions Today, xG Statistics &amp; Match Analytics" />
+    <meta name="twitter:description" content="Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) statistics, Poisson probabilities, and H2H analytics for 40+ leagues. 18+." />
     <meta name="twitter:image" content="https://predictpro.guru/og-image.jpg" />
 
     <!-- PWA -->
@@ -166,8 +197,8 @@
           "@type": "WebPage",
           "@id": "https://predictpro.guru/#webpage",
           "url": "https://predictpro.guru/",
-          "name": "PredictPro — AI Football Predictions Today & Free Daily Tips",
-          "description": "AI-powered football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, and value bets across 40+ leagues worldwide.",
+          "name": "PredictPro — AI Football Predictions Today, xG Statistics & Match Analytics",
+          "description": "Independent AI-powered football predictions today with 87% accuracy. Daily Expected Goals (xG) statistics, Bivariate Poisson match probabilities, and H2H analytics across 40+ leagues worldwide. 18+ Informational only.",
           "isPartOf": {
             "@type": "WebSite",
             "@id": "https://predictpro.guru/#website"
@@ -262,6 +293,10 @@
     <div id="root">
       <!-- Fallback semantic structure for Googlebot and initial crawler pass before hydration -->
       <header style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <strong>PredictPro</strong>
+          <a href="/responsible-gaming" aria-label="18+ Age Restriction Policy" style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; background: #e11d48; color: #ffffff; font-size: 11px; font-weight: 900; text-decoration: none;">⚠ 18+ ONLY</a>
+        </div>
         <nav aria-label="Quick Crawl Navigation">
           <a href="/">Home</a> · 
           <a href="/premier-league-predictions">Premier League Predictions</a> · 
@@ -284,13 +319,18 @@
           <a href="/tournaments">Global Tournaments</a> · 
           <a href="/track-record">Verified Track Record</a> · 
           <a href="/blog">Betting Strategy Blog</a> · 
+          <a href="/responsible-gaming">Responsible Gaming &amp; 18+ Policy</a> · 
           <a href="/sitemap">HTML Sitemap</a> · 
           <a href="/seo-indexing">Google Indexing Console</a>
         </nav>
       </header>
       <main id="main-content" style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
-        <h1>PredictPro — AI Football Predictions Today | Free Daily Betting Tips &amp; xG Stats</h1>
-        <p>AI-powered football predictions today with 87% verified accuracy. Daily banker picks, xG statistics, Both Teams to Score (BTTS), and Expected Value bets across 40+ leagues worldwide.</p>
+        <h1>PredictPro — AI Football Predictions Today | Statistical Match Analytics &amp; xG Forecasts</h1>
+        <p>Independent AI-powered football statistical modeling, Bivariate Poisson scoreline distributions, and Expected Goals (xG) analytics across 40+ leagues worldwide.</p>
+        <section aria-label="Responsible Gambling and 18+ Age Restriction Notice" style="margin-top: 16px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px;">
+          <strong>18+ Only · Responsible Gambling &amp; Informational Analytics Disclaimer (Never Intended for Minors):</strong>
+          PredictPro (predictpro.guru) is an independent sports statistics and mathematical football analytics platform for informational and educational purposes only. PredictPro is NOT a bookmaker or real-money gambling operator, does NOT accept wagers or deposits, and never guarantees outcomes. If you or someone you know needs support with problem gambling, visit <a href="https://www.begambleaware.org" rel="noopener noreferrer">BeGambleAware.org</a>, call GamCare at 0808 8020 133, US NCPG at 1-800-GAMBLER, or Responsible Gaming Kenya at 0800 722 200. Read our full <a href="/responsible-gaming">Responsible Gaming &amp; Minor Protection Policy</a>.
+        </section>
       </main>
     </div>
     <noscript>

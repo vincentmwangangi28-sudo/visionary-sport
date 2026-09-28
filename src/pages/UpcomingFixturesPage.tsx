@@ -15,6 +15,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { Link } from 'react-router-dom';
 import {
+  isPlayedOrPastMatch,
+  matchesDateFilter,
+  groupMatchesByDate,
+} from '@/lib/dateFilterUtils';
+import {
   Calendar,
   Zap,
   Filter,
@@ -45,6 +50,7 @@ export default function UpcomingFixturesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'card' | 'compact'>('card');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [visibleCount, setVisibleCount] = useState<number>(12);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -62,14 +68,10 @@ export default function UpcomingFixturesPage() {
   }, [matches]);
 
   const filteredMatches = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toDateString();
-
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const tomorrowStr = tomorrow.toDateString();
-
     const list = matches.filter(m => {
+      // Strictly ignore any played, in-play, or past match
+      if (isPlayedOrPastMatch(m)) return false;
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchesQuery =
@@ -84,13 +86,7 @@ export default function UpcomingFixturesPage() {
       }
 
       if (timeframe !== 'all') {
-        const mDate = new Date(m.match_date);
-        const mDateStr = mDate.toDateString();
-        const dayOfWeek = mDate.getDay();
-
-        if (timeframe === 'today' && mDateStr !== todayStr) return false;
-        if (timeframe === 'tomorrow' && mDateStr !== tomorrowStr) return false;
-        if (timeframe === 'weekend' && dayOfWeek !== 5 && dayOfWeek !== 6 && dayOfWeek !== 0) return false;
+        if (!matchesDateFilter(m.match_date, timeframe)) return false;
       }
 
       return true;
@@ -98,6 +94,10 @@ export default function UpcomingFixturesPage() {
 
     return sortPredictions(list);
   }, [matches, searchQuery, selectedLeague, timeframe, sortPredictions]);
+
+  const dateGroupedFixtures = useMemo(() => {
+    return groupMatchesByDate(filteredMatches.slice(0, visibleCount));
+  }, [filteredMatches, visibleCount]);
 
   const bankerMatches = useMemo(() => {
     return filteredMatches.filter(m => (m.confidence_score ?? m.confidence ?? 0) >= 80);
@@ -132,7 +132,7 @@ export default function UpcomingFixturesPage() {
 
       <Navbar />
 
-      <main className="container mx-auto px-4 py-20 max-w-6xl flex-1">
+      <div className="container mx-auto px-4 py-20 max-w-6xl flex-1">
         {/* HERO / INTRO HEADER */}
         <div className="mb-6 rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/30 p-5 sm:p-7 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -145,8 +145,11 @@ export default function UpcomingFixturesPage() {
                 <Badge variant="outline" className="text-xs font-semibold px-2 py-0.5 border-primary/20 bg-primary/5 text-primary">
                   {region.flag} {region.shortLabel} Priority
                 </Badge>
+                <Badge variant="outline" className="text-[10px] font-bold border-primary/30 bg-primary/10 text-primary">
+                  Date Priority · Played Matches Ignored
+                </Badge>
                 {isRealTime && (
-                  <Badge variant="outline" className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 flex items-center gap-1">
+                  <Badge variant="outline" className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/15 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Verified Real-Time Feed
                   </Badge>
@@ -200,7 +203,7 @@ export default function UpcomingFixturesPage() {
             </div>
             <div className="p-2.5 rounded-xl bg-background/80 border border-border/50">
               <p className="text-[10px] uppercase font-bold text-muted-foreground">Banker Picks (≥80%)</p>
-              <p className="text-lg font-black text-amber-600 dark:text-amber-400">{bankerMatches.length}</p>
+              <p className="text-lg font-black text-amber-800 dark:text-amber-300">{bankerMatches.length}</p>
             </div>
             <div className="p-2.5 rounded-xl bg-background/80 border border-border/50">
               <p className="text-[10px] uppercase font-bold text-muted-foreground">Competitions</p>
@@ -277,15 +280,17 @@ export default function UpcomingFixturesPage() {
                 />
               </div>
 
-              <div className="flex items-center border border-border/70 rounded-lg p-0.5 bg-muted/30 shrink-0">
+              <div className="flex items-center border border-border/70 rounded-lg p-0.5 bg-muted/30 shrink-0" role="group" aria-label="View mode">
                 <Button
                   variant={viewMode === 'card' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('card')}
                   className="h-7 w-7 p-0"
                   title="Card View"
+                  aria-label="Card View"
+                  aria-pressed={viewMode === 'card'}
                 >
-                  <LayoutGrid className="h-3.5 w-3.5" />
+                  <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
                 <Button
                   variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
@@ -293,8 +298,10 @@ export default function UpcomingFixturesPage() {
                   onClick={() => setViewMode('compact')}
                   className="h-7 w-7 p-0"
                   title="Compact View"
+                  aria-label="Compact View"
+                  aria-pressed={viewMode === 'compact'}
                 >
-                  <List className="h-3.5 w-3.5" />
+                  <List className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -314,7 +321,7 @@ export default function UpcomingFixturesPage() {
                 className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium ${
                   selectedLeague === 'all'
                     ? 'bg-primary text-primary-foreground border-primary font-bold'
-                    : 'bg-muted/30 border-border hover:bg-muted text-muted-foreground'
+                    : 'bg-muted/40 border-border hover:bg-muted text-foreground/85'
                 }`}
               >
                 All ({matches.length})
@@ -331,11 +338,11 @@ export default function UpcomingFixturesPage() {
                     className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1 ${
                       selectedLeague.toLowerCase() === lg.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-bold'
-                        : 'bg-muted/30 border-border hover:bg-muted text-muted-foreground'
+                        : 'bg-muted/40 border-border hover:bg-muted text-foreground/85'
                     }`}
                   >
                     <span>{lg}</span>
-                    <span className="text-[9px] opacity-75 font-mono">({count})</span>
+                    <span className="text-[9px] opacity-85 font-mono">({count})</span>
                   </button>
                 );
               })}
@@ -345,19 +352,61 @@ export default function UpcomingFixturesPage() {
 
         {/* FIXTURES LIST */}
         {loading && matches.length === 0 ? (
-          <UpcomingMatchListSkeleton count={8} />
+          <UpcomingMatchListSkeleton count={6} />
         ) : filteredMatches.length > 0 ? (
-          <div
-            className={
-              viewMode === 'card'
-                ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-4'
-                : 'space-y-3'
-            }
-          >
-            {filteredMatches.map(m => (
-              <PredictionCard key={m.id} prediction={m} viewMode={viewMode} />
-            ))}
-          </div>
+          <>
+            <div className="space-y-6">
+              {dateGroupedFixtures.map(group => (
+                <div key={group.dateKey} className="space-y-3">
+                  <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-muted/40 border border-border/60">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-extrabold uppercase tracking-wide ${
+                          group.isToday
+                            ? 'bg-primary text-primary-foreground shadow-xs'
+                            : group.isTomorrow
+                            ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                            : 'bg-background text-foreground border border-border'
+                        }`}
+                      >
+                        <Calendar className="h-3 w-3" />
+                        {group.isToday ? 'Today · Priority #1' : group.isTomorrow ? 'Tomorrow · Priority #2' : group.subLabel}
+                      </span>
+                      <h2 className="text-sm font-bold text-foreground">
+                        {group.label}
+                      </h2>
+                    </div>
+                    <Badge variant="outline" className="text-[11px] font-mono">
+                      {group.matches.length} {group.matches.length === 1 ? 'Fixture' : 'Fixtures'}
+                    </Badge>
+                  </div>
+
+                  <div
+                    className={
+                      viewMode === 'card'
+                        ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-4'
+                        : 'space-y-3'
+                    }
+                  >
+                    {group.matches.map(m => (
+                      <PredictionCard key={m.id} prediction={m} viewMode={viewMode} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {filteredMatches.length > visibleCount && (
+              <div className="mt-8 flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => setVisibleCount(prev => prev + 12)}
+                  className="font-bold text-xs px-6"
+                >
+                  Show More Fixtures ({filteredMatches.length - visibleCount} remaining)
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <Card className="p-12 text-center border-dashed">
             <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
@@ -383,7 +432,7 @@ export default function UpcomingFixturesPage() {
         )}
 
         <LeagueNavigationStrip className="mt-10" />
-      </main>
+      </div>
 
       <Footer />
     </div>

@@ -177,7 +177,7 @@ export const SEOAuthorityHub: React.FC = () => {
         {/* Section 2: Direct Answer Hub for AI Overviews & Featured Snippets */}
         <div className="pt-6 border-t border-border/40">
           <div className="max-w-3xl mb-6">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-2">
               <HelpCircle className="h-4 w-4" aria-hidden="true" />
               <span>Verified Football Prediction FAQ &amp; Methodology</span>
             </div>

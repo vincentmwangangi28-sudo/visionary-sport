@@ -37,8 +37,8 @@ export function BreakingNewsTicker() {
               <h2 className="text-sm font-extrabold text-foreground tracking-tight">
                 Breaking Football News & Gemini Tactical Wire
               </h2>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <Zap className="h-2.5 w-2.5" /> Fast Backend Cache
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+                <Zap className="h-2.5 w-2.5" aria-hidden="true" /> Fast Backend Cache
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground">
@@ -51,7 +51,7 @@ export function BreakingNewsTicker() {
           to="/news"
           className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors shrink-0"
         >
-          View All News <ArrowRight className="h-3.5 w-3.5" />
+          View All News <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </div>
 
@@ -60,6 +60,7 @@ export function BreakingNewsTicker() {
           <Link
             key={idx}
             to="/news"
+            aria-label={`Read football news analysis: ${item.title}`}
             className="group block"
           >
             <Card className="h-full bg-background/50 border-border/50 hover:border-primary/40 hover:shadow-sm transition-all flex flex-col justify-between p-3">
@@ -69,7 +70,7 @@ export function BreakingNewsTicker() {
                     variant={item.isGeminiCurated ? "default" : "secondary"}
                     className="text-[10px] font-extrabold h-4.5 px-1.5 gap-1"
                   >
-                    {item.isGeminiCurated && <Sparkles className="h-2.5 w-2.5" />}
+                    {item.isGeminiCurated && <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />}
                     {item.isGeminiCurated ? 'Gemini AI Wire' : item.source}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground">
@@ -77,13 +78,13 @@ export function BreakingNewsTicker() {
                   </span>
                 </div>
 
-                <h4 className="text-xs font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                <h3 className="text-xs font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
                   {item.title}
-                </h4>
+                </h3>
 
                 {item.bettingImpact ? (
                   <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium line-clamp-2 flex items-start gap-1 pt-0.5">
-                    <TrendingUp className="h-3 w-3 shrink-0 mt-0.5 text-emerald-700 dark:text-emerald-400" />
+                    <TrendingUp className="h-3 w-3 shrink-0 mt-0.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
                     <span>{item.bettingImpact}</span>
                   </div>
                 ) : (
@@ -95,7 +96,7 @@ export function BreakingNewsTicker() {
 
               <div className="pt-2 text-[10px] text-primary font-semibold flex items-center gap-1">
                 <span>Read analysis</span>
-                <ExternalLink className="h-2.5 w-2.5" />
+                <ExternalLink className="h-2.5 w-2.5" aria-hidden="true" />
               </div>
             </Card>
           </Link>

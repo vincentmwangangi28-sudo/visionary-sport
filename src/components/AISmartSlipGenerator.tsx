@@ -49,7 +49,7 @@ const STRATEGY_PRESETS: Record<SlipStrategy, {
     icon: ShieldCheck,
     tagline: 'High probability locks with 85%+ model confidence',
     badge: '87.4% Expected Win Rate',
-    badgeClass: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
+    badgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30',
     legs: [
       {
         match: 'Arsenal vs Chelsea',
@@ -137,7 +137,7 @@ const STRATEGY_PRESETS: Record<SlipStrategy, {
     icon: Rocket,
     tagline: 'High-multiplier accumulator designed for massive payouts',
     badge: '28.5x Multiplier Acca',
-    badgeClass: 'bg-purple-500/15 text-purple-600 border-purple-500/30',
+    badgeClass: 'bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30',
     legs: [
       {
         match: 'Arsenal vs Chelsea',

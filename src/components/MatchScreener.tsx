@@ -81,6 +81,9 @@ export const MatchScreener: React.FC = () => {
         });
       });
 
+      // Sort upcoming matches strictly by matchDate in ascending order
+      list.sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
+
       setMatches(list);
     } catch (err) {
       console.warn('Match screener load error:', err);

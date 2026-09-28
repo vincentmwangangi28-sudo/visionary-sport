@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   getTeamLogoWithLeague,
   fetchAndCacheTeamLogoByLeague,
   getTeamInitialsAndColor,
+  markLogoUrlFailed,
 } from '@/services/teamLogos';
 
 export interface TeamLogoProps {
@@ -27,7 +28,7 @@ const SIZE_MAP: Record<string, { container: string; img: string; text: string; d
   xl: { container: 'w-16 h-16 rounded-2xl p-2', img: 'w-11 h-11', text: 'text-base font-black', dim: 44 },
 };
 
-export const TeamLogo: React.FC<TeamLogoProps> = ({
+export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   team: rawTeam,
   teamName,
   logoUrl,
@@ -50,18 +51,19 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   const resolvedUrl = !imageError ? (syncUrl || asyncLogoUrl) : null;
   const { initials, bgColor, textColor } = getTeamInitialsAndColor(team);
 
-  // Intelligent background fetch & cache if not already found synchronously
+  // Only trigger async lookup if synchronous lookup returned null
   useEffect(() => {
-    let isMounted = true;
     setImageError(false);
+    if (!team || syncUrl) return;
 
-    if (team) {
-      fetchAndCacheTeamLogoByLeague(team, effectiveLeague, logoUrl).then((fetched) => {
-        if (isMounted && fetched && fetched !== syncUrl) {
+    let isMounted = true;
+    fetchAndCacheTeamLogoByLeague(team, effectiveLeague, logoUrl)
+      .then((fetched) => {
+        if (isMounted && fetched) {
           setAsyncLogoUrl(fetched);
         }
-      });
-    }
+      })
+      .catch(() => {});
 
     return () => {
       isMounted = false;
@@ -92,7 +94,10 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
             loaded ? 'opacity-100' : 'opacity-80'
           } ${sizeConfig.img}`}
           onLoad={() => setLoaded(true)}
-          onError={() => setImageError(true)}
+          onError={() => {
+            markLogoUrlFailed(team, resolvedUrl);
+            setImageError(true);
+          }}
         />
       ) : (
         <div
@@ -122,4 +127,6 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
       <span className={`font-bold truncate text-foreground ${nameClassName}`}>{team}</span>
     </div>
   );
-};
+});
+
+TeamLogo.displayName = 'TeamLogo';

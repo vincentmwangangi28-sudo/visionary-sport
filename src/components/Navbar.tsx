@@ -32,7 +32,8 @@ import {
   BookOpen,
   Calendar,
   Map,
-  Database
+  Database,
+  ShieldAlert
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -106,6 +107,7 @@ export const Navbar = () => {
     { to: "/sitemap",       label: "HTML Sitemap",                       icon: Map },
     { to: "/preferences",   label: t('nav.preferences', "Preferences"),  icon: SlidersHorizontal },
     { to: "/methodology",   label: "Methodology",    icon: ShieldCheck },
+    { to: "/responsible-gaming", label: "18+ Responsible Gaming", icon: ShieldAlert },
     { to: "/about",         label: "About",          icon: Info },
   ];
 
@@ -131,11 +133,20 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-xl border-b border-border">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-16 gap-2">
-          {/* Logo */}
+          {/* Logo & Prominent 18+ Warning Icon */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link to="/" className="flex items-center gap-2 group">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-sm group-hover:scale-105 transition-transform">PP</div>
               <span className="text-lg font-bold hidden sm:block tracking-tight">PredictPro</span>
+            </Link>
+            <Link
+              to="/responsible-gaming"
+              title="18+ Age Restriction Policy — Strictly for Adults Only (Never Intended for Minors)"
+              aria-label="18+ Age Restriction Warning — View Responsible Gaming Policy"
+              className="inline-flex items-center gap-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 text-[10px] font-black tracking-tight shadow-xs ring-1 ring-rose-400/50 transition-transform hover:scale-105 select-none"
+            >
+              <ShieldAlert className="h-3 w-3 shrink-0 text-white" aria-hidden="true" />
+              <span>18+</span>
             </Link>
           </div>
 
@@ -433,7 +444,16 @@ export const Navbar = () => {
                 <SheetHeader className="text-left pb-2 border-b">
                   <SheetTitle className="text-base font-bold flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-black">PP</div>
-                    PredictPro Global
+                    <span>PredictPro Global</span>
+                    <Link
+                      to="/responsible-gaming"
+                      onClick={() => setOpen(false)}
+                      title="18+ Age Restriction Policy"
+                      className="inline-flex items-center gap-1 rounded-full bg-rose-600 text-white px-2 py-0.5 text-[10px] font-black shadow-xs"
+                    >
+                      <ShieldAlert className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
+                      <span>18+</span>
+                    </Link>
                   </SheetTitle>
                 </SheetHeader>
 

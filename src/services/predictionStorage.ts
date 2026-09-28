@@ -1,6 +1,7 @@
 import { Prediction } from '@/types/prediction';
+import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
 
-const STORAGE_KEY = 'predictpro_saved_predictions_v3';
+const STORAGE_KEY = 'predictpro_saved_predictions_v4';
 const MAX_STORAGE_DAYS = 14;
 
 // In-memory cache for ultra-fast access and SSR/fallback safety
@@ -235,16 +236,40 @@ function hydrateStorage(): Record<string, Prediction> {
   return memoryStore;
 }
 
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
 /**
- * Commit memory store to localStorage
+ * Commit memory store to localStorage (debounced to avoid main-thread blocking during bulk merges)
  */
-function persistStorage() {
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
+function persistStorage(immediate = false) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
+  const flush = () => {
+    persistTimer = null;
+    try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(memoryStore));
+    } catch (e) {
+      // Handle QuotaExceededError gracefully by trimming oldest entries
+      try {
+        const keys = Object.keys(memoryStore);
+        if (keys.length > 60) {
+          keys.slice(0, Math.floor(keys.length / 2)).forEach((k) => delete memoryStore[k]);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(memoryStore));
+        }
+      } catch {
+        // Ignore storage quota errors
+      }
     }
-  } catch (e) {
-    console.warn('[PredictionStorage] Failed persisting to localStorage:', e);
+  };
+
+  if (immediate) {
+    if (persistTimer) clearTimeout(persistTimer);
+    flush();
+    return;
+  }
+
+  if (!persistTimer) {
+    persistTimer = setTimeout(flush, 300);
   }
 }
 
@@ -256,11 +281,27 @@ export function getSavedPredictions(): Record<string, Prediction> {
 }
 
 /**
- * Retrieve all saved predictions as an array
+ * Retrieve all saved predictions as an array (strictly excluding played/past matches)
  */
 export function getSavedPredictionsList(): Prediction[] {
   const store = hydrateStorage();
-  return Object.values(store);
+  let changed = false;
+  const active: Prediction[] = [];
+
+  for (const [key, pred] of Object.entries(store)) {
+    if (isPlayedOrPastMatch(pred)) {
+      delete store[key];
+      changed = true;
+    } else {
+      active.push(pred);
+    }
+  }
+
+  if (changed) {
+    persistStorage();
+  }
+
+  return active;
 }
 
 /**
@@ -269,16 +310,17 @@ export function getSavedPredictionsList(): Prediction[] {
 export function getSavedPrediction(home: string, away: string, matchDate?: string): Prediction | null {
   const store = hydrateStorage();
   const exactKey = getCanonicalMatchKey(home, away, matchDate);
-  if (store[exactKey]) return store[exactKey];
+  if (store[exactKey] && !isPlayedOrPastMatch(store[exactKey])) return store[exactKey];
 
   // Try matching without date
   const genericKey = getCanonicalMatchKey(home, away);
-  if (store[genericKey]) return store[genericKey];
+  if (store[genericKey] && !isPlayedOrPastMatch(store[genericKey])) return store[genericKey];
 
   // Fuzzy lookup across stored keys
   const normHome = normalizeTeamName(home);
   const normAway = normalizeTeamName(away);
   for (const pred of Object.values(store)) {
+    if (isPlayedOrPastMatch(pred)) continue;
     if (
       (normalizeTeamName(pred.home_team) === normHome || pred.home_team.toLowerCase().includes(home.toLowerCase())) &&
       (normalizeTeamName(pred.away_team) === normAway || pred.away_team.toLowerCase().includes(away.toLowerCase()))
@@ -380,6 +422,8 @@ export function mergeAndPreservePredictions(incomingList: Prediction[]): Predict
 
   for (const item of incomingList) {
     if (!item.home_team || !item.away_team) continue;
+    // Strictly ignore any played, finished, in-play, or past match
+    if (isPlayedOrPastMatch(item)) continue;
 
     const key = getCanonicalMatchKey(item.home_team, item.away_team, item.match_date);
     const genericKey = getCanonicalMatchKey(item.home_team, item.away_team);
@@ -399,7 +443,7 @@ export function mergeAndPreservePredictions(incomingList: Prediction[]): Predict
 }
 
 /**
- * Clean up old expired matches from storage (e.g. matches older than 14 days)
+ * Clean up old expired or already-played matches from storage
  */
 export function cleanupExpiredPredictions() {
   const store = hydrateStorage();
@@ -407,6 +451,11 @@ export function cleanupExpiredPredictions() {
   let changed = false;
 
   for (const [key, pred] of Object.entries(store)) {
+    if (isPlayedOrPastMatch(pred)) {
+      delete store[key];
+      changed = true;
+      continue;
+    }
     if (pred.match_date) {
       const matchTime = new Date(pred.match_date).getTime();
       if (!isNaN(matchTime) && matchTime < cutoff) {
@@ -421,7 +470,7 @@ export function cleanupExpiredPredictions() {
   }
 }
 
-// Auto-run cleanup on initial import
+// Auto-run cleanup on idle well after initial load
 if (typeof window !== 'undefined') {
-  setTimeout(() => cleanupExpiredPredictions(), 3000);
+  setTimeout(() => cleanupExpiredPredictions(), 35000);
 }

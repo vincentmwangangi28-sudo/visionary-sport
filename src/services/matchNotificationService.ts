@@ -71,21 +71,32 @@ export async function requestPushPermission(): Promise<NotificationPermission | 
   }
 }
 
+let cachedSubscriptions: MatchNotificationSubscription[] | null = null;
+
 /**
- * Get all active subscriptions from localStorage
+ * Get all active subscriptions from memory cache / localStorage
  */
 export function getAllSubscriptions(): MatchNotificationSubscription[] {
+  if (cachedSubscriptions !== null) {
+    return cachedSubscriptions;
+  }
   if (typeof window === 'undefined') return [];
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [];
-    return JSON.parse(stored) as MatchNotificationSubscription[];
+    if (!stored) {
+      cachedSubscriptions = [];
+      return cachedSubscriptions;
+    }
+    cachedSubscriptions = JSON.parse(stored) as MatchNotificationSubscription[];
+    return cachedSubscriptions;
   } catch {
-    return [];
+    cachedSubscriptions = [];
+    return cachedSubscriptions;
   }
 }
 
 function saveSubscriptions(subs: MatchNotificationSubscription[]): void {
+  cachedSubscriptions = subs;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(subs));

@@ -77,7 +77,13 @@ export default function ValueBets() {
         }
       }
 
-      calculated.sort((a, b) => b.valuePct - a.valuePct);
+      // Sort upcoming fixtures by match_date in ascending order (most immediate first, then valuePct)
+      calculated.sort((a, b) => {
+        const timeA = new Date(a.match_date).getTime();
+        const timeB = new Date(b.match_date).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        return b.valuePct - a.valuePct;
+      });
       setBets(calculated.slice(0, 15));
     } catch (e) {
       console.warn('Value bets fetch error:', e);

@@ -90,6 +90,7 @@ const JackpotPredictions     = lazyWithRetry(() => import("./pages/JackpotPredic
 const USSoccerPredictions    = lazyWithRetry(() => import("./pages/USSoccerPredictions"));
 const StreaksRadar           = lazyWithRetry(() => import("./pages/StreaksRadar"));
 const H2HComparisonPage      = lazyWithRetry(() => import("./pages/H2HComparisonPage"));
+const ResponsibleGaming      = lazyWithRetry(() => import("./pages/ResponsibleGaming"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -394,6 +395,9 @@ const App = () => (
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
                             <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
+                            <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
+                            <Route path="/disclaimer"                   element={<RouteBoundary component={ResponsibleGaming} />} />
+                            <Route path="/ads-policy"                   element={<RouteBoundary component={ResponsibleGaming} />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
                             <Route path="/predictions"                  element={<Navigate to="/predict" replace />} />
                             <Route path="/tips"                         element={<Navigate to="/best-bets" replace />} />

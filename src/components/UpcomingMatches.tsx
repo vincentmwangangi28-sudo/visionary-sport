@@ -16,6 +16,11 @@ import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { Link } from 'react-router-dom';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
+  isPlayedOrPastMatch,
+  matchesDateFilter,
+  groupMatchesByDate,
+} from '@/lib/dateFilterUtils';
+import {
   Calendar,
   Zap,
   Clock,
@@ -70,16 +75,12 @@ export const UpcomingMatches: React.FC = () => {
     return Array.from(set).slice(0, 8);
   }, [matches]);
 
-  // Filter and sort matches
+  // Filter and sort matches strictly by Date Priority while ignoring played/past matches
   const filteredMatches = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toDateString();
-
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const tomorrowStr = tomorrow.toDateString();
-
     const list = matches.filter(m => {
+      // Strictly ignore any played, in-play, or past match
+      if (isPlayedOrPastMatch(m)) return false;
+
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
@@ -95,23 +96,21 @@ export const UpcomingMatches: React.FC = () => {
         if (m.league.toLowerCase() !== selectedLeague.toLowerCase()) return false;
       }
 
-      // 3. Timeframe Filter
+      // 3. Timeframe Filter (strictly future matches only)
       if (timeframe !== 'all') {
-        const mDate = new Date(m.match_date);
-        const mDateStr = mDate.toDateString();
-        const dayOfWeek = mDate.getDay(); // 0 = Sunday, 6 = Saturday, 5 = Friday
-
-        if (timeframe === 'today' && mDateStr !== todayStr) return false;
-        if (timeframe === 'tomorrow' && mDateStr !== tomorrowStr) return false;
-        if (timeframe === 'weekend' && dayOfWeek !== 5 && dayOfWeek !== 6 && dayOfWeek !== 0) return false;
+        if (!matchesDateFilter(m.match_date, timeframe)) return false;
       }
 
       return true;
     });
 
-    // Prioritize user's region
+    // Prioritize by Date first (Today -> Tomorrow -> Future dates), then regional relevance
     return sortPredictions(list);
   }, [matches, searchQuery, selectedLeague, timeframe, sortPredictions]);
+
+  const dateGroupedUpcoming = useMemo(() => {
+    return groupMatchesByDate(filteredMatches.slice(0, 12));
+  }, [filteredMatches]);
 
   const isMarketInSlip = (match: UpcomingMatch, market: string) => {
     return selections.some(
@@ -163,8 +162,11 @@ export const UpcomingMatches: React.FC = () => {
               <Badge variant="outline" className="text-xs font-semibold px-2 py-0.5 border-primary/20 bg-primary/5 text-primary">
                 {region.flag} {region.shortLabel}
               </Badge>
+              <Badge variant="outline" className="text-[10px] font-bold border-primary/30 bg-primary/10 text-primary">
+                Date Priority · Played Ignored
+              </Badge>
               {isRealTime && (
-                <Badge variant="outline" className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 flex items-center gap-1">
+                <Badge variant="outline" className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/15 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Verified Fixture Feed
                 </Badge>
@@ -268,6 +270,7 @@ export const UpcomingMatches: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
+                  aria-label="Clear search query"
                   className="absolute right-0 top-0 h-full w-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-xs text-muted-foreground hover:text-foreground"
                 >
                   ✕
@@ -317,21 +320,47 @@ export const UpcomingMatches: React.FC = () => {
           )}
         </div>
 
-        {/* MATCHES GRID */}
+        {/* MATCHES GRID GROUPED BY DATE PRIORITY */}
         {filteredMatches.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredMatches.slice(0, 9).map(m => {
-              const badgeMeta = getLeagueBadge(m.league);
-              const outcome = m.predicted_outcome || m.prediction || 'Match Winner';
-              const confidence = m.confidence_score ?? m.confidence ?? 75;
-              const isBanker = confidence >= 80;
-              const isHomePinned = isTeamPinned(m.home_team);
-              const isAwayPinned = isTeamPinned(m.away_team);
-              const relativeKickoff = getKickoffRelative(m.match_date);
-              const matchSlug = formatMatchSlug(m.home_team, m.away_team, m.match_date);
-              const matchUrl = `/predict/${matchSlug}`;
+          <div className="space-y-6">
+            {dateGroupedUpcoming.map(group => (
+              <div key={group.dateKey} className="space-y-3">
+                <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-muted/40 border border-border/60">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-extrabold uppercase tracking-wide ${
+                        group.isToday
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : group.isTomorrow
+                          ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                          : 'bg-background text-foreground border border-border'
+                      }`}
+                    >
+                      <Calendar className="h-3 w-3" />
+                      {group.isToday ? 'Today · Priority #1' : group.isTomorrow ? 'Tomorrow · Priority #2' : group.subLabel}
+                    </span>
+                    <h3 className="text-sm font-bold text-foreground">
+                      {group.label}
+                    </h3>
+                  </div>
+                  <Badge variant="outline" className="text-[11px] font-mono">
+                    {group.matches.length} {group.matches.length === 1 ? 'Fixture' : 'Fixtures'}
+                  </Badge>
+                </div>
 
-              return (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {group.matches.map(m => {
+                    const badgeMeta = getLeagueBadge(m.league);
+                    const outcome = m.predicted_outcome || m.prediction || 'Match Winner';
+                    const confidence = m.confidence_score ?? m.confidence ?? 75;
+                    const isBanker = confidence >= 80;
+                    const isHomePinned = isTeamPinned(m.home_team);
+                    const isAwayPinned = isTeamPinned(m.away_team);
+                    const relativeKickoff = getKickoffRelative(m.match_date);
+                    const matchSlug = formatMatchSlug(m.home_team, m.away_team, m.match_date);
+                    const matchUrl = `/predict/${matchSlug}`;
+
+                    return (
                 <Card
                   key={m.id}
                   className="hover:border-primary/50 transition-all duration-200 h-full flex flex-col justify-between group bg-card shadow-xs hover:shadow-md cursor-pointer"
@@ -520,6 +549,7 @@ export const UpcomingMatches: React.FC = () => {
                           onClick={e => e.stopPropagation()}
                           className="flex items-center gap-1 font-bold text-primary hover:underline text-[11px]"
                           title={`View ${m.home_team} vs ${m.away_team} AI match prediction & analytics`}
+                          aria-label={`View ${m.home_team} vs ${m.away_team} AI match prediction & analytics`}
                         >
                           <span>Analysis &rarr;</span>
                         </Link>
@@ -528,7 +558,10 @@ export const UpcomingMatches: React.FC = () => {
                   </CardContent>
                 </Card>
               );
-            })}
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="text-center py-12 bg-muted/20 border border-dashed rounded-2xl p-6">

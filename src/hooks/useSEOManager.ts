@@ -2,6 +2,12 @@ import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { STRATEGY_POSTS } from '@/data/blogData';
 import { BASE_URL } from '@/services/sitemapGenerator';
+import type { Prediction } from '@/types/prediction';
+import {
+  resolveMatchPredictionForSEO,
+  buildMatchPredictionJsonLdNodes,
+  ResolvedMatchSEOData,
+} from '@/hooks/useMatchPredictionSEO';
 
 export interface SEOBreadcrumbItem {
   name: string;
@@ -18,6 +24,7 @@ export interface SEOManagerOptions {
   noIndex?: boolean;
   structuredData?: object;
   breadcrumbs?: SEOBreadcrumbItem[];
+  matchPrediction?: Partial<Prediction> | null;
 }
 
 export interface ResolvedSEOMetadata {
@@ -33,6 +40,7 @@ export interface ResolvedSEOMetadata {
   noIndex: boolean;
   breadcrumbs: SEOBreadcrumbItem[];
   structuredData: object;
+  matchSeo?: ResolvedMatchSEOData | null;
 }
 
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
@@ -52,11 +60,11 @@ interface RouteSEOConfig {
  */
 const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/': {
-    title: 'AI Football Predictions Today | Free Betting Tips & Live xG',
+    title: 'AI Football Predictions Today, xG Statistics & Match Analytics',
     description:
-      'Get accurate AI football predictions and daily betting tips today. Verified 1X2 banker bets, Poisson xG stats, and +EV value picks across 40+ global leagues.',
+      'Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) stats, Bivariate Poisson probabilities, and H2H analytics across 40+ leagues. 18+ Informational only.',
     keywords:
-      'ai football predictions today, football predictions today, free betting tips, banker bets today, expected goals xg, soccer predictions',
+      'ai football predictions today, football predictions today, football match statistics, expected goals xg, soccer predictions, poisson scoreline probabilities',
     canonicalPath: '/',
   },
   '/best-bets': {
@@ -323,6 +331,22 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'predictpro sitemap, football predictions directory, all leagues predictions links',
     canonicalPath: '/sitemap',
   },
+  '/responsible-gaming': {
+    title: 'Responsible Gaming, 18+ Minor Protection & Analytics Disclaimer',
+    description:
+      'PredictPro Responsible Gambling Policy, 18+ minor protection standards, international support helplines, and informational sports statistics disclaimer.',
+    keywords:
+      'responsible gambling policy, 18+ age restriction, sports statistics disclaimer, begambleaware, gamcare helpline',
+    canonicalPath: '/responsible-gaming',
+  },
+  '/disclaimer': {
+    title: 'Responsible Gaming, 18+ Minor Protection & Analytics Disclaimer',
+    description:
+      'PredictPro Responsible Gambling Policy, 18+ minor protection standards, international support helplines, and informational sports statistics disclaimer.',
+    keywords:
+      'responsible gambling policy, 18+ age restriction, sports statistics disclaimer, begambleaware, gamcare helpline',
+    canonicalPath: '/responsible-gaming',
+  },
 };
 
 /**
@@ -540,25 +564,39 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
   const resolved = useMemo<ResolvedSEOMetadata>(() => {
     const routeDefaults = resolveDynamicRouteConfig(activePathname);
 
-    const rawTitle = options.title || routeDefaults.title;
+    // Automatically detect individual match prediction pages (/predict/:matchSlug or /match/:matchSlug)
+    // or explicit matchPrediction passed via <SEO matchPrediction={...} />
+    const isMatchPredictionRoute =
+      Boolean(options.matchPrediction) ||
+      /^\/(?:predict|match)\/[^/]+$/i.test(activePathname.replace(/\/+$/, ''));
+
+    const matchSeo = isMatchPredictionRoute
+      ? resolveMatchPredictionForSEO(
+          options.canonical || activePathname,
+          options.matchPrediction
+        )
+      : null;
+
+    const rawTitle = options.title || matchSeo?.seoTitle || routeDefaults.title;
     const fullTitle = rawTitle.includes('PredictPro')
       ? rawTitle
       : rawTitle.length + 13 <= 68
         ? `${rawTitle} | PredictPro`
         : rawTitle;
 
-    const description = options.description || routeDefaults.description;
+    const description = options.description || matchSeo?.seoDescription || routeDefaults.description;
     const webPageDescription = normalizeSEODescription(description);
 
-    const rawCanonicalPath = options.canonical || routeDefaults.canonicalPath || activePathname;
+    const rawCanonicalPath =
+      options.canonical || matchSeo?.canonicalPath || routeDefaults.canonicalPath || activePathname;
     const canonicalPath = rawCanonicalPath.startsWith('/') ? rawCanonicalPath : `/${rawCanonicalPath}`;
     const canonicalUrl = rawCanonicalPath.startsWith('http')
       ? rawCanonicalPath
       : `${BASE_URL}${canonicalPath === '/' ? '/' : canonicalPath.replace(/\/+$/, '')}`;
 
     const image = options.image || DEFAULT_IMAGE;
-    const type = options.type || routeDefaults.type || 'website';
-    const keywords = options.keywords || routeDefaults.keywords;
+    const type = options.type || (matchSeo ? 'article' : routeDefaults.type) || 'website';
+    const keywords = options.keywords || matchSeo?.keywords || routeDefaults.keywords;
     const noIndex = options.noIndex ?? routeDefaults.noIndex ?? false;
 
     const breadcrumbs =
@@ -577,7 +615,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       })),
     };
 
-    const webPageSchema = {
+    const webPageSchema: Record<string, unknown> = {
       '@type': 'WebPage',
       '@id': `${canonicalUrl}#webpage`,
       url: canonicalUrl,
@@ -590,12 +628,32 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       breadcrumb: {
         '@id': `${canonicalUrl}#breadcrumb`,
       },
+      primaryImageOfPage: {
+        '@type': 'ImageObject',
+        url: image,
+        width: 1200,
+        height: 630,
+      },
       inLanguage: 'en',
       potentialAction: {
         '@type': 'ReadAction',
         target: [canonicalUrl],
       },
     };
+
+    if (matchSeo) {
+      webPageSchema.datePublished = matchSeo.publishedTime;
+      webPageSchema.dateModified = matchSeo.modifiedTime;
+      webPageSchema.mainEntity = { '@id': `${canonicalUrl}#sportsevent` };
+    }
+
+    const matchJsonLdNodes =
+      matchSeo && !noIndex
+        ? buildMatchPredictionJsonLdNodes(
+            { ...matchSeo, canonicalUrl, canonicalPath },
+            image
+          )
+        : [];
 
     const structuredData = {
       '@context': 'https://schema.org',
@@ -618,7 +676,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
           '@id': `${BASE_URL}/#organization`,
           name: 'PredictPro',
           url: BASE_URL,
-          logo: { '@type': 'ImageObject', url: `${BASE_URL}/icon-512.png` },
+          logo: { '@type': 'ImageObject', url: `${BASE_URL}/icon-512.png`, width: 512, height: 512 },
           sameAs: ['https://twitter.com/PredictProAI'],
           contactPoint: {
             '@type': 'ContactPoint',
@@ -635,6 +693,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
         },
         webPageSchema,
         breadcrumbListSchema,
+        ...matchJsonLdNodes,
         ...(options.structuredData ? [options.structuredData] : []),
       ],
     };
@@ -652,6 +711,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       noIndex,
       breadcrumbs,
       structuredData,
+      matchSeo,
     };
   }, [
     activePathname,
@@ -664,6 +724,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     options.noIndex,
     options.structuredData,
     options.breadcrumbs,
+    options.matchPrediction,
   ]);
 
   useEffect(() => {
@@ -674,15 +735,19 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       document.title = resolved.fullTitle;
     }
 
-    // 2. Synchronize Primary Meta Tags
+    // 2. Synchronize Primary & Google Discover Meta Tags
+    const robotsDirective = resolved.noIndex
+      ? 'noindex,nofollow'
+      : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1';
+
     upsertMetaTag('name', 'description', resolved.description);
     upsertMetaTag('name', 'keywords', resolved.keywords);
+    upsertMetaTag('name', 'robots', robotsDirective);
+    upsertMetaTag('name', 'googlebot', robotsDirective);
     upsertMetaTag(
       'name',
-      'robots',
-      resolved.noIndex
-        ? 'noindex,nofollow'
-        : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1'
+      'googlebot-news',
+      resolved.noIndex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1'
     );
 
     // 3. Synchronize Canonical & Hreflang Links
@@ -690,7 +755,11 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     upsertLinkTag('alternate', resolved.canonicalUrl, 'en');
     upsertLinkTag('alternate', resolved.canonicalUrl, 'x-default');
 
-    // 4. Synchronize OpenGraph Tags
+    // 4. Synchronize OpenGraph & Google Discover Article Freshness Tags
+    const imageAlt = resolved.matchSeo
+      ? `${resolved.matchSeo.homeTeam} vs ${resolved.matchSeo.awayTeam} AI Football Prediction, Lineups & xG Stats`
+      : resolved.fullTitle;
+
     upsertMetaTag('property', 'og:type', resolved.type);
     upsertMetaTag('property', 'og:url', resolved.canonicalUrl);
     upsertMetaTag('property', 'og:title', resolved.fullTitle);
@@ -698,8 +767,16 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     upsertMetaTag('property', 'og:image', resolved.image);
     upsertMetaTag('property', 'og:image:width', '1200');
     upsertMetaTag('property', 'og:image:height', '630');
+    upsertMetaTag('property', 'og:image:alt', imageAlt);
     upsertMetaTag('property', 'og:site_name', SITE_NAME);
     upsertMetaTag('property', 'og:locale', 'en_US');
+
+    if (resolved.matchSeo) {
+      upsertMetaTag('property', 'article:published_time', resolved.matchSeo.publishedTime);
+      upsertMetaTag('property', 'article:modified_time', resolved.matchSeo.modifiedTime);
+      upsertMetaTag('property', 'article:section', resolved.matchSeo.league);
+      upsertMetaTag('property', 'article:author', 'PredictPro Quantitative Football Intelligence');
+    }
 
     // 5. Synchronize Twitter Card Tags
     upsertMetaTag('name', 'twitter:card', 'summary_large_image');
@@ -708,6 +785,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     upsertMetaTag('name', 'twitter:title', resolved.fullTitle);
     upsertMetaTag('name', 'twitter:description', resolved.description);
     upsertMetaTag('name', 'twitter:image', resolved.image);
+    upsertMetaTag('name', 'twitter:image:alt', imageAlt);
 
     // 6. Synchronize JSON-LD Structured Data Script in <head>
     const scriptId = 'predictpro-dynamic-seo-jsonld';

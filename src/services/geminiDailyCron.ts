@@ -300,11 +300,17 @@ class GeminiDailyCronService {
       }
     };
 
-    // Run first check after 4 seconds
-    setTimeout(check, 4000);
+    // Defer first background check until well after initial page load completes
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(check);
+      } else {
+        check();
+      }
+    }, 45000);
 
-    // Heartbeat every 2 minutes to evaluate schedule
-    this.timer = setInterval(check, 2 * 60 * 1000);
+    // Heartbeat every 5 minutes to evaluate schedule
+    this.timer = setInterval(check, 5 * 60 * 1000);
   }
 
   public stopHeartbeat(): void {

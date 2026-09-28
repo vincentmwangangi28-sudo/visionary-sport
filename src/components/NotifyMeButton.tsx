@@ -212,12 +212,14 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
         </div>
       )}
 
-      {/* Dialog for fine-tuning match alert preferences */}
-      <MatchNotificationDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        match={match}
-      />
+      {/* Dialog for fine-tuning match alert preferences (lazy mounted on click) */}
+      {dialogOpen && (
+        <MatchNotificationDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          match={match}
+        />
+      )}
     </>
   );
 };

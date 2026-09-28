@@ -22,6 +22,7 @@ import {
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { useMatchPredictionSEO } from '@/hooks/useMatchPredictionSEO';
 import type { Prediction } from '@/types/prediction';
 import { 
   Zap, 
@@ -113,6 +114,9 @@ export default function MatchPrediction() {
   const { addSelection } = useBetSlip();
   const { formatKickoff, formatOdds, preferences } = useUserPreferences();
   const { region } = useGeoRegion();
+
+  // Automatically generate and inject Google Discover & Schema.org JSON-LD markup for this match
+  useMatchPredictionSEO(prediction, matchSlug);
 
   const loadPrediction = useCallback(async () => {
     if (!matchSlug) {
@@ -307,6 +311,7 @@ export default function MatchPrediction() {
         description={description}
         canonical={`/predict/${matchSlug}`}
         keywords={`${prediction.home_team} vs ${prediction.away_team} prediction, ${prediction.league} lineups, tactical formation ${prediction.home_team}, ${prediction.away_team} referee stats, xG match stats`}
+        matchPrediction={prediction}
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-12 max-w-5xl">

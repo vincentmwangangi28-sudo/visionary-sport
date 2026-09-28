@@ -752,7 +752,9 @@ export function getLeagueRelevanceScore(
 }
 
 /**
- * Prioritizes and sorts match predictions based on geographic region & user favorites
+ * Sorts match predictions by match_date in strict ascending order first (ensuring the most immediate
+ * upcoming matches appear at the top of the UI), using geographic region & user favorites as tie-breakers
+ * for matches kicking off at the exact same time.
  */
 export function sortPredictionsByRegion<T extends { league: string; match_date?: string | Date; confidence?: number; confidence_score?: number }>(
   items: T[],
@@ -760,24 +762,27 @@ export function sortPredictionsByRegion<T extends { league: string; match_date?:
   favoriteLeagues: string[] = []
 ): T[] {
   return [...items].sort((a, b) => {
+    // 1. Primary Priority: Strict ascending kickoff timestamp (most immediate matches at the top)
+    const rawA = a.match_date ? new Date(a.match_date).getTime() : Number.MAX_SAFE_INTEGER;
+    const rawB = b.match_date ? new Date(b.match_date).getTime() : Number.MAX_SAFE_INTEGER;
+    const dateA = isNaN(rawA) ? Number.MAX_SAFE_INTEGER : rawA;
+    const dateB = isNaN(rawB) ? Number.MAX_SAFE_INTEGER : rawB;
+
+    if (dateA !== dateB) {
+      return dateA - dateB;
+    }
+
+    // 2. Tie-breaker for identical kickoff times: Geographic region & user favorite league relevance
     const relA = getLeagueRelevanceScore(a.league, regionId, favoriteLeagues).score;
     const relB = getLeagueRelevanceScore(b.league, regionId, favoriteLeagues).score;
-
     if (relA !== relB) {
-      return relB - relA; // higher score first
+      return relB - relA;
     }
 
-    // Tie-break by confidence score
+    // 3. Tie-breaker: AI confidence score descending
     const confA = a.confidence_score ?? a.confidence ?? 60;
     const confB = b.confidence_score ?? b.confidence ?? 60;
-    if (confA !== confB) {
-      return confB - confA;
-    }
-
-    // Tie-break by match date (earliest first)
-    const dateA = a.match_date ? new Date(a.match_date).getTime() : 0;
-    const dateB = b.match_date ? new Date(b.match_date).getTime() : 0;
-    return dateA - dateB;
+    return confB - confA;
   });
 }
 

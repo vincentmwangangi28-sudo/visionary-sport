@@ -28,12 +28,17 @@ export default function CorrectScore() {
     try {
       const realFixtures = await fetchRealtimeUpcomingFixtures();
       if (realFixtures && realFixtures.length > 0) {
-        setPreds(realFixtures.slice(0, 18));
+        const sortedReal = [...realFixtures].sort(
+          (a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime()
+        );
+        setPreds(sortedReal.slice(0, 18));
       } else {
         const { data } = await supabase.from('predictions')
           .select('*')
-          .gte('match_date', new Date().toISOString())
+          .gt('match_date', new Date().toISOString())
+          .eq('status', 'pending')
           .gte('confidence', 60)
+          .order('match_date', { ascending: true })
           .order('confidence', { ascending: false })
           .limit(20);
         setPreds((data ?? []) as Prediction[]);

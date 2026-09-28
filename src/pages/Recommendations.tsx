@@ -10,10 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { mergeAndPreservePredictions } from '@/services/predictionStorage';
 import { Prediction, getConfidence } from '@/types/prediction';
+import { isPlayedOrPastMatch, sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import {
   Sparkles,
@@ -57,14 +58,17 @@ export default function Recommendations() {
         const { data } = await supabase
           .from('predictions')
           .select('*')
-          .gte('match_date', new Date().toISOString())
+          .gt('match_date', new Date().toISOString())
           .lte('match_date', nextWeek)
+          .eq('status', 'pending')
+          .order('match_date', { ascending: true })
           .order('confidence', { ascending: false })
           .limit(30);
 
         if (data && data.length > 0) {
           const existing = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
           for (const d of data as Prediction[]) {
+            if (isPlayedOrPastMatch(d)) continue;
             const key = `${d.home_team}-${d.away_team}`.toLowerCase();
             if (!existing.has(key)) {
               items.push(d);
@@ -75,10 +79,10 @@ export default function Recommendations() {
         console.warn('Database predictions fetch error:', err);
       }
 
-      // 3. Fallback to mock data if still sparse
-      if (items.length < 6) {
+      // 3. Fallback to updated upcoming fixtures if still sparse
+      if (items.length < 8) {
         const existingIds = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
-        for (const f of DEFAULT_PREDICTIONS) {
+        for (const f of getUpdatedDefaultPredictions()) {
           const key = `${f.home_team}-${f.away_team}`.toLowerCase();
           if (!existingIds.has(key)) {
             items.push(f);
@@ -87,8 +91,9 @@ export default function Recommendations() {
       }
     }
 
-    const merged = mergeAndPreservePredictions(items);
-    merged.sort((a, b) => (getConfidence(b) || 0) - (getConfidence(a) || 0));
+    const merged = sortMatchesByDatePriority(
+      mergeAndPreservePredictions(items).filter(p => !isPlayedOrPastMatch(p))
+    );
     setPredictions(merged);
     setLoading(false);
   }, []);

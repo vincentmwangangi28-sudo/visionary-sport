@@ -15,16 +15,19 @@ import { WhatsAppShare } from '@/components/WhatsAppShare';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import type { Prediction } from '@/types/prediction';
 import { getPrediction, getConfidence } from '@/types/prediction';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { mergeAndPreservePredictions } from '@/services/predictionStorage';
+import { isPlayedOrPastMatch, sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
 
 function sanitizeAndDeduplicate(list: Prediction[]): Prediction[] {
+  const sortedByDate = sortMatchesByDatePriority(list.filter(p => !isPlayedOrPastMatch(p)));
   const seenTeams = new Map<string, number>();
   const sanitized: Prediction[] = [];
 
-  for (const pred of list) {
+  for (const pred of sortedByDate) {
     if (!pred.home_team || !pred.away_team) continue;
+    if (isPlayedOrPastMatch(pred)) continue;
     const matchTime = new Date(pred.match_date).getTime();
     
     const homeLast = seenTeams.get(pred.home_team.toLowerCase());
@@ -39,7 +42,7 @@ function sanitizeAndDeduplicate(list: Prediction[]): Prediction[] {
     sanitized.push(pred);
   }
 
-  return sanitized;
+  return sortMatchesByDatePriority(sanitized);
 }
 
 export default function BestBets() {
@@ -71,26 +74,29 @@ export default function BestBets() {
     try {
       const realFixtures = await fetchRealtimeUpcomingFixtures();
       if (realFixtures && realFixtures.length > 0) {
-        items.push(...realFixtures.filter(p => (getConfidence(p) || 0) >= minConf));
+        items.push(...realFixtures.filter(p => !isPlayedOrPastMatch(p) && (getConfidence(p) || 0) >= minConf));
       }
     } catch (err) {
       console.warn('Realtime fixtures error in BestBets:', err);
     }
 
-    // 2. Only fallback if no real fixtures found
-    if (items.length < 4) {
+    // 2. Supplement if needed
+    if (items.length < 8) {
       try {
         const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString();
         const { data } = await supabase.from('predictions')
           .select('*')
-          .gte('match_date', new Date().toISOString())
+          .gt('match_date', new Date().toISOString())
           .lte('match_date', nextWeek)
+          .eq('status', 'pending')
           .gte('confidence', minConf)
+          .order('match_date', { ascending: true })
           .order('confidence', { ascending: false })
           .limit(20);
         if (data && data.length > 0) {
           const existing = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
           for (const d of data as Prediction[]) {
+            if (isPlayedOrPastMatch(d)) continue;
             const key = `${d.home_team}-${d.away_team}`.toLowerCase();
             if (!existing.has(key)) {
               items.push(d);
@@ -101,8 +107,8 @@ export default function BestBets() {
         console.warn('BestBets fetch error:', err);
       }
 
-      if (items.length < 4) {
-        const fallback = DEFAULT_PREDICTIONS.filter(p => (getConfidence(p) || 0) >= minConf);
+      if (items.length < 8) {
+        const fallback = getUpdatedDefaultPredictions().filter(p => (getConfidence(p) || 0) >= minConf);
         const existingIds = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
         for (const f of fallback) {
           const key = `${f.home_team}-${f.away_team}`.toLowerCase();
@@ -113,8 +119,8 @@ export default function BestBets() {
       }
     }
 
-    const clean = sanitizeAndDeduplicate(mergeAndPreservePredictions(items));
-    clean.sort((a, b) => (getConfidence(b) || 0) - (getConfidence(a) || 0));
+    // Sort upcoming fixtures in ascending date order so the most immediate matches appear at the top
+    const clean = sortMatchesByDatePriority(sanitizeAndDeduplicate(mergeAndPreservePredictions(items)));
     setBets(clean.slice(0, 18));
     setLoading(false);
   }, [minConf]);

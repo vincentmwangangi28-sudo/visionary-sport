@@ -6,7 +6,13 @@ import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { LeagueDateFilterBar, DateFilterType } from '@/components/LeagueDateFilterBar';
-import { matchesDateFilter, calculateDateFilterCounts } from '@/lib/dateFilterUtils';
+import {
+  matchesDateFilter,
+  calculateDateFilterCounts,
+  isPlayedOrPastMatch,
+  sortMatchesByDatePriority,
+  groupMatchesByDate,
+} from '@/lib/dateFilterUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +55,13 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
   const { preferences, setRiskProfile } = useUserPreferences();
   const { region, prioritizedLeagues, sortPredictions, getLeagueBadge } = useGeoRegion();
-  const { predictions, isLoading, totalPages, isFetching, refetch } = usePredictions(page, league);
+  const { predictions, data, isLoading, totalPages, isFetching, refetch } = usePredictions(page, league);
+
+  // Full unpaginated upcoming predictions pool for accurate date filter counts and date-filtered views
+  const allUpcomingPool = useMemo(() => {
+    const rawPool = data?.allPredictions ?? predictions;
+    return sortMatchesByDatePriority(rawPool.filter((p) => !isPlayedOrPastMatch(p)));
+  }, [data?.allPredictions, predictions]);
 
   const handleSetViewMode = (mode: 'card' | 'compact') => {
     setViewMode(mode);
@@ -76,14 +88,21 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     return list;
   }, [prioritizedLeagues]);
 
-  // Date filter counts computed from currently loaded league predictions
+  // Date filter counts computed from all upcoming league predictions (ignoring played matches)
   const dateCounts = useMemo(() => {
-    return calculateDateFilterCounts(predictions);
-  }, [predictions]);
+    return calculateDateFilterCounts(allUpcomingPool);
+  }, [allUpcomingPool]);
 
-  // Client-side filtering for date filters, quick filters, risk profiles, search and regional boost
+  // Client-side filtering for date filters, quick filters, risk profiles, search and Date Priority
   const filteredPredictions = useMemo(() => {
-    const rawFiltered = predictions.filter((p) => {
+    const activeSource =
+      dateFilter !== 'all' || quickFilter !== 'all' || searchQuery.trim() !== ''
+        ? allUpcomingPool
+        : predictions.filter((p) => !isPlayedOrPastMatch(p));
+
+    const rawFiltered = activeSource.filter((p) => {
+      if (isPlayedOrPastMatch(p)) return false;
+
       // Date filter (Today, Tomorrow, Weekend)
       if (dateFilter !== 'all') {
         if (!matchesDateFilter(p.match_date, dateFilter)) return false;
@@ -127,8 +146,12 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       return sortPredictions(rawFiltered);
     }
 
-    return rawFiltered;
-  }, [predictions, dateFilter, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
+    return sortMatchesByDatePriority(rawFiltered);
+  }, [allUpcomingPool, predictions, dateFilter, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
+
+  const dateGroupedPredictions = useMemo(() => {
+    return groupMatchesByDate(filteredPredictions);
+  }, [filteredPredictions]);
 
   if (isLoading) {
     return (
@@ -321,8 +344,12 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
           </label>
         </div>
 
-        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 self-end sm:self-auto">
-          <span>{filteredPredictions.length} Fixtures Analyzed</span>
+        <div className="text-[11px] text-muted-foreground flex items-center gap-2 self-end sm:self-auto flex-wrap">
+          <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 gap-1">
+            <Calendar className="h-3 w-3" />
+            Date Priority Active · Played Matches Ignored
+          </Badge>
+          <span>{filteredPredictions.length} Upcoming Fixtures</span>
         </div>
       </div>
 
@@ -398,19 +425,49 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         </div>
       ) : (
         <>
-          {viewMode === 'card' ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPredictions.map((p) => (
-                <PredictionCard key={p.id} prediction={p} viewMode="card" />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {filteredPredictions.map((p) => (
-                <PredictionCard key={p.id} prediction={p} viewMode="compact" />
-              ))}
-            </div>
-          )}
+          <div className="space-y-6">
+            {dateGroupedPredictions.map((group) => (
+              <div key={group.dateKey} className="space-y-3">
+                {/* Chronological Date Priority Section Header */}
+                <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-muted/40 border border-border/60">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-extrabold uppercase tracking-wide ${
+                        group.isToday
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : group.isTomorrow
+                          ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                          : 'bg-background text-foreground border border-border'
+                      }`}
+                    >
+                      <Calendar className="h-3 w-3" />
+                      {group.isToday ? 'Today · Priority #1' : group.isTomorrow ? 'Tomorrow · Priority #2' : group.subLabel}
+                    </span>
+                    <h3 className="text-sm font-bold text-foreground">
+                      {group.label}
+                    </h3>
+                  </div>
+                  <Badge variant="outline" className="text-[11px] font-mono">
+                    {group.matches.length} {group.matches.length === 1 ? 'Match' : 'Matches'}
+                  </Badge>
+                </div>
+
+                {viewMode === 'card' ? (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {group.matches.map((p) => (
+                      <PredictionCard key={p.id} prediction={p} viewMode="card" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {group.matches.map((p) => (
+                      <PredictionCard key={p.id} prediction={p} viewMode="compact" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (

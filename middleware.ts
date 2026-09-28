@@ -33,6 +33,8 @@ const CANONICAL: Record<string, string> = {
   '/blog':                         'https://predictpro.guru/blog',
   '/pricing':                      'https://predictpro.guru/pricing',
   '/about':                        'https://predictpro.guru/about',
+  '/responsible-gaming':           'https://predictpro.guru/responsible-gaming',
+  '/disclaimer':                   'https://predictpro.guru/responsible-gaming',
   '/sitemap':                      'https://predictpro.guru/sitemap',
 };
 

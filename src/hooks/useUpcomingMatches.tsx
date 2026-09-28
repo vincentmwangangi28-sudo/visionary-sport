@@ -1,12 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { 
   getSavedPrediction, 
   getSavedPredictionsList,
   generateDeterministicPrediction,
 } from '@/services/predictionStorage';
 import { Prediction } from '@/types/prediction';
+import {
+  isPlayedOrPastMatch,
+  sortMatchesByDatePriority,
+} from '@/lib/dateFilterUtils';
 
 export interface UpcomingMatch extends Prediction {
   ai_prediction?: string;
@@ -14,55 +18,18 @@ export interface UpcomingMatch extends Prediction {
 }
 
 /**
- * Ensures any match_date is truly in the future (at least 15 mins ahead).
- * If a date is missing, invalid, or in the past (e.g. historical data or stale cache),
- * it shifts it to a realistic upcoming matchday slot in the current week/weekend.
- */
-export function normalizeToUpcomingDate(rawDateStr?: string, indexOffset = 0): string {
-  const now = Date.now();
-  const minValidTime = now + 15 * 60 * 1000; // at least 15 min ahead
-
-  if (rawDateStr) {
-    const parsed = new Date(rawDateStr).getTime();
-    if (!isNaN(parsed) && parsed >= minValidTime) {
-      return new Date(parsed).toISOString();
-    }
-  }
-
-  // Create a realistic future fixture slot (today to next 6 days)
-  const target = new Date(now);
-  const dayOffset = Math.floor(indexOffset / 4) + (indexOffset % 2 === 0 ? 0 : 1);
-  target.setDate(target.getDate() + dayOffset);
-
-  const kickoffSlots = [
-    { h: 12, m: 30 },
-    { h: 15, m: 0 },
-    { h: 17, m: 30 },
-    { h: 20, m: 0 }
-  ];
-  const slot = kickoffSlots[indexOffset % kickoffSlots.length];
-  target.setUTCHours(slot.h, slot.m, 0, 0);
-
-  if (target.getTime() <= minValidTime) {
-    target.setDate(target.getDate() + 1);
-  }
-
-  return target.toISOString();
-}
-
-/**
- * Deduplicates fixtures by team matchup and filters out any past match.
+ * Deduplicates fixtures by team matchup, strictly ignores any played/finished/in-play/past match,
+ * and sorts by Date Priority (Today -> Tomorrow -> Future dates, earliest kickoff first).
  */
 export function deduplicateUpcomingMatches(list: UpcomingMatch[]): UpcomingMatch[] {
-  const nowMs = Date.now() - 15 * 60 * 1000;
+  const sortedByDate = sortMatchesByDatePriority(list);
   const seenPairs = new Set<string>();
   const sanitized: UpcomingMatch[] = [];
 
-  for (const m of list) {
+  for (const m of sortedByDate) {
     if (!m.home_team || !m.away_team) continue;
-    const matchTime = new Date(m.match_date).getTime();
-    // Strictly exclude any match that has already started or finished
-    if (isNaN(matchTime) || matchTime < nowMs) continue;
+    // Strictly ignore any match that has already kicked off, is in-play, or has been played/settled
+    if (isPlayedOrPastMatch(m)) continue;
 
     const pairKey = `${m.home_team.trim().toLowerCase()} vs ${m.away_team.trim().toLowerCase()}`;
     if (seenPairs.has(pairKey)) continue;
@@ -71,23 +38,28 @@ export function deduplicateUpcomingMatches(list: UpcomingMatch[]): UpcomingMatch
     sanitized.push(m);
   }
 
-  // Strictly sort chronologically by kickoff timestamp
-  sanitized.sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
-  return sanitized;
+  return sortMatchesByDatePriority(sanitized);
 }
 
 /**
- * Converts a prediction or raw fixture into a verified UpcomingMatch with AI model reasoning.
+ * Converts a valid upcoming prediction or raw fixture into a verified UpcomingMatch with AI model reasoning.
+ * Returns null if the match has already been played, settled, or kicked off.
  */
-function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false, idx = 0): UpcomingMatch {
-  const home = (p.home_team || 'Home Team').trim();
-  const away = (p.away_team || 'Away Team').trim();
+function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMatch | null {
+  if (!p || isPlayedOrPastMatch(p)) {
+    return null;
+  }
+
+  const home = (p.home_team || '').trim();
+  const away = (p.away_team || '').trim();
+  if (!home || !away) return null;
+
   const league = p.league || 'Football League';
-  const validatedDate = normalizeToUpcomingDate(p.match_date, idx);
+  const matchDateIso = new Date(p.match_date as string).toISOString();
 
   // Check saved predictions or generate deterministic modeling
-  const saved = getSavedPrediction(home, away);
-  const det = generateDeterministicPrediction(home, away, league, validatedDate);
+  const saved = getSavedPrediction(home, away, matchDateIso);
+  const det = generateDeterministicPrediction(home, away, league, matchDateIso);
 
   const outcome = p.predicted_outcome || p.prediction || saved?.predicted_outcome || saved?.prediction || det.prediction;
   const conf = p.confidence_score ?? p.confidence ?? saved?.confidence_score ?? saved?.confidence ?? det.confidence;
@@ -102,7 +74,7 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false, idx = 0): U
     home_team: home,
     away_team: away,
     league,
-    match_date: validatedDate,
+    match_date: matchDateIso,
     prediction: outcome,
     predicted_outcome: outcome,
     ai_prediction: outcome,
@@ -121,11 +93,14 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false, idx = 0): U
 }
 
 export const useUpcomingMatches = () => {
-  // Initialize immediately from valid upcoming fixtures for instant render
+  // Initialize immediately from valid upcoming fixtures (ignoring played matches) sorted by Date Priority
   const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
     const saved = getSavedPredictionsList();
-    const sourceList = saved.length > 0 ? saved : DEFAULT_PREDICTIONS;
-    const initial = sourceList.slice(0, 16).map((p, idx) => toUpcomingMatch(p, false, idx));
+    const updatedDefaults = getUpdatedDefaultPredictions();
+    const sourceList = [...saved, ...updatedDefaults];
+    const initial = sourceList
+      .map((p) => toUpcomingMatch(p, false))
+      .filter((m): m is UpcomingMatch => m !== null);
     return deduplicateUpcomingMatches(initial);
   });
 
@@ -138,30 +113,29 @@ export const useUpcomingMatches = () => {
       // 1. Query real-time upcoming verified matches across international leagues
       const realtimePicks = await fetchRealtimeUpcomingFixtures();
       
-      const realMatches: UpcomingMatch[] = realtimePicks.map((p, idx) => 
-        toUpcomingMatch(p, true, idx)
-      );
+      const realMatches: UpcomingMatch[] = realtimePicks
+        .map((p) => toUpcomingMatch(p, true))
+        .filter((m): m is UpcomingMatch => m !== null);
 
       const combined: UpcomingMatch[] = [...realMatches];
 
-      // 2. If realtime feed returned fewer than 12 matches, supplement with authentic curated fixtures
-      if (combined.length < 12) {
-        const fallbackPicks = DEFAULT_PREDICTIONS.map((p, idx) =>
-          toUpcomingMatch(p, false, combined.length + idx)
-        );
-        combined.push(...fallbackPicks);
-      }
+      // 2. Supplement with updated upcoming fixtures (prioritized from Today forward)
+      const updatedDefaults = getUpdatedDefaultPredictions()
+        .map((p) => toUpcomingMatch(p, false))
+        .filter((m): m is UpcomingMatch => m !== null);
+      combined.push(...updatedDefaults);
 
-      // 3. Deduplicate and ensure all dates are valid and in the future
+      // 3. Deduplicate, ignore any played/past matches, and sort strictly by Date Priority
       const sanitized = deduplicateUpcomingMatches(combined);
       setMatches(sanitized);
       setIsRealTime(realMatches.length > 0);
     } catch (e) {
       console.warn('useUpcomingMatches refresh fallback:', e instanceof Error ? e.message : 'fetch failed');
-      // Offline fallback: load from cached predictions with guaranteed upcoming dates
       const saved = getSavedPredictionsList();
-      const offlineSource = saved.length > 0 ? saved : DEFAULT_PREDICTIONS;
-      const offlineList = offlineSource.map((p, idx) => toUpcomingMatch(p, false, idx));
+      const updatedDefaults = getUpdatedDefaultPredictions();
+      const offlineList = [...saved, ...updatedDefaults]
+        .map((p) => toUpcomingMatch(p, false))
+        .filter((m): m is UpcomingMatch => m !== null);
       setMatches(deduplicateUpcomingMatches(offlineList));
       setIsRealTime(false);
     } finally {
@@ -171,7 +145,7 @@ export const useUpcomingMatches = () => {
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 90_000); // 90-second fixture sync
+    const interval = setInterval(refresh, 60_000); // 60-second fixture sync & played-match pruning
     return () => clearInterval(interval);
   }, [refresh]);
 

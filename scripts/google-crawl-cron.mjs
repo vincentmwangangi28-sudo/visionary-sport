@@ -11,8 +11,8 @@
  * 5. Logs detailed diagnostics for Google Search Console and crawler monitoring
  */
 
-const BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'predictpro789xyz456indexnow';
+const BASE_URL = process.env.SITE_URL || 'https://www.predictpro.guru';
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
 const SUPABASE_PING_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines';
 
 const PRIORITY_CRAWL_URLS = [

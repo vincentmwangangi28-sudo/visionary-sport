@@ -38,9 +38,9 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="PredictPro — AI Football Predictions Today & Daily Tips"
-        description="Accurate AI football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, and value bets for 40+ global leagues."
-        keywords="football predictions today, ai football predictions, free football betting tips, premier league predictions today, sure wins today, banker bet of the day, both teams to score btts tips, over 2.5 goals predictions, value bets today"
+        title="PredictPro — AI Football Predictions Today, xG Stats & Match Analytics"
+        description="Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) stats, Bivariate Poisson probabilities, and H2H match analytics for 40+ global leagues. 18+ Informational only."
+        keywords="football predictions today, ai football predictions, football match statistics today, premier league predictions today, expected goals xg model, both teams to score btts stats, over 2.5 goals probabilities, poisson scoreline analytics"
         canonical="/"
       />
       <Navbar />
@@ -55,19 +55,19 @@ export default function Index() {
               🔥 Trending Today:
             </span>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-              <Link to="/jackpot-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-700 dark:text-red-300 font-bold border border-red-500/30 whitespace-nowrap transition-all">
+              <Link to="/jackpot-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-800 dark:text-red-300 font-bold border border-red-500/30 whitespace-nowrap transition-all">
                 <span>🏆 Mega Jackpot (17 Games)</span>
               </Link>
               <Link to="/predict" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary font-bold border border-primary/20 whitespace-nowrap transition-all">
                 <span>🎯 AI Pro Tips Today</span>
               </Link>
-              <Link to="/btts" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30 whitespace-nowrap transition-all">
+              <Link to="/btts" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/30 whitespace-nowrap transition-all">
                 <span>⚽ BTTS &amp; Over 2.5</span>
               </Link>
-              <Link to="/value-bets" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/30 whitespace-nowrap transition-all">
+              <Link to="/value-bets" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-500/30 whitespace-nowrap transition-all">
                 <span>📈 Value Bets (+EV)</span>
               </Link>
-              <Link to="/us-soccer-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/15 hover:bg-blue-500/25 text-blue-700 dark:text-blue-300 font-bold border border-blue-500/30 whitespace-nowrap transition-all">
+              <Link to="/us-soccer-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/15 hover:bg-blue-500/25 text-blue-800 dark:text-blue-300 font-bold border border-blue-500/30 whitespace-nowrap transition-all">
                 <span>🇺🇸 US Soccer &amp; MLS</span>
               </Link>
               <Link to="/kpl-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-foreground font-semibold border whitespace-nowrap transition-all">

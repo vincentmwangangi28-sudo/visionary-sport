@@ -48,7 +48,7 @@ export const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl pt-24 pb-12 sm:pt-28 sm:pb-16">
         {/* Live badge */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-3 py-1 font-semibold text-xs">
+          <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 px-3 py-1 font-semibold text-xs">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2 inline-block" />
             Live AI Inference Feed
           </Badge>
@@ -110,11 +110,26 @@ export const Hero = () => {
           ))}
         </div>
 
-        {/* Trust badges */}
+        {/* Trust badges & Above-the-Fold Google Ads Responsible Gambling / 18+ Disclosure */}
         <div className="flex items-center justify-center gap-6 mt-8 flex-wrap">
           {['M-Pesa', 'Stripe', 'API-Football', 'Gemini AI'].map(b => (
-            <span key={b} className="text-xs text-muted-foreground/60 font-medium">{b}</span>
+            <span key={b} className="text-xs text-muted-foreground font-medium">{b}</span>
           ))}
+        </div>
+
+        <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 rounded-xl border border-border/70 bg-background/75 backdrop-blur-sm px-3.5 py-2 text-[11px] text-muted-foreground max-w-2xl mx-auto">
+          <span className="inline-flex items-center rounded bg-rose-600 px-1.5 py-0.5 text-[10px] font-black text-white">
+            18+ ONLY
+          </span>
+          <span className="font-semibold text-foreground">
+            Informational Football Statistics &amp; xG Analytics (Never for Minors)
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>Not a bookmaker or real-money gambling site</span>
+          <span aria-hidden="true">·</span>
+          <Link to="/responsible-gaming" className="font-bold text-primary hover:underline">
+            Responsible Gambling Policy &amp; Helplines
+          </Link>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePredictions } from '@/hooks/usePredictions';
+import { isPlayedOrPastMatch, sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
 import {
   calculateTeamStats,
   calculateLeagueOverview,
@@ -22,7 +23,11 @@ export interface PinnedDashboardData {
 
 export function usePersonalizedDashboard() {
   const { user } = useAuth();
-  const { predictions } = usePredictions(1);
+  const { predictions: pagePredictions, data } = usePredictions(1);
+  const predictions = useMemo(() => {
+    const raw = data?.allPredictions ?? pagePredictions;
+    return sortMatchesByDatePriority(raw.filter(p => !isPlayedOrPastMatch(p)));
+  }, [data?.allPredictions, pagePredictions]);
 
   const storageKey = useMemo(() => {
     return user ? `predictpro_pinned_dashboard_${user.id}` : 'predictpro_pinned_dashboard_guest';
@@ -208,33 +213,33 @@ export function usePersonalizedDashboard() {
     const pinnedTeamsNorm = pinnedTeams.map(t => t.toLowerCase().trim());
     const pinnedLeaguesNorm = pinnedLeagues.map(l => l.toLowerCase().trim());
 
-    const nowMs = Date.now() - 105 * 60 * 1000;
-    return predictions.filter(p => {
-      const matchTime = new Date(p.match_date).getTime();
-      if (!isNaN(matchTime) && matchTime < nowMs) return false;
+    return sortMatchesByDatePriority(
+      predictions.filter(p => {
+        if (isPlayedOrPastMatch(p)) return false;
 
-      const h = p.home_team.toLowerCase().trim();
-      const a = p.away_team.toLowerCase().trim();
-      const lg = p.league.toLowerCase().trim();
+        const h = p.home_team.toLowerCase().trim();
+        const a = p.away_team.toLowerCase().trim();
+        const lg = p.league.toLowerCase().trim();
 
-      const matchesTeam = pinnedTeamsNorm.some(t => h.includes(t) || a.includes(t) || t.includes(h) || t.includes(a));
-      const matchesLeague = pinnedLeaguesNorm.some(l => lg.includes(l) || l.includes(lg));
+        const matchesTeam = pinnedTeamsNorm.some(t => h.includes(t) || a.includes(t) || t.includes(h) || t.includes(a));
+        const matchesLeague = pinnedLeaguesNorm.some(l => lg.includes(l) || l.includes(lg));
 
-      return matchesTeam || matchesLeague;
-    }).map(p => {
-      const h = p.home_team.toLowerCase().trim();
-      const a = p.away_team.toLowerCase().trim();
-      const lg = p.league.toLowerCase().trim();
+        return matchesTeam || matchesLeague;
+      }).map(p => {
+        const h = p.home_team.toLowerCase().trim();
+        const a = p.away_team.toLowerCase().trim();
+        const lg = p.league.toLowerCase().trim();
 
-      const isPinnedTeamMatch = pinnedTeamsNorm.some(t => h.includes(t) || a.includes(t) || t.includes(h) || t.includes(a));
-      const isPinnedLeagueMatch = pinnedLeaguesNorm.some(l => lg.includes(l) || l.includes(lg));
+        const isPinnedTeamMatch = pinnedTeamsNorm.some(t => h.includes(t) || a.includes(t) || t.includes(h) || t.includes(a));
+        const isPinnedLeagueMatch = pinnedLeaguesNorm.some(l => lg.includes(l) || l.includes(lg));
 
-      return {
-        ...p,
-        isPinnedTeamMatch,
-        isPinnedLeagueMatch,
-      };
-    }).sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
+        return {
+          ...p,
+          isPinnedTeamMatch,
+          isPinnedLeagueMatch,
+        };
+      })
+    );
   }, [predictions, pinnedTeams, pinnedLeagues]);
 
   return {

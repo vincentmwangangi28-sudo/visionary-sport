@@ -62,31 +62,31 @@ export const SiteAnnouncementBanner: React.FC = () => {
   // Theme styles
   const themeConfig = {
     promo: {
-      bg: 'bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-background/95 text-emerald-100 border-emerald-500/30',
+      bg: 'bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-emerald-50 border-emerald-500/30',
       icon: Sparkles,
-      iconColor: 'text-emerald-400',
-      btnVariant: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-xs',
+      iconColor: 'text-emerald-300',
+      btnVariant: 'bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs',
       badge: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
     },
     info: {
-      bg: 'bg-gradient-to-r from-sky-950/80 via-sky-900/60 to-background/95 text-sky-100 border-sky-500/30',
+      bg: 'bg-gradient-to-r from-sky-950 via-sky-900 to-slate-900 text-sky-50 border-sky-500/30',
       icon: Info,
-      iconColor: 'text-sky-400',
-      btnVariant: 'bg-sky-500 hover:bg-sky-600 text-white shadow-xs',
+      iconColor: 'text-sky-300',
+      btnVariant: 'bg-sky-700 hover:bg-sky-800 text-white font-semibold shadow-xs',
       badge: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
     },
     urgent: {
-      bg: 'bg-gradient-to-r from-amber-950/85 via-amber-900/65 to-background/95 text-amber-100 border-amber-500/30',
+      bg: 'bg-gradient-to-r from-amber-950 via-amber-900 to-slate-900 text-amber-50 border-amber-500/30',
       icon: AlertTriangle,
-      iconColor: 'text-amber-400',
-      btnVariant: 'bg-amber-500 hover:bg-amber-600 text-black font-semibold shadow-xs',
+      iconColor: 'text-amber-300',
+      btnVariant: 'bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold shadow-xs',
       badge: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
     },
     vip: {
-      bg: 'bg-gradient-to-r from-violet-950/85 via-purple-900/65 to-background/95 text-purple-100 border-purple-500/30',
+      bg: 'bg-gradient-to-r from-violet-950 via-purple-900 to-slate-900 text-purple-50 border-purple-500/30',
       icon: Crown,
-      iconColor: 'text-amber-400',
-      btnVariant: 'bg-purple-600 hover:bg-purple-700 text-white shadow-xs',
+      iconColor: 'text-amber-300',
+      btnVariant: 'bg-purple-700 hover:bg-purple-800 text-white font-semibold shadow-xs',
       badge: 'border-purple-500/40 bg-purple-500/10 text-purple-300',
     },
   }[announcement.theme || 'promo'];

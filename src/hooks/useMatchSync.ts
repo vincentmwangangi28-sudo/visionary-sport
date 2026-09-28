@@ -428,7 +428,7 @@ export function useMatchSync() {
     return () => clearInterval(interval);
   }, [autoEnabled, isTriggerEnabled, syncMatchData]);
 
-  // TRIGGER 4: Cold Start Check (on App Mount)
+  // TRIGGER 4: Cold Start Check (deferred to idle after initial page load completes)
   useEffect(() => {
     if (!autoEnabled) return;
 
@@ -440,8 +440,14 @@ export function useMatchSync() {
 
     if (storedDate !== todayDate) {
       const initialTimer = setTimeout(() => {
-        syncMatchData('init_cold_start', false).catch(() => {});
-      }, 3500);
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(() => {
+            syncMatchData('init_cold_start', false).catch(() => {});
+          });
+        } else {
+          syncMatchData('init_cold_start', false).catch(() => {});
+        }
+      }, 45000);
       return () => clearTimeout(initialTimer);
     }
   }, [autoEnabled, syncMatchData]);

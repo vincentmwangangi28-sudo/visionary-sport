@@ -121,9 +121,9 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
           </div>
 
           <div className="flex items-center gap-2 shrink-0 flex-wrap">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <Send className="h-3.5 w-3.5" />
+              <Send className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Telegram Auto-Broadcast Active</span>
             </div>
 
@@ -134,7 +134,7 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
               disabled={loading}
               className="text-xs font-bold h-8 gap-1.5"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               Refresh
             </Button>
           </div>
@@ -147,7 +147,7 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
           </span>
           <span>•</span>
           <span>
-            Avg Model Confidence: <strong className="text-emerald-600 dark:text-emerald-400">{digest.marketPulse.avgConfidence}%</strong>
+            Avg Model Confidence: <strong className="text-emerald-800 dark:text-emerald-300">{digest.marketPulse.avgConfidence}%</strong>
           </span>
           <span>•</span>
           <span>

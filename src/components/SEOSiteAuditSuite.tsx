@@ -696,10 +696,10 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
                 'Fixed ESPN scoreboard date query formatting (single-day YYYYMMDD) to prevent HTTP 400 errors and added automatic 30-minute cooldowns on RapidAPI 401/403/429 responses.',
             },
             {
-              title: 'IndexNow Key Alignment & Sitemap Protocol',
+              title: 'IndexNow Key Alignment & AhrefsBot UTF-8 Verification',
               status: 'Verified (HTTP 200)',
               detail:
-                'Unified predictpro789xyz456indexnow across static key files, Edge Functions, and cron handlers with strict application/json; charset=utf-8 headers and deprecated Google /ping removal.',
+                'Hosted UTF-8 key file at https://www.predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt with key content f7qprb5m24wrvjdmkspy56hhvjmhkcn5, explicit AhrefsBot allow rules, and unified across Edge Functions & cron handlers.',
             },
             {
               title: 'Supabase Edge Function CORS Preflight & Static Guard',

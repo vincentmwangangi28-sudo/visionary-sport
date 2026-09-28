@@ -53,7 +53,7 @@
       "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
     },
     {
-      "source": "/((?!api/|sitemap\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.txt|.*\\.png|.*\\.svg|.*\\.ico).*)",
+      "source": "/((?!api/|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.txt|.*\\.png|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],
@@ -64,6 +64,27 @@
     }
   ],
   "headers": [
+    {
+      "source": "/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [

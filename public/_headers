@@ -37,6 +37,18 @@
   Access-Control-Allow-Origin: *
   Content-Type: text/html; charset=UTF-8
 
+/k1rdcw8qawe1jjeeezgcndj1njk3yr2g.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+  X-Robots-Tag: all
+
+/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+  X-Robots-Tag: all
+
 /ccf4ef0c532c4444b096f02474b4320a.txt
   Cache-Control: public, max-age=3600
   Access-Control-Allow-Origin: *

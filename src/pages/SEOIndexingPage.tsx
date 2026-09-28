@@ -784,7 +784,7 @@ export default function SEOIndexingPage() {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
-                      IndexNow Key Verification
+                      IndexNow API Key (UTF-8 Root Key File)
                     </label>
                     <div className="flex items-center gap-2">
                       <Input
@@ -802,9 +802,29 @@ export default function SEOIndexingPage() {
                         {copiedKey ? 'Copied' : 'Copy'}
                       </Button>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      Verified at <a href="/predictpro-indexnow-key.txt" target="_blank" className="text-primary underline">/predictpro-indexnow-key.txt</a>
-                    </p>
+                    <div className="mt-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-medium">Root UTF-8 Key File:</span>
+                        <a
+                          href="/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-emerald-700 dark:text-emerald-300 font-mono font-bold underline flex items-center gap-1"
+                        >
+                          /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-medium">Canonical Key URL:</span>
+                        <span className="font-mono text-[10px] text-foreground">
+                          https://www.predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-medium">AhrefsBot &amp; Site Audit:</span>
+                        <span className="text-emerald-700 dark:text-emerald-300 font-bold">Allowed (UTF-8 Verified)</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
@@ -868,8 +888,8 @@ export default function SEOIndexingPage() {
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="text-muted-foreground">IndexNow Key Endpoint:</span>
-                        <a href="/ccf4ef0c532c4444b096f02474b4320a.txt" target="_blank" className="text-emerald-500 underline font-sans font-semibold">
-                          /ccf4ef0c532c4444b096f02474b4320a.txt
+                        <a href="/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt" target="_blank" rel="noreferrer" className="text-emerald-600 dark:text-emerald-400 underline font-sans font-semibold">
+                          /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
                         </a>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">

@@ -42,6 +42,14 @@ function cronTasksPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split("?")[0] || "";
+        if (url === "/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt") {
+          res.setHeader("Content-Type", "text/plain; charset=utf-8");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.setHeader("Cache-Control", "public, max-age=3600");
+          res.statusCode = 200;
+          res.end("f7qprb5m24wrvjdmkspy56hhvjmhkcn5");
+          return;
+        }
         if (url.startsWith("/api/") && (url.endsWith("-cron") || url.includes("/cron") || url === "/api/indexing-cron")) {
           try {
             const { handleCronTask } = await import("./src/server/cronApiHandler");
@@ -82,10 +90,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 3000,
-    hmr: {
-      clientPort: 3000,
-      protocol: "ws",
-    },
+    hmr: false,
   },
   plugins: [react(), geminiTasksPlugin(), cronTasksPlugin()],
   resolve: { 

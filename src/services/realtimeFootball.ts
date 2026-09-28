@@ -1,5 +1,6 @@
 import { NormalizedMatch, toIsoUtc, normalizeStatus } from '@/lib/matchNormalizer';
 import { Prediction } from '@/types/prediction';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { 
   generateDeterministicPrediction, 
   mergeAndPreservePredictions, 
@@ -15,8 +16,31 @@ import {
   safeFootballFetch,
   CACHE_TTLS
 } from '@/services/footballDataCache';
+import { registerRuntimeTeamLogo } from '@/services/teamLogos';
 
 export { isHostInCooldown, setHostCooldown, getFootballCache, setFootballCache };
+
+/**
+ * Shared, deduplicated ESPN league scoreboard fetcher so live scores and upcoming fixtures
+ * share the exact same in-flight promise and cached payload instead of double-fetching.
+ */
+async function fetchEspnLeagueScoreboard(league: LeagueDefinition): Promise<Array<Record<string, unknown>>> {
+  return fetchWithCacheAndDeduplication(`espn_sb_${league.espnCode}`, CACHE_TTLS.LIVE_SCORES, async () => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
+    } catch {
+      return [];
+    }
+  });
+}
 
 // Supported top leagues mapping
 export interface LeagueDefinition {
@@ -440,23 +464,8 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     }
   }
 
-  // Fetch real-time live events across major leagues from real-time ESPN scoreboard feed
-  // Prioritize primary 6 leagues for lightning-fast first paint, query remaining in parallel with tight 2.5s timeout
-  const livePromises = LEAGUES_LIST.slice(0, 10).map(async (league) => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2500);
-      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
-    } catch {
-      return [];
-    }
-  });
+  // Fetch real-time live events across major leagues using shared deduplicated scoreboard helper
+  const livePromises = LEAGUES_LIST.slice(0, 6).map((league) => fetchEspnLeagueScoreboard(league));
 
   const leagueResults = await Promise.all(livePromises);
   const rawEvents = leagueResults.flat();
@@ -474,6 +483,8 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 
     const homeLogo = (homeComp?.team as Record<string, string>)?.logo || null;
     const awayLogo = (awayComp?.team as Record<string, string>)?.logo || null;
+    registerRuntimeTeamLogo(homeTeam, homeLogo);
+    registerRuntimeTeamLogo(awayTeam, awayLogo);
     
     const homeScoreRaw = homeComp?.score !== undefined ? parseInt(String(homeComp.score), 10) : null;
     const awayScoreRaw = awayComp?.score !== undefined ? parseInt(String(awayComp.score), 10) : null;
@@ -559,45 +570,46 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Calculate upcoming date range (today to 14 days ahead) in YYYYMMDD-YYYYMMDD format
+  // Calculate upcoming date range (today to 10 days ahead) in YYYYMMDD-YYYYMMDD format
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
 
-  const future = new Date(now.getTime() + 14 * 86400000);
+  const tomorrow = new Date(now.getTime() + 86400000);
+  const yt = tomorrow.getFullYear();
+  const mt = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const dt = String(tomorrow.getDate()).padStart(2, '0');
+
+  const future = new Date(now.getTime() + 10 * 86400000);
   const y2 = future.getFullYear();
   const m2 = String(future.getMonth() + 1).padStart(2, '0');
   const d2 = String(future.getDate()).padStart(2, '0');
 
   const rangeParam = `${y}${m}${d}-${y2}${m2}${d2}`;
 
-  // Every league we track has a verified ESPN scoreboard code (see LEAGUES_LIST
-  // above) - widened from a 15-league subset so upcoming fixtures actually
-  // cover AFCON, CAF Champions League, cup competitions (FA Cup, Copa del Rey,
-  // DFB-Pokal, Coppa Italia, Coupe de France), Saudi Pro League, Copa
-  // Libertadores, AFC Champions League, World Cup, and the Kenyan Premier
-  // League, none of which were previously queried here even though they were
-  // already configured and used elsewhere in this file.
   const ESPN_SCOREBOARD_SUPPORTED = new Set(LEAGUES_LIST.map(l => l.espnCode));
 
   const fetchPromises = selectedLeagues
     .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-    .slice(0, 12)
+    .slice(0, 10)
     .map(async (league) => {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2500);
-        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
-      } catch {
-        return [];
-      }
+      return fetchWithCacheAndDeduplication(`espn_upcoming_${league.espnCode}_${y}${m}${d}`, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 8000);
+          const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${rangeParam}`, {
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+          if (!res.ok) return fetchEspnLeagueScoreboard(league);
+          const data = await res.json();
+          const events = (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
+          return events.length > 0 ? events : fetchEspnLeagueScoreboard(league);
+        } catch {
+          return fetchEspnLeagueScoreboard(league);
+        }
+      });
     });
 
   const resultsByLeague = await Promise.all(fetchPromises);
@@ -605,8 +617,38 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
   const predictions: Prediction[] = [];
   const seenMatches = new Set<string>();
+  const nowMs = Date.now();
 
   for (const ev of rawEvents) {
+    // Strictly ignore played, finished, in-play, postponed, or cancelled matches
+    const statusObj = (ev.status as Record<string, unknown>)?.type as Record<string, unknown> | undefined;
+    const state = String(statusObj?.state || '').toLowerCase();
+    const completed = Boolean(statusObj?.completed);
+    const statusDesc = String(statusObj?.description || statusObj?.detail || '').toLowerCase();
+
+    if (
+      completed ||
+      state === 'post' ||
+      state === 'in' ||
+      statusDesc.includes('final') ||
+      statusDesc.includes('full time') ||
+      statusDesc === 'ft' ||
+      statusDesc.includes('ended') ||
+      statusDesc.includes('finished') ||
+      statusDesc.includes('postpon') ||
+      statusDesc.includes('cancel') ||
+      statusDesc.includes('abandon')
+    ) {
+      continue;
+    }
+
+    const matchDateIso = ev.date ? toIsoUtc(ev.date as string) : '';
+    const matchTimeMs = matchDateIso ? new Date(matchDateIso).getTime() : NaN;
+    // Strictly ignore any match whose kickoff time has already passed
+    if (isNaN(matchTimeMs) || matchTimeMs <= nowMs) {
+      continue;
+    }
+
     const competitions = (ev.competitions as Array<Record<string, unknown>>) || [];
     const comp = competitions[0] || {};
     const competitors = (comp.competitors as Array<Record<string, unknown>>) || [];
@@ -617,7 +659,12 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     const awayTeam = (awayComp?.team as Record<string, string>)?.displayName || (awayComp?.team as Record<string, string>)?.name;
     if (!homeTeam || !awayTeam) continue;
 
-    const matchKey = `${homeTeam.toLowerCase()}-${awayTeam.toLowerCase()}-${String(ev.date).split('T')[0]}`;
+    const homeLogo = (homeComp?.team as Record<string, string>)?.logo || null;
+    const awayLogo = (awayComp?.team as Record<string, string>)?.logo || null;
+    registerRuntimeTeamLogo(homeTeam, homeLogo);
+    registerRuntimeTeamLogo(awayTeam, awayLogo);
+
+    const matchKey = `${homeTeam.toLowerCase()}-${awayTeam.toLowerCase()}-${String(matchDateIso).split('T')[0]}`;
     if (seenMatches.has(matchKey)) continue;
     seenMatches.add(matchKey);
 
@@ -626,7 +673,6 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     const oddsDetail = oddsObj?.details as string | undefined;
 
     const pred = computeLivePrediction(homeTeam, awayTeam, null, null, oddsDetail);
-    const matchDateIso = ev.date ? toIsoUtc(ev.date as string) : new Date().toISOString();
     const leagueName = (ev._leagueName as string) || 'Football League';
 
     const isHighConf = pred.confidence >= 78;
@@ -662,12 +708,13 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     ];
     const datesToQuery = [
       `${y}${m}${d}`,
+      `${yt}${mt}${dt}`,
     ];
 
     for (const rapidHost of rapidHosts) {
       if (isHostInCooldown(rapidHost)) continue;
       let hostSuccess = false;
-      for (const queryDate of datesToQuery.slice(0, 1)) {
+      for (const queryDate of datesToQuery) {
         try {
           const res = await fetch(`https://${rapidHost}/football-get-matches-by-date?date=${queryDate}`, {
             headers: {
@@ -683,16 +730,22 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
             const json = await res.json();
             const apiMatches = json.response?.matches || [];
             for (const mItem of apiMatches) {
+              if (mItem.status?.finished || mItem.status?.started || mItem.status?.cancelled) {
+                continue;
+              }
               const h = mItem.home?.name || mItem.home?.longName;
               const a = mItem.away?.name || mItem.away?.longName;
               if (!h || !a) continue;
 
-              const mKey = `${h.toLowerCase()}-${a.toLowerCase()}-${String(mItem.status?.utcTime || mItem.time || '').split('T')[0]}`;
+              const matchDate = mItem.status?.utcTime || '';
+              const matchTimeMs = matchDate ? new Date(matchDate).getTime() : NaN;
+              if (isNaN(matchTimeMs) || matchTimeMs <= Date.now()) continue;
+
+              const mKey = `${h.toLowerCase()}-${a.toLowerCase()}-${String(matchDate).split('T')[0]}`;
               if (seenMatches.has(mKey)) continue;
               seenMatches.add(mKey);
 
               const pred = computeLivePrediction(h, a);
-              const matchDate = mItem.status?.utcTime || new Date().toISOString();
 
               predictions.push({
                 id: `freeapi-match-${mItem.id || mKey}`,
@@ -747,12 +800,15 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
           const a = ev.away?.name || ev.away_team || ev.away;
           if (!h || !a) continue;
 
-          const mKey = `${h.toLowerCase()}-${a.toLowerCase()}`;
+          const matchDate = ev.time ? new Date(Number(ev.time) * 1000).toISOString() : '';
+          const matchTimeMs = matchDate ? new Date(matchDate).getTime() : NaN;
+          if (isNaN(matchTimeMs) || matchTimeMs <= Date.now()) continue;
+
+          const mKey = `${h.toLowerCase()}-${a.toLowerCase()}-${String(matchDate).split('T')[0]}`;
           if (seenMatches.has(mKey)) continue;
           seenMatches.add(mKey);
 
           const pred = computeLivePrediction(h, a);
-          const matchDate = ev.time ? new Date(Number(ev.time) * 1000).toISOString() : new Date().toISOString();
 
           predictions.push({
             id: `bet365-match-${ev.id || mKey}`,
@@ -796,11 +852,18 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
         const json = await res.json();
         const apiData = json.data || [];
         for (const item of apiData) {
+          if (item.is_expired || item.status === 'won' || item.status === 'lost' || item.status === 'finished') {
+            continue;
+          }
           const h = item.home_team;
           const a = item.away_team;
           if (!h || !a) continue;
 
-          const mKey = `${h.toLowerCase()}-${a.toLowerCase()}`;
+          const startIso = item.start_date ? toIsoUtc(String(item.start_date)) : '';
+          const startMs = startIso ? new Date(startIso).getTime() : NaN;
+          if (isNaN(startMs) || startMs <= Date.now()) continue;
+
+          const mKey = `${h.toLowerCase()}-${a.toLowerCase()}-${String(startIso).split('T')[0]}`;
           if (seenMatches.has(mKey)) continue;
           seenMatches.add(mKey);
 
@@ -822,7 +885,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
             home_team: h,
             away_team: a,
             league: item.competition_name || item.federation || 'Football Match',
-            match_date: item.start_date || new Date().toISOString(),
+            match_date: startIso,
             prediction: outcome,
             predicted_outcome: outcome,
             confidence: Math.min(95, Math.max(55, confidenceVal)),
@@ -844,11 +907,40 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Merge with saved prediction registry to lock in and avoid prediction shifts on refreshes
-  const lockedPredictions = mergeAndPreservePredictions(predictions);
+  // Supplement with updated default upcoming fixtures if external feeds returned a small set
+  if (predictions.length < 15) {
+    let fallbackFixtures = getUpdatedDefaultPredictions();
+    if (leagueFilter && leagueFilter !== 'All') {
+      const filteredFallback = fallbackFixtures.filter((f) =>
+        f.league.toLowerCase().includes(leagueFilter.toLowerCase()) ||
+        leagueFilter.toLowerCase().includes(f.league.toLowerCase())
+      );
+      if (filteredFallback.length > 0) {
+        fallbackFixtures = filteredFallback;
+      }
+    }
+    for (const item of fallbackFixtures) {
+      const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
+      if (!seenMatchKeys.has(mKey)) {
+        seenMatchKeys.add(mKey);
+        predictions.push(item);
+      }
+    }
+  }
 
-  // Sort by date ascending, then confidence descending
-  lockedPredictions.sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
+  // Merge with saved prediction registry to lock in and avoid prediction shifts on refreshes
+  const lockedPredictions = mergeAndPreservePredictions(predictions).filter((p) => {
+    const t = new Date(p.match_date).getTime();
+    return !isNaN(t) && t > Date.now() && p.status !== 'finished' && !p.result;
+  });
+
+  // Sort upcoming fixtures strictly by match_date in ascending order so the most immediate matches appear at the top
+  lockedPredictions.sort((a, b) => {
+    const timeA = new Date(a.match_date).getTime();
+    const timeB = new Date(b.match_date).getTime();
+    if (timeA !== timeB) return timeA - timeB;
+    return (b.confidence_score ?? b.confidence ?? 0) - (a.confidence_score ?? a.confidence ?? 0);
+  });
 
   return lockedPredictions;
   });

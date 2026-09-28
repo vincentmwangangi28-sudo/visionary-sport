@@ -22,15 +22,18 @@ logger.initGlobalErrorLogging();
  * 5. Reconnection & Visibility Sync: Triggers immediate revalidation on network recovery and tab focus.
  */
 if ('serviceWorker' in navigator) {
-  // Handler for background revalidation broadcasts
+  let lastRevalidationTime = 0;
+  // Handler for background revalidation broadcasts (debounced to prevent main-thread violations)
   const handleMatchDataRevalidation = (data?: { url?: string; timestamp?: string }) => {
+    const now = Date.now();
+    if (now - lastRevalidationTime < 30000) return;
+    lastRevalidationTime = now;
+
     try {
-      // Invalidate match prediction queries so UI updates smoothly with fresh data
       queryClient.invalidateQueries({ queryKey: ['predictions'] }).catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['live-fixtures'] }).catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['upcoming-fixtures'] }).catch(() => {});
 
-      // Dispatch custom DOM event for listening components
       window.dispatchEvent(
         new CustomEvent('predictpro:match-data-revalidated', {
           detail: {
@@ -65,11 +68,17 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  // Immediately purge any stale pre-v9 caches so old poisoned chunk entries are evicted
+  // Immediately purge any stale pre-v4 caches so old bloated opaque logo caches are evicted
   if ('caches' in window) {
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => !k.includes('v9')).map((k) => caches.delete(k))))
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => !k.startsWith('predictpro-v4'))
+            .map((k) => caches.delete(k).catch(() => false))
+        )
+      )
       .catch(() => {});
   }
 

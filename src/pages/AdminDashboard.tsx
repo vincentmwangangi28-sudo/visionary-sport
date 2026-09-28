@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { 
   DollarSign, Sparkles, LayoutDashboard, Clock, ShieldCheck, 
   ShieldAlert, Zap, Users, AlertTriangle, LogIn, BarChart3, CheckCircle2, LogOut, Lock,
-  Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key
+  Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key, Radio
 } from 'lucide-react';
 import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomationHub';
 import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
@@ -29,6 +29,7 @@ import { AdminSystemConfigTab } from '@/components/admin/AdminSystemConfigTab';
 import { AdminAuditLogTab } from '@/components/admin/AdminAuditLogTab';
 import { AdminDiagnosticsTab } from '@/components/admin/AdminDiagnosticsTab';
 import { AdminUserRolesManager } from '@/components/admin/AdminUserRolesManager';
+import { AdminExternalApisTab } from '@/components/admin/AdminExternalApisTab';
 
 interface DailyStat {
   date: string;
@@ -272,6 +273,11 @@ export default function AdminDashboard() {
                 <span>Overview</span>
               </TabsTrigger>
 
+              <TabsTrigger value="external-apis" className="gap-2 text-xs">
+                <Radio className="h-3.5 w-3.5 text-emerald-500" />
+                <span>External APIs &amp; Latency</span>
+              </TabsTrigger>
+
               <TabsTrigger value="trends" className="gap-2 text-xs">
                 <BarChart3 className="h-3.5 w-3.5 text-sky-500" />
                 <span>Trends & DAU</span>
@@ -352,6 +358,11 @@ export default function AdminDashboard() {
               fetching={fetching} 
               onNavigateTab={setActiveTab} 
             />
+          </TabsContent>
+
+          {/* External APIs & Latency Monitor Tab */}
+          <TabsContent value="external-apis" className="space-y-6">
+            <AdminExternalApisTab />
           </TabsContent>
 
           {/* Trends & Accuracy Tab */}

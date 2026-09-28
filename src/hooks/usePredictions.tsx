@@ -2,50 +2,47 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { fetchSportscorePredictions } from '@/services/sportscoreFootball';
-import { fetchSportmonksPredictions } from '@/services/sportmonksFootball';
 import { 
   mergeAndPreservePredictions, 
   getSavedPredictionsList 
 } from '@/services/predictionStorage';
+import {
+  isPlayedOrPastMatch,
+  filterOutPlayedMatches,
+  sortMatchesByDatePriority,
+} from '@/lib/dateFilterUtils';
 
 export type { Prediction };
 export { getPrediction, getConfidence };
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 12;
 const queryKeys = { predictions: { list: (p: number) => ['predictions', 'list', p] } };
 
-// A match still counts as "present day" for up to 3 hours after kickoff (covers
-// a full 90 minutes plus stoppage/extra time), after which it's treated as an
-// outdated/finished fixture and should never surface as an active prediction -
-// regardless of which data source (live feed, DB, or cached/default fallback)
-// it came from.
-const OUTDATED_MATCH_GRACE_MS = 3 * 3600 * 1000;
-
-function excludeOutdatedMatches(list: Prediction[]): Prediction[] {
-  const cutoff = Date.now() - OUTDATED_MATCH_GRACE_MS;
-  return list.filter(p => {
-    const t = new Date(p.match_date).getTime();
-    return !isNaN(t) && t >= cutoff;
-  });
+// Strictly ignore any match that has already kicked off, is in-play, or has been played/settled
+function excludePlayedMatches(list: Prediction[]): Prediction[] {
+  return filterOutPlayedMatches(list);
 }
 
-// Filter out duplicate or conflicting schedule matches
+// Filter out duplicate or conflicting schedule matches while preserving earliest upcoming date priority
 function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
+  // Sort chronologically first so the earliest upcoming match for any team wins deduplication
+  const sortedInput = sortMatchesByDatePriority(excludePlayedMatches(list));
   const seenTeams = new Map<string, number>(); // team -> timestamp ms
   const seenFixtures = new Set<string>();
   const sanitized: Prediction[] = [];
 
-  for (const pred of list) {
+  for (const pred of sortedInput) {
     if (!pred.home_team || !pred.away_team) continue;
+    if (isPlayedOrPastMatch(pred)) continue;
+
     const matchTime = new Date(pred.match_date).getTime();
     const fixKey = `${pred.home_team.toLowerCase()}-${pred.away_team.toLowerCase()}-${String(pred.match_date).split('T')[0]}`;
     if (seenFixtures.has(fixKey)) continue;
     seenFixtures.add(fixKey);
     
-    // Check if either team played within 18 hours of this match (same day conflict)
+    // Check if either team is scheduled within 18 hours of this match (same day conflict)
     const homeLast = seenTeams.get(pred.home_team.toLowerCase());
     const awayLast = seenTeams.get(pred.away_team.toLowerCase());
     const tooCloseHome = homeLast && Math.abs(matchTime - homeLast) < 18 * 3600 * 1000;
@@ -60,7 +57,7 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
     sanitized.push(pred);
   }
 
-  return sanitized;
+  return sortMatchesByDatePriority(sanitized);
 }
 
 export const usePredictions = (page = 1, league?: string) => {
@@ -69,54 +66,64 @@ export const usePredictions = (page = 1, league?: string) => {
   const query = useQuery({
     queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
     placeholderData: () => {
-      // Instantly provide cached predictions or default schedule while background refresh runs
-      const saved = getSavedPredictionsList();
-      const list = excludeOutdatedMatches(saved.length > 0 ? saved : DEFAULT_PREDICTIONS);
-      let filtered = list;
+      // Instantly provide updated upcoming predictions sorted by Date Priority while background refresh runs
+      const saved = excludePlayedMatches(getSavedPredictionsList());
+      const updatedDefaults = getUpdatedDefaultPredictions();
+      const mergedInitial = sanitizeAndDeduplicatePredictions([...saved, ...updatedDefaults]);
+      let filtered = mergedInitial;
       if (league && league !== 'All' && league !== 'all') {
-        filtered = list.filter(p => p.league?.toLowerCase().includes(league.toLowerCase()));
-        if (filtered.length === 0) filtered = list;
+        filtered = mergedInitial.filter(p => p.league?.toLowerCase().includes(league.toLowerCase()));
+        if (filtered.length === 0) filtered = mergedInitial;
       }
       const start = (page - 1) * PAGE_SIZE;
       return {
         predictions: filtered.slice(start, start + PAGE_SIZE),
+        allPredictions: filtered,
         total: filtered.length,
         isRealTime: false,
       };
     },
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
+      const seenMatchupKeys = new Set<string>();
+
+      const pushIfValidUpcoming = (item: Prediction) => {
+        if (!item || !item.home_team || !item.away_team) return;
+        if (isPlayedOrPastMatch(item)) return;
+        const pairKey = `${item.home_team.trim().toLowerCase()}-${item.away_team.trim().toLowerCase()}`;
+        if (seenMatchupKeys.has(pairKey)) return;
+        seenMatchupKeys.add(pairKey);
+        combinedPredictions.push({
+          ...item,
+          status: 'pending',
+        });
+      };
 
       // 1. Fetch real-time live upcoming fixtures from RapidAPI & ESPN sports feeds
       try {
         const realtimeFixtures = await fetchRealtimeUpcomingFixtures(league);
         if (realtimeFixtures && realtimeFixtures.length > 0) {
-          const seen = new Set<string>();
           for (const item of realtimeFixtures) {
-            const key = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}-${String(item.match_date).split('T')[0]}`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              combinedPredictions.push(item);
-            }
+            pushIfValidUpcoming(item);
           }
         }
       } catch (err) {
         console.warn('Realtime fixtures fetch warning:', err);
       }
 
-      // 2. If real-time fixtures are available, use them as authoritative live predictions
-      // Otherwise, query database predictions or default verified fixtures
-      if (combinedPredictions.length < 4) {
+      // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
+      if (combinedPredictions.length < 18) {
         try {
-          const today = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
-          const twoWeeks = new Date(Date.now() + 14 * 86400000).toISOString();
+          const nowIso = new Date().toISOString();
+          const twoWeeksIso = new Date(Date.now() + 14 * 86400000).toISOString();
           let q = supabase
             .from('predictions')
             .select('*')
-            .gte('match_date', today)
-            .lte('match_date', twoWeeks)
-            .order('confidence', { ascending: false })
-            .order('match_date', { ascending: true });
+            .gt('match_date', nowIso)
+            .lte('match_date', twoWeeksIso)
+            .eq('status', 'pending')
+            .order('match_date', { ascending: true })
+            .order('confidence', { ascending: false });
 
           if (league && league !== 'All') {
             q = q.eq('league', league);
@@ -124,56 +131,44 @@ export const usePredictions = (page = 1, league?: string) => {
 
           const { data, error } = await q;
           if (!error && data && data.length > 0) {
-            const existingIds = new Set(combinedPredictions.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
             for (const item of data as Prediction[]) {
-              const key = `${item.home_team}-${item.away_team}`.toLowerCase();
-              if (!existingIds.has(key)) {
-                combinedPredictions.push(item);
-              }
+              pushIfValidUpcoming(item);
             }
           }
         } catch (err) {
           console.warn('Supabase predictions query warning:', err);
         }
+      }
 
-        // 3. Fallback to default verified fixtures if total is still sparse
-        let fallbackList = DEFAULT_PREDICTIONS;
-        if (league && league !== 'All') {
-          fallbackList = DEFAULT_PREDICTIONS.filter(p => p.league?.toLowerCase() === league.toLowerCase());
-        }
-
-        if (combinedPredictions.length < 3) {
-          const existingIds = new Set(combinedPredictions.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
-          for (const item of fallbackList) {
-            const key = `${item.home_team}-${item.away_team}`.toLowerCase();
-            if (!existingIds.has(key)) {
-              combinedPredictions.push(item);
-            }
-          }
+      // 3. Supplement with updated upcoming fixtures (prioritized from Today forward) so every date window is populated
+      let updatedDefaultList = getUpdatedDefaultPredictions();
+      if (league && league !== 'All') {
+        const leagueFiltered = updatedDefaultList.filter(p => p.league?.toLowerCase() === league.toLowerCase());
+        if (leagueFiltered.length > 0) {
+          updatedDefaultList = leagueFiltered;
         }
       }
 
-      // Merge with persistent prediction registry to lock values across key refreshes
+      for (const item of updatedDefaultList) {
+        pushIfValidUpcoming(item);
+      }
+
+      // Merge with persistent prediction registry to lock values across refreshes (excluding any played matches)
       const preserved = mergeAndPreservePredictions(combinedPredictions);
 
-      // Final deduplication, present-day filtering & sorting by date and confidence.
-      // excludeOutdatedMatches runs last so it applies no matter which source(s)
-      // (live feed, DB, cache, or default mock schedule) contributed each entry.
-      const cleanList = excludeOutdatedMatches(
-        sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : getSavedPredictionsList())
+      // Final deduplication, strict played-match exclusion & Date Priority sorting (Today -> Tomorrow -> Future dates)
+      const cleanList = sortMatchesByDatePriority(
+        sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : updatedDefaultList)
       );
-      cleanList.sort((a, b) => {
-        const dateA = new Date(a.match_date).getTime();
-        const dateB = new Date(b.match_date).getTime();
-        if (Math.abs(dateA - dateB) < 12 * 3600 * 1000) {
-          return (getConfidence(b) || 0) - (getConfidence(a) || 0);
-        }
-        return dateA - dateB;
-      });
 
       const start = (page - 1) * PAGE_SIZE;
       const paginated = cleanList.slice(start, start + PAGE_SIZE);
-      return { predictions: paginated, total: cleanList.length, isRealTime: true };
+      return {
+        predictions: paginated,
+        allPredictions: cleanList,
+        total: cleanList.length,
+        isRealTime: true,
+      };
     },
     staleTime: 60_000,
     retry: 1,

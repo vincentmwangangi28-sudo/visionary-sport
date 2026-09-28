@@ -121,7 +121,7 @@ export const LeagueDateFilterBar: React.FC<LeagueDateFilterBarProps> = ({
 
               {/* Micro tag for Today / Tomorrow / Weekend */}
               {chip.tag && !isSelected && (
-                <span className="hidden sm:inline-block text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground/80">
+                <span className="hidden sm:inline-block text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-muted text-foreground/80">
                   {chip.tag}
                 </span>
               )}

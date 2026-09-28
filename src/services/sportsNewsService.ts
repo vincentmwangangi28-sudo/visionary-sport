@@ -258,8 +258,10 @@ class SportsNewsService {
   public startAutomatedSync(intervalMinutes = 15) {
     if (this.timer) return;
 
-    // Initial background revalidation
-    this.fetchAndCacheNews(false).catch(() => {});
+    // Defer initial background revalidation so it never competes with initial page render
+    setTimeout(() => {
+      this.fetchAndCacheNews(false).catch(() => {});
+    }, 35000);
 
     // Periodic schedule
     this.timer = window.setInterval(() => {

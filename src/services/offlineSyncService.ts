@@ -32,11 +32,11 @@ export interface CacheStorageBreakdown {
   lastSyncedAt: string | null;
 }
 
-const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v6';
-const CACHE_STATIC_NAME = 'predictpro-static-v6';
-const CACHE_IMAGES_NAME = 'predictpro-images-v6';
-const CACHE_DATA_NAME = 'predictpro-data-v6';
-const CURRENT_ACTIVE_CACHES = [CACHE_STATIC_NAME, CACHE_IMAGES_NAME, CACHE_DATA_NAME];
+const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v4';
+const CACHE_STATIC_NAME = 'predictpro-v4-static';
+const CACHE_IMAGES_NAME = 'predictpro-v4-images';
+const CACHE_DATA_NAME = 'predictpro-v4-dynamic';
+const CURRENT_ACTIVE_CACHES = [CACHE_STATIC_NAME, CACHE_DATA_NAME];
 
 /**
  * Format bytes to readable string (e.g. 14.2 MB)
@@ -85,35 +85,12 @@ export function sendSWMessage(message: Record<string, unknown>): boolean {
  */
 export async function triggerMatchDataRevalidation(): Promise<boolean> {
   if (typeof window === 'undefined') return false;
-
-  // 1. Request background revalidation from Service Worker
-  const sent = sendSWMessage({
-    type: 'REVALIDATE_MATCH_DATA',
-    timestamp: new Date().toISOString(),
-  });
-
-  // 2. Also refresh the offline snapshot payload in Cache Storage if online
-  if (navigator.onLine && 'caches' in window) {
-    try {
-      const savedMatches = getSavedPredictionsList();
-      const matchPayload = savedMatches.length > 0 ? savedMatches : DEFAULT_PREDICTIONS;
-      const dataCache = await caches.open(CACHE_DATA_NAME);
-      const snapshotUrl = new URL('/api/offline-matches-snapshot', window.location.origin).href;
-      const snapshotResponse = new Response(JSON.stringify(matchPayload), {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-PredictPro-Strategy': 'stale-while-revalidate',
-          'X-PredictPro-Updated': new Date().toISOString(),
-        },
-      });
-      await dataCache.put(snapshotUrl, snapshotResponse);
-      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
-    } catch {
-      // non-blocking
-    }
+  try {
+    localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+  } catch {
+    // non-blocking
   }
-
-  return sent;
+  return true;
 }
 
 /**
@@ -123,64 +100,10 @@ export async function triggerMatchDataRevalidation(): Promise<boolean> {
 export async function prewarmOfflineCaches(): Promise<void> {
   if (typeof window === 'undefined') return;
 
-  const logoUrls = getAllTeamLogoUrls();
-  const savedMatches = getSavedPredictionsList();
-  const matchPayload = savedMatches.length > 0 ? savedMatches : DEFAULT_PREDICTIONS;
-
-  // 1. Direct postMessage to Service Worker if active
-  sendSWMessage({
-    type: 'PRECACHE_LOGOS',
-    urls: logoUrls,
-  });
-
-  sendSWMessage({
-    type: 'PRECACHE_MATCH_DATA',
-    payload: {
-      timestamp: new Date().toISOString(),
-      matches: matchPayload,
-    },
-  });
-
-  // 2. Direct browser Cache API pre-caching fallback (only if SW controller isn't active yet)
-  if ('caches' in window && (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller)) {
-    try {
-      const imgCache = await caches.open(CACHE_IMAGES_NAME);
-      // Pre-cache top 15 critical league logos immediately in batches
-      const priorityLogos = logoUrls.slice(0, 15);
-      
-      await Promise.allSettled(
-        priorityLogos.map(async url => {
-          try {
-            const hasMatch = await imgCache.match(url);
-            if (!hasMatch) {
-              const res = await fetch(url, { mode: 'no-cors' });
-              if (res) {
-                await imgCache.put(url, res);
-              }
-            }
-          } catch {
-            // non-blocking for individual image
-          }
-        })
-      );
-
-      // Save match snapshot to Cache Storage
-      const dataCache = await caches.open(CACHE_DATA_NAME);
-      const snapshotUrl = new URL('/api/offline-matches-snapshot', window.location.origin).href;
-      const snapshotResponse = new Response(JSON.stringify(matchPayload), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      await dataCache.put(snapshotUrl, snapshotResponse);
-
-      localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
-    } catch (err: any) {
-      // Gracefully handle storage quota limits on constrained devices
-      if (err?.name === 'QuotaExceededError' || err?.message?.includes?.('Quota')) {
-        // Storage quota limit reached; skip non-essential prewarm
-        return;
-      }
-      console.debug('[OfflineSync] CacheStorage pre-warm notice:', err?.message || err);
-    }
+  try {
+    localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+  } catch {
+    // Ignore storage quota limits
   }
 }
 
@@ -450,18 +373,18 @@ export async function clearCacheCategory(category: 'images' | 'data' | 'stale' |
   }
 }
 
-// Auto-trigger pre-warming on idle/startup
-if (typeof window !== 'undefined') {
+// Clean up legacy opaque image caches on idle
+if (typeof window !== 'undefined' && 'caches' in window) {
   window.addEventListener('load', () => {
-    // Stagger slightly after initial paint
-    setTimeout(() => {
-      if (navigator.onLine) {
-        prewarmOfflineCaches();
-      }
-    }, 2500);
-  });
-
-  window.addEventListener('online', () => {
-    prewarmOfflineCaches();
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => !k.startsWith('predictpro-v4'))
+            .map((k) => caches.delete(k).catch(() => false))
+        )
+      )
+      .catch(() => {});
   });
 }

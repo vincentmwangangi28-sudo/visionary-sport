@@ -85,10 +85,26 @@ export interface SportscoreTeamResponse {
   updated: string;
 }
 
+export function hasCustomSportscoreApiKey(): boolean {
+  try {
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem(SPORTSCORE_STORAGE_KEY);
+      if (local && local.trim().length > 0 && local.trim() !== DEFAULT_SPORTSCORE_KEY) {
+        return true;
+      }
+    }
+  } catch {}
+
+  const envKey = (import.meta as { env?: Record<string, string> }).env;
+  const configured = envKey?.VITE_SPORTSCORE_KEY || envKey?.VITE_RAPIDAPI_KEY;
+  return Boolean(configured && configured !== DEFAULT_SPORTSCORE_KEY);
+}
+
 /**
  * Fetch matches for a specific team slug from SportScore6 RapidAPI with safe timeout and cooldown
  */
 export async function fetchSportscoreTeamMatches(slug: string): Promise<SportscoreRawMatch[]> {
+  if (!hasCustomSportscoreApiKey()) return [];
   if (isHostInCooldown(SPORTSCORE_HOST)) return [];
   const apiKey = getSportscoreApiKey();
   if (!apiKey) return [];

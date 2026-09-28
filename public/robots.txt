@@ -1,8 +1,10 @@
 # PredictPro Robots.txt & Search Engine Directives
-# Domain: https://predictpro.guru
+# Domain: https://www.predictpro.guru
+# IndexNow Key File: https://www.predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
 User-agent: *
 Allow: /
+Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 Disallow: /api/
 Disallow: /_vercel/
 
@@ -12,7 +14,30 @@ Allow: /
 User-agent: Googlebot-Image
 Allow: /
 
-User-agent: Bingbot
+User-agent: AdsBot-Google
 Allow: /
 
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+
+User-agent: Yandex
+Allow: /
+Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+
+User-agent: AhrefsBot
+Allow: /
+Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+
+User-agent: AhrefsSiteAudit
+Allow: /
+Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+
+Sitemap: https://www.predictpro.guru/sitemap.xml
 Sitemap: https://predictpro.guru/sitemap.xml

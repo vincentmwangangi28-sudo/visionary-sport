@@ -17,6 +17,8 @@ import {
 } from '@/services/matchNotificationService';
 import { toast } from 'sonner';
 
+let alertIntervalStarted = false;
+
 export function useMatchNotifications() {
   const [subscriptions, setSubscriptions] = useState<MatchNotificationSubscription[]>(() =>
     getAllSubscriptions()
@@ -34,14 +36,22 @@ export function useMatchNotifications() {
     return unsub;
   }, []);
 
-  // Periodic checker loop for match alerts
+  // Single shared periodic checker loop for match alerts across all mounted buttons
   useEffect(() => {
-    checkUpcomingMatchAlerts();
+    if (alertIntervalStarted || typeof window === 'undefined') return;
+    alertIntervalStarted = true;
+    const initTimer = setTimeout(() => {
+      checkUpcomingMatchAlerts();
+    }, 30000);
     const interval = setInterval(() => {
       checkUpcomingMatchAlerts();
-    }, 45000); // Check every 45s
+    }, 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(interval);
+      alertIntervalStarted = false;
+    };
   }, []);
 
   const requestPermission = useCallback(async () => {

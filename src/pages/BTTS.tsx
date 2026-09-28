@@ -63,6 +63,9 @@ export default function BTTS() {
   };
 
   const sorted = [...preds].sort((a, b) => {
+    const timeA = new Date(a.match_date).getTime();
+    const timeB = new Date(b.match_date).getTime();
+    if (timeA !== timeB) return timeA - timeB;
     const aProbs = getProbabilities(a);
     const bProbs = getProbabilities(b);
     return tab === 'btts' ? bProbs.btts - aProbs.btts : bProbs.over25 - aProbs.over25;
