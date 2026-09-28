@@ -2,20 +2,18 @@ import { PredictionCard } from "./PredictionCard";
 import { PredictionListSkeleton } from "./PredictionCardSkeleton";
 import { usePredictions } from "@/hooks/usePredictions";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { useGeoRegion } from "@/hooks/useGeoRegion";
-import { Skeleton } from "@/components/ui/skeleton";
+import { sortMatchesByDatePriority } from "@/lib/dateFilterUtils";
 import { Trophy, Zap } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 
 export const TodaysPredictions = () => {
   const { predictions, loading } = usePredictions();
   const { t } = useUserPreferences();
-  const { region, sortPredictions } = useGeoRegion();
   const [newPredictionId, setNewPredictionId] = useState<string | null>(null);
 
   const prioritizedPredictions = useMemo(() => {
-    return sortPredictions(predictions);
-  }, [predictions, sortPredictions]);
+    return sortMatchesByDatePriority(predictions);
+  }, [predictions]);
 
   const topPredictionId = prioritizedPredictions[0]?.id;
 

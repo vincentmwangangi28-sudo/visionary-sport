@@ -1,7 +1,7 @@
 import { Prediction } from '@/types/prediction';
 import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
 
-const STORAGE_KEY = 'predictpro_saved_predictions_v4';
+const STORAGE_KEY = 'predictpro_saved_predictions_v5_live';
 const MAX_STORAGE_DAYS = 14;
 
 // In-memory cache for ultra-fast access and SSR/fallback safety

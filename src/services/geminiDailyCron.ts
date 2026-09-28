@@ -27,7 +27,7 @@ export interface DailyAIDigest {
   };
 }
 
-const DIGEST_STORAGE_KEY = 'predictpro_gemini_daily_digest';
+const DIGEST_STORAGE_KEY = 'predictpro_gemini_daily_digest_v3_live';
 const DIGEST_CRON_SETTINGS_KEY = 'predictpro_gemini_cron_settings';
 export const TELEGRAM_AUTO_SENT_KEY = 'predictpro_telegram_daily_digest_broadcast_date';
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -10,6 +10,8 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Trophy, Sparkles, Share2, Copy, CheckCheck, Flame, ShieldCheck, HelpCircle } from 'lucide-react';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
+import { getPrediction, getConfidence } from '@/types/prediction';
 import { toast } from 'sonner';
 
 interface JackpotGame {
@@ -48,22 +50,62 @@ const SPORTPESA_MEGA_17: JackpotGame[] = [
   { id: 17, match: 'Betis vs Valencia', homeTeam: 'Betis', awayTeam: 'Valencia', league: 'La Liga', kickoff: 'Sun 21:00', homeProb: 50, drawProb: 28, awayProb: 22, recommendedPick: '1', doubleChance: '1X', isBanker: false, scoreline: '2-0' },
 ];
 
-const BETIKA_MIDWEEK_15: JackpotGame[] = SPORTPESA_MEGA_17.slice(0, 15);
-const MOZZART_GRAND_16: JackpotGame[] = SPORTPESA_MEGA_17.slice(1, 17);
-const SPORTYBET_NIGERIA_12: JackpotGame[] = SPORTPESA_MEGA_17.slice(0, 12);
-
 export default function JackpotPredictions() {
   const [activeJackpot, setActiveJackpot] = useState<'sportpesa' | 'betika' | 'mozzart' | 'sportybet'>('sportpesa');
   const [coverageMode, setCoverageMode] = useState<'bankers' | 'double_chance'>('bankers');
   const [copied, setCopied] = useState(false);
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data, predictions } = usePredictions(1);
+
+  const liveJackpotPool = useMemo<JackpotGame[]>(() => {
+    const source = data?.allPredictions?.length ? data.allPredictions : predictions;
+    if (!source || source.length === 0) return SPORTPESA_MEGA_17;
+
+    const mapped: JackpotGame[] = source.slice(0, 17).map((p, index) => {
+      const outcome = getPrediction(p);
+      const conf = getConfidence(p) || 64;
+      const recPick: '1' | 'X' | '2' = outcome === 'Away Win' ? '2' : outcome === 'Draw' ? 'X' : '1';
+      const homeProb = recPick === '1' ? Math.min(72, Math.max(44, conf - 14)) : recPick === 'X' ? 32 : Math.max(16, 100 - conf - 14);
+      const awayProb = recPick === '2' ? Math.min(68, Math.max(42, conf - 14)) : recPick === 'X' ? 30 : Math.max(16, 100 - homeProb - 26);
+      const drawProb = Math.max(18, 100 - homeProb - awayProb);
+      const d = new Date(p.match_date);
+      const kickoffStr = !isNaN(d.getTime())
+        ? `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        : 'Upcoming';
+
+      const hScore = p.predicted_home_score ?? (recPick === '1' ? 2 : 1);
+      const aScore = p.predicted_away_score ?? (recPick === '2' ? 2 : 1);
+
+      return {
+        id: index + 1,
+        match: `${p.home_team} vs ${p.away_team}`,
+        homeTeam: p.home_team,
+        awayTeam: p.away_team,
+        league: p.league,
+        kickoff: kickoffStr,
+        homeProb,
+        drawProb,
+        awayProb,
+        recommendedPick: recPick,
+        doubleChance: recPick === '2' ? 'X2' : recPick === 'X' ? '1X' : conf >= 82 ? '1' : '1X',
+        isBanker: conf >= 80,
+        scoreline: `${hScore}-${aScore}`,
+      };
+    });
+
+    while (mapped.length < 17) {
+      const fallback = SPORTPESA_MEGA_17[mapped.length];
+      mapped.push({ ...fallback, id: mapped.length + 1 });
+    }
+    return mapped;
+  }, [data?.allPredictions, predictions]);
 
   const getActiveGames = (): JackpotGame[] => {
     switch (activeJackpot) {
-      case 'sportpesa': return SPORTPESA_MEGA_17;
-      case 'betika': return BETIKA_MIDWEEK_15;
-      case 'mozzart': return MOZZART_GRAND_16;
-      case 'sportybet': return SPORTYBET_NIGERIA_12;
+      case 'sportpesa': return liveJackpotPool.slice(0, 17);
+      case 'betika': return liveJackpotPool.slice(0, 15);
+      case 'mozzart': return liveJackpotPool.slice(0, 16);
+      case 'sportybet': return liveJackpotPool.slice(0, 12);
     }
   };
 

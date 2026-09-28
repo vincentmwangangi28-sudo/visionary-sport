@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useCurrency } from '@/hooks/useCurrency';
+import { usePredictions } from '@/hooks/usePredictions';
+import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { 
-  Sparkles, 
   ShieldCheck, 
   TrendingUp, 
   Rocket, 
@@ -10,13 +11,8 @@ import {
   RotateCw, 
   Check, 
   Copy, 
-  Plus, 
-  ArrowRight,
-  Flame,
-  Percent,
-  SlidersHorizontal
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -30,187 +26,146 @@ interface SmartLeg {
   homeTeam: string;
   awayTeam: string;
   league: string;
+  matchDate?: string;
   market: string;
   odds: number;
   confidence: number;
   reason: string;
 }
 
-const STRATEGY_PRESETS: Record<SlipStrategy, {
+interface StrategyConfig {
   name: string;
   icon: typeof ShieldCheck;
   tagline: string;
   badge: string;
   badgeClass: string;
   legs: SmartLeg[];
-}> = {
-  banker: {
-    name: 'Banker Multi',
-    icon: ShieldCheck,
-    tagline: 'High probability locks with 85%+ model confidence',
-    badge: '87.4% Expected Win Rate',
-    badgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30',
-    legs: [
-      {
-        match: 'Arsenal vs Chelsea',
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        league: 'Premier League',
-        market: 'Home Win',
-        odds: 1.62,
-        confidence: 86,
-        reason: 'xG difference +1.32; Chelsea conceded in 7 consecutive away matches',
-      },
-      {
-        match: 'Real Madrid vs Real Betis',
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Real Betis',
-        league: 'La Liga',
-        market: 'Home Win & Over 1.5 Goals',
-        odds: 1.48,
-        confidence: 88,
-        reason: 'Unbeaten home record; Vinicius & Mbappe in 92nd percentile shot conversion',
-      },
-      {
-        match: 'Inter Milan vs Fiorentina',
-        homeTeam: 'Inter Milan',
-        awayTeam: 'Fiorentina',
-        league: 'Serie A',
-        market: 'Home Win',
-        odds: 1.55,
-        confidence: 84,
-        reason: 'San Siro fortress; Inter conceding just 0.65 xG per 90',
-      },
-    ],
-  },
-  value: {
-    name: 'Value Edge (+EV)',
-    icon: TrendingUp,
-    tagline: 'Market inefficiencies with positive mathematical expected value',
-    badge: '+12.8% Edge Over Bookmaker',
-    badgeClass: 'bg-primary/15 text-primary border-primary/30',
-    legs: [
-      {
-        match: 'Manchester City vs Liverpool',
-        homeTeam: 'Manchester City',
-        awayTeam: 'Liverpool',
-        league: 'Premier League',
-        market: 'Both Teams to Score (BTTS)',
-        odds: 1.72,
-        confidence: 82,
-        reason: 'Both attacks rank top 3 globally in expected goals created',
-      },
-      {
-        match: 'Bayern Munich vs Borussia Dortmund',
-        homeTeam: 'Bayern Munich',
-        awayTeam: 'Borussia Dortmund',
-        league: 'Bundesliga',
-        market: 'Over 3.5 Total Goals',
-        odds: 1.95,
-        confidence: 79,
-        reason: 'Der Klassiker historical average sits at 4.2 goals over last 8 meetings',
-      },
-      {
-        match: 'PSG vs Marseille',
-        homeTeam: 'PSG',
-        awayTeam: 'Marseille',
-        league: 'Ligue 1',
-        market: 'Home Win & BTTS',
-        odds: 2.10,
-        confidence: 74,
-        reason: 'High attacking tempo; Marseille scored in 9 of last 10 derbies',
-      },
-      {
-        match: 'Barcelona vs Atletico Madrid',
-        homeTeam: 'Barcelona',
-        awayTeam: 'Atletico Madrid',
-        league: 'La Liga',
-        market: 'Over 2.5 Goals',
-        odds: 1.82,
-        confidence: 77,
-        reason: 'Barcelona average 2.7 goals per home match this campaign',
-      },
-    ],
-  },
-  moonshot: {
-    name: 'Moonshot Hail Mary',
-    icon: Rocket,
-    tagline: 'High-multiplier accumulator designed for massive payouts',
-    badge: '28.5x Multiplier Acca',
-    badgeClass: 'bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30',
-    legs: [
-      {
-        match: 'Arsenal vs Chelsea',
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        league: 'Premier League',
-        market: 'Arsenal Win & Over 2.5 Goals',
-        odds: 2.35,
-        confidence: 76,
-        reason: 'Emirates goal rush metrics',
-      },
-      {
-        match: 'Real Madrid vs Barcelona',
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Barcelona',
-        league: 'La Liga',
-        market: 'Both Teams to Score & Over 2.5',
-        odds: 1.85,
-        confidence: 81,
-        reason: 'Clasico goal expectation sits at 3.4',
-      },
-      {
-        match: 'Bayern Munich vs Dortmund',
-        homeTeam: 'Bayern Munich',
-        awayTeam: 'Borussia Dortmund',
-        league: 'Bundesliga',
-        market: 'Bayern Win & Over 3.5 Goals',
-        odds: 2.65,
-        confidence: 72,
-        reason: 'Bundesliga firepower disparity',
-      },
-      {
-        match: 'Inter Milan vs Juventus',
-        homeTeam: 'Inter Milan',
-        awayTeam: 'Juventus',
-        league: 'Serie A',
-        market: 'Inter Milan Win',
-        odds: 1.78,
-        confidence: 79,
-        reason: 'Tactical superiority at San Siro',
-      },
-      {
-        match: 'Gor Mahia vs AFC Leopards',
-        homeTeam: 'Gor Mahia',
-        awayTeam: 'AFC Leopards',
-        league: 'FKF Premier League',
-        market: 'Gor Mahia Win & Under 2.5',
-        odds: 1.95,
-        confidence: 80,
-        reason: 'Mashemeji derby low-scoring trend',
-      },
-    ],
-  },
-};
+}
 
-export const AISmartSlipGenerator: React.FC = () => {
+function buildLegFromPrediction(p: Prediction, mode: SlipStrategy): SmartLeg {
+  const baseOutcome = getPrediction(p);
+  const conf = getConfidence(p) || 76;
+  const homeOdds = p.home_odds ?? 1.85;
+  const drawOdds = p.draw_odds ?? 3.30;
+  const awayOdds = p.away_odds ?? 2.90;
+
+  let market = baseOutcome || 'Home Win';
+  let odds = baseOutcome === 'Away Win' ? awayOdds : baseOutcome === 'Draw' ? drawOdds : homeOdds;
+
+  if (mode === 'banker') {
+    odds = Number(Math.max(1.32, Math.min(1.85, odds)).toFixed(2));
+  } else if (mode === 'value') {
+    if (odds < 1.65) {
+      market = `${baseOutcome} & Over 1.5 Goals`;
+      odds = Number((odds * 1.24).toFixed(2));
+    }
+  } else if (mode === 'moonshot') {
+    if (odds < 1.85) {
+      market = `${baseOutcome} & Over 2.5 Goals`;
+      odds = Number((odds * 1.42).toFixed(2));
+    }
+  }
+
+  const analysisText = getAnalysis(p) || `${p.home_team} vs ${p.away_team} live schedule model projects ${market} (${conf}% confidence).`;
+
+  return {
+    match: `${p.home_team} vs ${p.away_team}`,
+    homeTeam: p.home_team,
+    awayTeam: p.away_team,
+    league: p.league,
+    matchDate: p.match_date,
+    market,
+    odds,
+    confidence: conf,
+    reason: analysisText,
+  };
+}
+
+export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({ predictions: propPredictions }) => {
   const [strategy, setStrategy] = useState<SlipStrategy>('banker');
+  const [shuffleOffset, setShuffleOffset] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const { addSelections, setIsOpen } = useBetSlip();
-  const { currency, format, formatAmount } = useCurrency();
+  const { formatAmount } = useCurrency();
+  const { data, predictions: hookPredictions } = usePredictions(1);
 
-  const currentPreset = STRATEGY_PRESETS[strategy];
+  const activePool = useMemo(() => {
+    if (propPredictions && propPredictions.length > 0) return propPredictions;
+    return data?.allPredictions?.length ? data.allPredictions : hookPredictions;
+  }, [propPredictions, data?.allPredictions, hookPredictions]);
+
+  const dynamicPresets = useMemo<Record<SlipStrategy, StrategyConfig>>(() => {
+    const pool = activePool.length > 0 ? activePool : [];
+    const rotate = <T,>(arr: T[], offset: number): T[] => {
+      if (arr.length === 0) return [];
+      const k = offset % arr.length;
+      return [...arr.slice(k), ...arr.slice(0, k)];
+    };
+
+    const byConf = rotate(
+      [...pool].sort((a, b) => (getConfidence(b) || 0) - (getConfidence(a) || 0)),
+      shuffleOffset * 2
+    );
+    const byValue = rotate(
+      [...pool].filter((p) => (p.home_odds ?? 1.9) >= 1.65 || (p.away_odds ?? 2.2) >= 1.75),
+      shuffleOffset * 3
+    );
+    const byHighOdds = rotate(
+      [...pool].sort((a, b) => (b.home_odds ?? 2.0) - (a.home_odds ?? 2.0)),
+      shuffleOffset * 2 + 1
+    );
+
+    const bankerPool = byConf.slice(0, 3);
+    const valuePool = (byValue.length >= 4 ? byValue : byConf).slice(0, 4);
+    const moonshotPool = (byHighOdds.length >= 5 ? byHighOdds : byConf).slice(0, 5);
+
+    const bankerLegs = bankerPool.map((p) => buildLegFromPrediction(p, 'banker'));
+    const valueLegs = valuePool.map((p) => buildLegFromPrediction(p, 'value'));
+    const moonshotLegs = moonshotPool.map((p) => buildLegFromPrediction(p, 'moonshot'));
+
+    const moonshotMult = moonshotLegs.reduce((acc, l) => acc * l.odds, 1);
+
+    return {
+      banker: {
+        name: 'Banker Multi',
+        icon: ShieldCheck,
+        tagline: 'High probability locks from upcoming verified fixtures',
+        badge: 'High Confidence Acca',
+        badgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30',
+        legs: bankerLegs,
+      },
+      value: {
+        name: 'Value Edge (+EV)',
+        icon: TrendingUp,
+        tagline: 'Upcoming market inefficiencies with positive mathematical expected value',
+        badge: '+EV Market Edge',
+        badgeClass: 'bg-primary/15 text-primary border-primary/30',
+        legs: valueLegs,
+      },
+      moonshot: {
+        name: 'Moonshot Hail Mary',
+        icon: Rocket,
+        tagline: 'High-multiplier accumulator built from upcoming fixtures',
+        badge: `${moonshotMult.toFixed(1)}x Multiplier Acca`,
+        badgeClass: 'bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30',
+        legs: moonshotLegs,
+      },
+    };
+  }, [activePool, shuffleOffset]);
+
+  const currentPreset = dynamicPresets[strategy];
   const totalOdds = currentPreset.legs.reduce((acc, leg) => acc * leg.odds, 1);
   const stakeExample = 500;
   const potentialReturn = Math.round(stakeExample * totalOdds);
 
   const handleShuffle = () => {
     setIsShuffling(true);
+    setShuffleOffset((prev) => prev + 1);
     setTimeout(() => {
       setIsShuffling(false);
-      toast.success(`Generated fresh ${currentPreset.name} algorithmic permutation!`);
-    }, 400);
+      toast.success(`Generated fresh ${currentPreset.name} from live upcoming fixtures!`);
+    }, 350);
   };
 
   const handleLoadSlip = () => {
@@ -219,6 +174,7 @@ export const AISmartSlipGenerator: React.FC = () => {
       homeTeam: leg.homeTeam,
       awayTeam: leg.awayTeam,
       league: leg.league,
+      matchDate: leg.matchDate,
       market: leg.market,
       odds: leg.odds,
       confidence: leg.confidence,
@@ -271,7 +227,7 @@ export const AISmartSlipGenerator: React.FC = () => {
         {/* 3 Strategy Preset Switchers */}
         <div className="grid grid-cols-3 gap-2 mt-4">
           {(['banker', 'value', 'moonshot'] as SlipStrategy[]).map((st) => {
-            const config = STRATEGY_PRESETS[st];
+            const config = dynamicPresets[st];
             const Icon = config.icon;
             const isSelected = strategy === st;
             return (

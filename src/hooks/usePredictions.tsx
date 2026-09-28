@@ -65,24 +65,6 @@ export const usePredictions = (page = 1, league?: string) => {
 
   const query = useQuery({
     queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
-    placeholderData: () => {
-      // Instantly provide updated upcoming predictions sorted by Date Priority while background refresh runs
-      const saved = excludePlayedMatches(getSavedPredictionsList());
-      const updatedDefaults = getUpdatedDefaultPredictions();
-      const mergedInitial = sanitizeAndDeduplicatePredictions([...saved, ...updatedDefaults]);
-      let filtered = mergedInitial;
-      if (league && league !== 'All' && league !== 'all') {
-        filtered = mergedInitial.filter(p => p.league?.toLowerCase().includes(league.toLowerCase()));
-        if (filtered.length === 0) filtered = mergedInitial;
-      }
-      const start = (page - 1) * PAGE_SIZE;
-      return {
-        predictions: filtered.slice(start, start + PAGE_SIZE),
-        allPredictions: filtered,
-        total: filtered.length,
-        isRealTime: false,
-      };
-    },
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -140,25 +122,26 @@ export const usePredictions = (page = 1, league?: string) => {
         }
       }
 
-      // 3. Supplement with updated upcoming fixtures (prioritized from Today forward) so every date window is populated
-      let updatedDefaultList = getUpdatedDefaultPredictions();
-      if (league && league !== 'All') {
-        const leagueFiltered = updatedDefaultList.filter(p => p.league?.toLowerCase() === league.toLowerCase());
-        if (leagueFiltered.length > 0) {
-          updatedDefaultList = leagueFiltered;
+      // 3. Only fall back to updated default fixtures if live feeds and DB returned zero matches
+      if (combinedPredictions.length === 0) {
+        let updatedDefaultList = getUpdatedDefaultPredictions();
+        if (league && league !== 'All') {
+          const leagueFiltered = updatedDefaultList.filter(p => p.league?.toLowerCase() === league.toLowerCase());
+          if (leagueFiltered.length > 0) {
+            updatedDefaultList = leagueFiltered;
+          }
         }
-      }
-
-      for (const item of updatedDefaultList) {
-        pushIfValidUpcoming(item);
+        for (const item of updatedDefaultList) {
+          pushIfValidUpcoming(item);
+        }
       }
 
       // Merge with persistent prediction registry to lock values across refreshes (excluding any played matches)
       const preserved = mergeAndPreservePredictions(combinedPredictions);
 
-      // Final deduplication, strict played-match exclusion & Date Priority sorting (Today -> Tomorrow -> Future dates)
+      // Final deduplication, strict played-match exclusion & Date Priority sorting (earliest upcoming first)
       const cleanList = sortMatchesByDatePriority(
-        sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : updatedDefaultList)
+        sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : combinedPredictions)
       );
 
       const start = (page - 1) * PAGE_SIZE;

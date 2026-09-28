@@ -23,7 +23,8 @@ import {
 } from '@/services/predictionStorage';
 import type { NormalizedMatch } from '@/lib/matchNormalizer';
 import type { Prediction } from '@/types/prediction';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
 import { FALLBACK_STANDINGS, CURRENT_SEASON_STANDINGS, StandingRow } from '@/data/standingsData';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 
@@ -487,11 +488,13 @@ async function fetchUpcomingFixturesQuery(league?: string, _daysAhead: number = 
 
   // Combine, preserve saved predictions, and deduplicate
   const combined = [...sportscorePredictions, ...sportmonksPredictions, ...realtimePredictions];
-  const preserved = excludeOutdatedMatches(mergeAndPreservePredictions(combined));
+  const preserved = sortMatchesByDatePriority(excludeOutdatedMatches(mergeAndPreservePredictions(combined)));
 
   if (preserved.length === 0) {
     const savedFallback = excludeOutdatedMatches(getSavedPredictionsList());
-    const activeList = savedFallback.length > 0 ? savedFallback : excludeOutdatedMatches(DEFAULT_PREDICTIONS);
+    const activeList = sortMatchesByDatePriority(
+      savedFallback.length > 0 ? savedFallback : excludeOutdatedMatches(getUpdatedDefaultPredictions())
+    );
     return league && league !== 'All'
       ? activeList.filter(p => p.league.toLowerCase().includes(league.toLowerCase()))
       : activeList;

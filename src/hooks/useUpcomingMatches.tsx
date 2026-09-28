@@ -93,18 +93,14 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
 }
 
 export const useUpcomingMatches = () => {
-  // Initialize immediately from valid upcoming fixtures (ignoring played matches) sorted by Date Priority
   const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
-    const saved = getSavedPredictionsList();
-    const updatedDefaults = getUpdatedDefaultPredictions();
-    const sourceList = [...saved, ...updatedDefaults];
-    const initial = sourceList
-      .map((p) => toUpcomingMatch(p, false))
+    const saved = getSavedPredictionsList()
+      .map((p) => toUpcomingMatch(p, true))
       .filter((m): m is UpcomingMatch => m !== null);
-    return deduplicateUpcomingMatches(initial);
+    return deduplicateUpcomingMatches(saved);
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isRealTime, setIsRealTime] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -119,11 +115,13 @@ export const useUpcomingMatches = () => {
 
       const combined: UpcomingMatch[] = [...realMatches];
 
-      // 2. Supplement with updated upcoming fixtures (prioritized from Today forward)
-      const updatedDefaults = getUpdatedDefaultPredictions()
-        .map((p) => toUpcomingMatch(p, false))
-        .filter((m): m is UpcomingMatch => m !== null);
-      combined.push(...updatedDefaults);
+      // 2. Only fall back to updated default fixtures if live feeds returned zero matches
+      if (combined.length === 0) {
+        const updatedDefaults = getUpdatedDefaultPredictions()
+          .map((p) => toUpcomingMatch(p, false))
+          .filter((m): m is UpcomingMatch => m !== null);
+        combined.push(...updatedDefaults);
+      }
 
       // 3. Deduplicate, ignore any played/past matches, and sort strictly by Date Priority
       const sanitized = deduplicateUpcomingMatches(combined);
@@ -132,8 +130,8 @@ export const useUpcomingMatches = () => {
     } catch (e) {
       console.warn('useUpcomingMatches refresh fallback:', e instanceof Error ? e.message : 'fetch failed');
       const saved = getSavedPredictionsList();
-      const updatedDefaults = getUpdatedDefaultPredictions();
-      const offlineList = [...saved, ...updatedDefaults]
+      const sourcePool = saved.length > 0 ? saved : getUpdatedDefaultPredictions();
+      const offlineList = sourcePool
         .map((p) => toUpcomingMatch(p, false))
         .filter((m): m is UpcomingMatch => m !== null);
       setMatches(deduplicateUpcomingMatches(offlineList));

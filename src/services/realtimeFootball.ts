@@ -465,7 +465,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
   }
 
   // Fetch real-time live events across major leagues using shared deduplicated scoreboard helper
-  const livePromises = LEAGUES_LIST.slice(0, 6).map((league) => fetchEspnLeagueScoreboard(league));
+  const livePromises = LEAGUES_LIST.slice(0, 14).map((league) => fetchEspnLeagueScoreboard(league));
 
   const leagueResults = await Promise.all(livePromises);
   const rawEvents = leagueResults.flat();
@@ -581,7 +581,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
   const mt = String(tomorrow.getMonth() + 1).padStart(2, '0');
   const dt = String(tomorrow.getDate()).padStart(2, '0');
 
-  const future = new Date(now.getTime() + 10 * 86400000);
+  const future = new Date(now.getTime() + 12 * 86400000);
   const y2 = future.getFullYear();
   const m2 = String(future.getMonth() + 1).padStart(2, '0');
   const d2 = String(future.getDate()).padStart(2, '0');
@@ -592,7 +592,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
   const fetchPromises = selectedLeagues
     .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-    .slice(0, 10)
+    .slice(0, 18)
     .map(async (league) => {
       return fetchWithCacheAndDeduplication(`espn_upcoming_${league.espnCode}_${y}${m}${d}`, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
         try {
@@ -907,8 +907,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Supplement with updated default upcoming fixtures if external feeds returned a small set
-  if (predictions.length < 15) {
+  // Only fall back to updated default upcoming fixtures if external feeds returned zero matches
+  if (predictions.length === 0) {
     let fallbackFixtures = getUpdatedDefaultPredictions();
     if (leagueFilter && leagueFilter !== 'All') {
       const filteredFallback = fallbackFixtures.filter((f) =>
@@ -921,8 +921,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
     for (const item of fallbackFixtures) {
       const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
-      if (!seenMatchKeys.has(mKey)) {
-        seenMatchKeys.add(mKey);
+      if (!seenMatches.has(mKey)) {
+        seenMatches.add(mKey);
         predictions.push(item);
       }
     }
@@ -976,11 +976,11 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
 
     const pastRange = `${y1}${m1}${d1}-${y}${m}${d}`;
 
-    const fetchPromises = selectedLeagues.map(async (league) => {
+    const fetchPromises = selectedLeagues.slice(0, 12).map(async (league) => {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${pastRange}`, {
           signal: controller.signal,
         });
         clearTimeout(timeout);

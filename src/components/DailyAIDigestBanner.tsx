@@ -36,7 +36,17 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
   const { addSelection, selections } = useBetSlip();
 
   useEffect(() => {
-    if (!digest && predictions.length > 0) {
+    if (predictions.length === 0) return;
+
+    const currentMatchesSet = new Set(
+      predictions.map((p) => `${p.home_team} vs ${p.away_team}`.toLowerCase())
+    );
+    const hasStalePick =
+      digest?.topPicks?.length
+        ? !digest.topPicks.some((tp) => currentMatchesSet.has(tp.match.toLowerCase()))
+        : true;
+
+    if (!digest || hasStalePick) {
       setLoading(true);
       geminiDailyCronService
         .generateDailyDigest(predictions)
