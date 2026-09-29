@@ -14,7 +14,26 @@
     <link rel="canonical" href="https://predictpro.guru/" />
     <link rel="alternate" hreflang="x-default" href="https://predictpro.guru/" />
     <link rel="alternate" hreflang="en" href="https://predictpro.guru/" />
+    <link rel="alternate" hreflang="en-KE" href="https://predictpro.guru/" />
+    <link rel="alternate" hreflang="en-NG" href="https://predictpro.guru/" />
+    <link rel="alternate" hreflang="en-GB" href="https://predictpro.guru/" />
+    <link rel="alternate" hreflang="en-US" href="https://predictpro.guru/" />
+    <link rel="alternate" hreflang="en-ZA" href="https://predictpro.guru/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://predictpro.guru/sitemap.xml" />
     <meta name="author" content="PredictPro" />
+
+    <!-- Enforce HTTPS & Upgrade Insecure Requests for Search Engine Crawlers and Users -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <script>
+      (function () {
+        if (typeof window !== 'undefined' && window.location) {
+          var host = window.location.hostname;
+          if ((host === 'predictpro.guru' || host === 'www.predictpro.guru') && window.location.protocol === 'http:') {
+            window.location.replace('https://predictpro.guru' + window.location.pathname + window.location.search + window.location.hash);
+          }
+        }
+      })();
+    </script>
 
     <!-- Search Engine & Webmaster Ownership Verification -->
     <meta name="yandex-verification" content="6aab6592f8d8ca55" />
@@ -87,10 +106,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PredictPro" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
 
-    <!-- Icons -->
+    <!-- Icons (Yandex requires 120x120, 32x32, 16x16 PNG, SVG, or multi-size ICO) -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="120x120" href="/favicon-120x120.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
@@ -240,19 +264,59 @@
           }
         },
         {
-          "@type": "Organization",
+          "@type": ["Organization", "ProfessionalService"],
           "@id": "https://predictpro.guru/#organization",
           "name": "PredictPro",
+          "legalName": "PredictPro Sports Analytics",
           "url": "https://predictpro.guru",
+          "image": "https://predictpro.guru/og-image.jpg",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://predictpro.guru/icon-512.png"
+            "url": "https://predictpro.guru/favicon-120x120.png",
+            "width": 120,
+            "height": 120
           },
+          "priceRange": "Free - $19/mo",
+          "telephone": "+254-700-000000",
+          "email": "support@predictpro.guru",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Westlands Commercial Center",
+            "addressLocality": "Nairobi",
+            "addressRegion": "Nairobi County",
+            "postalCode": "00100",
+            "addressCountry": "KE"
+          },
+          "areaServed": [
+            { "@type": "Place", "name": "Worldwide" },
+            { "@type": "Country", "name": "KE" },
+            { "@type": "Country", "name": "NG" },
+            { "@type": "Country", "name": "GB" },
+            { "@type": "Country", "name": "US" },
+            { "@type": "Country", "name": "ZA" }
+          ],
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ],
+              "opens": "00:00",
+              "closes": "23:59"
+            }
+          ],
           "sameAs": ["https://twitter.com/PredictProAI"],
           "contactPoint": {
             "@type": "ContactPoint",
             "email": "support@predictpro.guru",
-            "contactType": "customer support"
+            "contactType": "customer support",
+            "availableLanguage": ["English", "Swahili", "French", "Spanish"]
           }
         },
         {

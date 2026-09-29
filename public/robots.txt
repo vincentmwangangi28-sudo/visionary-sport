@@ -1,12 +1,56 @@
-# PredictPro Robots.txt & Search Engine Directives
-# Domain: https://www.predictpro.guru
-# IndexNow Key File: https://www.predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+# PredictPro Robots.txt — Google, Yandex, Bing & AI Search Directives
+# Canonical HTTPS Mirror: https://predictpro.guru
+# IndexNow Key File: https://predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
 User-agent: *
 Allow: /
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /favicon-120x120.png
+Allow: /favicon-48x48.png
+Allow: /favicon-32x32.png
+Allow: /favicon-16x16.png
+Allow: /apple-touch-icon.png
+Allow: /icon-192.png
+Allow: /icon-512.png
+Allow: /sitemap.xml
+Allow: /sitemap-yandex.xml
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 Disallow: /api/
 Disallow: /_vercel/
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&fbclid&gclid&yclid /
+
+User-agent: Yandex
+Allow: /
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /favicon-120x120.png
+Allow: /favicon-48x48.png
+Allow: /favicon-32x32.png
+Allow: /favicon-16x16.png
+Allow: /sitemap.xml
+Allow: /sitemap-yandex.xml
+Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
+Disallow: /api/
+Disallow: /_vercel/
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&fbclid&gclid&yclid /
+Host: https://predictpro.guru
+
+User-agent: YandexImages
+Allow: /
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /favicon-120x120.png
+Allow: /og-image.jpg
+
+User-agent: YandexFavicons
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /favicon-120x120.png
+Allow: /favicon-48x48.png
+Allow: /favicon-32x32.png
+Allow: /favicon-16x16.png
+Allow: /apple-touch-icon.png
 
 User-agent: Googlebot
 Allow: /
@@ -27,10 +71,6 @@ User-agent: Bingbot
 Allow: /
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
-User-agent: Yandex
-Allow: /
-Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
-
 User-agent: AhrefsBot
 Allow: /
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
@@ -39,5 +79,7 @@ User-agent: AhrefsSiteAudit
 Allow: /
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
-Sitemap: https://www.predictpro.guru/sitemap.xml
+Host: https://predictpro.guru
 Sitemap: https://predictpro.guru/sitemap.xml
+Sitemap: https://predictpro.guru/sitemap-yandex.xml
+Sitemap: https://www.predictpro.guru/sitemap.xml

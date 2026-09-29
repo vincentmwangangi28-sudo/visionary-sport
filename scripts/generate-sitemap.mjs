@@ -51,6 +51,7 @@ const CORE_PAGES = [
   { path: '/archive', priority: 0.75, freq: 'daily', title: 'Past Match Prediction Archive & Settlement Results' },
   { path: '/leaderboard', priority: 0.75, freq: 'daily', title: 'Community Prediction Leaderboard & Tipster Rankings' },
   { path: '/about', priority: 0.70, freq: 'monthly', title: 'About PredictPro - AI Sports Analytics Platform' },
+  { path: '/responsible-gaming', priority: 0.75, freq: 'monthly', title: 'Responsible Gaming & 18+ Age Restriction Policy' },
   { path: '/sitemap', priority: 0.70, freq: 'daily', title: 'HTML Predictions Directory & Sitemap' },
   { path: '/seo-indexing', priority: 0.70, freq: 'daily', title: 'Google Indexing & Search Engine Management Console' },
 ];
@@ -169,19 +170,11 @@ export function buildSitemapXml() {
     <lastmod>${entry.lastmod}</lastmod>
     <changefreq>${entry.changefreq}</changefreq>
     <priority>${entry.priority}</priority>
-    <image:image>
-      <image:loc>${BASE_URL}/og-image.jpg</image:loc>
-      <image:title>${escapeXml(entry.title)}</image:title>
-    </image:image>
   </url>`;
   }).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xmlNodes}
 </urlset>
 `;

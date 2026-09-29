@@ -296,11 +296,20 @@ class GoogleIndexingCronService {
    */
   private async dispatchIndexNow(urls: string[], trigger: 'auto' | 'manual'): Promise<IndexingLogEntry> {
     const key = this.settings.indexNowKey || DEFAULT_INDEXNOW_KEY;
+    const priorityAssets = [
+      'https://predictpro.guru/',
+      'https://predictpro.guru/favicon.ico',
+      'https://predictpro.guru/favicon.svg',
+      'https://predictpro.guru/favicon-120x120.png',
+      'https://predictpro.guru/sitemap.xml',
+      'https://predictpro.guru/sitemap-yandex.xml',
+    ];
+    const mergedUrls = Array.from(new Set([...priorityAssets, ...urls])).slice(0, 100);
     const payload = {
-      host: 'www.predictpro.guru',
+      host: 'predictpro.guru',
       key,
-      keyLocation: `https://www.predictpro.guru/${key}.txt`,
-      urlList: urls.slice(0, 100), // IndexNow batch
+      keyLocation: `https://predictpro.guru/${key}.txt`,
+      urlList: mergedUrls,
     };
 
     let httpCode = 200;

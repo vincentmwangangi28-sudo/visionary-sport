@@ -6,9 +6,33 @@
 
 /icon-*.png
   Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+  Content-Type: image/png
+  X-Robots-Tag: all
 
-/favicon*
+/apple-touch-icon.png
   Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+  Content-Type: image/png
+  X-Robots-Tag: all
+
+/favicon.ico
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+  Content-Type: image/x-icon
+  X-Robots-Tag: all
+
+/favicon.svg
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+  Content-Type: image/svg+xml
+  X-Robots-Tag: all
+
+/favicon-*.png
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+  Content-Type: image/png
+  X-Robots-Tag: all
 
 /*.js
   Cache-Control: public, max-age=31536000, immutable
@@ -18,9 +42,21 @@
 
 /sitemap.xml
   Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/sitemap-yandex.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
 
 /robots.txt
   Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+  X-Robots-Tag: all
 
 /ads.txt
   Cache-Control: public, max-age=3600

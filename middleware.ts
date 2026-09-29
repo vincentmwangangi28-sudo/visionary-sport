@@ -42,6 +42,16 @@ export default function middleware(request: Request) {
   const url     = new URL(request.url);
   const path    = url.pathname.replace(/\/$/, '') || '/';
   const country = request.headers.get('x-vercel-ip-country') || 'US';
+  const proto   = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
+
+  // Enforce HTTPS and single canonical host (predictpro.guru) for Yandex & Google
+  if (
+    (url.hostname === 'predictpro.guru' && proto === 'http') ||
+    url.hostname === 'www.predictpro.guru'
+  ) {
+    const targetUrl = `https://predictpro.guru${url.pathname}${url.search}`;
+    return Response.redirect(targetUrl, 301);
+  }
 
   const response = next();
 
@@ -51,8 +61,13 @@ export default function middleware(request: Request) {
     `pp_country=${country}; Path=/; Max-Age=86400; SameSite=Lax`,
   );
 
-  // Canonical Link header — Google treats this identically to <link rel="canonical">.
-  // Fixes the root cause of zero Google indexation: every route was resolving to /.
+  // Enforce HSTS on all edge responses
+  response.headers.set(
+    'Strict-Transport-Security',
+    'max-age=63072000; includeSubDomains; preload',
+  );
+
+  // Canonical Link header — Google and Yandex treat this identically to <link rel="canonical">.
   const canonical = CANONICAL[path] ?? `https://predictpro.guru${path}`;
   response.headers.set('Link', `<${canonical}>; rel="canonical"`);
 

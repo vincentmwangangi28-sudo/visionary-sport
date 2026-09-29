@@ -1,4 +1,4 @@
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { LEAGUES_LIST } from '@/services/realtimeFootball';
 
 export interface SitemapEntry {
@@ -116,6 +116,7 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/screener', title: 'Match Screener & Multi-Filter Football Stats Scanner', priority: 0.85, changeFreq: 'daily' },
     { path: '/track-record', title: 'Verified AI Prediction Track Record & Strike Rate History', priority: 0.85, changeFreq: 'daily' },
     { path: '/seo-indexing', title: 'PredictPro SEO Command Center & Google Indexing Cron Dashboard', priority: 0.70, changeFreq: 'daily' },
+    { path: '/responsible-gaming', title: 'Responsible Gaming & 18+ Minor Protection Policy', priority: 0.75, changeFreq: 'monthly' },
     { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.65, changeFreq: 'daily' },
   ];
 
@@ -133,7 +134,7 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
 
   // 4. Dynamic Match Prediction Routes
   const seenMatches = new Set<string>();
-  for (const pred of DEFAULT_PREDICTIONS) {
+  for (const pred of getUpdatedDefaultPredictions()) {
     const slug = formatMatchSlug(pred.home_team, pred.away_team, pred.match_date);
     if (!seenMatches.has(slug)) {
       seenMatches.add(slug);
@@ -194,35 +195,24 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
 }
 
 /**
- * Generate XML string complying with the official Sitemaps XML protocol
+ * Generate XML string complying with the official Sitemaps XML protocol (Yandex, Google, Bing compliant)
  */
 export function generateSitemapXml(baseUrl: string = BASE_URL): string {
   const entries = getAllSitemapEntries(baseUrl);
 
   const xmlUrls = entries
     .map((entry) => {
-      const defaultImgXml = entry.category === 'core' || entry.category === 'league' || entry.category === 'match'
-        ? `\n    <image:image>
-      <image:loc>${baseUrl}/og-image.jpg</image:loc>
-      <image:title>${escapeXml(entry.title)}</image:title>
-    </image:image>`
-        : '';
-
       return `  <url>
     <loc>${escapeXml(entry.url)}</loc>
     <lastmod>${entry.lastModified}</lastmod>
     <changefreq>${entry.changeFrequency}</changefreq>
-    <priority>${entry.priority.toFixed(2)}</priority>${defaultImgXml}
+    <priority>${entry.priority.toFixed(2)}</priority>
   </url>`;
     })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xmlUrls}
 </urlset>`;
 }

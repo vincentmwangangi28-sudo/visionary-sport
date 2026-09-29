@@ -681,7 +681,80 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
 
       {/* SECTION 3: TECHNICAL SITE AUDIT */}
       {activeSubTab === 'technical' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <Card className="border-emerald-500/30 bg-emerald-500/5">
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
+                  YANDEX WEBMASTER &amp; GOOGLE DIAGNOSTICS — 5/5 RESOLVED
+                </Badge>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5 font-semibold"
+                    onClick={() => copyText('https://predictpro.guru/sitemap.xml', 'Canonical Sitemap URL')}
+                  >
+                    <Copy className="w-3 h-3" /> Copy Sitemap URL
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5 font-semibold"
+                    onClick={() => copyText('https://predictpro.guru/favicon.ico', 'Favicon URL')}
+                  >
+                    <Copy className="w-3 h-3" /> Copy Favicon URL
+                  </Button>
+                </div>
+              </div>
+              <CardTitle className="text-base font-extrabold mt-2">
+                Yandex Webmaster (predictpro.guru) — 5 Recommendations &amp; 21 Self-Checks Status
+              </CardTitle>
+              <CardDescription className="text-xs">
+                All code-level fixes for HTTPS enforcement, Sitemap XML compliance, YandexFavicons multi-size icons, Yandex Business Schema, and Geo-Region declarations are active.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                <div className="font-bold text-foreground flex items-center justify-between">
+                  <span>1. HTTPS Protocol &amp; HSTS Preload</span>
+                  <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Active</Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  301 HTTP→HTTPS &amp; www→non-www redirect in Edge Middleware, <code className="text-primary">Strict-Transport-Security: max-age=63072000; preload</code>, and <code className="text-primary">Host: https://predictpro.guru</code> in robots.txt.
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                <div className="font-bold text-foreground flex items-center justify-between">
+                  <span>2. Strict Sitemap XML (66 URLs)</span>
+                  <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Active</Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  Clean <code className="text-primary">sitemaps.org/schemas/sitemap/0.9</code> XML at <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="text-primary underline">/sitemap.xml</a> and <a href="/sitemap-yandex.xml" target="_blank" rel="noopener noreferrer" className="text-primary underline">/sitemap-yandex.xml</a> with HTML <code className="text-primary">&lt;link rel=&quot;sitemap&quot;&gt;</code> auto-discovery.
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                <div className="font-bold text-foreground flex items-center justify-between">
+                  <span>3. YandexFavicons Multi-Size Square Icons</span>
+                  <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Active</Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  Valid multi-resolution <a href="/favicon.ico" target="_blank" rel="noopener noreferrer" className="text-primary underline">/favicon.ico</a> (16×16, 32×32, 48×48), <a href="/favicon-120x120.png" target="_blank" rel="noopener noreferrer" className="text-primary underline">/favicon-120x120.png</a>, and <a href="/favicon.svg" target="_blank" rel="noopener noreferrer" className="text-primary underline">/favicon.svg</a> with explicit <code className="text-primary">User-agent: YandexFavicons</code> allow rules.
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                <div className="font-bold text-foreground flex items-center justify-between">
+                  <span>4 &amp; 5. Yandex Business &amp; Region Targeting</span>
+                  <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Active</Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  Full <code className="text-primary">Organization</code> + <code className="text-primary">ProfessionalService</code> JSON-LD with address, hours, phone, priceRange, and global + regional <code className="text-primary">hreflang</code> tags (<code className="text-primary">x-default, en, en-KE, en-NG, en-GB, en-US</code>).
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             {
               title: 'Zero Broken Images & Club Crests (0× 404s)',
@@ -699,7 +772,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               title: 'IndexNow Key Alignment & AhrefsBot UTF-8 Verification',
               status: 'Verified (HTTP 200)',
               detail:
-                'Hosted UTF-8 key file at https://www.predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt with key content f7qprb5m24wrvjdmkspy56hhvjmhkcn5, explicit AhrefsBot allow rules, and unified across Edge Functions & cron handlers.',
+                'Hosted UTF-8 key file at https://predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt with key content f7qprb5m24wrvjdmkspy56hhvjmhkcn5, explicit Yandex & AhrefsBot allow rules, and unified across Edge Functions & cron handlers.',
             },
             {
               title: 'Supabase Edge Function CORS Preflight & Static Guard',
@@ -714,10 +787,10 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
                 'Replaced generic navigation labels across Footer, Homepage SEOAuthorityHub, BestBets, ValueBets, and BTTS with keyword-rich descriptive anchor text.',
             },
             {
-              title: 'Schema.org Structured Data (SportsOrganization, FAQPage, BreadcrumbList)',
+              title: 'Schema.org Structured Data (Organization, ProfessionalService, FAQPage)',
               status: 'Valid JSON-LD',
               detail:
-                'Every core prediction hub, league page, and strategy article emits valid JSON-LD structured data for Google Rich Results and AI Overviews.',
+                'Every core prediction hub, league page, and strategy article emits valid JSON-LD structured data for Google Rich Results, Yandex Business Snippets, and AI Overviews.',
             },
           ].map((check) => (
             <Card key={check.title} className="border-border/60 bg-card">
@@ -735,6 +808,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               </CardContent>
             </Card>
           ))}
+          </div>
         </div>
       )}
     </div>

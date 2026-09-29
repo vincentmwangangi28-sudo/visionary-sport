@@ -53,7 +53,7 @@
       "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
     },
     {
-      "source": "/((?!api/|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.txt|.*\\.png|.*\\.svg|.*\\.ico).*)",
+      "source": "/((?!api/|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.txt|.*\\.html|.*\\.png|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],
@@ -64,6 +64,111 @@
     }
   ],
   "headers": [
+    {
+      "source": "/(sitemap\\.xml|sitemap-yandex\\.xml)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.ico",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/x-icon"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.svg",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/svg+xml"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "source": "/(favicon-.*\\.png|apple-touch-icon\\.png|icon-.*\\.png)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/png"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
     {
       "source": "/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt",
       "headers": [
@@ -115,7 +220,11 @@
         },
         {
           "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "upgrade-insecure-requests"
         }
       ]
     }

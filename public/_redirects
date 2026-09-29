@@ -38,15 +38,34 @@
 /tables                     /standings                    301
 /odds                       /dropping-odds                301
 
-# Static SEO & Agentic Crawler Files
+# Enforce HTTPS on custom domain
+http://predictpro.guru/*     https://predictpro.guru/:splat 301!
+http://www.predictpro.guru/* https://predictpro.guru/:splat 301!
+
+# Static SEO, Favicon & Agentic Crawler Files
+/favicon.ico                /favicon.ico                  200
+/favicon.svg                /favicon.svg                  200
+/favicon-120x120.png        /favicon-120x120.png          200
+/favicon-48x48.png          /favicon-48x48.png            200
+/favicon-32x32.png          /favicon-32x32.png            200
+/favicon-16x16.png          /favicon-16x16.png            200
+/apple-touch-icon.png       /apple-touch-icon.png         200
+/icon-192.png               /icon-192.png                 200
+/icon-512.png               /icon-512.png                 200
+/manifest.json              /manifest.json                200
 /k1rdcw8qawe1jjeeezgcndj1njk3yr2g.txt /k1rdcw8qawe1jjeeezgcndj1njk3yr2g.txt 200
 /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt 200
 /ccf4ef0c532c4444b096f02474b4320a.txt /ccf4ef0c532c4444b096f02474b4320a.txt 200
 /predictpro-indexnow-key.txt /predictpro-indexnow-key.txt 200
+/yandex_6aab6592f8d8ca55.html /yandex_6aab6592f8d8ca55.html 200
+/yandex_ccf4ef0c532c4444b096f02474b4320a.html /yandex_ccf4ef0c532c4444b096f02474b4320a.html 200
+/6aab6592f8d8ca55.html      /6aab6592f8d8ca55.html        200
+/ccf4ef0c532c4444b096f02474b4320a.html /ccf4ef0c532c4444b096f02474b4320a.html 200
 /ads.txt                    /ads.txt                      200
 /robots.txt                 /robots.txt                   200
 /llms.txt                   /llms.txt                     200
 /sitemap.xml                /sitemap.xml                  200
+/sitemap-yandex.xml         /sitemap-yandex.xml           200
 
 # SPA Fallback
 /*                          /index.html                   200
