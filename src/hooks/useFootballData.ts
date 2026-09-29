@@ -693,13 +693,14 @@ export function useUpcomingFixtures(options?: {
 /**
  * Hook to fetch league standings with API-Football / RapidAPI / Edge integration and caching
  */
-export function useStandings(leagueId: number, season?: number) {
+export function useStandings(leagueId: number, season?: number, enabled = true) {
   return useQuery({
     queryKey: footballQueryKeys.standings(leagueId, season),
     queryFn: () => fetchStandingsQuery(leagueId, season),
     staleTime: 1000 * 60 * 5, // 5 minutes cache
     gcTime: 1000 * 60 * 30, // 30 minutes
     refetchOnWindowFocus: false,
+    enabled,
     retry: (failureCount, error) => {
       if (error instanceof FootballApiError && error.isAuthError) return false;
       return failureCount < 2;
@@ -716,18 +717,27 @@ export function useFootballData(options?: {
   leagueId?: number | string;
   standingsLeagueId?: number;
   livePollInterval?: number | false;
+  includeUpcoming?: boolean;
+  includeLeagues?: boolean;
 }) {
   const queryClient = useQueryClient();
-  const { league, leagueId, standingsLeagueId, livePollInterval = 15_000 } = options || {};
+  const {
+    league,
+    leagueId,
+    standingsLeagueId,
+    livePollInterval = 15_000,
+    includeUpcoming = false,
+    includeLeagues = false,
+  } = options || {};
 
   const liveQuery = useLiveFixtures({ 
     leagueId, 
     refetchInterval: livePollInterval 
   });
   
-  const leaguesQuery = useFootballLeagues();
-  const upcomingQuery = useUpcomingFixtures({ league });
-  const standingsQuery = useStandings(standingsLeagueId || 39);
+  const leaguesQuery = useFootballLeagues({ enabled: includeLeagues });
+  const upcomingQuery = useUpcomingFixtures({ league, enabled: includeUpcoming });
+  const standingsQuery = useStandings(standingsLeagueId || 39, undefined, Boolean(standingsLeagueId));
 
   // Authentication & Service Availability calculations
   const liveError = liveQuery.error as (FootballApiError | Error | null);

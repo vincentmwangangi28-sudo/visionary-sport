@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useUpcomingMatches, UpcomingMatch } from '@/hooks/useUpcomingMatches';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
@@ -12,8 +12,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { UpcomingMatchListSkeleton } from '@/components/PredictionCardSkeleton';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
-import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { Link } from 'react-router-dom';
+
+const MatchAnalyticsModal = lazy(() =>
+  import('@/components/MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
+);
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
   isPlayedOrPastMatch,
@@ -602,11 +605,13 @@ export const UpcomingMatches: React.FC = () => {
 
       {/* MATCH ANALYTICS MODAL */}
       {selectedMatch && (
-        <MatchAnalyticsModal
-          prediction={selectedMatch}
-          open={!!selectedMatch}
-          onClose={() => setSelectedMatch(null)}
-        />
+        <Suspense fallback={null}>
+          <MatchAnalyticsModal
+            prediction={selectedMatch}
+            open={!!selectedMatch}
+            onClose={() => setSelectedMatch(null)}
+          />
+        </Suspense>
       )}
     </section>
   );

@@ -116,17 +116,17 @@ export const POPULAR_CLUBS_CATALOG: ClubCatalogItem[] = [
   { name: 'Lille', league: 'Ligue 1', shortName: 'LOSC', country: 'France', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/164.png' },
 
   // Kenyan Premier League (KPL)
-  { name: 'Gor Mahia', league: 'KPL', shortName: 'GOR', country: 'Kenya', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/14467.png' },
-  { name: 'AFC Leopards', league: 'KPL', shortName: 'AFC', country: 'Kenya', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/14465.png' },
-  { name: 'Tusker FC', league: 'KPL', shortName: 'TUS', country: 'Kenya', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/14470.png' },
-  { name: 'Bandari FC', league: 'KPL', shortName: 'BAN', country: 'Kenya', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/14466.png' },
+  { name: 'Gor Mahia', league: 'KPL', shortName: 'GOR', country: 'Kenya', logo: '' },
+  { name: 'AFC Leopards', league: 'KPL', shortName: 'AFC', country: 'Kenya', logo: '' },
+  { name: 'Tusker FC', league: 'KPL', shortName: 'TUS', country: 'Kenya', logo: '' },
+  { name: 'Bandari FC', league: 'KPL', shortName: 'BAN', country: 'Kenya', logo: '' },
 
   // MLS & International
-  { name: 'Inter Miami CF', league: 'MLS', shortName: 'MIA', country: 'USA', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/19004.png' },
+  { name: 'Inter Miami CF', league: 'MLS', shortName: 'MIA', country: 'USA', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/20232.png' },
   { name: 'Brazil', league: 'World Cup', shortName: 'BRA', country: 'Brazil', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/205.png' },
   { name: 'Argentina', league: 'World Cup', shortName: 'ARG', country: 'Argentina', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/202.png' },
   { name: 'Senegal', league: 'AFCON Qualifier', shortName: 'SEN', country: 'Senegal', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/654.png' },
-  { name: 'Morocco', league: 'AFCON Qualifier', shortName: 'MAR', country: 'Morocco', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/651.png' },
+  { name: 'Morocco', league: 'AFCON Qualifier', shortName: 'MAR', country: 'Morocco', logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2869.png' },
 ];
 
 export function getTeamLogo(teamName: string): string {

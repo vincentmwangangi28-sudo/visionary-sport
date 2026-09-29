@@ -9,26 +9,31 @@ export const AccuracyTracker = () => {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from('predictions')
-        .select('league, prediction, result, confidence');
-      if (!data?.length) return;
-      const resolved = data.filter(p => p.result);
-      const correct = resolved.filter(p => p.result === p.prediction).length;
-      const leagueMap: Record<string, { count: number; correct: number }> = {};
-      resolved.forEach(p => {
-        if (!leagueMap[p.league]) leagueMap[p.league] = { count: 0, correct: 0 };
-        leagueMap[p.league].count++;
-        if (p.result === p.prediction) leagueMap[p.league].correct++;
-      });
-      setStats({
-        total: data.length, correct,
-        accuracy: resolved.length ? Math.round((correct / resolved.length) * 100) : 87,
-        byLeague: Object.entries(leagueMap).map(([league, { count, correct }]) => ({
-          league, count, correct, pct: Math.round((correct / count) * 100)
-        })).sort((a, b) => b.count - a.count).slice(0, 5),
-      });
-    })();
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await supabase.from('predictions')
+          .select('league, prediction, result, confidence');
+        if (!data?.length) return;
+        const resolved = data.filter(p => p.result);
+        const correct = resolved.filter(p => p.result === p.prediction).length;
+        const leagueMap: Record<string, { count: number; correct: number }> = {};
+        resolved.forEach(p => {
+          if (!leagueMap[p.league]) leagueMap[p.league] = { count: 0, correct: 0 };
+          leagueMap[p.league].count++;
+          if (p.result === p.prediction) leagueMap[p.league].correct++;
+        });
+        setStats({
+          total: data.length, correct,
+          accuracy: resolved.length ? Math.round((correct / resolved.length) * 100) : 87,
+          byLeague: Object.entries(leagueMap).map(([league, { count, correct }]) => ({
+            league, count, correct, pct: Math.round((correct / count) * 100)
+          })).sort((a, b) => b.count - a.count).slice(0, 5),
+        });
+      } catch {
+        // ignore
+      }
+    }, 6500);
+    return () => clearTimeout(timer);
   }, []);
 
   const displayAccuracy = stats?.accuracy ?? 87;

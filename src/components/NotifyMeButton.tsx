@@ -82,7 +82,7 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
           title={subscribed ? 'Subscribed to match push alerts (Click to manage)' : 'Notify me for kickoff and full-time results'}
           aria-label={subscribed ? 'Manage match alerts' : 'Notify me for match results'}
           className={cn(
-            'relative h-10 w-10 min-h-[40px] min-w-[40px] rounded-full transition-all flex-shrink-0',
+            'relative h-11 w-11 min-h-[44px] min-w-[44px] rounded-full transition-all flex-shrink-0',
             subscribed
               ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
               : 'hover:border-primary hover:text-primary',
@@ -134,7 +134,7 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
             onClick={handleClick}
             aria-label={subscribed ? `Match alerts active for ${match.home_team} vs ${match.away_team}` : `Enable notifications for ${match.home_team} vs ${match.away_team}`}
             className={cn(
-              'h-7 px-2.5 text-xs font-bold gap-1.5 rounded-lg transition-all',
+              'min-h-[40px] px-3 py-1.5 text-xs font-bold gap-1.5 rounded-lg transition-all',
               subscribed
                 ? 'bg-primary/15 text-primary hover:bg-primary/25 border-primary/30'
                 : 'hover:border-primary hover:text-primary',

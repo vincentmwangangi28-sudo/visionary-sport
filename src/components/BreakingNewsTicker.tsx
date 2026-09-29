@@ -15,12 +15,17 @@ export function BreakingNewsTicker() {
       setArticles(fresh.slice(0, 4));
     });
 
-    // Background silent check
-    sportsNewsService.fetchAndCacheNews(false).then((fresh) => {
-      if (fresh?.length) setArticles(fresh.slice(0, 4));
-    }).catch(() => {});
+    // Background silent check deferred off initial critical path
+    const timer = setTimeout(() => {
+      sportsNewsService.fetchAndCacheNews(false).then((fresh) => {
+        if (fresh?.length) setArticles(fresh.slice(0, 4));
+      }).catch(() => {});
+    }, 7500);
 
-    return () => unsub();
+    return () => {
+      clearTimeout(timer);
+      unsub();
+    };
   }, []);
 
   if (!articles.length) return null;

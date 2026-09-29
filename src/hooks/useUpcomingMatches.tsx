@@ -94,13 +94,15 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
 
 export const useUpcomingMatches = () => {
   const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
-    const saved = getSavedPredictionsList()
+    const saved = getSavedPredictionsList();
+    const sourcePool = saved.length >= 6 ? saved : getUpdatedDefaultPredictions();
+    const mapped = sourcePool
       .map((p) => toUpcomingMatch(p, true))
       .filter((m): m is UpcomingMatch => m !== null);
-    return deduplicateUpcomingMatches(saved);
+    return deduplicateUpcomingMatches(mapped);
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isRealTime, setIsRealTime] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -142,9 +144,12 @@ export const useUpcomingMatches = () => {
   }, []);
 
   useEffect(() => {
-    refresh();
+    const initialTimer = setTimeout(refresh, 6500);
     const interval = setInterval(refresh, 60_000); // 60-second fixture sync & played-match pruning
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, [refresh]);
 
   return { matches, loading, isRealTime, refresh };

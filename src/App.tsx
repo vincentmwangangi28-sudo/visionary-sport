@@ -308,6 +308,64 @@ const MatchSyncInitializer: React.FC = () => {
   return null;
 };
 
+const DeferredGlobalOverlays = () => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = false;
+    const enable = () => {
+      if (mounted) return;
+      mounted = true;
+      setReady(true);
+    };
+    const timer = setTimeout(enable, 5500);
+    window.addEventListener("scroll", enable, { passive: true, once: true });
+    window.addEventListener("pointerdown", enable, { passive: true, once: true });
+    window.addEventListener("keydown", enable, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", enable);
+      window.removeEventListener("pointerdown", enable);
+      window.removeEventListener("keydown", enable);
+    };
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <>
+      <AutoIndexingInitializer />
+      <GeminiDailyCronInitializer />
+      <MatchSyncInitializer />
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <UnifiedSearchModal />
+        </ErrorBoundary>
+      </Suspense>
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <BetSlipDrawer />
+        </ErrorBoundary>
+      </Suspense>
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <AIChatbot />
+        </ErrorBoundary>
+      </Suspense>
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <PWAInstallPrompt />
+        </ErrorBoundary>
+      </Suspense>
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <FirstVisitSignupModal />
+        </ErrorBoundary>
+      </Suspense>
+    </>
+  );
+};
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
@@ -321,9 +379,6 @@ const App = () => (
                     <LocaleDetectionInitializer />
                     <SEOManagerInitializer />
                     <WebMCPInitializer />
-                    <AutoIndexingInitializer />
-                    <GeminiDailyCronInitializer />
-                    <MatchSyncInitializer />
                     <BetSlipProvider>
                       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
                         Skip to content
@@ -440,31 +495,7 @@ const App = () => (
                           </Routes>
                         </ErrorBoundary>
                       </Suspense>
-                      <Suspense fallback={null}>
-                        <ErrorBoundary fallback={null}>
-                          <UnifiedSearchModal />
-                        </ErrorBoundary>
-                      </Suspense>
-                      <Suspense fallback={null}>
-                        <ErrorBoundary fallback={null}>
-                          <BetSlipDrawer />
-                        </ErrorBoundary>
-                      </Suspense>
-                      <Suspense fallback={null}>
-                        <ErrorBoundary fallback={null}>
-                          <AIChatbot />
-                        </ErrorBoundary>
-                      </Suspense>
-                      <Suspense fallback={null}>
-                        <ErrorBoundary fallback={null}>
-                          <PWAInstallPrompt />
-                        </ErrorBoundary>
-                      </Suspense>
-                      <Suspense fallback={null}>
-                        <ErrorBoundary fallback={null}>
-                          <FirstVisitSignupModal />
-                        </ErrorBoundary>
-                      </Suspense>
+                      <DeferredGlobalOverlays />
                       <MobileBottomNav />
                       <BackToTop />
                     </BetSlipProvider>

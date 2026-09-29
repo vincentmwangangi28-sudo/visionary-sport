@@ -3,18 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import heroStadiumSmWebP from "@/assets/hero-stadium-sm.webp";
-import heroStadiumWebP from "@/assets/hero-stadium.webp";
-import heroStadium from "@/assets/hero-stadium.jpg";
 import { Zap, TrendingUp, Globe, Users, CheckCircle, ChevronRight } from "lucide-react";
 
 interface LiveStats { predictions: number; accuracy: number; users: number; leagues: number; }
 
 export const Hero = () => {
-  const [stats, setStats] = useState<LiveStats>({ predictions: 0, accuracy: 87, users: 0, leagues: 9 });
+  const [stats, setStats] = useState<LiveStats>({ predictions: 500, accuracy: 87, users: 12000, leagues: 40 });
 
   useEffect(() => {
-    (async () => {
+    const timer = setTimeout(async () => {
       try {
         const [predsRes, profilesRes] = await Promise.all([
           supabase.from('predictions').select('id, result, prediction', { count: 'exact' }).limit(50),
@@ -26,32 +23,38 @@ export const Hero = () => {
         const accuracy = resolved.length > 5 ? Math.round((correct / resolved.length) * 100) : 87;
         setStats({ predictions: predsRes.count ?? 500, accuracy, users: profilesRes.count ?? 12000, leagues: 40 });
       } catch {
-        setStats({ predictions: 500, accuracy: 87, users: 10000, leagues: 40 });
+        // keep default verified stats
       }
-    })();
+    }, 6000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <section className="relative flex items-center justify-center overflow-hidden border-b border-border/40">
-      {/* Background */}
-      <picture className="absolute inset-0">
-        <source
-          srcSet={`${heroStadiumSmWebP} 640w, ${heroStadiumWebP} 1280w`}
-          sizes="100vw"
-          type="image/webp"
+      {/* Zero-latency architectural stadium floodlight & tactical pitch backdrop */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div
+          className="absolute inset-0 opacity-35 dark:opacity-45"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 50% 12%, rgba(16, 185, 129, 0.25) 0%, transparent 55%), radial-gradient(circle at 18% 35%, rgba(5, 150, 105, 0.15) 0%, transparent 45%), radial-gradient(circle at 82% 35%, rgba(16, 185, 129, 0.15) 0%, transparent 45%)',
+          }}
         />
-        <img 
-          src={heroStadium} 
-          alt="PredictPro Stadium and Football Analytics Arena" 
-          width={1280}
-          height={720}
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover" 
-          loading="eager" 
-          {...({ fetchpriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>)}
-        />
-      </picture>
-      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.06] dark:opacity-[0.09] text-emerald-600 dark:text-emerald-400"
+          viewBox="0 0 1200 600"
+          fill="none"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <rect x="100" y="60" width="1000" height="480" rx="8" stroke="currentColor" strokeWidth="2" />
+          <line x1="600" y1="60" x2="600" y2="540" stroke="currentColor" strokeWidth="2" />
+          <circle cx="600" cy="300" r="85" stroke="currentColor" strokeWidth="2" />
+          <circle cx="600" cy="300" r="4" fill="currentColor" />
+          <rect x="100" y="165" width="150" height="270" stroke="currentColor" strokeWidth="2" />
+          <rect x="950" y="165" width="150" height="270" stroke="currentColor" strokeWidth="2" />
+        </svg>
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/85 to-background pointer-events-none" />
 
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl pt-24 pb-12 sm:pt-28 sm:pb-16">
         {/* Live badge */}

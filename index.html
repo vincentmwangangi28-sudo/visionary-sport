@@ -340,8 +340,8 @@
     </script>
   </head>
   <body>
-    <div id="root">
-      <!-- Fallback semantic structure for Googlebot and initial crawler pass before hydration -->
+    <div id="root"></div>
+    <noscript>
       <header style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
           <strong>PredictPro</strong>
@@ -363,7 +363,7 @@
           <a href="/value-bets">Value Bets</a> · 
           <a href="/correct-score">Correct Score</a> · 
           <a href="/accumulator">Accumulator Builder</a> · 
-          <a href="/live">Live Scores & Odds</a> · 
+          <a href="/live">Live Scores &amp; Odds</a> · 
           <a href="/dropping-odds">Dropping Odds Radar</a> · 
           <a href="/screener">Match Screener</a> · 
           <a href="/tournaments">Global Tournaments</a> · 
@@ -374,21 +374,11 @@
           <a href="/seo-indexing">Google Indexing Console</a>
         </nav>
       </header>
-      <main id="main-content" style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
+      <main style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
         <h1>PredictPro — AI Football Predictions Today | Statistical Match Analytics &amp; xG Forecasts</h1>
         <p>Independent AI-powered football statistical modeling, Bivariate Poisson scoreline distributions, and Expected Goals (xG) analytics across 40+ leagues worldwide.</p>
-        <section aria-label="Responsible Gambling and 18+ Age Restriction Notice" style="margin-top: 16px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px;">
-          <strong>18+ Only · Responsible Gambling &amp; Informational Analytics Disclaimer (Never Intended for Minors):</strong>
-          PredictPro (predictpro.guru) is an independent sports statistics and mathematical football analytics platform for informational and educational purposes only. PredictPro is NOT a bookmaker or real-money gambling operator, does NOT accept wagers or deposits, and never guarantees outcomes. If you or someone you know needs support with problem gambling, visit <a href="https://www.begambleaware.org" rel="noopener noreferrer">BeGambleAware.org</a>, call GamCare at 0808 8020 133, US NCPG at 1-800-GAMBLER, or Responsible Gaming Kenya at 0800 722 200. Read our full <a href="/responsible-gaming">Responsible Gaming &amp; Minor Protection Policy</a>.
-        </section>
-      </main>
-    </div>
-    <noscript>
-      <div style="padding: 24px; text-align: center; font-family: system-ui, -apple-system, sans-serif;">
-        <h2>JavaScript Required for Interactive Experience</h2>
-        <p>PredictPro utilizes real-time AI modeling. Please enable JavaScript to access live odds, interactive match simulations, and dynamic bet builder tools.</p>
         <p><a href="/sitemap">Browse Full Football Predictions Directory &amp; Sitemap</a></p>
-      </div>
+      </main>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>

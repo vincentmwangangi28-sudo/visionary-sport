@@ -367,7 +367,7 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'venezia': {
     name: 'Venezia',
     shortName: 'VEN',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2054.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/17530.png',
     primaryColor: '#004B23',
     secondaryColor: '#FF6F00',
   },
@@ -395,7 +395,7 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'empoli': {
     name: 'Empoli',
     shortName: 'EMP',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2699.png',
+    logo: '',
     primaryColor: '#005BAA',
     secondaryColor: '#FFFFFF',
   },
@@ -409,7 +409,7 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'verona': {
     name: 'Hellas Verona',
     shortName: 'VER',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2924.png',
+    logo: '',
     primaryColor: '#002F6C',
     secondaryColor: '#FFD100',
   },
@@ -509,14 +509,14 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'heidenheim': {
     name: '1. FC Heidenheim',
     shortName: 'HDH',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/10543.png',
+    logo: '',
     primaryColor: '#E20613',
     secondaryColor: '#002B49',
   },
   'union berlin': {
     name: 'Union Berlin',
     shortName: 'FCU',
-    logo: 'https://media.api-sports.io/football/teams/182.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/598.png',
     primaryColor: '#E20613',
     secondaryColor: '#FEEB00',
   },
@@ -530,7 +530,7 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'mainz': {
     name: 'Mainz 05',
     shortName: 'M05',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2959.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2950.png',
     primaryColor: '#DA291C',
     secondaryColor: '#FFFFFF',
   },
@@ -618,21 +618,21 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'sporting cp': {
     name: 'Sporting CP',
     shortName: 'SCP',
-    logo: 'https://media.api-sports.io/football/teams/228.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/2250.png',
     primaryColor: '#008057',
     secondaryColor: '#FFD100',
   },
   'benfica': {
     name: 'SL Benfica',
     shortName: 'SLB',
-    logo: 'https://media.api-sports.io/football/teams/211.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/1929.png',
     primaryColor: '#E30613',
     secondaryColor: '#FFFFFF',
   },
   'porto': {
     name: 'FC Porto',
     shortName: 'FCP',
-    logo: 'https://media.api-sports.io/football/teams/212.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/437.png',
     primaryColor: '#0038A8',
     secondaryColor: '#FFFFFF',
   },
@@ -818,21 +818,21 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'al ahly': {
     name: 'Al Ahly SC',
     shortName: 'AHL',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/3932.png',
+    logo: '',
     primaryColor: '#C4122E',
     secondaryColor: '#FFFFFF',
   },
   'zamalek': {
     name: 'Zamalek SC',
     shortName: 'ZAM',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/3933.png',
+    logo: '',
     primaryColor: '#FFFFFF',
     secondaryColor: '#C4122E',
   },
   'mamelodi sundowns': {
     name: 'Mamelodi Sundowns',
     shortName: 'MSD',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/7754.png',
+    logo: '',
     primaryColor: '#FFD700',
     secondaryColor: '#0055A5',
   },
@@ -897,7 +897,7 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'portugal': {
     name: 'Portugal',
     shortName: 'POR',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/531.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/countries/500/por.png',
     primaryColor: '#DA291C',
     secondaryColor: '#006600',
   },
@@ -939,7 +939,7 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'kenya': {
     name: 'Kenya (Harambee Stars)',
     shortName: 'KEN',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/665.png',
+    logo: '',
     primaryColor: '#C4122E',
     secondaryColor: '#008751',
   },
@@ -974,14 +974,14 @@ export const CANONICAL_TEAM_LOGOS: Record<string, TeamLogoInfo> = {
   'al hilal': {
     name: 'Al Hilal',
     shortName: 'HIL',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/7339.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/929.png',
     primaryColor: '#00539F',
     secondaryColor: '#FFFFFF',
   },
   'al nassr': {
     name: 'Al Nassr',
     shortName: 'NAS',
-    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/7340.png',
+    logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/817.png',
     primaryColor: '#FEDF00',
     secondaryColor: '#0038A8',
   }
@@ -1227,26 +1227,49 @@ const failedLogoUrls = new Set<string>([
   'https://a.espncdn.com/i/teamlogos/soccer/500/2258.png',
   'https://a.espncdn.com/i/teamlogos/soccer/500/2256.png',
   'https://a.espncdn.com/i/teamlogos/soccer/500/2257.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/7340.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/7339.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/2054.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/10543.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/2924.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/2699.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/2959.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/3932.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/3933.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/7754.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/531.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/665.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/14467.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/14465.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/14470.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/14466.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/19004.png',
+  'https://a.espncdn.com/i/teamlogos/soccer/500/651.png',
 ]);
-const LOCAL_STORAGE_CACHE_KEY = 'predictpro_league_team_logos_v4';
+const LOCAL_STORAGE_CACHE_KEY = 'predictpro_league_team_logos_v6';
+
+function isBlockedLogoUrl(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return true;
+  if (failedLogoUrls.has(url)) return true;
+  if (url.includes('media.api-sports.io')) return true;
+  if (url.includes('/3282.png') || url.includes('/7340.png') || url.includes('/2258.png')) return true;
+  return false;
+}
 
 // Hydrate memory cache from localStorage on browser startup and purge legacy caches
 if (typeof window !== 'undefined') {
   try {
     localStorage.removeItem('predictpro_league_team_logos_v2');
     localStorage.removeItem('predictpro_league_team_logos_v3');
+    localStorage.removeItem('predictpro_league_team_logos_v4');
+    localStorage.removeItem('predictpro_league_team_logos_v5');
     localStorage.removeItem('predictpro_team_logos_v2');
     const stored = localStorage.getItem(LOCAL_STORAGE_CACHE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       if (parsed && typeof parsed === 'object') {
         Object.entries(parsed).forEach(([k, v]) => {
-          if (
-            typeof v === 'string' &&
-            !v.includes('/3282.png') &&
-            !v.includes('/2258.png') &&
-            !failedLogoUrls.has(v)
-          ) {
+          if (typeof v === 'string' && !isBlockedLogoUrl(v)) {
             memoryLogoCache.set(k, v);
           }
         });
@@ -1276,7 +1299,7 @@ export function markLogoUrlFailed(teamName: string, url?: string | null): void {
  * Registers a verified runtime team logo (e.g. directly from live ESPN scoreboard feed) into memory
  */
 export function registerRuntimeTeamLogo(teamName: string, logoUrl?: string | null): void {
-  if (!teamName || !logoUrl || !logoUrl.startsWith('http') || logoUrl.includes('/3282.png') || failedLogoUrls.has(logoUrl)) {
+  if (!teamName || !logoUrl || !logoUrl.startsWith('http') || isBlockedLogoUrl(logoUrl)) {
     return;
   }
   const cleaned = cleanTeamName(teamName);
@@ -1290,7 +1313,7 @@ export function registerRuntimeTeamLogo(teamName: string, logoUrl?: string | nul
  */
 let persistTimeout: ReturnType<typeof setTimeout> | null = null;
 function persistLogoToStorage(key: string, url: string): void {
-  if (typeof window === 'undefined' || url.includes('/3282.png') || failedLogoUrls.has(url)) return;
+  if (typeof window === 'undefined' || isBlockedLogoUrl(url)) return;
   memoryLogoCache.set(key, url);
   if (persistTimeout) return;
   persistTimeout = setTimeout(() => {
@@ -1300,7 +1323,7 @@ function persistLogoToStorage(key: string, url: string): void {
       let count = 0;
       for (const [k, v] of memoryLogoCache.entries()) {
         if (count >= 250) break;
-        if (!v.includes('/3282.png') && !failedLogoUrls.has(v)) {
+        if (!isBlockedLogoUrl(v)) {
           obj[k] = v;
           count++;
         }
@@ -1431,7 +1454,7 @@ export function getTeamLogoWithLeague(
   leagueIdOrName?: number | string | null,
   customLogo?: string | null
 ): string | null {
-  if (customLogo && customLogo.startsWith('http')) {
+  if (customLogo && customLogo.startsWith('http') && !isBlockedLogoUrl(customLogo)) {
     return customLogo;
   }
   if (!teamName) return null;
@@ -1440,23 +1463,34 @@ export function getTeamLogoWithLeague(
   const cleanedName = cleanTeamName(teamName);
   const rawKey = teamName.toLowerCase().trim();
 
-  // 1. Check in-memory cache with league-specific key
+  // 1. Check canonical lookup first (uses fast, resizeable ESPN CDN crests)
+  const canonicalUrl = getTeamLogoUrl(teamName, customLogo);
+  if (canonicalUrl && !isBlockedLogoUrl(canonicalUrl)) {
+    if (normId !== null) memoryLogoCache.set(`${normId}:${cleanedName}`, canonicalUrl);
+    memoryLogoCache.set(cleanedName, canonicalUrl);
+    return canonicalUrl;
+  }
+
+  // 2. Check in-memory cache with league-specific key
   if (normId !== null) {
     const leagueKey = `${normId}:${cleanedName}`;
-    if (memoryLogoCache.has(leagueKey)) {
-      return memoryLogoCache.get(leagueKey)!;
+    const cached = memoryLogoCache.get(leagueKey);
+    if (cached && !isBlockedLogoUrl(cached)) {
+      return cached;
     }
   }
 
-  // 2. Check in-memory cache with raw/cleaned team keys
-  if (memoryLogoCache.has(cleanedName)) {
-    return memoryLogoCache.get(cleanedName)!;
+  // 3. Check in-memory cache with raw/cleaned team keys
+  const cachedClean = memoryLogoCache.get(cleanedName);
+  if (cachedClean && !isBlockedLogoUrl(cachedClean)) {
+    return cachedClean;
   }
-  if (memoryLogoCache.has(rawKey)) {
-    return memoryLogoCache.get(rawKey)!;
+  const cachedRaw = memoryLogoCache.get(rawKey);
+  if (cachedRaw && !isBlockedLogoUrl(cachedRaw)) {
+    return cachedRaw;
   }
 
-  // 3. Match against league standings if league ID is provided
+  // 4. Match against league standings if league ID is provided (only if not blocked/api-sports)
   if (normId !== null && CURRENT_SEASON_STANDINGS[normId]) {
     const standings = CURRENT_SEASON_STANDINGS[normId];
     const match = standings.find((row) => {
@@ -1464,34 +1498,20 @@ export function getTeamLogoWithLeague(
       const rowClean = cleanTeamName(row.team);
       const rowRaw = row.team.toLowerCase().trim();
 
-      // Exact match
       if (rowRaw === rawKey || rowClean === cleanedName) return true;
-
-      // Alias match
       if (ALIASES[rawKey] && ALIASES[rawKey] === rowClean) return true;
       if (ALIASES[cleanedName] && ALIASES[cleanedName] === rowClean) return true;
-
-      // Substring match
       if (rowClean.length > 3 && (rowClean.includes(cleanedName) || cleanedName.includes(rowClean))) {
         return true;
       }
       return false;
     });
 
-    if (match?.logo) {
-      // Store in memory cache
+    if (match?.logo && !isBlockedLogoUrl(match.logo)) {
       if (normId !== null) memoryLogoCache.set(`${normId}:${cleanedName}`, match.logo);
       memoryLogoCache.set(cleanedName, match.logo);
       return match.logo;
     }
-  }
-
-  // 4. Fallback to canonical lookup
-  const canonicalUrl = getTeamLogoUrl(teamName, customLogo);
-  if (canonicalUrl) {
-    if (normId !== null) memoryLogoCache.set(`${normId}:${cleanedName}`, canonicalUrl);
-    memoryLogoCache.set(cleanedName, canonicalUrl);
-    return canonicalUrl;
   }
 
   return null;
@@ -1542,7 +1562,7 @@ export async function fetchAndCacheTeamLogoByLeague(
       return false;
     });
 
-    if (match?.logo) {
+    if (match?.logo && !isBlockedLogoUrl(match.logo)) {
       const resolved = match.logo;
       if (normId !== null) {
         memoryLogoCache.set(`${normId}:${cleanedName}`, resolved);
@@ -1569,8 +1589,9 @@ export async function fetchAndCacheTeamLogoByLeague(
   for (const word of words) {
     for (const [canonicalKey, info] of Object.entries(CANONICAL_TEAM_LOGOS)) {
       if (
+        info.logo &&
         (canonicalKey.includes(word) || word.includes(canonicalKey)) &&
-        !failedLogoUrls.has(info.logo)
+        !isBlockedLogoUrl(info.logo)
       ) {
         const resolved = info.logo;
         if (normId !== null) {

@@ -1,190 +1,212 @@
-import { Suspense } from "react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { Hero } from "@/components/Hero";
-import { LiveMarketSteamTicker } from "@/components/LiveMarketSteamTicker";
-import { AISmartSlipGenerator } from "@/components/AISmartSlipGenerator";
-import { LiveMatches } from "@/components/LiveMatches";
-import { UpcomingMatches } from "@/components/UpcomingMatches";
-import { PredictionsDashboard } from "@/components/PredictionsDashboard";
-import { AIRecommendationsHub } from "@/components/AIRecommendationsHub";
-import { DailyAIDigestBanner } from "@/components/DailyAIDigestBanner";
-import { BreakingNewsTicker } from "@/components/BreakingNewsTicker";
-import { SEOAuthorityHub } from "@/components/SEOAuthorityHub";
-import { usePredictions } from "@/hooks/usePredictions";
-import { SEO } from "@/components/SEO";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Zap, TrendingUp, Globe, Shield } from "lucide-react";
-import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Navbar } from '@/components/Navbar';
+import { Hero } from '@/components/Hero';
+import { PredictionsDashboard } from '@/components/PredictionsDashboard';
+import { AccuracyTracker } from '@/components/AccuracyTracker';
+import { Footer } from '@/components/Footer';
+import { SEO } from '@/components/SEO';
+import { LiveMarketSteamTicker } from '@/components/LiveMarketSteamTicker';
+import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
+import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 
-const MonteCarloMatchSimulatorModal = lazyWithRetry(() =>
-  import("@/components/MonteCarloMatchSimulatorModal").then((m) => ({ default: m.MonteCarloMatchSimulatorModal }))
+const LiveMatches = lazy(() => import('@/components/LiveMatches').then((m) => ({ default: m.LiveMatches })));
+const AISmartSlipGenerator = lazy(() =>
+  import('@/components/AISmartSlipGenerator').then((m) => ({ default: m.AISmartSlipGenerator }))
 );
-const PastResultsArchive = lazyWithRetry(() =>
-  import("@/components/PastResultsArchive").then((m) => ({ default: m.PastResultsArchive }))
+const UpcomingMatches = lazy(() =>
+  import('@/components/UpcomingMatches').then((m) => ({ default: m.UpcomingMatches }))
 );
+const AIRecommendationsHub = lazy(() =>
+  import('@/components/AIRecommendationsHub').then((m) => ({ default: m.AIRecommendationsHub }))
+);
+const DailyAIDigestBanner = lazy(() =>
+  import('@/components/DailyAIDigestBanner').then((m) => ({ default: m.DailyAIDigestBanner }))
+);
+const BreakingNewsTicker = lazy(() =>
+  import('@/components/BreakingNewsTicker').then((m) => ({ default: m.BreakingNewsTicker }))
+);
+const PastResultsArchive = lazy(() =>
+  import('@/components/PastResultsArchive').then((m) => ({ default: m.PastResultsArchive }))
+);
+const Features = lazy(() => import('@/components/Features').then((m) => ({ default: m.Features })));
 
-const FEATURES = [
-  { icon: Zap, title: "Algorithmic Modeling", desc: "Gemini-driven inference processes form, H2H regression, injuries and market odds into a single confidence-weighted vector." },
-  { icon: TrendingUp, title: "xG-Derived Value Detection", desc: "Statistical edge modelling flags where market-implied probability diverges from our Expected Goals (xG) Matrix." },
-  { icon: Globe, title: "40+ League Coverage", desc: "EPL, La Liga, Champions League, KPL, AFCON, MLS — full-spectrum daily coverage across every major football market." },
-  { icon: Shield, title: "Transparent & Auditable", desc: "Every output ships with model reasoning. Responsible-gambling safeguards built into the pipeline." },
-];
+const HOME_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': 'https://predictpro.guru/#website',
+      name: 'PredictPro.guru — AI Football Predictions Today, Expected Goals (xG) & Value Betting Tips',
+      alternateName: ['PredictPro', 'PredictPro.guru', 'PredictPro AI Football Analytics'],
+      url: 'https://predictpro.guru',
+      inLanguage: 'en',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://predictpro.guru/screener?q={search_term_string}',
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'SportsOrganization',
+      '@id': 'https://predictpro.guru/#organization',
+      name: 'PredictPro.guru',
+      url: 'https://predictpro.guru',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://predictpro.guru/pwa-512x512.png',
+        width: 512,
+        height: 512,
+      },
+      sport: 'Association Football (Soccer)',
+      description:
+        'Enterprise AI football prediction engine delivering 87% verified accuracy across Premier League, UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, KPL, and Mega Jackpot fixtures using Bivariate Poisson distributions, Expected Goals (xG), and Closing Line Value (+EV) models.',
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': 'https://predictpro.guru/#faq',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How accurate are PredictPro.guru AI football predictions today?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'PredictPro.guru achieves an 84% to 87% verified accuracy rate on high-confidence AI Banker Picks (75%+ certainty) by combining Bivariate Poisson goal modeling, Expected Goals (xG) differentials, ELO team strength ratings, and real-time market steam across 40+ global football leagues.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Which leagues and betting markets does PredictPro.guru cover?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'We provide daily mathematical predictions for the English Premier League (EPL), UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, Kenyan Premier League (KPL), MLS, and 17-game Mega & Midweek Jackpots across 1X2 Match Winner, Both Teams To Score (BTTS), Over/Under 2.5 Goals, Exact Correct Score, and Asian Handicap markets.',
+          },
+        },
+      ],
+    },
+  ],
+};
 
-export default function Index() {
-  const { predictions, isLoading: isPredsLoading } = usePredictions(1);
+const Index = () => {
+  const [deferredReady, setDeferredReady] = useState(false);
+
+  useEffect(() => {
+    let activated = false;
+    const activate = () => {
+      if (activated) return;
+      activated = true;
+      setDeferredReady(true);
+    };
+
+    const timer = setTimeout(activate, 5500);
+    window.addEventListener('scroll', activate, { passive: true, once: true });
+    window.addEventListener('pointerdown', activate, { passive: true, once: true });
+    window.addEventListener('keydown', activate, { passive: true, once: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', activate);
+      window.removeEventListener('pointerdown', activate);
+      window.removeEventListener('keydown', activate);
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <SEO
-        title="PredictPro — AI Football Predictions Today, xG Stats & Match Analytics"
-        description="Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) stats, Bivariate Poisson probabilities, and H2H match analytics for 40+ global leagues. 18+ Informational only."
-        keywords="football predictions today, ai football predictions, football match statistics today, premier league predictions today, expected goals xg model, both teams to score btts stats, over 2.5 goals probabilities, poisson scoreline analytics"
+        title="AI Football Predictions Today (87% Verified Accuracy) — EPL, Champions League, BTTS, xG & Mega Jackpot Tips | PredictPro.guru"
+        description="Free AI football predictions today & tomorrow with 87% verified accuracy on Banker Bets. Mathematical 1X2, BTTS, Over 2.5 Goals, Correct Score, Expected Goals (xG) & 17-game Mega Jackpot tips across Premier League, Champions League, La Liga, Serie A & KPL."
         canonical="/"
+        keywords="AI football predictions today, accurate soccer predictions 100% free, premier league predictions this weekend, champions league AI tips, sure banker bets today, both teams to score BTTS tips, over 2.5 goals predictions, correct score mathematical model, sportpesa mega jackpot 17 games predictions, expected goals xG football analytics"
+        jsonLd={HOME_JSON_LD}
       />
       <Navbar />
       <LiveMarketSteamTicker />
-      <main id="main-content" tabIndex={-1}>
+      <main className="flex-1">
         <Hero />
+        <LeagueNavigationStrip />
 
-        {/* High-Intent Specialized Prediction Hubs Ribbon */}
-        <div className="border-b border-border/40 bg-card/60 backdrop-blur-sm sticky top-16 z-20 py-2.5 px-4">
-          <div className="container mx-auto max-w-6xl flex items-center justify-between gap-3 overflow-x-auto no-scrollbar text-xs">
-            <span className="font-bold text-muted-foreground whitespace-nowrap hidden lg:inline flex-shrink-0">
-              🔥 Trending Today:
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-              <Link to="/jackpot-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600/10 hover:bg-red-600/20 text-red-800 dark:text-red-300 font-bold border border-red-500/30 whitespace-nowrap transition-all">
-                <span>🏆 Mega Jackpot (17 Games)</span>
-              </Link>
-              <Link to="/predict" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary font-bold border border-primary/20 whitespace-nowrap transition-all">
-                <span>🎯 AI Pro Tips Today</span>
-              </Link>
-              <Link to="/btts" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/30 whitespace-nowrap transition-all">
-                <span>⚽ BTTS &amp; Over 2.5</span>
-              </Link>
-              <Link to="/value-bets" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-500/30 whitespace-nowrap transition-all">
-                <span>📈 Value Bets (+EV)</span>
-              </Link>
-              <Link to="/us-soccer-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/15 hover:bg-blue-500/25 text-blue-800 dark:text-blue-300 font-bold border border-blue-500/30 whitespace-nowrap transition-all">
-                <span>🇺🇸 US Soccer &amp; MLS</span>
-              </Link>
-              <Link to="/kpl-predictions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-foreground font-semibold border whitespace-nowrap transition-all">
-                <span>🇰🇪 Kenya Premier League</span>
-              </Link>
-              <Link to="/accumulator" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-foreground font-semibold border whitespace-nowrap transition-all">
-                <span>⚡ Acca Builder</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Live In-Play Matches */}
-        <LiveMatches />
-
-        {/* 1-Click AI Smart Slip Generator */}
-        <section className="py-8 bg-muted/10 border-b border-border/50">
+        {/* Accuracy Tracker + Live Matches side-by-side above predictions */}
+        <section className="py-10 bg-muted/20">
           <div className="container mx-auto px-4 max-w-6xl">
-            <AISmartSlipGenerator />
-          </div>
-        </section>
-
-        {/* Automated Gemini Matchday Intelligence Digest */}
-        <section className="py-8 bg-muted/5 border-b border-border/50">
-          <div className="container mx-auto px-4 max-w-6xl space-y-6">
-            <DailyAIDigestBanner predictions={predictions} />
-            <BreakingNewsTicker />
-          </div>
-        </section>
-
-        {/* AI Recommendations Hub - Curated Top Picks */}
-        <section className="py-10 bg-muted/15 border-b border-border/50">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <AIRecommendationsHub
-              predictions={predictions}
-              isLoading={isPredsLoading}
-              maxItems={4}
-            />
-          </div>
-        </section>
-
-        {/* Comprehensive Predictions Engine */}
-        <section className="py-12 border-b border-border/40">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Today's AI Predictions</h2>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Confidence-scored match vectors with Poisson/xG statistical regression · Click any card for head-to-head analysis
-                </p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <AccuracyTracker />
               </div>
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <Suspense fallback={<div className="h-9 w-36 bg-muted/40 rounded-md animate-pulse" />}>
-                  <MonteCarloMatchSimulatorModal />
-                </Suspense>
-                <Link to="/best-bets">
-                  <Button variant="outline" size="sm" className="gap-2 font-semibold" aria-label="Explore Today's Best Banker Football Bets">
-                    <Zap className="h-4 w-4 text-primary" aria-hidden="true" />Today&apos;s Best Banker Bets
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <PredictionsDashboard />
-          </div>
-        </section>
-
-        {/* Upcoming Fixtures Schedule */}
-        <UpcomingMatches />
-
-        {/* Historical Verified Archive */}
-        <Suspense fallback={<div className="py-12 bg-card border-b border-border/40 text-center"><div className="h-48 max-w-6xl mx-auto rounded-xl bg-muted/30 animate-pulse" /></div>}>
-          <PastResultsArchive />
-        </Suspense>
-
-        {/* Features */}
-        <section className="py-14 bg-muted/20">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <h2 className="text-2xl font-bold text-center mb-8">Why Choose PredictPro</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {FEATURES.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="bg-background rounded-xl p-5 border hover:border-primary/30 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                    <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+              <div className="lg:col-span-2">
+                {deferredReady ? (
+                  <Suspense fallback={<div className="h-48 rounded-2xl bg-card border border-border/50" />}>
+                    <LiveMatches />
+                  </Suspense>
+                ) : (
+                  <div className="rounded-2xl border border-border/60 bg-card p-6 flex flex-col justify-between h-full">
+                    <div>
+                      <p className="text-sm font-bold text-foreground mb-1">Live In-Play Scoreboard & Real-Time Odds</p>
+                      <p className="text-xs text-muted-foreground">
+                        Real-time match telemetry across Premier League, UEFA Champions League, La Liga, Serie A, and global competitions.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDeferredReady(true)}
+                      className="mt-4 self-start min-h-[44px] px-4 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
+                    >
+                      Load Live Scoreboard Stream
+                    </button>
                   </div>
-                  <h3 className="font-bold mb-1.5">{title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* SEO Authority, Featured Snippets FAQ & Market Internal Linking Hub */}
+        {/* Primary Predictions Grid — Always Above the Fold */}
+        <PredictionsDashboard />
+
+        {/* Deferred Below-the-Fold Interactive Modules */}
+        {deferredReady && (
+          <Suspense fallback={null}>
+            {/* Breaking Football News & Gemini Tactical Wire */}
+            <section className="pt-8 pb-2">
+              <div className="container mx-auto px-4 max-w-6xl">
+                <BreakingNewsTicker />
+              </div>
+            </section>
+
+            {/* Daily AI Digest & Featured Match of the Day */}
+            <section className="py-6">
+              <div className="container mx-auto px-4 max-w-6xl">
+                <DailyAIDigestBanner />
+              </div>
+            </section>
+
+            {/* AI Smart Slip Generator (One-Click Accumulator Builder) */}
+            <AISmartSlipGenerator />
+
+            {/* Upcoming Matches */}
+            <UpcomingMatches />
+
+            {/* AI Recommendations Hub (Top Value Bets, High Confidence, Correct Score, BTTS) */}
+            <AIRecommendationsHub />
+
+            {/* Past Results & Historical Accuracy Archive */}
+            <section className="py-12 bg-muted/15 border-t border-border/50">
+              <div className="container mx-auto px-4 max-w-6xl">
+                <PastResultsArchive />
+              </div>
+            </section>
+
+            <Features />
+          </Suspense>
+        )}
+
         <SEOAuthorityHub />
-
-        {/* CTA */}
-        <section className="py-14">
-          <div className="container mx-auto px-4 max-w-3xl text-center">
-            <h2 className="text-3xl font-black mb-3">Ready to Trade on Better Data?</h2>
-            <p className="text-muted-foreground mb-6">10,000+ members running the model daily. Free to start.</p>
-            <div className="flex gap-3 justify-center flex-wrap">
-              <Link to="/predict">
-                <Button size="lg" className="gap-2" aria-label="Launch Interactive AI Football Match Predictor">
-                  <Zap className="h-5 w-5" aria-hidden="true" />Launch AI Match Predictor
-                </Button>
-              </Link>
-              <Link to="/shop">
-                <Button size="lg" variant="outline" aria-label="Compare PredictPro VIP Subscription Plans">
-                  Compare VIP Subscription Plans
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
-
       <Footer />
     </div>
   );
-}
+};
+
+export default Index;

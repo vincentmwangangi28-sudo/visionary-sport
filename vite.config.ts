@@ -111,6 +111,17 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 600,
     cssCodeSplit: true,
     sourcemap: false,
+    modulePreload: {
+      polyfill: false,
+      resolveDependencies: (_filename, deps) =>
+        deps.filter(
+          (d) =>
+            !d.includes("vendor-charts") &&
+            !d.includes("standingsData") &&
+            !d.includes("MatchAnalyticsModal") &&
+            !d.includes("AdvancedMarketsTab")
+        ),
+    },
     rollupOptions: {
       output: {
         // Flat asset paths - avoids Vercel rewrite conflicts

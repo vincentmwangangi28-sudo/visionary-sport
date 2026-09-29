@@ -1,7 +1,6 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, memo } from 'react';
 import {
   getTeamLogoWithLeague,
-  fetchAndCacheTeamLogoByLeague,
   getTeamInitialsAndColor,
   markLogoUrlFailed,
 } from '@/services/teamLogos';
@@ -44,31 +43,10 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   const effectiveLeague = leagueId ?? league ?? null;
   const [imageError, setImageError] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [asyncLogoUrl, setAsyncLogoUrl] = useState<string | null>(null);
 
   // Synchronous resolution path using league context and multi-tier memory cache
-  const syncUrl = !imageError && team ? getTeamLogoWithLeague(team, effectiveLeague, logoUrl) : null;
-  const resolvedUrl = !imageError ? (syncUrl || asyncLogoUrl) : null;
+  const resolvedUrl = !imageError && team ? getTeamLogoWithLeague(team, effectiveLeague, logoUrl) : null;
   const { initials, bgColor, textColor } = getTeamInitialsAndColor(team);
-
-  // Only trigger async lookup if synchronous lookup returned null
-  useEffect(() => {
-    setImageError(false);
-    if (!team || syncUrl) return;
-
-    let isMounted = true;
-    fetchAndCacheTeamLogoByLeague(team, effectiveLeague, logoUrl)
-      .then((fetched) => {
-        if (isMounted && fetched) {
-          setAsyncLogoUrl(fetched);
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      isMounted = false;
-    };
-  }, [team, effectiveLeague, logoUrl, syncUrl]);
 
   const sizeConfig = typeof size === 'number'
     ? { container: `w-[${size}px] h-[${size}px] rounded-lg p-1`, img: `w-[${size - 8}px] h-[${size - 8}px]`, text: 'text-xs', dim: Math.max(12, size - 8) }

@@ -131,7 +131,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
             type="button"
             onClick={(e) => e.stopPropagation()}
             title="Click to view underlying factors"
-            className={`inline-flex items-center gap-1.5 min-h-[36px] px-2 py-1 rounded-md focus:outline-none cursor-pointer group hover:bg-muted/60 transition-colors ${className}`}
+            className={`inline-flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-md focus:outline-none cursor-pointer group hover:bg-muted/60 transition-colors ${className}`}
           >
             <span className="relative flex h-2 w-2 shrink-0">
               <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColorClass}`} />
@@ -398,47 +398,31 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setPopoverOpen(true);
+              setInlineExpanded(!inlineExpanded);
             }}
-            aria-label={`AI Confidence ${normalizedConfidence}% - ${tier.label}`}
-            className="group flex items-center gap-1.5 min-h-[38px] px-2 py-1 focus:outline-none select-none cursor-pointer rounded-lg hover:bg-muted/50 transition-colors"
+            aria-label={`AI Confidence ${normalizedConfidence}% - ${tier.label}. Click to toggle factor breakdown`}
+            className="group flex items-center gap-2 min-h-[44px] px-2.5 py-1.5 focus:outline-none select-none cursor-pointer rounded-lg hover:bg-muted/50 transition-colors"
           >
-            <div className="relative flex items-center justify-center w-3.5 h-3.5">
-              <span className={`w-2 h-2 rounded-full ring-1 ring-background shadow-xs ${dotColorClass}`} />
-            </div>
+            <span className={`w-2 h-2 rounded-full shrink-0 ${dotColorClass}`} />
             <div className="w-16 sm:w-20 h-2 bg-muted/80 dark:bg-muted/40 rounded-full overflow-hidden p-0.5 border border-border/40 relative">
               <div
                 style={{ width: `${normalizedConfidence}%` }}
                 className={`h-full rounded-full bg-gradient-to-r ${tier.barColor}`}
               />
             </div>
-            <div className="flex items-center gap-1">
-              <span className={`text-xs font-black tabular-nums tracking-tight ${tier.colorClass}`}>
-                {normalizedConfidence}%
-              </span>
-              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
-            </div>
+            <span className={`text-xs font-black tabular-nums tracking-tight ${tier.colorClass}`}>
+              {normalizedConfidence}%
+            </span>
+            <span className="text-[11px] text-muted-foreground group-hover:text-primary font-semibold inline-flex items-center gap-0.5">
+              <span>Factors</span>
+              {inlineExpanded ? (
+                <ChevronUp className="h-3 w-3" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="h-3 w-3" aria-hidden="true" />
+              )}
+            </span>
           </button>
         )}
-
-        {/* Inline Factor Breakdown Quick Trigger */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setInlineExpanded(!inlineExpanded);
-          }}
-          title="Toggle underlying factors breakdown"
-          className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 min-h-[38px] px-2 py-1 rounded-lg hover:bg-muted/50 font-semibold"
-        >
-          <Layers className="h-3 w-3" aria-hidden="true" />
-          <span>Factors</span>
-          {inlineExpanded ? (
-            <ChevronUp className="h-3 w-3" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="h-3 w-3" aria-hidden="true" />
-          )}
-        </button>
       </div>
 
       {/* Inline Accordion Breakdown (When Expanded) */}

@@ -90,7 +90,7 @@ export const LeagueDateFilterBar: React.FC<LeagueDateFilterBarProps> = ({
               onClick={() => onFilterChange(chip.id)}
               className={`group relative shrink-0 flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 snap-start select-none outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 isSelected
-                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02] border-transparent'
+                  ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-zinc-950 shadow-md shadow-primary/25 scale-[1.02] border-transparent'
                   : 'bg-card hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/70 hover:border-border'
               }`}
             >
@@ -98,7 +98,7 @@ export const LeagueDateFilterBar: React.FC<LeagueDateFilterBarProps> = ({
               <Icon
                 className={`w-3.5 h-3.5 transition-transform duration-200 ${
                   isSelected
-                    ? 'text-primary-foreground scale-110'
+                    ? 'text-white dark:text-zinc-950 scale-110'
                     : 'text-muted-foreground group-hover:text-foreground'
                 }`}
               />
@@ -111,7 +111,7 @@ export const LeagueDateFilterBar: React.FC<LeagueDateFilterBarProps> = ({
                 <span
                   className={`inline-flex items-center justify-center text-[10px] font-mono px-1.5 py-0.5 rounded-full min-w-[20px] transition-colors ${
                     isSelected
-                      ? 'bg-primary-foreground/20 text-primary-foreground font-extrabold'
+                      ? 'bg-white text-emerald-950 dark:bg-zinc-950 dark:text-emerald-300 font-extrabold shadow-2xs'
                       : 'bg-muted text-foreground font-bold group-hover:bg-muted/80'
                   }`}
                 >

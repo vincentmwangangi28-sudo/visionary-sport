@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -18,7 +19,7 @@ import {
 export type { Prediction };
 export { getPrediction, getConfidence };
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 6;
 const queryKeys = { predictions: { list: (p: number) => ['predictions', 'list', p] } };
 
 // Strictly ignore any match that has already kicked off, is in-play, or has been played/settled
@@ -65,8 +66,26 @@ export const usePredictions = (page = 1, league?: string) => {
   const { isPremium } = useSubscription();
   const queryClient = useQueryClient();
 
+  const initialDataPayload = (() => {
+    let seed = getUpdatedDefaultPredictions();
+    if (league && league !== 'All') {
+      const filtered = seed.filter((p) => p.league?.toLowerCase() === league.toLowerCase());
+      if (filtered.length > 0) seed = filtered;
+    }
+    const cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
+    const start = (page - 1) * PAGE_SIZE;
+    return {
+      predictions: cleanList.slice(start, start + PAGE_SIZE),
+      allPredictions: cleanList,
+      total: cleanList.length,
+      isRealTime: true,
+    };
+  })();
+
   const query = useQuery({
     queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
+    initialData: initialDataPayload,
+    initialDataUpdatedAt: Date.now(),
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -156,8 +175,17 @@ export const usePredictions = (page = 1, league?: string) => {
       };
     },
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
     retry: 1,
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      query.refetch();
+    }, 5500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [league]);
 
   const generatePrediction = async (input: {
     homeTeam: string;

@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { usePredictions } from '@/hooks/usePredictions';
-import { useFootballData } from '@/hooks/useFootballData';
 import { getPrediction, getConfidence } from '@/types/prediction';
 
 interface SteamAlert {
@@ -22,23 +21,9 @@ export const LiveMarketSteamTicker: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const { predictions } = usePredictions(1);
-  const { liveFixtures } = useFootballData({ livePollInterval: 45_000 });
 
   const alerts = useMemo<SteamAlert[]>(() => {
     const list: SteamAlert[] = [];
-
-    const activeLive = liveFixtures.filter((m) => m.status === 'live' || m.status === 'halftime');
-    if (activeLive.length > 0) {
-      const topLive = activeLive[0];
-      list.push({
-        id: `live-${topLive.id}`,
-        type: 'momentum',
-        badge: `LIVE ${topLive.status === 'halftime' ? 'HT' : `${topLive.minute ?? 45}'`}`,
-        badgeColor: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 font-bold',
-        text: `${topLive.home_team} ${topLive.home_score ?? 0}–${topLive.away_score ?? 0} ${topLive.away_team} (${topLive.league}) — In-Play AI Tip: ${topLive.prediction || 'Home Win'}`,
-        link: '/live',
-      });
-    }
 
     if (predictions && predictions.length > 0) {
       const first = predictions[0];
@@ -105,7 +90,7 @@ export const LiveMarketSteamTicker: React.FC = () => {
     }
 
     return list;
-  }, [predictions, liveFixtures]);
+  }, [predictions]);
 
   useEffect(() => {
     if (isPaused || alerts.length <= 1) return;
