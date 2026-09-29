@@ -56,10 +56,10 @@ export const AuditedTrackRecord: React.FC = () => {
           const won = predicted === actualOutcome;
           const tipOdds = Number(
             (predicted === 'Home Win'
-              ? m.odds?.home ?? 1.82
+              ? m.home_odds ?? m.odds?.home ?? 1.82
               : predicted === 'Away Win'
-              ? m.odds?.away ?? 2.18
-              : m.odds?.draw ?? 3.15
+              ? m.away_odds ?? m.odds?.away ?? 2.18
+              : m.draw_odds ?? m.odds?.draw ?? 3.15
             ).toFixed(2)
           );
           const closingOdds = Number(Math.max(1.25, tipOdds - (won ? 0.09 : -0.06)).toFixed(2));

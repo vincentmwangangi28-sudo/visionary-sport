@@ -47,10 +47,10 @@ export const SiteAnnouncementBanner: React.FC = () => {
   }
 
   // Audience targeting
-  if (announcement.targetAudience === 'vip' && !isPremium) {
+  if (announcement.targetAudience === 'vip' && !isPremium()) {
     return null;
   }
-  if (announcement.targetAudience === 'free' && isPremium) {
+  if (announcement.targetAudience === 'free' && isPremium()) {
     return null;
   }
 
@@ -110,7 +110,7 @@ export const SiteAnnouncementBanner: React.FC = () => {
                 {announcement.headline}
               </span>
             )}
-            <span className="text-white/80 line-clamp-1">
+            <span className="text-white/95 line-clamp-1">
               {announcement.message}
             </span>
           </div>
@@ -121,7 +121,7 @@ export const SiteAnnouncementBanner: React.FC = () => {
             <Link to={announcement.ctaUrl}>
               <Button
                 size="sm"
-                className={`h-7 text-[11px] px-2.5 gap-1 rounded-md transition-all ${themeConfig.btnVariant}`}
+                className={`h-9 min-h-[38px] text-xs px-3 gap-1 rounded-md transition-all ${themeConfig.btnVariant}`}
               >
                 <span>{announcement.ctaText}</span>
                 <ArrowRight className="h-3 w-3" />
@@ -134,9 +134,9 @@ export const SiteAnnouncementBanner: React.FC = () => {
               type="button"
               onClick={handleDismiss}
               aria-label="Dismiss banner"
-              className="p-1 rounded-md text-white/60 hover:text-white hover:bg-black/20 transition-colors"
+              className="h-9 w-9 min-h-[38px] min-w-[38px] inline-flex items-center justify-center rounded-md text-white/85 hover:text-white hover:bg-black/20 transition-colors"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>

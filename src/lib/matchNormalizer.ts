@@ -3,6 +3,7 @@ export interface NormalizedMatch {
   home_team: string;
   away_team: string;
   competition?: string;
+  league?: string;
   match_date: string; // ISO UTC
   status: 'live' | 'halftime' | 'finished' | 'upcoming' | 'postponed' | 'cancelled' | 'unknown';
   minute?: number | null;
@@ -12,6 +13,16 @@ export interface NormalizedMatch {
   away_logo?: string | null;
   prediction?: string | null;
   confidence?: number | null;
+  home_odds?: number | null;
+  draw_odds?: number | null;
+  away_odds?: number | null;
+  odds?: {
+    home?: number;
+    draw?: number;
+    away?: number;
+  };
+  venue?: string | null;
+  source?: string;
 }
 
 export function toIsoUtc(dateStr?: string, timeStr?: string): string {

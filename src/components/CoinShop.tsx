@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Coins, Gift, Zap, Ticket, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Coins, Gift, Zap, Ticket, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { redeemPromoCode } from '@/services/promoCodeService';
+import { MpesaPaymentDialog } from '@/components/MpesaPaymentDialog';
 import { toast } from 'sonner';
 
 const COIN_PACKS = [
@@ -76,16 +77,36 @@ export const CoinShop = () => {
               <p className="text-3xl font-black text-amber-500 mb-1">🪙 {pack.coins}</p>
               <p className="text-sm text-muted-foreground mb-1">{pack.label}</p>
               <p className="font-bold text-lg mb-3">KES {pack.price}</p>
-              <Link to="/rewards">
-                <Button
-                  size="sm"
-                  variant={pack.popular ? 'default' : 'outline'}
-                  className="w-full gap-1.5"
+              {!user ? (
+                <Link to="/auth">
+                  <Button
+                    size="sm"
+                    variant={pack.popular ? 'default' : 'outline'}
+                    className="w-full gap-1.5"
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    Sign in to Buy
+                  </Button>
+                </Link>
+              ) : (
+                <MpesaPaymentDialog
+                  plan={`coins-${pack.coins}`}
+                  purpose="coin_purchase"
+                  amount={pack.price}
+                  title={`${pack.label} — ${pack.coins} Coins`}
+                  description={`Purchase ${pack.coins} prediction coins via Safaricom M-Pesa STK Push.`}
+                  buttonText={`Pay KES ${pack.price}`}
                 >
-                  <Zap className="h-3.5 w-3.5" />
-                  Buy
-                </Button>
-              </Link>
+                  <Button
+                    size="sm"
+                    variant={pack.popular ? 'default' : 'outline'}
+                    className="w-full gap-1.5"
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    Buy ({pack.coins} 🪙)
+                  </Button>
+                </MpesaPaymentDialog>
+              )}
             </CardContent>
           </Card>
         ))}

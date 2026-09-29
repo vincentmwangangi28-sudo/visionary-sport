@@ -541,7 +541,7 @@ export async function probeSingleApiProvider(
     try {
       const { data, error } = await supabase
         .from('predictions')
-        .select('id, home_team, away_team, league, match_date, confidence, predicted_outcome')
+        .select('id, home_team, away_team, league, match_date, confidence, prediction')
         .limit(15);
 
       const latency = Math.max(8, Math.round(performance.now() - start));
@@ -561,7 +561,7 @@ export async function probeSingleApiProvider(
               match: `${r.home_team} vs ${r.away_team}`,
               competition: r.league || 'Premier League',
               kickoffUtc: new Date(r.match_date).toISOString(),
-              status: r.predicted_outcome || 'Home Win',
+              status: r.prediction || 'Home Win',
             };
           }
         } else {
@@ -673,7 +673,7 @@ export async function probeSingleApiProvider(
           sampleFixture = {
             id: norm.id,
             match: `${norm.home_team} vs ${norm.away_team}`,
-            competition: norm.competition,
+            competition: norm.competition || 'Premier League',
             kickoffUtc: norm.match_date,
             status: norm.status.toUpperCase(),
           };

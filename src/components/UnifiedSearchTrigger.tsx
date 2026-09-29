@@ -23,7 +23,7 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
         variant="outline"
         size="icon"
         onClick={() => openSearch()}
-        className={cn('h-9 w-9 shrink-0 relative border-border/80 hover:bg-muted/70', className)}
+        className={cn('h-10 w-10 min-h-[42px] min-w-[42px] shrink-0 relative border-border/80 hover:bg-muted/70', className)}
         title="Search (⌘K)"
         aria-label="Open Unified Search"
       >

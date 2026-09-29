@@ -323,7 +323,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
             variant="outline"
             size="sm"
             onClick={handleShareRecommendations}
-            className="gap-1.5 text-xs"
+            className="gap-1.5 text-xs min-h-[42px] px-3.5"
             aria-label="Share recommended picks"
           >
             <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -332,7 +332,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
 
           <Button
             onClick={handleLoadAllToSlip}
-            className="gap-2 text-xs font-bold bg-primary hover:bg-primary/90 shadow-sm"
+            className="gap-2 text-xs font-bold bg-primary hover:bg-primary/90 shadow-sm min-h-[42px] px-4"
             size="sm"
             aria-label={`Load all ${filtered.length} recommendations to bet slip at ${combinedAccaOdds.toFixed(2)} total odds`}
           >
@@ -343,7 +343,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Recommendation Categories">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Recommendation Categories">
         {[
           { id: 'all', label: 'All Recommended', icon: Sparkles },
           { id: 'banker', label: '🛡️ Safe Bankers', icon: ShieldCheck },
@@ -357,7 +357,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
             type="button"
             onClick={() => setActiveCategory(id as RecommendationCategory)}
             aria-selected={activeCategory === id}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border ${
+            className={`min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border ${
               activeCategory === id
                 ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                 : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border-border'
@@ -467,16 +467,16 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
                     variant={added ? 'secondary' : 'default'}
                     size="sm"
                     onClick={() => handleToggleBet(item)}
-                    className={`gap-1.5 text-xs font-bold ${
+                    className={`min-h-[42px] gap-1.5 text-xs font-bold ${
                       added
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25'
+                        ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25'
                         : ''
                     }`}
                     aria-label={added ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
                   >
                     {added ? (
                       <>
-                        <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                        <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
                         In Slip
                       </>
                     ) : (
@@ -492,7 +492,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedMatch(item.prediction)}
-                    className="gap-1 text-xs"
+                    className="min-h-[42px] gap-1 text-xs"
                     aria-label="View deep tactical analytics"
                   >
                     <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" />

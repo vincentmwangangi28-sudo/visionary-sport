@@ -10,6 +10,7 @@
 
 export const CACHE_TTLS = {
   LIVE_MATCHES: 35_000,            // 35 seconds for live matches
+  LIVE_SCORES: 35_000,             // 35 seconds for live scoreboards
   UPCOMING_FIXTURES: 10 * 60_000,  // 10 minutes for upcoming fixtures
   MATCHES_BY_DATE: 15 * 60_000,    // 15 minutes for date queries
   STANDINGS: 20 * 60_000,          // 20 minutes for league standings

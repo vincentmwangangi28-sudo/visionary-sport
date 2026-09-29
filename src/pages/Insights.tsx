@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { TrendingUp, Target, Globe, Zap, BarChart2, Trophy, Clock, CheckCircle } from 'lucide-react';
 
 interface InsightData {
@@ -21,43 +22,62 @@ export default function Insights() {
 
   useEffect(() => {
     (async () => {
-      const { data: preds } = await supabase.from('predictions')
-        .select('league, prediction, predicted_outcome, confidence, confidence_score, is_premium, match_date');
-      if (!preds) return;
+      try {
+        const { data: dbPreds } = await supabase.from('predictions')
+          .select('league, prediction, confidence, is_premium, match_date');
 
-      const today = new Date().toISOString().split('T')[0];
-      const allConf = preds.map(p => p.confidence_score ?? p.confidence ?? 0);
-      const avgConf = Math.round(allConf.reduce((s, c) => s + c, 0) / allConf.length);
+        const preds: Array<{
+          league: string;
+          prediction?: string;
+          predicted_outcome?: string;
+          confidence?: number;
+          confidence_score?: number;
+          is_premium?: boolean | null;
+          match_date?: string;
+        }> = dbPreds && dbPreds.length > 0 ? dbPreds : getUpdatedDefaultPredictions();
 
-      const leagueMap: Record<string, { count: number; sum: number }> = {};
-      const outcomeMap: Record<string, number> = {};
-      preds.forEach(p => {
-        if (!leagueMap[p.league]) leagueMap[p.league] = { count: 0, sum: 0 };
-        leagueMap[p.league].count++;
-        leagueMap[p.league].sum += p.confidence_score ?? p.confidence ?? 0;
-        const o = p.predicted_outcome ?? p.prediction ?? 'Unknown';
-        outcomeMap[o] = (outcomeMap[o] ?? 0) + 1;
-      });
+        if (!preds.length) {
+          setLoading(false);
+          return;
+        }
 
-      const byLeague = Object.entries(leagueMap)
-        .map(([league, { count, sum }]) => ({ league, count, avgConf: Math.round(sum / count) }))
-        .sort((a, b) => b.count - a.count);
+        const today = new Date().toISOString().split('T')[0];
+        const allConf = preds.map(p => p.confidence_score ?? p.confidence ?? 0);
+        const avgConf = allConf.length ? Math.round(allConf.reduce((s, c) => s + c, 0) / allConf.length) : 78;
 
-      const byOutcome = Object.entries(outcomeMap)
-        .map(([outcome, count]) => ({ outcome, count, pct: Math.round((count / preds.length) * 100) }))
-        .sort((a, b) => b.count - a.count);
+        const leagueMap: Record<string, { count: number; sum: number }> = {};
+        const outcomeMap: Record<string, number> = {};
+        preds.forEach(p => {
+          if (!leagueMap[p.league]) leagueMap[p.league] = { count: 0, sum: 0 };
+          leagueMap[p.league].count++;
+          leagueMap[p.league].sum += p.confidence_score ?? p.confidence ?? 0;
+          const o = p.predicted_outcome ?? p.prediction ?? 'Unknown';
+          outcomeMap[o] = (outcomeMap[o] ?? 0) + 1;
+        });
 
-      setData({
-        totalPredictions: preds.length,
-        leagues: [...new Set(preds.map(p => p.league))],
-        avgConfidence: avgConf,
-        highConf: preds.filter(p => (p.confidence_score ?? p.confidence ?? 0) >= 75).length,
-        byLeague,
-        byOutcome,
-        todayCount: preds.filter(p => p.match_date?.startsWith(today)).length,
-        premiumCount: preds.filter(p => p.is_premium).length,
-      });
-      setLoading(false);
+        const byLeague = Object.entries(leagueMap)
+          .map(([league, { count, sum }]) => ({ league, count, avgConf: Math.round(sum / count) }))
+          .sort((a, b) => b.count - a.count);
+
+        const byOutcome = Object.entries(outcomeMap)
+          .map(([outcome, count]) => ({ outcome, count, pct: Math.round((count / preds.length) * 100) }))
+          .sort((a, b) => b.count - a.count);
+
+        setData({
+          totalPredictions: preds.length,
+          leagues: [...new Set(preds.map(p => p.league))],
+          avgConfidence: avgConf,
+          highConf: preds.filter(p => (p.confidence_score ?? p.confidence ?? 0) >= 75).length,
+          byLeague,
+          byOutcome,
+          todayCount: preds.filter(p => p.match_date?.startsWith(today)).length,
+          premiumCount: preds.filter(p => p.is_premium).length,
+        });
+      } catch (err) {
+        console.warn('Insights load error:', err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

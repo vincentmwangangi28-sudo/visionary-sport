@@ -236,7 +236,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
           {/* Odds buttons */}
           {!locked && (p.home_odds || p.draw_odds || p.away_odds) && (
-            <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
               {[
                 { label: 'Home Win', key: '1', odds: p.home_odds },
                 { label: 'Draw', key: 'X', odds: p.draw_odds },
@@ -248,13 +248,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                     key={key}
                     onClick={(e) => handleOddsClick(e, label, odds)}
                     aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${formatOdds(odds)} to betslip`}
-                    className={`px-2 py-1 rounded text-xs font-bold border transition-all active:scale-95 duration-75 select-none touch-manipulation ${
+                    className={`min-h-[42px] min-w-[44px] px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all active:scale-95 duration-75 select-none touch-manipulation ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-muted/60 hover:bg-primary/10 hover:border-primary/50'
+                        : 'bg-muted/60 hover:bg-primary/10 hover:border-primary/50 text-foreground'
                     }`}
                   >
-                    <span className="opacity-70 text-[9px] block">{key}</span>
+                    <span className="text-[10px] block font-semibold">{key}</span>
                     <span>{formatOdds(odds)}</span>
                   </button>
                 ) : null
@@ -310,10 +310,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                   togglePinLeague(p.league);
                 }}
                 title={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}
-                className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                className="min-h-[36px] min-w-[36px] p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors inline-flex items-center justify-center"
                 aria-label={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}
               >
-                <Pin className={`h-3 w-3 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} />
+                <Pin className={`h-3.5 w-3.5 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} />
               </button>
               {clvData?.isPositiveEV && !locked && (
                 <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
@@ -323,10 +323,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
-                <Clock className="h-3 w-3 text-primary/70" />
+                <Clock className="h-3 w-3 text-primary" />
                 <span>{formatKickoff(p.match_date, { includeDate: true, includeTimezone: true })}</span>
                 {relativeKickoff.status === 'live' && (
-                  <span className="text-[10px] bg-red-500 text-white font-extrabold px-1.5 py-0.2 rounded animate-pulse">
+                  <span className="text-[10px] bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded animate-pulse">
                     LIVE
                   </span>
                 )}
@@ -350,9 +350,9 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
               </div>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-3 bg-muted/20 p-2.5 rounded-xl border border-border/40">
+          <div className="mt-3 flex items-center justify-between gap-2 bg-muted/20 p-2.5 rounded-xl border border-border/40">
             {/* Home team */}
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <TeamLogo team={p.home_team} size="sm" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
@@ -364,7 +364,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                       togglePinTeam(p.home_team);
                     }}
                     title={isTeamPinned(p.home_team) ? `Unpin ${p.home_team} from My Dashboard` : `Pin ${p.home_team} to My Dashboard`}
-                    className={`p-0.5 rounded text-muted-foreground hover:text-primary transition-opacity shrink-0 ${
+                    className={`min-h-[32px] min-w-[32px] p-1.5 rounded text-muted-foreground hover:text-primary transition-opacity shrink-0 inline-flex items-center justify-center ${
                       isTeamPinned(p.home_team) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                     }`}
                     aria-label={`Pin ${p.home_team}`}
@@ -381,15 +381,15 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
               onClick={(e) => e.stopPropagation()}
               title={`View ${p.home_team} vs ${p.away_team} dedicated match prediction`}
               aria-label={`View ${p.home_team} vs ${p.away_team} match center`}
-              className="shrink-0 flex flex-col items-center justify-center px-1 group/vs"
+              className="shrink-0 flex flex-col items-center justify-center min-h-[36px] min-w-[36px] px-1.5 group/vs"
             >
-              <span className="text-[10px] font-black text-muted-foreground bg-muted/80 group-hover/vs:bg-primary group-hover/vs:text-primary-foreground transition-colors px-2 py-0.5 rounded uppercase tracking-wider">
+              <span className="text-[10px] font-black text-foreground bg-muted group-hover/vs:bg-primary group-hover/vs:text-primary-foreground transition-colors px-2 py-1 rounded uppercase tracking-wider">
                 VS
               </span>
             </Link>
 
             {/* Away team */}
-            <div className="flex items-center justify-end gap-2.5 min-w-0 flex-1 text-right">
+            <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-end gap-1">
                   <button
@@ -399,7 +399,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                       togglePinTeam(p.away_team);
                     }}
                     title={isTeamPinned(p.away_team) ? `Unpin ${p.away_team} from My Dashboard` : `Pin ${p.away_team} to My Dashboard`}
-                    className={`p-0.5 rounded text-muted-foreground hover:text-primary transition-opacity shrink-0 ${
+                    className={`min-h-[32px] min-w-[32px] p-1.5 rounded text-muted-foreground hover:text-primary transition-opacity shrink-0 inline-flex items-center justify-center ${
                       isTeamPinned(p.away_team) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                     }`}
                     aria-label={`Pin ${p.away_team}`}
@@ -445,13 +445,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                     key={label}
                     onClick={(e) => handleOddsClick(e, label, odds)}
                     aria-label={`Add ${p.home_team} vs ${p.away_team} - ${label} at ${formatOdds(odds)} to betslip`}
-                    className={`py-1.5 px-2 rounded-lg border text-center transition-all active:scale-95 duration-75 select-none touch-manipulation ${
+                    className={`min-h-[48px] py-2 px-2 rounded-lg border text-center transition-all active:scale-95 duration-75 select-none touch-manipulation ${
                       isMarketInSlip(label)
                         ? 'bg-primary text-primary-foreground border-primary shadow-sm font-black'
                         : 'bg-muted/40 hover:bg-primary/10 hover:border-primary/50 text-foreground'
                     }`}
                   >
-                    <p className="text-[10px] opacity-70 font-medium">{name}</p>
+                    <p className={`text-[10px] font-semibold ${isMarketInSlip(label) ? 'text-primary-foreground' : 'text-muted-foreground'}`}>{name}</p>
                     <p className="font-black text-sm flex items-center justify-center gap-0.5">
                       {formatOdds(odds)}
                       {isMarketInSlip(label) && <Check className="h-3 w-3" />}
@@ -480,20 +480,21 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                   1: <b>{communityStats.home}%</b> · X: <b>{communityStats.draw}%</b> · 2: <b>{communityStats.away}%</b>
                 </span>
               </div>
-              <div className="h-1.5 w-full flex rounded-full overflow-hidden bg-muted gap-0.5 mb-1.5">
-                <div className="bg-green-500 transition-all" style={{ width: `${communityStats.home}%` }} title={`Home Win: ${communityStats.home}%`} />
+              <div className="h-1.5 w-full flex rounded-full overflow-hidden bg-muted gap-0.5 mb-2">
+                <div className="bg-green-600 transition-all" style={{ width: `${communityStats.home}%` }} title={`Home Win: ${communityStats.home}%`} />
                 <div className="bg-amber-500 transition-all" style={{ width: `${communityStats.draw}%` }} title={`Draw: ${communityStats.draw}%`} />
-                <div className="bg-blue-500 transition-all" style={{ width: `${communityStats.away}%` }} title={`Away Win: ${communityStats.away}%`} />
+                <div className="bg-blue-600 transition-all" style={{ width: `${communityStats.away}%` }} title={`Away Win: ${communityStats.away}%`} />
               </div>
-              <div className="flex items-center justify-between gap-1 text-[10px]">
-                <span className="text-muted-foreground">Your vote:</span>
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between gap-2 text-[11px]">
+                <span className="text-muted-foreground font-medium">Your vote:</span>
+                <div className="flex items-center gap-2">
                   {(['1', 'X', '2'] as const).map((v) => (
                     <button
                       key={v}
                       type="button"
                       onClick={(e) => handleVote(e, v)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                      aria-label={`Vote ${v === '1' ? p.home_team : v === '2' ? p.away_team : 'Draw'} for ${p.home_team} vs ${p.away_team}`}
+                      className={`min-h-[38px] min-w-[40px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors inline-flex items-center justify-center ${
                         userVote === v ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/40 hover:bg-muted text-foreground'
                       }`}
                     >
@@ -510,7 +511,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
             <div className="space-y-2 pt-1" onClick={(e) => e.stopPropagation()}>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link to="/shop" className="flex-1">
-                  <Button size="sm" className="w-full gap-2 font-bold" aria-label="Upgrade to Pro">
+                  <Button size="sm" className="w-full min-h-[42px] gap-2 font-bold" aria-label="Upgrade to Pro">
                     <TrendingUp className="h-3.5 w-3.5" /> Unlock with Pro
                   </Button>
                 </Link>
@@ -519,9 +520,9 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                   variant="outline"
                   onClick={handleCoinUnlock}
                   disabled={unlockingCoin}
-                  className="gap-1.5 font-bold border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"
+                  className="min-h-[42px] gap-1.5 font-bold border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"
                 >
-                  <Coins className="h-3.5 w-3.5 text-amber-500" />
+                  <Coins className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                   {unlockingCoin ? 'Unlocking...' : 'Unlock (50 🪙)'}
                 </Button>
               </div>
@@ -533,7 +534,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
           {/* Footer Actions: Analytics Trigger + Full Match Intel + Share */}
           <div className="flex items-center justify-between pt-1 border-t gap-2 flex-wrap">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={(e) => {
@@ -541,7 +542,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                   setShowAnalytics(true);
                 }}
                 aria-label={`View match analytics, head-to-head statistics and predicted lineups for ${p.home_team} vs ${p.away_team}`}
-                className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                className="min-h-[40px] px-2 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 hover:underline flex items-center gap-1 transition-colors"
               >
                 <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Gemini Intel & Lineups</span>
@@ -550,7 +551,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
               <Link
                 to={matchUrl}
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs font-semibold text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-0.5 transition-colors"
+                className="min-h-[40px] px-2 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-muted/50 hover:underline inline-flex items-center gap-1 transition-colors"
                 title={`Open full match intelligence page for ${p.home_team} vs ${p.away_team}`}
                 aria-label={`Open full match preview for ${p.home_team} vs ${p.away_team}`}
               >

@@ -30,7 +30,7 @@ export function GeoRegionSelector({ variant = 'pill', className = '' }: GeoRegio
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 px-2 text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground ${className}`}
+            className={`h-10 min-h-[40px] px-3 text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground ${className}`}
             title={`Current Region: ${region.name}`}
             aria-label={`Current Region: ${region.name}. Click to change.`}
           >
@@ -119,7 +119,7 @@ export function GeoRegionSelector({ variant = 'pill', className = '' }: GeoRegio
           <Button
             size="sm"
             variant="outline"
-            className="h-8 px-2.5 text-xs font-semibold gap-1.5 border-primary/30 hover:bg-primary/10 shrink-0"
+            className="h-10 min-h-[40px] px-3 text-xs font-semibold gap-1.5 border-primary/30 hover:bg-primary/10 shrink-0"
             aria-label="Change geographic football region"
           >
             <Globe className="h-3.5 w-3.5 text-primary" />

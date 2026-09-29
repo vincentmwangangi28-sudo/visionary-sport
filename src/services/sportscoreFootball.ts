@@ -219,7 +219,7 @@ export async function fetchSportscorePredictions(): Promise<Prediction[]> {
       match_id: m.id,
       home_team: m.home_team,
       away_team: m.away_team,
-      league: m.competition,
+      league: m.competition || 'Premier League',
       match_date: m.match_date,
       prediction: det.prediction,
       predicted_outcome: det.prediction,

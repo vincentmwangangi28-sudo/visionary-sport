@@ -134,8 +134,8 @@ export const Navbar = () => {
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-16 gap-2">
           {/* Logo & Prominent 18+ Warning Icon */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2 group">
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2 group min-h-[42px]">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-sm group-hover:scale-105 transition-transform">PP</div>
               <span className="text-lg font-bold hidden sm:block tracking-tight">PredictPro</span>
             </Link>
@@ -143,7 +143,7 @@ export const Navbar = () => {
               to="/responsible-gaming"
               title="18+ Age Restriction Policy — Strictly for Adults Only (Never Intended for Minors)"
               aria-label="18+ Age Restriction Warning — View Responsible Gaming Policy"
-              className="inline-flex items-center gap-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 text-[10px] font-black tracking-tight shadow-xs ring-1 ring-rose-400/50 transition-transform hover:scale-105 select-none"
+              className="inline-flex items-center justify-center gap-1 rounded-full bg-rose-700 hover:bg-rose-800 text-white px-2.5 py-1.5 min-h-[36px] min-w-[44px] text-[11px] font-black tracking-tight shadow-xs ring-1 ring-rose-400/50 transition-transform hover:scale-105 select-none"
             >
               <ShieldAlert className="h-3 w-3 shrink-0 text-white" aria-hidden="true" />
               <span>18+</span>
@@ -365,14 +365,14 @@ export const Navbar = () => {
               <Button
                 variant={location.pathname === '/dashboard' ? 'default' : 'ghost'}
                 size="sm"
-                className={`h-8 gap-1.5 text-xs font-semibold px-2.5 ${
+                className={`h-10 min-h-[42px] min-w-[42px] gap-1.5 text-xs font-semibold px-2.5 ${
                   location.pathname === '/dashboard'
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Open Personalized Dashboard"
               >
-                <Pin className="h-3.5 w-3.5 fill-current" />
+                <Pin className="h-4 w-4 fill-current" />
                 <span className="hidden md:inline">My Dashboard</span>
               </Button>
             </Link>
@@ -382,7 +382,7 @@ export const Navbar = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="h-10 w-10 min-h-[42px] min-w-[42px] text-muted-foreground hover:text-foreground"
                 aria-label="Open Preferences and Regional Settings"
               >
                 <Settings className="h-4 w-4" />
@@ -395,7 +395,7 @@ export const Navbar = () => {
               variant="ghost"
               size="icon"
               onClick={() => window.openSupabaseWalkthrough?.()}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-10 w-10 min-h-[42px] min-w-[42px] text-muted-foreground hover:text-foreground"
               title="Supabase Environment & Session Setup Walkthrough (Ctrl+Shift+S)"
               aria-label="Open Supabase Environment & Session Setup Walkthrough"
             >

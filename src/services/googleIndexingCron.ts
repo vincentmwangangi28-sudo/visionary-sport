@@ -14,7 +14,7 @@ export interface IndexingLogEntry {
   id: string;
   timestamp: string;
   trigger: 'auto' | 'manual';
-  endpoint: 'Google Indexing API' | 'IndexNow' | 'Google Ping' | 'Bing Ping' | 'Full Batch';
+  endpoint: 'Google Indexing API' | 'IndexNow' | 'Google Ping' | 'Bing Ping' | 'Full Batch' | 'Sitemap Auto-Discovery';
   urlCount: number;
   status: 'success' | 'warning' | 'error';
   httpCode: number;

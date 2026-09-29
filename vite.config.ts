@@ -14,7 +14,7 @@ function geminiTasksPlugin(): Plugin {
           });
           req.on("end", async () => {
             try {
-              const { handleGeminiTask } = await import("./src/server/geminiHandler");
+              const { handleGeminiTask } = await import("./src/server/geminiHandler.ts");
               const parsed = JSON.parse(body || "{}");
               const result = await handleGeminiTask(parsed.task || "match_analysis", parsed.payload || {});
               res.setHeader("Content-Type", "application/json");
@@ -41,6 +41,15 @@ function cronTasksPlugin(): Plugin {
     name: "cron-tasks-api",
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+        res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+        res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+        res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+        res.setHeader(
+          "Content-Security-Policy",
+          "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;"
+        );
         const url = req.url?.split("?")[0] || "";
         if (url === "/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt") {
           res.setHeader("Content-Type", "text/plain; charset=utf-8");
@@ -52,7 +61,7 @@ function cronTasksPlugin(): Plugin {
         }
         if (url.startsWith("/api/") && (url.endsWith("-cron") || url.includes("/cron") || url === "/api/indexing-cron")) {
           try {
-            const { handleCronTask } = await import("./src/server/cronApiHandler");
+            const { handleCronTask } = await import("./src/server/cronApiHandler.ts");
             const result = await handleCronTask(url);
             res.setHeader("Content-Type", "application/json");
             res.setHeader("Access-Control-Allow-Origin", "*");

@@ -73,8 +73,8 @@ export default function JackpotPredictions() {
         ? `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
         : 'Upcoming';
 
-      const hScore = p.predicted_home_score ?? (recPick === '1' ? 2 : 1);
-      const aScore = p.predicted_away_score ?? (recPick === '2' ? 2 : 1);
+      const hScore = (p as { predicted_home_score?: number }).predicted_home_score ?? (recPick === '1' ? 2 : 1);
+      const aScore = (p as { predicted_away_score?: number }).predicted_away_score ?? (recPick === '2' ? 2 : 1);
 
       return {
         id: index + 1,
@@ -126,13 +126,19 @@ export default function JackpotPredictions() {
     const text = `🏆 *PredictPro ${activeJackpot.toUpperCase()} Jackpot Picks* (${currentGames.length} Games)\n\n` +
       currentGames.map((g, i) => `*${i + 1}.* ${g.homeTeam} vs ${g.awayTeam}\n👉 Pick: *${coverageMode === 'double_chance' ? g.doubleChance : g.recommendedPick}* | Pred: ${g.scoreline} ${g.isBanker ? '⭐ BANKER' : ''}`).join('\n\n') +
       `\n\n🔥 *Free AI Analysis & Bonus Target:* https://predictpro.guru/jackpot-predictions`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    const link = document.createElement('a');
+    link.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleLoadAllToSlip = () => {
     currentGames.forEach(g => {
       addSelection({
-        id: `jackpot-${activeJackpot}-${g.id}`,
+        matchId: `jackpot-${activeJackpot}-${g.id}`,
         match: `${g.homeTeam} vs ${g.awayTeam}`,
         homeTeam: g.homeTeam,
         awayTeam: g.awayTeam,

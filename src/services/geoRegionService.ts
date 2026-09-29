@@ -687,13 +687,25 @@ export function getLeagueRelevanceScore(
   leagueName: string,
   regionId: GeographicRegionId,
   favoriteLeagues: string[] = []
-): { score: number; badgeLabel?: string; isDomestic?: boolean } {
-  if (!leagueName) return { score: 0 };
+): { score: number; badgeLabel?: string; isDomestic?: boolean; flag: string } {
+  if (!leagueName) return { score: 0, flag: '⚽' };
   const lowerName = leagueName.toLowerCase();
+
+  let defaultFlag = '⚽';
+  if (lowerName.includes('premier league') && !lowerName.includes('kenya')) defaultFlag = '🏴󠁧󠁢󠁥󠁮󠁧󠁿';
+  else if (lowerName.includes('la liga')) defaultFlag = '🇪🇸';
+  else if (lowerName.includes('serie a') && !lowerName.includes('brasil')) defaultFlag = '🇮🇹';
+  else if (lowerName.includes('bundesliga')) defaultFlag = '🇩🇪';
+  else if (lowerName.includes('ligue 1')) defaultFlag = '🇫🇷';
+  else if (lowerName.includes('champions league') || lowerName.includes('europa')) defaultFlag = '🏆';
+  else if (lowerName.includes('kenya') || lowerName.includes('kpl') || lowerName.includes('fkf')) defaultFlag = '🇰🇪';
+  else if (lowerName.includes('nigeria') || lowerName.includes('npfl')) defaultFlag = '🇳🇬';
+  else if (lowerName.includes('mls') || lowerName.includes('us ')) defaultFlag = '🇺🇸';
+  else if (lowerName.includes('psl') || lowerName.includes('south africa')) defaultFlag = '🇿🇦';
 
   // 1. Explicit user favorite: highest priority
   if (favoriteLeagues.some((f) => f.toLowerCase() === lowerName || lowerName.includes(f.toLowerCase()))) {
-    return { score: 1000, badgeLabel: '⭐ Favorite', isDomestic: false };
+    return { score: 1000, badgeLabel: '⭐ Favorite', isDomestic: false, flag: defaultFlag };
   }
 
   const region = GEOGRAPHIC_REGIONS[regionId] || GEOGRAPHIC_REGIONS.global;
@@ -704,51 +716,52 @@ export function getLeagueRelevanceScore(
   );
 
   if (matchedMeta) {
+    const flag = matchedMeta.flag || defaultFlag;
     if (matchedMeta.tier === 'domestic_tier1') {
-      return { score: 800, badgeLabel: matchedMeta.badgeLabel || `${region.flag} Local League`, isDomestic: true };
+      return { score: 800, badgeLabel: matchedMeta.badgeLabel || `${region.flag} Local League`, isDomestic: true, flag };
     }
     if (matchedMeta.tier === 'regional_hero') {
-      return { score: 650, badgeLabel: matchedMeta.badgeLabel || 'Regional Hero', isDomestic: false };
+      return { score: 650, badgeLabel: matchedMeta.badgeLabel || 'Regional Hero', isDomestic: false, flag };
     }
     if (matchedMeta.tier === 'global_elite') {
-      return { score: 500, badgeLabel: matchedMeta.badgeLabel || 'Top Elite', isDomestic: false };
+      return { score: 500, badgeLabel: matchedMeta.badgeLabel || 'Top Elite', isDomestic: false, flag };
     }
   }
 
   // 3. Broad regional string matching (e.g. Kenya, AFCON, CAF, Nigeria, PSL, MLS, Libertadores)
   if (regionId === 'east_africa') {
     if (lowerName.includes('kenya') || lowerName.includes('kpl') || lowerName.includes('fkf')) {
-      return { score: 750, badgeLabel: '🇰🇪 Domestic League', isDomestic: true };
+      return { score: 750, badgeLabel: '🇰🇪 Domestic League', isDomestic: true, flag: '🇰🇪' };
     }
     if (lowerName.includes('afcon') || lowerName.includes('caf') || lowerName.includes('cecafa')) {
-      return { score: 600, badgeLabel: '🌍 African Football', isDomestic: false };
+      return { score: 600, badgeLabel: '🌍 African Football', isDomestic: false, flag: '🌍' };
     }
   } else if (regionId === 'west_africa') {
     if (lowerName.includes('nigeria') || lowerName.includes('npfl') || lowerName.includes('ghana')) {
-      return { score: 750, badgeLabel: '🇳🇬 Domestic League', isDomestic: true };
+      return { score: 750, badgeLabel: '🇳🇬 Domestic League', isDomestic: true, flag: '🇳🇬' };
     }
     if (lowerName.includes('afcon') || lowerName.includes('caf')) {
-      return { score: 600, badgeLabel: '🌍 African Football', isDomestic: false };
+      return { score: 600, badgeLabel: '🌍 African Football', isDomestic: false, flag: '🌍' };
     }
   } else if (regionId === 'north_america') {
     if (lowerName.includes('mls') || lowerName.includes('major league soccer') || lowerName.includes('liga mx')) {
-      return { score: 750, badgeLabel: '🇺🇸 North America', isDomestic: true };
+      return { score: 750, badgeLabel: '🇺🇸 North America', isDomestic: true, flag: '🇺🇸' };
     }
   } else if (regionId === 'latin_america') {
     if (lowerName.includes('libertadores') || lowerName.includes('brasil') || lowerName.includes('argentin')) {
-      return { score: 750, badgeLabel: '🏆 CONMEBOL', isDomestic: true };
+      return { score: 750, badgeLabel: '🏆 CONMEBOL', isDomestic: true, flag: '🏆' };
     }
   }
 
   // 4. Global Premier Leagues
   if (lowerName.includes('premier league') || lowerName.includes('champions league') || lowerName.includes('la liga')) {
-    return { score: 400, badgeLabel: 'Top Tier' };
+    return { score: 400, badgeLabel: 'Top Tier', flag: defaultFlag };
   }
   if (lowerName.includes('serie a') || lowerName.includes('bundesliga') || lowerName.includes('ligue 1')) {
-    return { score: 300 };
+    return { score: 300, flag: defaultFlag };
   }
 
-  return { score: 100 };
+  return { score: 100, flag: defaultFlag };
 }
 
 /**
@@ -789,7 +802,7 @@ export function sortPredictionsByRegion<T extends { league: string; match_date?:
 /**
  * Prioritizes and sorts live match fixtures based on in-play state + geographic relevance
  */
-export function sortLiveFixturesByRegion<T extends { league: string; status: string; minute?: number | string; match_date?: string | Date }>(
+export function sortLiveFixturesByRegion<T extends { league: string; status: string; minute?: number | string | null; match_date?: string | Date }>(
   items: T[],
   regionId: GeographicRegionId,
   favoriteLeagues: string[] = []

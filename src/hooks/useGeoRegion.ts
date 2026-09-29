@@ -48,7 +48,7 @@ export function useGeoRegion() {
   );
 
   const sortLiveFixtures = useCallback(
-    <T extends { league: string; status: string; minute?: number | string; match_date?: string | Date }>(items: T[]): T[] => {
+    <T extends { league: string; status: string; minute?: number | string | null; match_date?: string | Date }>(items: T[]): T[] => {
       return sortLiveFixturesByRegion(items, geoState.regionId, preferences?.favoriteLeagues || []);
     },
     [geoState.regionId, preferences?.favoriteLeagues]
@@ -61,6 +61,7 @@ export function useGeoRegion() {
         badgeLabel: info.badgeLabel,
         isDomestic: info.isDomestic,
         score: info.score,
+        flag: info.flag,
       };
     },
     [geoState.regionId, preferences?.favoriteLeagues]

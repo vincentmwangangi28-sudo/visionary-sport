@@ -25,12 +25,12 @@ export function useAutoIndexing() {
     // If never pushed or last push was more than 30 mins ago, silently trigger background push
     if (now - lastRun > AUTO_PUSH_THROTTLE_MS) {
       // Delay after initial mount so critical assets and layout paint first
-      let idleHandle: any = null;
-      let timerHandle: any = null;
+      let idleHandle: number | null = null;
+      let timerHandle: ReturnType<typeof setTimeout> | null = null;
 
       const runIndexing = () => {
         if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(() => {
+          idleHandle = (window as any).requestIdleCallback(() => {
             googleIndexingCronService.runCronNow('auto').catch(() => {});
           });
         } else {

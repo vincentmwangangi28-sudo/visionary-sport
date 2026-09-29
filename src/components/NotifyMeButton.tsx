@@ -82,7 +82,7 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
           title={subscribed ? 'Subscribed to match push alerts (Click to manage)' : 'Notify me for kickoff and full-time results'}
           aria-label={subscribed ? 'Manage match alerts' : 'Notify me for match results'}
           className={cn(
-            'relative h-8 w-8 rounded-full transition-all flex-shrink-0',
+            'relative h-10 w-10 min-h-[40px] min-w-[40px] rounded-full transition-all flex-shrink-0',
             subscribed
               ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
               : 'hover:border-primary hover:text-primary',

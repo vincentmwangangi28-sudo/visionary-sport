@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { SearchItemType } from '@/services/unifiedSearch';
+import { SearchCategoryFilter } from '@/services/unifiedSearch';
 
 interface UnifiedSearchContextType {
   isOpen: boolean;
-  openSearch: (initialQuery?: string, initialCategory?: 'all' | SearchItemType) => void;
+  openSearch: (initialQuery?: string, initialCategory?: SearchCategoryFilter) => void;
   closeSearch: () => void;
   toggleSearch: () => void;
   query: string;
   setQuery: (q: string) => void;
-  activeCategory: 'all' | SearchItemType;
-  setActiveCategory: (cat: 'all' | SearchItemType) => void;
+  activeCategory: SearchCategoryFilter;
+  setActiveCategory: (cat: SearchCategoryFilter) => void;
 }
 
 const UnifiedSearchContext = createContext<UnifiedSearchContextType | undefined>(undefined);
@@ -17,9 +17,9 @@ const UnifiedSearchContext = createContext<UnifiedSearchContextType | undefined>
 export const UnifiedSearchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<'all' | SearchItemType>('all');
+  const [activeCategory, setActiveCategory] = useState<SearchCategoryFilter>('all');
 
-  const openSearch = useCallback((initialQuery = '', initialCategory: 'all' | SearchItemType = 'all') => {
+  const openSearch = useCallback((initialQuery = '', initialCategory: SearchCategoryFilter = 'all') => {
     if (initialQuery) setQuery(initialQuery);
     if (initialCategory) setActiveCategory(initialCategory);
     setIsOpen(true);

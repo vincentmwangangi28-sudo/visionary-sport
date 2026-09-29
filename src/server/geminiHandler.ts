@@ -23,7 +23,14 @@ export interface GeminiTaskResponse<T = any> {
 function getGeminiClient(): GoogleGenAI | null {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
+    },
+  });
 }
 
 function cleanJsonText(rawText: string): string {
@@ -111,6 +118,121 @@ Return ONLY a valid JSON object matching this exact schema:
   ],
   "tacticalVerdict": "One concise sentence on the expected tactical edge and betting takeaway.",
   "impactScore": 8
+}`;
+  } else if (task === 'curate_acca') {
+    const { matches = [], strategy = 'banker' } = payload;
+    prompt = `You are an expert football accumulator builder. From these fixtures, select the best 3 to 5 picks for a ${strategy} accumulator:
+Fixtures: ${JSON.stringify(matches)}
+Strategy: ${strategy} ('banker' for high probability, 'value' for +EV picks, 'goals' for Over/BTTS)
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "acca_title": "AI ${String(strategy).toUpperCase()} ACCUMULATOR",
+  "combined_odds": 3.45,
+  "combined_confidence": 79,
+  "rationale": "2-sentence strategic rationale.",
+  "legs": [
+    {
+      "match": "Team A vs Team B",
+      "league": "League",
+      "market": "Home Win / Over 1.5 / BTTS Yes",
+      "odds": 1.45,
+      "confidence": 84,
+      "reason": "1-sentence tactical or statistical justification."
+    }
+  ]
+}`;
+  } else if (task === 'value_screener') {
+    const { match, bookmakerOdds, marketProbabilities } = payload;
+    prompt = `Analyze positive Expected Value (+EV) betting edge for:
+Match: ${JSON.stringify(match)}
+Bookmaker Odds: ${JSON.stringify(bookmakerOdds)}
+Model Probabilities: ${JSON.stringify(marketProbabilities)}
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "has_positive_ev": true,
+  "ev_percentage": 5.8,
+  "recommended_market": "Home Win",
+  "market_price": 2.10,
+  "fair_price": 1.85,
+  "kelly_stake_percent": 2.5,
+  "verdict": "Strong Value" | "Marginal Edge" | "Avoid",
+  "analysis": "2-sentence explanation of the market inefficiency."
+}`;
+  } else if (task === 'generate_telegram_post') {
+    const { type = 'banker', data = {} } = payload;
+    prompt = `Create an engaging Telegram channel post formatted with HTML tags (<b>, <i>, <code>) for type: ${type}, details: ${JSON.stringify(data)}.
+Include football emojis, bold match titles, odds, AI confidence, 2-sentence tactical breakdown, link to https://predictpro.guru, and 18+ responsible gaming reminder.
+Return ONLY a valid JSON object:
+{
+  "html_post": "formatted HTML text string",
+  "headline": "Short preview headline"
+}`;
+  } else if (task === 'live_momentum') {
+    const { match, minute, score, league, events = [] } = payload;
+    prompt = `Evaluate live in-play tactical momentum for:
+Match: ${JSON.stringify(match)}
+Minute: ${minute ? `${minute}'` : 'Live'}
+Score: ${score || '0 - 0'}
+League: ${league || 'Football'}
+Events: ${JSON.stringify(events)}
+
+Return ONLY a valid JSON object:
+{
+  "game_phase": "High Press Siege" | "End-to-End Counter" | "Midfield Lockdown" | "Late Comeback Push",
+  "momentum_team": "Home" | "Away" | "Neutral",
+  "pressure_index": 76,
+  "inplay_tip": "Next Goal: Home Team / Over Total",
+  "confidence": 75,
+  "tactical_pulse": "2 concise sentences explaining live flow and mathematical weight.",
+  "projected_final_score": "2 - 1"
+}`;
+  } else if (task === 'daily_digest') {
+    const { date, matches = [] } = payload;
+    prompt = `Create a daily football matchday intelligence digest for ${date || 'Today'} from these fixtures: ${JSON.stringify(matches.slice(0, 10))}.
+Return ONLY a valid JSON object:
+{
+  "headline": "Punchy 1-line headline summarizing today's action",
+  "summary": "2-3 concise sentences detailing overall tactical value and market efficiency gaps today",
+  "marketPulse": {
+    "totalMatchesAnalyzed": ${matches.length || 38},
+    "avgConfidence": 81,
+    "bestValueLeague": "Premier League"
+  },
+  "topPicks": [
+    {
+      "type": "banker",
+      "title": "Primary Banker Lock",
+      "badge": "88% Conf",
+      "match": "Team A vs Team B",
+      "league": "Competition",
+      "pick": "Home Win",
+      "odds": 1.65,
+      "confidence": 85,
+      "tacticalAngle": "2 sentences of statistical or tactical reasoning"
+    }
+  ]
+}`;
+  } else if (task === 'viral_keywords') {
+    const { niche = 'football betting tips ai predictions', seedQueries = [] } = payload;
+    prompt = `Discover the top viral and breakout search queries ranking high on Google for "${niche}".
+Seed queries: ${JSON.stringify(seedQueries.slice(0, 10))}
+Return ONLY a valid JSON object:
+{
+  "scannedAt": "${new Date().toISOString()}",
+  "topViralKeywords": [
+    {
+      "keyword": "btts ai prediction today",
+      "searchIntent": "Commercial",
+      "targetUrl": "/btts",
+      "estimatedMonthlySearches": 195000,
+      "competitiveDifficulty": "Medium",
+      "whyViral": "High punter demand for algorithmic goal-market models.",
+      "recommendedTitle": "Both Teams to Score (BTTS) AI Predictions Today | PredictPro"
+    }
+  ],
+  "serpGroundingSummary": "Google SERPs show rising demand for real-time statistical xG and Poisson models."
 }`;
   } else if (task === 'match_qa') {
     const { question, matchContext } = payload;
@@ -209,7 +331,7 @@ Return a JSON array of 5 news items:
       const config: any = {
         systemInstruction,
       };
-      if (task === 'match_analysis' || task === 'football_news' || task === 'quick_insight') {
+      if (task !== 'match_qa') {
         config.responseMimeType = 'application/json';
       }
 
@@ -244,18 +366,8 @@ Return a JSON array of 5 news items:
       groundingMetadata,
     };
   } catch {
-    // If output wasn't pure JSON, return text wrapped or fallback
-    return {
-      success: true,
-      result: {
-        tactical_breakdown: rawText,
-        outcome_prediction: 'Home Win',
-        confidence_score: 75,
-        projected_score: '2-1',
-        btts_verdict: 'Yes',
-      },
-      groundingMetadata,
-    };
+    // If output wasn't pure JSON, return task-appropriate fallback
+    return generateFallbackWithGrounding(task, payload, 'Invalid JSON response');
   }
 }
 
@@ -320,6 +432,197 @@ function generateFallbackWithGrounding(
         tacticalVerdict: `Tactical advantage leans towards ${home} with Over 1.5 Goals or Both Teams to Score (BTTS) providing strong value edge given defensive absences on both sides.`,
         impactScore: 8
       },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'curate_acca') {
+    const matches = Array.isArray(payload.matches) ? payload.matches : [];
+    const strategy = payload.strategy || 'banker';
+    return {
+      success: true,
+      result: {
+        acca_title: `AI ${String(strategy).toUpperCase()} ACCUMULATOR`,
+        combined_odds: 3.45,
+        combined_confidence: 81,
+        rationale: 'Curated from high underlying Expected Goals (xG) differentials and consistent home territorial dominance.',
+        legs: (matches.length > 0 ? matches.slice(0, 3) : [
+          { homeTeam: 'Arsenal', awayTeam: 'Wolves', league: 'Premier League' },
+          { homeTeam: 'Real Madrid', awayTeam: 'Getafe', league: 'La Liga' },
+          { homeTeam: 'Bayern Munich', awayTeam: 'Hoffenheim', league: 'Bundesliga' },
+        ]).map((m: any) => ({
+          match: `${m.homeTeam || 'Home'} vs ${m.awayTeam || 'Away'}`,
+          league: m.league || 'Top Flight',
+          market: strategy === 'goals' ? 'Over 2.5 Goals' : 'Home Win or Draw',
+          odds: 1.45,
+          confidence: 83,
+          reason: 'Superior xG creation and strong defensive transition metrics.',
+        })),
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'value_screener') {
+    const bookmakerOdds = payload.bookmakerOdds || {};
+    return {
+      success: true,
+      result: {
+        has_positive_ev: true,
+        ev_percentage: 6.2,
+        recommended_market: 'Home Win',
+        market_price: bookmakerOdds.home || 2.10,
+        fair_price: 1.90,
+        kelly_stake_percent: 2.5,
+        verdict: 'Strong Value',
+        analysis: 'Bookmaker odds price the home side below their true Poisson conversion rate given recent underlying xG.',
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'generate_telegram_post') {
+    return {
+      success: true,
+      result: {
+        headline: '🎯 PredictPro Daily Banker Bet',
+        html_post: `🎯 <b>PREDICTPRO AI — DAILY MATCH INTELLIGENCE</b> 🎯\n\n⚡ <i>Powered by PredictPro Gemini AI Engine</i>\n🔗 Track live predictions: https://predictpro.guru\n⚠️ <i>18+ Only. Informational sports statistics.</i>`,
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'live_momentum') {
+    const score = String(payload.score || '0 - 0');
+    return {
+      success: true,
+      result: {
+        game_phase: 'High Press Siege',
+        momentum_team: 'Home',
+        pressure_index: 78,
+        inplay_tip: 'Next Goal: Home Team',
+        confidence: 76,
+        tactical_pulse: 'Sustained final-third territory and box entries indicate high probability of an imminent breakthrough.',
+        projected_final_score: score.startsWith('0') ? '1 - 0' : '2 - 1',
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'daily_digest') {
+    const matches = Array.isArray(payload.matches) ? payload.matches : [];
+    const first = matches[0] || { match: 'Arsenal vs Chelsea', league: 'Premier League', odds: { home: 1.85 }, confidence: 86 };
+    const second = matches[1] || { match: 'Real Madrid vs Barcelona', league: 'La Liga', odds: { home: 1.92 }, confidence: 82 };
+    return {
+      success: true,
+      result: {
+        headline: 'Matchday Intelligence: Key AI Angles for Today',
+        summary: 'Analytical models spotlight significant xG conversion edges in home fixtures across major leagues.',
+        marketPulse: {
+          totalMatchesAnalyzed: matches.length || 42,
+          avgConfidence: 81,
+          bestValueLeague: first.league || 'Premier League',
+        },
+        topPicks: [
+          {
+            type: 'banker',
+            title: 'Primary Banker Lock',
+            badge: `${first.confidence || 86}% Conf`,
+            match: first.match || 'Arsenal vs Chelsea',
+            league: first.league || 'Premier League',
+            pick: first.prediction || 'Home Win',
+            odds: first.odds?.home || 1.85,
+            confidence: first.confidence || 86,
+            tacticalAngle: 'High pressing efficiency and superior box occupancy gives the home side a commanding statistical edge.',
+          },
+          {
+            type: 'value',
+            title: '+EV Tactical Edge',
+            badge: 'Value Edge',
+            match: second.match || 'Real Madrid vs Barcelona',
+            league: second.league || 'La Liga',
+            pick: 'Over 2.5 Goals',
+            odds: second.odds?.home || 1.92,
+            confidence: second.confidence || 82,
+            tacticalAngle: 'Both attacks operating above 2.3 expected goals per game, exploiting transition half-spaces.',
+          },
+        ],
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'viral_keywords') {
+    return {
+      success: true,
+      result: {
+        scannedAt: new Date().toISOString(),
+        topViralKeywords: [
+          {
+            keyword: 'btts ai prediction today',
+            searchIntent: 'Commercial',
+            targetUrl: '/btts',
+            estimatedMonthlySearches: 195000,
+            competitiveDifficulty: 'Medium',
+            whyViral: 'High CTR intent (55.56% CTR in GSC). Strong demand for algorithmic Both Teams to Score models.',
+            recommendedTitle: 'Both Teams To Score (BTTS) AI Predictions Today | PredictPro',
+          },
+          {
+            keyword: 'aiprotips prediction today',
+            searchIntent: 'Informational',
+            targetUrl: '/predict',
+            estimatedMonthlySearches: 284000,
+            competitiveDifficulty: 'Medium',
+            whyViral: 'Top non-brand impression driver in GSC with high page-1 breakout potential.',
+            recommendedTitle: 'AI Pro Tips Today: Match Winner & BTTS Predictions | PredictPro',
+          },
+          {
+            keyword: 'free guru tips today football prediction',
+            searchIntent: 'Commercial',
+            targetUrl: '/best-bets',
+            estimatedMonthlySearches: 140000,
+            competitiveDifficulty: 'Low',
+            whyViral: '60% CTR in GSC at position 6.8 across East & West Africa.',
+            recommendedTitle: 'Free Guru Tips Today & Sure Banker Football Predictions | PredictPro',
+          },
+        ],
+        serpGroundingSummary: 'Grounded SERP analysis shows strong growth in BTTS AI and daily mathematical value queries.',
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'football_news') {
+    const league = payload.league || 'Premier League';
+    return {
+      success: true,
+      result: [
+        {
+          id: 'news-1',
+          title: `${league} Tactical Overhauls Point to High Second-Half Goal Expectancy`,
+          summary: 'High defensive lines across top contenders are conceding increased counter-pressing xG in recent matchweeks.',
+          source: 'BBC Sport',
+          time: 'Just now',
+          impact: 'Positive statistical value on Over 2.5 Goals and BTTS markets.',
+          category: 'tactics',
+        },
+        {
+          id: 'news-2',
+          title: 'Key Midweek Squad Rotations Create Asian Handicap Value Discrepancies',
+          summary: 'Congested fixture schedules force key rotational changes for away favorites this matchweek.',
+          source: 'Sky Sports',
+          time: '25m ago',
+          impact: 'Home underdogs +1.5 Asian Handicap trading above fair mathematical odds.',
+          category: 'lineup',
+        },
+      ],
       groundingMetadata,
       fallback_used: true,
     };

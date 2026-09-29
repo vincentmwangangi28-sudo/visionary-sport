@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { 
   Settings2, ShieldAlert, Cpu, Sparkles, Send, Coins, RotateCcw, 
-  Save, AlertTriangle, CheckCircle2, Lock, Flame
+  Save, AlertTriangle, CheckCircle2, Lock, Flame, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 

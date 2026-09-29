@@ -22,8 +22,9 @@
     <link rel="sitemap" type="application/xml" title="Sitemap" href="https://predictpro.guru/sitemap.xml" />
     <meta name="author" content="PredictPro" />
 
-    <!-- Enforce HTTPS & Upgrade Insecure Requests for Search Engine Crawlers and Users -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <!-- Enforce HTTPS & Strong Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <script>
       (function () {
         if (typeof window !== 'undefined' && window.location) {
@@ -121,61 +122,16 @@
     <!-- Permissions Policy: permit unload to prevent browser extension violations (e.g. chext_loader) -->
     <meta http-equiv="Permissions-Policy" content="unload=*" />
 
-    <!-- Performance: Preconnect critical origins -->
+    <!-- Performance: Preconnect critical origins used during initial render -->
+    <link rel="preconnect" href="https://site.api.espn.com" crossorigin />
+    <link rel="preconnect" href="https://a.espncdn.com" crossorigin />
     <link rel="preconnect" href="https://bhgjlhgevyggkhyytulv.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
     <link rel="dns-prefetch" href="https://api-football-v1.p.rapidapi.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-    <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
 
-    <!-- Google AdSense (Loaded cleanly after idle on production with adblocker resilience) -->
-    <script>
-      (function() {
-        try {
-          var host = window.location.hostname;
-          if (host === 'predictpro.guru' || host === 'www.predictpro.guru') {
-            window.addEventListener('load', function() {
-              setTimeout(function() {
-                try {
-                  var ad = document.createElement('script');
-                  ad.async = true;
-                  ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-                  ad.crossOrigin = 'anonymous';
-                  ad.onerror = function(e) { if (e && e.preventDefault) e.preventDefault(); };
-                  document.head.appendChild(ad);
-                } catch (e) {}
-              }, 2500);
-            });
-          }
-        } catch (e) {}
-      })();
-    </script>
-
-    <!-- Ahrefs Analytics (only loaded on production predictpro.guru after load) -->
-    <script type="text/javascript">
-      (function() {
-        try {
-          var host = window.location.hostname;
-          if (host !== 'predictpro.guru' && host !== 'www.predictpro.guru') return;
-
-          window.addEventListener('load', function() {
-            setTimeout(function() {
-              try {
-                var ah = document.createElement('script');
-                ah.async = true;
-                ah.src = 'https://analytics.ahrefs.com/analytics.js';
-                ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
-                ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-                document.head.appendChild(ah);
-              } catch (e) {}
-            }, 2000);
-          });
-        } catch (e) {}
-      })();
-    </script>
-
-    <!-- Google Analytics (deferred & configured without third-party ad remarketing cascades) -->
+    <!-- Third-party scripts (AdSense, Ahrefs, GA4) deferred until user interaction or idle after load -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -187,17 +143,47 @@
         allow_google_signals: false,
         allow_ad_personalization_signals: false
       });
-      window.addEventListener('load', () => {
-        setTimeout(() => {
+
+      (function() {
+        var loaded = false;
+        function loadThirdPartyScripts() {
+          if (loaded) return;
+          loaded = true;
           try {
-            const s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-            s.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-            document.head.appendChild(s);
+            var host = window.location.hostname;
+            var isProd = (host === 'predictpro.guru' || host === 'www.predictpro.guru');
+
+            var ga = document.createElement('script');
+            ga.async = true;
+            ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+            ga.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+            document.head.appendChild(ga);
+
+            if (isProd) {
+              var ah = document.createElement('script');
+              ah.async = true;
+              ah.src = 'https://analytics.ahrefs.com/analytics.js';
+              ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
+              ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+              document.head.appendChild(ah);
+
+              var ad = document.createElement('script');
+              ad.async = true;
+              ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+              ad.crossOrigin = 'anonymous';
+              ad.onerror = function(e) { if (e && e.preventDefault) e.preventDefault(); };
+              document.head.appendChild(ad);
+            }
           } catch (e) {}
-        }, 1500);
-      });
+        }
+
+        ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function(evt) {
+          window.addEventListener(evt, loadThirdPartyScripts, { once: true, passive: true });
+        });
+        window.addEventListener('load', function() {
+          setTimeout(loadThirdPartyScripts, 6500);
+        }, { once: true });
+      })();
     </script>
 
     <!-- JSON-LD default structured data & Google Rich Snippets -->

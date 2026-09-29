@@ -49,7 +49,7 @@ export function BreakingNewsTicker() {
 
         <Link
           to="/news"
-          className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 min-h-[40px] px-2.5 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 hover:text-primary/90 transition-colors shrink-0"
         >
           View All News <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>

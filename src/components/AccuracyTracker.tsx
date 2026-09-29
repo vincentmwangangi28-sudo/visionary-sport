@@ -11,15 +11,15 @@ export const AccuracyTracker = () => {
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from('predictions')
-        .select('league, prediction, predicted_outcome, result, confidence');
+        .select('league, prediction, result, confidence');
       if (!data?.length) return;
       const resolved = data.filter(p => p.result);
-      const correct = resolved.filter(p => p.result === (p.predicted_outcome ?? p.prediction)).length;
+      const correct = resolved.filter(p => p.result === p.prediction).length;
       const leagueMap: Record<string, { count: number; correct: number }> = {};
       resolved.forEach(p => {
         if (!leagueMap[p.league]) leagueMap[p.league] = { count: 0, correct: 0 };
         leagueMap[p.league].count++;
-        if (p.result === (p.predicted_outcome ?? p.prediction)) leagueMap[p.league].correct++;
+        if (p.result === p.prediction) leagueMap[p.league].correct++;
       });
       setStats({
         total: data.length, correct,

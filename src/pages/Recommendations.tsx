@@ -60,7 +60,7 @@ export default function Recommendations() {
           .select('*')
           .gt('match_date', new Date().toISOString())
           .lte('match_date', nextWeek)
-          .eq('status', 'pending')
+          .is('result', null)
           .order('match_date', { ascending: true })
           .order('confidence', { ascending: false })
           .limit(30);

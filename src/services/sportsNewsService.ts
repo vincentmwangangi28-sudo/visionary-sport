@@ -134,6 +134,7 @@ class SportsNewsService {
             description,
             link,
             source: 'ESPN Football',
+            region: 'Europe',
             pubDate: published,
             imageUrl: image,
             category,

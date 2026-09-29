@@ -136,13 +136,13 @@ export default function USSoccerPredictions() {
 
   const handleAddToSlip = (f: USFixture) => {
     addSelection({
-      id: `us-pick-${f.id}`,
+      matchId: `us-pick-${f.id}`,
       match: `${f.homeTeam} vs ${f.awayTeam}`,
       homeTeam: f.homeTeam,
       awayTeam: f.awayTeam,
       league: f.competition,
       market: f.aiPick,
-      odds: oddsFormat === 'american' ? f.decimalHome : f.decimalHome,
+      odds: f.decimalHome,
       confidence: f.confidence,
     });
     setIsOpen(true);

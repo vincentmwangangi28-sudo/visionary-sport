@@ -104,7 +104,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
   const needsBreakdown = popoverOpen || inlineExpanded || variant === 'gauge';
   const breakdown = useMemo(() => {
     if (!needsBreakdown) {
-      return { baseConfidence: normalizedConfidence, adjustedConfidence: normalizedConfidence, netImpact: 0, factors: [] };
+      return { baseConfidence: normalizedConfidence, finalConfidence: normalizedConfidence, netImpact: 0, factors: [] };
     }
     return calculateConfidenceFactors(
       normalizedConfidence,
@@ -131,7 +131,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
             type="button"
             onClick={(e) => e.stopPropagation()}
             title="Click to view underlying factors"
-            className={`inline-flex items-center gap-1.5 focus:outline-none cursor-pointer group hover:opacity-85 transition-opacity ${className}`}
+            className={`inline-flex items-center gap-1.5 min-h-[36px] px-2 py-1 rounded-md focus:outline-none cursor-pointer group hover:bg-muted/60 transition-colors ${className}`}
           >
             <span className="relative flex h-2 w-2 shrink-0">
               <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColorClass}`} />
@@ -337,7 +337,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
                 type="button"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`AI Confidence ${normalizedConfidence}% - ${tier.label}`}
-                className="group flex items-center gap-1.5 focus:outline-none select-none cursor-pointer rounded-lg hover:opacity-90 transition-opacity"
+                className="group flex items-center gap-1.5 min-h-[38px] px-2 py-1 focus:outline-none select-none cursor-pointer rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="relative flex items-center justify-center w-3.5 h-3.5">
                   <span className={`w-2 h-2 rounded-full ring-1 ring-background shadow-xs ${dotColorClass}`} />
@@ -352,7 +352,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
                   <span className={`text-xs font-black tabular-nums tracking-tight ${tier.colorClass}`}>
                     {normalizedConfidence}%
                   </span>
-                  <HelpCircle className="h-3 w-3 text-muted-foreground/50 group-hover:text-foreground transition-colors" />
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
                 </div>
               </button>
             </PopoverTrigger>
@@ -401,7 +401,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
               setPopoverOpen(true);
             }}
             aria-label={`AI Confidence ${normalizedConfidence}% - ${tier.label}`}
-            className="group flex items-center gap-1.5 focus:outline-none select-none cursor-pointer rounded-lg hover:opacity-90 transition-opacity"
+            className="group flex items-center gap-1.5 min-h-[38px] px-2 py-1 focus:outline-none select-none cursor-pointer rounded-lg hover:bg-muted/50 transition-colors"
           >
             <div className="relative flex items-center justify-center w-3.5 h-3.5">
               <span className={`w-2 h-2 rounded-full ring-1 ring-background shadow-xs ${dotColorClass}`} />
@@ -416,7 +416,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
               <span className={`text-xs font-black tabular-nums tracking-tight ${tier.colorClass}`}>
                 {normalizedConfidence}%
               </span>
-              <HelpCircle className="h-3 w-3 text-muted-foreground/50 group-hover:text-foreground transition-colors" />
+              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
             </div>
           </button>
         )}
@@ -429,14 +429,14 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
             setInlineExpanded(!inlineExpanded);
           }}
           title="Toggle underlying factors breakdown"
-          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 px-1 py-0.5 rounded hover:bg-muted/50 font-semibold"
+          className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 min-h-[38px] px-2 py-1 rounded-lg hover:bg-muted/50 font-semibold"
         >
-          <Layers className="h-2.5 w-2.5" />
+          <Layers className="h-3 w-3" aria-hidden="true" />
           <span>Factors</span>
           {inlineExpanded ? (
-            <ChevronUp className="h-2.5 w-2.5" />
+            <ChevronUp className="h-3 w-3" aria-hidden="true" />
           ) : (
-            <ChevronDown className="h-2.5 w-2.5" />
+            <ChevronDown className="h-3 w-3" aria-hidden="true" />
           )}
         </button>
       </div>

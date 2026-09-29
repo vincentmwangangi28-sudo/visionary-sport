@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { PaymentDialog } from "@/components/PaymentDialog";
 import { MpesaPaymentDialog } from "@/components/MpesaPaymentDialog";
 import { CoinShop } from "@/components/CoinShop";
+import { PredictionBundles } from "@/components/PredictionBundles";
 import { Crown, Check, Star, Globe, Smartphone, Zap, Shield, BarChart2, Bell } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -105,8 +106,9 @@ export default function Shop() {
         </div>
 
         <Tabs defaultValue="plans">
-          <TabsList className="grid w-full max-w-sm mx-auto grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="plans">Subscription Plans</TabsTrigger>
+            <TabsTrigger value="bundles">Prediction Bundles</TabsTrigger>
             <TabsTrigger value="coins">Buy Coins</TabsTrigger>
           </TabsList>
 
@@ -192,6 +194,10 @@ export default function Shop() {
               <p>🔒 Payments secured by Stripe & Lipana (Safaricom) • Cancel anytime</p>
               <p>🌍 Available worldwide — USD cards, M-Pesa, Apple Pay, Google Pay</p>
             </div>
+          </TabsContent>
+
+          <TabsContent value="bundles">
+            <PredictionBundles />
           </TabsContent>
 
           <TabsContent value="coins">

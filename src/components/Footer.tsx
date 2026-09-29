@@ -119,7 +119,7 @@ export const Footer = () => {
             <ul className="space-y-2">
               {links.map(l => (
                 <li key={l.to}>
-                  <Link to={l.to} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                  <Link to={l.to} className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary transition-colors">
                     {l.label}
                   </Link>
                 </li>
@@ -135,7 +135,7 @@ export const Footer = () => {
           <p className="font-semibold text-xs text-foreground uppercase tracking-wider">
             Top Clash Intelligence & Head-to-Head Previews Today
           </p>
-          <Link to="/upcoming" className="text-xs text-primary font-semibold hover:underline">
+          <Link to="/upcoming" className="inline-flex items-center py-1.5 min-h-[36px] text-xs text-primary font-semibold hover:underline">
             Browse All Upcoming Football Fixtures &amp; AI Match Previews &rarr;
           </Link>
         </div>
@@ -144,7 +144,7 @@ export const Footer = () => {
             <Link
               key={m.slug}
               to={`/predict/${m.slug}-${today}`}
-              className="text-muted-foreground hover:text-primary transition-colors hover:underline"
+              className="inline-flex items-center py-1 min-h-[32px] text-muted-foreground hover:text-primary transition-colors hover:underline"
             >
               {m.label} AI Match Prediction &amp; Odds
             </Link>
@@ -155,16 +155,16 @@ export const Footer = () => {
       <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
         <p>© {new Date().getFullYear()} PredictPro. All rights reserved. <span className="mx-1">·</span> predictpro.guru</p>
         
-        <div className="flex items-center gap-2 flex-wrap justify-center">
+        <div className="flex items-center gap-2.5 flex-wrap justify-center">
           <Link
             to="/responsible-gaming"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 transition-colors text-xs font-bold border border-rose-500/30"
+            className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 transition-colors text-xs font-bold border border-rose-500/30"
           >
             <span>18+ Responsible Gaming &amp; Disclaimer</span>
           </Link>
           <Link
             to="/preferences"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background hover:bg-primary/10 text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors text-xs font-semibold border border-border shadow-xs"
+            className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-full bg-background hover:bg-primary/10 text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors text-xs font-semibold border border-border shadow-xs"
             title="Configure Language, Region, Currency and Timezone"
             aria-label="Open Preferences and Regional Settings"
           >
@@ -191,15 +191,15 @@ export const Footer = () => {
             Informational Sports Statistics &amp; Responsible Gambling Notice (Never Intended for Minors)
           </p>
           <div className="flex flex-wrap items-center gap-3 font-semibold text-foreground">
-            <Link to="/responsible-gaming" className="text-primary hover:underline">
+            <Link to="/responsible-gaming" className="inline-flex items-center py-1 min-h-[32px] text-primary hover:underline">
               Responsible Gambling Policy
             </Link>
             <span>·</span>
-            <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center py-1 min-h-[32px] hover:underline">
               BeGambleAware.org
             </a>
             <span>·</span>
-            <a href="https://www.gamcare.org.uk" target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <a href="https://www.gamcare.org.uk" target="_blank" rel="noopener noreferrer" className="inline-flex items-center py-1 min-h-[32px] hover:underline">
               GamCare (0808 8020 133)
             </a>
             <span>·</span>

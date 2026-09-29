@@ -164,7 +164,7 @@ Over a small sample of 20 bets, luck and red cards dictate your balance. Over 50
 ## How to Use PredictPro's Dropping Odds Radar
 
 1. **Early Model Release:** Our AI publishes initial Poisson fair odds 48 hours before kickoff—before recreational money moves the market.
-2. **Sharp Steam Alerts:** Visit the **Dropping Odds Radar** (`/dropping-odds`) to spot fixtures where bookmaker prices have compressed by more than **8% to 15%**.
+2. **Sharp Steam Alerts:** Visit the **Dropping Odds Radar** (/dropping-odds) to spot fixtures where bookmaker prices have compressed by more than **8% to 15%**.
 3. **Catching Lagging Bookmakers:** When sharp exchanges slash a team's odds from 2.20 to 1.88, soft domestic bookmakers often take 15–45 minutes to adjust their lines—giving you a window to lock in positive CLV.`
   },
   "kpl-betting-guide-kenya": {

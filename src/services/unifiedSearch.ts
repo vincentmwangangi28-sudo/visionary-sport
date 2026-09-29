@@ -1,9 +1,10 @@
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
-import { LEAGUES, CURRENT_SEASON_STANDINGS, StandingRow, LeagueConfig } from '@/data/standingsData';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { LEAGUES, CURRENT_SEASON_STANDINGS } from '@/data/standingsData';
 import { STRATEGY_POSTS, BlogPostItem } from '@/data/blogData';
 import { Prediction } from '@/types/prediction';
 
 export type SearchItemType = 'match' | 'league' | 'team' | 'blog';
+export type SearchCategoryFilter = 'all' | SearchItemType | 'matches' | 'leagues' | 'teams';
 
 export interface BaseSearchResult {
   id: string;
@@ -262,7 +263,7 @@ function calculateTextScore(text: string, query: string, terms: string[]): numbe
  */
 export function executeUnifiedSearch(
   query: string,
-  categoryFilter: 'all' | SearchItemType = 'all',
+  categoryFilter: SearchCategoryFilter = 'all',
   options?: {
     customPredictions?: Prediction[];
     customBlogPosts?: BlogPostItem[];
@@ -281,7 +282,7 @@ export function executeUnifiedSearch(
   const cleanQuery = query.trim().toLowerCase();
   const terms = cleanQuery.split(/\s+/).filter(Boolean);
 
-  const matches = buildMatchesCorpus(options?.customPredictions || DEFAULT_PREDICTIONS);
+  const matches = buildMatchesCorpus(options?.customPredictions || getUpdatedDefaultPredictions());
   const leagues = buildLeaguesCorpus();
   const teams = buildTeamsCorpus();
   const blogs = buildBlogCorpus(options?.customBlogPosts);
@@ -396,11 +397,11 @@ export function executeUnifiedSearch(
 
   let results: UnifiedSearchResult[] = [];
 
-  if (categoryFilter === 'matches') {
+  if (categoryFilter === 'matches' || categoryFilter === 'match') {
     results = scoredMatches;
-  } else if (categoryFilter === 'leagues') {
+  } else if (categoryFilter === 'leagues' || categoryFilter === 'league') {
     results = scoredLeagues;
-  } else if (categoryFilter === 'teams') {
+  } else if (categoryFilter === 'teams' || categoryFilter === 'team') {
     results = scoredTeams;
   } else if (categoryFilter === 'blog') {
     results = scoredBlogs;

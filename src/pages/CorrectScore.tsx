@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CorrectScoreListSkeleton } from '@/components/PredictionCardSkeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { Target, RefreshCw, Zap, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -36,15 +37,20 @@ export default function CorrectScore() {
         const { data } = await supabase.from('predictions')
           .select('*')
           .gt('match_date', new Date().toISOString())
-          .eq('status', 'pending')
+          .is('result', null)
           .gte('confidence', 60)
           .order('match_date', { ascending: true })
           .order('confidence', { ascending: false })
           .limit(20);
-        setPreds((data ?? []) as Prediction[]);
+        if (data && data.length > 0) {
+          setPreds(data as Prediction[]);
+        } else {
+          setPreds(getUpdatedDefaultPredictions().slice(0, 18));
+        }
       }
     } catch (e) {
       console.warn('Correct score fetch error:', e);
+      setPreds(getUpdatedDefaultPredictions().slice(0, 18));
     } finally {
       setLoading(false);
     }

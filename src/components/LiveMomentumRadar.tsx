@@ -40,7 +40,8 @@ export const LiveMomentumRadar: React.FC = () => {
     let mounted = true;
     const loadMomentumData = async () => {
       try {
-        const realLive = await fetchRealtimeLiveMatches();
+        const liveResult = await fetchRealtimeLiveMatches();
+        const realLive = liveResult?.matches || [];
         if (!mounted) return;
 
         if (realLive.length > 0) {
@@ -59,7 +60,7 @@ export const LiveMomentumRadar: React.FC = () => {
               minute: minNum,
               homeScore: hScore,
               awayScore: aScore,
-              league: m.competition,
+              league: m.competition || m.league || 'Football League',
               isLiveInPlay: true,
               homeMomentum: hMom,
               awayMomentum: aMom,
@@ -91,20 +92,22 @@ export const LiveMomentumRadar: React.FC = () => {
           const hMom = pred === 'Away Win' ? 36 : pred === 'Draw' ? 50 : 66 + (idx * 4) % 16;
           const aMom = 100 - hMom;
           const kickoffTime = new Date(p.match_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const predHomeScore = (p as { predicted_home_score?: number }).predicted_home_score;
+          const predAwayScore = (p as { predicted_away_score?: number }).predicted_away_score;
 
           return {
             id: p.id,
             homeTeam: p.home_team,
             awayTeam: p.away_team,
             minute: kickoffTime,
-            homeScore: p.predicted_home_score ?? 0,
-            awayScore: p.predicted_away_score ?? 0,
+            homeScore: predHomeScore ?? 0,
+            awayScore: predAwayScore ?? 0,
             league: p.league,
             isLiveInPlay: false,
             homeMomentum: hMom,
             awayMomentum: aMom,
             opportunityAlert: {
-              title: `Pre-Match xG Surge (${((p.predicted_home_score ?? 1.6) + (p.predicted_away_score ?? 1.1)).toFixed(2)} Projected Goals)`,
+              title: `Pre-Match xG Surge (${((predHomeScore ?? 1.6) + (predAwayScore ?? 1.1)).toFixed(2)} Projected Goals)`,
               type: idx % 2 === 0 ? 'Momentum Shift' : 'Over Goal Spike',
               probability: conf,
               recommendedMarket: pred,

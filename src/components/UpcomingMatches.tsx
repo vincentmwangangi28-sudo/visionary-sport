@@ -184,20 +184,20 @@ export const UpcomingMatches: React.FC = () => {
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="h-8 text-xs font-semibold gap-1.5"
+              className="h-10 min-h-[42px] px-3 text-xs font-semibold gap-1.5"
               title="Refresh upcoming schedule"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
               Sync
             </Button>
             <Link to="/accumulator">
-              <Button variant="outline" size="sm" className="h-8 text-xs font-semibold gap-1.5">
-                <Zap className="h-3.5 w-3.5 text-amber-500" />
+              <Button variant="outline" size="sm" className="h-10 min-h-[42px] px-3 text-xs font-semibold gap-1.5">
+                <Zap className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                 Acca Builder
               </Button>
             </Link>
             <Link to="/best-bets">
-              <Button size="sm" className="h-8 text-xs font-bold gap-1.5">
+              <Button size="sm" className="h-10 min-h-[42px] px-3 text-xs font-bold gap-1.5">
                 <Flame className="h-3.5 w-3.5" />
                 Best Bets
               </Button>
@@ -490,19 +490,19 @@ export const UpcomingMatches: React.FC = () => {
 
                       {/* Interactive 1X2 Odds with Bet Slip Integration */}
                       {m.home_odds && (
-                        <div className="grid grid-cols-3 gap-1.5 pt-1">
+                        <div className="grid grid-cols-3 gap-2 pt-1">
                           {/* 1 - Home */}
                           <button
                             type="button"
                             onClick={e => handleOddsClick(e, m, '1', m.home_odds || 2.1)}
-                            className={`p-1.5 rounded-lg border text-xs text-center transition-all flex flex-col items-center justify-center ${
+                            className={`min-h-[46px] p-2 rounded-lg border text-xs text-center transition-all flex flex-col items-center justify-center ${
                               isMarketInSlip(m, '1')
                                 ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                 : 'bg-muted/40 hover:bg-muted/80 border-border/70 text-foreground'
                             }`}
                             title={`Add ${m.home_team} win to Bet Slip`}
                           >
-                            <span className="text-[10px] text-muted-foreground uppercase font-semibold">1</span>
+                            <span className={`text-[10px] uppercase font-semibold ${isMarketInSlip(m, '1') ? 'text-primary-foreground' : 'text-muted-foreground'}`}>1</span>
                             <span className="font-mono font-bold">{formatOdds(m.home_odds)}</span>
                           </button>
 
@@ -510,14 +510,14 @@ export const UpcomingMatches: React.FC = () => {
                           <button
                             type="button"
                             onClick={e => handleOddsClick(e, m, 'X', m.draw_odds || 3.3)}
-                            className={`p-1.5 rounded-lg border text-xs text-center transition-all flex flex-col items-center justify-center ${
+                            className={`min-h-[46px] p-2 rounded-lg border text-xs text-center transition-all flex flex-col items-center justify-center ${
                               isMarketInSlip(m, 'X')
                                 ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                 : 'bg-muted/40 hover:bg-muted/80 border-border/70 text-foreground'
                             }`}
                             title="Add Draw to Bet Slip"
                           >
-                            <span className="text-[10px] text-muted-foreground uppercase font-semibold">X</span>
+                            <span className={`text-[10px] uppercase font-semibold ${isMarketInSlip(m, 'X') ? 'text-primary-foreground' : 'text-muted-foreground'}`}>X</span>
                             <span className="font-mono font-bold">{formatOdds(m.draw_odds || 3.3)}</span>
                           </button>
 
@@ -525,14 +525,14 @@ export const UpcomingMatches: React.FC = () => {
                           <button
                             type="button"
                             onClick={e => handleOddsClick(e, m, '2', m.away_odds || 3.4)}
-                            className={`p-1.5 rounded-lg border text-xs text-center transition-all flex flex-col items-center justify-center ${
+                            className={`min-h-[46px] p-2 rounded-lg border text-xs text-center transition-all flex flex-col items-center justify-center ${
                               isMarketInSlip(m, '2')
                                 ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                 : 'bg-muted/40 hover:bg-muted/80 border-border/70 text-foreground'
                             }`}
                             title={`Add ${m.away_team} win to Bet Slip`}
                           >
-                            <span className="text-[10px] text-muted-foreground uppercase font-semibold">2</span>
+                            <span className={`text-[10px] uppercase font-semibold ${isMarketInSlip(m, '2') ? 'text-primary-foreground' : 'text-muted-foreground'}`}>2</span>
                             <span className="font-mono font-bold">{formatOdds(m.away_odds || 3.4)}</span>
                           </button>
                         </div>
@@ -547,7 +547,7 @@ export const UpcomingMatches: React.FC = () => {
                         <Link
                           to={matchUrl}
                           onClick={e => e.stopPropagation()}
-                          className="flex items-center gap-1 font-bold text-primary hover:underline text-[11px]"
+                          className="min-h-[38px] px-2 py-1.5 rounded-lg flex items-center gap-1 font-bold text-primary hover:bg-primary/10 hover:underline text-[11px] transition-colors"
                           title={`View ${m.home_team} vs ${m.away_team} AI match prediction & analytics`}
                           aria-label={`View ${m.home_team} vs ${m.away_team} AI match prediction & analytics`}
                         >

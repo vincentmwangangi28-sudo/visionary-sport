@@ -60,6 +60,7 @@ const STORAGE_KEY = 'predictpro_user_preferences_v2';
 
 interface UserPreferencesContextType {
   preferences: UserPreferences;
+  oddsFormat: OddsFormat;
   updatePreferences: (updates: Partial<UserPreferences>) => void;
   setRiskProfile: (profile: RiskProfile) => void;
   setLanguage: (lang: SupportedLanguage) => void;
@@ -228,6 +229,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     <UserPreferencesContext.Provider
       value={{
         preferences,
+        oddsFormat: preferences.oddsFormat,
         updatePreferences,
         setRiskProfile,
         setLanguage,

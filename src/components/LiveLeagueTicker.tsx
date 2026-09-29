@@ -17,7 +17,7 @@ export const LiveLeagueTicker = () => {
 
       try {
         const { data } = await supabase.from('predictions')
-          .select('league, confidence, confidence_score')
+          .select('league, confidence')
           .gte('match_date', today);
 
         if (data && data.length > 0) {
@@ -25,7 +25,7 @@ export const LiveLeagueTicker = () => {
             if (!p.league) return;
             if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
             map[p.league].total++;
-            map[p.league].sum += p.confidence_score ?? p.confidence ?? 75;
+            map[p.league].sum += p.confidence ?? 75;
           });
         }
       } catch {

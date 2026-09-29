@@ -37,7 +37,7 @@ import {
   LeagueSearchResult,
   TeamSearchResult,
   BlogSearchResult,
-  SearchItemType,
+  SearchCategoryFilter,
 } from '@/services/unifiedSearch';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -84,7 +84,7 @@ export const UnifiedSearchModal: React.FC = () => {
     navigate(item.url);
   }, [query, closeSearch, navigate]);
 
-  const handleApplySuggestion = (suggestionQuery: string, cat: 'all' | SearchItemType = 'all') => {
+  const handleApplySuggestion = (suggestionQuery: string, cat: SearchCategoryFilter = 'all') => {
     setQuery(suggestionQuery);
     setActiveCategory(cat);
     inputRef.current?.focus();
@@ -213,7 +213,7 @@ export const UnifiedSearchModal: React.FC = () => {
             onClick={() => setActiveCategory('matches')}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1 rounded-full font-medium transition-all whitespace-nowrap',
-              activeCategory === 'matches'
+              activeCategory === 'matches' || activeCategory === 'match'
                 ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60'
             )}
@@ -226,7 +226,7 @@ export const UnifiedSearchModal: React.FC = () => {
             onClick={() => setActiveCategory('leagues')}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1 rounded-full font-medium transition-all whitespace-nowrap',
-              activeCategory === 'leagues'
+              activeCategory === 'leagues' || activeCategory === 'league'
                 ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60'
             )}
@@ -239,7 +239,7 @@ export const UnifiedSearchModal: React.FC = () => {
             onClick={() => setActiveCategory('teams')}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1 rounded-full font-medium transition-all whitespace-nowrap',
-              activeCategory === 'teams'
+              activeCategory === 'teams' || activeCategory === 'team'
                 ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60'
             )}

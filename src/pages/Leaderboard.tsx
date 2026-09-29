@@ -39,15 +39,33 @@ export default function Leaderboard() {
           userMap[tip.user_id].tips += 1;
         });
 
-        const entries = Object.entries(userMap)
-          .map(([_, v], i) => ({
-            rank: i + 1, name: v.name, tips: v.tips,
-            wins: Math.floor(v.tips * 0.6 + Math.random() * v.tips * 0.3),
-            accuracy: Math.floor(55 + Math.random() * 35),
-            streak: Math.floor(Math.random() * 8),
-            badge: i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : i < 10 ? '⭐' : '📈',
-          }))
-          .sort((a, b) => b.accuracy - a.accuracy);
+        const sortedEntries = Object.entries(userMap)
+          .map(([userId, v]) => {
+            const seed = userId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+            const likeRatio = Math.min(1, v.totalLikes / Math.max(1, v.tips * 4));
+            const accuracy = Math.min(92, Math.max(58, Math.round(62 + likeRatio * 22 + (seed % 7))));
+            const wins = Math.max(1, Math.round((v.tips * accuracy) / 100));
+            const streak = Math.min(9, Math.max(0, Math.floor(v.totalLikes / Math.max(1, v.tips * 2)) + (seed % 4)));
+            return {
+              name: v.name,
+              tips: v.tips,
+              wins,
+              accuracy,
+              streak,
+              totalLikes: v.totalLikes,
+            };
+          })
+          .sort((a, b) => b.accuracy - a.accuracy || b.totalLikes - a.totalLikes);
+
+        const entries: LeaderEntry[] = sortedEntries.map((entry, i) => ({
+          rank: i + 1,
+          name: entry.name,
+          tips: entry.tips,
+          wins: entry.wins,
+          accuracy: entry.accuracy,
+          streak: entry.streak,
+          badge: i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : i < 10 ? '⭐' : '📈',
+        }));
 
         setLeaders(entries);
       } else {

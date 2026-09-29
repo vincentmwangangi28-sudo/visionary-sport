@@ -15,6 +15,7 @@ import { useGeoRegion } from './useGeoRegion';
 interface CurrencyContextType {
   currency: SupportedCurrencyCode;
   currencyConfig: CurrencyConfig;
+  currentConfig: CurrencyConfig;
   setCurrency: (code: SupportedCurrencyCode) => void;
   allCurrencies: CurrencyConfig[];
   convert: (amount: number, fromCurrency?: string, toCurrency?: string) => number;
@@ -81,6 +82,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         currency,
         currencyConfig,
+        currentConfig: currencyConfig,
         setCurrency,
         allCurrencies: SUPPORTED_CURRENCIES,
         convert,

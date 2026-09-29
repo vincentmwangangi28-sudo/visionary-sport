@@ -17,6 +17,9 @@ export interface Prediction {
   home_odds?: number;
   draw_odds?: number;
   away_odds?: number;
+  home_logo?: string | null;
+  away_logo?: string | null;
+  ai_model?: string;
   metadata?: Record<string, unknown>;
   created_at: string;
 }

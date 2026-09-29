@@ -142,7 +142,7 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
               size="sm"
               onClick={handleRefresh}
               disabled={loading}
-              className="text-xs font-bold h-8 gap-1.5"
+              className="text-xs font-bold h-10 min-h-[40px] px-3 gap-1.5"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               Refresh
@@ -172,11 +172,11 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
           const selected = isSelected(pick);
           const icon =
             pick.type === 'banker' ? (
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <ShieldCheck className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
             ) : pick.type === 'value' ? (
-              <Zap className="h-4 w-4 text-amber-500" />
+              <Zap className="h-4 w-4 text-amber-700 dark:text-amber-400" />
             ) : (
-              <Flame className="h-4 w-4 text-rose-500" />
+              <Flame className="h-4 w-4 text-rose-700 dark:text-rose-400" />
             );
 
           return (
@@ -229,7 +229,7 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
                   size="sm"
                   variant={selected ? 'default' : 'outline'}
                   onClick={() => handleAddPick(pick)}
-                  className={`w-full text-xs font-bold h-8 gap-1.5 ${
+                  className={`w-full text-xs font-bold h-10 min-h-[40px] gap-1.5 ${
                     selected ? 'bg-primary text-primary-foreground' : ''
                   }`}
                 >

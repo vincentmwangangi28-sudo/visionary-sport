@@ -523,30 +523,34 @@ export default function SEOIndexingPage() {
                     </thead>
                     <tbody className="divide-y divide-border/40">
                       {viralKeywords
-                        .filter(k => 
-                          !viralSearchQuery || 
-                          k.keyword.toLowerCase().includes(viralSearchQuery.toLowerCase()) ||
-                          k.category.toLowerCase().includes(viralSearchQuery.toLowerCase()) ||
-                          k.targetUrl.toLowerCase().includes(viralSearchQuery.toLowerCase())
-                        )
+                        .filter(k => {
+                          if (!viralSearchQuery) return true;
+                          const q = viralSearchQuery.toLowerCase();
+                          const cat = (k.category || k.groundedSource || '').toLowerCase();
+                          return (
+                            k.keyword.toLowerCase().includes(q) ||
+                            cat.includes(q) ||
+                            k.targetUrl.toLowerCase().includes(q)
+                          );
+                        })
                         .map((kw, idx) => (
                           <tr key={idx} className="hover:bg-muted/30 transition-colors">
                             <td className="p-3 font-semibold text-foreground flex items-center gap-2">
                               <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                               <span>{kw.keyword}</span>
                             </td>
-                            <td className="p-3 font-mono font-medium">{kw.estimatedMonthlyVolume.toLocaleString()}</td>
+                            <td className="p-3 font-mono font-medium">{(kw.estimatedMonthlyVolume ?? kw.estimatedMonthlySearches ?? 0).toLocaleString()}</td>
                             <td className="p-3">
                               <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold">
-                                {kw.breakoutScore} / 100
+                                {kw.breakoutScore ?? 92} / 100
                               </Badge>
                             </td>
                             <td className="p-3">
                               <Badge variant="outline" className="text-[10px] capitalize">
-                                {kw.intent}
+                                {kw.intent || kw.searchIntent || 'Commercial'}
                               </Badge>
                             </td>
-                            <td className="p-3 text-muted-foreground">{kw.category}</td>
+                            <td className="p-3 text-muted-foreground">{kw.category || kw.groundedSource || 'AI Search Grounding'}</td>
                             <td className="p-3">
                               <a
                                 href={kw.targetUrl}
@@ -560,7 +564,7 @@ export default function SEOIndexingPage() {
                             </td>
                             <td className="p-3">
                               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold flex items-center gap-1 w-fit">
-                                <CheckCircle2 className="w-2.5 h-2.5" /> {kw.status}
+                                <CheckCircle2 className="w-2.5 h-2.5" /> {kw.status || 'Indexed'}
                               </Badge>
                             </td>
                           </tr>

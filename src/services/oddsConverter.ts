@@ -11,15 +11,16 @@ export interface OddsFormatMetadata {
   name: string;
   example: string;
   region: string;
+  description: string;
 }
 
 export const ODDS_FORMATS: OddsFormatMetadata[] = [
-  { id: 'decimal', name: 'Decimal (European / African)', example: '1.85', region: 'Europe, Africa, Australia' },
-  { id: 'fractional', name: 'Fractional (UK & Ireland)', example: '17/20', region: 'United Kingdom, Ireland' },
-  { id: 'american', name: 'American (Moneyline +/-)', example: '-118', region: 'United States, Canada' },
-  { id: 'hongkong', name: 'Hong Kong (HK Odds)', example: '0.85', region: 'Hong Kong, East Asia' },
-  { id: 'indonesian', name: 'Indonesian (Indo Odds)', example: '-1.18', region: 'Indonesia, SE Asia' },
-  { id: 'malay', name: 'Malay (MY Odds)', example: '+0.85', region: 'Malaysia, Singapore' },
+  { id: 'decimal', name: 'Decimal (European / African)', example: '1.85', region: 'Europe, Africa, Australia', description: 'Total payout per unit staked (Europe, Africa, Australia)' },
+  { id: 'fractional', name: 'Fractional (UK & Ireland)', example: '17/20', region: 'United Kingdom, Ireland', description: 'Net profit relative to stake (United Kingdom & Ireland)' },
+  { id: 'american', name: 'American (Moneyline +/-)', example: '-118', region: 'United States, Canada', description: 'US Moneyline (+/- based on $100 reference stake)' },
+  { id: 'hongkong', name: 'Hong Kong (HK Odds)', example: '0.85', region: 'Hong Kong, East Asia', description: 'Net profit per 1 unit staked (Hong Kong & East Asia)' },
+  { id: 'indonesian', name: 'Indonesian (Indo Odds)', example: '-1.18', region: 'Indonesia, SE Asia', description: 'Unit-scaled moneyline odds (Indonesia & SE Asia)' },
+  { id: 'malay', name: 'Malay (MY Odds)', example: '+0.85', region: 'Malaysia, Singapore', description: 'Inverse risk/reward unit odds (Malaysia & Singapore)' },
 ];
 
 export const SUPPORTED_ODDS_FORMATS = ODDS_FORMATS;

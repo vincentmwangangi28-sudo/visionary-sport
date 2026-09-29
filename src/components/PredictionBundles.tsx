@@ -3,17 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePredictionBundles } from '@/hooks/usePredictionBundles';
 import { useAuth } from '@/hooks/useAuth';
-import { Package, Loader2, Lock, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
+import { MpesaPaymentDialog } from '@/components/MpesaPaymentDialog';
+import { Package, Loader2, Lock, Sparkles, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const PredictionBundles = () => {
   const { user } = useAuth();
   const { bundles, loading } = usePredictionBundles();
-
-  const handlePurchase = (bundleId: string) => {
-    toast.info('Bundle purchase coming soon!');
-  };
 
   if (loading) {
     return (
@@ -40,9 +36,9 @@ export const PredictionBundles = () => {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {bundles.map((bundle, index) => {
           const isBestValue = index === bundles.length - 1;
-          const originalPrice = Math.round(
-            bundle.priceKes / (1 - bundle.discountPercent / 100)
-          );
+          const originalPrice = bundle.discountPercent > 0
+            ? Math.round(bundle.priceKes / (1 - bundle.discountPercent / 100))
+            : bundle.priceKes;
 
           return (
             <Card
@@ -91,18 +87,26 @@ export const PredictionBundles = () => {
                   <Button asChild variant="outline" className="w-full">
                     <Link to="/auth">
                       <Lock className="mr-2 h-4 w-4" />
-                      Login
+                      Login to Purchase
                     </Link>
                   </Button>
                 ) : (
-                  <Button
-                    onClick={() => handlePurchase(bundle.id)}
-                    className={`w-full ${isBestValue ? 'bg-gradient-to-r from-amber-500 to-orange-500' : ''}`}
-                    variant={isBestValue ? 'default' : 'outline'}
+                  <MpesaPaymentDialog
+                    plan={bundle.id}
+                    purpose="prediction_unlock"
+                    amount={bundle.priceKes}
+                    title={`${bundle.name} (${bundle.predictionsCount} Predictions)`}
+                    description={`Unlock ${bundle.predictionsCount} premium AI match predictions via M-Pesa STK Push.`}
+                    buttonText={`Pay KES ${bundle.priceKes}`}
                   >
-                    <Package className="mr-2 h-4 w-4" />
-                    Purchase
-                  </Button>
+                    <Button
+                      className={`w-full ${isBestValue ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' : ''}`}
+                      variant={isBestValue ? 'default' : 'outline'}
+                    >
+                      <Smartphone className="mr-2 h-4 w-4" />
+                      Buy {bundle.name}
+                    </Button>
+                  </MpesaPaymentDialog>
                 )}
               </CardContent>
             </Card>

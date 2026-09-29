@@ -160,7 +160,7 @@ export function detectTimeFormat(rawLocale?: string): {
     const testDate = new Date(2026, 11, 23, 15, 30, 0); // 3:30 PM / 15:30
     
     // Check hourCycle in resolvedOptions if available
-    const resolved = Intl.DateTimeFormat(loc).resolvedOptions();
+    const resolved = Intl.DateTimeFormat(loc).resolvedOptions() as Intl.ResolvedDateTimeFormatOptions & { hourCycle?: string };
     if (resolved.hourCycle === 'h11' || resolved.hourCycle === 'h12') {
       return { format: '12h', sampleFormatted: '3:30 PM' };
     }

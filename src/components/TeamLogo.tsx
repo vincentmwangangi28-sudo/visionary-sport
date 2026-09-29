@@ -74,6 +74,26 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
     ? { container: `w-[${size}px] h-[${size}px] rounded-lg p-1`, img: `w-[${size - 8}px] h-[${size - 8}px]`, text: 'text-xs', dim: Math.max(12, size - 8) }
     : SIZE_MAP[size] || SIZE_MAP.md;
 
+  const optimizeEspnUrl = (url: string, px: number): string => {
+    try {
+      if (!url.includes('espncdn.com/') || url.includes('/combiner/i')) return url;
+      const parsed = new URL(url);
+      if (
+        parsed.hostname.endsWith('espncdn.com') &&
+        (parsed.pathname.startsWith('/i/') || parsed.pathname.startsWith('/guid/'))
+      ) {
+        return `https://a.espncdn.com/combiner/i?img=${parsed.pathname}&w=${px}&h=${px}&scale=crop`;
+      }
+    } catch {
+      // ignore
+    }
+    return url;
+  };
+
+  const src1x = resolvedUrl ? optimizeEspnUrl(resolvedUrl, sizeConfig.dim) : null;
+  const src2x = resolvedUrl ? optimizeEspnUrl(resolvedUrl, sizeConfig.dim * 2) : null;
+  const srcSet = src1x && src2x && src1x !== resolvedUrl ? `${src1x} 1x, ${src2x} 2x` : undefined;
+
   const logoElement = (
     <div
       className={`relative inline-flex items-center justify-center flex-shrink-0 select-none overflow-hidden transition-all duration-200 bg-card/90 dark:bg-zinc-900 border border-border/60 dark:border-zinc-800 shadow-2xs ring-1 ring-black/5 dark:ring-white/5 ${
@@ -81,9 +101,10 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
       } ${className}`}
       title={team}
     >
-      {resolvedUrl ? (
+      {resolvedUrl && src1x ? (
         <img
-          src={resolvedUrl}
+          src={src1x}
+          srcSet={srcSet}
           alt={alt || `${team} crest`}
           loading="lazy"
           decoding="async"

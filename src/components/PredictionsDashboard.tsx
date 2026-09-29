@@ -175,13 +175,13 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <SlidersHorizontal className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
             Strategy:
           </span>
-          <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border" role="group" aria-label="Select active risk profile">
+          <div className="flex items-center gap-1.5 bg-background/80 p-1 rounded-lg border" role="group" aria-label="Select active risk profile">
             {(['conservative', 'balanced', 'aggressive'] as RiskProfile[]).map((profile) => (
               <button
                 key={profile}
                 type="button"
                 onClick={() => setRiskProfile(profile)}
-                className={`px-2.5 py-1 text-xs font-bold rounded-md capitalize transition-all ${
+                className={`min-h-[38px] px-3 py-1.5 text-xs font-bold rounded-md capitalize transition-all inline-flex items-center justify-center ${
                   preferences.riskProfile === profile
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -196,15 +196,15 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Link to="/archive">
-            <Badge variant="outline" className="hover:bg-muted text-[11px] gap-1 cursor-pointer font-semibold py-1">
-              <CheckCircle2 className="h-3 w-3 text-green-500" aria-hidden="true" />
+          <Link to="/archive" className="inline-flex items-center min-h-[40px]">
+            <Badge variant="outline" className="hover:bg-muted text-[11px] gap-1.5 cursor-pointer font-semibold py-1.5 px-3">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
               Verified Results Archive
             </Badge>
           </Link>
-          <Link to="/methodology">
-            <Badge variant="outline" className="hover:bg-muted text-[11px] gap-1 cursor-pointer font-semibold py-1">
-              <ShieldCheck className="h-3 w-3 text-primary" aria-hidden="true" />
+          <Link to="/methodology" className="inline-flex items-center min-h-[40px]">
+            <Badge variant="outline" className="hover:bg-muted text-[11px] gap-1.5 cursor-pointer font-semibold py-1.5 px-3">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
               Model Methodology
             </Badge>
           </Link>
@@ -215,19 +215,19 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="h-4 w-4 absolute left-3 top-2.5 text-muted-foreground" />
+          <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
           <Input
             placeholder="Search teams or leagues..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-xs"
+            className="pl-9 h-10 min-h-[42px] text-xs"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
               aria-label="Clear search input"
-              className="absolute right-2.5 top-2.5 text-xs text-muted-foreground hover:text-foreground"
+              className="absolute right-1 top-1 h-8 w-8 min-h-[36px] min-w-[36px] inline-flex items-center justify-center text-xs text-muted-foreground hover:text-foreground"
             >
               ✕
             </button>
@@ -331,7 +331,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         <div className="flex items-center gap-2 flex-wrap">
           <GeoRegionSelector variant="compact" />
           <div className="h-4 w-px bg-border/80 hidden sm:block" />
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+          <label className="flex items-center gap-2 min-h-[40px] px-1 text-xs text-muted-foreground cursor-pointer select-none">
             <Switch
               checked={enableRegionalSort}
               onCheckedChange={setEnableRegionalSort}
@@ -345,7 +345,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         </div>
 
         <div className="text-[11px] text-muted-foreground flex items-center gap-2 self-end sm:self-auto flex-wrap">
-          <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 gap-1">
+          <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 gap-1">
             <Calendar className="h-3 w-3" />
             Date Priority Active · Played Matches Ignored
           </Badge>
@@ -354,7 +354,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       </div>
 
       {/* League Selection Horizontal Scroll */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none" role="group" aria-label="Filter predictions by league">
+      <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none" role="group" aria-label="Filter predictions by league">
         {dynamicLeagueTabs.map((l) => {
           const isSelected = (league === l.id || (l.id === 'All' && !league) || (league === l.name));
           return (
@@ -368,14 +368,14 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               }}
               aria-label={`Filter predictions by ${l.name}`}
               aria-pressed={isSelected}
-              className={`text-xs h-7 px-2.5 flex-shrink-0 font-medium gap-1.5 transition-all ${
+              className={`text-xs h-10 min-h-[42px] px-3.5 flex-shrink-0 font-semibold gap-1.5 transition-all ${
                 isSelected ? 'shadow-sm' : 'hover:border-primary/40'
               }`}
             >
               {l.flag && <span className="text-xs">{l.flag}</span>}
               <span>{l.name}</span>
               {l.badge && !isSelected && (
-                <span className="text-[9px] px-1 py-0 rounded bg-muted text-muted-foreground font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-foreground font-mono">
                   {l.badge}
                 </span>
               )}

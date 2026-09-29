@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
@@ -6,7 +6,8 @@ import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { 
   mergeAndPreservePredictions, 
-  getSavedPredictionsList 
+  generateDeterministicPrediction,
+  savePrediction
 } from '@/services/predictionStorage';
 import {
   isPlayedOrPastMatch,
@@ -62,6 +63,7 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
 
 export const usePredictions = (page = 1, league?: string) => {
   const { isPremium } = useSubscription();
+  const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
@@ -103,7 +105,7 @@ export const usePredictions = (page = 1, league?: string) => {
             .select('*')
             .gt('match_date', nowIso)
             .lte('match_date', twoWeeksIso)
-            .eq('status', 'pending')
+            .is('result', null)
             .order('match_date', { ascending: true })
             .order('confidence', { ascending: false });
 
@@ -157,6 +159,38 @@ export const usePredictions = (page = 1, league?: string) => {
     retry: 1,
   });
 
+  const generatePrediction = async (input: {
+    homeTeam: string;
+    awayTeam: string;
+    league: string;
+    matchDate: string;
+  }) => {
+    const det = generateDeterministicPrediction(input.homeTeam, input.awayTeam, input.league, input.matchDate);
+    const created: Prediction = {
+      id: `custom-${Date.now()}`,
+      match_id: `custom-${Date.now()}`,
+      home_team: input.homeTeam,
+      away_team: input.awayTeam,
+      league: input.league,
+      match_date: new Date(input.matchDate).toISOString(),
+      prediction: det.prediction,
+      predicted_outcome: det.prediction,
+      confidence: det.confidence,
+      confidence_score: det.confidence,
+      reasoning: det.reasoning,
+      analysis: det.reasoning,
+      home_odds: det.home_odds,
+      draw_odds: det.draw_odds,
+      away_odds: det.away_odds,
+      status: 'pending',
+      is_premium: false,
+      created_at: new Date().toISOString(),
+    };
+    savePrediction(created, true);
+    await queryClient.invalidateQueries({ queryKey: ['predictions'] });
+    return created;
+  };
+
   // Gate premium predictions for free users
   const rawList = query.data?.predictions ?? [];
   const gated = rawList.map(p => {
@@ -181,5 +215,13 @@ export const usePredictions = (page = 1, league?: string) => {
   const total = query.data?.total ?? gated.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  return { ...query, predictions: gated, totalPages, pageSize: PAGE_SIZE, isRealTime: true };
+  return {
+    ...query,
+    loading: query.isLoading,
+    generatePrediction,
+    predictions: gated,
+    totalPages,
+    pageSize: PAGE_SIZE,
+    isRealTime: true,
+  };
 };

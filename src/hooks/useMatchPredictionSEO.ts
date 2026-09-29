@@ -498,22 +498,7 @@ export function useMatchPredictionSEO(
 
   const matchSeo = useMemo(
     () => resolveMatchPredictionForSEO(targetSlugOrPath, prediction),
-    [
-      targetSlugOrPath,
-      prediction?.home_team,
-      prediction?.away_team,
-      prediction?.league,
-      prediction?.match_date,
-      prediction?.prediction,
-      prediction?.predicted_outcome,
-      prediction?.confidence,
-      prediction?.confidence_score,
-      prediction?.home_odds,
-      prediction?.draw_odds,
-      prediction?.away_odds,
-      prediction?.analysis,
-      prediction?.status,
-    ]
+    [targetSlugOrPath, prediction]
   );
 
   const jsonLdNodes = useMemo(

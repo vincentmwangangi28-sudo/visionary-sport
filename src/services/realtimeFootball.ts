@@ -85,7 +85,7 @@ export const LEAGUES_LIST: LeagueDefinition[] = [
 
 export interface RealtimeMatchResult {
   matches: NormalizedMatch[];
-  source: 'api_football' | 'football_data' | 'live_feed' | 'database';
+  source: 'api_football' | 'football_data' | 'live_feed' | 'database' | 'rapidapi_live' | 'rapidapi_cheaper' | 'livescore_rapidapi' | 'bet365_rapidapi' | string;
   liveCount: number;
   lastUpdated: string;
 }
@@ -592,25 +592,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
   const fetchPromises = selectedLeagues
     .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-    .slice(0, 18)
-    .map(async (league) => {
-      return fetchWithCacheAndDeduplication(`espn_upcoming_${league.espnCode}_${y}${m}${d}`, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 8000);
-          const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${rangeParam}`, {
-            signal: controller.signal,
-          });
-          clearTimeout(timeout);
-          if (!res.ok) return fetchEspnLeagueScoreboard(league);
-          const data = await res.json();
-          const events = (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
-          return events.length > 0 ? events : fetchEspnLeagueScoreboard(league);
-        } catch {
-          return fetchEspnLeagueScoreboard(league);
-        }
-      });
-    });
+    .slice(0, 14)
+    .map((league) => fetchEspnLeagueScoreboard(league));
 
   const resultsByLeague = await Promise.all(fetchPromises);
   const rawEvents = resultsByLeague.flat();
@@ -964,33 +947,7 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
       }
     }
 
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-
-    const past = new Date(now.getTime() - 14 * 86400000);
-    const y1 = past.getFullYear();
-    const m1 = String(past.getMonth() + 1).padStart(2, '0');
-    const d1 = String(past.getDate()).padStart(2, '0');
-
-    const pastRange = `${y1}${m1}${d1}-${y}${m}${d}`;
-
-    const fetchPromises = selectedLeagues.slice(0, 12).map(async (league) => {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${pastRange}`, {
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
-      } catch {
-        return [];
-      }
-    });
+    const fetchPromises = selectedLeagues.slice(0, 12).map((league) => fetchEspnLeagueScoreboard(league));
 
     const results = await Promise.all(fetchPromises);
     const rawEvents = results.flat();

@@ -17,38 +17,38 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Pitch Green - Primary brand color (WCAG AA compliant contrast ratio >= 5.2:1 with white) */
-    --primary: 142 76% 28%;
+    /* Pitch Green - Primary brand color (WCAG AA compliant contrast ratio >= 5.8:1 with white and light surfaces) */
+    --primary: 142 76% 25%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 76% 38%;
+    --primary-glow: 142 76% 36%;
 
     /* Victory Gold - Secondary accent */
-    --secondary: 38 92% 50%;
+    --secondary: 38 92% 48%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 5% 34%;
+    --muted: 240 4.8% 95.5%;
+    --muted-foreground: 240 6% 28%;
 
     /* Kenyan Red - Accent color */
-    --accent: 0 84% 60%;
+    --accent: 0 78% 46%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 78% 46%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 142 76% 28%;
+    --border: 240 5.9% 88%;
+    --input: 240 5.9% 88%;
+    --ring: 142 76% 25%;
 
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-victory: linear-gradient(135deg, hsl(142 76% 28%), hsl(142 76% 38%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 28%), hsl(38 92% 50%));
-    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 28% / 0.1), hsl(142 76% 28% / 0));
+    --gradient-victory: linear-gradient(135deg, hsl(142 76% 25%), hsl(142 76% 36%));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 25%), hsl(38 92% 48%));
+    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 25% / 0.1), hsl(142 76% 25% / 0));
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(142 76% 38% / 0.3);
+    --shadow-glow: 0 0 40px hsl(142 76% 36% / 0.3);
     --shadow-card: 0 10px 30px -10px hsl(240 10% 3.9% / 0.1);
   }
 
@@ -62,15 +62,15 @@ All colors MUST be HSL.
     --popover: 240 6% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 142 76% 28%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 76% 38%;
+    --primary: 142 70% 45%;
+    --primary-foreground: 240 10% 3.9%;
+    --primary-glow: 142 70% 52%;
 
     --secondary: 38 92% 50%;
     --secondary-foreground: 0 0% 0%;
 
     --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted-foreground: 240 5% 72%;
 
     --accent: 0 84% 60%;
     --accent-foreground: 0 0% 100%;
@@ -78,9 +78,9 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142 76% 28%;
+    --border: 240 3.7% 18%;
+    --input: 240 3.7% 18%;
+    --ring: 142 70% 45%;
 
     /* Dark mode gradients */
     --gradient-victory: linear-gradient(135deg, hsl(142 76% 28%), hsl(142 76% 38%));

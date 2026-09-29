@@ -448,8 +448,8 @@ export default function MatchPredictor() {
                     confidence={result.confidence_score ?? 65}
                     variant="card"
                     predictionTip={result.predicted_outcome ?? 'Draw'}
-                    homeTeam={homeTeam}
-                    awayTeam={awayTeam}
+                    homeTeam={home}
+                    awayTeam={away}
                     showBreakdownInline={true}
                   />
                 </div>

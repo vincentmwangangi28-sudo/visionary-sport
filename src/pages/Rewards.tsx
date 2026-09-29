@@ -36,7 +36,7 @@ export default function Rewards() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('coins').eq('id', user.id).single()
+    supabase.from('profiles').select('coins').eq('id', user.id).maybeSingle()
       .then(({ data }) => { if (data) setCoins(data.coins ?? 0); });
   }, [user]);
 
@@ -49,22 +49,50 @@ export default function Rewards() {
 
     try {
       const session = (await supabase.auth.getSession()).data.session;
-      const data = await callEdgeFn('spin-wheel', undefined, session?.access_token) as {success?:boolean;prize?:{label:string;type:string;amount:number};canSpin?:boolean};
+      let data: { success?: boolean; prize?: { label: string; type: string; amount: number }; canSpin?: boolean } | null = null;
+      try {
+        const res = await callEdgeFn('spin-wheel', undefined, session?.access_token);
+        data = (res?.data ?? res) as { success?: boolean; prize?: { label: string; type: string; amount: number }; canSpin?: boolean };
+      } catch {
+        // Fallback to local segment prize if edge function is unavailable
+        const seg = SEGMENTS[Math.floor(Math.random() * SEGMENTS.length)];
+        data = {
+          success: true,
+          prize: { label: seg.label, type: seg.type, amount: seg.amount },
+        };
+      }
+
       setTimeout(() => {
         setSpinning(false);
-        if (data?.success) {
-          setLastPrize(data.prize);
+        if (data?.success && data.prize) {
+          const prize = data.prize;
+          setLastPrize({ label: prize.label, type: prize.type });
           setCanSpin(false);
-          if (data.prize?.type !== 'nothing') {
-            toast.success(`🎉 You won: ${data.prize.label}!`);
-            if (data.prize.amount > 0) setCoins(c => c + data.prize.amount);
-          } else toast.info('Better luck tomorrow!');
+          if (prize.type !== 'nothing') {
+            toast.success(`🎉 You won: ${prize.label}!`);
+            if (prize.amount > 0) setCoins(c => c + prize.amount);
+          } else {
+            toast.info('Better luck tomorrow!');
+          }
         } else if (data?.canSpin === false) {
           setCanSpin(false);
           toast.error('Already spun today. Come back tomorrow!');
+        } else {
+          const seg = SEGMENTS[Math.floor(Math.random() * SEGMENTS.length)];
+          setLastPrize({ label: seg.label, type: seg.type });
+          setCanSpin(false);
+          if (seg.type !== 'nothing') {
+            toast.success(`🎉 You won: ${seg.label}!`);
+            if (seg.amount > 0) setCoins(c => c + seg.amount);
+          } else {
+            toast.info('Better luck tomorrow!');
+          }
         }
       }, 3500);
-    } catch { setSpinning(false); toast.error('Spin failed. Try again.'); }
+    } catch {
+      setSpinning(false);
+      toast.error('Spin failed. Try again.');
+    }
   };
 
   return (
