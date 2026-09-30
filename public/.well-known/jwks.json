@@ -1,0 +1,20 @@
+{
+  "keys": [
+    {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "kid": "predictpro-agent-ed25519-2026",
+      "use": "sig",
+      "alg": "EdDSA",
+      "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+    },
+    {
+      "kty": "RSA",
+      "kid": "predictpro-oauth-rs256-2026",
+      "use": "sig",
+      "alg": "RS256",
+      "n": "u1SU1LfVLPHCozMxH2Mo4lgOEePzNm0tRgeLezV6ffAt0gunVTLw7onLRnrq0pIzW7yWR7Gs5h7k3U0l4gJ6fA8b9c2d1e0f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d",
+      "e": "AQAB"
+    }
+  ]
+}

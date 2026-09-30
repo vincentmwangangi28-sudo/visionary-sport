@@ -1,17 +1,14 @@
 // Vercel Edge Middleware
-// 1. Injects pp_country cookie for geo-based pricing on first paint (existing)
-// 2. Injects per-route canonical Link header so Google indexes each page
-//    individually instead of treating every URL as a duplicate of /
-// Docs: https://vercel.com/docs/functions/edge-middleware
+// 1. Serves RFC 8288 / RFC 9727 Link headers for agent discovery on all HTML/Markdown responses
+// 2. Implements Markdown for Agents content negotiation (Accept: text/markdown)
+// 3. Ensures extensionless /.well-known/* discovery endpoints and /mcp return proper Content-Type
 import { next } from '@vercel/edge';
+import { buildLinkHeader, buildMarkdownForRoute, handleMcpJsonRpc } from './src/server/agentDiscovery';
 
 export const config = {
-  matcher: ['/((?!_vercel|api|.*\\.[\\w]+$).*)'],
+  matcher: ['/((?!_vercel|assets|.*\\.(?:js|css|png|jpg|jpeg|webp|svg|ico|woff2?)$).*)'],
 };
 
-// Canonical URL for every known route.
-// For unknown routes (blog/:slug, etc.) the fallback uses the request path
-// itself — always better than the old static index.html pointing everything at /.
 const CANONICAL: Record<string, string> = {
   '/':                             'https://predictpro.guru/',
   '/premier-league-predictions':   'https://predictpro.guru/premier-league-predictions',
@@ -38,13 +35,13 @@ const CANONICAL: Record<string, string> = {
   '/sitemap':                      'https://predictpro.guru/sitemap',
 };
 
-export default function middleware(request: Request) {
+export default async function middleware(request: Request) {
   const url     = new URL(request.url);
-  const path    = url.pathname.replace(/\/$/, '') || '/';
+  const rawPath = url.pathname;
+  const path    = rawPath.replace(/\/$/, '') || '/';
   const country = request.headers.get('x-vercel-ip-country') || 'US';
   const proto   = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
 
-  // Enforce HTTPS and single canonical host (predictpro.guru) for Yandex & Google
   if (
     (url.hostname === 'predictpro.guru' && proto === 'http') ||
     url.hostname === 'www.predictpro.guru'
@@ -53,23 +50,102 @@ export default function middleware(request: Request) {
     return Response.redirect(targetUrl, 301);
   }
 
+  // Health & Status Endpoint for RFC 9727 API Catalog
+  if (path === '/api/health' || path === '/api/status') {
+    return new Response(
+      JSON.stringify({
+        status: 'ok',
+        service: 'PredictPro.guru Quantitative Football Analytics',
+        version: '2.4.0',
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, max-age=60',
+        },
+      }
+    );
+  }
+
+  // MCP Streamable HTTP Endpoint (/mcp) & A2A JSON-RPC Endpoint (/api/a2a)
+  if (path === '/mcp' || path === '/api/a2a') {
+    let bodyObj: any = {};
+    if (request.method === 'POST') {
+      try {
+        bodyObj = await request.json();
+      } catch {
+        bodyObj = {};
+      }
+    }
+    return new Response(JSON.stringify(handleMcpJsonRpc(bodyObj)), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+
+  // Pass through static discovery files in /.well-known/*, /auth.md, /openapi.json, /llms*.txt
+  if (
+    rawPath.startsWith('/.well-known/') ||
+    rawPath === '/auth.md' ||
+    rawPath === '/openapi.json' ||
+    rawPath === '/llms.txt' ||
+    rawPath === '/llms-full.txt'
+  ) {
+    const res = next();
+    res.headers.set('Access-Control-Allow-Origin', '*');
+    if (rawPath === '/.well-known/api-catalog') {
+      res.headers.set('Content-Type', 'application/linkset+json; charset=utf-8');
+    } else if (rawPath === '/auth.md' || rawPath.endsWith('.md')) {
+      res.headers.set('Content-Type', 'text/markdown; charset=utf-8');
+    } else if (rawPath.endsWith('.txt')) {
+      res.headers.set('Content-Type', 'text/plain; charset=utf-8');
+    } else if (!rawPath.endsWith('.zone')) {
+      res.headers.set('Content-Type', 'application/json; charset=utf-8');
+    }
+    return res;
+  }
+
+  const canonical = CANONICAL[path] ?? `https://predictpro.guru${path}`;
+  const linkHeader = buildLinkHeader(canonical);
+
+  // Markdown for Agents content negotiation (Accept: text/markdown)
+  const accept = (request.headers.get('accept') || '').toLowerCase();
+  if (accept.includes('text/markdown') && !rawPath.startsWith('/api/')) {
+    const { markdown, tokens } = buildMarkdownForRoute(path);
+    return new Response(markdown, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/markdown; charset=utf-8',
+        'Vary': 'Accept',
+        'X-Markdown-Tokens': String(tokens),
+        'Content-Signal': 'ai-train=yes, search=yes, ai-input=yes',
+        'Link': linkHeader,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=300',
+      },
+    });
+  }
+
   const response = next();
 
-  // Geo cookie — used by PaystackCheckoutButton for regional pricing
   response.headers.append(
     'Set-Cookie',
     `pp_country=${country}; Path=/; Max-Age=86400; SameSite=Lax`,
   );
 
-  // Enforce HSTS on all edge responses
   response.headers.set(
     'Strict-Transport-Security',
     'max-age=63072000; includeSubDomains; preload',
   );
-
-  // Canonical Link header — Google and Yandex treat this identically to <link rel="canonical">.
-  const canonical = CANONICAL[path] ?? `https://predictpro.guru${path}`;
-  response.headers.set('Link', `<${canonical}>; rel="canonical"`);
+  response.headers.set('Vary', 'Accept');
+  response.headers.set('Content-Signal', 'ai-train=yes, search=yes, ai-input=yes');
+  response.headers.set('Link', linkHeader);
 
   return response;
 }

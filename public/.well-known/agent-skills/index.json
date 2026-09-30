@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "football-predictions",
+      "type": "skill-md",
+      "description": "Retrieve daily AI football predictions, Bivariate Poisson scoreline probabilities, Expected Goals (xG) differentials, and 1X2 Banker picks across 40+ global leagues.",
+      "url": "/.well-known/agent-skills/football-predictions/SKILL.md",
+      "digest": "sha256:d5e99914822732fdcaf1a46851727af8d7e146c793b5cc6b81dd9cf1044ed229"
+    },
+    {
+      "name": "jackpot-permutations",
+      "type": "skill-md",
+      "description": "Generate 17-game SportPesa Mega Jackpot, 15-game Betika Midweek Jackpot, and 20-game Mozzart Super Grand Jackpot Banker locks and Double Chance (2^N) permutation slips.",
+      "url": "/.well-known/agent-skills/jackpot-permutations/SKILL.md",
+      "digest": "sha256:a367f2abe8699b70c87456ad67d18492f247fad6708351a14247246c235e00ce"
+    },
+    {
+      "name": "value-bet-scanner",
+      "type": "skill-md",
+      "description": "Identify positive Expected Value (+EV) football wagers and sharp dropping odds steam where AI Poisson probabilities exceed bookmaker implied probabilities.",
+      "url": "/.well-known/agent-skills/value-bet-scanner/SKILL.md",
+      "digest": "sha256:63bb5a6e9e3abc94752289a09ae3f98b61b0f7ea30235ee28f153ab26b7396cf"
+    },
+    {
+      "name": "markdown-negotiation",
+      "type": "skill-md",
+      "description": "Request clean, token-efficient Markdown representations of any PredictPro.guru page using HTTP Accept: text/markdown content negotiation.",
+      "url": "/.well-known/agent-skills/markdown-negotiation/SKILL.md",
+      "digest": "sha256:918e1401b115aa8304eae92e7f0f1a3a1eb81f60599f3ad017c790fbeec1d3bf"
+    }
+  ]
+}

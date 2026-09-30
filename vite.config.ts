@@ -51,6 +51,58 @@ function cronTasksPlugin(): Plugin {
           "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;"
         );
         const url = req.url?.split("?")[0] || "";
+        const { buildLinkHeader, buildMarkdownForRoute, handleMcpJsonRpc } = await import("./src/server/agentDiscovery.ts");
+
+        if (url === "/api/health" || url === "/api/status") {
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.statusCode = 200;
+          res.end(JSON.stringify({ status: "ok", service: "PredictPro.guru Quantitative Football Analytics", version: "2.4.0" }));
+          return;
+        }
+
+        if (url === "/mcp" || url === "/api/a2a") {
+          let body = "";
+          req.on("data", (c: any) => { body += c; });
+          req.on("end", () => {
+            let parsed = {};
+            try { parsed = JSON.parse(body || "{}"); } catch {}
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(handleMcpJsonRpc(parsed)));
+          });
+          return;
+        }
+
+        if (url === "/.well-known/api-catalog") {
+          res.setHeader("Content-Type", "application/linkset+json; charset=utf-8");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+        } else if (url.startsWith("/.well-known/") && !url.endsWith(".md") && !url.endsWith(".zone")) {
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+        } else if (url === "/auth.md" || url.endsWith("/SKILL.md")) {
+          res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+        }
+
+        const canonicalPath = url === "/" ? "https://predictpro.guru/" : `https://predictpro.guru${url}`;
+        const linkHeader = buildLinkHeader(canonicalPath);
+        res.setHeader("Link", linkHeader);
+        res.setHeader("Vary", "Accept");
+        res.setHeader("Content-Signal", "ai-train=yes, search=yes, ai-input=yes");
+
+        const accept = String(req.headers["accept"] || "").toLowerCase();
+        if (accept.includes("text/markdown") && !url.startsWith("/api/") && !url.startsWith("/src/") && !url.startsWith("/@")) {
+          const { markdown, tokens } = buildMarkdownForRoute(url || "/");
+          res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+          res.setHeader("X-Markdown-Tokens", String(tokens));
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.statusCode = 200;
+          res.end(markdown);
+          return;
+        }
+
         if (url === "/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt") {
           res.setHeader("Content-Type", "text/plain; charset=utf-8");
           res.setHeader("Access-Control-Allow-Origin", "*");

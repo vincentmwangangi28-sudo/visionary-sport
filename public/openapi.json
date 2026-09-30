@@ -1,0 +1,90 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PredictPro.guru Quantitative Football Analytics API",
+    "version": "2.4.0",
+    "description": "Enterprise AI football prediction engine delivering daily 1X2 probabilities, Bivariate Poisson exact scorelines, Expected Goals (xG), +EV value bets, and 17-game Mega Jackpot permutations across 40+ global leagues.",
+    "contact": {
+      "name": "PredictPro.guru API Support",
+      "url": "https://predictpro.guru/about"
+    }
+  },
+  "x-service-info": {
+    "categories": [
+      "sports-analytics",
+      "football-predictions",
+      "quantitative-modeling"
+    ],
+    "documentation": "https://predictpro.guru/llms-full.txt",
+    "mcpEndpoint": "https://predictpro.guru/mcp"
+  },
+  "servers": [
+    {
+      "url": "https://predictpro.guru",
+      "description": "Production Edge Server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "getHealthStatus",
+        "summary": "Service health and telemetry status",
+        "responses": {
+          "200": {
+            "description": "Service is operational"
+          }
+        }
+      }
+    },
+    "/api/predictions": {
+      "get": {
+        "operationId": "getDailyPredictions",
+        "summary": "Retrieve today's AI football predictions, 1X2 probabilities, and Expected Goals (xG)",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of verified football predictions"
+          }
+        }
+      }
+    },
+    "/api/jackpots": {
+      "get": {
+        "operationId": "getLiveJackpotPools",
+        "summary": "Retrieve live 17-game SportPesa Mega Jackpot and Betika Midweek Jackpot pools and Banker locks",
+        "x-payment-info": {
+          "intent": "charge",
+          "method": "card",
+          "amount": "0.00",
+          "currency": "USD",
+          "description": "Free public access for standard 1X2 and Double Chance jackpot pool predictions"
+        },
+        "responses": {
+          "200": {
+            "description": "Active jackpot pools and Poisson probabilities"
+          }
+        }
+      }
+    },
+    "/mcp": {
+      "post": {
+        "operationId": "invokeMcpStreamableHttp",
+        "summary": "Model Context Protocol (MCP) JSON-RPC 2.0 Streamable HTTP endpoint",
+        "responses": {
+          "200": {
+            "description": "MCP JSON-RPC 2.0 response"
+          }
+        }
+      }
+    }
+  }
+}

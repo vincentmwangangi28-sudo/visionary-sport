@@ -1,0 +1,55 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "PredictPro.guru Quantitative Football Analytics",
+    "identifier": "did:web:predictpro.guru"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:predictpro.guru:server:football-mcp",
+      "displayName": "PredictPro AI Football Analytics MCP Server",
+      "description": "Model Context Protocol server providing daily football predictions, Bivariate Poisson scoreline probabilities, Expected Goals (xG), and 17-game Mega Jackpot combinations.",
+      "type": "application/mcp-server-card+json",
+      "url": "https://predictpro.guru/.well-known/mcp/server-card.json",
+      "representativeQueries": [
+        "what are today's highest confidence Premier League predictions",
+        "generate a 17-game SportPesa Mega Jackpot slip with double chance hedges",
+        "find positive expected value football bets for tonight's Champions League matches"
+      ]
+    },
+    {
+      "identifier": "urn:air:predictpro.guru:agent:quantitative-football",
+      "displayName": "PredictPro Quantitative Football A2A Agent",
+      "description": "Agent-to-Agent (A2A) autonomous sports analytics agent for match simulations, H2H comparisons, and +EV odds analysis.",
+      "type": "application/a2a-agent-card+json",
+      "url": "https://predictpro.guru/.well-known/agent-card.json",
+      "representativeQueries": [
+        "simulate Arsenal vs Bayern Munich using bivariate Poisson expected goals",
+        "compare head-to-head form and xG differential for Real Madrid vs Barcelona",
+        "which football matches have sharp dropping odds today"
+      ]
+    },
+    {
+      "identifier": "urn:air:predictpro.guru:skills:agent-skills-index",
+      "displayName": "PredictPro Agent Skills Discovery Index",
+      "description": "Agent Skills Discovery v0.2.0 manifest covering football predictions, jackpot permutations, value bet scanning, and markdown content negotiation.",
+      "type": "application/agentskills-discovery+json",
+      "url": "https://predictpro.guru/.well-known/agent-skills/index.json",
+      "representativeQueries": [
+        "discover available football prediction skills on predictpro.guru",
+        "how to request markdown football predictions for AI agents"
+      ]
+    },
+    {
+      "identifier": "urn:air:predictpro.guru:api:football-openapi",
+      "displayName": "PredictPro REST & Agentic Analytics API",
+      "description": "OpenAPI 3.1 specification for PredictPro football predictions, jackpot pools, and tactical match analysis endpoints.",
+      "type": "application/vnd.oai.openapi+json",
+      "url": "https://predictpro.guru/openapi.json",
+      "representativeQueries": [
+        "query the PredictPro football predictions REST API",
+        "fetch live jackpot fixture pools and 1X2 probabilities via API"
+      ]
+    }
+  ]
+}

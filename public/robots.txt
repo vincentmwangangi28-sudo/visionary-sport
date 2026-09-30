@@ -1,9 +1,18 @@
-# PredictPro Robots.txt — Google, Yandex, Bing & AI Search Directives
+# PredictPro Robots.txt — Google, Yandex, Bing & AI Agent Discovery Directives
 # Canonical HTTPS Mirror: https://predictpro.guru
 # IndexNow Key File: https://predictpro.guru/f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Agentmap: https://predictpro.guru/.well-known/ai-catalog.json
+
 User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 Allow: /
+Allow: /.well-known/
+Allow: /auth.md
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /openapi.json
 Allow: /favicon.ico
 Allow: /favicon.svg
 Allow: /favicon-120x120.png
@@ -16,9 +25,38 @@ Allow: /icon-512.png
 Allow: /sitemap.xml
 Allow: /sitemap-yandex.xml
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
-Disallow: /api/
 Disallow: /_vercel/
 Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&fbclid&gclid&yclid /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 User-agent: Yandex
 Allow: /
@@ -31,7 +69,6 @@ Allow: /favicon-16x16.png
 Allow: /sitemap.xml
 Allow: /sitemap-yandex.xml
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
-Disallow: /api/
 Disallow: /_vercel/
 Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&fbclid&gclid&yclid /
 Host: https://predictpro.guru
@@ -80,6 +117,7 @@ Allow: /
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
 Host: https://predictpro.guru
+Agentmap: https://predictpro.guru/.well-known/ai-catalog.json
 Sitemap: https://predictpro.guru/sitemap.xml
 Sitemap: https://predictpro.guru/sitemap-yandex.xml
 Sitemap: https://www.predictpro.guru/sitemap.xml

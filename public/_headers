@@ -105,6 +105,66 @@
   Access-Control-Allow-Origin: *
   Content-Type: text/html; charset=UTF-8
 
+/llms.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+
+/llms-full.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+
+/auth.md
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+
+/openapi.json
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/api-catalog
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/linkset+json; charset=utf-8
+
+/.well-known/openid-configuration
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/oauth-authorization-server
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/oauth-protected-resource
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/http-message-signatures-directory
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/ucp
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/*.json
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/agent-skills/*/SKILL.md
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
@@ -115,3 +175,6 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;
   X-Robots-Tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1
+  Vary: Accept
+  Content-Signal: ai-train=yes, search=yes, ai-input=yes
+  Link: <https://predictpro.guru/>; rel="canonical", </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json", </openapi.json>; rel="service-desc"; type="application/json", </llms-full.txt>; rel="service-doc"; type="text/plain", </auth.md>; rel="service-doc"; type="text/markdown", </.well-known/agent-skills/index.json>; rel="describedby"; type="application/json", </.well-known/agent-card.json>; rel="describedby"; type="application/json", </.well-known/ai-catalog.json>; rel="ai-catalog"; type="application/json"

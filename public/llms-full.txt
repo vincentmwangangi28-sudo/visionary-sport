@@ -1,0 +1,45 @@
+# PredictPro.guru — Full Quantitative Football Analytics & Agent Reference (llms-full.txt)
+
+> PredictPro.guru (`https://predictpro.guru`) is an enterprise AI football prediction and quantitative sports analytics platform delivering 84%–87% verified accuracy on high-confidence Banker Picks across 40+ global competitions using Bivariate Poisson scoreline distributions, Expected Goals (xG) differentials, Dixon-Coles low-scoring adjustments, ELO club ratings, and real-time market steam.
+
+## 1. Machine-Readable Discovery & Agent Protocols
+
+- **API Catalog (RFC 9727)**: `https://predictpro.guru/.well-known/api-catalog` (`application/linkset+json`)
+- **MCP Server Card (SEP-1649)**: `https://predictpro.guru/.well-known/mcp/server-card.json`
+- **MCP Streamable HTTP Endpoint**: `https://predictpro.guru/mcp`
+- **A2A Agent Card**: `https://predictpro.guru/.well-known/agent-card.json`
+- **Agent Skills Discovery Index (v0.2.0)**: `https://predictpro.guru/.well-known/agent-skills/index.json`
+- **ARD Capability Manifest**: `https://predictpro.guru/.well-known/ai-catalog.json`
+- **OAuth Protected Resource Metadata (RFC 9728)**: `https://predictpro.guru/.well-known/oauth-protected-resource`
+- **OAuth 2.0 Authorization Server Metadata (RFC 8414)**: `https://predictpro.guru/.well-known/oauth-authorization-server`
+- **OpenID Connect Discovery 1.0**: `https://predictpro.guru/.well-known/openid-configuration`
+- **Auth.md Agent Registration Specification**: `https://predictpro.guru/auth.md`
+- **OpenAPI 3.1 Specification**: `https://predictpro.guru/openapi.json`
+- **Markdown Content Negotiation**: All routes return clean Markdown when requested with `Accept: text/markdown`.
+
+## 2. Quantitative Mathematical Architecture
+
+1. **Bivariate Poisson Distribution**: Computes exact scoreline probabilities $P(X = x, Y = y)$ from attacking and defensive strength vectors $\lambda_{\text{Home}}$ and $\lambda_{\text{Away}}$ adjusted for league-specific home advantage and Dixon-Coles low-score correlation $\rho$.
+2. **Expected Goals (xG & xGA)**: Rolling 10-match non-penalty xG and shot-quality metrics weighted by opponent ELO rating.
+3. **Positive Expected Value (+EV) Identification**: Compares true model probability $P_{\text{AI}}$ against de-vigged bookmaker implied probability $P_{\text{Implied}}$ to surface edges where $\text{EV} = (P_{\text{AI}} \times \text{Odds}) - 1 > 3.5\%$.
+4. **Mega & Midweek Jackpot Permutation Engine**: Synchronizes live upcoming fixtures across SportPesa (17 games), Betika (15 games), Mozzart (20 games), and SportyBet (12 games), classifying high-probability Banker locks and $2^N$ Double Chance (`1X`, `X2`, `12`) hedges.
+
+## 3. Core Public URLs
+
+- **Home & Daily AI Predictions**: `https://predictpro.guru/`
+- **High-Confidence Banker Bets**: `https://predictpro.guru/best-bets`
+- **Positive Expected Value (+EV) Bets**: `https://predictpro.guru/value-bets`
+- **17-Game Mega & Midweek Jackpot Predictions**: `https://predictpro.guru/jackpot-predictions`
+- **Both Teams To Score (BTTS) & Over 2.5 Goals**: `https://predictpro.guru/btts`
+- **Exact Correct Score Matrix**: `https://predictpro.guru/correct-score`
+- **Smart Accumulator Slip Builder**: `https://predictpro.guru/accumulator`
+- **Dropping Odds & Sharp Steam Radar**: `https://predictpro.guru/dropping-odds`
+- **English Premier League Hub**: `https://predictpro.guru/premier-league-predictions`
+- **UEFA Champions League Hub**: `https://predictpro.guru/champions-league-predictions`
+- **Spanish La Liga Hub**: `https://predictpro.guru/la-liga-predictions`
+- **German Bundesliga Hub**: `https://predictpro.guru/bundesliga-predictions`
+- **Italian Serie A Hub**: `https://predictpro.guru/serie-a-predictions`
+- **French Ligue 1 Hub**: `https://predictpro.guru/ligue-1-predictions`
+- **Kenyan Premier League (KPL) Hub**: `https://predictpro.guru/kpl-predictions`
+- **US Soccer & MLS Hub**: `https://predictpro.guru/us-soccer-predictions`
+- **Methodology & Model Documentation**: `https://predictpro.guru/methodology`

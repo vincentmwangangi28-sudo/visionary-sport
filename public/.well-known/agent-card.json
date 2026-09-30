@@ -1,0 +1,118 @@
+{
+  "name": "PredictPro Quantitative Football Agent",
+  "version": "2.4.0",
+  "description": "Autonomous quantitative football analytics agent delivering Bivariate Poisson scoreline matrices, Expected Goals (xG) differentials, +EV value bets, and 17-game Mega Jackpot combinations across 40+ global competitions.",
+  "url": "https://predictpro.guru/api/a2a",
+  "provider": {
+    "organization": "PredictPro.guru",
+    "url": "https://predictpro.guru"
+  },
+  "documentationUrl": "https://predictpro.guru/llms-full.txt",
+  "supportedInterfaces": [
+    {
+      "url": "https://predictpro.guru/api/a2a",
+      "transport": "JSONRPC",
+      "protocol": "a2a",
+      "protocolVersion": "0.2.1"
+    },
+    {
+      "url": "https://predictpro.guru/mcp",
+      "transport": "HTTP",
+      "protocol": "mcp",
+      "protocolVersion": "2025-03-26"
+    }
+  ],
+  "defaultInputModes": [
+    "text/plain",
+    "application/json"
+  ],
+  "defaultOutputModes": [
+    "text/markdown",
+    "application/json"
+  ],
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "authentication": {
+    "schemes": [
+      "Bearer",
+      "OAuth2"
+    ],
+    "credentials": "https://predictpro.guru/.well-known/oauth-protected-resource"
+  },
+  "skills": [
+    {
+      "id": "football-match-prediction",
+      "name": "Football Match Prediction & xG Modeling",
+      "description": "Calculates 1X2 win probabilities, Bivariate Poisson exact score distributions, BTTS, and Over/Under 2.5 Goals probabilities for global football fixtures.",
+      "tags": [
+        "football",
+        "soccer",
+        "predictions",
+        "xg",
+        "poisson"
+      ],
+      "examples": [
+        "Predict Arsenal vs Real Madrid using Expected Goals and Poisson modeling",
+        "What are today's highest-confidence Banker Bets in the Premier League?"
+      ],
+      "inputModes": [
+        "text/plain",
+        "application/json"
+      ],
+      "outputModes": [
+        "text/markdown",
+        "application/json"
+      ]
+    },
+    {
+      "id": "jackpot-permutation-optimizer",
+      "name": "Mega & Midweek Jackpot Permutation Optimizer",
+      "description": "Generates Banker locks and Double Chance (1X, X2, 12) permutation matrices for SportPesa 17-game, Betika 15-game, Mozzart 20-game, and SportyBet 12-game jackpots.",
+      "tags": [
+        "jackpot",
+        "sportpesa",
+        "betika",
+        "permutations",
+        "double-chance"
+      ],
+      "examples": [
+        "Build a 17-game SportPesa Mega Jackpot slip with 3 Double Chance hedges",
+        "Which fixtures in this week's Betika Midweek Jackpot have the highest draw risk?"
+      ],
+      "inputModes": [
+        "text/plain",
+        "application/json"
+      ],
+      "outputModes": [
+        "text/markdown",
+        "application/json"
+      ]
+    },
+    {
+      "id": "expected-value-odds-scanner",
+      "name": "Positive Expected Value (+EV) & Dropping Odds Scanner",
+      "description": "Identifies mispriced bookmaker odds where AI model probability exceeds implied market probability, including Kelly Criterion staking.",
+      "tags": [
+        "value-bets",
+        "dropping-odds",
+        "expected-value",
+        "kelly-criterion"
+      ],
+      "examples": [
+        "Show today's +EV football bets with at least 5% edge",
+        "Which Champions League matches have sharp dropping odds steam today?"
+      ],
+      "inputModes": [
+        "text/plain",
+        "application/json"
+      ],
+      "outputModes": [
+        "text/markdown",
+        "application/json"
+      ]
+    }
+  ]
+}

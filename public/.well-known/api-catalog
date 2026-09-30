@@ -1,0 +1,50 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://predictpro.guru/api/predictions",
+      "service-desc": [
+        {
+          "href": "https://predictpro.guru/openapi.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://predictpro.guru/llms-full.txt",
+          "type": "text/plain"
+        },
+        {
+          "href": "https://predictpro.guru/methodology",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://predictpro.guru/api/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://predictpro.guru/mcp",
+      "service-desc": [
+        {
+          "href": "https://predictpro.guru/.well-known/mcp/server-card.json",
+          "type": "application/json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://predictpro.guru/llms-full.txt",
+          "type": "text/plain"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://predictpro.guru/api/health",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}

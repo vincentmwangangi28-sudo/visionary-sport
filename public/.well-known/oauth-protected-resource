@@ -1,0 +1,25 @@
+{
+  "resource": "https://predictpro.guru",
+  "authorization_servers": [
+    "https://predictpro.guru"
+  ],
+  "jwks_uri": "https://predictpro.guru/.well-known/jwks.json",
+  "scopes_supported": [
+    "openid",
+    "profile",
+    "email",
+    "predictions:read",
+    "jackpots:read",
+    "odds:read",
+    "analytics:read",
+    "agent:register"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ],
+  "resource_documentation": "https://predictpro.guru/auth.md",
+  "resource_signing_alg_values_supported": [
+    "RS256",
+    "EdDSA"
+  ]
+}

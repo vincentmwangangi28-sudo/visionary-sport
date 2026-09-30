@@ -1,0 +1,50 @@
+{
+  "serverInfo": {
+    "name": "PredictPro AI Football Analytics MCP Server",
+    "version": "2.4.0"
+  },
+  "description": "Quantitative football prediction engine providing daily 1X2 probabilities, Bivariate Poisson Expected Goals (xG), +EV value bets, 17-game Mega Jackpot permutations, live scores, and H2H analytics across 40+ global leagues.",
+  "url": "https://predictpro.guru/mcp",
+  "endpoint": "https://predictpro.guru/mcp",
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://predictpro.guru/mcp"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true
+  },
+  "tools": [
+    {
+      "name": "get_daily_football_predictions",
+      "description": "Retrieve AI-verified football predictions, 1X2 probabilities, Bivariate Poisson scorelines, and Expected Goals (xG) for today's fixtures."
+    },
+    {
+      "name": "get_mega_jackpot_analysis",
+      "description": "Retrieve 17-game SportPesa Mega Jackpot and Betika Midweek Jackpot Banker picks and Double Chance permutation hedges."
+    },
+    {
+      "name": "calculate_value_bets",
+      "description": "Find positive Expected Value (+EV) football bets where AI Poisson model probability exceeds bookmaker implied odds."
+    }
+  ],
+  "resources": [
+    {
+      "uri": "predictpro://predictions/today",
+      "name": "Today's AI Football Predictions",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "predictpro://jackpots/active",
+      "name": "Active Mega & Midweek Jackpot Pools",
+      "mimeType": "application/json"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "analyze_match_value",
+      "description": "Generate a Bivariate Poisson and Expected Goals (xG) tactical breakdown for a specific football fixture."
+    }
+  ]
+}

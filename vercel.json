@@ -53,7 +53,30 @@
       "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
     },
     {
-      "source": "/((?!api/|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.txt|.*\\.html|.*\\.png|.*\\.svg|.*\\.ico).*)",
+      "source": "/mcp",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/api/a2a",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/api/status",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/((?!api/|mcp|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt).*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "accept",
+          "value": ".*text/markdown.*"
+        }
+      ],
+      "destination": "/api/markdown?path=/$1"
+    },
+    {
+      "source": "/((?!api/|mcp|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.json|.*\\.md|.*\\.txt|.*\\.html|.*\\.png|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],
@@ -64,6 +87,71 @@
     }
   ],
   "headers": [
+    {
+      "source": "/.well-known/api-catalog",
+      "headers": [
+        { "key": "Content-Type", "value": "application/linkset+json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/.well-known/(openid-configuration|oauth-authorization-server|oauth-protected-resource|http-message-signatures-directory|ucp)",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/.well-known/(.*\\.json)",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/(auth\\.md|\\.well-known/agent-skills/.*/SKILL\\.md)",
+      "headers": [
+        { "key": "Content-Type", "value": "text/markdown; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/openapi.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/(llms\\.txt|llms-full\\.txt)",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://predictpro.guru/>; rel=\"canonical\", </.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/mcp/server-card.json>; rel=\"service-desc\"; type=\"application/json\", </openapi.json>; rel=\"service-desc\"; type=\"application/json\", </llms-full.txt>; rel=\"service-doc\"; type=\"text/plain\", </auth.md>; rel=\"service-doc\"; type=\"text/markdown\", </.well-known/agent-skills/index.json>; rel=\"describedby\"; type=\"application/json\", </.well-known/agent-card.json>; rel=\"describedby\"; type=\"application/json\", </.well-known/ai-catalog.json>; rel=\"ai-catalog\"; type=\"application/json\""
+        },
+        {
+          "key": "Vary",
+          "value": "Accept"
+        },
+        {
+          "key": "Content-Signal",
+          "value": "ai-train=yes, search=yes, ai-input=yes"
+        }
+      ]
+    },
     {
       "source": "/(sitemap\\.xml|sitemap-yandex\\.xml)",
       "headers": [
