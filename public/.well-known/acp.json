@@ -10,16 +10,10 @@
   ],
   "capabilities": {
     "services": [
-      {
-        "id": "football-predictions",
-        "name": "Daily AI Football Predictions & xG Feed",
-        "endpoint": "https://predictpro.guru/api/predictions"
-      },
-      {
-        "id": "jackpot-permutations",
-        "name": "Mega & Midweek Jackpot Permutation Engine",
-        "endpoint": "https://predictpro.guru/api/jackpots"
-      }
+      "catalog",
+      "checkout",
+      "orders",
+      "subscriptions"
     ]
   }
 }

@@ -1,10 +1,14 @@
 {
+  "ucp": "1.0",
   "protocol_version": "1.0",
+  "version": "1.0",
   "services": [
     {
       "id": "predictpro-football-analytics",
       "name": "PredictPro Quantitative Football Predictions",
-      "description": "AI football predictions, Expected Goals (xG) modeling, and 17-game Mega Jackpot permutation analysis."
+      "description": "AI football predictions, Expected Goals (xG) modeling, and 17-game Mega Jackpot permutation analysis.",
+      "type": "content",
+      "endpoint": "https://predictpro.guru/api/predictions"
     }
   ],
   "capabilities": [
