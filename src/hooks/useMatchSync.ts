@@ -111,6 +111,15 @@ export const SUGGESTED_TRIGGERS: SyncTriggerConfig[] = [
     enabled: false,
     frequency: 'Every 3 hours',
   },
+  {
+    id: 'jackpot_direct_sync',
+    name: 'SportPesa & Betika Direct Jackpot Pool Sync',
+    category: 'Autonomous',
+    description: 'Fetches official 17-game SportPesa Mega, 13-game Midweek, and 15-game Betika jackpot matches & odds.',
+    recommendedSchedule: '*/30 * * * *',
+    enabled: true,
+    frequency: 'Every 30 minutes + Rollover Windows',
+  },
 ];
 
 /**
@@ -249,9 +258,15 @@ export function useMatchSync() {
     let updatedCount = 0;
 
     try {
-      // 1. Primary path: trigger the daily predictions cron API endpoint
+      // 1. Primary path: trigger the daily predictions cron API endpoint + direct jackpot cron
       let cronSuccess = false;
       try {
+        fetch('/api/jackpot-cron', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trigger: `useMatchSync_${trigger}`, timestamp: new Date().toISOString() }),
+        }).catch(() => {});
+
         const cronRes = await fetch('/api/daily-predictions-cron', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -300,6 +315,16 @@ export function useMatchSync() {
           sourceUsed = 'realtime_feed';
           summaryMessage = `Synced ${updatedCount} today fixtures from live feeds`;
         }
+        // Auto-dispatch unseen high-confidence (>= 82%) AI predictions to Telegram channel
+        import('@/services/telegramTasksService')
+          .then(({ sendBatchHighConfidenceAlerts }) => {
+            const todayKey = `predictpro_tg_auto_sync_${todayDate}`;
+            if (!localStorage.getItem(todayKey)) {
+              localStorage.setItem(todayKey, '1');
+              sendBatchHighConfidenceAlerts(freshFixtures, 82, 2).catch(() => {});
+            }
+          })
+          .catch(() => {});
       } else {
         const saved = getSavedPredictionsList();
         updatedCount = saved.length;

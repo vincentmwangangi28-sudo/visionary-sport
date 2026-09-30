@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { evaluateLiveMomentumWithGemini, GeminiLiveMomentumResult } from '@/services/geminiTasksService';
+import { useTelegramAlerts } from '@/hooks/useTelegramAlerts';
 
 export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
@@ -48,6 +49,45 @@ export default function LiveScores() {
   const [inplayResult, setInplayResult] = useState<GeminiLiveMomentumResult | null>(null);
   const [loadingInplay, setLoadingInplay] = useState(false);
 
+  const {
+    autoAlertsEnabled,
+    setAutoAlertsEnabled,
+    isSending: sendingTelegramAlert,
+    sendLiveScoreAlert,
+    autoDispatchLiveScoreChanges,
+    chatId: telegramChatId,
+  } = useTelegramAlerts({ autoCheckOnMount: true });
+
+  const handleSendInPlayTelegramAlert = async () => {
+    if (!inplayMatch) return;
+    const scoreStr =
+      inplayMatch.home_score != null && inplayMatch.away_score != null
+        ? `${inplayMatch.home_score} - ${inplayMatch.away_score}`
+        : '0 - 0';
+    const res = await sendLiveScoreAlert({
+      id: String(inplayMatch.id),
+      homeTeam: inplayMatch.home_team,
+      awayTeam: inplayMatch.away_team,
+      league: inplayMatch.league,
+      homeScore: inplayMatch.home_score ?? 0,
+      awayScore: inplayMatch.away_score ?? 0,
+      score: scoreStr,
+      minute: inplayMatch.minute || inplayMatch.status || 'LIVE',
+      eventType: 'LIVE SCORE UPDATE',
+      tip: inplayResult ? `${inplayResult.inplay_tip} (${inplayResult.confidence}% Conf)` : inplayMatch.prediction,
+      tacticalPulse: inplayResult?.tactical_pulse,
+    });
+    if (res.success) {
+      toast.success(
+        res.simulated
+          ? `Live score alert formatted for ${telegramChatId} (preview mode)`
+          : `Live score alert sent to ${telegramChatId}!`
+      );
+    } else {
+      toast.error(res.error || 'Failed to send Telegram alert');
+    }
+  };
+
   const handleOpenInPlayPulse = async (match: ApiFootballLiveFixture) => {
     setInplayMatch(match);
     setInplayResult(null);
@@ -71,7 +111,23 @@ export default function LiveScores() {
 
   useEffect(() => {
     setLastSyncTime(new Date());
-  }, [matches]);
+    if (matches && matches.length > 0) {
+      autoDispatchLiveScoreChanges(
+        matches
+          .filter((m) => m.status === 'live' || m.status === 'halftime' || m.status === 'finished')
+          .map((m) => ({
+            id: String(m.id),
+            homeTeam: m.home_team,
+            awayTeam: m.away_team,
+            league: m.league,
+            homeScore: m.home_score ?? 0,
+            awayScore: m.away_score ?? 0,
+            minute: m.minute ?? (m.status === 'halftime' ? 'HT' : m.status === 'finished' ? 'FT' : 'LIVE'),
+            status: m.status === 'finished' ? 'FT' : m.status === 'halftime' ? 'HT' : 'LIVE',
+          }))
+      );
+    }
+  }, [matches, autoDispatchLiveScoreChanges]);
 
   const filteredMatches = useMemo(() => {
     const raw = selectedLeague === 'all'
@@ -269,7 +325,16 @@ export default function LiveScores() {
               Real-time API-Football feed active · Auto-refreshes every 15s · {isLiveFetching ? 'Fetching updates...' : `Synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg border bg-card text-xs">
+              <Send className="h-3.5 w-3.5 text-sky-500" />
+              <span className="text-muted-foreground hidden sm:inline">Telegram Live Alerts:</span>
+              <Switch
+                checked={autoAlertsEnabled}
+                onCheckedChange={setAutoAlertsEnabled}
+                aria-label="Toggle automated Telegram live score alerts"
+              />
+            </div>
             <Link to="/standings">
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
                 <Trophy className="h-4 w-4 text-primary" />
@@ -530,8 +595,18 @@ export default function LiveScores() {
 
                 <div className="flex gap-2">
                   <Button
+                    size="sm"
+                    onClick={handleSendInPlayTelegramAlert}
+                    disabled={sendingTelegramAlert}
+                    className="flex-1 text-xs font-semibold gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    {sendingTelegramAlert ? 'Sending...' : 'Send Alert to Telegram'}
+                  </Button>
+                  <Button
                     variant="outline"
-                    className="w-full text-xs font-semibold"
+                    size="sm"
+                    className="text-xs font-semibold"
                     onClick={() => setInplayMatch(null)}
                   >
                     Close

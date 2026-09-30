@@ -84,6 +84,10 @@
     {
       "path": "/api/indexing-cron",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/jackpot-cron",
+      "schedule": "*/30 * * * *"
     }
   ],
   "headers": [

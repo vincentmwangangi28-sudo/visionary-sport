@@ -61,6 +61,44 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/api/jackpots") {
+          try {
+            const force = Boolean(req.url?.includes("force=true") || req.url?.includes("force=1"));
+            const { handleDirectJackpotFetch } = await import("./src/server/jackpotDirectHandler.ts");
+            const data = await handleDirectJackpotFetch(force);
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: err?.message || "Failed to fetch direct jackpots" }));
+          }
+          return;
+        }
+
+        if (url === "/api/telegram-broadcast") {
+          let body = "";
+          req.on("data", (c: any) => { body += c; });
+          req.on("end", async () => {
+            try {
+              const { handleTelegramRequest } = await import("./src/server/telegramHandler.ts");
+              const parsed = JSON.parse(body || '{"action":"check_bot"}');
+              const result = await handleTelegramRequest(parsed);
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.setHeader("Access-Control-Allow-Origin", "*");
+              res.statusCode = 200;
+              res.end(JSON.stringify(result));
+            } catch (err: any) {
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.statusCode = 500;
+              res.end(JSON.stringify({ success: false, error: err?.message || "Telegram handler failed" }));
+            }
+          });
+          return;
+        }
+
         if (url === "/mcp" || url === "/api/a2a") {
           let body = "";
           req.on("data", (c: any) => { body += c; });

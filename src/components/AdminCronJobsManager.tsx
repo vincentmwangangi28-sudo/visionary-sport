@@ -78,12 +78,12 @@ const CRON_JOBS: CronJobDef[] = [
   },
   {
     id: 'jackpot-engine',
-    name: '17-Game Mega Jackpot Engine',
-    schedule: '0 12 * * 4',
-    scheduleDescription: 'Thursdays at 12:00 UTC',
+    name: 'SportPesa & Betika Direct Jackpot Sync',
+    schedule: '*/30 * * * *',
+    scheduleDescription: 'Every 30 minutes + Rollover Triggers',
     category: 'Predictions',
     endpoint: '/api/jackpot-cron',
-    description: 'Runs Monte Carlo models for SportPesa Mega & Betika pools generating pure bankers and double-chance slips.',
+    description: 'Fetches official SportPesa (Mega 17 & Midweek 13), Betika (15M Midweek & 50M MBW), and Mozzart (20) matches, SMS IDs, and live 1X2 odds.',
     icon: Layers,
   },
   {
