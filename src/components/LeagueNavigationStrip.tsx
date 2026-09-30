@@ -15,10 +15,10 @@ export const LeagueNavigationStrip: React.FC<Props> = ({ className = '', current
 
   return (
     <div className={`w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted-foreground/20 ${className}`}>
-      <div className="flex items-center gap-2 min-w-max p-1.5 bg-muted/30 rounded-xl border border-border/60">
-        <span className="text-[11px] font-bold text-muted-foreground px-2 uppercase tracking-wider hidden sm:inline">
-          Leagues:
-        </span>
+      <nav
+        aria-label="Top Football League Prediction Hubs"
+        className="flex items-center gap-2 min-w-max p-1.5 bg-muted/30 rounded-xl border border-border/60"
+      >
         {LEAGUE_HUBS.map((league) => {
           const isActive = activePath === league.to;
           return (
@@ -32,12 +32,11 @@ export const LeagueNavigationStrip: React.FC<Props> = ({ className = '', current
               }`}
               title={`${league.name} Football Predictions Today`}
             >
-              <span>{league.flag}</span>
-              <span>{league.shortName}</span>
+              {league.flag} {league.shortName}
             </Link>
           );
         })}
-      </div>
+      </nav>
     </div>
   );
 };

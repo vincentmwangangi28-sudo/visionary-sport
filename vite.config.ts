@@ -48,7 +48,7 @@ function cronTasksPlugin(): Plugin {
         res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
         res.setHeader(
           "Content-Security-Policy",
-          "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;"
+          "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: http: wss: ws:; img-src 'self' https: http: data: blob:; media-src 'self' https: http: data: blob:; frame-src 'self' https: http:; frame-ancestors *; object-src 'none'; base-uri 'self';"
         );
         const url = req.url?.split("?")[0] || "";
         const { buildLinkHeader, buildMarkdownForRoute, handleMcpJsonRpc } = await import("./src/server/agentDiscovery.ts");
@@ -199,6 +199,12 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0",
     port: 3000,
     hmr: false,
+    allowedHosts: true,
+  },
+  preview: {
+    host: "0.0.0.0",
+    port: 3000,
+    allowedHosts: true,
   },
   plugins: [react(), geminiTasksPlugin(), cronTasksPlugin()],
   resolve: { 
@@ -208,7 +214,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     chunkSizeWarningLimit: 600,
-    cssCodeSplit: true,
+    cssCodeSplit: false,
     sourcemap: false,
     modulePreload: {
       polyfill: false,
@@ -216,9 +222,9 @@ export default defineConfig(({ mode }) => ({
         deps.filter(
           (d) =>
             !d.includes("vendor-charts") &&
-            !d.includes("standingsData") &&
-            !d.includes("MatchAnalyticsModal") &&
-            !d.includes("AdvancedMarketsTab")
+            !d.includes("vendor-supabase") &&
+            !d.includes("vendor-motion") &&
+            !d.endsWith(".css")
         ),
     },
     rollupOptions: {
@@ -229,22 +235,129 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: "assets/[name]-[hash][extname]",
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
-            if (["react", "react-dom", "react-router-dom"].some(p => id.includes(`/${p}/`))) {
+            if (
+              [
+                "/react/",
+                "/react-dom/",
+                "/react-is/",
+                "/prop-types/",
+                "/scheduler/",
+                "/use-sync-external-store/",
+                "/object-assign/",
+                "/loose-envify/",
+                "/react-router/",
+                "/react-router-dom/",
+                "/@remix-run/",
+                "/@tanstack/",
+                "/react-helmet-async/",
+                "/clsx/",
+                "/tailwind-merge/",
+                "/class-variance-authority/",
+                "/sonner/",
+              ].some((p) => id.includes(p))
+            ) {
               return "vendor-framework";
             }
-            if (id.includes("@supabase")) {
+            if (id.includes("@supabase") || id.includes("/tslib/")) {
               return "vendor-supabase";
             }
-            if (id.includes("recharts") || id.includes("d3-") || id.includes("victory")) {
+            if (
+              id.includes("framer-motion") ||
+              id.includes("motion-dom") ||
+              id.includes("motion-utils")
+            ) {
+              return "vendor-motion";
+            }
+            if (
+              id.includes("recharts") ||
+              id.includes("d3-") ||
+              id.includes("victory-vendor") ||
+              id.includes("react-smooth") ||
+              id.includes("decimal.js-light")
+            ) {
               return "vendor-charts";
             }
-            if (id.includes("@radix-ui") || id.includes("lucide-react") || id.includes("motion") || id.includes("framer-motion")) {
-              return "vendor-ui";
-            }
-            if (id.includes("@tanstack") || id.includes("sonner") || id.includes("date-fns") || id.includes("clsx") || id.includes("tailwind-merge")) {
-              return "vendor-utils";
-            }
-            return "vendor-libs";
+            return undefined;
+          }
+
+          // Consolidate homepage-critical app modules into a single app-core chunk to eliminate the 35-chunk Slow-4G waterfall
+          const HOMEPAGE_CORE_PATTERNS = [
+            "/src/main.tsx",
+            "/src/App.tsx",
+            "/src/pages/Index.tsx",
+            "/src/lib/logger.ts",
+            "/src/lib/utils.ts",
+            "/src/lib/queryClient.ts",
+            "/src/lib/lazyWithRetry.ts",
+            "/src/lib/dateFilterUtils.ts",
+            "/src/utils/breadcrumbHierarchy.ts",
+            "/src/types/prediction.ts",
+            "/src/types/confidence.ts",
+            "/src/data/mockPredictions.ts",
+            "/src/data/leagueHubs.ts",
+            "/src/services/teamLogos.ts",
+            "/src/services/geoRegionService.ts",
+            "/src/services/currencyService.ts",
+            "/src/services/localeDetectionService.ts",
+            "/src/services/i18n.ts",
+            "/src/services/hapticService.ts",
+            "/src/services/offlineSyncService.ts",
+            "/src/services/predictionStorage.ts",
+            "/src/services/matchNotificationService.ts",
+            "/src/services/broadcastService.ts",
+            "/src/hooks/useAuth.tsx",
+            "/src/hooks/useAdmin.ts",
+            "/src/hooks/useSubscription.tsx",
+            "/src/hooks/useUserPreferences.tsx",
+            "/src/hooks/usePinnedFavorites.ts",
+            "/src/hooks/useGeoRegion.ts",
+            "/src/hooks/useCurrency.tsx",
+            "/src/hooks/useUnifiedSearch.tsx",
+            "/src/hooks/useBetSlip.tsx",
+            "/src/hooks/useLocaleDetection.ts",
+            "/src/hooks/useSEOManager.ts",
+            "/src/hooks/useMatchPredictionSEO.ts",
+            "/src/hooks/useWebMCPTools.ts",
+            "/src/hooks/useNetworkStatus.ts",
+            "/src/hooks/usePWAInstall.ts",
+            "/src/hooks/usePredictions.tsx",
+            "/src/hooks/useMatchNotifications.ts",
+            "/src/components/ui/button.tsx",
+            "/src/components/ui/badge.tsx",
+            "/src/components/ui/card.tsx",
+            "/src/components/ui/input.tsx",
+            "/src/components/ui/skeleton.tsx",
+            "/src/components/ui/sheet.tsx",
+            "/src/components/ui/dropdown-menu.tsx",
+            "/src/components/ui/popover.tsx",
+            "/src/components/ErrorBoundary.tsx",
+            "/src/components/ProtectedRoute.tsx",
+            "/src/components/MobileBottomNav.tsx",
+            "/src/components/OfflineBanner.tsx",
+            "/src/components/SiteAnnouncementBanner.tsx",
+            "/src/components/BreadcrumbLayoutSchema.tsx",
+            "/src/components/PredictionCardSkeleton.tsx",
+            "/src/components/Navbar.tsx",
+            "/src/components/UnifiedSearchTrigger.tsx",
+            "/src/components/PWAInstallButton.tsx",
+            "/src/components/Hero.tsx",
+            "/src/components/LeagueNavigationStrip.tsx",
+            "/src/components/AccuracyTracker.tsx",
+            "/src/components/PredictionsDashboard.tsx",
+            "/src/components/GeoRegionSelector.tsx",
+            "/src/components/LeagueDateFilterBar.tsx",
+            "/src/components/PredictionCard.tsx",
+            "/src/components/TeamLogo.tsx",
+            "/src/components/ConfidenceMeter.tsx",
+            "/src/components/NotifyMeButton.tsx",
+            "/src/components/SharePrediction.tsx",
+            "/src/components/SEOAuthorityHub.tsx",
+            "/src/components/Footer.tsx",
+            "/src/components/SEO.tsx",
+            "/src/components/LiveMarketSteamTicker.tsx",
+          ];
+          if (HOMEPAGE_CORE_PATTERNS.some((p) => id.endsWith(p))) {
+            return "app-core";
           }
         },
       },

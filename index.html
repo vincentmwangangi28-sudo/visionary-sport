@@ -146,16 +146,16 @@
     <!-- Permissions Policy: permit unload to prevent browser extension violations (e.g. chext_loader) -->
     <meta http-equiv="Permissions-Policy" content="unload=*" />
 
-    <!-- Performance: Preconnect critical origins used during initial render -->
-    <link rel="preconnect" href="https://site.api.espn.com" crossorigin />
-    <link rel="preconnect" href="https://a.espncdn.com" crossorigin />
-    <link rel="preconnect" href="https://bhgjlhgevyggkhyytulv.supabase.co" crossorigin />
+    <!-- Performance: DNS-prefetch origins (zero unused preconnect warnings) -->
+    <link rel="dns-prefetch" href="https://site.api.espn.com" />
+    <link rel="dns-prefetch" href="https://a.espncdn.com" />
+    <link rel="dns-prefetch" href="https://bhgjlhgevyggkhyytulv.supabase.co" />
     <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
     <link rel="dns-prefetch" href="https://api-football-v1.p.rapidapi.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
 
-    <!-- Third-party scripts (AdSense, Ahrefs, GA4) deferred until user interaction or idle after load -->
+    <!-- Third-party scripts (AdSense, Ahrefs, GA4) deferred strictly until user interaction or 22s idle -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -205,7 +205,7 @@
           window.addEventListener(evt, loadThirdPartyScripts, { once: true, passive: true });
         });
         window.addEventListener('load', function() {
-          setTimeout(loadThirdPartyScripts, 6500);
+          setTimeout(loadThirdPartyScripts, 22000);
         }, { once: true });
       })();
     </script>
@@ -365,14 +365,17 @@
   </head>
   <body>
     <div id="root">
-      <header style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
-        <a href="/"><strong>PredictPro — AI Football Predictions &amp; xG Match Stats</strong></a>
-        <span> · </span>
-        <a href="/responsible-gaming">18+ Responsible Gaming Policy</a>
+      <a href="#main-content" class="fixed left-4 top-4 z-[9999] -translate-y-24 focus:translate-y-0 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-bold text-sm shadow-lg transition-transform">Skip to content</a>
+      <header style="padding: 14px 16px; border-bottom: 1px solid rgba(128,128,128,0.15); font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: space-between;">
+        <a href="/" style="font-weight: 800; font-size: 18px; text-decoration: none; color: inherit;">PredictPro</a>
+        <a href="/responsible-gaming" style="font-size: 12px; font-weight: 700; text-decoration: none; color: inherit;">18+ Responsible Gaming Policy</a>
       </header>
-      <main style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
-        <h1>PredictPro — AI Football Predictions &amp; xG Match Stats</h1>
-        <p>Daily AI football predictions with 87% accuracy. Expected Goals (xG) stats, Bivariate Poisson probabilities, and H2H analytics across 40+ global leagues.</p>
+      <main id="main-content" tabindex="-1" style="padding: 32px 16px; max-width: 896px; margin: 0 auto; text-align: center; font-family: system-ui, -apple-system, sans-serif;">
+        <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 12px 0;">The Algorithmic Edge in Football Markets</h1>
+        <p class="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed" style="font-size: 15px; line-height: 1.6; max-width: 672px; margin: 0 auto 24px auto;">
+          Real-time Expected Goals (xG) modelling across 40+ leagues worldwide. Confidence-scored outcome vectors, H2H regression, form-weighted signals, and value-bet detection before kickoff.
+        </p>
+        <div style="content-visibility: auto; contain-intrinsic-size: 600px; text-align: left; margin-top: 32px;">
         <nav aria-label="Core AI Football Prediction Hubs">
           <h2>Core AI Football Prediction Markets &amp; Tools</h2>
           <ul>
@@ -464,6 +467,7 @@
             <li><a href="/predict/inter-miami-vs-new-york-red-bulls">Inter Miami vs New York Red Bulls MLS AI Prediction</a></li>
           </ul>
         </nav>
+        </div>
       </main>
     </div>
     <noscript>

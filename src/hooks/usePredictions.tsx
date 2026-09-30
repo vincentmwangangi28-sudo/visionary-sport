@@ -1,10 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
-import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { 
   mergeAndPreservePredictions, 
   generateDeterministicPrediction,
@@ -20,7 +18,7 @@ export type { Prediction };
 export { getPrediction, getConfidence };
 
 const PAGE_SIZE = 6;
-const queryKeys = { predictions: { list: (p: number) => ['predictions', 'list', p] } };
+const queryKeys = { predictions: { list: (leagueKey: string) => ['predictions', 'list', leagueKey] } };
 
 // Strictly ignore any match that has already kicked off, is in-play, or has been played/settled
 function excludePlayedMatches(list: Prediction[]): Prediction[] {
@@ -62,28 +60,41 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
   return sortMatchesByDatePriority(sanitized);
 }
 
+const INITIAL_PAYLOAD_CACHE = new Map<string, {
+  allPredictions: Prediction[];
+  total: number;
+  isRealTime: boolean;
+}>();
+
+function getCachedInitialPredictionsPayload(league?: string) {
+  const key = league?.toLowerCase() ?? 'all';
+  const cached = INITIAL_PAYLOAD_CACHE.get(key);
+  if (cached) return cached;
+
+  let seed = getUpdatedDefaultPredictions();
+  if (league && league !== 'All') {
+    const filtered = seed.filter((p) => p.league?.toLowerCase() === league.toLowerCase());
+    if (filtered.length > 0) seed = filtered;
+  }
+  const cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
+  const payload = {
+    allPredictions: cleanList,
+    total: cleanList.length,
+    isRealTime: true,
+  };
+  INITIAL_PAYLOAD_CACHE.set(key, payload);
+  return payload;
+}
+
 export const usePredictions = (page = 1, league?: string) => {
   const { isPremium } = useSubscription();
   const queryClient = useQueryClient();
+  const leagueKey = league?.toLowerCase() ?? 'all';
 
-  const initialDataPayload = (() => {
-    let seed = getUpdatedDefaultPredictions();
-    if (league && league !== 'All') {
-      const filtered = seed.filter((p) => p.league?.toLowerCase() === league.toLowerCase());
-      if (filtered.length > 0) seed = filtered;
-    }
-    const cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
-    const start = (page - 1) * PAGE_SIZE;
-    return {
-      predictions: cleanList.slice(start, start + PAGE_SIZE),
-      allPredictions: cleanList,
-      total: cleanList.length,
-      isRealTime: true,
-    };
-  })();
+  const initialDataPayload = getCachedInitialPredictionsPayload(league);
 
   const query = useQuery({
-    queryKey: [...queryKeys.predictions.list(page), league ?? 'all'],
+    queryKey: queryKeys.predictions.list(leagueKey),
     initialData: initialDataPayload,
     initialDataUpdatedAt: Date.now(),
     queryFn: async () => {
@@ -104,6 +115,7 @@ export const usePredictions = (page = 1, league?: string) => {
 
       // 1. Fetch real-time live upcoming fixtures from RapidAPI & ESPN sports feeds
       try {
+        const { fetchRealtimeUpcomingFixtures } = await import('@/services/realtimeFootball');
         const realtimeFixtures = await fetchRealtimeUpcomingFixtures(league);
         if (realtimeFixtures && realtimeFixtures.length > 0) {
           for (const item of realtimeFixtures) {
@@ -117,6 +129,7 @@ export const usePredictions = (page = 1, league?: string) => {
       // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
       if (combinedPredictions.length < 18) {
         try {
+          const { supabase } = await import('@/integrations/supabase/client');
           const nowIso = new Date().toISOString();
           const twoWeeksIso = new Date(Date.now() + 14 * 86400000).toISOString();
           let q = supabase
@@ -165,10 +178,7 @@ export const usePredictions = (page = 1, league?: string) => {
         sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : combinedPredictions)
       );
 
-      const start = (page - 1) * PAGE_SIZE;
-      const paginated = cleanList.slice(start, start + PAGE_SIZE);
       return {
-        predictions: paginated,
         allPredictions: cleanList,
         total: cleanList.length,
         isRealTime: true,
@@ -180,10 +190,20 @@ export const usePredictions = (page = 1, league?: string) => {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    let triggered = false;
+    const triggerRefetch = () => {
+      if (triggered) return;
+      triggered = true;
       query.refetch();
-    }, 5500);
-    return () => clearTimeout(timer);
+    };
+    const timer = setTimeout(triggerRefetch, 18000);
+    window.addEventListener('scroll', triggerRefetch, { passive: true, once: true });
+    window.addEventListener('pointerdown', triggerRefetch, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', triggerRefetch);
+      window.removeEventListener('pointerdown', triggerRefetch);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [league]);
 
@@ -219,35 +239,56 @@ export const usePredictions = (page = 1, league?: string) => {
     return created;
   };
 
-  // Gate premium predictions for free users
-  const rawList = query.data?.predictions ?? [];
-  const gated = rawList.map(p => {
-    const outcome = getPrediction(p);
-    if (p.is_premium && !isPremium() && !outcome.includes('🔒')) {
-      return {
-        ...p,
-        prediction: '🔒 Premium',
-        predicted_outcome: '🔒 Premium',
-        analysis: 'Upgrade to Pro to unlock this premium mathematical prediction.',
-        reasoning: 'Full probability vector and statistical metrics restricted to Pro subscribers.',
-        confidence: 0,
-        confidence_score: 0,
-        home_odds: undefined,
-        draw_odds: undefined,
-        away_odds: undefined,
-      };
-    }
-    return p;
-  });
+  // Gate premium predictions consistently across allPredictions and paginated slice for free users
+  const hasPremiumAccess = isPremium();
+  const gatedAll = useMemo(() => {
+    const rawAll = query.data?.allPredictions ?? [];
+    if (hasPremiumAccess) return rawAll;
+    return rawAll.map(p => {
+      const outcome = getPrediction(p);
+      if (p.is_premium && !outcome.includes('🔒')) {
+        return {
+          ...p,
+          prediction: '🔒 Premium',
+          predicted_outcome: '🔒 Premium',
+          analysis: 'Upgrade to Pro to unlock this premium mathematical prediction.',
+          reasoning: 'Full probability vector and statistical metrics restricted to Pro subscribers.',
+          confidence: 0,
+          confidence_score: 0,
+          home_odds: undefined,
+          draw_odds: undefined,
+          away_odds: undefined,
+        };
+      }
+      return p;
+    });
+  }, [query.data?.allPredictions, hasPremiumAccess]);
 
-  const total = query.data?.total ?? gated.length;
+  const gatedPage = useMemo(() => {
+    const start = Math.max(0, (page - 1) * PAGE_SIZE);
+    return gatedAll.slice(start, start + PAGE_SIZE);
+  }, [gatedAll, page]);
+
+  const total = gatedAll.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const gatedData = useMemo(() => {
+    if (!query.data) return undefined;
+    return {
+      ...query.data,
+      predictions: gatedPage,
+      allPredictions: gatedAll,
+      total,
+    };
+  }, [query.data, gatedPage, gatedAll, total]);
 
   return {
     ...query,
+    data: gatedData,
     loading: query.isLoading,
     generatePrediction,
-    predictions: gated,
+    predictions: gatedPage,
+    allPredictions: gatedAll,
     totalPages,
     pageSize: PAGE_SIZE,
     isRealTime: true,

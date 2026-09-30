@@ -92,7 +92,7 @@
       "destination": "/api/markdown?path=/$1"
     },
     {
-      "source": "/((?!api/|mcp|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|h2u74xmxq17qqj7na6p7g5w29zwrhhq7\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.json|.*\\.md|.*\\.txt|.*\\.html|.*\\.png|.*\\.svg|.*\\.ico).*)",
+      "source": "/((?!api/|mcp|assets/|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|h2u74xmxq17qqj7na6p7g5w29zwrhhq7\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.js|.*\\.mjs|.*\\.css|.*\\.woff2|.*\\.json|.*\\.md|.*\\.txt|.*\\.html|.*\\.png|.*\\.webp|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],

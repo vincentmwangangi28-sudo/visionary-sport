@@ -141,6 +141,7 @@ export const MobileBottomNav = () => {
               <span className="text-[10px] tracking-tight leading-none">More</span>
             </button>
           </SheetTrigger>
+          {sheetOpen && (
           <SheetContent side="bottom" className="max-h-[85vh] rounded-t-2xl px-4 pb-8 pt-4 overflow-y-auto">
             <SheetHeader className="text-left pb-3 border-b">
               <SheetTitle className="text-base font-bold flex items-center justify-between">
@@ -275,6 +276,7 @@ export const MobileBottomNav = () => {
               )}
             </div>
           </SheetContent>
+          )}
         </Sheet>
       </div>
     </nav>

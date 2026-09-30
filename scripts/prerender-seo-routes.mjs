@@ -284,6 +284,17 @@ function runPrerender() {
   const templateHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
   const sitemapXml = fs.readFileSync(SITEMAP_PATH, 'utf-8');
 
+  // Inline all built CSS files into <head> to eliminate render-blocking stylesheet requests
+  let baseHtml = templateHtml;
+  const cssLinkMatches = [...baseHtml.matchAll(/<link rel="stylesheet"[^>]*href="\/?(assets\/[^"]+\.css)"[^>]*>/g)];
+  for (const match of cssLinkMatches) {
+    const cssFilePath = path.join(DIST_DIR, match[1]);
+    if (fs.existsSync(cssFilePath)) {
+      const cssContent = fs.readFileSync(cssFilePath, 'utf-8');
+      baseHtml = baseHtml.replace(match[0], `<style data-inlined-css="true">${cssContent}</style>`);
+    }
+  }
+
   const locMatches = [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
   let generatedCount = 0;
 
@@ -313,7 +324,7 @@ function runPrerender() {
       `<meta property="og:url" content="${canonicalUrl}" />`,
     ].join('\n    ');
 
-    let routeHtml = templateHtml
+    let routeHtml = baseHtml
       .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapedTitle}</title>`)
       .replace(
         /<meta name="description" content="[^"]*"\s*\/?>/,

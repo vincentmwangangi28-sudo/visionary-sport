@@ -5,7 +5,8 @@ import {
   getSavedPrediction,
   generateDeterministicPrediction,
 } from '@/services/predictionStorage';
-import { BASE_URL } from '@/services/sitemapGenerator';
+
+const BASE_URL = 'https://predictpro.guru';
 
 export interface ResolvedMatchSEOData {
   slug: string;

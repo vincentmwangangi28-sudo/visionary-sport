@@ -89,7 +89,7 @@ Descriptions (Max 90 chars each — Informational & 18+ Compliant):
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between text-foreground">
       <SEO
-        title="Responsible Gaming, 18+ Minor Protection & Analytics Disclaimer | PredictPro"
+        title="Responsible Gaming, 18+ Policy & Analytics Disclaimer | PredictPro"
         description="PredictPro Responsible Gambling Policy, 18+ minor protection standards, international support helplines, and informational sports statistics disclaimer."
         canonical="/responsible-gaming"
         keywords="responsible gambling policy, 18+ age restriction, sports statistics disclaimer, begambleaware, gamcare helpline, predictpro compliance"

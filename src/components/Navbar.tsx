@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { 
@@ -48,10 +48,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { LEAGUE_HUBS } from "@/data/leagueHubs";
-import { CoinBalance } from "./CoinBalance";
-import { NotificationBell } from "./NotificationBell";
 import { UnifiedSearchTrigger } from "./UnifiedSearchTrigger";
 import { PWAInstallButton } from "./PWAInstallButton";
+
+const CoinBalance = lazy(() => import("./CoinBalance").then((m) => ({ default: m.CoinBalance })));
+const NotificationBell = lazy(() => import("./NotificationBell").then((m) => ({ default: m.NotificationBell })));
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -422,13 +423,13 @@ export const Navbar = () => {
             )}
 
             {user ? (
-              <>
+              <Suspense fallback={null}>
                 <CoinBalance />
                 <NotificationBell />
                 <Button variant="outline" size="sm" onClick={signOut} className="gap-1.5 hidden sm:flex">
                   <LogOut className="h-4 w-4" />{t('nav.signout', 'Sign Out')}
                 </Button>
-              </>
+              </Suspense>
             ) : (
               <Link to="/auth"><Button variant="default" size="sm">{t('nav.signin', 'Sign In')}</Button></Link>
             )}
@@ -440,6 +441,7 @@ export const Navbar = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
+              {open && (
               <SheetContent side="right" className="w-80 overflow-y-auto p-4 flex flex-col">
                 <SheetHeader className="text-left pb-2 border-b">
                   <SheetTitle className="text-base font-bold flex items-center gap-2">
@@ -547,6 +549,7 @@ export const Navbar = () => {
                   )}
                 </div>
               </SheetContent>
+              )}
             </Sheet>
           </div>
         </div>

@@ -1,13 +1,13 @@
 import { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { STRATEGY_POSTS } from '@/data/blogData';
-import { BASE_URL } from '@/services/sitemapGenerator';
 import type { Prediction } from '@/types/prediction';
 import {
   resolveMatchPredictionForSEO,
   buildMatchPredictionJsonLdNodes,
   ResolvedMatchSEOData,
 } from '@/hooks/useMatchPredictionSEO';
+
+export const BASE_URL = 'https://predictpro.guru';
 
 export interface SEOBreadcrumbItem {
   name: string;
@@ -475,17 +475,6 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
   const blogRoute = cleanPath.match(/^\/blog\/([^/]+)$/i);
   if (blogRoute) {
     const slug = blogRoute[1];
-    const foundPost = STRATEGY_POSTS.find((p) => p.slug === slug);
-    if (foundPost) {
-      return {
-        title: foundPost.title,
-        description: foundPost.excerpt,
-        keywords: foundPost.keywords || `${foundPost.category.toLowerCase()}, football betting strategy, ai predictions`,
-        canonicalPath: `/blog/${slug}`,
-        type: 'article',
-      };
-    }
-
     const humanized = slug
       .replace(/-/g, ' ')
       .replace(/\b\w/g, (c) => c.toUpperCase());

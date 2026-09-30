@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Zap, TrendingUp, Globe, Users, CheckCircle, ChevronRight } from "lucide-react";
 
 interface LiveStats { predictions: number; accuracy: number; users: number; leagues: number; }
@@ -11,8 +10,12 @@ export const Hero = () => {
   const [stats, setStats] = useState<LiveStats>({ predictions: 500, accuracy: 87, users: 12000, leagues: 40 });
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
+    let triggered = false;
+    const fetchHeroStats = async () => {
+      if (triggered) return;
+      triggered = true;
       try {
+        const { supabase } = await import("@/integrations/supabase/client");
         const [predsRes, profilesRes] = await Promise.all([
           supabase.from('predictions').select('id, result, prediction', { count: 'exact' }).limit(50),
           supabase.from('profiles').select('id', { count: 'exact', head: true }),
@@ -25,8 +28,16 @@ export const Hero = () => {
       } catch {
         // keep default verified stats
       }
-    }, 6000);
-    return () => clearTimeout(timer);
+    };
+
+    const timer = setTimeout(fetchHeroStats, 20000);
+    window.addEventListener('scroll', fetchHeroStats, { passive: true, once: true });
+    window.addEventListener('pointerdown', fetchHeroStats, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', fetchHeroStats);
+      window.removeEventListener('pointerdown', fetchHeroStats);
+    };
   }, []);
 
   return (

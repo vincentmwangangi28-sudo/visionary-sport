@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Subscription {
@@ -26,21 +25,32 @@ export const useSubscription = () => {
 
   useEffect(() => {
     if (!userId) { setSubscription(null); return; }
+    let cancelled = false;
     setLoading(true);
-    supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .gte('expires_at', new Date().toISOString())
-      .order('expires_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()  // NOT .single() — avoids 406 when no subscription exists
+    import('@/integrations/supabase/client')
+      .then(({ supabase }) =>
+        supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .gte('expires_at', new Date().toISOString())
+          .order('expires_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      )
       .then(({ data, error }) => {
+        if (cancelled) return;
         if (error) console.warn('subscription:', error.message);
         setSubscription(data ? { ...data, expiresAt: data.expires_at } : null);
         setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   const isPremium = () => {

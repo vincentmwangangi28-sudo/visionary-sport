@@ -60,7 +60,7 @@ describe('League-Aware Team Logo Caching Service', () => {
     it('resolves Spanish clubs accurately in La Liga (140)', () => {
       const logo = getTeamLogoWithLeague('Real Madrid', 140);
       expect(logo).toBeTruthy();
-      expect(logo).toContain('api-sports.io');
+      expect(logo).toMatch(/espncdn\.com|api-sports\.io/);
     });
 
     it('resolves Kenyan clubs in KPL (276)', () => {
@@ -94,7 +94,7 @@ describe('League-Aware Team Logo Caching Service', () => {
     it('resolves fuzzy matches across known league standings', async () => {
       const logo = await fetchAndCacheTeamLogoByLeague('Dortmund', 78);
       expect(logo).toBeTruthy();
-      expect(logo).toContain('api-sports.io');
+      expect(logo).toMatch(/espncdn\.com|api-sports\.io/);
     });
   });
 

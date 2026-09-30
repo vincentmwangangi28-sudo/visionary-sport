@@ -1,6 +1,4 @@
 import "./App.css";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -11,18 +9,13 @@ import { CurrencyProvider } from "@/hooks/useCurrency";
 import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
-import { useAutoIndexing } from "@/hooks/useAutoIndexing";
 import { useSEOManager } from "@/hooks/useSEOManager";
 import { useWebMCPTools } from "@/hooks/useWebMCPTools";
-import { useGeminiDailyCron } from "@/hooks/useGeminiDailyCron";
-import { useMatchSync } from "@/hooks/useMatchSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { BackToTop } from "@/components/BackToTop";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
-import { SupabaseWalkthroughIntegration } from "@/components/SupabaseWalkthroughIntegration";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
 import { queryClient } from "@/lib/queryClient";
 import React, { Suspense, memo, useState, useEffect, ComponentType, ReactNode } from "react";
@@ -32,11 +25,15 @@ import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 
+const DeferredBackgroundHooks = lazyWithRetry(() => import("@/components/DeferredBackgroundHooks"));
 const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
 const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
 const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m => ({ default: m.AIChatbot })));
 const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 const FirstVisitSignupModal = lazyWithRetry(() => import("@/components/FirstVisitSignupModal").then(m => ({ default: m.FirstVisitSignupModal })));
+const Sonner = lazyWithRetry(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
+const SupabaseWalkthroughIntegration = lazyWithRetry(() => import("@/components/SupabaseWalkthroughIntegration").then(m => ({ default: m.SupabaseWalkthroughIntegration })));
+const BackToTop = lazyWithRetry(() => import("@/components/BackToTop").then(m => ({ default: m.BackToTop })));
 
 import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -262,11 +259,6 @@ const LocaleDetectionInitializer: React.FC = () => {
   return null;
 };
 
-const AutoIndexingInitializer: React.FC = () => {
-  useAutoIndexing();
-  return null;
-};
-
 const SEOManagerInitializer: React.FC = () => {
   useSEOManager();
   return null;
@@ -298,16 +290,6 @@ const WebMCPInitializer: React.FC = () => {
   );
 };
 
-const GeminiDailyCronInitializer: React.FC = () => {
-  useGeminiDailyCron();
-  return null;
-};
-
-const MatchSyncInitializer: React.FC = () => {
-  useMatchSync();
-  return null;
-};
-
 const DeferredGlobalOverlays = () => {
   const [ready, setReady] = useState(false);
 
@@ -318,15 +300,17 @@ const DeferredGlobalOverlays = () => {
       mounted = true;
       setReady(true);
     };
-    const timer = setTimeout(enable, 5500);
+    const timer = setTimeout(enable, 20000);
     window.addEventListener("scroll", enable, { passive: true, once: true });
     window.addEventListener("pointerdown", enable, { passive: true, once: true });
     window.addEventListener("keydown", enable, { passive: true, once: true });
+    window.addEventListener("touchstart", enable, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", enable);
       window.removeEventListener("pointerdown", enable);
       window.removeEventListener("keydown", enable);
+      window.removeEventListener("touchstart", enable);
     };
   }, []);
 
@@ -334,9 +318,11 @@ const DeferredGlobalOverlays = () => {
 
   return (
     <>
-      <AutoIndexingInitializer />
-      <GeminiDailyCronInitializer />
-      <MatchSyncInitializer />
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <DeferredBackgroundHooks />
+        </ErrorBoundary>
+      </Suspense>
       <Suspense fallback={null}>
         <ErrorBoundary fallback={null}>
           <UnifiedSearchModal />
@@ -362,6 +348,13 @@ const DeferredGlobalOverlays = () => {
           <FirstVisitSignupModal />
         </ErrorBoundary>
       </Suspense>
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <Sonner />
+          <SupabaseWalkthroughIntegration />
+          <BackToTop />
+        </ErrorBoundary>
+      </Suspense>
     </>
   );
 };
@@ -380,15 +373,15 @@ const App = () => (
                     <SEOManagerInitializer />
                     <WebMCPInitializer />
                     <BetSlipProvider>
-                      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium">
+                      <a
+                        href="#main-content"
+                        className="fixed left-4 top-4 z-[9999] -translate-y-24 focus:translate-y-0 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-bold text-sm shadow-lg transition-transform focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
                         Skip to content
                       </a>
-                      <SupabaseWalkthroughIntegration />
                       <OfflineBanner />
                       <SiteAnnouncementBanner />
                       <BreadcrumbLayoutSchema />
-                      <Toaster />
-                      <Sonner />
                       <Suspense fallback={<RouteLoadingFallback />}>
                         <ErrorBoundary>
                           <Routes>
@@ -511,7 +504,6 @@ const App = () => (
                       </Suspense>
                       <DeferredGlobalOverlays />
                       <MobileBottomNav />
-                      <BackToTop />
                     </BetSlipProvider>
                   </UnifiedSearchProvider>
                 </CurrencyProvider>

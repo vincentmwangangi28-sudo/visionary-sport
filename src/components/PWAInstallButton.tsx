@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { Download, Smartphone, Share, PlusSquare, Check, WifiOff } from 'lucide-react';
+import { Download, Smartphone, Share, PlusSquare, Check, WifiOff, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface Props {
@@ -93,58 +86,77 @@ export const PWAInstallButton: React.FC<Props> = ({
         </Button>
       )}
 
-      {/* iOS & Manual Installation Modal Guide */}
-      <Dialog open={showIOSGuide} onOpenChange={setShowIOSGuide}>
-        <DialogContent className="max-w-sm sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base font-black">
-              <Smartphone className="h-5 w-5 text-primary" />
-              Install PredictPro App
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Install PredictPro for instantaneous match updates, offline tips access, and full-screen experience.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 pt-2">
-            <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0 mt-0.5">
-                <Share className="h-4 w-4" />
-              </div>
-              <div className="text-xs space-y-0.5">
-                <p className="font-bold text-foreground">Step 1: Tap Share</p>
-                <p className="text-muted-foreground">
-                  Tap the <span className="font-semibold text-foreground">Share</span> button in your browser toolbar (bottom on iOS Safari, top right on Chrome).
-                </p>
-              </div>
+      {/* iOS & Manual Installation Modal Guide (mounted only when clicked) */}
+      {showIOSGuide && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pwa-install-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs"
+          onClick={() => setShowIOSGuide(false)}
+        >
+          <div
+            className="w-full max-w-sm sm:max-w-md rounded-2xl border bg-background p-6 shadow-xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowIOSGuide(false)}
+              aria-label="Close installation guide"
+              className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mb-3">
+              <h2 id="pwa-install-dialog-title" className="flex items-center gap-2 text-base font-black text-foreground">
+                <Smartphone className="h-5 w-5 text-primary" />
+                Install PredictPro App
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Install PredictPro for instantaneous match updates, offline tips access, and full-screen experience.
+              </p>
             </div>
 
-            <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0 mt-0.5">
-                <PlusSquare className="h-4 w-4" />
+            <div className="space-y-3 pt-2">
+              <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0 mt-0.5">
+                  <Share className="h-4 w-4" />
+                </div>
+                <div className="text-xs space-y-0.5">
+                  <p className="font-bold text-foreground">Step 1: Tap Share</p>
+                  <p className="text-muted-foreground">
+                    Tap the <span className="font-semibold text-foreground">Share</span> button in your browser toolbar (bottom on iOS Safari, top right on Chrome).
+                  </p>
+                </div>
               </div>
-              <div className="text-xs space-y-0.5">
-                <p className="font-bold text-foreground">Step 2: Add to Home Screen</p>
-                <p className="text-muted-foreground">
-                  Scroll down the share sheet and tap <span className="font-semibold text-foreground">"Add to Home Screen"</span>.
-                </p>
-              </div>
-            </div>
 
-            <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
-                <Check className="h-4 w-4" />
+              <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0 mt-0.5">
+                  <PlusSquare className="h-4 w-4" />
+                </div>
+                <div className="text-xs space-y-0.5">
+                  <p className="font-bold text-foreground">Step 2: Add to Home Screen</p>
+                  <p className="text-muted-foreground">
+                    Scroll down the share sheet and tap <span className="font-semibold text-foreground">"Add to Home Screen"</span>.
+                  </p>
+                </div>
               </div>
-              <div className="text-xs space-y-0.5">
-                <p className="font-bold text-foreground">Step 3: Instant Fast Access</p>
-                <p className="text-muted-foreground">
-                  Launch directly from your home screen with saved odds, cached offline fixtures, and zero browser chrome.
-                </p>
+
+              <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
+                  <Check className="h-4 w-4" />
+                </div>
+                <div className="text-xs space-y-0.5">
+                  <p className="font-bold text-foreground">Step 3: Instant Fast Access</p>
+                  <p className="text-muted-foreground">
+                    Launch directly from your home screen with saved odds, cached offline fixtures, and zero browser chrome.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 };

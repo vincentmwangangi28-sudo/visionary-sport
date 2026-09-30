@@ -99,8 +99,6 @@ const LEAGUE_AUTHORITY_LINKS = [
   { to: '/world-cup-predictions', label: '2026 FIFA World Cup Qualifiers & Tournament Predictions' },
   { to: '/afcon-predictions', label: 'AFCON & CAF Champions League Football Tips' },
   { to: '/screener', label: 'Quantitative Football Match Screener & Filter' },
-  { to: '/h2h', label: 'Interactive Head-to-Head (H2H) Team Comparison Tool' },
-  { to: '/track-record', label: 'Audited Closing Line Value (CLV) Track Record' },
 ];
 
 export const SEOAuthorityHub: React.FC = () => {
@@ -166,7 +164,7 @@ export const SEOAuthorityHub: React.FC = () => {
                   to={hub.to}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline mt-auto"
                 >
-                  <span>{hub.anchor}</span>
+                  {hub.anchor}
                   <ArrowUpRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 </Link>
               </div>
@@ -198,15 +196,13 @@ export const SEOAuthorityHub: React.FC = () => {
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   {faq.answer}
                 </p>
-                <div className="pt-1">
-                  <Link
-                    to={faq.relatedLink}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                  >
-                    <span>{faq.anchorText}</span>
-                    <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                  </Link>
-                </div>
+                <Link
+                  to={faq.relatedLink}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
+                >
+                  {faq.anchorText}
+                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                </Link>
               </article>
             ))}
           </div>
@@ -225,10 +221,9 @@ export const SEOAuthorityHub: React.FC = () => {
               <Link
                 key={item.to}
                 to={item.to}
-                className="text-xs text-muted-foreground hover:text-primary font-medium transition-colors flex items-center gap-1.5 py-1"
+                className="text-xs text-muted-foreground hover:text-primary hover:underline font-medium transition-colors flex items-center gap-1.5 py-1"
               >
-                <span className="text-primary">›</span>
-                <span className="hover:underline">{item.label}</span>
+                › {item.label}
               </Link>
             ))}
           </div>

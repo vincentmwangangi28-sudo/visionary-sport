@@ -288,8 +288,8 @@ export default function JackpotPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Mega & Midweek Jackpot Predictions Today — Real Live SportPesa 17, Betika 15 & Mozzart Tips | PredictPro.guru"
-        description="Free AI Mega & Midweek Jackpot predictions powered by live upcoming fixtures. Real-time SportPesa 17-game, Betika 15-game, Mozzart 16-game & SportyBet 12-game mathematical 1X2 picks, banker locks & Double Chance permutation calculator."
+        title="Mega & Midweek Jackpot Predictions Today (17 Games) | PredictPro"
+        description="Live AI Mega & Midweek Jackpot predictions for SportPesa 17, Betika 15 & Mozzart 16 games with 1X2 banker picks and Double Chance calculator."
         canonical="/jackpot-predictions"
         keywords="mega jackpot predictions this weekend, midweek jackpot predictions today, sportpesa mega jackpot 17 games analysis, betika jackpot 15 predictions, mozzart super grand jackpot tips, mathematical double chance jackpot combinations"
         jsonLd={faqJsonLd}

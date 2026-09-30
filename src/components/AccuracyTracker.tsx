@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { BarChart2, CheckCircle } from 'lucide-react';
 
 interface Stats { total: number; correct: number; accuracy: number; byLeague: { league: string; count: number; correct: number; pct: number }[]; }
@@ -9,8 +8,12 @@ export const AccuracyTracker = () => {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
+    let triggered = false;
+    const fetchAccuracy = async () => {
+      if (triggered) return;
+      triggered = true;
       try {
+        const { supabase } = await import('@/integrations/supabase/client');
         const { data } = await supabase.from('predictions')
           .select('league, prediction, result, confidence');
         if (!data?.length) return;
@@ -32,18 +35,29 @@ export const AccuracyTracker = () => {
       } catch {
         // ignore
       }
-    }, 6500);
-    return () => clearTimeout(timer);
+    };
+
+    const timer = setTimeout(fetchAccuracy, 20000);
+    window.addEventListener('scroll', fetchAccuracy, { passive: true, once: true });
+    window.addEventListener('pointerdown', fetchAccuracy, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', fetchAccuracy);
+      window.removeEventListener('pointerdown', fetchAccuracy);
+    };
   }, []);
 
   const displayAccuracy = stats?.accuracy ?? 87;
 
   return (
     <Card>
-      <CardHeader><CardTitle className="flex items-center gap-2 text-base">
-        <BarChart2 className="h-5 w-5 text-primary"/>Platform Accuracy
-        {!stats?.total && <span className="text-xs font-normal text-muted-foreground ml-auto">Based on AI model benchmarks</span>}
-      </CardTitle></CardHeader>
+      <CardHeader>
+        <h2 className="font-semibold tracking-tight flex items-center gap-2 text-base leading-none">
+          <BarChart2 className="h-5 w-5 text-primary" aria-hidden="true" />
+          <span>Platform Accuracy</span>
+          {!stats?.total && <span className="text-xs font-normal text-muted-foreground ml-auto">Based on AI model benchmarks</span>}
+        </h2>
+      </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-center">
           <p className="text-5xl font-black text-primary">{displayAccuracy}%</p>

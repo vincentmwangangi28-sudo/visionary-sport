@@ -16,7 +16,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
 import {
   Zap,
@@ -55,9 +54,9 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
   const { preferences, setRiskProfile } = useUserPreferences();
   const { region, prioritizedLeagues, sortPredictions, getLeagueBadge } = useGeoRegion();
-  const { predictions, data, isLoading, totalPages, isFetching, refetch } = usePredictions(page, league);
+  const { predictions, data, isLoading, pageSize = 6, isFetching, refetch } = usePredictions(page, league);
 
-  // Full unpaginated upcoming predictions pool for accurate date filter counts and date-filtered views
+  // Full unpaginated upcoming predictions pool for accurate date filter counts and filtered views
   const allUpcomingPool = useMemo(() => {
     const rawPool = data?.allPredictions ?? predictions;
     return sortMatchesByDatePriority(rawPool.filter((p) => !isPlayedOrPastMatch(p)));
@@ -85,7 +84,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
       }
     }
 
-    return list;
+    return list.slice(0, 10);
   }, [prioritizedLeagues]);
 
   // Date filter counts computed from all upcoming league predictions (ignoring played matches)
@@ -95,12 +94,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
 
   // Client-side filtering for date filters, quick filters, risk profiles, search and Date Priority
   const filteredPredictions = useMemo(() => {
-    const activeSource =
-      dateFilter !== 'all' || quickFilter !== 'all' || searchQuery.trim() !== ''
-        ? allUpcomingPool
-        : predictions.filter((p) => !isPlayedOrPastMatch(p));
-
-    const rawFiltered = activeSource.filter((p) => {
+    const rawFiltered = allUpcomingPool.filter((p) => {
       if (isPlayedOrPastMatch(p)) return false;
 
       // Date filter (Today, Tomorrow, Weekend)
@@ -147,11 +141,19 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
     }
 
     return sortMatchesByDatePriority(rawFiltered);
-  }, [allUpcomingPool, predictions, dateFilter, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
+  }, [allUpcomingPool, dateFilter, searchQuery, quickFilter, preferences.riskProfile, enableRegionalSort, league, sortPredictions]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPredictions.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+
+  const paginatedPredictions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredPredictions.slice(start, start + pageSize);
+  }, [filteredPredictions, currentPage, pageSize]);
 
   const dateGroupedPredictions = useMemo(() => {
-    return groupMatchesByDate(filteredPredictions);
-  }, [filteredPredictions]);
+    return groupMatchesByDate(paginatedPredictions);
+  }, [paginatedPredictions]);
 
   if (isLoading) {
     return (
@@ -180,7 +182,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               <button
                 key={profile}
                 type="button"
-                onClick={() => setRiskProfile(profile)}
+                onClick={() => {
+                  setRiskProfile(profile);
+                  setPage(1);
+                }}
                 className={`min-h-[38px] px-3 py-1.5 text-xs font-bold rounded-md capitalize transition-all inline-flex items-center justify-center ${
                   preferences.riskProfile === profile
                     ? 'bg-primary text-primary-foreground shadow-sm'
@@ -219,13 +224,19 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
           <Input
             placeholder="Search teams or leagues..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
             className="pl-9 h-10 min-h-[42px] text-xs"
           />
           {searchQuery && (
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setPage(1);
+              }}
               aria-label="Clear search input"
               className="absolute right-1 top-1 h-8 w-8 min-h-[36px] min-w-[36px] inline-flex items-center justify-center text-xs text-muted-foreground hover:text-foreground"
             >
@@ -240,7 +251,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
           <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg" role="group" aria-label="Filter predictions">
             <button
               type="button"
-              onClick={() => setQuickFilter('all')}
+              onClick={() => {
+                setQuickFilter('all');
+                setPage(1);
+              }}
               aria-label="Show all predictions"
               className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md transition-all flex items-center justify-center ${
                 quickFilter === 'all'
@@ -252,7 +266,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             </button>
             <button
               type="button"
-              onClick={() => setQuickFilter('recommended')}
+              onClick={() => {
+                setQuickFilter('recommended');
+                setPage(1);
+              }}
               aria-label="Filter AI recommended predictions"
               className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md flex items-center justify-center gap-1 transition-all ${
                 quickFilter === 'recommended'
@@ -264,7 +281,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             </button>
             <button
               type="button"
-              onClick={() => setQuickFilter('high_confidence')}
+              onClick={() => {
+                setQuickFilter('high_confidence');
+                setPage(1);
+              }}
               aria-label="Filter predictions with greater than 80% confidence"
               className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md flex items-center justify-center gap-1 transition-all ${
                 quickFilter === 'high_confidence'
@@ -276,7 +296,10 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             </button>
             <button
               type="button"
-              onClick={() => setQuickFilter('value_bets')}
+              onClick={() => {
+                setQuickFilter('value_bets');
+                setPage(1);
+              }}
               aria-label="Filter positive expected value bets"
               className={`px-3 py-2 min-h-[44px] text-xs font-bold rounded-md flex items-center justify-center gap-1 transition-all ${
                 quickFilter === 'value_bets'
@@ -331,17 +354,29 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
         <div className="flex items-center gap-2 flex-wrap">
           <GeoRegionSelector variant="compact" />
           <div className="h-4 w-px bg-border/80 hidden sm:block" />
-          <label className="flex items-center gap-2 min-h-[40px] px-1 text-xs text-muted-foreground cursor-pointer select-none">
-            <Switch
-              checked={enableRegionalSort}
-              onCheckedChange={setEnableRegionalSort}
-              className="scale-75 origin-left"
-              aria-label="Toggle Regional Priority Match Sorting"
-            />
+          <button
+            type="button"
+            role="switch"
+            aria-checked={enableRegionalSort}
+            aria-label="Toggle Regional Priority Match Sorting"
+            onClick={() => setEnableRegionalSort((prev) => !prev)}
+            className="flex items-center gap-2 min-h-[40px] px-1 text-xs text-muted-foreground cursor-pointer select-none"
+          >
+            <span
+              className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full border border-transparent transition-colors ${
+                enableRegionalSort ? 'bg-primary' : 'bg-input'
+              }`}
+            >
+              <span
+                className={`pointer-events-none block h-3 w-3 rounded-full bg-background shadow-xs transition-transform ${
+                  enableRegionalSort ? 'translate-x-3' : 'translate-x-0.5'
+                }`}
+              />
+            </span>
             <span className="font-semibold text-[11px] text-foreground">
               {enableRegionalSort ? `Prioritizing ${region.shortLabel} & Favorites` : 'Standard Global Order'}
             </span>
-          </label>
+          </button>
         </div>
 
         <div className="text-[11px] text-muted-foreground flex items-center gap-2 self-end sm:self-auto flex-wrap">
@@ -475,21 +510,21 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page <= 1 || isFetching}
+                onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages) - 1))}
+                disabled={currentPage <= 1 || isFetching}
                 aria-label="Go to previous page of predictions"
                 className="min-h-[44px] px-3.5 gap-1 text-xs"
               >
                 <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" /> Previous
               </Button>
               <span className="text-xs text-muted-foreground font-medium" aria-current="page">
-                Page {page} of {totalPages}
+                Page {currentPage} of {totalPages}
               </span>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= totalPages || isFetching}
+                onClick={() => setPage((p) => Math.min(totalPages, Math.min(p, totalPages) + 1))}
+                disabled={currentPage >= totalPages || isFetching}
                 aria-label="Go to next page of predictions"
                 className="min-h-[44px] px-3.5 gap-1 text-xs"
               >

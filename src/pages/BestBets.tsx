@@ -136,8 +136,8 @@ export default function BestBets() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Free Guru Tips Today & Sure Banker Football Bets (75%+ AI Confidence) | PredictPro"
-        description="Verified daily football banker predictions and sure 1X2 guru tips today with 75% to 92% AI confidence. Filter high-probability match winners, Double Chance (1X), and Draw No Bet locks."
+        title="Free Guru Tips Today & Sure Banker Football Bets | PredictPro"
+        description="Verified daily football banker predictions and sure 1X2 guru tips today with 75%+ AI confidence, Double Chance (1X), and Draw No Bet locks."
         canonical="/best-bets"
         keywords="free guru tips today football prediction, guru predictions for today, best football bets today, sure bets today, banker bet of the day, high confidence football predictions, 1x2 banker tips"
         breadcrumbs={[

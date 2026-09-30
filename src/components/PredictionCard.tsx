@@ -5,17 +5,25 @@ import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/p
 import { SharePrediction } from '@/components/SharePrediction';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
-import { Lock, Clock, TrendingUp, BarChart3, Plus, Check, Coins, Users, Sparkles, Pin, ArrowRight } from 'lucide-react';
+import { Lock, Clock, TrendingUp, Check, Coins, Users, Sparkles, Pin, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo, memo, lazy, Suspense } from 'react';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { usePersonalizedDashboard } from '@/hooks/usePersonalizedDashboard';
-import { supabase } from '@/integrations/supabase/client';
-import { formatMatchSlug } from '@/services/sitemapGenerator';
+import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
 import { toast } from 'sonner';
+
+function formatMatchSlug(homeTeam: string, awayTeam: string, matchDate?: string): string {
+  const clean = (name: string) =>
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  const datePart = matchDate ? matchDate.split('T')[0] : new Date().toISOString().split('T')[0];
+  return `${clean(homeTeam)}-vs-${clean(awayTeam)}-${datePart}`;
+}
 
 const MatchAnalyticsModal = lazy(() =>
   import('@/components/MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
@@ -36,7 +44,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
   const { isPremium } = useSubscription();
   const { addSelection, selections } = useBetSlip();
   const { formatKickoff, getKickoffRelative, formatOdds, t } = useUserPreferences();
-  const { isLeaguePinned, togglePinLeague, isTeamPinned, togglePinTeam } = usePersonalizedDashboard();
+  const { isLeaguePinned, togglePinLeague } = usePinnedFavorites();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [unlockingCoin, setUnlockingCoin] = useState(false);
 
@@ -114,6 +122,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
     e.stopPropagation();
     setUnlockingCoin(true);
     try {
+      const { supabase } = await import('@/integrations/supabase/client');
       const session = (await supabase.auth.getSession()).data.session;
       if (!session) {
         toast.info('Sign in to unlock predictions using your coin balance.');
@@ -327,32 +336,30 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
               )}
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
-                <Clock className="h-3 w-3 text-primary" />
-                <span>{formatKickoff(p.match_date, { includeDate: true, includeTimezone: true })}</span>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                <Clock className="h-3 w-3 text-primary" aria-hidden="true" />
+                {formatKickoff(p.match_date, { includeDate: true, includeTimezone: true })}
                 {relativeKickoff.status === 'live' && (
                   <span className="text-[10px] bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded animate-pulse">
                     LIVE
                   </span>
                 )}
-              </div>
-              <div onClick={(e) => e.stopPropagation()}>
-                <NotifyMeButton
-                  match={{
-                    id: p.id,
-                    home_team: p.home_team,
-                    away_team: p.away_team,
-                    league: p.league,
-                    match_date: p.match_date,
-                    prediction: outcome,
-                    confidence,
-                    home_odds: p.home_odds,
-                    draw_odds: p.draw_odds,
-                    away_odds: p.away_odds,
-                  }}
-                  variant="icon"
-                />
-              </div>
+              </span>
+              <NotifyMeButton
+                match={{
+                  id: p.id,
+                  home_team: p.home_team,
+                  away_team: p.away_team,
+                  league: p.league,
+                  match_date: p.match_date,
+                  prediction: outcome,
+                  confidence,
+                  home_odds: p.home_odds,
+                  draw_odds: p.draw_odds,
+                  away_odds: p.away_odds,
+                }}
+                variant="icon"
+              />
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-2 bg-muted/20 p-2.5 rounded-xl border border-border/40">
@@ -433,19 +440,21 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
           {/* Community Consensus Bar ("Wisdom of the Crowd") */}
           {!locked && (
             <div className="pt-2 pb-1 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between text-[11px] mb-1 text-muted-foreground">
+              <div className="flex items-center justify-between text-[11px] mb-1.5 text-muted-foreground">
                 <span className="flex items-center gap-1 font-semibold">
-                  <Users className="h-3 w-3 text-primary" /> Community Crowd Vote:
+                  <Users className="h-3 w-3 text-primary" aria-hidden="true" /> Community Crowd Vote:
                 </span>
-                <span className="font-mono text-[10px]">
-                  1: <b>{communityStats.home}%</b> · X: <b>{communityStats.draw}%</b> · 2: <b>{communityStats.away}%</b>
+                <span className="font-mono text-[10px] font-semibold text-foreground">
+                  1: {communityStats.home}% · X: {communityStats.draw}% · 2: {communityStats.away}%
                 </span>
               </div>
-              <div className="h-1.5 w-full flex rounded-full overflow-hidden bg-muted gap-0.5 mb-2.5">
-                <div className="bg-green-600 transition-all" style={{ width: `${communityStats.home}%` }} title={`Home Win: ${communityStats.home}%`} />
-                <div className="bg-amber-500 transition-all" style={{ width: `${communityStats.draw}%` }} title={`Draw: ${communityStats.draw}%`} />
-                <div className="bg-blue-600 transition-all" style={{ width: `${communityStats.away}%` }} title={`Away Win: ${communityStats.away}%`} />
-              </div>
+              <div
+                className="h-1.5 w-full rounded-full mb-2.5"
+                style={{
+                  background: `linear-gradient(to right, #16a34a 0% ${communityStats.home}%, #f59e0b ${communityStats.home}% ${communityStats.home + communityStats.draw}%, #2563eb ${communityStats.home + communityStats.draw}% 100%)`,
+                }}
+                aria-hidden="true"
+              />
               <div className="flex items-center justify-between gap-2 text-[11px]">
                 <span className="text-muted-foreground font-medium">Your vote:</span>
                 <div className="flex items-center gap-2.5">
@@ -506,7 +515,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                 className="min-h-[44px] px-2.5 py-2 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 hover:underline flex items-center gap-1.5 transition-colors"
               >
                 <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                <span>Gemini Intel & Lineups</span>
+                Gemini Intel &amp; Lineups
               </button>
 
               <Link
@@ -516,7 +525,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                 title={`Open full match intelligence page for ${p.home_team} vs ${p.away_team}`}
                 aria-label={`Open full match preview for ${p.home_team} vs ${p.away_team}`}
               >
-                <span>Full Preview</span>
+                Full Preview
                 <ArrowRight className="h-3 w-3" aria-hidden="true" />
               </Link>
             </div>

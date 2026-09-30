@@ -4,8 +4,6 @@
  * and deterministic color/initials fallback for any football team worldwide.
  */
 
-import { CURRENT_SEASON_STANDINGS, LEAGUES } from '@/data/standingsData';
-
 export interface TeamLogoInfo {
   name: string;
   logo: string;
@@ -1434,14 +1432,6 @@ export function normalizeLeagueId(leagueIdOrName?: number | string | null): numb
     }
   }
 
-  // Check against LEAGUES configuration
-  const foundLeague = LEAGUES.find(
-    (l) => l.name.toLowerCase().includes(lower) || lower.includes(l.name.toLowerCase())
-  );
-  if (foundLeague) {
-    return foundLeague.id;
-  }
-
   return null;
 }
 
@@ -1490,30 +1480,6 @@ export function getTeamLogoWithLeague(
     return cachedRaw;
   }
 
-  // 4. Match against league standings if league ID is provided (only if not blocked/api-sports)
-  if (normId !== null && CURRENT_SEASON_STANDINGS[normId]) {
-    const standings = CURRENT_SEASON_STANDINGS[normId];
-    const match = standings.find((row) => {
-      if (!row.team) return false;
-      const rowClean = cleanTeamName(row.team);
-      const rowRaw = row.team.toLowerCase().trim();
-
-      if (rowRaw === rawKey || rowClean === cleanedName) return true;
-      if (ALIASES[rawKey] && ALIASES[rawKey] === rowClean) return true;
-      if (ALIASES[cleanedName] && ALIASES[cleanedName] === rowClean) return true;
-      if (rowClean.length > 3 && (rowClean.includes(cleanedName) || cleanedName.includes(rowClean))) {
-        return true;
-      }
-      return false;
-    });
-
-    if (match?.logo && !isBlockedLogoUrl(match.logo)) {
-      if (normId !== null) memoryLogoCache.set(`${normId}:${cleanedName}`, match.logo);
-      memoryLogoCache.set(cleanedName, match.logo);
-      return match.logo;
-    }
-  }
-
   return null;
 }
 
@@ -1545,35 +1511,40 @@ export async function fetchAndCacheTeamLogoByLeague(
     return syncResult;
   }
 
-  // 2. If not found in current league, search across all known standings
-  for (const [leagueKey, standings] of Object.entries(CURRENT_SEASON_STANDINGS)) {
-    const standingLeagueId = parseInt(leagueKey, 10);
-    const match = standings.find((row) => {
-      if (!row.team) return false;
-      const rowClean = cleanTeamName(row.team);
-      const rowRaw = row.team.toLowerCase().trim();
-      const rawKey = teamName.toLowerCase().trim();
+  // 2. If not found in current league, search across all known standings dynamically
+  try {
+    const { CURRENT_SEASON_STANDINGS } = await import('@/data/standingsData');
+    for (const [leagueKey, standings] of Object.entries(CURRENT_SEASON_STANDINGS)) {
+      const standingLeagueId = parseInt(leagueKey, 10);
+      const match = standings.find((row) => {
+        if (!row.team) return false;
+        const rowClean = cleanTeamName(row.team);
+        const rowRaw = row.team.toLowerCase().trim();
+        const rawKey = teamName.toLowerCase().trim();
 
-      if (rowRaw === rawKey || rowClean === cleanedName) return true;
-      if (ALIASES[rawKey] === rowClean || ALIASES[cleanedName] === rowClean) return true;
-      if (rowClean.length > 3 && (rowClean.includes(cleanedName) || cleanedName.includes(rowClean))) {
-        return true;
-      }
-      return false;
-    });
+        if (rowRaw === rawKey || rowClean === cleanedName) return true;
+        if (ALIASES[rawKey] === rowClean || ALIASES[cleanedName] === rowClean) return true;
+        if (rowClean.length > 3 && (rowClean.includes(cleanedName) || cleanedName.includes(rowClean))) {
+          return true;
+        }
+        return false;
+      });
 
-    if (match?.logo && !isBlockedLogoUrl(match.logo)) {
-      const resolved = match.logo;
-      if (normId !== null) {
-        memoryLogoCache.set(`${normId}:${cleanedName}`, resolved);
-        persistLogoToStorage(`${normId}:${cleanedName}`, resolved);
+      if (match?.logo && !isBlockedLogoUrl(match.logo)) {
+        const resolved = match.logo;
+        if (normId !== null) {
+          memoryLogoCache.set(`${normId}:${cleanedName}`, resolved);
+          persistLogoToStorage(`${normId}:${cleanedName}`, resolved);
+        }
+        memoryLogoCache.set(`${standingLeagueId}:${cleanedName}`, resolved);
+        memoryLogoCache.set(cleanedName, resolved);
+        persistLogoToStorage(cleanedName, resolved);
+        prewarmBrowserCache(resolved);
+        return resolved;
       }
-      memoryLogoCache.set(`${standingLeagueId}:${cleanedName}`, resolved);
-      memoryLogoCache.set(cleanedName, resolved);
-      persistLogoToStorage(cleanedName, resolved);
-      prewarmBrowserCache(resolved);
-      return resolved;
     }
+  } catch {
+    // ignore dynamic import issues
   }
 
   // 3. Fuzzy search in CANONICAL_TEAM_LOGOS by distinctive word tokens (excluding generic football terms)
@@ -1618,24 +1589,31 @@ export async function preloadLeagueTeamLogos(
   const normId = normalizeLeagueId(leagueIdOrName);
   const results: Record<string, string> = {};
 
-  if (normId === null || !CURRENT_SEASON_STANDINGS[normId]) {
+  if (normId === null) {
     return results;
   }
 
-  const standings = CURRENT_SEASON_STANDINGS[normId];
-  for (const row of standings) {
-    if (row.team && row.logo) {
-      const clean = cleanTeamName(row.team);
-      const raw = row.team.toLowerCase().trim();
+  try {
+    const { CURRENT_SEASON_STANDINGS } = await import('@/data/standingsData');
+    const standings = CURRENT_SEASON_STANDINGS[normId];
+    if (!standings) return results;
 
-      results[row.team] = row.logo;
-      memoryLogoCache.set(`${normId}:${clean}`, row.logo);
-      memoryLogoCache.set(`${normId}:${raw}`, row.logo);
-      memoryLogoCache.set(clean, row.logo);
+    for (const row of standings) {
+      if (row.team && row.logo) {
+        const clean = cleanTeamName(row.team);
+        const raw = row.team.toLowerCase().trim();
 
-      persistLogoToStorage(`${normId}:${clean}`, row.logo);
-      prewarmBrowserCache(row.logo);
+        results[row.team] = row.logo;
+        memoryLogoCache.set(`${normId}:${clean}`, row.logo);
+        memoryLogoCache.set(`${normId}:${raw}`, row.logo);
+        memoryLogoCache.set(clean, row.logo);
+
+        persistLogoToStorage(`${normId}:${clean}`, row.logo);
+        prewarmBrowserCache(row.logo);
+      }
     }
+  } catch {
+    // ignore
   }
 
   return results;

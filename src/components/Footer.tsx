@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Zap, Mail, SlidersHorizontal } from "lucide-react";
 
-const LINKS = {
+const LINKS: Record<string, Array<{ to: string; label: string }>> = {
   Predictions: [
     { to: "/", label: "AI Football Predictions Hub" },
     { to: "/upcoming", label: "Upcoming Football Fixtures & Kickoffs" },
@@ -26,7 +26,7 @@ const LINKS = {
     { to: "/world-cup-predictions", label: "2026 FIFA World Cup Qualifiers & Tips" },
     { to: "/afcon-predictions", label: "AFCON & African Football Predictions" },
   ],
-  Tools: [
+  "Live & Tools": [
     { to: "/live", label: "Live Football Scores & In-Play Odds" },
     { to: "/streaks", label: "Team Winning Streaks & Trends Radar" },
     { to: "/h2h", label: "Head-to-Head (H2H) Matchup Simulator" },
@@ -37,12 +37,8 @@ const LINKS = {
     { to: "/standings", label: "Live League Tables & Form Standings" },
     { to: "/bankroll", label: "Kelly Criterion Bankroll Manager" },
     { to: "/statistics", label: "Team & League Statistical Analytics" },
-    { to: "/players", label: "Football Player xG & Form Search" },
-    { to: "/news", label: "Breaking Football News & Injury Intel" },
-    { to: "/insights", label: "Deep Tactical Matchday Insights" },
-    { to: "/highlights", label: "Official Match Video Highlights" },
   ],
-  "Strategy & Guides": [
+  "Strategy & Math": [
     { to: "/blog", label: "Football Betting Strategy Blog Hub" },
     { to: "/blog/how-to-read-football-predictions", label: "How to Read AI Implied Probabilities" },
     { to: "/blog/expected-goals-xg-betting-model-explained", label: "Expected Goals (xG) & xGA Betting Model" },
@@ -52,6 +48,8 @@ const LINKS = {
     { to: "/blog/draw-no-bet-vs-double-chance-strategy", label: "Draw No Bet vs Double Chance ROI" },
     { to: "/blog/closing-line-value-clv-dropping-odds", label: "Closing Line Value (CLV) & Steam Guide" },
     { to: "/blog/bankroll-management-football", label: "Kelly Staking & Bankroll Math" },
+  ],
+  "Market Guides": [
     { to: "/blog/premier-league-prediction-guide-2026", label: "2026/27 Premier League Betting Guide" },
     { to: "/blog/champions-league-group-stage-tips", label: "Champions League Knockout Strategy" },
     { to: "/blog/btts-over-under-strategy", label: "BTTS & Over 2.5 Goals Strategy" },
@@ -60,8 +58,12 @@ const LINKS = {
     { to: "/blog/sportpesa-mega-jackpot-prediction-17-games", label: "17-Game Mega Jackpot Strategy" },
     { to: "/blog/us-soccer-betting-guide-mls-odds", label: "MLS & US Soccer Betting Guide" },
     { to: "/blog/kpl-betting-guide-kenya", label: "FKF Kenya Premier League Betting Guide" },
+    { to: "/players", label: "Football Player xG & Form Search" },
+    { to: "/news", label: "Breaking Football News & Injury Intel" },
   ],
   Platform: [
+    { to: "/insights", label: "Deep Tactical Matchday Insights" },
+    { to: "/highlights", label: "Official Match Video Highlights" },
     { to: "/dashboard", label: "Personalized Betting Dashboard" },
     { to: "/shop", label: "Upgrade to PredictPro VIP" },
     { to: "/rewards", label: "Daily Rewards & Prediction Coins" },
@@ -70,9 +72,6 @@ const LINKS = {
     { to: "/tournaments", label: "International Football Tournaments" },
     { to: "/sports", label: "Multi-Sport AI Predictions" },
     { to: "/about", label: "About PredictPro AI Intelligence" },
-    { to: "/responsible-gaming", label: "Responsible Gaming & 18+ Policy" },
-    { to: "/sitemap", label: "Complete HTML Sitemap Directory" },
-    { to: "/seo-indexing", label: "Search Engine Indexing Monitor" },
   ],
 };
 
@@ -87,8 +86,6 @@ const FEATURED_MATCHES = [
   { slug: 'gor-mahia-vs-afc-leopards', label: 'Gor Mahia vs AFC Leopards' },
   { slug: 'juventus-vs-napoli', label: 'Juventus vs Napoli' },
   { slug: 'atletico-madrid-vs-sevilla', label: 'Atletico vs Sevilla' },
-  { slug: 'la-galaxy-vs-lafc', label: 'LA Galaxy vs LAFC' },
-  { slug: 'inter-miami-vs-new-york-red-bulls', label: 'Inter Miami vs NY Red Bulls' },
 ];
 
 export const Footer = () => {
@@ -119,18 +116,14 @@ export const Footer = () => {
 
         {/* Link groups */}
         {Object.entries(LINKS).map(([group, links]) => (
-          <div key={group}>
-            <p className="font-semibold text-sm mb-3">{group}</p>
-            <ul className="space-y-2">
-              {links.map(l => (
-                <li key={l.to}>
-                  <Link to={l.to} className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary transition-colors">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <nav key={group} aria-label={group} className="flex flex-col gap-1.5">
+            <p className="font-semibold text-sm mb-1.5">{group}</p>
+            {links.map(l => (
+              <Link key={l.to} to={l.to} className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary transition-colors">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
         ))}
       </div>
 
@@ -138,11 +131,19 @@ export const Footer = () => {
       <div className="border-t border-border/60 pt-6 pb-6 mb-2">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <p className="font-semibold text-xs text-foreground uppercase tracking-wider">
-            Top Clash Intelligence & Head-to-Head Previews Today
+            Top Clash Intelligence &amp; Head-to-Head Previews Today
           </p>
-          <Link to="/upcoming" className="inline-flex items-center py-1.5 min-h-[36px] text-xs text-primary font-semibold hover:underline">
-            Browse All Upcoming Football Fixtures &amp; AI Match Previews &rarr;
-          </Link>
+          <div className="flex items-center gap-4 flex-wrap">
+            <Link to="/sitemap" className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary hover:underline">
+              Complete HTML Sitemap Directory
+            </Link>
+            <Link to="/seo-indexing" className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary hover:underline">
+              Search Engine Indexing Monitor
+            </Link>
+            <Link to="/upcoming" className="inline-flex items-center py-1.5 min-h-[36px] text-xs text-primary font-semibold hover:underline">
+              Browse All Upcoming Football Fixtures &rarr;
+            </Link>
+          </div>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
           {FEATURED_MATCHES.map(m => (

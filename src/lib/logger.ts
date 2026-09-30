@@ -1,4 +1,3 @@
-import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
 export type ErrorType =
@@ -133,6 +132,7 @@ async function transmitLogEntry(entry: ErrorLogEntry): Promise<boolean> {
     }
 
     // Attempt insert into Supabase error_logs
+    const { supabase } = await import('@/integrations/supabase/client');
     const { error } = await supabase.from('error_logs').insert([
       {
         error_message: entry.error_message.slice(0, 2000),

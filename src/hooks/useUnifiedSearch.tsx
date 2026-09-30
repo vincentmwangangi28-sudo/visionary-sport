@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { SearchCategoryFilter } from '@/services/unifiedSearch';
+import type { SearchCategoryFilter } from '@/services/unifiedSearch';
 
 interface UnifiedSearchContextType {
   isOpen: boolean;

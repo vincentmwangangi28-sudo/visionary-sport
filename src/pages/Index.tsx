@@ -100,31 +100,33 @@ const Index = () => {
       setDeferredReady(true);
     };
 
-    const timer = setTimeout(activate, 5500);
+    const timer = setTimeout(activate, 20000);
     window.addEventListener('scroll', activate, { passive: true, once: true });
     window.addEventListener('pointerdown', activate, { passive: true, once: true });
     window.addEventListener('keydown', activate, { passive: true, once: true });
+    window.addEventListener('touchstart', activate, { passive: true, once: true });
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', activate);
       window.removeEventListener('pointerdown', activate);
       window.removeEventListener('keydown', activate);
+      window.removeEventListener('touchstart', activate);
     };
   }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title="AI Football Predictions Today (87% Verified Accuracy) — EPL, Champions League, BTTS, xG & Mega Jackpot Tips | PredictPro.guru"
-        description="Free AI football predictions today & tomorrow with 87% verified accuracy on Banker Bets. Mathematical 1X2, BTTS, Over 2.5 Goals, Correct Score, Expected Goals (xG) & 17-game Mega Jackpot tips across Premier League, Champions League, La Liga, Serie A & KPL."
+        title="PredictPro — AI Football Predictions & xG Match Stats"
+        description="Daily AI football predictions with 87% accuracy. Expected Goals (xG) stats, Poisson probabilities, and H2H analytics across 40+ global leagues."
         canonical="/"
         keywords="AI football predictions today, accurate soccer predictions 100% free, premier league predictions this weekend, champions league AI tips, sure banker bets today, both teams to score BTTS tips, over 2.5 goals predictions, correct score mathematical model, sportpesa mega jackpot 17 games predictions, expected goals xG football analytics"
         jsonLd={HOME_JSON_LD}
       />
       <Navbar />
       <LiveMarketSteamTicker />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         <Hero />
         <LeagueNavigationStrip />
 
@@ -202,9 +204,13 @@ const Index = () => {
           </Suspense>
         )}
 
-        <SEOAuthorityHub />
+        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '700px' }}>
+          <SEOAuthorityHub />
+        </div>
       </main>
-      <Footer />
+      <div style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
+        <Footer />
+      </div>
     </div>
   );
 };

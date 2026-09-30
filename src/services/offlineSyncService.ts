@@ -5,8 +5,6 @@
  */
 
 import { CANONICAL_TEAM_LOGOS } from '@/services/teamLogos';
-import { getSavedPredictionsList } from '@/services/predictionStorage';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
 
 export interface CacheStats {
   isSupported: boolean;

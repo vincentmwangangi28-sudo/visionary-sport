@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import {
   ShieldCheck,
   TrendingUp,
@@ -10,7 +10,12 @@ import {
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ConfidenceFactor, calculateConfidenceFactors } from '@/types/confidence';
-import { ConfidenceFactorBreakdown } from '@/components/ConfidenceFactorBreakdown';
+
+const ConfidenceFactorBreakdown = lazy(() =>
+  import('@/components/ConfidenceFactorBreakdown').then((m) => ({
+    default: m.ConfidenceFactorBreakdown,
+  }))
+);
 
 export interface ConfidenceMeterProps {
   confidence: number;
@@ -158,7 +163,9 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
                   {tier.badgeText}
                 </span>
               </div>
-              <ConfidenceFactorBreakdown breakdown={breakdown} predictionTip={predictionTip} />
+              <Suspense fallback={null}>
+                <ConfidenceFactorBreakdown breakdown={breakdown} predictionTip={predictionTip} />
+              </Suspense>
             </div>
           </PopoverContent>
         )}
@@ -308,12 +315,14 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
 
           {inlineExpanded && (
             <div className="mt-3 pt-2 border-t border-border/40">
-              <ConfidenceFactorBreakdown
-                breakdown={breakdown}
-                predictionTip={predictionTip}
-                homeTeam={homeTeam}
-                awayTeam={awayTeam}
-              />
+              <Suspense fallback={null}>
+                <ConfidenceFactorBreakdown
+                  breakdown={breakdown}
+                  predictionTip={predictionTip}
+                  homeTeam={homeTeam}
+                  awayTeam={awayTeam}
+                />
+              </Suspense>
             </div>
           )}
         </div>
@@ -327,6 +336,34 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
   }
 
   // 4. Default "card" variant with lazy popover (mounts Popover only on user click)
+  if (!popoverOpen && !inlineExpanded) {
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setInlineExpanded(true);
+        }}
+        aria-label={`AI Confidence ${normalizedConfidence}% - ${tier.label}. Click to toggle factor breakdown`}
+        className={`group flex items-center gap-2 min-h-[44px] px-2.5 py-1.5 focus:outline-none select-none cursor-pointer rounded-lg hover:bg-muted/50 transition-colors ${className}`}
+      >
+        <span className={`w-2 h-2 rounded-full shrink-0 ${dotColorClass}`} />
+        <span className="w-16 sm:w-20 h-2 bg-muted/80 dark:bg-muted/40 rounded-full overflow-hidden p-0.5 border border-border/40 relative block">
+          <span
+            style={{ width: `${normalizedConfidence}%` }}
+            className={`h-full rounded-full bg-gradient-to-r block ${tier.barColor}`}
+          />
+        </span>
+        <span className={`text-xs font-black tabular-nums tracking-tight ${tier.colorClass}`}>
+          {normalizedConfidence}%
+        </span>
+        <span className="text-[11px] text-muted-foreground group-hover:text-primary font-semibold">
+          Factors ▾
+        </span>
+      </button>
+    );
+  }
+
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <div className="flex items-center gap-2">
@@ -377,12 +414,14 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
                   {tier.description}
                 </p>
 
-                <ConfidenceFactorBreakdown
-                  breakdown={breakdown}
-                  predictionTip={predictionTip}
-                  homeTeam={homeTeam}
-                  awayTeam={awayTeam}
-                />
+                <Suspense fallback={null}>
+                  <ConfidenceFactorBreakdown
+                    breakdown={breakdown}
+                    predictionTip={predictionTip}
+                    homeTeam={homeTeam}
+                    awayTeam={awayTeam}
+                  />
+                </Suspense>
 
                 <div className="pt-1 text-[10px] text-muted-foreground flex items-center justify-between border-t border-border/30">
                   <div className="flex items-center gap-1">
