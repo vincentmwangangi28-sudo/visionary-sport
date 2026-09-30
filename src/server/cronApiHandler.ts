@@ -48,8 +48,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'indexing': {
         // Keep the Vercel request lightweight. The full crawl/verification job runs in
         // GitHub Actions; this endpoint performs only the fast indexing dispatch.
-        const baseUrl = process.env.SITE_URL || 'https://www.predictpro.guru';
-        const indexNowKey = process.env.INDEXNOW_KEY || 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+        const baseUrl = process.env.SITE_URL || 'https://predictpro.guru';
+        const indexNowKey = process.env.INDEXNOW_KEY || 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
         const urls = [
           baseUrl + '/',
           baseUrl + '/predict',

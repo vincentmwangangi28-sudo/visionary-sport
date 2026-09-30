@@ -37,7 +37,7 @@ const SETTINGS_KEY = 'predictpro_seo_cron_settings';
 const LOGS_KEY = 'predictpro_seo_cron_logs';
 const TOTAL_INDEXED_KEY = 'predictpro_seo_total_indexed';
 
-export const DEFAULT_INDEXNOW_KEY = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+export const DEFAULT_INDEXNOW_KEY = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
 
 export const DEFAULT_SETTINGS: GoogleIndexingSettings = {
   isEnabled: true,
@@ -127,7 +127,9 @@ class GoogleIndexingCronService {
         if (
           !parsed.indexNowKey ||
           parsed.indexNowKey === 'predictpro789xyz456indexnow' ||
-          parsed.indexNowKey === 'ccf4ef0c532c4444b096f02474b4320a'
+          parsed.indexNowKey === 'ccf4ef0c532c4444b096f02474b4320a' ||
+          parsed.indexNowKey === 'k1rdcw8qawe1jjeeezgcndj1njk3yr2g' ||
+          parsed.indexNowKey === 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5'
         ) {
           parsed.indexNowKey = DEFAULT_INDEXNOW_KEY;
         }

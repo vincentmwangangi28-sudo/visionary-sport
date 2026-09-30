@@ -5,8 +5,8 @@ export const config = {
   runtime: 'edge',
 };
 
-const BASE_URL = 'https://www.predictpro.guru';
-const INDEXNOW_KEY = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+const BASE_URL = 'https://predictpro.guru';
+const INDEXNOW_KEY = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
 const SUPABASE_PING_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines';
 
 const PRIORITY_URLS = [
@@ -62,7 +62,7 @@ export default async function handler(request: Request) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        host: 'www.predictpro.guru',
+        host: 'predictpro.guru',
         key: INDEXNOW_KEY,
         keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
         urlList: PRIORITY_URLS,

@@ -38,7 +38,7 @@ serve(async (req) => {
     // default
   }
 
-  const defaultKey = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+  const defaultKey = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
   const indexNowKey = Deno.env.get('INDEXNOW_KEY') || defaultKey;
 
   const defaultUrls = [
@@ -77,9 +77,9 @@ serve(async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
-        host: 'www.predictpro.guru',
+        host: 'predictpro.guru',
         key: indexNowKey,
-        keyLocation: `https://www.predictpro.guru/${indexNowKey}.txt`,
+        keyLocation: `https://predictpro.guru/${indexNowKey}.txt`,
         urlList: urlList.slice(0, 100),
       }),
     });
