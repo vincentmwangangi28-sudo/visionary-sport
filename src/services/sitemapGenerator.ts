@@ -15,20 +15,22 @@ export const BASE_URL = 'https://predictpro.guru';
 
 // Blog strategy articles
 export const BLOG_POSTS_METADATA = [
-  { slug: 'how-to-read-football-predictions', title: 'How to Read AI Football Predictions Like a Pro', date: '2026-09-25' },
-  { slug: 'value-betting-explained', title: 'Value Betting in Football: A Complete +EV Guide', date: '2026-09-24' },
-  { slug: 'asian-handicap-betting-explained', title: 'Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines', date: '2026-09-23' },
-  { slug: 'draw-no-bet-vs-double-chance-strategy', title: 'Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide', date: '2026-09-22' },
-  { slug: 'closing-line-value-clv-dropping-odds', title: 'Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam', date: '2026-09-21' },
-  { slug: 'bankroll-management-football', title: 'Bankroll Management & Kelly Criterion for Football Bettors', date: '2026-09-20' },
-  { slug: 'premier-league-prediction-guide-2026', title: 'Premier League 2026/27 AI Prediction & xG Guide', date: '2026-09-19' },
-  { slug: 'champions-league-group-stage-tips', title: 'Champions League 36-Team Swiss Phase: How to Bet Smart', date: '2026-09-18' },
-  { slug: 'btts-over-under-strategy', title: 'BTTS and Over/Under 2.5: The Poisson Stats Behind Goal Markets', date: '2026-09-17' },
-  { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League (FKF) Betting Guide 2026/27', date: '2026-09-16' },
-  { slug: 'accumulator-building-strategy', title: 'How to Build a Winning Football Accumulator: The 5-Fold Formula', date: '2026-09-15' },
-  { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: How Poisson Matrices Predict Exact Scorelines', date: '2026-09-14' },
-  { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', date: '2026-09-13' },
-  { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', date: '2026-09-12' },
+  { slug: 'how-to-read-football-predictions', title: 'How to Read AI Football Predictions Like a Pro', date: '2026-09-30' },
+  { slug: 'expected-goals-xg-betting-model-explained', title: 'Expected Goals (xG) & xGA Football Betting Model Explained: How to Beat Bookmaker Lines', date: '2026-09-30' },
+  { slug: 'halftime-fulltime-ht-ft-predictions-strategy', title: 'Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround & Draw-Win Strategy', date: '2026-09-30' },
+  { slug: 'value-betting-explained', title: 'Value Betting in Football: A Complete +EV Guide', date: '2026-09-30' },
+  { slug: 'asian-handicap-betting-explained', title: 'Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines', date: '2026-09-30' },
+  { slug: 'draw-no-bet-vs-double-chance-strategy', title: 'Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide', date: '2026-09-30' },
+  { slug: 'closing-line-value-clv-dropping-odds', title: 'Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam', date: '2026-09-30' },
+  { slug: 'bankroll-management-football', title: 'Bankroll Management & Kelly Criterion for Football Bettors', date: '2026-09-30' },
+  { slug: 'premier-league-prediction-guide-2026', title: 'Premier League 2026/27 AI Prediction & xG Guide', date: '2026-09-30' },
+  { slug: 'champions-league-group-stage-tips', title: 'Champions League 36-Team Swiss Phase: How to Bet Smart', date: '2026-09-30' },
+  { slug: 'btts-over-under-strategy', title: 'BTTS and Over/Under 2.5: The Poisson Stats Behind Goal Markets', date: '2026-09-30' },
+  { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League (FKF) Betting Guide 2026/27', date: '2026-09-30' },
+  { slug: 'accumulator-building-strategy', title: 'How to Build a Winning Football Accumulator: The 5-Fold Formula', date: '2026-09-30' },
+  { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: How Poisson Matrices Predict Exact Scorelines', date: '2026-09-30' },
+  { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', date: '2026-09-30' },
+  { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', date: '2026-09-30' },
 ];
 
 /**

@@ -45,7 +45,12 @@ const LINKS = {
   "Strategy & Guides": [
     { to: "/blog", label: "Football Betting Strategy Blog Hub" },
     { to: "/blog/how-to-read-football-predictions", label: "How to Read AI Implied Probabilities" },
+    { to: "/blog/expected-goals-xg-betting-model-explained", label: "Expected Goals (xG) & xGA Betting Model" },
+    { to: "/blog/halftime-fulltime-ht-ft-predictions-strategy", label: "Half-Time / Full-Time (HT/FT) Strategy" },
     { to: "/blog/value-betting-explained", label: "Expected Value (+EV) Betting Guide" },
+    { to: "/blog/asian-handicap-betting-explained", label: "Asian Handicap (-0.5 & -0.75) Guide" },
+    { to: "/blog/draw-no-bet-vs-double-chance-strategy", label: "Draw No Bet vs Double Chance ROI" },
+    { to: "/blog/closing-line-value-clv-dropping-odds", label: "Closing Line Value (CLV) & Steam Guide" },
     { to: "/blog/bankroll-management-football", label: "Kelly Staking & Bankroll Math" },
     { to: "/blog/premier-league-prediction-guide-2026", label: "2026/27 Premier League Betting Guide" },
     { to: "/blog/champions-league-group-stage-tips", label: "Champions League Knockout Strategy" },

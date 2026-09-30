@@ -455,8 +455,12 @@ const App = () => (
                             <Route path="/ads-policy"                   element={<RouteBoundary component={ResponsibleGaming} />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
                             <Route path="/predictions"                  element={<Navigate to="/predict" replace />} />
+                            <Route path="/football-predictions"         element={<Navigate to="/" replace />} />
+                            <Route path="/soccer-predictions"           element={<Navigate to="/" replace />} />
                             <Route path="/tips"                         element={<Navigate to="/best-bets" replace />} />
                             <Route path="/free-tips"                    element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/sure-bets"                    element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/banker-bets"                  element={<Navigate to="/best-bets" replace />} />
                             <Route path="/betting-tips"                 element={<Navigate to="/best-bets" replace />} />
                             <Route path="/today"                        element={<Navigate to="/best-bets" replace />} />
                             <Route path="/tomorrow"                     element={<Navigate to="/upcoming" replace />} />
@@ -467,9 +471,14 @@ const App = () => (
                             <Route path="/pricing"                      element={<Navigate to="/shop" replace />} />
                             <Route path="/jackpot"                      element={<Navigate to="/jackpot-predictions" replace />} />
                             <Route path="/mega-jackpot"                 element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/sportpesa-jackpot"            element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/betika-jackpot"               element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/mozzart-jackpot"              element={<Navigate to="/jackpot-predictions" replace />} />
                             <Route path="/epl"                          element={<Navigate to="/premier-league-predictions" replace />} />
+                            <Route path="/epl-predictions"              element={<Navigate to="/premier-league-predictions" replace />} />
                             <Route path="/premier-league"               element={<Navigate to="/premier-league-predictions" replace />} />
                             <Route path="/ucl"                          element={<Navigate to="/champions-league-predictions" replace />} />
+                            <Route path="/ucl-predictions"              element={<Navigate to="/champions-league-predictions" replace />} />
                             <Route path="/champions-league"             element={<Navigate to="/champions-league-predictions" replace />} />
                             <Route path="/laliga"                       element={<Navigate to="/la-liga-predictions" replace />} />
                             <Route path="/la-liga"                      element={<Navigate to="/la-liga-predictions" replace />} />
@@ -481,13 +490,18 @@ const App = () => (
                             <Route path="/world-cup"                    element={<Navigate to="/world-cup-predictions" replace />} />
                             <Route path="/afcon"                        element={<Navigate to="/afcon-predictions" replace />} />
                             <Route path="/mls"                          element={<Navigate to="/us-soccer-predictions" replace />} />
+                            <Route path="/mls-predictions"              element={<Navigate to="/us-soccer-predictions" replace />} />
                             <Route path="/livescore"                    element={<Navigate to="/live" replace />} />
                             <Route path="/livescores"                   element={<Navigate to="/live" replace />} />
                             <Route path="/live-scores"                  element={<Navigate to="/live" replace />} />
                             <Route path="/acca"                         element={<Navigate to="/accumulator" replace />} />
                             <Route path="/accumulators"                 element={<Navigate to="/accumulator" replace />} />
                             <Route path="/both-teams-to-score"          element={<Navigate to="/btts" replace />} />
+                            <Route path="/over-2-5-goals"               element={<Navigate to="/btts" replace />} />
+                            <Route path="/over-under-2-5"               element={<Navigate to="/btts" replace />} />
                             <Route path="/correct-scores"               element={<Navigate to="/correct-score" replace />} />
+                            <Route path="/ht-ft"                        element={<Navigate to="/blog/halftime-fulltime-ht-ft-predictions-strategy" replace />} />
+                            <Route path="/asian-handicap"               element={<Navigate to="/blog/asian-handicap-betting-explained" replace />} />
                             <Route path="/table"                        element={<Navigate to="/standings" replace />} />
                             <Route path="/tables"                       element={<Navigate to="/standings" replace />} />
                             <Route path="/odds"                         element={<Navigate to="/dropping-odds" replace />} />

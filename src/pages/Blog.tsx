@@ -196,7 +196,7 @@ export default function Blog() {
                   <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{featured.readTime} read</span>
                   <span>{new Date(featured.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   <span className="ml-auto text-primary font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Read complete guide <ChevronRight className="h-4 w-4" />
+                    Read {featured.category} Strategy Guide <ChevronRight className="h-4 w-4" />
                   </span>
                 </div>
               </CardContent>
@@ -227,9 +227,9 @@ export default function Blog() {
                         {post.excerpt}
                       </p>
                       <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{new Date(post.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span>{new Date(post.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} · Updated</span>
                         <span className="text-primary font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                          <span>Read</span>
+                          <span>Read {post.category} Guide</span>
                           <ChevronRight className="h-3.5 w-3.5" />
                         </span>
                       </div>

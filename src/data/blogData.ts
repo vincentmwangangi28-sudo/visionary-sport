@@ -5,6 +5,7 @@ export interface BlogPostItem {
   category: string;
   readTime: string;
   date: string;
+  lastUpdated?: string;
   featured?: boolean;
   keywords?: string;
 }
@@ -16,9 +17,30 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Understanding confidence scores, probability percentages and odds — what they mean and how to use them in your betting strategy.", 
     category: "Strategy", 
     readTime: "5 min", 
-    date: "2026-09-25", 
+    date: "2026-09-25",
+    lastUpdated: "2026-09-30",
     featured: true,
     keywords: "confidence score, probability, odds calculation, value betting, ai football predictions"
+  },
+  {
+    slug: "expected-goals-xg-betting-model-explained",
+    title: "Expected Goals (xG) & xGA Football Betting Model Explained: How to Beat Bookmaker Lines",
+    excerpt: "How quantitative syndicates use Expected Goals (xG), Post-Shot xG (PSxG), and Expected Points (xPTS) regression to identify mispriced football teams before the market adjusts.",
+    category: "Strategy",
+    readTime: "8 min",
+    date: "2026-09-30",
+    lastUpdated: "2026-09-30",
+    keywords: "expected goals xg explained, xg football betting model, xga stats, expected points xpts, understat xg strategy"
+  },
+  {
+    slug: "halftime-fulltime-ht-ft-predictions-strategy",
+    title: "Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround & Draw-Win Strategy",
+    excerpt: "Unlock higher decimal odds with Half-Time / Full-Time (HT/FT) wagering. Learn why Draw/Home (X/1) and Home/Home (1/1) splits outperform standard 1X2 bets in specific tactical matchups.",
+    category: "Markets",
+    readTime: "7 min",
+    date: "2026-09-29",
+    lastUpdated: "2026-09-30",
+    keywords: "ht ft predictions today, halftime fulltime betting strategy, draw home x/1 tips, ht ft turnaround football"
   },
   { 
     slug: "value-betting-explained", 
@@ -27,6 +49,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Strategy", 
     readTime: "8 min", 
     date: "2026-09-24",
+    lastUpdated: "2026-09-30",
     keywords: "expected value, EV, edge, bookmaker margins, bankroll, value bets"
   },
   {
@@ -36,6 +59,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Markets",
     readTime: "7 min",
     date: "2026-09-23",
+    lastUpdated: "2026-09-30",
     keywords: "asian handicap explained, -0.5 handicap, -0.75 asian handicap, quarter goal lines, football handicap tips"
   },
   {
@@ -45,6 +69,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Strategy",
     readTime: "6 min",
     date: "2026-09-22",
+    lastUpdated: "2026-09-30",
     keywords: "draw no bet explained, double chance 1x x2, dnb vs double chance, safe football betting markets"
   },
   {
@@ -54,6 +79,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Markets",
     readTime: "8 min",
     date: "2026-09-21",
+    lastUpdated: "2026-09-30",
     keywords: "closing line value clv, dropping odds strategy, sharp money football, steam moves betting"
   },
   { 
@@ -63,6 +89,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Finance", 
     readTime: "6 min", 
     date: "2026-09-20",
+    lastUpdated: "2026-09-30",
     keywords: "kelly criterion, bankroll, staking, risk management, units"
   },
   { 
@@ -72,6 +99,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Premier League", 
     readTime: "10 min", 
     date: "2026-09-19",
+    lastUpdated: "2026-09-30",
     keywords: "premier league, arsenal, manchester city, liverpool, chelsea, epl xG"
   },
   { 
@@ -81,6 +109,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Champions League", 
     readTime: "7 min", 
     date: "2026-09-18",
+    lastUpdated: "2026-09-30",
     keywords: "champions league, ucl, league phase, real madrid, bayern munich"
   },
   { 
@@ -90,6 +119,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Markets", 
     readTime: "6 min", 
     date: "2026-09-17",
+    lastUpdated: "2026-09-30",
     keywords: "btts, both teams to score, over 2.5 goals, under 2.5, goal markets"
   },
   { 
@@ -99,6 +129,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "KPL", 
     readTime: "5 min", 
     date: "2026-09-16",
+    lastUpdated: "2026-09-30",
     keywords: "kpl, kenya premier league, gor mahia, afc leopards, m-pesa, tusker"
   },
   { 
@@ -108,6 +139,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Strategy", 
     readTime: "7 min", 
     date: "2026-09-15",
+    lastUpdated: "2026-09-30",
     keywords: "accumulator, acca, parlay, multibet, 5-fold, odds boost"
   },
   { 
@@ -117,6 +149,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Markets", 
     readTime: "6 min", 
     date: "2026-09-14",
+    lastUpdated: "2026-09-30",
     keywords: "correct score, exact score, scoreline, probability matrix"
   },
   {
@@ -126,6 +159,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "Jackpots",
     readTime: "8 min",
     date: "2026-09-13",
+    lastUpdated: "2026-09-30",
     keywords: "sportpesa mega jackpot prediction 17 games, betika midweek jackpot, mozzart grand jackpot, jackpot bonus tips, double chance combinations"
   },
   {
@@ -135,6 +169,7 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     category: "US Soccer",
     readTime: "7 min",
     date: "2026-09-12",
+    lastUpdated: "2026-09-30",
     keywords: "mls predictions, us soccer betting picks, american odds moneyline, spread betting mls, inter miami la galaxy odds"
   },
 ];

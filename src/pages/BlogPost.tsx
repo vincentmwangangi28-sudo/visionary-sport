@@ -59,6 +59,50 @@ Most prediction sites use simple form tables. PredictPro's AI analyses:
 
 The result is a confidence score backed by real data, not intuition.`
   },
+  "expected-goals-xg-betting-model-explained": {
+    title: "Expected Goals (xG) & xGA Football Betting Model Explained: How to Beat Bookmaker Lines",
+    description: "Learn how Expected Goals (xG), Expected Goals Against (xGA), and Expected Points (xPTS) models identify mispriced football odds and positive EV bets.",
+    keywords: "expected goals xg explained, xg football betting model, xga stats, expected points xpts, poisson xg calculator",
+    category: "Strategy", readTime: "8 min", date: "2026-09-30",
+    content: `## What is Expected Goals (xG) in Football Betting?
+
+**Expected Goals (xG)** quantifies the statistical probability that a specific shot will result in a goal on a scale from **0.01 to 0.99**, based on historical data from over 500,000 professional shots. Every shot is weighted by distance to goal, shooting angle, body part (foot vs header), assist type (through-ball, cross, cutback), and defensive pressure.
+
+- **Tap-in inside the 6-yard box:** ~0.65 to 0.85 xG (65%–85% scoring probability)
+- **Penalty kick:** 0.76 to 0.79 xG (76%–79% scoring probability)
+- **Central shot from 25 yards:** ~0.03 to 0.05 xG (3%–5% scoring probability)
+
+## Why League Tables Lie: Expected Points (xPTS) Regression
+
+In any 8-to-12 match sample, actual goals scored diverge sharply from underlying **Expected Goals (xG)** due to woodwork hits, deflections, and short-term goalkeeper variance. Quantitative bettors calculate **Expected Points (xPTS)** by simulating each match 10,000 times using the shots taken:
+
+- **Underperforming Buy-Low Teams:** When a club creates **2.15 xG per 90** and concedes **0.95 xGA per 90** but sits mid-table due to temporary finishing cold streaks, bookmakers overprice their odds. Backing these teams on the **Value Bets** scanner yields +8% to +18% Expected Value (+EV).
+- **Overperforming Fade Candidates:** Teams winning three consecutive matches 1-0 despite generating only **0.55 xG** per match are statistically primed for negative regression.
+
+## Feeding xG & xGA into the Bivariate Poisson Matrix
+
+PredictPro's **Interactive AI Match Outcome Predictor** converts rolling 10-match non-penalty xG (npxG) and xGA into team-specific attacking and defensive lambdas (λ_Home and λ_Away). These lambdas power our **Correct Score** and **Both Teams to Score (BTTS)** probability distributions across 40+ global leagues.`
+  },
+  "halftime-fulltime-ht-ft-predictions-strategy": {
+    title: "Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround & Draw-Win Strategy",
+    description: "Master Half-Time / Full-Time (HT/FT) football predictions. Discover how Draw/Home (X/1) and Home/Home (1/1) derivative markets multiply value on heavy favourites.",
+    keywords: "ht ft predictions today, halftime fulltime betting strategy, draw home x/1 tips, ht ft turnaround football, double result tips",
+    category: "Markets", readTime: "7 min", date: "2026-09-29",
+    content: `## How Half-Time / Full-Time (HT/FT) Betting Works
+
+The **Half-Time / Full-Time (HT/FT)** market—also called Double Result—requires predicting the match state at the 45-minute whistle AND the final 90-minute whistle. Because there are 3 possible outcomes in each half, there are **3 × 3 = 9 possible HT/FT combinations** (1/1, X/1, 2/1, 1/X, X/X, 2/X, 1/2, X/2, 2/2).
+
+## The Two Highest-ROI HT/FT Strategies
+
+Instead of chasing 28.00 turnaround lottery tickets (2/1 or 1/2), professional syndicates use HT/FT to extract higher odds from heavy favourites priced between **1.28 and 1.55** in the standard 1X2 market:
+
+- **Strategy 1: Draw / Favourite (X/1 or X/2) at 4.00 – 4.60 Odds:** Against deep 5-4-1 low blocks in the **Premier League** or Italian Serie A, underdogs expend peak physical energy in the first 45 minutes to hold a 0-0 halftime draw before conceding between minutes 60 and 85 as substitution depth takes over.
+- **Strategy 2: Favourite / Favourite (1/1) at 1.95 – 2.35 Odds:** When a fast-starting home side (such as Bayern Munich, Real Madrid, or Gor Mahia) averages >1.10 First-Half xG, backing **1/1** transforms an unbettable 1.35 moneyline into a near-evens **Value Bets** opportunity.
+
+## Using Half-by-Half xG Splits on PredictPro
+
+Before placing an HT/FT wager, inspect team scoring timing distributions on our **Match Screener** and **Today's Best Bets** hubs to separate aggressive first-half pressers (1/1 candidates) from patient second-half possession grinders (X/1 candidates).`
+  },
   "value-betting-explained": {
     title: "Value Betting in Football: A Complete +EV Guide",
     description: "What is value betting, how to calculate expected value (EV) and why AI predictions help you find edges over bookmakers in football betting.",
@@ -168,11 +212,11 @@ Over a small sample of 20 bets, luck and red cards dictate your balance. Over 50
 3. **Catching Lagging Bookmakers:** When sharp exchanges slash a team's odds from 2.20 to 1.88, soft domestic bookmakers often take 15–45 minutes to adjust their lines—giving you a window to lock in positive CLV.`
   },
   "kpl-betting-guide-kenya": {
-    title: "Kenya Premier League Betting Guide 2026",
+    title: "Kenya Premier League (FKF) Betting Guide 2026/27",
     description: "Complete guide to betting on KPL. Best teams to back, M-Pesa payment options, prediction accuracy and tips for Kenya Premier League matches.",
     keywords: "KPL betting guide, Kenya Premier League predictions, Gor Mahia betting, AFC Leopards tips, SportPesa KPL, Betika KPL, M-Pesa betting football Kenya",
-    category: "KPL", readTime: "5 min", date: "2026-05-29",
-    content: `## Kenya Premier League 2025/26 Overview
+    category: "KPL", readTime: "5 min", date: "2026-09-16",
+    content: `## Kenya Premier League 2026/27 Overview
 
 The KPL features 18 clubs competing across a 34-match season. The most-predicted teams are:
 - **Gor Mahia** — Record champions, strong home form at Kasarani
@@ -202,7 +246,7 @@ If gambling affects your life, call **0800 723 253** (Kenya Responsible Gambling
     title: "SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI",
     description: "Complete guide to tackling the 17-game SportPesa Mega Jackpot and Betika Midweek. Banker selection criteria, double chance hedging, and cash bonus strategy.",
     keywords: "sportpesa mega jackpot prediction 17 games, betika midweek jackpot tips, mozzart grand jackpot, jackpot bonus winners",
-    category: "Jackpots", readTime: "8 min", date: "2026-06-05",
+    category: "Jackpots", readTime: "8 min", date: "2026-09-13",
     content: `## The Anatomy of the 17-Game Mega Jackpot
 
 Winning the SportPesa Mega Jackpot (over KES 350,000,000) or Betika Grand requires picking 17 correct outcomes across diverse global leagues. Mathematically, 17 matches have 3¹⁷ = **129,140,163 possible combinations**.
@@ -248,7 +292,7 @@ PredictPro updates the 17-game Mega Jackpot every Thursday evening on our **Jack
     title: "Bankroll Management for Football Bettors: The Math That Protects Your Capital",
     description: "The Kelly Criterion, proportional unit staking, and variance mitigation strategies. Learn how professional sports bettors safeguard their betting bankroll.",
     keywords: "bankroll management football, kelly criterion football betting, unit staking strategy, flat staking vs proportional, football betting bankroll",
-    category: "Finance", readTime: "6 min", date: "2026-06-02",
+    category: "Finance", readTime: "6 min", date: "2026-09-20",
     content: `## The Core Law of Sports Betting
 
 No predictive algorithm, regardless of machine learning accuracy, can overcome undisciplined staking. In football betting, variance is inevitable. A model with a **65% win probability** can easily experience a 5-bet losing streak within any sample of 50 matches.
@@ -293,10 +337,10 @@ Because Full Kelly can produce volatile bankroll swings, professional quantitati
 Use PredictPro's built-in **Bankroll Manager** and **Verified Track Record** tools to record every wager and monitor your unit yield over time.`
   },
   "premier-league-prediction-guide-2026": {
-    title: "Premier League 2025/26 Prediction Guide: Tactical Stats & AI Exploits",
+    title: "Premier League 2026/27 AI Prediction & xG Guide: Tactical Stats & AI Exploits",
     description: "Which EPL teams are most predictable? Home pitch advantage metrics, Expected Goals (xG) anomalies, and referee impact analysis for Premier League fixtures.",
     keywords: "premier league prediction guide, epl betting tips, expected goals premier league, arsenal man city liverpool predictions, epl home advantage",
-    category: "Premier League", readTime: "10 min", date: "2026-06-01",
+    category: "Premier League", readTime: "10 min", date: "2026-09-19",
     content: `## The Premier League Paradigm: Statistical Parity
 
 The English Premier League (EPL) is the most heavily traded sports betting market globally. Bookmaker liquidity is immense, meaning consensus lines (such as Arsenal vs Chelsea 1X2) are priced with razor-thin margins. To beat the market, bettors must look beyond league table position and analyze deeper underlying performance indicators.
@@ -326,10 +370,10 @@ Over 28% of all Premier League goals originate from dead-ball scenarios (corners
 Teams competing in the UEFA Champions League or Europa League experience substantial statistical drop-offs when playing away fixtures within 64 hours of a continental match. Monitor squad rotation announcements and midfield distance-covered statistics on PredictPro's **Match Screener** before placing matchday wagers.`
   },
   "champions-league-group-stage-tips": {
-    title: "Champions League Group Stage & League Phase: How to Bet Smart",
+    title: "Champions League 36-Team Swiss Phase: How to Bet Smart",
     description: "Navigating the UEFA Champions League 36-team Swiss model. Tactical rotation, motivation factors, goal differentials, and knockout qualification dynamics.",
     keywords: "champions league predictions, ucl betting tips, uefa swiss model betting, champions league group stage tips, real madrid bayern ucl",
-    category: "Champions League", readTime: "7 min", date: "2026-05-31",
+    category: "Champions League", readTime: "7 min", date: "2026-09-18",
     content: `## The New UEFA League Phase Landscape
 
 The expansion of the UEFA Champions League to a 36-team single league phase has fundamentally altered match dynamics. Unlike the traditional 4-team groups where teams often qualified with 2 matches to spare, the new Swiss-style table places immense value on **goal difference and total points**:
@@ -360,10 +404,10 @@ Champions League fixtures feature an average of **3.15 goals per match**, signif
 Targeting **Over 2.5 Goals & BTTS** in fixtures pairing high-possession heavyweights against fast counter-attacking sides offers consistent statistical value across the tournament.`
   },
   "btts-over-under-strategy": {
-    title: "BTTS and Over/Under: The Stats Behind Goal Markets",
+    title: "BTTS and Over/Under 2.5: The Poisson Stats Behind Goal Markets",
     description: "Why Both Teams to Score (BTTS) is one of the most mathematically predictable betting markets. Poisson distributions, Expected Goals (xG), and key tactical metrics.",
     keywords: "btts betting strategy, both teams to score tips, over under 2.5 goals strategy, poisson goal distribution, soccer goal markets",
-    category: "Markets", readTime: "6 min", date: "2026-05-30",
+    category: "Markets", readTime: "6 min", date: "2026-09-17",
     content: `## Why Professional Bettors Target Goal Markets
 
 Match outcome markets (1X2 Home/Draw/Away) carry ternary risk: a late deflection or disputed red card can overturn an otherwise solid selection. In contrast, goal markets like **Both Teams to Score (BTTS)** and **Over/Under 2.5 Goals** are binary and independent of which specific club secures all 3 points.
@@ -397,7 +441,7 @@ Explore our dedicated **BTTS & Over 2.5** hub on PredictPro to review daily matc
     title: "How to Build a Winning Football Accumulator: The 5-Fold Formula",
     description: "Why most accumulator multibets fail and how to use AI confidence filtering to engineer profitable 3-to-5 leg parlays with bookmaker bonus boosts.",
     keywords: "accumulator betting strategy, winning football acca, parlay multibet tips, 5-fold accumulator guide, acca builder tips",
-    category: "Strategy", readTime: "7 min", date: "2026-05-28",
+    category: "Strategy", readTime: "7 min", date: "2026-09-15",
     content: `## The Paradox of the Accumulator
 
 Accumulator bets (also known as multibets, parlays, or combo tickets) are beloved by football fans because they offer astronomical payouts from modest stakes. However, standard accumulators are also bookmakers' highest margin product:
@@ -425,10 +469,10 @@ When you assemble 4 legs that all carry individual positive expected value (+EV)
 Use PredictPro's **Accumulator Builder** to generate 1-click booking codes optimized with algorithmic banker legs.`
   },
   "correct-score-prediction-tips": {
-    title: "Correct Score Betting: Can AI Really Predict the Exact Scoreline?",
+    title: "Correct Score Betting: How Poisson Matrices Predict Exact Scorelines",
     description: "The mathematical realities of correct scoreline betting. Bivariate Poisson matrices, scoreline clustering, and when exact score odds offer genuine value.",
     keywords: "correct score prediction tips, exact score football tips, scoreline betting guide, bivariate poisson football, correct score odds",
-    category: "Markets", readTime: "6 min", date: "2026-05-27",
+    category: "Markets", readTime: "6 min", date: "2026-09-14",
     content: `## The Reality of Correct Score Betting
 
 Correct Score is widely considered the ultimate test of football prediction. Because predicting an exact 90-minute outcome (e.g., 2-1 or 1-0) involves pinpoint accuracy, decimal odds routinely range between **6.50 to 18.00**.
@@ -468,7 +512,7 @@ Check our daily **Correct Score** tips page to inspect the top 3 algorithmic sco
     title: "US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks",
     description: "How to bet on Major League Soccer, Concacaf Champions Cup, and US Open Cup. Understand American moneyline (+/-), goal spreads, travel fatigue, and altitude edges.",
     keywords: "mls predictions today, us soccer betting guide, american moneyline odds, major league soccer picks, inter miami betting",
-    category: "US Soccer", readTime: "7 min", date: "2026-06-06",
+    category: "US Soccer", readTime: "7 min", date: "2026-09-12",
     content: `## Deciphering American Odds (+/- Moneyline)
 
 In the United States, sportsbooks like DraftKings, FanDuel, and BetMGM display prices in **American Odds** instead of decimal format:
@@ -504,10 +548,57 @@ Tune into the MLS Season Pass on Apple TV, Paramount+ for Concacaf fixtures, and
   },
 };
 
+const INTERNAL_KEYWORD_LINKS: Array<{ phrase: RegExp; to: string; title: string }> = [
+  { phrase: /\bValue Bets\b/i, to: '/value-bets', title: 'Daily Positive Expected Value (+EV) Football Value Bets' },
+  { phrase: /\bvalue bets page\b/i, to: '/value-bets', title: 'Daily Positive Expected Value (+EV) Football Value Bets' },
+  { phrase: /\bBoth Teams to Score \(BTTS\)\b/i, to: '/btts', title: 'Daily Both Teams to Score (BTTS) & Over 2.5 Goals AI Predictions' },
+  { phrase: /\bBTTS & Over 2\.5\b/i, to: '/btts', title: 'Both Teams to Score (BTTS) & Over 2.5 Goals Hub' },
+  { phrase: /\bCorrect Score\b/i, to: '/correct-score', title: 'Exact Correct Score Bivariate Poisson Matrix Predictions' },
+  { phrase: /\bAccumulator Builder\b/i, to: '/accumulator', title: 'Smart Multi-Match Football Accumulator Slip Builder' },
+  { phrase: /\baccumulator builder\b/i, to: '/accumulator', title: 'Smart Multi-Match Football Accumulator Slip Builder' },
+  { phrase: /\bJackpot Predictions\b/i, to: '/jackpot-predictions', title: 'Official 17-Game SportPesa Mega & Betika Jackpot AI Predictions' },
+  { phrase: /\bDropping Odds Radar\b/i, to: '/dropping-odds', title: 'Live Dropping Odds & Sharp Syndicate Steam Move Radar' },
+  { phrase: /\bBankroll Manager\b/i, to: '/bankroll', title: 'Kelly Criterion Football Bankroll Manager & Staking Calculator' },
+  { phrase: /\bVerified Track Record\b/i, to: '/track-record', title: 'Audited AI Football Prediction Track Record & CLV ROI' },
+  { phrase: /\bMatch Screener\b/i, to: '/screener', title: 'Multi-Factor Quantitative Football Match Screener' },
+  { phrase: /\bUS Soccer & MLS Predictions\b/i, to: '/us-soccer-predictions', title: 'Major League Soccer (MLS) & US Soccer Moneyline Predictions' },
+  { phrase: /\bInteractive AI Match Outcome Predictor\b/i, to: '/predict', title: 'Interactive AI Football Match Outcome & Poisson Simulator' },
+  { phrase: /\bToday's Best Bets\b/i, to: '/best-bets', title: 'Today’s 75%+ Confidence AI Football Banker Predictions' },
+];
+
+function renderParagraphWithInternalLinks(rawLine: string, linkedTargets: Set<string>): React.ReactNode {
+  const cleanText = rawLine.replace(/\*\*(.*?)\*\*/g, (_, t) => t);
+  for (const rule of INTERNAL_KEYWORD_LINKS) {
+    if (linkedTargets.has(rule.to)) continue;
+    const match = cleanText.match(rule.phrase);
+    if (match && match.index !== undefined) {
+      linkedTargets.add(rule.to);
+      const before = cleanText.slice(0, match.index);
+      const matchedText = match[0];
+      const after = cleanText.slice(match.index + matchedText.length);
+      return (
+        <>
+          {before}
+          <Link
+            to={rule.to}
+            title={rule.title}
+            className="text-primary font-semibold underline decoration-primary/40 hover:decoration-primary transition-colors"
+          >
+            {matchedText}
+          </Link>
+          {after}
+        </>
+      );
+    }
+  }
+  return cleanText;
+}
+
 function renderMarkdown(text: string) {
   const lines = text.split('\n');
   const elements: React.ReactNode[] = [];
   let currentList: React.ReactNode[] = [];
+  const linkedTargets = new Set<string>();
 
   const flushList = () => {
     if (currentList.length > 0) {
@@ -524,7 +615,7 @@ function renderMarkdown(text: string) {
     if (line.startsWith('- ')) {
       currentList.push(
         <li key={`li-${i}`}>
-          {line.slice(2).replace(/\*\*(.*?)\*\*/g, (_, t) => t)}
+          {renderParagraphWithInternalLinks(line.slice(2), linkedTargets)}
         </li>
       );
     } else {
@@ -540,7 +631,7 @@ function renderMarkdown(text: string) {
       } else {
         elements.push(
           <p key={i} className="text-muted-foreground leading-relaxed my-1.5">
-            {line.replace(/\*\*(.*?)\*\*/g, (_, t) => t)}
+            {renderParagraphWithInternalLinks(line, linkedTargets)}
           </p>
         );
       }
@@ -716,7 +807,7 @@ export default function BlogPost() {
       <Navbar />
       <main className="container mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-bold mb-4">Article not found</h1>
-        <Link to="/blog"><Button>← Back to Blog</Button></Link>
+        <Link to="/blog"><Button>← Back to Football Betting Strategy Guides</Button></Link>
       </main>
       <Footer />
     </div>
@@ -731,7 +822,33 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen bg-background">
       <SEO title={seoTitle} description={post.description} keywords={post.keywords} canonical={`/blog/${slug}`}
-        structuredData={{ '@type': 'Article', headline: post.title, description: post.description, datePublished: post.date, author: { '@type': 'Organization', name: 'PredictPro' }, publisher: { '@type': 'Organization', name: 'PredictPro', url: 'https://predictpro.guru' } }} />
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'Article',
+              headline: post.title,
+              description: post.description,
+              datePublished: post.date,
+              dateModified: '2026-09-30',
+              author: { '@type': 'Organization', name: 'PredictPro Quantitative Research' },
+              publisher: { '@type': 'Organization', name: 'PredictPro', url: 'https://predictpro.guru' },
+            },
+            {
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: post.title,
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: post.description,
+                  },
+                },
+              ],
+            },
+          ],
+        }} />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         {/* Dynamic Breadcrumbs */}
@@ -744,28 +861,43 @@ export default function BlogPost() {
         <div className="flex items-center gap-3 mb-4">
           <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold">{post.category}</Badge>
           <Link to="/blog" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors ml-auto">
-            <ChevronLeft className="h-3.5 w-3.5" />All Guides
+            <ChevronLeft className="h-3.5 w-3.5" />Browse All Football Betting Strategy Guides
           </Link>
         </div>
 
         <h1 className="text-3xl font-black mb-4 leading-tight">{post.title}</h1>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-8 pb-6 border-b">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b">
           <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />{post.readTime} read</span>
-          <span>{new Date(post.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <span>Published {new Date(post.date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">· Updated 30 Sep 2026 (2026/27 Season)</span>
           <WhatsAppShare text={`${post.title} — predictpro.guru/blog/${slug}`} className="ml-auto" />
         </div>
+
+        {/* AI Overview & Position-Zero Featured Snippet Summary Box */}
+        <aside
+          aria-label="Key Quantitative Takeaway and Direct Answer"
+          className="mb-6 p-4 rounded-xl border border-primary/25 bg-primary/5 space-y-1.5"
+        >
+          <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
+            Quick Answer · Quantitative Summary
+          </p>
+          <p className="text-xs sm:text-sm text-foreground leading-relaxed font-medium">
+            {post.description}
+          </p>
+        </aside>
+
         <article className="prose-sm max-w-none">{renderMarkdown(post.content)}</article>
 
         <AdBannerHorizontal className="my-6" />
-        {/* CTA */}
+        {/* CTA with Descriptive Anchor Texts */}
         <Card className="mt-10 border-primary/20 bg-primary/5">
           <CardContent className="p-6 text-center">
             <Zap className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="font-bold text-lg mb-2">Put Theory into Practice</h3>
-            <p className="text-muted-foreground text-sm mb-4">Use our AI to find value bets right now.</p>
-            <div className="flex gap-3 justify-center">
-              <Link to="/value-bets"><Button>Find Value Bets</Button></Link>
-              <Link to="/best-bets"><Button variant="outline">Today's Best Bets</Button></Link>
+            <h3 className="font-bold text-lg mb-2">Put Quantitative Strategy into Practice</h3>
+            <p className="text-muted-foreground text-sm mb-4">Apply Poisson probabilities and +EV screening to today’s live football slate.</p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link to="/value-bets"><Button>Scan Today's Positive EV (+EV) Value Bets</Button></Link>
+              <Link to="/best-bets"><Button variant="outline">Explore Today's 75%+ AI Banker Predictions</Button></Link>
             </div>
           </CardContent>
         </Card>
@@ -787,7 +919,7 @@ export default function BlogPost() {
                 to="/blog"
                 className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
               >
-                <span>All Articles</span>
+                <span>Explore All Football Betting Strategy Guides</span>
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -815,8 +947,8 @@ export default function BlogPost() {
                     {article.excerpt}
                   </p>
                   <div className="pt-2 border-t border-border/40 text-[11px] font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                    <span>Read Guide</span>
-                    <ArrowRight className="h-3 w-3" />
+                    <span className="truncate">Read {article.category} Strategy Guide</span>
+                    <ArrowRight className="h-3 w-3 shrink-0" />
                   </div>
                 </Link>
               ))}

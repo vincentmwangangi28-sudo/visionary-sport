@@ -71,14 +71,19 @@ const LEAGUE_PAGES = [
 
 const BLOG_POSTS = [
   { slug: 'how-to-read-football-predictions', title: 'How to Read AI Football Predictions Like a Pro', priority: 0.80 },
+  { slug: 'expected-goals-xg-betting-model-explained', title: 'Expected Goals (xG) & xGA Football Betting Model Explained: How to Beat Bookmaker Lines', priority: 0.85 },
+  { slug: 'halftime-fulltime-ht-ft-predictions-strategy', title: 'Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround & Draw-Win Strategy', priority: 0.85 },
   { slug: 'value-betting-explained', title: 'Value Betting in Football: A Complete Guide to Positive Expected Value', priority: 0.80 },
+  { slug: 'asian-handicap-betting-explained', title: 'Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines', priority: 0.85 },
+  { slug: 'draw-no-bet-vs-double-chance-strategy', title: 'Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide', priority: 0.85 },
+  { slug: 'closing-line-value-clv-dropping-odds', title: 'Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam', priority: 0.85 },
   { slug: 'bankroll-management-football', title: 'Bankroll Management for Football Bettors: Kelly Criterion', priority: 0.80 },
-  { slug: 'premier-league-prediction-guide-2026', title: 'Premier League 2025/26 Season Prediction Guide', priority: 0.80 },
-  { slug: 'champions-league-group-stage-tips', title: 'Champions League Group Stage: How to Bet Smart Using AI', priority: 0.80 },
+  { slug: 'premier-league-prediction-guide-2026', title: 'Premier League 2026/27 Season Prediction Guide', priority: 0.80 },
+  { slug: 'champions-league-group-stage-tips', title: 'Champions League 36-Team Swiss Phase: How to Bet Smart Using AI', priority: 0.80 },
   { slug: 'btts-over-under-strategy', title: 'BTTS and Over/Under 2.5: The Stats Behind Goal Markets', priority: 0.80 },
-  { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League Betting Guide 2026 & M-Pesa Payouts', priority: 0.80 },
+  { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League (FKF) Betting Guide 2026/27 & M-Pesa Payouts', priority: 0.80 },
   { slug: 'accumulator-building-strategy', title: 'How to Build a Winning Football Accumulator with Low Correlation', priority: 0.80 },
-  { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: Can AI Really Predict the Scoreline?', priority: 0.80 },
+  { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: How Poisson Matrices Predict Exact Scorelines', priority: 0.80 },
   { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', priority: 0.85 },
   { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', priority: 0.80 },
 ];

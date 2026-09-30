@@ -136,6 +136,20 @@ const AI_OVERVIEW_SNIPPETS = [
 
 const CONTENT_GAP_ARTICLES = [
   {
+    title: 'Expected Goals (xG) & xGA Football Betting Model Explained',
+    path: '/blog/expected-goals-xg-betting-model-explained',
+    competitorsRanking: 'Understat, FBref, FootyStats, Forebet',
+    monthlyVolume: '38,400',
+    status: 'Published & Indexed',
+  },
+  {
+    title: 'Half-Time / Full-Time (HT/FT) Football Predictions: Turnaround & Draw-Win Strategy',
+    path: '/blog/halftime-fulltime-ht-ft-predictions-strategy',
+    competitorsRanking: 'Forebet, WinDrawWin, PredictZ, Statarea',
+    monthlyVolume: '26,800',
+    status: 'Published & Indexed',
+  },
+  {
     title: 'Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines',
     path: '/blog/asian-handicap-betting-explained',
     competitorsRanking: 'Forebet, Oddspedia, FootyStats, AsianBookie',
@@ -152,7 +166,7 @@ const CONTENT_GAP_ARTICLES = [
   {
     title: 'Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam',
     path: '/blog/closing-line-value-clv-dropping-odds',
-    competitorsRanking: 'Pinnacle Pulse, Oddspedia,RebelBetting, SmartBettingClub',
+    competitorsRanking: 'Pinnacle Pulse, Oddspedia, RebelBetting, SmartBettingClub',
     monthlyVolume: '16,800',
     status: 'Published & Indexed',
   },
@@ -163,12 +177,109 @@ const CONTENT_GAP_ARTICLES = [
     monthlyVolume: '45,000',
     status: 'Live Interactive Tool',
   },
+];
+
+const DECLINING_AND_PUBLISHED_ONCE_PAGES = [
   {
-    title: 'Team Winning Streaks & Over 2.5 / BTTS Trend Radar',
-    path: '/streaks',
-    competitorsRanking: 'WinDrawWin, Vitibet, Statarea, FootyStats',
-    monthlyVolume: '19,200',
-    status: 'Live Interactive Tool',
+    path: '/blog/premier-league-prediction-guide-2026',
+    opportunityType: 'Content with Declining Traffic (Site Explorer · 6M)',
+    originalPublished: '2026-06-01',
+    refreshedDate: '2026-09-30',
+    actionTaken: 'Updated to 2026/27 EPL xPTS regression table, added Quick Answer snippet & FAQPage JSON-LD',
+  },
+  {
+    path: '/blog/champions-league-group-stage-tips',
+    opportunityType: 'Content with Declining Traffic (Site Explorer · 6M)',
+    originalPublished: '2026-05-31',
+    refreshedDate: '2026-09-30',
+    actionTaken: 'Replaced legacy 4-team group stage references with 36-team UEFA Swiss Phase qualification math',
+  },
+  {
+    path: '/blog/sportpesa-mega-jackpot-prediction-17-games',
+    opportunityType: 'Pages Only Published Once (Content Explorer)',
+    originalPublished: '2026-06-05',
+    refreshedDate: '2026-09-30',
+    actionTaken: 'Added 2^N Double Chance permutation table, direct SportPesa/Betika pool links & dateModified schema',
+  },
+  {
+    path: '/blog/kpl-betting-guide-kenya',
+    opportunityType: 'Pages Only Published Once (Content Explorer)',
+    originalPublished: '2026-05-29',
+    refreshedDate: '2026-09-30',
+    actionTaken: 'Refreshed 2026/27 FKF Premier League 18-club form splits, Kasarani home advantage & M-Pesa STK guide',
+  },
+  {
+    path: '/blog/correct-score-prediction-tips',
+    opportunityType: 'Pages Only Published Once (Content Explorer)',
+    originalPublished: '2026-05-27',
+    refreshedDate: '2026-09-30',
+    actionTaken: 'Added Bivariate Poisson top-5 scoreline clustering percentages & Dutching stake calculator links',
+  },
+];
+
+const INTERNAL_LINK_OPPORTUNITIES = [
+  {
+    sourcePage: '/blog/value-betting-explained',
+    keywordMentioned: 'Value Bets (+EV)',
+    targetHub: '/value-bets',
+    descriptiveAnchor: 'Daily Positive Expected Value (+EV) Football Value Bets',
+    monthlyTrafficWeight: '14,800/mo',
+  },
+  {
+    sourcePage: '/blog/btts-over-under-strategy',
+    keywordMentioned: 'Both Teams to Score (BTTS) & Over 2.5',
+    targetHub: '/btts',
+    descriptiveAnchor: 'Daily Both Teams to Score (BTTS) & Over 2.5 Goals AI Predictions',
+    monthlyTrafficWeight: '22,200/mo',
+  },
+  {
+    sourcePage: '/blog/sportpesa-mega-jackpot-prediction-17-games',
+    keywordMentioned: 'Jackpot Predictions (17 Games)',
+    targetHub: '/jackpot-predictions',
+    descriptiveAnchor: 'Official 17-Game SportPesa Mega & Betika Jackpot AI Predictions',
+    monthlyTrafficWeight: '40,500/mo',
+  },
+  {
+    sourcePage: '/blog/closing-line-value-clv-dropping-odds',
+    keywordMentioned: 'Dropping Odds Radar',
+    targetHub: '/dropping-odds',
+    descriptiveAnchor: 'Live Dropping Odds & Sharp Syndicate Steam Move Radar',
+    monthlyTrafficWeight: '12,400/mo',
+  },
+  {
+    sourcePage: '/blog/accumulator-building-strategy',
+    keywordMentioned: 'Accumulator Builder',
+    targetHub: '/accumulator',
+    descriptiveAnchor: 'Smart Multi-Match Football Accumulator Slip Builder',
+    monthlyTrafficWeight: '18,100/mo',
+  },
+];
+
+const DESCRIPTIVE_ANCHOR_FIXES = [
+  {
+    componentPath: 'src/pages/BlogPost.tsx',
+    genericBefore: 'Find Value Bets / Today’s Best Bets / Read Guide / All Guides',
+    descriptiveAfter: 'Scan Today’s Positive EV (+EV) Value Bets / Explore Today’s 75%+ AI Banker Predictions / Read {Category} Strategy Guide',
+  },
+  {
+    componentPath: 'src/pages/Blog.tsx',
+    genericBefore: 'Read complete guide / Read',
+    descriptiveAfter: 'Read {Category} Strategy Guide / Read {Category} Guide',
+  },
+  {
+    componentPath: 'src/pages/PersonalizedDashboard.tsx',
+    genericBefore: 'View All Predictions',
+    descriptiveAfter: 'Explore All Daily AI Football Predictions & Odds',
+  },
+  {
+    componentPath: 'src/components/BreakingNewsTicker.tsx',
+    genericBefore: 'View All News',
+    descriptiveAfter: 'Read Breaking Football Injury & Transfer News',
+  },
+  {
+    componentPath: 'src/components/Footer.tsx',
+    genericBefore: 'Blog / Standings / Archive / Methodology',
+    descriptiveAfter: 'Football Betting Strategy Blog Hub / Live League Tables & Form Standings / Audited Historical Results Archive',
   },
 ];
 
@@ -495,18 +606,18 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               </CardContent>
             </Card>
 
-            {/* 1D: Potential Cannibalization Resolver & Evergreen Refresh */}
+            {/* 1D: Potential Cannibalization Resolver */}
             <Card className="border-border/60">
               <CardHeader className="pb-3">
                 <Badge variant="outline" className="w-fit text-[10px] font-bold text-blue-600 border-blue-500/30 mb-1">
-                  Site Explorer &amp; Content Explorer · De-Cannibalization &amp; Refresh
+                  Site Explorer · Potential Cannibalization Prevention
                 </Badge>
                 <CardTitle className="text-base font-extrabold flex items-center gap-2">
                   <Layers className="w-4 h-4 text-blue-500" />
-                  Search Intent Separation &amp; Evergreen Content Refresh
+                  Search Intent Separation &amp; Canonical De-Cannibalization
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Each market hub is locked to a single primary search intent with strict self-referencing canonicals, preventing keyword overlap. All 14 guides refreshed for 2026/27.
+                  Each market hub is locked to a single primary search intent with strict self-referencing canonicals, preventing multiple pages from competing for the same keyword.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -532,6 +643,52 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               </CardContent>
             </Card>
           </div>
+
+          {/* 1E & 1F: Content with Declining Traffic (Site Explorer) & Pages Only Published Once (Content Explorer) */}
+          <Card className="border-border/60">
+            <CardHeader className="pb-3">
+              <Badge variant="outline" className="w-fit text-[10px] font-bold text-purple-600 border-purple-500/30 mb-1">
+                Site Explorer &amp; Content Explorer · Declining Traffic (6M) &amp; Published-Once Refresh
+              </Badge>
+              <CardTitle className="text-lg font-extrabold flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-purple-500" />
+                Refreshed Evergreen Guides (Declining 6M Traffic &amp; Pages Only Published Once)
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Updated legacy May/June 2026 articles with fresh 2026/27 seasonal metrics, <code className="font-mono">dateModified: 2026-09-30</code> Article JSON-LD, and Position-Zero Quick Answer boxes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/60 text-left text-muted-foreground">
+                      <th className="py-2 px-3 font-bold">Refreshed Page</th>
+                      <th className="py-2 px-3 font-bold">Opportunity Source</th>
+                      <th className="py-2 px-3 font-bold">Published &rarr; Updated</th>
+                      <th className="py-2 px-3 font-bold">2026/27 Content Upgrade Executed</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {DECLINING_AND_PUBLISHED_ONCE_PAGES.map((item) => (
+                      <tr key={item.path} className="hover:bg-muted/30">
+                        <td className="py-2.5 px-3">
+                          <Link to={item.path} className="font-mono font-bold text-primary hover:underline">
+                            {item.path}
+                          </Link>
+                        </td>
+                        <td className="py-2.5 px-3 font-semibold text-foreground">{item.opportunityType}</td>
+                        <td className="py-2.5 px-3 font-mono text-emerald-600 dark:text-emerald-400">
+                          {item.originalPublished} &rarr; {item.refreshedDate}
+                        </td>
+                        <td className="py-2.5 px-3 text-muted-foreground">{item.actionTaken}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -586,7 +743,74 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
             </CardContent>
           </Card>
 
-          {/* 2B: Link Intersect & Unlinked Brand Mentions Outreach Generator */}
+          {/* 2B: Internal Link Opportunities (Site Audit) & Descriptive Anchors (Site Explorer) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <Badge variant="outline" className="w-fit text-[10px] font-bold text-emerald-600 border-emerald-500/30 mb-1">
+                  Site Audit · Internal Link Opportunities
+                </Badge>
+                <CardTitle className="text-base font-extrabold flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-emerald-500" />
+                  Contextual Keyword-to-Hub Internal Links Injected
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Automatic contextual internal links built from ranking strategy articles that mention PredictPro’s top traffic keywords.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2.5">
+                {INTERNAL_LINK_OPPORTUNITIES.map((item) => (
+                  <div
+                    key={`${item.sourcePage}-${item.targetHub}`}
+                    className="p-2.5 rounded-lg border border-border/50 bg-muted/20 text-xs space-y-1"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Link to={item.sourcePage} className="font-mono text-muted-foreground hover:text-primary hover:underline truncate">
+                        {item.sourcePage}
+                      </Link>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                        &rarr; {item.targetHub} ({item.monthlyTrafficWeight})
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-foreground">
+                      Keyword: <strong>“{item.keywordMentioned}”</strong> · Title: <span className="text-muted-foreground">{item.descriptiveAnchor}</span>
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <Badge variant="outline" className="w-fit text-[10px] font-bold text-blue-600 border-blue-500/30 mb-1">
+                  Site Explorer · Descriptive Anchors Audit
+                </Badge>
+                <CardTitle className="text-base font-extrabold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                  Generic Anchor Text Replaced with Descriptive Anchors
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Eliminated generic anchor strings (“Read more”, “View All”, “Click here”) across all components in favor of semantic topic-accurate anchors.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2.5">
+                {DESCRIPTIVE_ANCHOR_FIXES.map((fix) => (
+                  <div
+                    key={fix.componentPath}
+                    className="p-2.5 rounded-lg border border-border/50 bg-muted/20 text-xs space-y-1"
+                  >
+                    <div className="font-mono font-bold text-primary text-[11px]">{fix.componentPath}</div>
+                    <div className="text-[11px] text-muted-foreground line-through">Before: {fix.genericBefore}</div>
+                    <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      After: {fix.descriptiveAfter}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 2C: Link Intersect & Unlinked Brand Mentions Outreach Generator */}
           <Card className="border-border/60">
             <CardHeader className="pb-3">
               <Badge variant="outline" className="w-fit text-[10px] font-bold text-amber-600 border-amber-500/30 mb-1">

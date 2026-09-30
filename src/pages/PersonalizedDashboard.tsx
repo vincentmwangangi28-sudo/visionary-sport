@@ -424,7 +424,7 @@ export default function PersonalizedDashboard() {
                   to="/"
                   className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
                 >
-                  View All Predictions <ChevronRight className="h-3.5 w-3.5" />
+                  Explore All Daily AI Football Predictions &amp; Odds <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
 
