@@ -148,7 +148,7 @@ export const Footer = () => {
           {FEATURED_MATCHES.map(m => (
             <Link
               key={m.slug}
-              to={`/predict/${m.slug}-${today}`}
+              to={`/predict/${m.slug}`}
               className="inline-flex items-center py-1 min-h-[32px] text-muted-foreground hover:text-primary transition-colors hover:underline"
             >
               {m.label} AI Match Prediction &amp; Odds

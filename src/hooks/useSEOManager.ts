@@ -350,26 +350,41 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
 };
 
 /**
- * Normalizes WebPage schema description to 150–160 chars for optimal SERP snippet rendering.
+ * Normalizes page <title> to strictly <= 60 characters for Ahrefs Site Audit & SERP display.
+ */
+export function normalizeSEOTitle(raw: string): string {
+  const text = (raw || '').trim();
+  if (text.length <= 60) return text;
+  const withoutBrand = text.replace(/\s*[|—-]\s*PredictPro.*$/i, '').trim();
+  if (withoutBrand.length <= 60 && withoutBrand.length >= 25) {
+    return withoutBrand;
+  }
+  let truncated = text.slice(0, 57);
+  const lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace > 38) {
+    truncated = truncated.slice(0, lastSpace).replace(/[,:&|—-]+$/, '');
+  }
+  return truncated.trim();
+}
+
+/**
+ * Normalizes meta & WebPage schema description to 120–155 chars (strictly <= 155 chars for Ahrefs Site Audit).
  */
 export function normalizeSEODescription(raw: string): string {
   let text = (raw || '').trim();
 
-  if (text.length > 160) {
-    let truncated = text.slice(0, 157);
+  if (text.length > 155) {
+    let truncated = text.slice(0, 152);
     const lastSpace = truncated.lastIndexOf(' ');
-    if (lastSpace > 135) {
-      truncated = truncated.slice(0, lastSpace);
+    if (lastSpace > 120) {
+      truncated = truncated.slice(0, lastSpace).replace(/[,:;]+$/, '');
     }
     text = `${truncated}...`;
-  }
-
-  if (text.length < 150) {
+  } else if (text.length < 115) {
     const cleanBase = text.replace(/[.\s]+$/, '');
-    const suffix =
-      ' Get verified AI football tips, Poisson probability models, live xG stats & +EV daily value picks.';
+    const suffix = ' Daily AI football predictions, Poisson xG stats & H2H odds.';
     const combined = `${cleanBase}.${suffix}`;
-    text = combined.length > 160 ? `${combined.slice(0, 157)}...` : combined.padEnd(152, '.');
+    text = combined.length > 155 ? `${combined.slice(0, 152)}...` : combined;
   }
 
   return text;
@@ -578,14 +593,16 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       : null;
 
     const rawTitle = options.title || matchSeo?.seoTitle || routeDefaults.title;
-    const fullTitle = rawTitle.includes('PredictPro')
+    const candidateTitle = rawTitle.includes('PredictPro')
       ? rawTitle
-      : rawTitle.length + 13 <= 68
+      : rawTitle.length + 13 <= 60
         ? `${rawTitle} | PredictPro`
         : rawTitle;
+    const fullTitle = normalizeSEOTitle(candidateTitle);
 
-    const description = options.description || matchSeo?.seoDescription || routeDefaults.description;
-    const webPageDescription = normalizeSEODescription(description);
+    const rawDescription = options.description || matchSeo?.seoDescription || routeDefaults.description;
+    const webPageDescription = normalizeSEODescription(rawDescription);
+    const description = webPageDescription;
 
     const rawCanonicalPath =
       options.canonical || matchSeo?.canonicalPath || routeDefaults.canonicalPath || activePathname;

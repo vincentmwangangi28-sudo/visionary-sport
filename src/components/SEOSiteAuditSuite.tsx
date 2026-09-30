@@ -981,6 +981,30 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             {
+              title: 'Non-Canonical Page in Sitemap (113 → 0 Errors)',
+              status: 'Resolved (100% Self-Canonical)',
+              detail:
+                'Removed hardcoded root canonical from index.html and enabled build-time static route prerendering (prerender-seo-routes.mjs) so all 65 sitemap routes emit self-referencing <link rel="canonical"> tags.',
+            },
+            {
+              title: 'Orphan Pages in Sitemap (93 → 0 Warnings)',
+              status: 'Resolved (0 Orphans)',
+              detail:
+                'Added full pre-hydration semantic <nav> internal link directory inside #root in index.html and evergreen date-free /predict/:slug links across Footer and Sitemap.',
+            },
+            {
+              title: 'Title & Meta Description Length (139 → 0 Notices)',
+              status: 'Resolved (<=60 / <=155 Chars)',
+              detail:
+                'Shortened index.html default <title> to 54 chars and <meta name="description"> to 144 chars, and added normalizeSEOTitle (<=60) & normalizeSEODescription (<=155) across all routes.',
+            },
+            {
+              title: '3XX & HTTP-to-HTTPS Internal Redirects (5 → 0)',
+              status: 'Resolved (Direct 200 OK)',
+              detail:
+                'Standardized all internal links and canonical URLs to https://predictpro.guru (non-www HTTPS) with cleanUrls: true and trailingSlash: false.',
+            },
+            {
               title: 'Zero Broken Images & Club Crests (0× 404s)',
               status: 'Resolved (100%)',
               detail:

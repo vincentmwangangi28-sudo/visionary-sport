@@ -158,10 +158,10 @@ export function buildSitemapXml() {
     title: 'Football Betting Strategy Blog & AI Prediction Guides',
   });
 
-  // Match pages
+  // Match pages (Evergreen canonical slugs so internal links never drift across days)
   for (const slug of FEATURED_MATCH_SLUGS) {
     urlEntries.push({
-      loc: `${BASE_URL}/predict/${slug}-${TODAY}`,
+      loc: `${BASE_URL}/predict/${slug}`,
       lastmod: TODAY,
       changefreq: 'daily',
       priority: '0.80',

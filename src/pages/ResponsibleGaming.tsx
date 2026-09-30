@@ -54,12 +54,12 @@ const HELPLINES = [
 
 export default function ResponsibleGaming() {
   const appealStatement = `Google Ads Destination & Policy Compliance Statement (Customer ID: 250-331-9949 | Campaign: Search-1 [23467443261]):
-1. Informational Sports Statistics Only: PredictPro (https://www.predictpro.guru) is an independent football data science, Expected Goals (xG), and Bivariate Poisson statistical modeling platform. We are NOT a bookmaker, casino, or real-money gambling operator, and users cannot place real-money bets or deposits on our website.
+1. Informational Sports Statistics Only: PredictPro (https://predictpro.guru) is an independent football data science, Expected Goals (xG), and Bivariate Poisson statistical modeling platform. We are NOT a bookmaker, casino, or real-money gambling operator, and users cannot place real-money bets or deposits on our website.
 2. No Gambling Vouchers or Affiliate Wagering: Our landing pages do not promote real-money casino games, slots, bingo, or bookmaker bonus codes, nor do we claim guaranteed financial returns.
-3. Prominent Responsible Gambling & 18+ Minor Protection: Every landing page displays a clear 18+ age restriction ("Never Intended for Minors"), responsible gambling guidelines, and direct links to international helplines (BeGambleAware.org, GamCare 0808 8020 133, NCPG 1-800-GAMBLER, and Responsible Gaming KE 0800 722 200) at https://www.predictpro.guru/responsible-gaming.`;
+3. Prominent Responsible Gambling & 18+ Minor Protection: Every landing page displays a clear 18+ age restriction ("Never Intended for Minors"), responsible gambling guidelines, and direct links to international helplines (BeGambleAware.org, GamCare 0808 8020 133, NCPG 1-800-GAMBLER, and Responsible Gaming KE 0800 722 200) at https://predictpro.guru/responsible-gaming.`;
 
   const compliantAdCopy = `Google Ads Compliant Responsive Search Ad (RSA) Copy — Campaign: Search-1 [23467443261]
-Final URL: https://www.predictpro.guru/
+Final URL: https://predictpro.guru/
 
 Headlines (Max 30 chars each — No restricted gambling terms):
 • PredictPro AI Football Stats

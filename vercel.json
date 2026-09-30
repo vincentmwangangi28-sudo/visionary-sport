@@ -3,6 +3,8 @@
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist",
   "framework": "vite",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "redirects": [
     { "source": "/predictions", "destination": "/predict", "permanent": true },
     { "source": "/predictions/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
