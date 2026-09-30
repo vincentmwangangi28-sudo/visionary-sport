@@ -684,10 +684,30 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
           url: BASE_URL,
           logo: { '@type': 'ImageObject', url: `${BASE_URL}/icon-512.png`, width: 512, height: 512 },
           sameAs: ['https://twitter.com/PredictProAI'],
+          areaServed: [
+            { '@type': 'Continent', name: 'Africa' },
+            { '@type': 'Country', name: 'Kenya' },
+            { '@type': 'Country', name: 'Nigeria' },
+            { '@type': 'Country', name: 'South Africa' },
+            { '@type': 'Country', name: 'Ghana' },
+            { '@type': 'Country', name: 'Tanzania' },
+            { '@type': 'Country', name: 'Uganda' },
+            { '@type': 'Country', name: 'Zambia' },
+            { '@type': 'Country', name: 'Cameroon' },
+            { '@type': 'Country', name: 'DR Congo' },
+            { '@type': 'Country', name: 'Egypt' },
+            { '@type': 'Country', name: 'Morocco' },
+            { '@type': 'Country', name: 'Senegal' },
+            { '@type': 'Country', name: 'Ivory Coast' },
+            { '@type': 'Country', name: 'United Kingdom' },
+            { '@type': 'Country', name: 'United States' },
+          ],
           contactPoint: {
             '@type': 'ContactPoint',
             email: 'support@predictpro.guru',
             contactType: 'customer support',
+            areaServed: ['KE', 'NG', 'ZA', 'GH', 'TZ', 'UG', 'ZM', 'ZW', 'RW', 'ET', 'CM', 'CD', 'EG', 'MA', 'SN', 'CI', 'GB', 'US'],
+            availableLanguage: ['en', 'sw', 'fr', 'ar', 'pt', 'es'],
           },
         },
         {
@@ -756,10 +776,37 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       resolved.noIndex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1'
     );
 
-    // 3. Synchronize Canonical & Hreflang Links
+    // 3. Synchronize Canonical & Multi-Region Continental Hreflang Links
     upsertLinkTag('canonical', resolved.canonicalUrl);
-    upsertLinkTag('alternate', resolved.canonicalUrl, 'en');
-    upsertLinkTag('alternate', resolved.canonicalUrl, 'x-default');
+    const continentalHreflangs = [
+      'x-default',
+      'en',
+      'en-KE',
+      'en-NG',
+      'en-ZA',
+      'en-GH',
+      'en-TZ',
+      'en-UG',
+      'en-ZM',
+      'en-ZW',
+      'en-RW',
+      'en-CM',
+      'en-EG',
+      'sw-KE',
+      'sw-TZ',
+      'fr-SN',
+      'fr-CI',
+      'fr-CD',
+      'fr-CM',
+      'fr-MA',
+      'ar-EG',
+      'pt-AO',
+      'en-GB',
+      'en-US',
+    ];
+    for (const lang of continentalHreflangs) {
+      upsertLinkTag('alternate', resolved.canonicalUrl, lang);
+    }
 
     // 4. Synchronize OpenGraph & Google Discover Article Freshness Tags
     const imageAlt = resolved.matchSeo

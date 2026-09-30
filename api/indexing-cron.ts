@@ -24,18 +24,31 @@ const PRIORITY_URLS = [
   `${BASE_URL}/recommendations`,
   `${BASE_URL}/tournaments`,
   `${BASE_URL}/track-record`,
+  `${BASE_URL}/jackpot-predictions`,
   `${BASE_URL}/premier-league-predictions`,
   `${BASE_URL}/champions-league-predictions`,
   `${BASE_URL}/la-liga-predictions`,
   `${BASE_URL}/bundesliga-predictions`,
   `${BASE_URL}/serie-a-predictions`,
   `${BASE_URL}/kpl-predictions`,
-  `${BASE_URL}/world-cup-predictions`,
   `${BASE_URL}/afcon-predictions`,
+  `${BASE_URL}/world-cup-predictions`,
+  `${BASE_URL}/us-soccer-predictions`,
+  `${BASE_URL}/streaks`,
+  `${BASE_URL}/h2h`,
   `${BASE_URL}/blog`,
   `${BASE_URL}/methodology`,
   `${BASE_URL}/sitemap`,
   `${BASE_URL}/seo-indexing`
+];
+
+const CONTINENTAL_REGIONS_DISTRIBUTED = [
+  { id: 'east_africa', zone: 'East Africa (KE, TZ, UG, RW, ET)', locales: ['en-KE', 'en-TZ', 'en-UG', 'en-RW', 'sw-KE', 'sw-TZ'] },
+  { id: 'west_africa', zone: 'West Africa (NG, GH, CI, SN, ML)', locales: ['en-NG', 'en-GH', 'fr-CI', 'fr-SN'] },
+  { id: 'southern_africa', zone: 'Southern Africa (ZA, ZM, ZW, BW, NA, MZ)', locales: ['en-ZA', 'en-ZM', 'en-ZW', 'pt-MZ'] },
+  { id: 'central_africa', zone: 'Central Africa (CD, CM, AO, CG, GA)', locales: ['fr-CD', 'fr-CM', 'en-CM', 'pt-AO'] },
+  { id: 'north_africa_middle_east', zone: 'North Africa & MENA (EG, MA, DZ, TN, SA, AE)', locales: ['ar-EG', 'en-EG', 'fr-MA', 'fr-DZ', 'fr-TN'] },
+  { id: 'europe_americas', zone: 'Europe & Americas (UK, EU, US, BR)', locales: ['en-GB', 'en-US', 'es-ES', 'pt-BR'] },
 ];
 
 export default async function handler(request: Request) {
@@ -95,7 +108,8 @@ export default async function handler(request: Request) {
       cronSchedule: '0 */2 * * * (Every 2 Hours)',
       indexNow: indexNowStatus,
       supabasePing: supabaseStatus,
-      googlebotDirective: 'Sitemap in robots.txt actively declared & pinged',
+      continentalDistribution: CONTINENTAL_REGIONS_DISTRIBUTED,
+      googlebotDirective: 'Sitemap in robots.txt actively declared & pinged across all continental hreflang regions',
     }),
     {
       status: 200,

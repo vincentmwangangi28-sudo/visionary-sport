@@ -7,9 +7,11 @@
  */
 
 export type GeographicRegionId =
+  | 'pan_africa'
   | 'east_africa'
   | 'west_africa'
   | 'southern_africa'
+  | 'central_africa'
   | 'north_africa_middle_east'
   | 'uk_ireland'
   | 'western_europe'
@@ -46,13 +48,54 @@ export interface RegionDefinition {
 }
 
 export const GEOGRAPHIC_REGIONS: Record<GeographicRegionId, RegionDefinition> = {
+  pan_africa: {
+    id: 'pan_africa',
+    name: 'All-Africa Continental (CAF)',
+    shortLabel: 'All Africa',
+    flag: '🌍',
+    description: 'Full continental syndication across all 54 CAF nations: AFCON, CAF Champions League, KPL, NPFL, PSL, Botola & EPL',
+    countries: [
+      'Kenya', 'Nigeria', 'South Africa', 'Ghana', 'Tanzania', 'Uganda', 'Egypt', 'Morocco',
+      'Senegal', 'Ivory Coast', 'Cameroon', 'DR Congo', 'Zambia', 'Zimbabwe', 'Algeria', 'Tunisia',
+      'Rwanda', 'Ethiopia', 'Angola', 'Mali', 'Burkina Faso', 'Gabon', 'Namibia', 'Botswana',
+    ],
+    primaryCountry: 'Pan-Africa',
+    timezones: ['Africa/Nairobi', 'Africa/Lagos', 'Africa/Johannesburg', 'Africa/Cairo', 'Africa/Casablanca', 'Africa/Kinshasa'],
+    defaultCurrency: 'USD',
+    regionalBookmakers: ['SportyBet', 'Betway', '1xBet', 'Betika', 'Bet9ja', 'Hollywoodbets', 'Mozzart'],
+    topLeagues: [
+      { id: '6', apiFootballId: 6, name: 'AFCON', flag: '🌍', country: 'Africa', tier: 'regional_hero', badgeLabel: 'Continental Flagship' },
+      { id: '12', apiFootballId: 12, name: 'CAF Champions League', flag: '🏆', country: 'Africa', tier: 'regional_hero', badgeLabel: 'Continental Elite' },
+      { id: '20', apiFootballId: 20, name: 'AFCON Qualifier', flag: '🌍', country: 'Africa', tier: 'regional_hero' },
+      { id: '276', apiFootballId: 276, name: 'FKF Premier League', shortName: 'KPL', flag: '🇰🇪', country: 'Kenya', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'East Africa' },
+      { id: '383', apiFootballId: 383, name: 'Nigeria NPFL', shortName: 'NPFL', flag: '🇳🇬', country: 'Nigeria', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'West Africa' },
+      { id: '288', apiFootballId: 288, name: 'South Africa PSL', shortName: 'PSL', flag: '🇿🇦', country: 'South Africa', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'Southern Africa' },
+      { id: '233', apiFootballId: 233, name: 'Egyptian Premier League', flag: '🇪🇬', country: 'Egypt', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'North Africa' },
+      { id: '200', apiFootballId: 200, name: 'Botola Pro (Morocco)', flag: '🇲🇦', country: 'Morocco', tier: 'domestic_tier1', isDomestic: true },
+      { id: '39', apiFootballId: 39, name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', country: 'England', tier: 'global_elite', badgeLabel: 'Most Watched' },
+      { id: '2', apiFootballId: 2, name: 'Champions League', flag: '🏆', country: 'Europe', tier: 'global_elite' },
+    ],
+    popularLeaguesList: [
+      'AFCON',
+      'CAF Champions League',
+      'FKF Premier League',
+      'Nigeria NPFL',
+      'South Africa PSL',
+      'Egyptian Premier League',
+      'Botola Pro (Morocco)',
+      'Premier League',
+      'Champions League',
+      'La Liga',
+    ],
+  },
+
   east_africa: {
     id: 'east_africa',
     name: 'East Africa',
     shortLabel: 'East Africa',
     flag: '🇰🇪',
-    description: 'Prioritizing Kenyan Premier League (FKF), AFCON, Premier League, and Champions League',
-    countries: ['Kenya', 'Tanzania', 'Uganda', 'Rwanda', 'Ethiopia', 'Burundi', 'South Sudan'],
+    description: 'Prioritizing Kenyan Premier League (FKF), Tanzania NBC League, Uganda Premier League, AFCON & EPL',
+    countries: ['Kenya', 'Tanzania', 'Uganda', 'Rwanda', 'Ethiopia', 'Burundi', 'South Sudan', 'Somalia', 'Djibouti', 'Eritrea'],
     primaryCountry: 'Kenya',
     timezones: [
       'Africa/Nairobi',
@@ -62,12 +105,17 @@ export const GEOGRAPHIC_REGIONS: Record<GeographicRegionId, RegionDefinition> = 
       'Africa/Addis_Ababa',
       'Africa/Bujumbura',
       'Africa/Juba',
+      'Africa/Mogadishu',
+      'Africa/Asmara',
+      'Africa/Djibouti',
     ],
     defaultCurrency: 'KES',
-    regionalBookmakers: ['SportyBet', 'Betika', 'Mozzart', '1xBet', 'Betway'],
+    regionalBookmakers: ['SportPesa', 'Betika', 'SportyBet', 'Mozzart', '1xBet', 'Betway', 'Odibets'],
     topLeagues: [
       { id: '39', apiFootballId: 39, name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', country: 'England', tier: 'global_elite', badgeLabel: 'Top Followed' },
       { id: '276', apiFootballId: 276, name: 'FKF Premier League', shortName: 'KPL', flag: '🇰🇪', country: 'Kenya', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'Domestic Tier 1' },
+      { id: '567', apiFootballId: 567, name: 'Tanzania NBC Premier League', shortName: 'Ligi Kuu', flag: '🇹🇿', country: 'Tanzania', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'East Africa Derby' },
+      { id: '585', apiFootballId: 585, name: 'Uganda Premier League', shortName: 'UPL', flag: '🇺🇬', country: 'Uganda', tier: 'domestic_tier1', isDomestic: true },
       { id: '2', apiFootballId: 2, name: 'Champions League', flag: '🏆', country: 'Europe', tier: 'global_elite', badgeLabel: 'Elite' },
       { id: '140', apiFootballId: 140, name: 'La Liga', flag: '🇪🇸', country: 'Spain', tier: 'global_elite' },
       { id: '6', apiFootballId: 6, name: 'AFCON', flag: '🌍', country: 'Africa', tier: 'regional_hero', badgeLabel: 'Continental Hero' },
@@ -81,6 +129,8 @@ export const GEOGRAPHIC_REGIONS: Record<GeographicRegionId, RegionDefinition> = 
       'Premier League',
       'FKF Premier League',
       'KPL',
+      'Tanzania NBC Premier League',
+      'Uganda Premier League',
       'Champions League',
       'La Liga',
       'AFCON Qualifier',
@@ -177,6 +227,51 @@ export const GEOGRAPHIC_REGIONS: Record<GeographicRegionId, RegionDefinition> = 
       'Bundesliga',
       'AFCON',
       'CAF Champions League',
+    ],
+  },
+
+  central_africa: {
+    id: 'central_africa',
+    name: 'Central Africa',
+    shortLabel: 'Central Africa',
+    flag: '🇨🇩',
+    description: 'Prioritizing Linafoot (DR Congo), Elite One (Cameroon), Girabola (Angola), CAF Champions League & Ligue 1',
+    countries: ['DR Congo', 'Cameroon', 'Angola', 'Republic of the Congo', 'Gabon', 'Chad', 'Central African Republic', 'Equatorial Guinea'],
+    primaryCountry: 'DR Congo',
+    timezones: [
+      'Africa/Kinshasa',
+      'Africa/Lubumbashi',
+      'Africa/Douala',
+      'Africa/Luanda',
+      'Africa/Brazzaville',
+      'Africa/Libreville',
+      'Africa/Ndjamena',
+      'Africa/Bangui',
+      'Africa/Malabo',
+    ],
+    defaultCurrency: 'USD',
+    regionalBookmakers: ['1xBet', 'PremierBet', 'Betwinner', 'SportyBet', 'Melbet'],
+    topLeagues: [
+      { id: '12', apiFootballId: 12, name: 'CAF Champions League', flag: '🏆', country: 'Africa', tier: 'regional_hero', badgeLabel: 'Continental Hero' },
+      { id: '6', apiFootballId: 6, name: 'AFCON', flag: '🌍', country: 'Africa', tier: 'regional_hero', badgeLabel: 'Continental Hero' },
+      { id: '405', apiFootballId: 405, name: 'DR Congo Linafoot', shortName: 'Linafoot', flag: '🇨🇩', country: 'DR Congo', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'Domestic Tier 1' },
+      { id: '411', apiFootballId: 411, name: 'Cameroon Elite One', shortName: 'Elite One', flag: '🇨🇲', country: 'Cameroon', tier: 'domestic_tier1', isDomestic: true, badgeLabel: 'Domestic Tier 1' },
+      { id: '397', apiFootballId: 397, name: 'Angola Girabola', shortName: 'Girabola', flag: '🇦🇴', country: 'Angola', tier: 'domestic_tier1', isDomestic: true },
+      { id: '61', apiFootballId: 61, name: 'Ligue 1', flag: '🇫🇷', country: 'France', tier: 'global_elite', badgeLabel: 'Top Followed' },
+      { id: '39', apiFootballId: 39, name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', country: 'England', tier: 'global_elite' },
+      { id: '2', apiFootballId: 2, name: 'Champions League', flag: '🏆', country: 'Europe', tier: 'global_elite', badgeLabel: 'Elite' },
+      { id: '140', apiFootballId: 140, name: 'La Liga', flag: '🇪🇸', country: 'Spain', tier: 'global_elite' },
+    ],
+    popularLeaguesList: [
+      'CAF Champions League',
+      'AFCON',
+      'DR Congo Linafoot',
+      'Cameroon Elite One',
+      'Angola Girabola',
+      'Ligue 1',
+      'Premier League',
+      'Champions League',
+      'La Liga',
     ],
   },
 
@@ -526,10 +621,13 @@ export function detectUserGeographicRegion(): {
       if (['Nairobi', 'Dar_es_Salaam', 'Kampala', 'Kigali', 'Addis_Ababa', 'Mogadishu', 'Asmara'].some(c => detectedTz.includes(c))) {
         return { regionId: 'east_africa', region: GEOGRAPHIC_REGIONS.east_africa, isAutoDetected: true, detectedTimezone: detectedTz, matchedBy: 'timezone' };
       }
-      if (['Lagos', 'Accra', 'Abidjan', 'Dakar', 'Douala', 'Bamako', 'Niamey', 'Conakry', 'Freetown', 'Monrovia'].some(c => detectedTz.includes(c))) {
+      if (['Lagos', 'Accra', 'Abidjan', 'Dakar', 'Bamako', 'Niamey', 'Conakry', 'Freetown', 'Monrovia', 'Ouagadougou', 'Lome', 'Porto-Novo'].some(c => detectedTz.includes(c))) {
         return { regionId: 'west_africa', region: GEOGRAPHIC_REGIONS.west_africa, isAutoDetected: true, detectedTimezone: detectedTz, matchedBy: 'timezone' };
       }
-      if (['Johannesburg', 'Harare', 'Lusaka', 'Gaborone', 'Windhoek', 'Maputo', 'Maseru', 'Mbabane'].some(c => detectedTz.includes(c))) {
+      if (['Kinshasa', 'Lubumbashi', 'Douala', 'Luanda', 'Brazzaville', 'Libreville', 'Ndjamena', 'Bangui', 'Malabo'].some(c => detectedTz.includes(c))) {
+        return { regionId: 'central_africa', region: GEOGRAPHIC_REGIONS.central_africa, isAutoDetected: true, detectedTimezone: detectedTz, matchedBy: 'timezone' };
+      }
+      if (['Johannesburg', 'Harare', 'Lusaka', 'Gaborone', 'Windhoek', 'Maputo', 'Maseru', 'Mbabane', 'Blantyre'].some(c => detectedTz.includes(c))) {
         return { regionId: 'southern_africa', region: GEOGRAPHIC_REGIONS.southern_africa, isAutoDetected: true, detectedTimezone: detectedTz, matchedBy: 'timezone' };
       }
       if (['Cairo', 'Casablanca', 'Algiers', 'Tunis', 'Tripoli'].some(c => detectedTz.includes(c))) {
@@ -828,3 +926,125 @@ export function sortLiveFixturesByRegion<T extends { league: string; status: str
     return dateA - dateB;
   });
 }
+
+export interface ContinentalDistributionNode {
+  id: GeographicRegionId;
+  title: string;
+  continentZone: string;
+  flag: string;
+  countriesCount: number;
+  countries: string[];
+  hreflangLocales: string[];
+  edgePoPs: string[];
+  keyLeagues: string[];
+  bookmakerFeeds: string[];
+  priorityRoutes: string[];
+}
+
+export const CONTINENTAL_DISTRIBUTION_HUBS: ContinentalDistributionNode[] = [
+  {
+    id: 'east_africa',
+    title: 'East Africa & Horn Hub',
+    continentZone: 'Africa · East (CECAFA)',
+    flag: '🇰🇪',
+    countriesCount: 10,
+    countries: ['Kenya', 'Tanzania', 'Uganda', 'Rwanda', 'Ethiopia', 'Burundi', 'South Sudan', 'Somalia', 'Djibouti', 'Eritrea'],
+    hreflangLocales: ['en-KE', 'en-TZ', 'en-UG', 'en-RW', 'en-ET', 'sw-KE', 'sw-TZ'],
+    edgePoPs: ['NBO (Nairobi)', 'DAR (Dar es Salaam)', 'EBB (Entebbe)', 'KGL (Kigali)', 'ADD (Addis Ababa)'],
+    keyLeagues: ['FKF Premier League (KPL)', 'Tanzania NBC Premier League', 'Uganda Premier League', 'AFCON', 'Premier League'],
+    bookmakerFeeds: ['SportPesa KE/TZ', 'Betika KE/TZ/UG', 'SportyBet', 'Mozzart', 'Odibets'],
+    priorityRoutes: ['/kpl-predictions', '/jackpot-predictions', '/afcon-predictions', '/premier-league-predictions', '/best-bets'],
+  },
+  {
+    id: 'west_africa',
+    title: 'West Africa Hub (WAFU)',
+    continentZone: 'Africa · West (ECOWAS)',
+    flag: '🇳🇬',
+    countriesCount: 15,
+    countries: ['Nigeria', 'Ghana', 'Ivory Coast', 'Senegal', 'Mali', 'Burkina Faso', 'Guinea', 'Benin', 'Togo', 'Sierra Leone', 'Liberia', 'Niger', 'Gambia'],
+    hreflangLocales: ['en-NG', 'en-GH', 'en-SL', 'en-LR', 'fr-SN', 'fr-CI', 'fr-ML', 'fr-BF'],
+    edgePoPs: ['LOS (Lagos)', 'ACC (Accra)', 'ABJ (Abidjan)', 'DKR (Dakar)'],
+    keyLeagues: ['Nigeria NPFL', 'Ghana Premier League', 'Ligue 1 Ivory Coast', 'AFCON', 'Premier League', 'La Liga'],
+    bookmakerFeeds: ['Bet9ja', 'SportyBet NG/GH', 'BetKing', '1xBet', 'Betway'],
+    priorityRoutes: ['/afcon-predictions', '/premier-league-predictions', '/accumulator', '/best-bets', '/value-bets'],
+  },
+  {
+    id: 'southern_africa',
+    title: 'Southern Africa Hub (COSAFA)',
+    continentZone: 'Africa · South (SADC)',
+    flag: '🇿🇦',
+    countriesCount: 10,
+    countries: ['South Africa', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Mozambique', 'Malawi', 'Lesotho', 'Eswatini', 'Madagascar'],
+    hreflangLocales: ['en-ZA', 'en-ZM', 'en-ZW', 'en-BW', 'en-NA', 'en-MW', 'pt-MZ'],
+    edgePoPs: ['JNB (Johannesburg)', 'CPT (Cape Town)', 'LUN (Lusaka)', 'HRE (Harare)', 'MPM (Maputo)'],
+    keyLeagues: ['South Africa Betway Premiership (PSL)', 'Zambia Super League', 'CAF Champions League', 'Premier League'],
+    bookmakerFeeds: ['Hollywoodbets', 'Betway ZA/ZM', 'Supabets', 'Sportingbet', '1xBet'],
+    priorityRoutes: ['/afcon-predictions', '/premier-league-predictions', '/btts', '/correct-score', '/jackpot-predictions'],
+  },
+  {
+    id: 'central_africa',
+    title: 'Central Africa Hub (UNIFFAC)',
+    continentZone: 'Africa · Central (CEMAC)',
+    flag: '🇨🇩',
+    countriesCount: 8,
+    countries: ['DR Congo', 'Cameroon', 'Angola', 'Republic of the Congo', 'Gabon', 'Chad', 'Central African Republic', 'Equatorial Guinea'],
+    hreflangLocales: ['fr-CD', 'fr-CM', 'en-CM', 'pt-AO', 'fr-CG', 'fr-GA'],
+    edgePoPs: ['FIH (Kinshasa)', 'DLA (Douala)', 'LAD (Luanda)', 'LBV (Libreville)'],
+    keyLeagues: ['DR Congo Linafoot', 'Cameroon Elite One', 'Angola Girabola', 'CAF Champions League', 'Ligue 1'],
+    bookmakerFeeds: ['PremierBet', '1xBet', 'Betwinner', 'SportyBet', 'Melbet'],
+    priorityRoutes: ['/afcon-predictions', '/champions-league-predictions', '/best-bets', '/live', '/standings'],
+  },
+  {
+    id: 'north_africa_middle_east',
+    title: 'North Africa (UNAF) & MENA Hub',
+    continentZone: 'Africa · North & Gulf',
+    flag: '🇪🇬',
+    countriesCount: 11,
+    countries: ['Egypt', 'Morocco', 'Algeria', 'Tunisia', 'Libya', 'Saudi Arabia', 'UAE', 'Qatar', 'Kuwait', 'Oman', 'Jordan'],
+    hreflangLocales: ['ar-EG', 'en-EG', 'fr-MA', 'ar-MA', 'fr-DZ', 'fr-TN', 'ar-SA', 'en-AE'],
+    edgePoPs: ['CAI (Cairo)', 'CMN (Casablanca)', 'ALG (Algiers)', 'TUN (Tunis)', 'DXB (Dubai)', 'RUH (Riyadh)'],
+    keyLeagues: ['Egyptian Premier League', 'Morocco Botola Pro', 'Algeria Ligue 1', 'Tunisia Ligue 1', 'CAF Champions League', 'Saudi Pro League'],
+    bookmakerFeeds: ['1xBet', 'Bet365', 'Melbet', 'Stake', 'Betwinner'],
+    priorityRoutes: ['/afcon-predictions', '/champions-league-predictions', '/la-liga-predictions', '/value-bets', '/live'],
+  },
+  {
+    id: 'pan_africa',
+    title: 'Pan-African Master Syndication',
+    continentZone: 'All 54 CAF Member Nations',
+    flag: '🌍',
+    countriesCount: 54,
+    countries: ['All 54 CAF African Countries (East, West, South, Central & North Africa)'],
+    hreflangLocales: ['x-default', 'en', 'fr', 'ar', 'pt', 'sw'],
+    edgePoPs: ['All African & Global Cloudflare/Vercel Edge PoPs'],
+    keyLeagues: ['AFCON', 'CAF Champions League', 'CAF Confederation Cup', 'All Domestic African Tier-1 Leagues'],
+    bookmakerFeeds: ['All Continental Bookmakers & Mobile Money (M-Pesa, Airtel, MTN,OPay)'],
+    priorityRoutes: ['/', '/afcon-predictions', '/kpl-predictions', '/jackpot-predictions', '/best-bets', '/live'],
+  },
+  {
+    id: 'uk_ireland',
+    title: 'UK, Ireland & Western Europe Hub',
+    continentZone: 'Europe (UEFA)',
+    flag: '🇪🇺',
+    countriesCount: 15,
+    countries: ['United Kingdom', 'Ireland', 'Spain', 'Germany', 'Italy', 'France', 'Portugal', 'Netherlands', 'Belgium'],
+    hreflangLocales: ['en-GB', 'en-IE', 'es-ES', 'de-DE', 'it-IT', 'fr-FR', 'pt-PT', 'nl-NL'],
+    edgePoPs: ['LHR (London)', 'FRA (Frankfurt)', 'MAD (Madrid)', 'CDG (Paris)', 'MXP (Milan)'],
+    keyLeagues: ['Premier League', 'Champions League', 'La Liga', 'Bundesliga', 'Serie A', 'Ligue 1'],
+    bookmakerFeeds: ['Bet365', 'SkyBet', 'Unibet', 'Betfair', 'Bwin'],
+    priorityRoutes: ['/premier-league-predictions', '/champions-league-predictions', '/la-liga-predictions', '/bundesliga-predictions', '/serie-a-predictions'],
+  },
+  {
+    id: 'north_america',
+    title: 'Americas & Global Diaspora Hub',
+    continentZone: 'North & Latin America (CONCACAF / CONMEBOL)',
+    flag: '🌎',
+    countriesCount: 12,
+    countries: ['United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Colombia', 'Chile', 'Uruguay'],
+    hreflangLocales: ['en-US', 'en-CA', 'es-MX', 'pt-BR', 'es-AR', 'es-CO'],
+    edgePoPs: ['IAD (Washington)', 'LAX (Los Angeles)', 'YYZ (Toronto)', 'GRU (São Paulo)', 'EZE (Buenos Aires)'],
+    keyLeagues: ['MLS', 'Liga MX', 'Copa Libertadores', 'Brasileirão', 'World Cup 2026'],
+    bookmakerFeeds: ['DraftKings', 'FanDuel', 'BetMGM', 'Betano', 'Bet365'],
+    priorityRoutes: ['/us-soccer-predictions', '/world-cup-predictions', '/value-bets', '/predict', '/screener'],
+  },
+];
+

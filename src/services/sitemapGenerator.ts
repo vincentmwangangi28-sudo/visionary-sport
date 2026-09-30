@@ -153,7 +153,7 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     }
   }
 
-  // Add additional popular top matchups for comprehensive crawler coverage
+  // Add additional popular top matchups across all parts of the continent for comprehensive crawler coverage
   const featuredClubs = [
     { home: 'Arsenal', away: 'Chelsea', league: 'Premier League' },
     { home: 'Manchester City', away: 'Liverpool', league: 'Premier League' },
@@ -162,6 +162,14 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { home: 'Inter Milan', away: 'Juventus', league: 'Serie A' },
     { home: 'Paris Saint-Germain', away: 'Marseille', league: 'Ligue 1' },
     { home: 'Gor Mahia', away: 'AFC Leopards', league: 'Kenya Premier League' },
+    { home: 'Simba SC', away: 'Young Africans', league: 'Tanzania NBC Premier League' },
+    { home: 'Kaizer Chiefs', away: 'Orlando Pirates', league: 'South Africa PSL' },
+    { home: 'Mamelodi Sundowns', away: 'Orlando Pirates', league: 'CAF Champions League' },
+    { home: 'Enyimba', away: 'Rangers International', league: 'Nigeria NPFL' },
+    { home: 'Hearts of Oak', away: 'Asante Kotoko', league: 'Ghana Premier League' },
+    { home: 'Al Ahly', away: 'Zamalek', league: 'Egyptian Premier League' },
+    { home: 'Wydad AC', away: 'Raja Casablanca', league: 'Botola Pro Morocco' },
+    { home: 'TP Mazembe', away: 'AS Vita Club', league: 'DR Congo Linafoot' },
   ];
 
   for (const fixture of featuredClubs) {
