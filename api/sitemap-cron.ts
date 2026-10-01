@@ -40,6 +40,18 @@ export default async function handler(request: Request) {
       `${BASE_URL}/predict`,
       `${BASE_URL}/upcoming`,
       `${BASE_URL}/live`,
+      `${BASE_URL}/best-bets`,
+      `${BASE_URL}/jackpot-predictions`,
+      `${BASE_URL}/afcon-predictions`,
+      `${BASE_URL}/kpl-predictions`,
+      `${BASE_URL}/premier-league-predictions`,
+      `${BASE_URL}/champions-league-predictions`,
+      `${BASE_URL}/predict/gor-mahia-vs-afc-leopards`,
+      `${BASE_URL}/predict/simba-sc-vs-young-africans`,
+      `${BASE_URL}/predict/kaizer-chiefs-vs-orlando-pirates`,
+      `${BASE_URL}/predict/enyimba-vs-rangers-international`,
+      `${BASE_URL}/predict/al-ahly-vs-zamalek`,
+      `${BASE_URL}/predict/tp-mazembe-vs-as-vita-club`,
     ],
   });
 

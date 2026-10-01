@@ -22,7 +22,11 @@ import {
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
-import { useMatchPredictionSEO } from '@/hooks/useMatchPredictionSEO';
+import {
+  useMatchPredictionSEO,
+  formatTeamDisplayName,
+  inferCompetitionFromTeams,
+} from '@/hooks/useMatchPredictionSEO';
 import type { Prediction } from '@/types/prediction';
 import { 
   Zap, 
@@ -63,27 +67,27 @@ function parseSlug(slug: string) {
   const [homePart, awayPart] = teamsPart.split('-vs-');
   return {
     date: date || new Date().toISOString().split('T')[0],
-    home: homePart?.replace(/-/g, ' ').trim(),
-    away: awayPart?.replace(/-/g, ' ').trim(),
+    home: homePart ? formatTeamDisplayName(homePart) : '',
+    away: awayPart ? formatTeamDisplayName(awayPart) : '',
   };
 }
 
 function createFallbackPrediction(home: string, away: string, dateStr: string): Prediction {
-  const capitalize = (s: string) => s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-  const homeName = capitalize(home);
-  const awayName = capitalize(away);
+  const homeName = formatTeamDisplayName(home);
+  const awayName = formatTeamDisplayName(away);
+  const inferredLeague = inferCompetitionFromTeams(homeName, awayName);
 
   const saved = getSavedPrediction(homeName, awayName, dateStr);
   if (saved) return saved;
 
-  const det = generateDeterministicPrediction(homeName, awayName, undefined, dateStr);
+  const det = generateDeterministicPrediction(homeName, awayName, inferredLeague, dateStr);
 
   const pred: Prediction = {
-    id: `pred-${home.replace(/\s+/g, '-')}-${away.replace(/\s+/g, '-')}`,
-    match_id: `match-${home.replace(/\s+/g, '-')}-${away.replace(/\s+/g, '-')}`,
+    id: `pred-${home.toLowerCase().replace(/\s+/g, '-')}-${away.toLowerCase().replace(/\s+/g, '-')}`,
+    match_id: `match-${home.toLowerCase().replace(/\s+/g, '-')}-${away.toLowerCase().replace(/\s+/g, '-')}`,
     home_team: homeName,
     away_team: awayName,
-    league: 'Football Match',
+    league: inferredLeague,
     match_date: dateStr ? new Date(dateStr).toISOString() : new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
     prediction: det.prediction,
     predicted_outcome: det.prediction,
@@ -183,8 +187,8 @@ export default function MatchPrediction() {
       }
 
       const localMatch = DEFAULT_PREDICTIONS.find(p =>
-        p.home_team.toLowerCase().includes(home.toLowerCase()) ||
-        p.away_team.toLowerCase().includes(away.toLowerCase())
+        (p.home_team.toLowerCase().includes(home.toLowerCase()) || home.toLowerCase().includes(p.home_team.toLowerCase())) &&
+        (p.away_team.toLowerCase().includes(away.toLowerCase()) || away.toLowerCase().includes(p.away_team.toLowerCase()))
       );
 
       if (localMatch) {

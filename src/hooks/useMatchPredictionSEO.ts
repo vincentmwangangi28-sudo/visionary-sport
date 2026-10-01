@@ -44,13 +44,13 @@ const DEFAULT_DISCOVER_IMAGE = `${BASE_URL}/og-image.jpg`;
 /**
  * Formats a hyphenated team slug into proper display casing for titles & JSON-LD
  */
-function formatTeamDisplayName(raw: string): string {
+export function formatTeamDisplayName(raw: string): string {
   return (raw || '')
     .trim()
     .split(/[-\s]+/)
     .filter(Boolean)
     .map((word) =>
-      word.length <= 3 && /^(fc|sc|ac|as|cf|fk|us|psg|kpl|afc|utd)$/i.test(word)
+      word.length <= 3 && /^(fc|sc|ac|as|cf|fk|us|psg|kpl|afc|utd|tp|apr|kcb|rs|es|cr|mc|js|cs|far)$/i.test(word)
         ? word.toUpperCase()
         : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
     )
@@ -60,10 +60,34 @@ function formatTeamDisplayName(raw: string): string {
 /**
  * Infers competition/league from club names when only the URL slug is available
  */
-function inferCompetitionFromTeams(home: string, away: string): string {
+export function inferCompetitionFromTeams(home: string, away: string): string {
   const combined = `${home} ${away}`.toLowerCase();
-  if (/(gor mahia|afc leopards|tusker|kenya police|bandari|shabana)/.test(combined)) {
+  if (/(gor mahia|afc leopards|tusker|kenya police|bandari|shabana|kcb|kakamega|mathare|sofapaka|ulinzi)/.test(combined)) {
     return 'FKF Kenyan Premier League';
+  }
+  if (/(simba|young africans|yanga|azam|namungo|singida)/.test(combined)) {
+    return 'Tanzania NBC Premier League';
+  }
+  if (/(kaizer chiefs|orlando pirates|mamelodi sundowns|stellenbosch|amazulu|sekhukhune|cape town)/.test(combined)) {
+    return 'South Africa Betway Premiership (PSL)';
+  }
+  if (/(enyimba|rangers international|remo stars|shooting stars|kano pillars|bendel insurance)/.test(combined)) {
+    return 'Nigeria Premier Football League (NPFL)';
+  }
+  if (/(hearts of oak|asante kotoko|medeama|samartex|aduana)/.test(combined)) {
+    return 'Ghana Premier League';
+  }
+  if (/(al ahly|zamalek|pyramids|al masry|ismaily)/.test(combined)) {
+    return 'Egyptian Premier League & CAF';
+  }
+  if (/(wydad|raja casablanca|far rabat|rs berkane|fus rabat)/.test(combined)) {
+    return 'Morocco Botola Pro';
+  }
+  if (/(tp mazembe|as vita|vita club|maniema union|saint eloi lupopo)/.test(combined)) {
+    return 'DR Congo Linafoot';
+  }
+  if (/(esperance|club africain|etoile du sahel|cs sfaxien)/.test(combined)) {
+    return 'Tunisia Ligue Professionnelle 1';
   }
   if (/(arsenal|chelsea|liverpool|manchester|tottenham|newcastle|aston villa|brighton|west ham)/.test(combined)) {
     return 'English Premier League';

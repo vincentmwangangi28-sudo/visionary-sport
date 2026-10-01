@@ -61,6 +61,16 @@ export function buildMarkdownForRoute(pathname: string): { markdown: string; tok
       summary:
         '90-minute exact scoreline probability distributions with Dixon-Coles low-scoring correlation adjustments.',
     },
+    '/afcon-predictions': {
+      title: 'AFCON, CAF Champions League & Pan-African Football Predictions (54 CAF Nations)',
+      summary:
+        'Quantitative AI match predictions across East, West, Southern, Central, and North Africa covering AFCON, CAF Champions League, KPL, Nigeria NPFL, South Africa PSL, DR Congo Linafoot, Egyptian Premier League, and Morocco Botola Pro.',
+    },
+    '/kpl-predictions': {
+      title: 'Kenya Premier League (FKF KPL) & East Africa Football Predictions Today',
+      summary:
+        'AI football tips, Poisson scorelines, and M-Pesa jackpot selections for Gor Mahia, AFC Leopards, Tusker FC, Simba SC, and Young Africans.',
+    },
   };
 
   const meta = routeTitles[cleanPath] || {
@@ -89,7 +99,7 @@ auth_discovery: "https://predictpro.guru/auth.md"
 
 - **Primary Prediction Engine**: Bivariate Poisson Distribution ($P(X=x, Y=y)$) with Dixon-Coles low-scoring correlation ($\\rho$) and club ELO strength adjustments.
 - **Verified Banker Accuracy**: 84%–87% historical hit rate on high-confidence Banker selections ($\\ge 75\\%$ model confidence).
-- **Coverage**: English Premier League, UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, Kenyan Premier League (KPL), MLS, and 17-game Mega & Midweek Jackpots.
+- **Coverage**: All 54 CAF African nations (AFCON, CAF Champions League, Kenya KPL, Nigeria NPFL, South Africa PSL, DR Congo Linafoot, Egyptian League, Morocco Botola Pro), English Premier League, UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, MLS, and 17-game Mega & Midweek Jackpots.
 
 ## Machine-Readable Agent Discovery Endpoints
 
@@ -111,6 +121,8 @@ auth_discovery: "https://predictpro.guru/auth.md"
 - [High-Confidence Banker Bets](https://predictpro.guru/best-bets)
 - [Positive Expected Value (+EV) Bets](https://predictpro.guru/value-bets)
 - [17-Game Mega & Midweek Jackpot Predictions](https://predictpro.guru/jackpot-predictions)
+- [AFCON, CAF & Pan-African 54-Nation Predictions](https://predictpro.guru/afcon-predictions)
+- [Kenyan Premier League (KPL) & East Africa Predictions](https://predictpro.guru/kpl-predictions)
 - [Both Teams To Score (BTTS) & Over 2.5 Goals](https://predictpro.guru/btts)
 - [Exact Correct Score Matrix](https://predictpro.guru/correct-score)
 - [Dropping Odds & Sharp Steam Radar](https://predictpro.guru/dropping-odds)
@@ -120,7 +132,6 @@ auth_discovery: "https://predictpro.guru/auth.md"
 - [Italian Serie A Predictions](https://predictpro.guru/serie-a-predictions)
 - [German Bundesliga Predictions](https://predictpro.guru/bundesliga-predictions)
 - [French Ligue 1 Predictions](https://predictpro.guru/ligue-1-predictions)
-- [Kenyan Premier League (KPL) Predictions](https://predictpro.guru/kpl-predictions)
 `;
 
   const tokens = Math.ceil(markdown.length / 4);

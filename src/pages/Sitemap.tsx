@@ -98,10 +98,10 @@ export default function Sitemap() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="PredictPro HTML Sitemap & XML Directory | All Indexed Football Routes"
-        description="Comprehensive index of all available football prediction hubs, match previews, AI betting tools, statistics, and strategy guides on PredictPro."
+        title="PredictPro HTML Sitemap & XML Route Directory | PredictPro"
+        description="Comprehensive index of all football prediction hubs, continental match previews, AI betting tools, statistics, and strategy guides on PredictPro."
         keywords="predictpro sitemap, football predictions sitemap, premier league prediction routes, ai betting tools directory"
-        url="https://predictpro.guru/sitemap"
+        canonical="/sitemap"
       />
       <Navbar />
 

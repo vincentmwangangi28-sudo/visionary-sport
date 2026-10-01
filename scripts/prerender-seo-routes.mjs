@@ -243,7 +243,7 @@ function deriveMetaForPath(routePath) {
     const formatTeam = (s) =>
       s
         .split('-')
-        .map((w) => (w.length <= 3 && /^(fc|sc|ac|as|cf|fk|us|psg|ny)$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+        .map((w) => (w.length <= 3 && /^(fc|sc|ac|as|cf|fk|us|psg|ny|afc|tp|apr|kcb|kpl|rs|es|cr|mc|js|cs|far)$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
         .join(' ');
     const matchup = parts.length === 2 ? `${formatTeam(parts[0])} vs ${formatTeam(parts[1])}` : slug;
     return {

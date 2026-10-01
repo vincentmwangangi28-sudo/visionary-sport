@@ -94,11 +94,13 @@ const LEAGUE_AUTHORITY_LINKS = [
   { to: '/la-liga-predictions', label: 'Spanish La Liga Tactical Match Forecasts' },
   { to: '/bundesliga-predictions', label: 'German Bundesliga Over 2.5 & BTTS Predictions' },
   { to: '/serie-a-predictions', label: 'Italian Serie A Defensive xGA & 1X2 Tips' },
-  { to: '/kpl-predictions', label: 'Kenya Premier League (FKF) Predictions & M-Pesa Tips' },
+  { to: '/kpl-predictions', label: 'East Africa: Kenya Premier League (FKF) & NBC League Tips' },
+  { to: '/afcon-predictions', label: 'Pan-Africa: AFCON, CAF Champions League, NPFL & PSL Tips' },
+  { to: '/jackpot-predictions', label: 'Continental 17-Game Mega & Midweek Jackpot Predictions' },
   { to: '/us-soccer-predictions', label: 'MLS & US Soccer Moneyline Betting Picks' },
   { to: '/world-cup-predictions', label: '2026 FIFA World Cup Qualifiers & Tournament Predictions' },
-  { to: '/afcon-predictions', label: 'AFCON & CAF Champions League Football Tips' },
   { to: '/screener', label: 'Quantitative Football Match Screener & Filter' },
+  { to: '/seo-indexing', label: 'Continental Content Syndication & Search Indexing Hub' },
 ];
 
 export const SEOAuthorityHub: React.FC = () => {

@@ -123,7 +123,7 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'River Plate', prob: 21, flag: '🇦🇷' },
       { team: 'Fluminense', prob: 12, flag: '🇧🇷' },
     ],
-    routePath: '/predictions',
+    routePath: '/upcoming',
     keyDates: 'Final: Nov 28, 2026 (Buenos Aires)',
     totalTeams: 32,
     featuredMatches: [
@@ -173,7 +173,7 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Espérance de Tunis', prob: 18, flag: '🇹🇳' },
       { team: 'TP Mazembe', prob: 10, flag: '🇨🇩' },
     ],
-    routePath: '/predictions',
+    routePath: '/afcon-predictions',
     keyDates: 'Two-legged Final: May 2026',
     totalTeams: 16,
     featuredMatches: [
@@ -197,7 +197,7 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Yokohama F. Marinos', prob: 16, flag: '🇯🇵' },
       { team: 'Ulsan HD', prob: 12, flag: '🇰🇷' },
     ],
-    routePath: '/predictions',
+    routePath: '/upcoming',
     keyDates: 'Finals Hub: Saudi Arabia',
     totalTeams: 24,
     featuredMatches: [

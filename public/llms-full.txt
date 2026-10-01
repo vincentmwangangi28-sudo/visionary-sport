@@ -40,6 +40,27 @@
 - **German Bundesliga Hub**: `https://predictpro.guru/bundesliga-predictions`
 - **Italian Serie A Hub**: `https://predictpro.guru/serie-a-predictions`
 - **French Ligue 1 Hub**: `https://predictpro.guru/ligue-1-predictions`
-- **Kenyan Premier League (KPL) Hub**: `https://predictpro.guru/kpl-predictions`
+- **AFCON, CAF & Pan-African 54-Nation Hub**: `https://predictpro.guru/afcon-predictions`
+- **Kenyan Premier League (KPL) & East Africa Hub**: `https://predictpro.guru/kpl-predictions`
 - **US Soccer & MLS Hub**: `https://predictpro.guru/us-soccer-predictions`
+- **FIFA World Cup 2026 Hub**: `https://predictpro.guru/world-cup-predictions`
 - **Methodology & Model Documentation**: `https://predictpro.guru/methodology`
+
+## 4. Continental Syndication & Regional Hubs (54 CAF Nations + Global)
+
+- **All-Africa Continental (CAF)**: AFCON, CAF Champions League, CAF Confederation Cup (`x-default`, `en`)
+- **East Africa (CECAFA)**: Kenya FKF Premier League, Tanzania NBC Premier League, Uganda, Rwanda, Ethiopia (`en-KE`, `sw-KE`, `en-TZ`, `sw-TZ`, `en-UG`, `en-RW`)
+- **West Africa (WAFU)**: Nigeria NPFL, Ghana Premier League, Senegal, Côte d'Ivoire, Cameroon (`en-NG`, `en-GH`, `fr-SN`, `fr-CI`)
+- **Southern Africa (COSAFA)**: South Africa Betway Premiership (PSL), Zambia Super League, Zimbabwe, Botswana (`en-ZA`, `en-ZM`, `en-ZW`)
+- **Central Africa (UNIFFAC)**: DR Congo Linafoot, Angola Girabola, Congo, Gabon (`fr-CD`, `fr-CM`, `pt-AO`)
+- **North Africa & MENA (UNAF)**: Egyptian Premier League, Morocco Botola Pro, Tunisia Ligue 1, Algeria (`ar-EG`, `fr-MA`, `fr-TN`, `fr-DZ`)
+- **Flagship Continental Derby Previews**:
+  - `https://predictpro.guru/predict/gor-mahia-vs-afc-leopards` (Kenya Mashemeji Derby)
+  - `https://predictpro.guru/predict/simba-sc-vs-young-africans` (Tanzania Kariakoo Derby)
+  - `https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates` (South Africa Soweto Derby)
+  - `https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates` (CAF & PSL Clash)
+  - `https://predictpro.guru/predict/enyimba-vs-rangers-international` (Nigeria NPFL Oriental Derby)
+  - `https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko` (Ghana Super Clash)
+  - `https://predictpro.guru/predict/al-ahly-vs-zamalek` (Cairo & CAF Super Derby)
+  - `https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca` (Casablanca Derby)
+  - `https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club` (DR Congo Linafoot Classico)

@@ -21,8 +21,10 @@ PredictPro combines historical head-to-head (H2H) records, rolling 10-match Expe
 - [Spanish La Liga Predictions](https://predictpro.guru/la-liga-predictions): Tactical match forecasts and value picks for La Liga.
 - [German Bundesliga Predictions](https://predictpro.guru/bundesliga-predictions): High-tempo Over 2.5 goals, BTTS, and 1X2 Bundesliga tips.
 - [Italian Serie A Predictions](https://predictpro.guru/serie-a-predictions): Defensive xGA and match outcome forecasts for Serie A.
-- [FKF Kenya Premier League Predictions](https://predictpro.guru/kpl-predictions): Kenyan Premier League match predictions and M-Pesa VIP tips.
-- [17-Game Mega Jackpot Predictions](https://predictpro.guru/jackpot-predictions): SportPesa Mega Jackpot and Betika Midweek banker and Double Chance combinations.
+- [FKF Kenya Premier League Predictions](https://predictpro.guru/kpl-predictions): Kenyan Premier League, Tanzania NBC League, and East African match predictions.
+- [AFCON, CAF & Pan-African Predictions](https://predictpro.guru/afcon-predictions): Full continental coverage across all 54 CAF nations including AFCON, CAF Champions League, Nigeria NPFL, South Africa PSL, DR Congo Linafoot, Egyptian Premier League, and Morocco Botola Pro.
+- [17-Game Mega Jackpot Predictions](https://predictpro.guru/jackpot-predictions): SportPesa Mega Jackpot, Betika Grand Jackpot, and Mozzart Super Grand Jackpot banker and Double Chance combinations.
+- [FIFA World Cup 2026 Predictions](https://predictpro.guru/world-cup-predictions): World Cup qualifiers and tournament knockout simulations.
 - [US Soccer & MLS Predictions](https://predictpro.guru/us-soccer-predictions): Major League Soccer moneyline (+/-), goal spreads, and AI picks.
 
 ## Interactive Analytics & Strategy Guides
