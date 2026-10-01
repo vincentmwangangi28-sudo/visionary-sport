@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
+import { TeamNewsInjuryUpdates } from "@/components/TeamNewsInjuryUpdates";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,10 @@ export default function KPLPredictions() {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Free Kenya Premier League (KPL) predictions. AI tips for Gor Mahia, AFC Leopards, Tusker FC, Bandari. Pay with M-Pesa.</p>
         </div>
         <PredictionsDashboard initialLeague="KPL" />
+
+        <div className="mt-10">
+          <TeamNewsInjuryUpdates leagueFilter="KPL" />
+        </div>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="border-border/70">

@@ -50,6 +50,7 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { fetchAndCacheTeamLogoByLeague, preloadLeagueTeamLogos } from '@/services/teamLogos';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
+import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
 import { PredictionDetailSkeleton } from '@/components/PredictionCardSkeleton';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
@@ -731,7 +732,8 @@ export default function MatchPrediction() {
           </TabsContent>
 
           {/* TAB 4: Pitch Lineups & Formations */}
-          <TabsContent value="lineups">
+          <TabsContent value="lineups" className="space-y-6">
+            <TeamNewsInjuryUpdates singleMatch={prediction} />
             <PitchLineupVisualizer homeTeam={prediction.home_team} awayTeam={prediction.away_team} league={prediction.league} />
           </TabsContent>
 

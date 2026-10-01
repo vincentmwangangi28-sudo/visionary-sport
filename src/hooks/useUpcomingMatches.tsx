@@ -144,10 +144,9 @@ export const useUpcomingMatches = () => {
   }, []);
 
   useEffect(() => {
-    const initialTimer = setTimeout(refresh, 6500);
+    refresh();
     const interval = setInterval(refresh, 60_000); // 60-second fixture sync & played-match pruning
     return () => {
-      clearTimeout(initialTimer);
       clearInterval(interval);
     };
   }, [refresh]);

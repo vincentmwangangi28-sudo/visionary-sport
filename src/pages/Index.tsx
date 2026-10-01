@@ -8,6 +8,7 @@ import { SEO } from '@/components/SEO';
 import { LiveMarketSteamTicker } from '@/components/LiveMarketSteamTicker';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
+import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
 
 const LiveMatches = lazy(() => import('@/components/LiveMatches').then((m) => ({ default: m.LiveMatches })));
 const AISmartSlipGenerator = lazy(() =>
@@ -166,6 +167,13 @@ const Index = () => {
 
         {/* Primary Predictions Grid — Always Above the Fold */}
         <PredictionsDashboard />
+
+        {/* Real-Time Team News, Injury & Lineup Updates for Featured Matches */}
+        <section className="py-8 bg-muted/10 border-t border-border/50">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <TeamNewsInjuryUpdates />
+          </div>
+        </section>
 
         {/* Deferred Below-the-Fold Interactive Modules */}
         {deferredReady && (

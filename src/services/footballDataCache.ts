@@ -28,7 +28,7 @@ const memoryCache = new Map<string, CacheRecord<unknown>>();
 const inFlightRequests = new Map<string, Promise<unknown>>();
 const hostCooldowns = new Map<string, number>();
 
-const SESSION_PREFIX = 'predictpro_fc_';
+const SESSION_PREFIX = 'predictpro_fc_v3_';
 const COOLDOWN_STORAGE_KEY = 'predictpro_host_cooldowns';
 
 // Initialize host cooldowns from sessionStorage and localStorage on startup

@@ -5,6 +5,7 @@ import {
   geminiDailyCronService,
 } from '@/services/geminiDailyCron';
 import { Prediction } from '@/types/prediction';
+import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +29,9 @@ interface Props {
   predictions?: Prediction[];
 }
 
-export const DailyAIDigestBanner: React.FC<Props> = ({ predictions = [] }) => {
+export const DailyAIDigestBanner: React.FC<Props> = ({ predictions: propPredictions = [] }) => {
+  const { data } = usePredictions(1);
+  const predictions = propPredictions.length > 0 ? propPredictions : (data?.allPredictions || []);
   const [digest, setDigest] = useState<DailyAIDigest | null>(() =>
     geminiDailyCronService.getCachedDigest()
   );

@@ -119,6 +119,44 @@ Return ONLY a valid JSON object matching this exact schema:
   "tacticalVerdict": "One concise sentence on the expected tactical edge and betting takeaway.",
   "impactScore": 8
 }`;
+  } else if (task === 'team_news_injuries') {
+    const { homeTeam, awayTeam, league, date } = payload;
+    prompt = `You are a chief football medical scout and tactical lineup analyst. Provide real-time injury, suspension, press conference, and starting lineup intelligence for:
+Match: ${homeTeam} vs ${awayTeam}
+League: ${league || 'Football'}
+Date: ${date || 'Upcoming'}
+
+Return ONLY a valid JSON object matching this exact schema:
+{
+  "headline": "1-line breaking team news headline for this matchup",
+  "pressConferenceSummary": "2-sentence summary of the managers' latest press conferences regarding squad fitness and tactical rotation.",
+  "homeFormation": "4-3-3",
+  "awayFormation": "4-2-3-1",
+  "homeLineupStrength": 91,
+  "awayLineupStrength": 82,
+  "xgDeltaHome": 0.22,
+  "xgDeltaAway": -0.31,
+  "confidenceAdjustment": 5,
+  "adjustedMarketTip": "Home Win & Over 1.5 Goals",
+  "adjustedMarketReason": "1-sentence explanation of how squad availability shifts the mathematical betting edge.",
+  "injuries": [
+    {
+      "team": "home" | "away",
+      "player": "Player Full Name",
+      "position": "FWD" | "MID" | "DEF" | "GK",
+      "status": "Ruled Out" | "Doubtful" | "Suspended" | "Returning",
+      "injuryType": "Hamstring Strain / Ankle Knock / Card Accumulation / Full Fitness",
+      "expectedReturn": "2 weeks / Matchday Assessment / Back in Squad",
+      "xgImpact": "-0.18 xG",
+      "roleImportance": "Key Starter" | "Squad Rotation" | "Captain",
+      "note": "Concise tactical consequence of this player's status."
+    }
+  ],
+  "lineupNotes": [
+    "Key confirmed or projected starting XI change for the home side",
+    "Key confirmed or projected starting XI change for the away side"
+  ]
+}`;
   } else if (task === 'curate_acca') {
     const { matches = [], strategy = 'banker' } = payload;
     prompt = `You are an expert football accumulator builder. From these fixtures, select the best 3 to 5 picks for a ${strategy} accumulator:
@@ -431,6 +469,77 @@ function generateFallbackWithGrounding(
         ],
         tacticalVerdict: `Tactical advantage leans towards ${home} with Over 1.5 Goals or Both Teams to Score (BTTS) providing strong value edge given defensive absences on both sides.`,
         impactScore: 8
+      },
+      groundingMetadata,
+      fallback_used: true,
+    };
+  }
+
+  if (task === 'team_news_injuries') {
+    return {
+      success: true,
+      result: {
+        headline: `${home} Boosted by Attacking Return as ${away} Face Defensive Rotation`,
+        pressConferenceSummary: `Both managers addressed squad availability in their pre-match briefings. ${home} confirmed their primary attacking core completed full training, whereas ${away} must navigate a defensive suspension and a late fitness check in midfield.`,
+        homeFormation: '4-3-3',
+        awayFormation: '4-2-3-1',
+        homeLineupStrength: 92,
+        awayLineupStrength: 81,
+        xgDeltaHome: 0.24,
+        xgDeltaAway: -0.29,
+        confidenceAdjustment: 5,
+        adjustedMarketTip: `${home} Win or Draw (1X) & Over 1.5 Goals`,
+        adjustedMarketReason: `Defensive disruption in ${away}'s backline increases ${home}'s box-entry conversion rate by +14%.`,
+        injuries: [
+          {
+            team: 'home',
+            player: `${home} Creative Playmaker`,
+            position: 'MID',
+            status: 'Returning',
+            injuryType: 'Cleared after minor calf tightness',
+            expectedReturn: 'Projected Starter',
+            xgImpact: '+0.21 xG',
+            roleImportance: 'Key Starter',
+            note: 'Restores progressive passing volume into the final third.',
+          },
+          {
+            team: 'home',
+            player: `${home} Rotational Fullback`,
+            position: 'DEF',
+            status: 'Doubtful',
+            injuryType: 'Ankle knock in midweek session',
+            expectedReturn: 'Late Fitness Test (50%)',
+            xgImpact: '-0.06 xGA',
+            roleImportance: 'Squad Rotation',
+            note: 'Inverted fullback role will be covered by senior deputy if rested.',
+          },
+          {
+            team: 'away',
+            player: `${away} Holding Midfielder`,
+            position: 'MID',
+            status: 'Suspended',
+            injuryType: 'Yellow card accumulation (5 cautions)',
+            expectedReturn: '1-Match Ban',
+            xgImpact: '+0.24 xGA',
+            roleImportance: 'Key Starter',
+            note: 'Leaves central transition zones exposed against quick counter-presses.',
+          },
+          {
+            team: 'away',
+            player: `${away} Wide Forward`,
+            position: 'FWD',
+            status: 'Ruled Out',
+            injuryType: 'Grade 1 hamstring strain',
+            expectedReturn: 'Out 2-3 Weeks',
+            xgImpact: '-0.22 xG',
+            roleImportance: 'Key Starter',
+            note: 'Reduces direct 1v1 ball-carrying threat on the counter-attack.',
+          },
+        ],
+        lineupNotes: [
+          `${home} expected to deploy a high-pressing 4-3-3 with full-strength front three.`,
+          `${away} likely to shift to a compact double-pivot 4-2-3-1 to protect their reshaped back four.`,
+        ],
       },
       groundingMetadata,
       fallback_used: true,

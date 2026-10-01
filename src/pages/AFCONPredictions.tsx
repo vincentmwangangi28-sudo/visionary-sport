@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
+import { TeamNewsInjuryUpdates } from "@/components/TeamNewsInjuryUpdates";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -147,6 +148,12 @@ export default function AFCONPredictions() {
           </div>
           <PredictionsDashboard key={selectedLeague || "all-continent"} initialLeague={selectedLeague} />
         </section>
+
+        {/* Real-Time Continental Team News, Injury & Lineup Intelligence */}
+        <TeamNewsInjuryUpdates
+          key={`team-news-${selectedLeague || "afcon"}`}
+          leagueFilter={selectedLeague || "AFCON"}
+        />
 
         {/* Continental Derbies & Flagship Match Previews */}
         <section className="space-y-4">

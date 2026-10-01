@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { matchesLeagueFilter } from '@/services/realtimeFootball';
 import { 
   mergeAndPreservePredictions, 
   generateDeterministicPrediction,
@@ -73,7 +74,7 @@ function getCachedInitialPredictionsPayload(league?: string) {
 
   let seed = getUpdatedDefaultPredictions();
   if (league && league !== 'All') {
-    const filtered = seed.filter((p) => p.league?.toLowerCase() === league.toLowerCase());
+    const filtered = seed.filter((p) => matchesLeagueFilter(p.league, league));
     if (filtered.length > 0) seed = filtered;
   }
   const cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
@@ -96,7 +97,7 @@ export const usePredictions = (page = 1, league?: string) => {
   const query = useQuery({
     queryKey: queryKeys.predictions.list(leagueKey),
     initialData: initialDataPayload,
-    initialDataUpdatedAt: Date.now(),
+    initialDataUpdatedAt: 0,
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -104,6 +105,7 @@ export const usePredictions = (page = 1, league?: string) => {
       const pushIfValidUpcoming = (item: Prediction) => {
         if (!item || !item.home_team || !item.away_team) return;
         if (isPlayedOrPastMatch(item)) return;
+        if (league && league !== 'All' && !matchesLeagueFilter(item.league, league)) return;
         const pairKey = `${item.home_team.trim().toLowerCase()}-${item.away_team.trim().toLowerCase()}`;
         if (seenMatchupKeys.has(pairKey)) return;
         seenMatchupKeys.add(pairKey);
@@ -156,18 +158,18 @@ export const usePredictions = (page = 1, league?: string) => {
         }
       }
 
-      // 3. Only fall back to updated default fixtures if live feeds and DB returned zero matches
-      if (combinedPredictions.length === 0) {
-        let updatedDefaultList = getUpdatedDefaultPredictions();
-        if (league && league !== 'All') {
-          const leagueFiltered = updatedDefaultList.filter(p => p.league?.toLowerCase() === league.toLowerCase());
-          if (leagueFiltered.length > 0) {
-            updatedDefaultList = leagueFiltered;
-          }
+      // 3. Only supplement verified fallback fixtures if live feeds returned fewer than 6 matches or for regional CAF leagues
+      let updatedDefaultList = getUpdatedDefaultPredictions();
+      if (league && league !== 'All') {
+        const leagueFiltered = updatedDefaultList.filter(p => matchesLeagueFilter(p.league, league));
+        if (leagueFiltered.length > 0) {
+          updatedDefaultList = leagueFiltered;
         }
-        for (const item of updatedDefaultList) {
-          pushIfValidUpcoming(item);
-        }
+      } else if (combinedPredictions.length >= 12) {
+        updatedDefaultList = updatedDefaultList.filter(p => matchesLeagueFilter(p.league, 'AFCON'));
+      }
+      for (const item of updatedDefaultList) {
+        pushIfValidUpcoming(item);
       }
 
       // Merge with persistent prediction registry to lock values across refreshes (excluding any played matches)
@@ -196,13 +198,9 @@ export const usePredictions = (page = 1, league?: string) => {
       triggered = true;
       query.refetch();
     };
-    const timer = setTimeout(triggerRefetch, 18000);
-    window.addEventListener('scroll', triggerRefetch, { passive: true, once: true });
-    window.addEventListener('pointerdown', triggerRefetch, { passive: true, once: true });
+    const timer = setTimeout(triggerRefetch, 50);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('scroll', triggerRefetch);
-      window.removeEventListener('pointerdown', triggerRefetch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [league]);

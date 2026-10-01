@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NewsGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { AdBannerHorizontal } from '@/components/AdBanner';
+import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
 import {
   sportsNewsService,
   SportsArticle,
@@ -177,6 +178,11 @@ export default function News() {
               Sync Backend
             </Button>
           </div>
+        </div>
+
+        {/* Featured Matches Real-Time Team News & Injury Updates */}
+        <div className="mb-8">
+          <TeamNewsInjuryUpdates />
         </div>
 
         {/* Gemini AI Tactical Spotlight Banner */}

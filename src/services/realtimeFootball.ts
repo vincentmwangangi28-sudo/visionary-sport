@@ -23,9 +23,16 @@ export { isHostInCooldown, setHostCooldown, getFootballCache, setFootballCache }
 /**
  * Shared, deduplicated ESPN league scoreboard fetcher so live scores and upcoming fixtures
  * share the exact same in-flight promise and cached payload instead of double-fetching.
+ * When includeFullMatchweek is true, automatically fetches +1 day and +2 days of the active
+ * matchweek so Friday + Saturday + Sunday (or Tuesday + Wednesday) fixtures are all captured.
  */
-async function fetchEspnLeagueScoreboard(league: LeagueDefinition): Promise<Array<Record<string, unknown>>> {
-  return fetchWithCacheAndDeduplication(`espn_sb_${league.espnCode}`, CACHE_TTLS.LIVE_SCORES, async () => {
+async function fetchEspnLeagueScoreboard(
+  league: LeagueDefinition,
+  includeFullMatchweek = false
+): Promise<Array<Record<string, unknown>>> {
+  const cacheKey = `espn_sb_${league.espnCode}_${includeFullMatchweek ? 'full' : 'day'}`;
+  const ttl = includeFullMatchweek ? CACHE_TTLS.UPCOMING_FIXTURES : CACHE_TTLS.LIVE_SCORES;
+  return fetchWithCacheAndDeduplication(cacheKey, ttl, async () => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
@@ -35,7 +42,48 @@ async function fetchEspnLeagueScoreboard(league: LeagueDefinition): Promise<Arra
       clearTimeout(timeout);
       if (!res.ok) return [];
       const data = await res.json();
-      return (data.events || []).map((ev: Record<string, unknown>) => ({ ...ev, _leagueName: league.name }));
+      const baseEvents: Array<Record<string, unknown>> = data.events || [];
+      const allEvents = [...baseEvents];
+
+      if (includeFullMatchweek && baseEvents.length > 0) {
+        const firstIso = String(baseEvents[0]?.date || '');
+        if (firstIso.length >= 10) {
+          const baseMs = new Date(`${firstIso.slice(0, 10)}T00:00:00Z`).getTime();
+          if (!isNaN(baseMs)) {
+            const extraDates = [1, 2].map((offset) => {
+              const d = new Date(baseMs + offset * 86400000);
+              return d.toISOString().slice(0, 10).replace(/-/g, '');
+            });
+            const extraResults = await Promise.all(
+              extraDates.map(async (dt) => {
+                try {
+                  const r = await fetch(
+                    `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`
+                  );
+                  if (!r.ok) return [];
+                  const j = await r.json();
+                  return (j.events as Array<Record<string, unknown>>) || [];
+                } catch {
+                  return [];
+                }
+              })
+            );
+            for (const extraList of extraResults) {
+              allEvents.push(...extraList);
+            }
+          }
+        }
+      }
+
+      const seenIds = new Set<string>();
+      const uniqueEvents: Array<Record<string, unknown>> = [];
+      for (const ev of allEvents) {
+        const evId = String(ev.id || `${ev.name}-${ev.date}`);
+        if (seenIds.has(evId)) continue;
+        seenIds.add(evId);
+        uniqueEvents.push({ ...ev, _leagueName: league.name });
+      }
+      return uniqueEvents;
     } catch {
       return [];
     }
@@ -59,6 +107,20 @@ export const LEAGUES_LIST: LeagueDefinition[] = [
   { name: 'Champions League', espnCode: 'uefa.champions', apiFootballId: 2, country: 'Europe' },
   { name: 'Europa League', espnCode: 'uefa.europa', apiFootballId: 3, country: 'Europe' },
   { name: 'Conference League', espnCode: 'uefa.europa.conf', apiFootballId: 848, country: 'Europe' },
+  { name: 'UEFA Nations League', espnCode: 'uefa.nations', apiFootballId: 5, country: 'Europe' },
+  { name: 'AFCON Qualifier', espnCode: 'caf.nations_qual', apiFootballId: 20, country: 'Africa' },
+  { name: 'MLS', espnCode: 'usa.1', apiFootballId: 253, country: 'USA' },
+  { name: 'Saudi Pro League', espnCode: 'ksa.1', apiFootballId: 307, country: 'Saudi Arabia' },
+  { name: 'Eredivisie', espnCode: 'ned.1', apiFootballId: 88, country: 'Netherlands' },
+  { name: 'Primeira Liga', espnCode: 'por.1', apiFootballId: 94, country: 'Portugal' },
+  { name: 'Brazilian Serie A', espnCode: 'bra.1', apiFootballId: 71, country: 'Brazil' },
+  { name: 'Argentine Liga Profesional', espnCode: 'arg.1', apiFootballId: 128, country: 'Argentina' },
+  { name: 'Championship', espnCode: 'eng.2', apiFootballId: 40, country: 'England' },
+  { name: 'League One', espnCode: 'eng.3', apiFootballId: 41, country: 'England' },
+  { name: 'LaLiga 2', espnCode: 'esp.2', apiFootballId: 141, country: 'Spain' },
+  { name: 'Scottish Premiership', espnCode: 'sco.1', apiFootballId: 179, country: 'Scotland' },
+  { name: 'Liga MX', espnCode: 'mex.1', apiFootballId: 262, country: 'Mexico' },
+  { name: 'International Friendly', espnCode: 'fifa.friendly', apiFootballId: 10, country: 'World' },
   { name: 'Copa Libertadores', espnCode: 'conmebol.libertadores', apiFootballId: 13, country: 'South America' },
   { name: 'AFC Champions League', espnCode: 'afc.champions', apiFootballId: 17, country: 'Asia' },
   { name: 'FA Cup', espnCode: 'eng.fa', apiFootballId: 45, country: 'England' },
@@ -66,22 +128,71 @@ export const LEAGUES_LIST: LeagueDefinition[] = [
   { name: 'DFB-Pokal', espnCode: 'ger.dfb_pokal', apiFootballId: 81, country: 'Germany' },
   { name: 'Coppa Italia', espnCode: 'ita.coppa_italia', apiFootballId: 137, country: 'Italy' },
   { name: 'Coupe de France', espnCode: 'fra.coupe_de_france', apiFootballId: 66, country: 'France' },
-  { name: 'MLS', espnCode: 'usa.1', apiFootballId: 253, country: 'USA' },
-  { name: 'Saudi Pro League', espnCode: 'ksa.1', apiFootballId: 307, country: 'Saudi Arabia' },
-  { name: 'AFCON Qualifier', espnCode: 'caf.nations_qual', apiFootballId: 20, country: 'Africa' },
   { name: 'AFCON', espnCode: 'caf.nations', apiFootballId: 6, country: 'Africa' },
   { name: 'CAF Champions League', espnCode: 'caf.champions', apiFootballId: 12, country: 'Africa' },
   { name: 'World Cup', espnCode: 'fifa.world', apiFootballId: 1, country: 'World' },
   { name: 'World Cup Qualifiers', espnCode: 'fifa.worldq.conmebol', apiFootballId: 10, country: 'World' },
-  { name: 'Brazilian Serie A', espnCode: 'bra.1', apiFootballId: 71, country: 'Brazil' },
-  { name: 'Eredivisie', espnCode: 'ned.1', apiFootballId: 88, country: 'Netherlands' },
-  { name: 'Primeira Liga', espnCode: 'por.1', apiFootballId: 94, country: 'Portugal' },
-  { name: 'Scottish Premiership', espnCode: 'sco.1', apiFootballId: 179, country: 'Scotland' },
-  { name: 'Liga MX', espnCode: 'mex.1', apiFootballId: 262, country: 'Mexico' },
-  { name: 'Championship', espnCode: 'eng.2', apiFootballId: 40, country: 'England' },
   { name: 'Kenyan Premier League', espnCode: 'ken.1', apiFootballId: 276, country: 'Kenya' },
   { name: 'FKF Premier League', espnCode: 'ken.1', apiFootballId: 276, country: 'Kenya' },
+  { name: 'Tanzania NBC Premier League', espnCode: 'tza.1', apiFootballId: 567, country: 'Tanzania' },
+  { name: 'South Africa PSL', espnCode: 'rsa.1', apiFootballId: 288, country: 'South Africa' },
+  { name: 'Nigeria NPFL', espnCode: 'nga.1', apiFootballId: 399, country: 'Nigeria' },
+  { name: 'Ghana Premier League', espnCode: 'gha.1', apiFootballId: 570, country: 'Ghana' },
+  { name: 'Egyptian Premier League', espnCode: 'egy.1', apiFootballId: 233, country: 'Egypt' },
+  { name: 'Botola Pro Morocco', espnCode: 'mar.1', apiFootballId: 200, country: 'Morocco' },
+  { name: 'DR Congo Linafoot', espnCode: 'cod.1', apiFootballId: 420, country: 'DR Congo' },
+  { name: 'CAF Confederation Cup', espnCode: 'caf.confed', apiFootballId: 20, country: 'Africa' },
 ];
+
+/**
+ * Accurately matches a prediction/fixture league name against a requested league filter
+ * without conflating English Premier League with Kenyan/Egyptian/Ghana/Tanzania Premier Leagues,
+ * or UEFA Champions League with CAF/AFC Champions League.
+ */
+export function matchesLeagueFilter(itemLeague?: string, filterLeague?: string): boolean {
+  if (!filterLeague || filterLeague === 'All' || filterLeague === 'all-continent') return true;
+  const pL = (itemLeague || '').toLowerCase().trim();
+  const tL = filterLeague.toLowerCase().trim();
+  if (!pL) return false;
+
+  // Kenya KPL / FKF aliases
+  if (tL === 'kpl' || tL.includes('kenya') || tL.includes('fkf')) {
+    return pL === 'kpl' || pL.includes('kenya') || pL.includes('fkf');
+  }
+
+  // English Premier League strict disambiguation
+  if (tL === 'premier league' || tL === 'epl' || tL === 'english premier league') {
+    return pL === 'premier league' || pL === 'english premier league' || pL === 'epl';
+  }
+
+  // UEFA Champions League strict disambiguation
+  if (tL === 'champions league' || tL === 'ucl' || tL === 'uefa champions league') {
+    return pL === 'champions league' || pL === 'uefa champions league' || pL === 'ucl';
+  }
+
+  // AFCON / CAF continental umbrella
+  if (tL === 'afcon' || tL === 'caf') {
+    return (
+      pL.includes('afcon') ||
+      pL.includes('caf') ||
+      pL.includes('kenya') ||
+      pL.includes('fkf') ||
+      pL.includes('tanzania') ||
+      pL.includes('psl') ||
+      pL.includes('south africa') ||
+      pL.includes('npfl') ||
+      pL.includes('nigeria') ||
+      pL.includes('ghana') ||
+      pL.includes('egypt') ||
+      pL.includes('botola') ||
+      pL.includes('morocco') ||
+      pL.includes('linafoot') ||
+      pL.includes('congo')
+    );
+  }
+
+  return pL === tL || pL.includes(tL) || tL.includes(pL);
+}
 
 export interface RealtimeMatchResult {
   matches: NormalizedMatch[];
@@ -465,7 +576,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
   }
 
   // Fetch real-time live events across major leagues using shared deduplicated scoreboard helper
-  const livePromises = LEAGUES_LIST.slice(0, 14).map((league) => fetchEspnLeagueScoreboard(league));
+  const livePromises = LEAGUES_LIST.slice(0, 22).map((league) => fetchEspnLeagueScoreboard(league, true));
 
   const leagueResults = await Promise.all(livePromises);
   const rawEvents = leagueResults.flat();
@@ -559,15 +670,10 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Promise<Prediction[]> {
   const cacheKey = `upcoming_fixtures_${leagueFilter || 'all'}`;
   return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
-    let selectedLeagues = LEAGUES_LIST;
+  let selectedLeagues = LEAGUES_LIST;
   if (leagueFilter && leagueFilter !== 'All') {
-    const found = LEAGUES_LIST.filter(l => 
-      l.name.toLowerCase().includes(leagueFilter.toLowerCase()) || 
-      leagueFilter.toLowerCase().includes(l.name.toLowerCase())
-    );
-    if (found.length > 0) {
-      selectedLeagues = found;
-    }
+    const found = LEAGUES_LIST.filter((l) => matchesLeagueFilter(l.name, leagueFilter));
+    selectedLeagues = found;
   }
 
   // Calculate upcoming date range (today to 10 days ahead) in YYYYMMDD-YYYYMMDD format
@@ -592,8 +698,8 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
   const fetchPromises = selectedLeagues
     .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-    .slice(0, 14)
-    .map((league) => fetchEspnLeagueScoreboard(league));
+    .slice(0, 22)
+    .map((league) => fetchEspnLeagueScoreboard(league, true));
 
   const resultsByLeague = await Promise.all(fetchPromises);
   const rawEvents = resultsByLeague.flat();
@@ -890,24 +996,23 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Only fall back to updated default upcoming fixtures if external feeds returned zero matches
-  if (predictions.length === 0) {
-    let fallbackFixtures = getUpdatedDefaultPredictions();
-    if (leagueFilter && leagueFilter !== 'All') {
-      const filteredFallback = fallbackFixtures.filter((f) =>
-        f.league.toLowerCase().includes(leagueFilter.toLowerCase()) ||
-        leagueFilter.toLowerCase().includes(f.league.toLowerCase())
-      );
-      if (filteredFallback.length > 0) {
-        fallbackFixtures = filteredFallback;
-      }
-    }
-    for (const item of fallbackFixtures) {
-      const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
-      if (!seenMatches.has(mKey)) {
-        seenMatches.add(mKey);
-        predictions.push(item);
-      }
+  // Supplement with verified fixtures only if live feeds returned zero matches or for regional African leagues not on ESPN
+  let supplementalFixtures = getUpdatedDefaultPredictions();
+  if (leagueFilter && leagueFilter !== 'All') {
+    supplementalFixtures = supplementalFixtures.filter((f) =>
+      matchesLeagueFilter(f.league, leagueFilter)
+    );
+  } else if (predictions.length >= 12) {
+    // When global live ESPN feeds returned 12+ authentic matches, only supplement regional CAF/African club fixtures
+    supplementalFixtures = supplementalFixtures.filter((f) =>
+      matchesLeagueFilter(f.league, 'AFCON')
+    );
+  }
+  for (const item of supplementalFixtures) {
+    const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
+    if (!seenMatches.has(mKey)) {
+      seenMatches.add(mKey);
+      predictions.push(item);
     }
   }
 
@@ -947,10 +1052,33 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
       }
     }
 
-    const fetchPromises = selectedLeagues.slice(0, 12).map((league) => fetchEspnLeagueScoreboard(league));
+    const fetchPromises = selectedLeagues.slice(0, 14).map((league) => fetchEspnLeagueScoreboard(league));
 
-    const results = await Promise.all(fetchPromises);
-    const rawEvents = results.flat();
+    // Also fetch recent completed matchdays from the last 4 days + recent domestic round so finished results are always populated
+    const recentDatePromises = [1, 2, 3, 4].map(async (daysAgo) => {
+      try {
+        const dt = new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
+        const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${dt}&limit=50`);
+        if (!r.ok) return [];
+        const j = await r.json();
+        return ((j.events as Array<Record<string, unknown>>) || []).map((ev) => ({
+          ...ev,
+          _leagueName:
+            ((ev.season as Record<string, string>)?.slug || '')
+              .replace(/^\d{4}-\d{2}-/, '')
+              .replace(/-/g, ' ')
+              .replace(/\b\w/g, (c) => c.toUpperCase()) || 'International Match',
+        }));
+      } catch {
+        return [];
+      }
+    });
+
+    const [results, recentResults] = await Promise.all([
+      Promise.all(fetchPromises),
+      Promise.all(recentDatePromises),
+    ]);
+    const rawEvents = [...results.flat(), ...recentResults.flat()];
     const finishedList: NormalizedMatch[] = [];
     const seenMatches = new Set<string>();
 

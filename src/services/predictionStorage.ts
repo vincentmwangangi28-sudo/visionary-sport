@@ -1,7 +1,12 @@
 import { Prediction } from '@/types/prediction';
 import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
 
-const STORAGE_KEY = 'predictpro_saved_predictions_v5_live';
+const STORAGE_KEY = 'predictpro_saved_predictions_v7_authentic';
+const LEGACY_STORAGE_KEYS = [
+  'predictpro_saved_predictions_v5_live',
+  'predictpro_saved_predictions_v6_live',
+  'predictpro_saved_predictions_v4',
+];
 const MAX_STORAGE_DAYS = 14;
 
 // In-memory cache for ultra-fast access and SSR/fallback safety
@@ -220,6 +225,9 @@ function hydrateStorage(): Record<string, Prediction> {
 
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
+      for (const legacyKey of LEGACY_STORAGE_KEYS) {
+        localStorage.removeItem(legacyKey);
+      }
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);

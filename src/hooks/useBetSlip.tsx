@@ -27,6 +27,7 @@ interface BetSlipContextType {
   addSelections: (selections: Omit<BetSelection, 'id'>[]) => void;
   removeSelection: (id: string) => void;
   clearSlip: () => void;
+  isInSlip: (idOrMatch: string) => boolean;
   totalOdds: number;
   bonusMultiplier: number;
   potentialReturn: number;
@@ -153,6 +154,17 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     toast.info('Bet slip cleared');
   };
 
+  const isInSlip = (idOrMatch: string) => {
+    if (!idOrMatch) return false;
+    const q = idOrMatch.toLowerCase();
+    return selections.some(
+      (s) =>
+        s.id.toLowerCase() === q ||
+        (s.matchId && s.matchId.toLowerCase() === q) ||
+        s.match.toLowerCase() === q
+    );
+  };
+
   const rawTotalOdds = selections.reduce((acc, s) => {
     const o = Number(s.odds);
     return acc * (Number.isFinite(o) && o > 0 ? o : 1);
@@ -202,6 +214,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       addSelections,
       removeSelection,
       clearSlip,
+      isInSlip,
       totalOdds,
       bonusMultiplier,
       potentialReturn,
@@ -228,6 +241,7 @@ const defaultFallbackContext: BetSlipContextType = {
   addSelections: () => {},
   removeSelection: () => {},
   clearSlip: () => {},
+  isInSlip: () => false,
   totalOdds: 1,
   bonusMultiplier: 0,
   potentialReturn: 0,

@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TeamLogo } from '@/components/TeamLogo';
 import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import {
@@ -49,11 +50,16 @@ interface AIRecommendationsHubProps {
 }
 
 export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
-  predictions = [],
+  predictions: propPredictions = [],
   isLoading = false,
   onViewAll,
   maxItems = 4,
 }) => {
+  const { data } = usePredictions(1);
+  const predictions = useMemo(
+    () => (propPredictions && propPredictions.length > 0 ? propPredictions : (data?.allPredictions || [])),
+    [propPredictions, data?.allPredictions]
+  );
   const [activeCategory, setActiveCategory] = useState<RecommendationCategory>('all');
   const [selectedMatch, setSelectedMatch] = useState<Prediction | null>(null);
   const { addSelection, addSelections, selections } = useBetSlip();
