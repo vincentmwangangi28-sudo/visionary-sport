@@ -101,6 +101,66 @@ export const SUPPORTED_CURRENCIES: CurrencyConfig[] = [
     regionId: 'east_africa',
   },
   {
+    code: 'EGP',
+    name: 'Egyptian Pound',
+    symbol: 'E£',
+    flag: '🇪🇬',
+    rateToUSD: 48.5,
+    decimals: 2,
+    symbolPosition: 'prefix',
+    regionId: 'north_africa_middle_east',
+  },
+  {
+    code: 'MAD',
+    name: 'Moroccan Dirham',
+    symbol: 'MAD',
+    flag: '🇲🇦',
+    rateToUSD: 9.85,
+    decimals: 2,
+    symbolPosition: 'suffix',
+    regionId: 'north_africa_middle_east',
+  },
+  {
+    code: 'XAF',
+    name: 'Central African CFA Franc',
+    symbol: 'FCFA',
+    flag: '🇨🇲',
+    rateToUSD: 605.0,
+    decimals: 0,
+    symbolPosition: 'suffix',
+    regionId: 'central_africa',
+  },
+  {
+    code: 'XOF',
+    name: 'West African CFA Franc',
+    symbol: 'CFA',
+    flag: '🇸🇳',
+    rateToUSD: 605.0,
+    decimals: 0,
+    symbolPosition: 'suffix',
+    regionId: 'west_africa',
+  },
+  {
+    code: 'CDF',
+    name: 'Congolese Franc',
+    symbol: 'FC',
+    flag: '🇨🇩',
+    rateToUSD: 2850.0,
+    decimals: 0,
+    symbolPosition: 'suffix',
+    regionId: 'central_africa',
+  },
+  {
+    code: 'ZMW',
+    name: 'Zambian Kwacha',
+    symbol: 'ZK',
+    flag: '🇿🇲',
+    rateToUSD: 26.4,
+    decimals: 2,
+    symbolPosition: 'prefix',
+    regionId: 'southern_africa',
+  },
+  {
     code: 'BRL',
     name: 'Brazilian Real',
     symbol: 'R$',
@@ -182,6 +242,12 @@ export type SupportedCurrencyCode =
   | 'GHS'
   | 'UGX'
   | 'TZS'
+  | 'EGP'
+  | 'MAD'
+  | 'XAF'
+  | 'XOF'
+  | 'CDF'
+  | 'ZMW'
   | 'BRL'
   | 'CAD'
   | 'AUD'
@@ -272,17 +338,25 @@ export function formatCurrencyAmount(
 export function inferDefaultCurrency(regionId?: string, timezone?: string): SupportedCurrencyCode {
   if (regionId) {
     switch (regionId) {
+      case 'pan_africa':
       case 'east_africa':
         return 'KES';
       case 'west_africa':
         return 'NGN';
       case 'southern_africa':
         return 'ZAR';
+      case 'central_africa':
+        return 'XAF';
+      case 'north_africa_middle_east':
+        return 'EGP';
       case 'uk':
+      case 'uk_ireland':
         return 'GBP';
       case 'europe':
+      case 'western_europe':
         return 'EUR';
       case 'south_america':
+      case 'latin_america':
         return 'BRL';
       case 'north_america':
         return 'USD';
@@ -297,9 +371,18 @@ export function inferDefaultCurrency(regionId?: string, timezone?: string): Supp
 
   if (timezone) {
     const tz = timezone.toLowerCase();
-    if (tz.includes('nairobi') || tz.includes('kampala') || tz.includes('dar_es_salaam')) return 'KES';
-    if (tz.includes('lagos') || tz.includes('accra')) return 'NGN';
+    if (tz.includes('nairobi')) return 'KES';
+    if (tz.includes('kampala')) return 'UGX';
+    if (tz.includes('dar_es_salaam')) return 'TZS';
+    if (tz.includes('lagos')) return 'NGN';
+    if (tz.includes('accra')) return 'GHS';
+    if (tz.includes('abidjan') || tz.includes('dakar')) return 'XOF';
+    if (tz.includes('kinshasa') || tz.includes('lubumbashi')) return 'CDF';
+    if (tz.includes('douala') || tz.includes('libreville')) return 'XAF';
     if (tz.includes('johannesburg')) return 'ZAR';
+    if (tz.includes('lusaka')) return 'ZMW';
+    if (tz.includes('cairo')) return 'EGP';
+    if (tz.includes('casablanca')) return 'MAD';
     if (tz.includes('london')) return 'GBP';
     if (tz.includes('paris') || tz.includes('berlin') || tz.includes('madrid') || tz.includes('rome')) return 'EUR';
     if (tz.includes('sao_paulo')) return 'BRL';

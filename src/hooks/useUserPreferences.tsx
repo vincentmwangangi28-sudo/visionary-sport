@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SupportedLanguage, TRANSLATIONS, SUPPORTED_LANGUAGES } from '@/services/i18n';
 import { SupportedOddsFormat, formatOddsValue } from '@/services/oddsConverter';
+import { SupportedCurrencyCode } from '@/services/currencyService';
 import { formatKickoffDateTime, getDeviceTimezone, getRelativeKickoffLabel } from '@/services/timezoneService';
 import {
   detectNavigatorLanguage,
@@ -25,7 +26,7 @@ export interface UserPreferences {
   timeFormat: 'auto' | DetectedTimeFormat;
   dataSaverMode: boolean;
   defaultBookmaker: string;
-  defaultCurrency: 'KES' | 'USD' | 'EUR' | 'GBP' | 'NGN';
+  defaultCurrency: SupportedCurrencyCode;
   dailyDigestEnabled: boolean;
   kickoffAlertsEnabled: boolean;
   hapticFeedbackEnabled: boolean;

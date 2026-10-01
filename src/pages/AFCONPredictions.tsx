@@ -116,7 +116,35 @@ export default function AFCONPredictions() {
         </div>
 
         {/* Live Fixtures & Predictions Dashboard */}
-        <section aria-label="Continental Match Predictions">
+        <section aria-label="Continental Match Predictions" className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { label: "🌍 All Continental Priority", value: undefined },
+              { label: "🏆 CAF Champions League", value: "CAF Champions League" },
+              { label: "🇰🇪 Kenya FKF KPL", value: "KPL" },
+              { label: "🇹🇿 Tanzania NBC League", value: "Tanzania NBC Premier League" },
+              { label: "🇿🇦 South Africa PSL", value: "South Africa PSL" },
+              { label: "🇳🇬 Nigeria NPFL", value: "Nigeria NPFL" },
+              { label: "🇬🇭 Ghana Premier League", value: "Ghana Premier League" },
+              { label: "🇪🇬 Egyptian League", value: "Egyptian Premier League" },
+              { label: "🇲🇦 Morocco Botola Pro", value: "Morocco Botola Pro" },
+              { label: "🇨🇩 DR Congo Linafoot", value: "DR Congo Linafoot" },
+            ].map((pill) => {
+              const active = selectedLeague === pill.value;
+              return (
+                <Button
+                  key={pill.label}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  onClick={() => setSelectedLeague(pill.value)}
+                  className="text-xs font-semibold h-8"
+                >
+                  {pill.label}
+                </Button>
+              );
+            })}
+          </div>
           <PredictionsDashboard key={selectedLeague || "all-continent"} initialLeague={selectedLeague} />
         </section>
 

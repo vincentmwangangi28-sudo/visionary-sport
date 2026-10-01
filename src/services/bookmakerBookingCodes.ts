@@ -12,13 +12,17 @@ export interface RegionalBookmaker {
 export const REGIONAL_BOOKMAKERS: RegionalBookmaker[] = [
   // Africa
   { id: 'sportpesa', name: 'SportPesa', region: 'Africa', flag: '🇰🇪', codePrefix: 'sp-', countryCodes: ['ke', 'ea', 'tz'], websiteUrl: 'https://www.sportpesa.co.ke' },
-  { id: 'betika', name: 'Betika', region: 'Africa', flag: '🇰🇪', codePrefix: 'btk-', countryCodes: ['ke', 'ea'], websiteUrl: 'https://www.betika.com' },
-  { id: 'sportybet', name: 'SportyBet', region: 'Africa', flag: '🌍', codePrefix: 'sb-', countryCodes: ['ke', 'ng', 'gh'], websiteUrl: 'https://www.sportybet.com' },
+  { id: 'betika', name: 'Betika', region: 'Africa', flag: '🇰🇪', codePrefix: 'btk-', countryCodes: ['ke', 'ea', 'tz', 'gh', 'cd'], websiteUrl: 'https://www.betika.com' },
+  { id: 'sportybet', name: 'SportyBet', region: 'Africa', flag: '🌍', codePrefix: 'sb-', countryCodes: ['ke', 'ng', 'gh', 'tz', 'ug', 'zm'], websiteUrl: 'https://www.sportybet.com' },
+  { id: 'betpawa', name: 'betPawa', region: 'Africa', flag: '🌍', codePrefix: 'bpw-', countryCodes: ['ke', 'ng', 'gh', 'ug', 'tz', 'zm', 'cm', 'rw'], websiteUrl: 'https://www.betpawa.com' },
   { id: 'bet9ja', name: 'Bet9ja', region: 'Africa', flag: '🇳🇬', codePrefix: 'b9j-', countryCodes: ['ng', 'wa'], websiteUrl: 'https://www.bet9ja.com' },
-  { id: 'mozzart', name: 'MozzartBet', region: 'Africa', flag: '🌍', codePrefix: 'mzt-', countryCodes: ['ke', 'ea'], websiteUrl: 'https://www.mozzartbet.co.ke' },
-  { id: 'odibets', name: 'OdiBets', region: 'Africa', flag: '🇰🇪', codePrefix: 'odi-', countryCodes: ['ke', 'ea'], websiteUrl: 'https://www.odibets.com' },
-  { id: 'hollywoodbets', name: 'Hollywoodbets', region: 'Africa', flag: '🇿🇦', codePrefix: 'hwb-', countryCodes: ['za'], websiteUrl: 'https://www.hollywoodbets.net' },
-  { id: 'betway', name: 'Betway', region: 'Africa', flag: '🌍', codePrefix: 'bw-', countryCodes: ['ke', 'ng', 'za', 'gh', 'uk'], websiteUrl: 'https://www.betway.co.ke' },
+  { id: 'betking', name: 'BetKing', region: 'Africa', flag: '🇳🇬', codePrefix: 'bkg-', countryCodes: ['ng', 'gh', 'ke'], websiteUrl: 'https://www.betking.com' },
+  { id: 'mozzart', name: 'MozzartBet', region: 'Africa', flag: '🌍', codePrefix: 'mzt-', countryCodes: ['ke', 'ea', 'ng', 'gh'], websiteUrl: 'https://www.mozzartbet.co.ke' },
+  { id: 'premierbet', name: 'PremierBet', region: 'Africa', flag: '🇨🇩', codePrefix: 'pmb-', countryCodes: ['cd', 'cm', 'ao', 'zm', 'mw', 'tz', 'sn', 'ci'], websiteUrl: 'https://www.premierbet.com' },
+  { id: 'odibets', name: 'OdiBets', region: 'Africa', flag: '🇰🇪', codePrefix: 'odi-', countryCodes: ['ke', 'ea', 'gh'], websiteUrl: 'https://www.odibets.com' },
+  { id: 'hollywoodbets', name: 'Hollywoodbets', region: 'Africa', flag: '🇿🇦', codePrefix: 'hwb-', countryCodes: ['za', 'mz'], websiteUrl: 'https://www.hollywoodbets.net' },
+  { id: 'supabets', name: 'Supabets', region: 'Africa', flag: '🇿🇦', codePrefix: 'spb-', countryCodes: ['za', 'gh', 'tz', 'zw'], websiteUrl: 'https://www.supabets.co.za' },
+  { id: 'betway', name: 'Betway', region: 'Africa', flag: '🌍', codePrefix: 'bw-', countryCodes: ['ke', 'ng', 'za', 'gh', 'zm', 'tz', 'uk'], websiteUrl: 'https://www.betway.co.ke' },
 
   // UK & Europe
   { id: 'bet365', name: 'Bet365', region: 'UK & Europe', flag: '🇬🇧', codePrefix: 'b365-', countryCodes: ['uk', 'eu', 'global'], websiteUrl: 'https://www.bet365.com' },
