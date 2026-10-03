@@ -9,6 +9,7 @@ import { ScreenerMatchGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
+import { hapticService } from '@/services/hapticService';
 import { SlidersHorizontal, Sparkles, Filter, Zap, ArrowRight, Download, Check, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -110,6 +111,7 @@ export const MatchScreener: React.FC = () => {
 
   const handleAddAllToAcca = () => {
     if (filtered.length === 0) return;
+    hapticService.boost();
     const toAdd = filtered.slice(0, 6);
     toAdd.forEach(m => {
       addSelection({
@@ -127,6 +129,7 @@ export const MatchScreener: React.FC = () => {
   };
 
   const handleExportCSV = () => {
+    hapticService.success();
     const csvContent = "data:text/csv;charset=utf-8," 
       + ["Match,League,Market,Odds,AI Confidence,Edge,Date",
         ...filtered.map(m => `"${m.homeTeam} vs ${m.awayTeam}","${m.league}","${m.market}",${m.odds},${m.aiConfidence}%,+${m.valueEdge}%,${m.matchDate}`)
@@ -332,6 +335,7 @@ export const MatchScreener: React.FC = () => {
                   <Button
                     size="sm"
                     onClick={() => {
+                      hapticService.selection();
                       addSelection({
                         match: `${m.homeTeam} vs ${m.awayTeam}`,
                         homeTeam: m.homeTeam,

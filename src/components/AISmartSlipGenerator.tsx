@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { hapticService } from '@/services/hapticService';
 import { toast } from 'sonner';
 
 type SlipStrategy = 'banker' | 'value' | 'moonshot';
@@ -160,6 +161,7 @@ export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({
   const potentialReturn = Math.round(stakeExample * totalOdds);
 
   const handleShuffle = () => {
+    hapticService.selection();
     setIsShuffling(true);
     setShuffleOffset((prev) => prev + 1);
     setTimeout(() => {
@@ -169,6 +171,7 @@ export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({
   };
 
   const handleLoadSlip = () => {
+    hapticService.boost();
     const slipPayload = currentPreset.legs.map((leg) => ({
       match: leg.match,
       homeTeam: leg.homeTeam,
@@ -186,6 +189,7 @@ export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({
   };
 
   const handleCopyCode = () => {
+    hapticService.success();
     const randomCode = `PREDICT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
     navigator.clipboard.writeText(randomCode);
     setCopiedCode(true);
@@ -234,7 +238,10 @@ export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({
               <button
                 key={st}
                 type="button"
-                onClick={() => setStrategy(st)}
+                onClick={() => {
+                  hapticService.selection();
+                  setStrategy(st);
+                }}
                 className={`p-3 min-h-[48px] rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   isSelected
                     ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary'

@@ -7,6 +7,7 @@ import { LiveMatchGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { Activity, RefreshCw, Radio, Zap, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TeamLogo } from '@/components/TeamLogo';
+import { hapticService } from '@/services/hapticService';
 
 export const LiveMatches = () => {
   const { 
@@ -97,7 +98,7 @@ export const LiveMatches = () => {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {live.slice(0, 6).map((m) => (
-            <Link to="/live" key={m.id}>
+            <Link to="/live" key={m.id} onClick={() => hapticService.selection()}>
               <Card className="border-red-500/30 bg-red-500/5 hover:border-red-500/50 transition-all cursor-pointer h-full shadow-sm">
                 <CardContent className="p-4 flex flex-col justify-between h-full">
                   <div className="flex items-center justify-between mb-2">

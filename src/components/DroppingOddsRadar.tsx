@@ -7,6 +7,7 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { DroppingOddsGridSkeleton } from '@/components/PredictionCardSkeleton';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { hapticService } from '@/services/hapticService';
 import { TrendingDown, Flame, Zap, ArrowDownRight, Activity, Filter, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -99,6 +100,7 @@ export const DroppingOddsRadar: React.FC = () => {
   });
 
   const handleAddBet = (item: DroppingOddsItem) => {
+    hapticService.selection();
     addSelection({
       match: `${item.homeTeam} vs ${item.awayTeam}`,
       homeTeam: item.homeTeam,

@@ -5,6 +5,7 @@ import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { TeamLogo } from '@/components/TeamLogo';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
+import { hapticService } from '@/services/hapticService';
 import {
   MatchTeamNewsReport,
   PlayerAvailabilityStatus,
@@ -86,6 +87,7 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
   }, [report.matchId, report.injuries]);
 
   const togglePlayerDetails = useCallback((playerId: string) => {
+    hapticService.selection();
     setExpandedPlayerIds((prev) => ({
       ...prev,
       [playerId]: !prev[playerId],
@@ -202,6 +204,7 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
   );
 
   const handleAddAdjustedPick = () => {
+    hapticService.selection();
     addSelection({
       matchId: report.matchId,
       match: `${report.homeTeam} vs ${report.awayTeam}`,
@@ -287,6 +290,7 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => {
+                    hapticService.selection();
                     setSelectedMatchIndex(idx);
                     setStatusFilter('all');
                   }}
@@ -425,7 +429,10 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setStatusFilter(tab.id)}
+                onClick={() => {
+                  hapticService.selection();
+                  setStatusFilter(tab.id);
+                }}
                 aria-pressed={statusFilter === tab.id}
                 className={`min-h-[36px] px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   statusFilter === tab.id

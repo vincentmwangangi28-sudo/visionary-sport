@@ -13,6 +13,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
+import { hapticService } from '@/services/hapticService';
 import { toast } from 'sonner';
 
 function formatMatchSlug(homeTeam: string, awayTeam: string, matchDate?: string): string {
@@ -109,6 +110,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
   const handleVote = (e: React.MouseEvent, vote: '1' | 'X' | '2') => {
     e.stopPropagation();
+    hapticService.selection();
     setUserVote(vote);
     try {
       localStorage.setItem(voteKey, vote);
@@ -120,11 +122,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
   const handleCoinUnlock = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    hapticService.selection();
     setUnlockingCoin(true);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       const session = (await supabase.auth.getSession()).data.session;
       if (!session) {
+        hapticService.warning();
         toast.info('Sign in to unlock predictions using your coin balance.');
         return;
       }
@@ -136,11 +140,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
         .single();
 
       if (error || !profile) {
+        hapticService.error();
         toast.error('Could not fetch coin balance.');
         return;
       }
 
       if ((profile.coins ?? 0) < 50) {
+        hapticService.warning();
         toast.error(`You have ${profile.coins ?? 0} coins. 50 coins required. Spin daily wheel in Rewards to earn free coins!`);
         return;
       }
@@ -153,8 +159,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
       localStorage.setItem(coinUnlockKey, 'true');
       setCoinUnlocked(true);
+      hapticService.boost();
       toast.success('Unlocked with 50 coins! Enjoy your edge.');
     } catch {
+      hapticService.error();
       toast.error('Unlock failed. Please try again.');
     } finally {
       setUnlockingCoin(false);
@@ -173,6 +181,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
   const handleOddsClick = (e: React.MouseEvent, market: string, odds: number) => {
     e.stopPropagation();
+    hapticService.selection();
     addSelection({
       match: `${p.home_team} vs ${p.away_team}`,
       homeTeam: p.home_team,
@@ -190,7 +199,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
     return (
       <>
         <div
-          onClick={() => !locked && setShowAnalytics(true)}
+          onClick={() => {
+            hapticService.selection();
+            if (!locked) setShowAnalytics(true);
+          }}
           className={`p-3 rounded-xl border bg-card hover:bg-muted/40 transition-all cursor-pointer flex items-center justify-between gap-3 ${
             locked ? 'opacity-75' : ''
           } ${confidence >= 80 ? 'border-primary/40' : ''}`}
@@ -306,7 +318,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
   return (
     <>
       <Card
-        onClick={() => !locked && setShowAnalytics(true)}
+        onClick={() => {
+          hapticService.selection();
+          if (!locked) setShowAnalytics(true);
+        }}
         className={`group overflow-hidden cursor-pointer transition-all hover:shadow-lg border bg-card ${
           locked ? 'opacity-85' : ''
         } ${confidence >= 80 ? 'border-primary/40 ring-1 ring-primary/20' : ''}`}
@@ -321,6 +336,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
+                  hapticService.selection();
                   togglePinLeague(p.league);
                 }}
                 title={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}

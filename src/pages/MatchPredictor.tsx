@@ -19,6 +19,7 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { analyzeMatchWithGemini, GeminiMatchAnalysis } from '@/services/geminiTasksService';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
+import { hapticService } from '@/services/hapticService';
 
 const LEAGUES = ['Premier League','La Liga','Champions League','Bundesliga','Serie A','Ligue 1','KPL','AFCON Qualifier','MLS','Europa League'];
 
@@ -90,6 +91,7 @@ export default function MatchPredictor() {
 
   const handleDeepGeminiAnalysis = async () => {
     if (!home.trim() || !away.trim()) return;
+    hapticService.boost();
     setLoadingGemini(true);
     try {
       const data = await analyzeMatchWithGemini({
@@ -113,6 +115,7 @@ export default function MatchPredictor() {
 
   const handleAddToBetSlip = () => {
     if (!result) return;
+    hapticService.selection();
     const outcome = result.predicted_outcome || 'Home Win';
     const odds = outcome === 'Home Win' ? (result.home_odds || 1.85) : outcome === 'Away Win' ? (result.away_odds || 2.50) : (result.draw_odds || 3.20);
     addSelection({
@@ -134,6 +137,7 @@ export default function MatchPredictor() {
       toast.error('Please enter both team names');
       return;
     }
+    hapticService.selection();
     setLoading(true);
     setResult(null);
     setIsUsingFallback(false);
@@ -352,7 +356,12 @@ export default function MatchPredictor() {
               <button
                 type="button"
                 key={m.home + m.away}
-                onClick={() => { setHome(m.home); setAway(m.away); setLeague(m.league); }}
+                onClick={() => {
+                  hapticService.selection();
+                  setHome(m.home);
+                  setAway(m.away);
+                  setLeague(m.league);
+                }}
                 aria-label={`Simulate match: ${m.home} vs ${m.away}`}
                 className="text-xs px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-full border transition-colors"
               >

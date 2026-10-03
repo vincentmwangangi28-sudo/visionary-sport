@@ -84,6 +84,7 @@ export default function Preferences() {
     setTimeFormat,
     setDataSaver,
     setHapticFeedback,
+    setHapticIntensity,
     setRiskProfile,
     toggleFavoriteLeague,
     togglePreferredMarket,
@@ -556,39 +557,89 @@ export default function Preferences() {
 
               {/* Interactive Haptic Test Controls */}
               {preferences.hapticFeedbackEnabled !== false && (
-                <div className="space-y-1.5 pt-1">
-                  <p className="text-xs font-semibold text-foreground">Test Mobile Tactile Patterns:</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => hapticService.selection()}
-                      className="text-xs py-1.5 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
-                    >
-                      <span className="font-bold">Light Tap</span>
-                      <span className="text-[10px] text-muted-foreground">Single Odd</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => hapticService.success()}
-                      className="text-xs py-1.5 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
-                    >
-                      <span className="font-bold text-primary">Multi-Pulse</span>
-                      <span className="text-[10px] text-muted-foreground">AI Smart Slip</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => hapticService.boost()}
-                      className="text-xs py-1.5 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
-                    >
-                      <span className="font-bold text-amber-500">Acca Boost</span>
-                      <span className="text-[10px] text-muted-foreground">Milestone</span>
-                    </Button>
+                <div className="space-y-3 pt-1">
+                  {/* Intensity Level Selector */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground">Haptic Vibration Intensity Level:</Label>
+                      <span className="text-[11px] font-bold text-primary uppercase">
+                        {preferences.hapticIntensity || hapticService.getIntensityPreference()}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['soft', 'medium', 'strong'] as const).map((level) => {
+                        const active = (preferences.hapticIntensity || hapticService.getIntensityPreference()) === level;
+                        return (
+                          <button
+                            key={level}
+                            type="button"
+                            onClick={() => {
+                              setHapticIntensity(level);
+                              if (level === 'soft') hapticService.soft();
+                              else if (level === 'medium') hapticService.medium();
+                              else hapticService.strong();
+                            }}
+                            className={`p-2 rounded-lg border text-center transition-all ${
+                              active
+                                ? 'border-primary bg-primary/10 font-bold text-primary ring-1 ring-primary'
+                                : 'border-border/60 hover:bg-muted/40 text-muted-foreground text-xs'
+                            }`}
+                          >
+                            <div className="capitalize text-xs font-bold">{level}</div>
+                            <div className="text-[10px] opacity-80">
+                              {level === 'soft' ? '0.7x subtle' : level === 'medium' ? '1.0x balanced' : '1.35x deep'}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Interaction Pattern Test Buttons */}
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-xs font-semibold text-foreground">Test Tactile Feedback by Interaction Type:</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => hapticService.menuTap()}
+                        className="text-xs py-2 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
+                      >
+                        <span className="font-bold">Light Impact</span>
+                        <span className="text-[10px] text-muted-foreground">Menu Taps</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => hapticService.medium()}
+                        className="text-xs py-2 h-auto flex flex-col items-center justify-center gap-1 active:scale-95"
+                      >
+                        <span className="font-bold">Medium Impact</span>
+                        <span className="text-[10px] text-muted-foreground">Odds &amp; Cards</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => hapticService.betConfirmation()}
+                        className="text-xs py-2 h-auto flex flex-col items-center justify-center gap-1 active:scale-95 border-primary/40 bg-primary/5"
+                      >
+                        <span className="font-bold text-primary">Strong Impact</span>
+                        <span className="text-[10px] text-muted-foreground">Bet Confirmation</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => hapticService.boost()}
+                        className="text-xs py-2 h-auto flex flex-col items-center justify-center gap-1 active:scale-95 border-amber-500/40 bg-amber-500/5"
+                      >
+                        <span className="font-bold text-amber-500">Acca Boost</span>
+                        <span className="text-[10px] text-muted-foreground">Milestones</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

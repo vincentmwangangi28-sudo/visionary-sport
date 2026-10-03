@@ -9,6 +9,7 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
+import { hapticService } from '@/services/hapticService';
 import {
   Sparkles,
   ShieldCheck,
@@ -196,6 +197,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
   };
 
   const handleToggleBet = (item: CategorizedRecommendation) => {
+    hapticService.selection();
     addSelection({
       match: `${item.prediction.home_team} vs ${item.prediction.away_team}`,
       homeTeam: item.prediction.home_team,
@@ -210,6 +212,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
 
   const handleLoadAllToSlip = () => {
     if (filtered.length === 0) return;
+    hapticService.success();
     const betsToAdd = filtered.map(item => ({
       match: `${item.prediction.home_team} vs ${item.prediction.away_team}`,
       homeTeam: item.prediction.home_team,
@@ -229,6 +232,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
 
   const handleShareRecommendations = async () => {
     if (filtered.length === 0) return;
+    hapticService.success();
     const text = `🎯 PredictPro AI Recommended Picks Today:\n\n${filtered.map(f => `• ${f.prediction.home_team} vs ${f.prediction.away_team}\n  Tip: ${f.market} @ ${f.odds.toFixed(2)} (${f.confidence}% conf)`).join('\n\n')}\n\nCombined Odds: ${combinedAccaOdds.toFixed(2)}x\n🔮 Verified on predictpro.guru`;
     
     if (navigator.share) {
@@ -361,7 +365,10 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
             key={id}
             role="tab"
             type="button"
-            onClick={() => setActiveCategory(id as RecommendationCategory)}
+            onClick={() => {
+              hapticService.selection();
+              setActiveCategory(id as RecommendationCategory);
+            }}
             aria-selected={activeCategory === id}
             className={`min-h-[42px] px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border ${
               activeCategory === id
@@ -497,7 +504,10 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedMatch(item.prediction)}
+                    onClick={() => {
+                      hapticService.selection();
+                      setSelectedMatch(item.prediction);
+                    }}
                     className="min-h-[42px] gap-1 text-xs"
                     aria-label="View deep tactical analytics"
                   >

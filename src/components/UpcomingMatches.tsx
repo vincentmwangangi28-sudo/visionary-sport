@@ -13,6 +13,7 @@ import { UpcomingMatchListSkeleton } from '@/components/PredictionCardSkeleton';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { Link } from 'react-router-dom';
+import { hapticService } from '@/services/hapticService';
 
 const MatchAnalyticsModal = lazy(() =>
   import('@/components/MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
@@ -63,6 +64,7 @@ export const UpcomingMatches: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
+    hapticService.selection();
     setIsRefreshing(true);
     await refresh();
     setIsRefreshing(false);
@@ -123,6 +125,7 @@ export const UpcomingMatches: React.FC = () => {
 
   const handleOddsClick = (e: React.MouseEvent, match: UpcomingMatch, market: string, odds: number) => {
     e.stopPropagation();
+    hapticService.selection();
     addSelection({
       match: `${match.home_team} vs ${match.away_team}`,
       homeTeam: match.home_team,
@@ -215,7 +218,10 @@ export const UpcomingMatches: React.FC = () => {
             <div className="flex items-center gap-1.5 bg-muted/40 p-1.5 rounded-lg border border-border/50 text-xs overflow-x-auto">
               <button
                 type="button"
-                onClick={() => setTimeframe('all')}
+                onClick={() => {
+                  hapticService.selection();
+                  setTimeframe('all');
+                }}
                 className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'all'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -226,7 +232,10 @@ export const UpcomingMatches: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setTimeframe('today')}
+                onClick={() => {
+                  hapticService.selection();
+                  setTimeframe('today');
+                }}
                 className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'today'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -237,7 +246,10 @@ export const UpcomingMatches: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setTimeframe('tomorrow')}
+                onClick={() => {
+                  hapticService.selection();
+                  setTimeframe('tomorrow');
+                }}
                 className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'tomorrow'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -248,7 +260,10 @@ export const UpcomingMatches: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setTimeframe('weekend')}
+                onClick={() => {
+                  hapticService.selection();
+                  setTimeframe('weekend');
+                }}
                 className={`px-3.5 py-2 min-h-[44px] rounded-md font-semibold transition-colors whitespace-nowrap flex items-center justify-center ${
                   timeframe === 'weekend'
                     ? 'bg-background text-foreground shadow-xs font-bold'
@@ -290,7 +305,10 @@ export const UpcomingMatches: React.FC = () => {
               </span>
               <button
                 type="button"
-                onClick={() => setSelectedLeague('all')}
+                onClick={() => {
+                  hapticService.selection();
+                  setSelectedLeague('all');
+                }}
                 className={`text-[11px] px-3 py-1.5 min-h-[44px] rounded-full border transition-colors shrink-0 font-medium flex items-center justify-center ${
                   selectedLeague === 'all'
                     ? 'bg-primary text-primary-foreground border-primary font-bold'
@@ -306,7 +324,10 @@ export const UpcomingMatches: React.FC = () => {
                   <button
                     key={lg}
                     type="button"
-                    onClick={() => setSelectedLeague(lg)}
+                    onClick={() => {
+                      hapticService.selection();
+                      setSelectedLeague(lg);
+                    }}
                     className={`text-[11px] px-3 py-1.5 min-h-[44px] rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1.5 justify-center ${
                       selectedLeague.toLowerCase() === lg.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-bold'
@@ -367,7 +388,10 @@ export const UpcomingMatches: React.FC = () => {
                 <Card
                   key={m.id}
                   className="hover:border-primary/50 transition-all duration-200 h-full flex flex-col justify-between group bg-card shadow-xs hover:shadow-md cursor-pointer"
-                  onClick={() => setSelectedMatch(m)}
+                  onClick={() => {
+                    hapticService.selection();
+                    setSelectedMatch(m);
+                  }}
                 >
                   <CardContent className="p-4 flex flex-col justify-between h-full space-y-3">
                     <div>

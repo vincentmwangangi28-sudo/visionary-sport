@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/TeamLogo';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { hapticService } from '@/services/hapticService';
 import { 
   Cpu, 
   Play, 
@@ -117,6 +118,7 @@ export const MonteCarloMatchSimulatorModal: React.FC<{
   const { addSelection, setIsOpen: setSlipOpen } = useBetSlip();
 
   const runSimulation = () => {
+    hapticService.boost();
     setIsSimulating(true);
     setSimProgress(0);
     setSimResult(null);
@@ -129,6 +131,7 @@ export const MonteCarloMatchSimulatorModal: React.FC<{
       if (progress >= 100) {
         clearInterval(interval);
         setIsSimulating(false);
+        hapticService.success();
 
         // Derive Poisson/Monte Carlo outcome
         const totalXg = selectedMatch.homeXg + selectedMatch.awayXg;
@@ -169,6 +172,7 @@ export const MonteCarloMatchSimulatorModal: React.FC<{
   };
 
   const handleAddRecommendation = () => {
+    hapticService.selection();
     addSelection({
       match: `${selectedMatch.homeTeam} vs ${selectedMatch.awayTeam}`,
       homeTeam: selectedMatch.homeTeam,
@@ -223,6 +227,7 @@ export const MonteCarloMatchSimulatorModal: React.FC<{
                     key={m.id}
                     type="button"
                     onClick={() => {
+                      hapticService.selection();
                       setSelectedMatch(m);
                       setSimResult(null);
                     }}

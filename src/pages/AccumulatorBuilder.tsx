@@ -12,6 +12,7 @@ import { AccaFixtureListSkeleton } from '@/components/PredictionCardSkeleton';
 import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, CheckCheck, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { curateAccaWithGemini } from '@/services/geminiTasksService';
+import { hapticService } from '@/services/hapticService';
 
 export default function AccumulatorBuilder() {
   const { predictions, isLoading } = usePredictions(1);
@@ -78,6 +79,7 @@ export default function AccumulatorBuilder() {
   };
 
   const handleGenerateCode = (bookie: string) => {
+    hapticService.betConfirmation();
     setSelectedBookmaker(bookie);
     const code = generateBookingCode(bookie);
     setGeneratedCode(code);
@@ -85,6 +87,7 @@ export default function AccumulatorBuilder() {
   };
 
   const handleCopyCode = (code: string) => {
+    hapticService.selection();
     navigator.clipboard.writeText(code);
     setCopied(true);
     toast.success(`Copied code ${code} to clipboard!`);
@@ -92,12 +95,14 @@ export default function AccumulatorBuilder() {
   };
 
   const shareAcca = async () => {
+    hapticService.success();
     const text = `🎯 My ${selections.length}-fold Accumulator\n\n${selections.map(s => `✅ ${s.homeTeam} vs ${s.awayTeam}\n   ${s.market} @ ${s.odds.toFixed(2)}`).join('\n\n')}\n\n💰 Combined odds: ${totalOdds.toFixed(2)}\n📊 Confidence: ${combinedConfidence}%\n${generatedCode ? `🎟️ Code (${selectedBookmaker}): ${generatedCode}\n` : ''}\nBuilt with PredictPro AI — predictpro.guru`;
     if (navigator.share) await navigator.share({ title: 'My Accumulator', text });
     else { navigator.clipboard.writeText(text); toast.success('Copied to clipboard!'); }
   };
 
   const handleGenerateRecommendedAcca = (preset: 'bankers' | 'value' | 'longshot') => {
+    hapticService.boost();
     if (predictions.length === 0) {
       toast.error('No predictions available right now.');
       return;

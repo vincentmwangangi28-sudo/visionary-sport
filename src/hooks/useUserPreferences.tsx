@@ -10,7 +10,7 @@ import {
   DetectedDateFormat,
   DetectedTimeFormat,
 } from '@/services/localeDetectionService';
-import { hapticService } from '@/services/hapticService';
+import { hapticService, HapticPreferenceLevel } from '@/services/hapticService';
 
 export type RiskProfile = 'conservative' | 'balanced' | 'aggressive';
 export type OddsFormat = SupportedOddsFormat;
@@ -30,6 +30,7 @@ export interface UserPreferences {
   dailyDigestEnabled: boolean;
   kickoffAlertsEnabled: boolean;
   hapticFeedbackEnabled: boolean;
+  hapticIntensity?: HapticPreferenceLevel;
 }
 
 const getDefaultPreferencesWithAutoLocale = (): UserPreferences => {
@@ -72,6 +73,7 @@ interface UserPreferencesContextType {
   toggleDataSaver: () => void;
   setDataSaver: (enabled: boolean) => void;
   setHapticFeedback: (enabled: boolean) => void;
+  setHapticIntensity: (level: HapticPreferenceLevel) => void;
   toggleFavoriteLeague: (league: string) => void;
   togglePreferredMarket: (market: string) => void;
   resetPreferences: () => void;
@@ -113,6 +115,9 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
       
       if (typeof preferences.hapticFeedbackEnabled === 'boolean') {
         hapticService.setEnabled(preferences.hapticFeedbackEnabled);
+      }
+      if (preferences.hapticIntensity) {
+        hapticService.setIntensityPreference(preferences.hapticIntensity);
       }
 
       // Update HTML direction for RTL languages like Arabic
@@ -157,6 +162,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
   const setHapticFeedback = (enabled: boolean) => {
     hapticService.setEnabled(enabled);
     updatePreferences({ hapticFeedbackEnabled: enabled });
+  };
+
+  const setHapticIntensity = (level: HapticPreferenceLevel) => {
+    hapticService.setIntensityPreference(level);
+    updatePreferences({ hapticIntensity: level });
   };
 
   const setDateFormat = (format: 'auto' | DetectedDateFormat) => {
@@ -241,6 +251,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         toggleDataSaver,
         setDataSaver,
         setHapticFeedback,
+        setHapticIntensity,
         toggleFavoriteLeague,
         togglePreferredMarket,
         resetPreferences,

@@ -113,6 +113,7 @@ export const BetSlipDrawer = () => {
   }, [combinedConfidence, totalOdds, currency]);
 
   const handleGenerateCode = (bookieId: string) => {
+    triggerHaptic('betConfirmation');
     setSelectedBookmakerId(bookieId);
     const bookie = REGIONAL_BOOKMAKERS.find((b) => b.id === bookieId) || REGIONAL_BOOKMAKERS[0];
     const code = generateRegionalBookingCode(bookieId, selections.length);
@@ -121,6 +122,7 @@ export const BetSlipDrawer = () => {
   };
 
   const handleCopyCode = (code: string) => {
+    triggerHaptic('selection');
     navigator.clipboard.writeText(code);
     setCopied(true);
     toast.success(`Copied code ${code} to clipboard!`);
@@ -128,6 +130,7 @@ export const BetSlipDrawer = () => {
   };
 
   const handleShareSlip = async () => {
+    triggerHaptic('success');
     const slipText = `⚽ 𝗣𝗿𝗲𝗱𝗶𝗰𝘁𝗣𝗿𝗼 𝗔𝗜 𝗕𝗲𝘁 𝗦𝗹𝗶𝗽 (${selections.length} Picks)\n\n` +
       selections.map((s, idx) => `${idx + 1}. ${s.homeTeam} vs ${s.awayTeam}\n   👉 Pick: ${s.market} @ ${formatOdds(s.odds)} (AI: ${s.confidence}%)\n   🏆 ${s.league}`).join('\n\n') +
       `\n\n📊 𝗧𝗼𝘁𝗮𝗹 𝗢𝗱𝗱𝘀: ${formatOdds(totalOdds)}\n` +
@@ -157,7 +160,10 @@ export const BetSlipDrawer = () => {
       {selections.length > 0 && !isOpen && (
         <div className="fixed bottom-20 md:bottom-6 right-4 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Button
-            onClick={() => setIsOpen(true)}
+            onClick={() => {
+              triggerHaptic('selection');
+              setIsOpen(true);
+            }}
             aria-label={`Open Acca Bet Slip with ${selections.length} selections, total odds ${totalOdds.toFixed(2)}`}
             className="h-13 px-4 py-3 bg-primary text-primary-foreground shadow-2xl rounded-full flex items-center gap-3 border-2 border-primary-foreground/20 hover:scale-105 transition-all group"
           >
@@ -440,6 +446,7 @@ export const BetSlipDrawer = () => {
                             type="button"
                             key={c}
                             onClick={() => {
+                              triggerHaptic('selection');
                               setCurrency(c);
                               setGlobalCurrency(c as any);
                             }}

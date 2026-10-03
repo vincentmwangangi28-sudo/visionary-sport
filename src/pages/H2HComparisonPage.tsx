@@ -9,6 +9,7 @@ import { TEAMS_DATABASE, DERBY_PRESETS, simulateH2HMatch } from '@/data/h2hTeams
 import { TeamProfile, DerbyPreset } from '@/types/h2h';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { hapticService } from '@/services/hapticService';
 import { toast } from 'sonner';
 import {
   ArrowLeftRight,
@@ -61,12 +62,14 @@ export default function H2HComparisonPage() {
 
   // Swap teams (Home vs Away)
   const handleSwap = () => {
+    hapticService.selection();
     setTeamAId(teamBId);
     setTeamBId(teamAId);
   };
 
   // Select a preset derby
   const handleSelectDerby = (derby: DerbyPreset) => {
+    hapticService.selection();
     setActiveDerbyId(derby.id);
     setTeamAId(derby.teamAId);
     setTeamBId(derby.teamBId);
@@ -74,9 +77,11 @@ export default function H2HComparisonPage() {
 
   // Trigger re-simulation animation
   const handleSimulate = () => {
+    hapticService.boost();
     setIsSimulating(true);
     setTimeout(() => {
       setIsSimulating(false);
+      hapticService.success();
       toast.success(`Match simulation updated for ${teamA.name} vs ${teamB.name}`);
     }, 450);
   };
@@ -88,6 +93,7 @@ export default function H2HComparisonPage() {
 
   // Add recommended market to slip
   const handleAddToSlip = () => {
+    hapticService.selection();
     addSelection({
       match: `${teamA.name} vs ${teamB.name}`,
       homeTeam: teamA.name,
@@ -104,6 +110,7 @@ export default function H2HComparisonPage() {
 
   // Share matchup analysis
   const handleShare = () => {
+    hapticService.success();
     const text = `⚽ H2H Simulation: ${teamA.name} vs ${teamB.name}\n` +
       `📊 Win Probabilities: ${teamA.name} ${simulation.homeWinProb}% | Draw ${simulation.drawProb}% | ${teamB.name} ${simulation.awayWinProb}%\n` +
       `🔥 Over 2.5: ${simulation.over25Prob}% | BTTS: ${simulation.bttsProb}%\n` +

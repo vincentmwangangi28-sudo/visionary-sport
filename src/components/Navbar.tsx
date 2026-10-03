@@ -35,6 +35,7 @@ import {
   Database,
   ShieldAlert
 } from "lucide-react";
+import { hapticService } from "@/services/hapticService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -437,7 +438,12 @@ export const Navbar = () => {
             {/* Mobile / All links drawer */}
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open navigation menu">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open navigation menu"
+                  onClick={() => hapticService.menuTap()}
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -449,7 +455,10 @@ export const Navbar = () => {
                     <span>PredictPro Global</span>
                     <Link
                       to="/responsible-gaming"
-                      onClick={() => setOpen(false)}
+                      onClick={() => {
+                        hapticService.menuTap();
+                        setOpen(false);
+                      }}
                       title="18+ Age Restriction Policy"
                       className="inline-flex items-center gap-1 rounded-full bg-rose-600 text-white px-2 py-0.5 text-[10px] font-black shadow-xs"
                     >
@@ -475,7 +484,10 @@ export const Navbar = () => {
                   </div>
                   <Link
                     to="/dashboard"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      hapticService.menuTap();
+                      setOpen(false);
+                    }}
                     className="flex items-center justify-between p-3 rounded-xl border bg-primary/5 border-primary/20 hover:bg-primary/10 transition-colors text-xs font-semibold text-foreground"
                   >
                     <span className="flex items-center gap-2">
@@ -486,7 +498,10 @@ export const Navbar = () => {
                   </Link>
                   <Link
                     to="/preferences"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      hapticService.menuTap();
+                      setOpen(false);
+                    }}
                     className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors text-xs font-semibold text-foreground"
                   >
                     <span className="flex items-center gap-2">
@@ -499,6 +514,7 @@ export const Navbar = () => {
                   <button
                     type="button"
                     onClick={() => {
+                      hapticService.menuTap();
                       setOpen(false);
                       window.openSupabaseWalkthrough?.();
                     }}
@@ -514,7 +530,10 @@ export const Navbar = () => {
                   {isAdmin && (
                     <Link
                       to="/admin"
-                      onClick={() => setOpen(false)}
+                      onClick={() => {
+                        hapticService.menuTap();
+                        setOpen(false);
+                      }}
                       className="flex items-center justify-between p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 transition-colors text-xs font-semibold text-foreground"
                     >
                       <span className="flex items-center gap-2 text-emerald-500">
@@ -531,7 +550,10 @@ export const Navbar = () => {
                     <Link
                       key={to}
                       to={to}
-                      onClick={() => setOpen(false)}
+                      onClick={() => {
+                        hapticService.menuTap();
+                        setOpen(false);
+                      }}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                         location.pathname === to
                           ? "bg-primary text-primary-foreground font-semibold"
@@ -543,7 +565,7 @@ export const Navbar = () => {
                     </Link>
                   ))}
                   {user && (
-                    <Button variant="ghost" size="sm" onClick={() => { signOut(); setOpen(false); }} className="justify-start gap-3 px-3 mt-2 text-muted-foreground">
+                    <Button variant="ghost" size="sm" onClick={() => { hapticService.menuTap(); signOut(); setOpen(false); }} className="justify-start gap-3 px-3 mt-2 text-muted-foreground">
                       <LogOut className="h-4 w-4" />{t('nav.signout', 'Sign Out')}
                     </Button>
                   )}

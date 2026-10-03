@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LEAGUE_HUBS, LeagueHubItem } from '@/data/leagueHubs';
+import { hapticService } from '@/services/hapticService';
 
 export type { LeagueHubItem };
 
@@ -25,6 +26,7 @@ export const LeagueNavigationStrip: React.FC<Props> = ({ className = '', current
             <Link
               key={league.to}
               to={league.to}
+              onClick={() => hapticService.selection()}
               className={`inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 isActive
                   ? 'bg-primary text-primary-foreground font-bold shadow-xs'

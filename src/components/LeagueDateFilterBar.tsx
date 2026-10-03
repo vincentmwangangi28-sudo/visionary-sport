@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Calendar, Flame, Clock, Sparkles, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { hapticService } from '@/services/hapticService';
 
 export type DateFilterType = 'all' | 'today' | 'tomorrow' | 'weekend';
 
@@ -87,7 +88,10 @@ export const LeagueDateFilterBar: React.FC<LeagueDateFilterBarProps> = ({
               role="tab"
               aria-selected={isSelected}
               id={`league-filter-${chip.id}`}
-              onClick={() => onFilterChange(chip.id)}
+              onClick={() => {
+                hapticService.selection();
+                onFilterChange(chip.id);
+              }}
               className={`group relative shrink-0 flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 snap-start select-none outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 isSelected
                   ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-zinc-950 shadow-md shadow-primary/25 scale-[1.02] border-transparent'

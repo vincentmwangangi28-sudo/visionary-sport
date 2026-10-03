@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useToast } from '@/hooks/use-toast';
+import { hapticService } from '@/services/hapticService';
 import {
   fetchLiveJackpotPools,
   getInitialOfficialJackpotPools,
@@ -149,6 +150,7 @@ export default function JackpotPredictions() {
   }, [currentPool, customPicks]);
 
   const handleSelectPick = (fixtureId: string, option: JackpotPickOption) => {
+    hapticService.selection();
     setCustomPicks((prev) => ({
       ...prev,
       [fixtureId]: option,
@@ -156,6 +158,7 @@ export default function JackpotPredictions() {
   };
 
   const handleApplyAIDoubleChances = () => {
+    hapticService.boost();
     const next: Record<string, JackpotPickOption> = { ...customPicks };
     let count = 0;
     for (const g of currentPool) {
@@ -174,6 +177,7 @@ export default function JackpotPredictions() {
   };
 
   const handleResetToSingleSlip = () => {
+    hapticService.clear();
     const next: Record<string, JackpotPickOption> = { ...customPicks };
     for (const g of currentPool) {
       next[g.fixtureId] = g.recommendedPick;
@@ -233,6 +237,7 @@ export default function JackpotPredictions() {
   }, [currentPool, activePicks, currentMeta.baseStake]);
 
   const handleLoadToBetSlip = (onlyBankers: boolean) => {
+    hapticService.success();
     const targetGames = onlyBankers ? currentPool.filter((g) => g.isBanker) : currentPool;
     const batch = targetGames.map((g) => {
       const pick = activePicks[g.fixtureId] || g.recommendedPick;

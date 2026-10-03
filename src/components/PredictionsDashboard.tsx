@@ -6,6 +6,7 @@ import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { LeagueDateFilterBar, DateFilterType } from '@/components/LeagueDateFilterBar';
+import { hapticService } from '@/services/hapticService';
 import {
   matchesDateFilter,
   calculateDateFilterCounts,
@@ -63,6 +64,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
   }, [data?.allPredictions, predictions]);
 
   const handleSetViewMode = (mode: 'card' | 'compact') => {
+    hapticService.selection();
     setViewMode(mode);
     localStorage.setItem('predictpro_view_mode', mode);
   };
@@ -183,6 +185,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
                 key={profile}
                 type="button"
                 onClick={() => {
+                  hapticService.selection();
                   setRiskProfile(profile);
                   setPage(1);
                 }}
@@ -252,6 +255,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <button
               type="button"
               onClick={() => {
+                hapticService.selection();
                 setQuickFilter('all');
                 setPage(1);
               }}
@@ -267,6 +271,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <button
               type="button"
               onClick={() => {
+                hapticService.selection();
                 setQuickFilter('recommended');
                 setPage(1);
               }}
@@ -282,6 +287,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <button
               type="button"
               onClick={() => {
+                hapticService.selection();
                 setQuickFilter('high_confidence');
                 setPage(1);
               }}
@@ -297,6 +303,7 @@ export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProp
             <button
               type="button"
               onClick={() => {
+                hapticService.selection();
                 setQuickFilter('value_bets');
                 setPage(1);
               }}
