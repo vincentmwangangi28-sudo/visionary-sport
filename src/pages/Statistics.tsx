@@ -21,28 +21,28 @@ export default function Statistics() {
     (async () => {
       let data: any[] = [];
       try {
-        const { data: dbData } = await supabase.from('predictions').select('league, prediction, predicted_outcome, confidence, confidence_score');
-        if (dbData && dbData.length > 0) {
-          data = dbData;
+        const liveFixtures = await fetchRealtimeUpcomingFixtures();
+        if (liveFixtures && liveFixtures.length > 0) {
+          data = liveFixtures.map(f => ({
+            league: f.league,
+            prediction: getPrediction(f),
+            predicted_outcome: getPrediction(f),
+            confidence: getConfidence(f),
+            confidence_score: getConfidence(f),
+          }));
         }
       } catch (e) {
-        console.warn('DB stats query error:', e);
+        console.warn('Realtime stats fetch error:', e);
       }
 
       if (data.length === 0) {
         try {
-          const liveFixtures = await fetchRealtimeUpcomingFixtures();
-          if (liveFixtures && liveFixtures.length > 0) {
-            data = liveFixtures.map(f => ({
-              league: f.league,
-              prediction: getPrediction(f),
-              predicted_outcome: getPrediction(f),
-              confidence: getConfidence(f),
-              confidence_score: getConfidence(f),
-            }));
+          const { data: dbData } = await supabase.from('predictions').select('league, prediction, predicted_outcome, confidence, confidence_score');
+          if (dbData && dbData.length > 0) {
+            data = dbData;
           }
         } catch (e) {
-          console.warn('Realtime stats fetch error:', e);
+          console.warn('DB stats query error:', e);
         }
       }
 

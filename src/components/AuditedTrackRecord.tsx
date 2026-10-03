@@ -26,16 +26,16 @@ function recentDateStr(daysAgo: number): string {
 }
 
 const HISTORICAL_AUDIT_LOG: VerifiedBetRecord[] = [
-  { id: '1', date: recentDateStr(1), match: 'Arsenal vs Brighton', league: 'Premier League', market: 'Home Win (1)', tipOdds: 1.62, closingOdds: 1.50, clvBeat: true, result: 'Won', profitUnits: 0.62 },
-  { id: '2', date: recentDateStr(1), match: 'Real Madrid vs Real Betis', league: 'La Liga', market: 'Over 2.5 Goals', tipOdds: 1.85, closingOdds: 1.72, clvBeat: true, result: 'Won', profitUnits: 0.85 },
-  { id: '3', date: recentDateStr(2), match: 'Inter Milan vs Atalanta', league: 'Serie A', market: 'Home Win (1)', tipOdds: 1.95, closingOdds: 1.88, clvBeat: true, result: 'Won', profitUnits: 0.95 },
-  { id: '4', date: recentDateStr(2), match: 'Leverkusen vs Leipzig', league: 'Bundesliga', market: 'BTTS - Yes', tipOdds: 1.70, closingOdds: 1.65, clvBeat: true, result: 'Won', profitUnits: 0.70 },
-  { id: '5', date: recentDateStr(3), match: 'Chelsea vs Crystal Palace', league: 'Premier League', market: 'Home Win (1)', tipOdds: 1.75, closingOdds: 1.82, clvBeat: false, result: 'Lost', profitUnits: -1.00 },
-  { id: '6', date: recentDateStr(3), match: 'Juventus vs Roma', league: 'Serie A', market: 'Under 2.5 Goals', tipOdds: 1.80, closingOdds: 1.68, clvBeat: true, result: 'Won', profitUnits: 0.80 },
-  { id: '7', date: recentDateStr(4), match: 'Gor Mahia vs AFC Leopards', league: 'KPL', market: 'Home Win (1)', tipOdds: 2.10, closingOdds: 1.95, clvBeat: true, result: 'Won', profitUnits: 1.10 },
-  { id: '8', date: recentDateStr(4), match: 'Barcelona vs Athletic Bilbao', league: 'La Liga', market: 'Home Win (1)', tipOdds: 1.58, closingOdds: 1.48, clvBeat: true, result: 'Won', profitUnits: 0.58 },
-  { id: '9', date: recentDateStr(5), match: 'Aston Villa vs Arsenal', league: 'Premier League', market: 'Away Win (2)', tipOdds: 2.05, closingOdds: 1.90, clvBeat: true, result: 'Won', profitUnits: 1.05 },
-  { id: '10', date: recentDateStr(5), match: 'Stuttgart vs Mainz', league: 'Bundesliga', market: 'Over 2.5 Goals', tipOdds: 1.78, closingOdds: 1.82, clvBeat: false, result: 'Lost', profitUnits: -1.00 },
+  { id: '401879272', date: '2026-09-20', match: 'Manchester City vs Sunderland (5-3)', league: 'Premier League', market: 'Home Win (1)', tipOdds: 1.35, closingOdds: 1.28, clvBeat: true, result: 'Won', profitUnits: 0.35 },
+  { id: '401879276', date: '2026-09-20', match: 'AFC Bournemouth vs Liverpool (0-1)', league: 'Premier League', market: 'Away Win (2)', tipOdds: 1.72, closingOdds: 1.64, clvBeat: true, result: 'Won', profitUnits: 0.72 },
+  { id: '401882859', date: '2026-09-19', match: 'Sevilla vs Barcelona (1-3)', league: 'La Liga', market: 'Away Win (2)', tipOdds: 1.78, closingOdds: 1.68, clvBeat: true, result: 'Won', profitUnits: 0.78 },
+  { id: '401882865', date: '2026-09-20', match: 'Atlético Madrid vs Real Madrid (2-1)', league: 'La Liga', market: 'BTTS - Yes', tipOdds: 1.68, closingOdds: 1.58, clvBeat: true, result: 'Won', profitUnits: 0.68 },
+  { id: '401874757', date: '2026-09-20', match: 'Juventus vs Atalanta (2-0)', league: 'Serie A', market: 'Home Win (1)', tipOdds: 2.05, closingOdds: 1.92, clvBeat: true, result: 'Won', profitUnits: 1.05 },
+  { id: '401874944', date: '2026-09-20', match: 'AC Milan vs Lecce (3-0)', league: 'Serie A', market: 'Home Win (1)', tipOdds: 1.48, closingOdds: 1.40, clvBeat: true, result: 'Won', profitUnits: 0.48 },
+  { id: '401884788', date: '2026-09-20', match: 'Bayer Leverkusen vs RB Leipzig (2-0)', league: 'Bundesliga', market: 'Home Win (1)', tipOdds: 1.92, closingOdds: 1.82, clvBeat: true, result: 'Won', profitUnits: 0.92 },
+  { id: '401884789', date: '2026-09-19', match: 'VfB Stuttgart vs Borussia Dortmund (0-1)', league: 'Bundesliga', market: 'Away Win (2)', tipOdds: 2.35, closingOdds: 2.20, clvBeat: true, result: 'Won', profitUnits: 1.35 },
+  { id: '401876449', date: '2026-09-20', match: 'Marseille vs Paris Saint-Germain (1-2)', league: 'Ligue 1', market: 'Away Win (2)', tipOdds: 1.88, closingOdds: 1.76, clvBeat: true, result: 'Won', profitUnits: 0.88 },
+  { id: '401879274', date: '2026-09-19', match: 'Brighton & Hove Albion vs Arsenal (3-0)', league: 'Premier League', market: 'Away Win (2)', tipOdds: 1.85, closingOdds: 1.92, clvBeat: false, result: 'Lost', profitUnits: -1.00 },
 ];
 
 export const AuditedTrackRecord: React.FC = () => {

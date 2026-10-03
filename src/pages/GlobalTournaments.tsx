@@ -77,8 +77,8 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
     keyDates: 'Final: May 30, 2026 (Munich)',
     totalTeams: 36,
     featuredMatches: [
-      { home: 'Real Madrid', away: 'Manchester City', date: 'Tomorrow, 20:00', stage: 'Quarter-Final', tip: 'Over 2.5 Goals', odds: 1.82 },
-      { home: 'Bayern Munich', away: 'Arsenal', date: 'Thu, 20:00', stage: 'Quarter-Final', tip: 'BTTS - Yes', odds: 1.75 },
+      { home: 'Arsenal', away: 'Paris Saint-Germain', date: 'Matchday 2 · 19:00 UTC', stage: 'League Phase', tip: 'Arsenal Win', odds: 1.75 },
+      { home: 'Bayer Leverkusen', away: 'AC Milan', date: 'Matchday 2 · 19:00 UTC', stage: 'League Phase', tip: 'BTTS - Yes', odds: 1.68 },
     ],
   },
   {
@@ -88,8 +88,8 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
     confederation: 'CAF',
     region: 'Africa',
     flag: '🌍',
-    season: '2025/2026',
-    status: 'In Progress',
+    season: '2026/2027',
+    status: 'Qualifiers',
     defendingChampion: 'Ivory Coast',
     topFavorite: { team: 'Morocco', probability: 29, odds: 3.25 },
     contenders: [
@@ -102,8 +102,8 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
     keyDates: 'Tournament Hosts: Morocco',
     totalTeams: 24,
     featuredMatches: [
-      { home: 'Morocco', away: 'Nigeria', date: 'Sat, 19:00', stage: 'Semi-Final', tip: 'Morocco Draw No Bet', odds: 1.68 },
-      { home: 'Senegal', away: 'Egypt', date: 'Sun, 21:00', stage: 'Semi-Final', tip: 'Under 2.5 Goals', odds: 1.55 },
+      { home: 'Guinea', away: 'Kenya', date: 'Today, 16:00 UTC', stage: 'Group Qualifier', tip: 'Guinea Win', odds: 1.62 },
+      { home: 'Nigeria', away: 'Libya', date: 'Tomorrow, 16:00 UTC', stage: 'Group Qualifier', tip: 'Nigeria Win', odds: 1.32 },
     ],
   },
   {

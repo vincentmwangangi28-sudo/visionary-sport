@@ -149,27 +149,6 @@ export default function MatchPrediction() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('predictions')
-        .select('*')
-        .ilike('home_team', `%${home}%`)
-        .ilike('away_team', `%${away}%`)
-        .order('match_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.warn('Database lookup encountered an issue:', error.message);
-      }
-
-      if (data) {
-        const savedPred = savePrediction(data as Prediction);
-        setPrediction(savedPred);
-        setIsFallback(false);
-        setLoading(false);
-        return;
-      }
-
       try {
         const liveFixtures = await fetchRealtimeUpcomingFixtures();
         const found = liveFixtures.find(p =>
@@ -194,6 +173,27 @@ export default function MatchPrediction() {
 
       if (localMatch) {
         const savedPred = savePrediction(localMatch);
+        setPrediction(savedPred);
+        setIsFallback(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('predictions')
+        .select('*')
+        .ilike('home_team', `%${home}%`)
+        .ilike('away_team', `%${away}%`)
+        .order('match_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('Database lookup encountered an issue:', error.message);
+      }
+
+      if (data) {
+        const savedPred = savePrediction(data as Prediction);
         setPrediction(savedPred);
         setIsFallback(false);
         setLoading(false);

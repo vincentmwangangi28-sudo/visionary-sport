@@ -1052,9 +1052,51 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
       }
     }
 
-    const fetchPromises = selectedLeagues.slice(0, 14).map((league) => fetchEspnLeagueScoreboard(league));
+    const nowMs = Date.now();
+    const fetchPromises = selectedLeagues.slice(0, 10).map(async (league) => {
+      try {
+        const baseEvents = await fetchEspnLeagueScoreboard(league);
+        const hasPost = baseEvents.some((ev) => {
+          const st = ((ev.status as Record<string, unknown>)?.type as Record<string, string>)?.state;
+          return st === 'post';
+        });
+        if (hasPost) return baseEvents;
 
-    // Also fetch recent completed matchdays from the last 4 days + recent domestic round so finished results are always populated
+        // Fetch scoreboard metadata to inspect league calendar for the most recent completed matchdays
+        const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`);
+        if (!r.ok) return baseEvents;
+        const d = await r.json();
+        const calRaw = (d.leagues?.[0]?.calendar || []) as Array<string | { value?: string }>;
+        const calDates = calRaw
+          .map((c) => (typeof c === 'string' ? c : c?.value || ''))
+          .filter((c) => c && new Date(c).getTime() <= nowMs)
+          .slice(-2);
+
+        const pastLists = await Promise.all(
+          calDates.map(async (pd) => {
+            try {
+              const dt = pd.slice(0, 10).replace(/-/g, '');
+              const r2 = await fetch(
+                `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`
+              );
+              if (!r2.ok) return [];
+              const d2 = await r2.json();
+              return ((d2.events as Array<Record<string, unknown>>) || []).map((ev) => ({
+                ...ev,
+                _leagueName: league.name,
+              }));
+            } catch {
+              return [];
+            }
+          })
+        );
+        return [...baseEvents, ...pastLists.flat()];
+      } catch {
+        return [];
+      }
+    });
+
+    // Also fetch recent completed matchdays from the last 4 days across all leagues
     const recentDatePromises = [1, 2, 3, 4].map(async (daysAgo) => {
       try {
         const dt = new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10).replace(/-/g, '');

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DutchingCalculatorModal } from '@/components/DutchingCalculatorModal';
 import { TEAM_STREAKS_DATA } from '@/data/teamStreaksData';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { TeamStreak, StreakCategory } from '@/types/streak';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
@@ -44,16 +45,66 @@ export default function StreaksRadar() {
   // Dutching modal state
   const [dutchingOpen, setDutchingOpen] = useState(false);
   const [dutchingInitial, setDutchingInitial] = useState<{ name: string; odds: number }[] | undefined>();
+  const [liveStreaks, setLiveStreaks] = useState<TeamStreak[]>(TEAM_STREAKS_DATA);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchRealtimeUpcomingFixtures()
+      .then((fixtures) => {
+        if (!mounted || !fixtures || fixtures.length === 0) return;
+        const updated = TEAM_STREAKS_DATA.map((streak) => {
+          const teamLower = streak.team.toLowerCase();
+          const match = fixtures.find(
+            (f) =>
+              f.home_team.toLowerCase().includes(teamLower) ||
+              teamLower.includes(f.home_team.toLowerCase()) ||
+              f.away_team.toLowerCase().includes(teamLower) ||
+              teamLower.includes(f.away_team.toLowerCase())
+          );
+          if (!match) return streak;
+          const isHome =
+            match.home_team.toLowerCase().includes(teamLower) ||
+            teamLower.includes(match.home_team.toLowerCase());
+          const opponent = isHome ? match.away_team : match.home_team;
+          const dt = new Date(match.match_date);
+          const dateLabel = !isNaN(dt.getTime())
+            ? dt.toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'UTC',
+              }) + ' UTC'
+            : streak.nextMatch.date;
+
+          return {
+            ...streak,
+            nextMatch: {
+              ...streak.nextMatch,
+              opponent,
+              isHome,
+              date: dateLabel,
+            },
+          };
+        });
+        setLiveStreaks(updated);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Available leagues
   const leagues = useMemo(() => {
-    const set = new Set(TEAM_STREAKS_DATA.map(s => s.league));
+    const set = new Set(liveStreaks.map(s => s.league));
     return ['all', ...Array.from(set)];
-  }, []);
+  }, [liveStreaks]);
 
   // Filtered streaks
   const filteredStreaks = useMemo(() => {
-    return TEAM_STREAKS_DATA.filter(streak => {
+    return liveStreaks.filter(streak => {
       // Category filter
       if (selectedCategory !== 'all' && streak.category !== selectedCategory) {
         return false;
@@ -79,12 +130,12 @@ export default function StreaksRadar() {
       }
       return true;
     }).sort((a, b) => b.sustainability.score - a.sustainability.score);
-  }, [selectedCategory, selectedLeague, searchQuery, minSustainability]);
+  }, [liveStreaks, selectedCategory, selectedLeague, searchQuery, minSustainability]);
 
   // High confidence banker streaks (for 1-click Acca builder)
   const topBankerStreaks = useMemo(() => {
-    return TEAM_STREAKS_DATA.filter(s => s.sustainability.score >= 80).slice(0, 4);
-  }, []);
+    return liveStreaks.filter(s => s.sustainability.score >= 80).slice(0, 4);
+  }, [liveStreaks]);
 
   const combinedBankerOdds = useMemo(() => {
     return topBankerStreaks.reduce((acc, s) => acc * s.nextMatch.odds, 1);

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { TrendingUp, Target, Globe, Zap, BarChart2, Trophy, Clock, CheckCircle } from 'lucide-react';
 
@@ -23,10 +24,7 @@ export default function Insights() {
   useEffect(() => {
     (async () => {
       try {
-        const { data: dbPreds } = await supabase.from('predictions')
-          .select('league, prediction, confidence, is_premium, match_date');
-
-        const preds: Array<{
+        let livePreds: Array<{
           league: string;
           prediction?: string;
           predicted_outcome?: string;
@@ -34,7 +32,15 @@ export default function Insights() {
           confidence_score?: number;
           is_premium?: boolean | null;
           match_date?: string;
-        }> = dbPreds && dbPreds.length > 0 ? dbPreds : getUpdatedDefaultPredictions();
+        }> = [];
+
+        try {
+          livePreds = await fetchRealtimeUpcomingFixtures();
+        } catch {
+          // fallback below
+        }
+
+        const preds = livePreds && livePreds.length > 0 ? livePreds : getUpdatedDefaultPredictions();
 
         if (!preds.length) {
           setLoading(false);
