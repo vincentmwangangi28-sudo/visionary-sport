@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode, useCallback 
 import type { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +41,6 @@ async function syncOAuthProfile(user: User) {
 
   if (!avatarUrl && !fullName) return;
 
-  const { supabase } = await import('@/integrations/supabase/client');
   const { error } = await supabase
     .from('profiles')
     .update({
@@ -68,7 +68,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (initialized || unsubscribed) return;
       initialized = true;
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
         if (unsubscribed) return;
         const { data: { session: activeSession } } = await supabase.auth.getSession();
         if (unsubscribed) return;
@@ -123,7 +122,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { supabase } = await import('@/integrations/supabase/client');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) { toast.error(error.message || 'Failed to sign in'); throw error; }
     toast.success('Welcome back!');
@@ -131,7 +129,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    const { supabase } = await import('@/integrations/supabase/client');
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -145,7 +142,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const { supabase } = await import('@/integrations/supabase/client');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -160,7 +156,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = useCallback(async () => {
-    const { supabase } = await import('@/integrations/supabase/client');
     const { error } = await supabase.auth.signOut();
     if (error) { toast.error(error.message || 'Failed to sign out'); return; }
     toast.success('Signed out successfully');

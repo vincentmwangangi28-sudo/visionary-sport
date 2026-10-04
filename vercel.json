@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "bun run build",
+  "installCommand": "bun install --frozen-lockfile",
   "outputDirectory": "dist",
   "framework": "vite",
   "cleanUrls": true,
@@ -103,7 +103,7 @@
     },
     {
       "path": "/api/jackpot-cron",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 6 * * *"
     }
   ],
   "headers": [

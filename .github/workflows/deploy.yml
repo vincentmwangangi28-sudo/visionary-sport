@@ -84,17 +84,21 @@ jobs:
 
       - name: Deploy edge functions
         run: |
-          for FN in \
-            generate-prediction fetch-live-matches fetch-upcoming-matches \
-            generate-daily-predictions fetch-user-performance mpesa-stk-push \
-            mpesa-webhook generate-sitemap fetch-api-football cron-hourly-fixtures \
-            cron-daily-predictions daily-predictions-automation update-prediction-results \
-            cron-subscription-reminders apply-referral-on-signup spin-wheel activate-subscription \
-            ai-chat fetch-match-context fetch-sports-news fetch-standings stripe-payment stripe-webhook \
-            find-value-bets wavave-express wavave-webhook paywave-express; do
-            echo "→ Deploying $FN"
-            supabase functions deploy "$FN" 2>&1 || echo "⚠ $FN failed, continuing"
-          done
+          FUNCTIONS=(
+            generate-prediction fetch-live-matches fetch-upcoming-matches
+            generate-daily-predictions fetch-user-performance mpesa-stk-push
+            mpesa-webhook generate-sitemap fetch-api-football cron-hourly-fixtures
+            cron-daily-predictions daily-predictions-automation update-prediction-results
+            cron-subscription-reminders apply-referral-on-signup spin-wheel activate-subscription
+            ai-chat fetch-match-context fetch-sports-news fetch-standings stripe-payment stripe-webhook
+            find-value-bets wavave-express wavave-webhook paywave-express
+          )
+          deploy_fn() {
+            echo "→ Deploying $1"
+            supabase functions deploy "$1" 2>&1 || echo "⚠ $1 failed, continuing"
+          }
+          export -f deploy_fn
+          printf "%s\n" "${FUNCTIONS[@]}" | xargs -n 1 -P 4 -I {} bash -c 'deploy_fn "$@"' _ {}
         continue-on-error: true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

@@ -1,4 +1,5 @@
 import type { Json } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ErrorType =
   | 'react_boundary'
@@ -132,7 +133,6 @@ async function transmitLogEntry(entry: ErrorLogEntry): Promise<boolean> {
     }
 
     // Attempt insert into Supabase error_logs
-    const { supabase } = await import('@/integrations/supabase/client');
     const { error } = await supabase.from('error_logs').insert([
       {
         error_message: entry.error_message.slice(0, 2000),

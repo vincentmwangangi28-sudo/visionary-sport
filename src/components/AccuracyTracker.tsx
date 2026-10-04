@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { BarChart2, CheckCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Stats { total: number; correct: number; accuracy: number; byLeague: { league: string; count: number; correct: number; pct: number }[]; }
 
@@ -13,7 +14,6 @@ export const AccuracyTracker = () => {
       if (triggered) return;
       triggered = true;
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
         const { data } = await supabase.from('predictions')
           .select('league, prediction, result, confidence');
         if (!data?.length) return;

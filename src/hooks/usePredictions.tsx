@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
-import { matchesLeagueFilter } from '@/services/realtimeFootball';
+import { matchesLeagueFilter, fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   mergeAndPreservePredictions, 
   generateDeterministicPrediction,
@@ -117,7 +118,6 @@ export const usePredictions = (page = 1, league?: string) => {
 
       // 1. Fetch real-time live upcoming fixtures from RapidAPI & ESPN sports feeds
       try {
-        const { fetchRealtimeUpcomingFixtures } = await import('@/services/realtimeFootball');
         const realtimeFixtures = await fetchRealtimeUpcomingFixtures(league);
         if (realtimeFixtures && realtimeFixtures.length > 0) {
           for (const item of realtimeFixtures) {
@@ -131,7 +131,6 @@ export const usePredictions = (page = 1, league?: string) => {
       // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
       if (combinedPredictions.length < 18) {
         try {
-          const { supabase } = await import('@/integrations/supabase/client');
           const nowIso = new Date().toISOString();
           const twoWeeksIso = new Date(Date.now() + 14 * 86400000).toISOString();
           let q = supabase

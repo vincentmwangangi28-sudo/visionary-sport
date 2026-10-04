@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Zap, TrendingUp, Globe, Users, CheckCircle, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LiveStats { predictions: number; accuracy: number; users: number; leagues: number; }
 
@@ -15,7 +16,6 @@ export const Hero = () => {
       if (triggered) return;
       triggered = true;
       try {
-        const { supabase } = await import("@/integrations/supabase/client");
         const [predsRes, profilesRes] = await Promise.all([
           supabase.from('predictions').select('id, result, prediction', { count: 'exact' }).limit(50),
           supabase.from('profiles').select('id', { count: 'exact', head: true }),

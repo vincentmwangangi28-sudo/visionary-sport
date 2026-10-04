@@ -14,6 +14,7 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
 import { hapticService } from '@/services/hapticService';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 function formatMatchSlug(homeTeam: string, awayTeam: string, matchDate?: string): string {
@@ -125,7 +126,6 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
     hapticService.selection();
     setUnlockingCoin(true);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       const session = (await supabase.auth.getSession()).data.session;
       if (!session) {
         hapticService.warning();

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const AUTHORIZED_ADMIN_LABEL = 'Authorized Administrator';
 
@@ -23,7 +24,6 @@ export function useAdmin() {
     setChecking(true);
 
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')

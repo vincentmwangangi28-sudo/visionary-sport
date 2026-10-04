@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   DailyAIDigest,
   DailyDigestItem,
@@ -31,11 +31,15 @@ interface Props {
 
 export const DailyAIDigestBanner: React.FC<Props> = ({ predictions: propPredictions = [] }) => {
   const { data } = usePredictions(1);
-  const predictions = propPredictions.length > 0 ? propPredictions : (data?.allPredictions || []);
+  const predictions = useMemo(() => {
+    return propPredictions.length > 0 ? propPredictions : (data?.allPredictions || []);
+  }, [propPredictions, data?.allPredictions]);
+
   const [digest, setDigest] = useState<DailyAIDigest | null>(() =>
     geminiDailyCronService.getCachedDigest()
   );
   const [loading, setLoading] = useState(false);
+  const hasTriggeredRef = useRef(false);
   const { addSelection, selections } = useBetSlip();
 
   useEffect(() => {
@@ -47,9 +51,10 @@ export const DailyAIDigestBanner: React.FC<Props> = ({ predictions: propPredicti
     const hasStalePick =
       digest?.topPicks?.length
         ? !digest.topPicks.some((tp) => currentMatchesSet.has(tp.match.toLowerCase()))
-        : true;
+        : false;
 
-    if (!digest || hasStalePick) {
+    if ((!digest || hasStalePick) && !hasTriggeredRef.current) {
+      hasTriggeredRef.current = true;
       setLoading(true);
       geminiDailyCronService
         .generateDailyDigest(predictions)

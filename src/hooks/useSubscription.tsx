@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Subscription {
   id: string;
@@ -27,18 +28,15 @@ export const useSubscription = () => {
     if (!userId) { setSubscription(null); return; }
     let cancelled = false;
     setLoading(true);
-    import('@/integrations/supabase/client')
-      .then(({ supabase }) =>
-        supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .gte('expires_at', new Date().toISOString())
-          .order('expires_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-      )
+    supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .gte('expires_at', new Date().toISOString())
+      .order('expires_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) console.warn('subscription:', error.message);
