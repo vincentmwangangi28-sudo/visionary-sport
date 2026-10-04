@@ -23,10 +23,19 @@ export const PaystackCheckoutButton = ({ plan, className = '' }: Props) => {
   const [country, setCountry] = useState('DEFAULT');
 
   useEffect(() => {
-    // Set by middleware.ts (Vercel Edge, reads x-vercel-ip-country) — instant,
-    // no client-side geolocation roundtrip needed.
     const c = readCookie('pp_country');
-    if (c && PRICING[c]) setCountry(c);
+    if (c && PRICING[c]) {
+      setCountry(c);
+      return;
+    }
+    // Fallback: detect timezone for seamless localized pricing without middleware
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      if (tz.includes('Nairobi') || tz.includes('Africa/Mombasa')) setCountry('KE');
+      else if (tz.includes('Lagos')) setCountry('NG');
+    } catch {
+      // ignore
+    }
   }, []);
 
   const pricing = PRICING[country] ?? PRICING.DEFAULT;

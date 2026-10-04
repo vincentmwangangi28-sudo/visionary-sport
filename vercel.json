@@ -6,6 +6,12 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.predictpro.guru" }],
+      "destination": "https://predictpro.guru/:path*",
+      "permanent": true
+    },
     { "source": "/predictions", "destination": "/predict", "permanent": true },
     { "source": "/predictions/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
     { "source": "/football-predictions", "destination": "/", "permanent": true },
@@ -350,6 +356,14 @@
         {
           "key": "Strict-Transport-Security",
           "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept"
+        },
+        {
+          "key": "Content-Signal",
+          "value": "ai-train=yes, search=yes, ai-input=yes"
         },
         {
           "key": "Cross-Origin-Opener-Policy",
