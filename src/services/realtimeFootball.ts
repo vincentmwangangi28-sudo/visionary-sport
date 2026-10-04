@@ -20,11 +20,17 @@ import { registerRuntimeTeamLogo } from '@/services/teamLogos';
 
 export { isHostInCooldown, setHostCooldown, getFootballCache, setFootballCache };
 
+export const ESPN_HEADERS: Record<string, string> = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'application/json',
+};
+
 /**
  * Shared, deduplicated ESPN league scoreboard fetcher so live scores and upcoming fixtures
  * share the exact same in-flight promise and cached payload instead of double-fetching.
- * When includeFullMatchweek is true, automatically fetches +1 day and +2 days of the active
- * matchweek so Friday + Saturday + Sunday (or Tuesday + Wednesday) fixtures are all captured.
+ * When includeFullMatchweek is true, automatically fetches today's scoreboard as well as
+ * +1 day and +2 days of the active matchweek so Friday + Saturday + Sunday fixtures are all captured.
  */
 async function fetchEspnLeagueScoreboard(
   league: LeagueDefinition,
@@ -36,17 +42,42 @@ async function fetchEspnLeagueScoreboard(
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!res.ok) return [];
-      const data = await res.json();
-      const baseEvents: Array<Record<string, unknown>> = data.events || [];
-      const allEvents = [...baseEvents];
+      const todayYmd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const defaultUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`;
+      
+      const fetchList: Promise<Response>[] = [
+        fetch(defaultUrl, {
+          signal: controller.signal,
+          headers: ESPN_HEADERS,
+        }),
+      ];
 
-      if (includeFullMatchweek && baseEvents.length > 0) {
-        const firstIso = String(baseEvents[0]?.date || '');
+      if (includeFullMatchweek) {
+        const todayUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${todayYmd}`;
+        fetchList.push(
+          fetch(todayUrl, {
+            signal: controller.signal,
+            headers: ESPN_HEADERS,
+          })
+        );
+      }
+
+      const responses = await Promise.all(fetchList);
+      clearTimeout(timeout);
+
+      const allEvents: Array<Record<string, unknown>> = [];
+      for (const res of responses) {
+        if (!res.ok) continue;
+        try {
+          const data = await res.json();
+          if (data.events && Array.isArray(data.events)) {
+            allEvents.push(...data.events);
+          }
+        } catch {}
+      }
+
+      if (includeFullMatchweek && allEvents.length > 0) {
+        const firstIso = String(allEvents[0]?.date || '');
         if (firstIso.length >= 10) {
           const baseMs = new Date(`${firstIso.slice(0, 10)}T00:00:00Z`).getTime();
           if (!isNaN(baseMs)) {
@@ -58,7 +89,8 @@ async function fetchEspnLeagueScoreboard(
               extraDates.map(async (dt) => {
                 try {
                   const r = await fetch(
-                    `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`
+                    `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`,
+                    { headers: ESPN_HEADERS }
                   );
                   if (!r.ok) return [];
                   const j = await r.json();
@@ -575,11 +607,21 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     }
   }
 
-  // Fetch real-time live events across major leagues using shared deduplicated scoreboard helper
+  // Fetch real-time live events across major leagues plus global scoreboard
+  const globalScoreboardPromise = fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard', {
+    headers: ESPN_HEADERS,
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => (d?.events as Array<Record<string, unknown>>) || [])
+    .catch(() => [] as Array<Record<string, unknown>>);
+
   const livePromises = LEAGUES_LIST.slice(0, 22).map((league) => fetchEspnLeagueScoreboard(league, true));
 
-  const leagueResults = await Promise.all(livePromises);
-  const rawEvents = leagueResults.flat();
+  const [leagueResults, globalEvents] = await Promise.all([
+    Promise.all(livePromises),
+    globalScoreboardPromise,
+  ]);
+  const rawEvents = [...globalEvents, ...leagueResults.flat()];
 
   for (const ev of rawEvents) {
     const competitions = (ev.competitions as Array<Record<string, unknown>>) || [];
@@ -701,8 +743,18 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     .slice(0, 22)
     .map((league) => fetchEspnLeagueScoreboard(league, true));
 
-  const resultsByLeague = await Promise.all(fetchPromises);
-  const rawEvents = resultsByLeague.flat();
+  const allUpcomingScoreboardPromise = (!leagueFilter || leagueFilter === 'All')
+    ? fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard', { headers: ESPN_HEADERS })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => (d?.events as Array<Record<string, unknown>>) || [])
+        .catch(() => [] as Array<Record<string, unknown>>)
+    : Promise.resolve([] as Array<Record<string, unknown>>);
+
+  const [resultsByLeague, globalUpcomingEvents] = await Promise.all([
+    Promise.all(fetchPromises),
+    allUpcomingScoreboardPromise,
+  ]);
+  const rawEvents = [...globalUpcomingEvents, ...resultsByLeague.flat()];
 
   const predictions: Prediction[] = [];
   const seenMatches = new Set<string>();
@@ -996,23 +1048,20 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Supplement with verified fixtures only if live feeds returned zero matches or for regional African leagues not on ESPN
-  let supplementalFixtures = getUpdatedDefaultPredictions();
-  if (leagueFilter && leagueFilter !== 'All') {
-    supplementalFixtures = supplementalFixtures.filter((f) =>
-      matchesLeagueFilter(f.league, leagueFilter)
-    );
-  } else if (predictions.length >= 12) {
-    // When global live ESPN feeds returned 12+ authentic matches, only supplement regional CAF/African club fixtures
-    supplementalFixtures = supplementalFixtures.filter((f) =>
-      matchesLeagueFilter(f.league, 'AFCON')
-    );
-  }
-  for (const item of supplementalFixtures) {
-    const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
-    if (!seenMatches.has(mKey)) {
-      seenMatches.add(mKey);
-      predictions.push(item);
+  // Supplement with verified fixtures ONLY if live feeds returned zero matches
+  if (predictions.length === 0) {
+    let supplementalFixtures = getUpdatedDefaultPredictions();
+    if (leagueFilter && leagueFilter !== 'All') {
+      supplementalFixtures = supplementalFixtures.filter((f) =>
+        matchesLeagueFilter(f.league, leagueFilter)
+      );
+    }
+    for (const item of supplementalFixtures) {
+      const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
+      if (!seenMatches.has(mKey)) {
+        seenMatches.add(mKey);
+        predictions.push(item);
+      }
     }
   }
 
@@ -1063,7 +1112,9 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
         if (hasPost) return baseEvents;
 
         // Fetch scoreboard metadata to inspect league calendar for the most recent completed matchdays
-        const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`);
+        const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`, {
+          headers: ESPN_HEADERS,
+        });
         if (!r.ok) return baseEvents;
         const d = await r.json();
         const calRaw = (d.leagues?.[0]?.calendar || []) as Array<string | { value?: string }>;
@@ -1077,7 +1128,8 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
             try {
               const dt = pd.slice(0, 10).replace(/-/g, '');
               const r2 = await fetch(
-                `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`
+                `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`,
+                { headers: ESPN_HEADERS }
               );
               if (!r2.ok) return [];
               const d2 = await r2.json();
@@ -1100,7 +1152,10 @@ export async function fetchRealtimeFinishedMatches(leagueFilter?: string): Promi
     const recentDatePromises = [1, 2, 3, 4].map(async (daysAgo) => {
       try {
         const dt = new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
-        const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${dt}&limit=50`);
+        const r = await fetch(
+          `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${dt}&limit=50`,
+          { headers: ESPN_HEADERS }
+        );
         if (!r.ok) return [];
         const j = await r.json();
         return ((j.events as Array<Record<string, unknown>>) || []).map((ev) => ({
@@ -1287,7 +1342,9 @@ export async function fetchRealtimeStandingsTable(leagueId: number | string): Pr
     }
 
     try {
-      const res = await fetch(`https://site.api.espn.com/apis/v2/sports/soccer/${leagueObj.espnCode}/standings`);
+      const res = await fetch(`https://site.api.espn.com/apis/v2/sports/soccer/${leagueObj.espnCode}/standings`, {
+        headers: ESPN_HEADERS,
+      });
       if (!res.ok) return [];
       const data = await res.json();
       const rawEntries = data.children?.[0]?.standings?.entries || [];

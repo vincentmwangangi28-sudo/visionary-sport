@@ -157,18 +157,18 @@ export const usePredictions = (page = 1, league?: string) => {
         }
       }
 
-      // 3. Only supplement verified fallback fixtures if live feeds returned fewer than 6 matches or for regional CAF leagues
-      let updatedDefaultList = getUpdatedDefaultPredictions();
-      if (league && league !== 'All') {
-        const leagueFiltered = updatedDefaultList.filter(p => matchesLeagueFilter(p.league, league));
-        if (leagueFiltered.length > 0) {
-          updatedDefaultList = leagueFiltered;
+      // 3. Only supplement verified fallback fixtures if live feeds returned zero matches
+      if (combinedPredictions.length === 0) {
+        let updatedDefaultList = getUpdatedDefaultPredictions();
+        if (league && league !== 'All') {
+          const leagueFiltered = updatedDefaultList.filter(p => matchesLeagueFilter(p.league, league));
+          if (leagueFiltered.length > 0) {
+            updatedDefaultList = leagueFiltered;
+          }
         }
-      } else if (combinedPredictions.length >= 12) {
-        updatedDefaultList = updatedDefaultList.filter(p => matchesLeagueFilter(p.league, 'AFCON'));
-      }
-      for (const item of updatedDefaultList) {
-        pushIfValidUpcoming(item);
+        for (const item of updatedDefaultList) {
+          pushIfValidUpcoming(item);
+        }
       }
 
       // Merge with persistent prediction registry to lock values across refreshes (excluding any played matches)
