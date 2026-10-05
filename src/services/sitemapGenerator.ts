@@ -204,6 +204,63 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
   return entries;
 }
 
+export const GLOBAL_HREFLANGS = [
+  'x-default',
+  'en',
+  'en-US',
+  'en-GB',
+  'en-KE',
+  'en-NG',
+  'en-ZA',
+  'en-GH',
+  'en-TZ',
+  'en-UG',
+  'en-ZM',
+  'en-ZW',
+  'en-RW',
+  'en-CM',
+  'en-IN',
+  'en-CA',
+  'en-AU',
+  'en-NZ',
+  'en-PH',
+  'en-SG',
+  'en-MY',
+  'en-IE',
+  'en-AE',
+  'es',
+  'es-ES',
+  'es-MX',
+  'es-AR',
+  'es-CO',
+  'es-CL',
+  'es-US',
+  'fr',
+  'fr-FR',
+  'fr-CA',
+  'fr-SN',
+  'fr-CI',
+  'fr-CD',
+  'fr-CM',
+  'fr-MA',
+  'pt',
+  'pt-BR',
+  'pt-PT',
+  'pt-AO',
+  'pt-MZ',
+  'sw',
+  'sw-KE',
+  'sw-TZ',
+  'de-DE',
+  'it-IT',
+  'nl-NL',
+  'ar',
+  'ar-EG',
+  'ar-SA',
+  'ar-AE',
+  'ar-MA',
+];
+
 /**
  * Generate XML string complying with the official Sitemaps XML protocol (Yandex, Google, Bing compliant)
  */
@@ -212,17 +269,22 @@ export function generateSitemapXml(baseUrl: string = BASE_URL): string {
 
   const xmlUrls = entries
     .map((entry) => {
+      const links = GLOBAL_HREFLANGS.map(
+        (lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(entry.url)}" />`
+      ).join('\n');
+
       return `  <url>
     <loc>${escapeXml(entry.url)}</loc>
     <lastmod>${entry.lastModified}</lastmod>
     <changefreq>${entry.changeFrequency}</changefreq>
     <priority>${entry.priority.toFixed(2)}</priority>
+${links}
   </url>`;
     })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${xmlUrls}
 </urlset>`;
 }

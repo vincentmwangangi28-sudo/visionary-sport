@@ -1,10 +1,11 @@
 import { Prediction } from '@/types/prediction';
 import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
 
-const STORAGE_KEY = 'predictpro_saved_predictions_v7_authentic';
+const STORAGE_KEY = 'predictpro_saved_predictions_v8_real';
 const LEGACY_STORAGE_KEYS = [
-  'predictpro_saved_predictions_v5_live',
+  'predictpro_saved_predictions_v7_authentic',
   'predictpro_saved_predictions_v6_live',
+  'predictpro_saved_predictions_v5_live',
   'predictpro_saved_predictions_v4',
 ];
 const MAX_STORAGE_DAYS = 14;

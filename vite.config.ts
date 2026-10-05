@@ -61,6 +61,25 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/api/football") {
+          try {
+            const parsedUrl = new URL(req.url || "", "http://localhost");
+            const type = parsedUrl.searchParams.get("type") || "upcoming";
+            const league = parsedUrl.searchParams.get("league") || undefined;
+            const { handleFootballRequest } = await import("./src/server/footballHandler.ts");
+            const data = await handleFootballRequest({ type, league });
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ success: false, error: err?.message || "Failed to fetch football data" }));
+          }
+          return;
+        }
+
         if (url === "/api/jackpots") {
           try {
             const force = Boolean(req.url?.includes("force=true") || req.url?.includes("force=1"));

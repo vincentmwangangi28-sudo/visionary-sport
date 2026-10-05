@@ -312,33 +312,21 @@ function runPrerender() {
     const escapedTitle = escapeHtml(title);
     const escapedDesc = escapeHtml(description);
 
+    const GLOBAL_HREFLANGS = [
+      'x-default', 'en', 'en-US', 'en-GB', 'en-KE', 'en-NG', 'en-ZA', 'en-GH', 'en-TZ', 'en-UG',
+      'en-ZM', 'en-ZW', 'en-RW', 'en-CM', 'en-IN', 'en-CA', 'en-AU', 'en-NZ', 'en-PH', 'en-SG',
+      'en-MY', 'en-IE', 'en-AE', 'es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-US',
+      'fr', 'fr-FR', 'fr-CA', 'fr-SN', 'fr-CI', 'fr-CD', 'fr-CM', 'fr-MA', 'pt', 'pt-BR',
+      'pt-PT', 'pt-AO', 'pt-MZ', 'sw', 'sw-KE', 'sw-TZ', 'de-DE', 'it-IT', 'nl-NL', 'ar',
+      'ar-EG', 'ar-SA', 'ar-AE', 'ar-MA'
+    ];
+    const ogLocales = ['en_GB', 'en_KE', 'en_NG', 'en_ZA', 'en_GH', 'en_IN', 'en_CA', 'en_AU', 'es_ES', 'es_MX', 'pt_BR', 'fr_FR', 'de_DE', 'sw_KE', 'ar_SA'];
+
     const canonicalLinksBlock = [
       `<link rel="canonical" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-KE" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-NG" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-ZA" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-GH" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-TZ" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-UG" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-ZM" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-ZW" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-RW" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-CM" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-EG" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="sw-KE" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="sw-TZ" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="fr-CI" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="fr-SN" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="fr-CD" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="fr-CM" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="fr-MA" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="ar-EG" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="pt-AO" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-GB" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en-US" href="${canonicalUrl}" />`,
+      ...GLOBAL_HREFLANGS.map(lang => `<link rel="alternate" hreflang="${lang}" href="${canonicalUrl}" />`),
       `<meta property="og:url" content="${canonicalUrl}" />`,
+      ...ogLocales.map(loc => `<meta property="og:locale:alternate" content="${loc}" />`),
     ].join('\n    ');
 
     let routeHtml = baseHtml

@@ -24,7 +24,14 @@
             cLink.setAttribute('href', canonicalHref);
             head.appendChild(cLink);
           }
-          var locales = ['x-default', 'en', 'en-KE', 'en-NG', 'en-GB', 'en-US', 'en-ZA'];
+          var locales = [
+            'x-default', 'en', 'en-US', 'en-GB', 'en-KE', 'en-NG', 'en-ZA', 'en-GH', 'en-TZ', 'en-UG',
+            'en-ZM', 'en-ZW', 'en-RW', 'en-CM', 'en-IN', 'en-CA', 'en-AU', 'en-NZ', 'en-PH', 'en-SG',
+            'en-MY', 'en-IE', 'en-AE', 'es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-US',
+            'fr', 'fr-FR', 'fr-CA', 'fr-SN', 'fr-CI', 'fr-CD', 'fr-CM', 'fr-MA', 'pt', 'pt-BR',
+            'pt-PT', 'pt-AO', 'pt-MZ', 'sw', 'sw-KE', 'sw-TZ', 'de-DE', 'it-IT', 'nl-NL', 'ar',
+            'ar-EG', 'ar-SA', 'ar-AE', 'ar-MA'
+          ];
           for (var i = 0; i < locales.length; i++) {
             var loc = locales[i];
             if (head && !head.querySelector('link[rel="alternate"][hreflang="' + loc + '"]')) {
@@ -33,6 +40,16 @@
               aLink.setAttribute('hreflang', loc);
               aLink.setAttribute('href', canonicalHref);
               head.appendChild(aLink);
+            }
+          }
+          var ogLocales = ['en_GB', 'en_KE', 'en_NG', 'en_ZA', 'en_GH', 'en_IN', 'en_CA', 'en_AU', 'es_ES', 'es_MX', 'pt_BR', 'fr_FR', 'de_DE', 'sw_KE', 'ar_SA'];
+          for (var j = 0; j < ogLocales.length; j++) {
+            var ogLoc = ogLocales[j];
+            if (head && !head.querySelector('meta[property="og:locale:alternate"][content="' + ogLoc + '"]')) {
+              var oMeta = document.createElement('meta');
+              oMeta.setAttribute('property', 'og:locale:alternate');
+              oMeta.setAttribute('content', ogLoc);
+              head.appendChild(oMeta);
             }
           }
         } catch (e) {}

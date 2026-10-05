@@ -356,6 +356,23 @@ function computeLivePrediction(home: string, away: string, homeScore: number | n
 export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
   const cacheKey = 'live_matches_realtime_feed';
   return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.LIVE_MATCHES, async () => {
+    // 0. Query internal proxy /api/football?type=live first
+    try {
+      const apiRes = await fetch('/api/football?type=live');
+      if (apiRes.ok) {
+        const json = await apiRes.json();
+        if (json.success && Array.isArray(json.matches) && json.matches.length > 0) {
+          const liveCount = json.matches.filter((m: NormalizedMatch) => m.status === 'live' || m.status === 'halftime').length;
+          return {
+            matches: json.matches,
+            source: 'live_feed',
+            liveCount,
+            lastUpdated: json.updatedAt || new Date().toISOString(),
+          };
+        }
+      }
+    } catch {}
+
     const matches: NormalizedMatch[] = [];
 
   // Check if custom API-Football key is configured
@@ -712,6 +729,27 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Promise<Prediction[]> {
   const cacheKey = `upcoming_fixtures_${leagueFilter || 'all'}`;
   return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
+    // 0. Query internal proxy /api/football endpoint first (instant official matches, bypasses client browser CORS/Akamai blocks)
+    try {
+      const q = leagueFilter && leagueFilter !== 'All' ? `?type=upcoming&league=${encodeURIComponent(leagueFilter)}` : '?type=upcoming';
+      const apiRes = await fetch(`/api/football${q}`);
+      if (apiRes.ok) {
+        const json = await apiRes.json();
+        if (json.success && Array.isArray(json.fixtures) && json.fixtures.length > 0) {
+          const nowMs = Date.now();
+          const validFixtures = json.fixtures.filter((p: Prediction) => {
+            const t = new Date(p.match_date).getTime();
+            return !isNaN(t) && t > nowMs;
+          });
+          if (validFixtures.length > 0) {
+            return mergeAndPreservePredictions(validFixtures);
+          }
+        }
+      }
+    } catch {
+      // Fallback to direct ESPN queries
+    }
+
   let selectedLeagues = LEAGUES_LIST;
   if (leagueFilter && leagueFilter !== 'All') {
     const found = LEAGUES_LIST.filter((l) => matchesLeagueFilter(l.name, leagueFilter));

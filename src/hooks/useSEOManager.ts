@@ -686,6 +686,11 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
           sameAs: ['https://twitter.com/PredictProAI'],
           areaServed: [
             { '@type': 'Continent', name: 'Africa' },
+            { '@type': 'Continent', name: 'Europe' },
+            { '@type': 'Continent', name: 'North America' },
+            { '@type': 'Continent', name: 'South America' },
+            { '@type': 'Continent', name: 'Asia' },
+            { '@type': 'Continent', name: 'Oceania' },
             { '@type': 'Country', name: 'Kenya' },
             { '@type': 'Country', name: 'Nigeria' },
             { '@type': 'Country', name: 'South Africa' },
@@ -693,21 +698,45 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
             { '@type': 'Country', name: 'Tanzania' },
             { '@type': 'Country', name: 'Uganda' },
             { '@type': 'Country', name: 'Zambia' },
+            { '@type': 'Country', name: 'Zimbabwe' },
+            { '@type': 'Country', name: 'Rwanda' },
             { '@type': 'Country', name: 'Cameroon' },
             { '@type': 'Country', name: 'DR Congo' },
             { '@type': 'Country', name: 'Egypt' },
             { '@type': 'Country', name: 'Morocco' },
             { '@type': 'Country', name: 'Senegal' },
             { '@type': 'Country', name: 'Ivory Coast' },
+            { '@type': 'Country', name: 'Angola' },
             { '@type': 'Country', name: 'United Kingdom' },
             { '@type': 'Country', name: 'United States' },
+            { '@type': 'Country', name: 'Canada' },
+            { '@type': 'Country', name: 'India' },
+            { '@type': 'Country', name: 'Australia' },
+            { '@type': 'Country', name: 'New Zealand' },
+            { '@type': 'Country', name: 'Ireland' },
+            { '@type': 'Country', name: 'Singapore' },
+            { '@type': 'Country', name: 'Malaysia' },
+            { '@type': 'Country', name: 'Philippines' },
+            { '@type': 'Country', name: 'United Arab Emirates' },
+            { '@type': 'Country', name: 'Saudi Arabia' },
+            { '@type': 'Country', name: 'Germany' },
+            { '@type': 'Country', name: 'France' },
+            { '@type': 'Country', name: 'Spain' },
+            { '@type': 'Country', name: 'Italy' },
+            { '@type': 'Country', name: 'Netherlands' },
+            { '@type': 'Country', name: 'Portugal' },
+            { '@type': 'Country', name: 'Brazil' },
+            { '@type': 'Country', name: 'Mexico' },
+            { '@type': 'Country', name: 'Argentina' },
+            { '@type': 'Country', name: 'Colombia' },
+            { '@type': 'Country', name: 'Chile' },
           ],
           contactPoint: {
             '@type': 'ContactPoint',
             email: 'support@predictpro.guru',
             contactType: 'customer support',
-            areaServed: ['KE', 'NG', 'ZA', 'GH', 'TZ', 'UG', 'ZM', 'ZW', 'RW', 'ET', 'CM', 'CD', 'EG', 'MA', 'SN', 'CI', 'GB', 'US'],
-            availableLanguage: ['en', 'sw', 'fr', 'ar', 'pt', 'es'],
+            areaServed: ['KE', 'NG', 'ZA', 'GH', 'TZ', 'UG', 'ZM', 'ZW', 'RW', 'ET', 'CM', 'CD', 'EG', 'MA', 'SN', 'CI', 'GB', 'US', 'CA', 'IN', 'AU', 'NZ', 'IE', 'AE', 'SA', 'BR', 'MX', 'AR', 'ES', 'DE', 'FR', 'IT'],
+            availableLanguage: ['en', 'sw', 'fr', 'ar', 'pt', 'es', 'de'],
           },
         },
         {
@@ -776,11 +805,13 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       resolved.noIndex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1'
     );
 
-    // 3. Synchronize Canonical & Multi-Region Continental Hreflang Links
+    // 3. Synchronize Canonical & Multi-Region Global Hreflang Links
     upsertLinkTag('canonical', resolved.canonicalUrl);
-    const continentalHreflangs = [
+    const globalHreflangs = [
       'x-default',
       'en',
+      'en-US',
+      'en-GB',
       'en-KE',
       'en-NG',
       'en-ZA',
@@ -791,20 +822,48 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       'en-ZW',
       'en-RW',
       'en-CM',
-      'en-EG',
-      'sw-KE',
-      'sw-TZ',
+      'en-IN',
+      'en-CA',
+      'en-AU',
+      'en-NZ',
+      'en-PH',
+      'en-SG',
+      'en-MY',
+      'en-IE',
+      'en-AE',
+      'es',
+      'es-ES',
+      'es-MX',
+      'es-AR',
+      'es-CO',
+      'es-CL',
+      'es-US',
+      'fr',
+      'fr-FR',
+      'fr-CA',
       'fr-SN',
       'fr-CI',
       'fr-CD',
       'fr-CM',
       'fr-MA',
-      'ar-EG',
+      'pt',
+      'pt-BR',
+      'pt-PT',
       'pt-AO',
-      'en-GB',
-      'en-US',
+      'pt-MZ',
+      'sw',
+      'sw-KE',
+      'sw-TZ',
+      'de-DE',
+      'it-IT',
+      'nl-NL',
+      'ar',
+      'ar-EG',
+      'ar-SA',
+      'ar-AE',
+      'ar-MA',
     ];
-    for (const lang of continentalHreflangs) {
+    for (const lang of globalHreflangs) {
       upsertLinkTag('alternate', resolved.canonicalUrl, lang);
     }
 
@@ -823,6 +882,14 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     upsertMetaTag('property', 'og:image:alt', imageAlt);
     upsertMetaTag('property', 'og:site_name', SITE_NAME);
     upsertMetaTag('property', 'og:locale', 'en_US');
+
+    const ogAlternateLocales = [
+      'en_GB', 'en_KE', 'en_NG', 'en_ZA', 'en_GH', 'en_IN', 'en_CA', 'en_AU',
+      'es_ES', 'es_MX', 'pt_BR', 'fr_FR', 'de_DE', 'sw_KE', 'ar_SA'
+    ];
+    for (const altLoc of ogAlternateLocales) {
+      upsertMetaTag('property', 'og:locale:alternate', altLoc);
+    }
 
     if (resolved.matchSeo) {
       upsertMetaTag('property', 'article:published_time', resolved.matchSeo.publishedTime);
