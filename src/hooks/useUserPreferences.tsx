@@ -141,6 +141,12 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
   const setLanguage = (lang: SupportedLanguage) => {
     updatePreferences({ language: lang });
+    try {
+      localStorage.setItem('predictpro_language', lang);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('predictpro:language_change', { detail: lang }));
+      }
+    } catch {}
   };
 
   const setTimezone = (tz: string) => {
