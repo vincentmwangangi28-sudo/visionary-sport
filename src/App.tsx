@@ -25,13 +25,14 @@ import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 
-const DeferredBackgroundHooks = lazyWithRetry(() => import("@/components/DeferredBackgroundHooks"));
+import DeferredBackgroundHooks from "@/components/DeferredBackgroundHooks";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+
 const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
 const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
 const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m => ({ default: m.AIChatbot })));
 const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 const FirstVisitSignupModal = lazyWithRetry(() => import("@/components/FirstVisitSignupModal").then(m => ({ default: m.FirstVisitSignupModal })));
-const Sonner = lazyWithRetry(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
 const SupabaseWalkthroughIntegration = lazyWithRetry(() => import("@/components/SupabaseWalkthroughIntegration").then(m => ({ default: m.SupabaseWalkthroughIntegration })));
 const BackToTop = lazyWithRetry(() => import("@/components/BackToTop").then(m => ({ default: m.BackToTop })));
 

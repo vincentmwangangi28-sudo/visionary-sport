@@ -821,34 +821,31 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={seoTitle} description={post.description} keywords={post.keywords} canonical={`/blog/${slug}`}
-        structuredData={{
-          '@context': 'https://schema.org',
-          '@graph': [
-            {
-              '@type': 'Article',
-              headline: post.title,
-              description: post.description,
-              datePublished: post.date,
-              dateModified: '2026-09-30',
-              author: { '@type': 'Organization', name: 'PredictPro Quantitative Research' },
-              publisher: { '@type': 'Organization', name: 'PredictPro', url: 'https://predictpro.guru' },
-            },
-            {
-              '@type': 'FAQPage',
-              mainEntity: [
-                {
-                  '@type': 'Question',
-                  name: post.title,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: post.description,
-                  },
-                },
-              ],
-            },
-          ],
-        }} />
+      <SEO
+        title={seoTitle}
+        description={post.description}
+        keywords={post.keywords}
+        canonical={`/blog/${slug}`}
+        type="article"
+        article={{
+          headline: post.title,
+          publishedTime: post.date,
+          modifiedTime: '2026-09-30',
+          section: post.category,
+          authorName: 'PredictPro Quantitative Research',
+        }}
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Betting Strategy Blog', item: '/blog' },
+          { name: post.title, item: `/blog/${slug}` },
+        ]}
+        faq={[
+          {
+            question: post.title,
+            answer: post.description,
+          },
+        ]}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         {/* Dynamic Breadcrumbs */}

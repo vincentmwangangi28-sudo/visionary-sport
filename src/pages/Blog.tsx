@@ -119,6 +119,10 @@ export default function Blog() {
         description="Daily AI match previews, expert football betting guides and strategy articles. Value betting, bankroll management, accumulator strategy and more."
         canonical="/blog"
         keywords="football betting tips blog, football match previews, football betting strategy, value betting guide, bankroll management football, accumulator tips, Premier League betting guide, KPL betting Kenya"
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Football Betting Strategy Blog', item: '/blog' },
+        ]}
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">

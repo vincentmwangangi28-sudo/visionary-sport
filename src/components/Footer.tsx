@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Zap, Mail, SlidersHorizontal } from "lucide-react";
+import { FooterFAQ } from "@/components/FooterFAQ";
 
 const LINKS: Record<string, Array<{ to: string; label: string }>> = {
   Predictions: [
@@ -134,6 +135,9 @@ export const Footer = () => {
           </nav>
         ))}
       </div>
+
+      {/* Structured FAQ & Entity Authority Schema */}
+      <FooterFAQ />
 
       {/* Featured Match Deep Links for Crawlers and Users */}
       <div className="border-t border-border/60 pt-6 pb-6 mb-2">

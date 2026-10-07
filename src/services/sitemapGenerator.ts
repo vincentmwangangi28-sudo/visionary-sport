@@ -269,9 +269,12 @@ export function generateSitemapXml(baseUrl: string = BASE_URL): string {
 
   const xmlUrls = entries
     .map((entry) => {
-      const links = GLOBAL_HREFLANGS.map(
-        (lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(entry.url)}" />`
-      ).join('\n');
+      const links = GLOBAL_HREFLANGS.map((lang) => {
+        const altUrl = (lang === 'x-default' || lang === 'en')
+          ? entry.url
+          : `${entry.url}${entry.url.includes('?') ? '&' : '?'}lang=${encodeURIComponent(lang)}`;
+        return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(altUrl)}" />`;
+      }).join('\n');
 
       return `  <url>
     <loc>${escapeXml(entry.url)}</loc>

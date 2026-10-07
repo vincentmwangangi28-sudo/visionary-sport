@@ -324,7 +324,12 @@ function runPrerender() {
 
     const canonicalLinksBlock = [
       `<link rel="canonical" href="${canonicalUrl}" />`,
-      ...GLOBAL_HREFLANGS.map(lang => `<link rel="alternate" hreflang="${lang}" href="${canonicalUrl}" />`),
+      ...GLOBAL_HREFLANGS.map(lang => {
+        const altHref = (lang === 'x-default' || lang === 'en')
+          ? canonicalUrl
+          : `${canonicalUrl}${canonicalUrl.includes('?') ? '&' : '?'}lang=${encodeURIComponent(lang)}`;
+        return `<link rel="alternate" hreflang="${lang}" href="${altHref}" />`;
+      }),
       `<meta property="og:url" content="${canonicalUrl}" />`,
       ...ogLocales.map(loc => `<meta property="og:locale:alternate" content="${loc}" />`),
     ].join('\n    ');

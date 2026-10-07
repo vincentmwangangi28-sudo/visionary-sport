@@ -71,12 +71,21 @@ const PRIORITY_CRAWL_URLS = [
   `${BASE_URL}/seo-indexing`
 ];
 
+const CORE_REGIONAL_LANGS = ['es', 'fr', 'pt', 'sw', 'de', 'ar'];
+const REGIONAL_URL_BATCH = [];
+for (const u of PRIORITY_CRAWL_URLS.slice(0, 15)) {
+  for (const lang of CORE_REGIONAL_LANGS) {
+    REGIONAL_URL_BATCH.push(`${u}${u.includes('?') ? '&' : '?'}lang=${lang}`);
+  }
+}
+const ALL_SUBMISSION_URLS = [...PRIORITY_CRAWL_URLS, ...REGIONAL_URL_BATCH];
+
 async function runGoogleCrawlCron() {
   const startTime = Date.now();
   console.log('='.repeat(60));
   console.log(`[Google Crawl Cron] Starting automated execution at ${new Date().toISOString()}`);
   console.log(`[Google Crawl Cron] Target Domain: ${BASE_URL}`);
-  console.log(`[Google Crawl Cron] URLs in Priority Queue: ${PRIORITY_CRAWL_URLS.length}`);
+  console.log(`[Google Crawl Cron] URLs in Priority Queue: ${ALL_SUBMISSION_URLS.length} (including ${REGIONAL_URL_BATCH.length} multi-country localized URLs)`);
   console.log('='.repeat(60));
 
   const results = {
@@ -85,7 +94,7 @@ async function runGoogleCrawlCron() {
     robotsStatus: 'pending',
     indexNowStatus: 'pending',
     supabasePingStatus: 'pending',
-    urlsProcessed: PRIORITY_CRAWL_URLS.length,
+    urlsProcessed: ALL_SUBMISSION_URLS.length,
     durationMs: 0
   };
 
@@ -143,7 +152,7 @@ async function runGoogleCrawlCron() {
       host: new URL(BASE_URL).hostname,
       key: INDEXNOW_KEY,
       keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
-      urlList: PRIORITY_CRAWL_URLS.slice(0, 100)
+      urlList: ALL_SUBMISSION_URLS.slice(0, 500)
     };
 
     const indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
@@ -165,7 +174,7 @@ async function runGoogleCrawlCron() {
     const edgeRes = await fetch(SUPABASE_PING_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls: PRIORITY_CRAWL_URLS })
+      body: JSON.stringify({ urls: ALL_SUBMISSION_URLS })
     });
     const edgeData = await edgeRes.json().catch(() => ({}));
     console.log(`✅ Supabase ping-search-engines result: HTTP ${edgeRes.status}`, edgeData);

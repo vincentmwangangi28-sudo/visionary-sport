@@ -24,6 +24,21 @@ export interface UserLocaleProfile {
   source: 'query_param' | 'preferences' | 'stored_lang' | 'navigator' | 'geo_region' | 'fallback';
 }
 
+export interface SEOArticleOptions {
+  publishedTime?: string;
+  modifiedTime?: string;
+  authorName?: string;
+  section?: string;
+  tags?: string[];
+  headline?: string;
+  wordCount?: number;
+}
+
+export interface SEOFaqItem {
+  question: string;
+  answer: string;
+}
+
 export interface SEOManagerOptions {
   title?: string;
   description?: string;
@@ -35,6 +50,8 @@ export interface SEOManagerOptions {
   structuredData?: object;
   breadcrumbs?: SEOBreadcrumbItem[];
   matchPrediction?: Partial<Prediction> | null;
+  article?: SEOArticleOptions;
+  faq?: SEOFaqItem[];
 }
 
 export interface ResolvedSEOMetadata {
@@ -49,6 +66,9 @@ export interface ResolvedSEOMetadata {
   keywords: string;
   noIndex: boolean;
   breadcrumbs: SEOBreadcrumbItem[];
+  breadcrumbSchema: object;
+  articleSchema?: object | null;
+  faqSchema?: object | null;
   structuredData: object;
   matchSeo?: ResolvedMatchSEOData | null;
   detectedLocale: UserLocaleProfile;
@@ -2013,6 +2033,89 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
           )
         : [];
 
+    // Build official Schema.org Article / BlogPosting structured data for articles, blog posts, and prediction pages
+    let articleSchema: Record<string, unknown> | null = null;
+    const isBlogRoute = canonicalPath.startsWith('/blog/');
+    const isPredictionRoute = canonicalPath.startsWith('/predict/') || Boolean(matchSeo);
+    const shouldGenerateArticle =
+      type === 'article' || Boolean(options.article) || isBlogRoute || isPredictionRoute;
+
+    if (shouldGenerateArticle) {
+      const artOpt = options.article;
+      const pubDate =
+        artOpt?.publishedTime ||
+        matchSeo?.publishedTime ||
+        (isBlogRoute ? '2026-09-30T00:00:00Z' : new Date().toISOString());
+      const modDate = artOpt?.modifiedTime || matchSeo?.modifiedTime || pubDate;
+      const authorName =
+        artOpt?.authorName ||
+        (matchSeo
+          ? 'PredictPro Quantitative Football Intelligence'
+          : 'PredictPro Sports Analytics Editorial Team');
+      const headline =
+        artOpt?.headline ||
+        fullTitle.replace(/\s*\|\s*PredictPro.*$/i, '').trim();
+
+      articleSchema = {
+        '@type': isBlogRoute ? 'BlogPosting' : 'Article',
+        '@id': `${canonicalUrl}#article`,
+        isPartOf: { '@id': `${canonicalUrl}#webpage` },
+        headline,
+        description: webPageDescription,
+        image: {
+          '@type': 'ImageObject',
+          url: image,
+          width: 1200,
+          height: 630,
+        },
+        datePublished: pubDate,
+        dateModified: modDate,
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `${canonicalUrl}#webpage`,
+        },
+        author: {
+          '@type': 'Organization',
+          name: authorName,
+          url: BASE_URL,
+        },
+        publisher: {
+          '@type': 'Organization',
+          '@id': `${BASE_URL}/#organization`,
+          name: 'PredictPro',
+          logo: {
+            '@type': 'ImageObject',
+            url: `${BASE_URL}/icon-512.png`,
+            width: 512,
+            height: 512,
+          },
+        },
+        inLanguage: userLocale.locale || userLocale.lang,
+        ...(artOpt?.section || matchSeo?.league
+          ? { articleSection: artOpt?.section || matchSeo?.league }
+          : {}),
+        ...(artOpt?.tags ? { keywords: artOpt.tags.join(', ') } : {}),
+        ...(artOpt?.wordCount ? { wordCount: artOpt.wordCount } : {}),
+      };
+    }
+
+    // Build FAQPage schema if FAQ items are supplied
+    let faqSchema: Record<string, unknown> | null = null;
+    if (options.faq && options.faq.length > 0) {
+      faqSchema = {
+        '@type': 'FAQPage',
+        '@id': `${canonicalUrl}#faq`,
+        mainEntity: options.faq.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer,
+          },
+        })),
+      };
+    }
+
     const structuredData = {
       '@context': 'https://schema.org',
       '@graph': [
@@ -2100,6 +2203,8 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
         },
         webPageSchema,
         breadcrumbListSchema,
+        ...(articleSchema ? [articleSchema] : []),
+        ...(faqSchema ? [faqSchema] : []),
         ...matchJsonLdNodes,
         ...(options.structuredData ? [options.structuredData] : []),
       ],
@@ -2117,6 +2222,9 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       keywords,
       noIndex,
       breadcrumbs,
+      breadcrumbSchema: breadcrumbListSchema,
+      articleSchema,
+      faqSchema,
       structuredData,
       matchSeo,
       detectedLocale: userLocale,
@@ -2135,6 +2243,8 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     options.structuredData,
     options.breadcrumbs,
     options.matchPrediction,
+    options.article,
+    options.faq,
     userLocale,
   ]);
 

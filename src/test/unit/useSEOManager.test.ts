@@ -7,6 +7,7 @@ import {
   LOCALIZED_ROUTE_METADATA,
   GLOBAL_HREFLANGS,
   pruneAlternateHreflangTags,
+  deriveRouteBreadcrumbs,
 } from '@/hooks/useSEOManager';
 
 describe('useSEOManager - International SEO & Locale Detection', () => {
@@ -272,6 +273,25 @@ describe('useSEOManager - International SEO & Locale Detection', () => {
       expect(GLOBAL_HREFLANGS).toContain('ar-EG');
       expect(GLOBAL_HREFLANGS).toContain('de');
       expect(GLOBAL_HREFLANGS).toContain('de-DE');
+    });
+  });
+
+  describe('Structured Data Support (BreadcrumbList & Article)', () => {
+    it('generates BreadcrumbList with correct hierarchy from route path', () => {
+      const crumbs = deriveRouteBreadcrumbs('/blog/how-to-read-football-predictions', 'How to Read AI Football Predictions | PredictPro');
+      expect(crumbs.length).toBe(3);
+      expect(crumbs[0]).toEqual({ name: 'Home', item: '/' });
+      expect(crumbs[1]).toEqual({ name: 'Blog', item: '/blog' });
+      expect(crumbs[2].item).toBe('/blog/how-to-read-football-predictions');
+      expect(crumbs[2].name).toBe('How to Read AI Football Predictions');
+    });
+
+    it('generates BreadcrumbList for match prediction routes', () => {
+      const crumbs = deriveRouteBreadcrumbs('/predict/arsenal-vs-chelsea', 'Arsenal vs Chelsea AI Prediction | PredictPro');
+      expect(crumbs.length).toBe(3);
+      expect(crumbs[0]).toEqual({ name: 'Home', item: '/' });
+      expect(crumbs[1]).toEqual({ name: 'Predict', item: '/predict' });
+      expect(crumbs[2].item).toBe('/predict/arsenal-vs-chelsea');
     });
   });
 

@@ -227,9 +227,12 @@ const GLOBAL_HREFLANGS = [
 ];
 
   const xmlNodes = urlEntries.map(entry => {
-    const hreflangNodes = GLOBAL_HREFLANGS.map(
-      lang => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(entry.loc)}" />`
-    ).join('\n');
+    const hreflangNodes = GLOBAL_HREFLANGS.map(lang => {
+      const altUrl = (lang === 'x-default' || lang === 'en')
+        ? entry.loc
+        : `${entry.loc}${entry.loc.includes('?') ? '&' : '?'}lang=${encodeURIComponent(lang)}`;
+      return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(altUrl)}" />`;
+    }).join('\n');
 
     return `  <url>
     <loc>${escapeXml(entry.loc)}</loc>

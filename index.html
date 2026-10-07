@@ -38,7 +38,10 @@
               var aLink = document.createElement('link');
               aLink.setAttribute('rel', 'alternate');
               aLink.setAttribute('hreflang', loc);
-              aLink.setAttribute('href', canonicalHref);
+              var altHref = (loc === 'x-default' || loc === 'en')
+                ? canonicalHref
+                : canonicalHref + (canonicalHref.indexOf('?') !== -1 ? '&' : '?') + 'lang=' + encodeURIComponent(loc);
+              aLink.setAttribute('href', altHref);
               head.appendChild(aLink);
             }
           }
