@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
+import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { 
   googleIndexingCronService, 
   CronInterval, 
@@ -351,8 +352,11 @@ export default function SEOIndexingPage() {
         </div>
 
         {/* Tabs for Console, Continental Distribution, Keywords, Configuration, and Schemas */}
-        <Tabs defaultValue="continental-distribution" className="space-y-6">
+        <Tabs defaultValue="gsc-reports" className="space-y-6">
           <TabsList className="bg-muted/50 p-1 rounded-xl flex-wrap">
+            <TabsTrigger value="gsc-reports" className="text-xs font-bold gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> GSC Reports &amp; CTR Engine
+            </TabsTrigger>
             <TabsTrigger value="continental-distribution" className="text-xs font-bold gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Globe className="w-3.5 h-3.5 text-emerald-500" /> Continental Push (54+ Nations)
             </TabsTrigger>
@@ -360,7 +364,7 @@ export default function SEOIndexingPage() {
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Site Audit &amp; 12 SEO Pillars
             </TabsTrigger>
             <TabsTrigger value="viral-intelligence" className="text-xs font-bold gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Viral Intelligence &amp; GSC
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Viral Intelligence
             </TabsTrigger>
             <TabsTrigger value="keywords" className="text-xs font-bold gap-1.5">
               <Search className="w-3.5 h-3.5" /> Google Keywords (Top 5)
@@ -375,6 +379,11 @@ export default function SEOIndexingPage() {
               <Sparkles className="w-3.5 h-3.5" /> Google Rich Schemas
             </TabsTrigger>
           </TabsList>
+
+          {/* TAB -3: Google Search Console Reports & Real Data Optimization Suite */}
+          <TabsContent value="gsc-reports" className="space-y-6">
+            <GoogleSearchConsoleHub onTriggerIndexNow={handleRunNow} />
+          </TabsContent>
 
           {/* TAB -2: Continental & Regional Content Syndication Engine */}
           <TabsContent value="continental-distribution" className="space-y-6">

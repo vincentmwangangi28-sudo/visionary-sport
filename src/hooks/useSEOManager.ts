@@ -109,27 +109,27 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/best-bets',
   },
   '/value-bets': {
-    title: 'Daily Value Bets Today (+EV): Beat Bookmaker Odds',
+    title: 'Daily Value Bets Today (+EV): Beat Bookmaker Odds with AI',
     description:
       'Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in edges.',
     keywords:
-      'daily value bets today, value bets (+ev), positive expected value football, beating bookmakers, football betting edge, ai odds discrepancies',
+      'daily value bets today (+ev), value bets today, positive expected value football, beating bookmakers, football betting edge, ai odds discrepancies',
     canonicalPath: '/value-bets',
   },
   '/btts': {
-    title: 'BTTS AI Prediction Today: Both Teams to Score & Over 2.5 Tips',
+    title: 'BTTS AI Prediction Today: Both Teams to Score Tips (79% Win Rate)',
     description:
-      'Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson expectancy across 40+ leagues.',
+      'Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson goal expectancy across 40+ leagues.',
     keywords:
-      'btts ai prediction today, both teams to score tips, over 2.5 goals predictions, free btts tips today, poisson goal expectancy',
+      'btts ai prediction today, btts ai prediction, both teams to score tips, over 2.5 goals predictions, free btts tips today, poisson goal expectancy',
     canonicalPath: '/btts',
   },
   '/correct-score': {
-    title: 'AI Correct Score Predictions Today & Exact Poisson Scorelines',
+    title: 'Guru Tips Correct Score Today: AI Exact Poisson Football Scorelines',
     description:
-      'Exact 90-minute football scoreline predictions powered by bivariate Poisson probability matrices. Find high-odds 1-0, 2-1, and 1-1 correct score value picks.',
+      'Daily correct score guru tips today and exact scoreline predictions powered by bivariate Poisson probability matrices. High-odds 1-0, 2-1, and 1-1 picks.',
     keywords:
-      'correct score predictions today, exact score football tips, bivariate poisson scoreline, correct score matrix',
+      'guru tips correct score today, correct score predictions today, exact score football tips, bivariate poisson scoreline, correct score matrix',
     canonicalPath: '/correct-score',
   },
   '/accumulator': {
@@ -141,11 +141,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/accumulator',
   },
   '/predict': {
-    title: 'AI Match Predictor & Custom Football xG Simulator',
+    title: 'AI Pro Tips Today: Match Winner & Football Predictions (xG Simulator)',
     description:
-      'Simulate any football match with PredictPro’s custom AI Match Predictor. Compare team form, head-to-head records, and Poisson goal probabilities in real time.',
+      'Verified AI pro tips today and football match predictions with 87% accuracy. Expected goals (xG), Poisson BTTS, fair odds, and score projections.',
     keywords:
-      'ai match predictor, aiprotips prediction today, custom football simulator, match outcome calculator',
+      'aiprotips prediction today, ai pro tips today, gemini ai football predictions, ai match predictor, custom football simulator',
     canonicalPath: '/predict',
   },
   '/upcoming': {
@@ -165,11 +165,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/upcoming',
   },
   '/live': {
-    title: 'Live Football Scores, In-Play xG Momentum & AI Odds',
+    title: 'Live Football Scores Today: In-Play AI Odds & Real-Time xG Momentum',
     description:
-      'Track real-time live football scores, minute-by-minute match momentum, in-play AI win probabilities, and live goal alerts across global competitions.',
+      'Track real-time live football scores with sub-15s auto-refresh, minute-by-minute match momentum, in-play AI win probabilities, and instant live goal notifications.',
     keywords:
-      'live football scores, in-play football predictions, live soccer odds, real-time match tracker',
+      'live football scores and in-play ai odds, live football scores today, in-play football predictions, live soccer odds, real-time match tracker',
     canonicalPath: '/live',
   },
   '/standings': {

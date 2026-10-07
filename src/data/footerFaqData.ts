@@ -12,10 +12,28 @@ export const FOOTER_FAQS: FooterFaqItem[] = [
       'PredictPro achieves an 84% to 87% verified strike rate on high-confidence AI Banker selections (75%+ certainty). Our quantitative engine synthesizes Expected Goals (xG) variance, bivariate Poisson goal distribution matrices, tactical head-to-head metrics, and real-time bookmaker line movements across 40+ leagues.',
   },
   {
-    category: 'xG Methodology',
-    question: 'What is an Expected Goals (xG) football model and how does it predict outcomes?',
+    category: 'BTTS AI Models',
+    question: 'What is a BTTS AI prediction and how does Both Teams to Score work?',
     answer:
-      'Expected Goals (xG) measures the statistical quality of goal-scoring opportunities created and conceded based on shot trajectory, assist angle, defender positioning, and historical conversion rates. PredictPro simulates 10,000 match scorelines using Poisson distributions to determine true mathematical probabilities for 1X2 Match Winner, Both Teams to Score (BTTS), and Over/Under 2.5 goals.',
+      'A BTTS AI prediction uses bivariate Poisson distributions to calculate the independent probability that both clubs will score at least once in 90 minutes. When combined attack ratings and defensive concession expectancies exceed 60%, the wager provides statistical positive expected value against market odds.',
+  },
+  {
+    category: 'Value Bets (+EV)',
+    question: 'How do daily value bets (+EV) beat bookmaker odds?',
+    answer:
+      'A value bet (+EV) occurs when our AI probability model calculates that an outcome has a higher true likelihood of happening than the implied probability of bookmaker decimal odds. By betting exclusively with a mathematical edge, punters consistently beat the Closing Line Value (CLV).',
+  },
+  {
+    category: 'AI Pro Tips',
+    question: 'What are AI Pro Tips today on PredictPro?',
+    answer:
+      'AI Pro Tips today are algorithmic match selections generated through Monte Carlo match simulations, incorporating player availability, Expected Goals (xG), home advantage coefficients, and sharp syndicate line movements to deliver high-probability 1X2, BTTS, and handicap forecasts.',
+  },
+  {
+    category: 'Correct Score Models',
+    question: 'How are exact Poisson scoreline probabilities calculated for correct score tips?',
+    answer:
+      'Exact score predictions are modeled using bivariate Poisson matrices that analyze home attack vs away defense and away attack vs home defense. The model outputs probability percentages for scores like 1-0, 2-1, 1-1, and 2-0 with verified market odds.',
   },
   {
     category: 'Banker Selections',

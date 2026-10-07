@@ -28,24 +28,24 @@ const ROUTE_META = {
     description: 'Daily AI football predictions with 87% accuracy. Expected Goals (xG) stats, Poisson probabilities, and H2H analytics across 40+ global leagues.',
   },
   '/best-bets': {
-    title: 'Best Banker Football Bets & Sure AI Tips | PredictPro',
-    description: 'Verified daily football banker predictions and sure 1X2 tips with 75% to 92% AI confidence. Filter high-probability match winners and Double Chance locks.',
+    title: 'Free Guru Tips Today & Sure Banker Bets | PredictPro',
+    description: 'Verified daily football banker predictions and sure 1X2 guru tips today with 75% to 92% AI confidence. Filter high-probability match winners and locks.',
   },
   '/upcoming': {
     title: 'Upcoming Football Fixtures & 7-Day AI Odds | PredictPro',
     description: 'Browse upcoming football fixtures across 40+ global leagues with early AI win probabilities, Expected Goals (xG) projections, and fair decimal odds.',
   },
   '/predict': {
-    title: 'AI Football Match Predictor & xG Simulator | PredictPro',
-    description: 'Simulate any football match with PredictPro’s custom AI Match Predictor. Compare team form, head-to-head records, and Poisson goal probabilities.',
+    title: 'AI Pro Tips Today: Match Predictor & xG Simulator | PredictPro',
+    description: 'Verified AI pro tips today and football match predictions with 87% accuracy. Expected goals (xG), Poisson BTTS, fair odds, and score projections.',
   },
   '/live': {
-    title: 'Live Football Scores, In-Play xG & AI Odds | PredictPro',
-    description: 'Track real-time live football scores, minute-by-minute match momentum, in-play AI win probabilities, and live goal alerts across global competitions.',
+    title: 'Live Football Scores Today: In-Play AI Odds | PredictPro',
+    description: 'Track real-time live football scores with sub-15s auto-refresh, minute-by-minute match momentum, in-play AI win probabilities, and live goal alerts.',
   },
   '/value-bets': {
-    title: 'Daily Value Bets (+EV) & Mispriced Football Odds',
-    description: 'Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and edges.',
+    title: 'Daily Value Bets Today (+EV): Beat Bookmaker Odds | PredictPro',
+    description: 'Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in edges.',
   },
   '/streaks': {
     title: 'Football Team Winning Streaks & Goal Trends Radar',
@@ -56,12 +56,12 @@ const ROUTE_META = {
     description: 'Compare any two football clubs head-to-head. Analyze historical H2H results, attacking vs defensive xG radar charts, and Poisson score simulations.',
   },
   '/correct-score': {
-    title: 'AI Correct Score Predictions & Poisson Matrix | PredictPro',
-    description: 'Exact 90-minute football scoreline predictions powered by bivariate Poisson probability matrices. Find 1-0, 2-1, and 1-1 correct score value picks.',
+    title: 'Guru Tips Correct Score Today: AI Scorelines | PredictPro',
+    description: 'Daily correct score guru tips today and exact scoreline predictions powered by bivariate Poisson probability matrices. High-odds 1-0, 2-1, and 1-1 picks.',
   },
   '/btts': {
-    title: 'BTTS AI Predictions Today & Over 2.5 Goals Tips',
-    description: 'Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson expectancy across 40+ leagues.',
+    title: 'BTTS AI Prediction Today: Both Teams to Score (79% Win Rate)',
+    description: 'Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson goal expectancy across 40+ leagues.',
   },
   '/accumulator': {
     title: 'Smart Football Accumulator & Multibet Builder | PredictPro',

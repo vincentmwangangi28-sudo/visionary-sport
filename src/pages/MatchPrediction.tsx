@@ -316,6 +316,11 @@ export default function MatchPrediction() {
         description={description}
         canonical={`/predict/${matchSlug}`}
         keywords={`${prediction.home_team} vs ${prediction.away_team} prediction, ${prediction.league} lineups, tactical formation ${prediction.home_team}, ${prediction.away_team} referee stats, xG match stats`}
+        breadcrumbs={[
+          { name: 'Home', item: '/' },
+          { name: 'Predictions', item: '/best-bets' },
+          { name: `${prediction.home_team} vs ${prediction.away_team}`, item: `/predict/${matchSlug}` }
+        ]}
         matchPrediction={prediction}
       />
       <Navbar />

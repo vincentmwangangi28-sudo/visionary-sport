@@ -296,10 +296,10 @@ export default function LiveScores() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Live Football Scores Today & Real-Time AI Tips | PredictPro"
-        description="Follow live football scores updating every 15s with instant in-play AI predictions, live match momentum radar, and real-time win probabilities."
+        title="Live Football Scores Today: In-Play AI Odds & Goal Alerts | PredictPro"
+        description="Follow real-time live football scores updating every 15s with instant in-play AI predictions, minute-by-minute xG momentum, and fair decimal odds."
         canonical="/live"
-        keywords="live football scores today, in-play football predictions, live score predict, real time football scores, live betting tips, live match tracker, ai pro tips today"
+        keywords="live football scores and in-play ai odds, live football scores today, in-play football predictions, live score predict, real time football scores, live betting tips, live match tracker, ai pro tips today"
         breadcrumbs={[
           { name: 'Home', item: '/' },
           { name: 'Live Football Scores & In-Play AI', item: '/live' }
