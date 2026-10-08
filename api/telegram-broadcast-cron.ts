@@ -1,12 +1,11 @@
 // Vercel Serverless / Edge Function: Telegram VIP Channel Broadcast Cron
 // Invoked on schedule: "0 7 * * *" (Daily at 07:00 AM UTC for morning bankers)
 
+import { handleTelegramRequest } from '../src/server/telegramHandler';
+
 export const config = {
   runtime: 'edge',
 };
-
-const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const BROADCAST_URL = `${SUPABASE_BASE_URL}/functions/v1/telegram-broadcast`;
 
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
@@ -27,36 +26,36 @@ export default async function handler(request: Request) {
   let broadcastResult: any = null;
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      headers['Authorization'] = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`;
-    }
+    const todayFormatted = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const message = [
+      `🔥 <b>PREDICTPRO AI MORNING BANKER PICKS (${todayFormatted})</b> 🔥`,
+      ``,
+      `Daily AI Pro Tips and high-confidence Value Bets (+EV) for today are live!`,
+      ``,
+      `👉 <b>Today's Verified Predictions:</b> https://predictpro.guru/predict`,
+      `🎟️ <b>AI Accumulator Builder:</b> https://predictpro.guru/accumulator`,
+      `💎 <b>Value Scanner (+EV):</b> https://predictpro.guru/value-bets`,
+      ``,
+      `<i>Mathematical probability models. 18+ Gamble responsibly.</i>`,
+    ].join('\n');
 
-    const res = await fetch(BROADCAST_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        action: 'broadcast',
-        parse_mode: 'HTML',
-        message: `🔥 <b>PredictPro AI Morning Banker Picks Ready!</b>\n\nDaily AI Pro Tips and high-confidence Value Bets (+EV) for today are live.\n\n👉 View today's full slate: https://predictpro.guru/predict\n👉 Accumulator Builder: https://predictpro.guru/accumulator\n\n<i>Trade responsibly. Verified AI predictions.</i>`,
-      }),
+    broadcastResult = await handleTelegramRequest({
+      action: 'broadcast',
+      parse_mode: 'HTML',
+      message,
     });
 
-    broadcastStatus = `http_${res.status}`;
-    broadcastResult = await res.json().catch(() => null);
+    broadcastStatus = broadcastResult.success ? (broadcastResult.simulated ? 'simulated_preview' : 'dispatched') : 'error';
   } catch (err) {
     broadcastStatus = err instanceof Error ? err.message : 'error';
   }
 
   return new Response(
     JSON.stringify({
-      success: true,
+      success: broadcastResult ? broadcastResult.success : false,
       job: 'telegram-vip-broadcast',
       executedAt: now,
       schedule: '0 7 * * * (Daily 07:00 UTC)',
-      endpoint: BROADCAST_URL,
       status: broadcastStatus,
       result: broadcastResult,
     }),

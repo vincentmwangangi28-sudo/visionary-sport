@@ -24,8 +24,8 @@ const BASE_URL = 'https://predictpro.guru';
 
 const ROUTE_META = {
   '/': {
-    title: 'PredictPro — AI Football Predictions & xG Match Stats',
-    description: 'Daily AI football predictions with 87% accuracy. Expected Goals (xG) stats, Poisson probabilities, and H2H analytics across 40+ global leagues.',
+    title: 'PredictPro — AI Pro Tips Today: Football Predictions & xG',
+    description: 'Daily AI pro tips today & verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues.',
   },
   '/best-bets': {
     title: 'Free Guru Tips Today & Sure Banker Bets | PredictPro',

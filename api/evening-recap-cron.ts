@@ -1,12 +1,11 @@
 // Vercel Serverless / Edge Function: Evening Performance & Winning Slips Recap Cron
 // Invoked on schedule: "0 22 * * *" (Daily at 22:00 PM UTC)
 
+import { handleTelegramRequest } from '../src/server/telegramHandler';
+
 export const config = {
   runtime: 'edge',
 };
-
-const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const BROADCAST_URL = `${SUPABASE_BASE_URL}/functions/v1/telegram-broadcast`;
 
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
@@ -26,32 +25,32 @@ export default async function handler(request: Request) {
   let data: any = null;
 
   try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      headers['Authorization'] = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`;
-    }
-
     const todayFormatted = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const message = [
+      `🏆 <b>PREDICTPRO AI MATCHDAY RESULTS &amp; WIN RATE RECAP</b> (${todayFormatted})`,
+      ``,
+      `Today's AI predictions have settled with positive strike rates across top European and African leagues!`,
+      ``,
+      `📊 <b>View Verified Track Record:</b> https://predictpro.guru/track-record`,
+      `🎟️ <b>Tomorrow's Early Bankers:</b> https://predictpro.guru/best-bets`,
+      ``,
+      `<i>Transparency first. Backtested mathematical models.</i>`,
+    ].join('\n');
 
-    const res = await fetch(BROADCAST_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        action: 'broadcast',
-        parse_mode: 'HTML',
-        message: `🏆 <b>PredictPro AI Matchday Results &amp; Win Rate Recap</b> (${todayFormatted})\n\nToday's AI predictions have settled with positive strike rates across top European and African leagues!\n\n📊 <b>View Verified Track Record:</b> https://predictpro.guru/track-record\n🎟️ <b>Tomorrow's Early Bankers:</b> https://predictpro.guru/best-bets\n\n<i>Transparency first. Backtested mathematical models.</i>`,
-      }),
+    data = await handleTelegramRequest({
+      action: 'broadcast',
+      parse_mode: 'HTML',
+      message,
     });
 
-    status = `http_${res.status}`;
-    data = await res.json().catch(() => null);
+    status = data.success ? (data.simulated ? 'simulated_preview' : 'dispatched') : 'error';
   } catch (err) {
     status = err instanceof Error ? err.message : 'error';
   }
 
   return new Response(
     JSON.stringify({
-      success: true,
+      success: data ? data.success : false,
       job: 'evening-performance-recap',
       executedAt: now,
       schedule: '0 22 * * * (Daily 22:00 UTC)',

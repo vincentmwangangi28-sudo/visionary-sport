@@ -44,6 +44,9 @@ export const GeminiTelegramAutomationHub = () => {
   const [botStatus, setBotStatus] = useState<TelegramBotStatus | null>(null);
   const [checkingBot, setCheckingBot] = useState(false);
   const [channelInput, setChannelInput] = useState('@predictproAi');
+  const [botTokenInput, setBotTokenInput] = useState('');
+  const [showTokenConfig, setShowTokenConfig] = useState(false);
+  const [savingToken, setSavingToken] = useState(false);
 
   // Task 1: Banker State
   const [bankerMatch, setBankerMatch] = useState({
@@ -98,6 +101,34 @@ export const GeminiTelegramAutomationHub = () => {
       setCheckingBot(false);
     }
   }, [channelInput]);
+
+  const handleSaveBotToken = async () => {
+    if (!botTokenInput.trim() && !channelInput.trim()) return;
+    setSavingToken(true);
+    try {
+      const res = await fetch('/api/telegram-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          botToken: botTokenInput.trim() || undefined,
+          channel: channelInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message || 'Telegram Bot token saved & verified!');
+        setBotTokenInput('');
+        setShowTokenConfig(false);
+        await handleCheckBot();
+      } else {
+        toast.error(data.error || 'Failed to save token');
+      }
+    } catch {
+      toast.error('Network error saving bot token');
+    } finally {
+      setSavingToken(false);
+    }
+  };
 
   // Check bot on mount
   useEffect(() => {
@@ -297,6 +328,16 @@ export const GeminiTelegramAutomationHub = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowTokenConfig(!showTokenConfig)}
+                className="gap-1.5 text-xs h-8 text-sky-600 dark:text-sky-400"
+              >
+                <Bot className="h-3.5 w-3.5" />
+                {showTokenConfig ? 'Close Token' : 'Bot Token'}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleCheckBot}
                 disabled={checkingBot}
                 className="gap-1.5 text-xs h-8"
@@ -306,6 +347,28 @@ export const GeminiTelegramAutomationHub = () => {
               </Button>
             </div>
           </div>
+
+          {/* Expandable Bot Token Config Box */}
+          {showTokenConfig && (
+            <div className="mt-3 p-3 bg-muted/40 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs">
+              <span className="font-medium text-foreground whitespace-nowrap">Bot Token:</span>
+              <Input
+                type="password"
+                placeholder="Paste Bot Token (from @BotFather)..."
+                value={botTokenInput}
+                onChange={(e) => setBotTokenInput(e.target.value)}
+                className="h-8 text-xs font-mono flex-1"
+              />
+              <Button
+                size="sm"
+                onClick={handleSaveBotToken}
+                disabled={savingToken || !botTokenInput.trim()}
+                className="h-8 text-xs bg-sky-600 hover:bg-sky-700 text-white shrink-0"
+              >
+                {savingToken ? 'Saving...' : 'Save & Verify'}
+              </Button>
+            </div>
+          )}
 
           {/* Bot Connection Pill Indicator */}
           <div className="mt-4 pt-4 border-t flex flex-wrap items-center gap-4 text-xs">

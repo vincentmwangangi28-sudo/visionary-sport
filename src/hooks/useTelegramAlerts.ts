@@ -304,3 +304,42 @@ export function useTelegramAlerts(options?: UseTelegramAlertsOptions) {
     autoDispatchLiveScoreChanges,
   };
 }
+
+/**
+ * Global background automation runner: runs continuously in App layout
+ * Checks for high-confidence picks, dispatches to Telegram, and respects user config
+ */
+export function useGlobalTelegramAutomation() {
+  const { autoDispatchHighConfidencePredictions } = useTelegramAlerts({ autoCheckOnMount: false });
+
+  useEffect(() => {
+    let timer: any = null;
+
+    const checkAndDispatch = async () => {
+      try {
+        const { getSystemConfig } = await import('@/services/systemConfigService');
+        const config = getSystemConfig();
+        if (!config.telegramAutoBroadcast) return;
+
+        const { getSavedPredictionsList } = await import('@/services/predictionStorage');
+        const predictions = getSavedPredictionsList();
+        if (predictions && predictions.length > 0) {
+          await autoDispatchHighConfidencePredictions(predictions, config.minBankerConfidence || 82);
+        }
+      } catch (err) {
+        console.debug('[useGlobalTelegramAutomation] Poll cycle error:', err);
+      }
+    };
+
+    // Warm-up after initial render (12 seconds)
+    timer = setTimeout(() => {
+      checkAndDispatch();
+      // Then check every 10 minutes
+      timer = setInterval(checkAndDispatch, 10 * 60 * 1000);
+    }, 12000);
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [autoDispatchHighConfidencePredictions]);
+}

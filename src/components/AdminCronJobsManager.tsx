@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Clock,
   Play,
@@ -19,9 +20,11 @@ import {
   Sparkles,
   Sliders,
   Power,
+  ExternalLink,
+  HeartPulse,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMatchSync, SUGGESTED_TRIGGERS } from '@/hooks/useMatchSync';
+import { useMatchSync } from '@/hooks/useMatchSync';
 import { Switch } from '@/components/ui/switch';
 
 interface CronJobDef {
@@ -170,6 +173,160 @@ export function AdminCronJobsManager() {
   const [runningAll, setRunningAll] = useState(false);
   const matchSync = useMatchSync();
 
+  // Autonomous Daemon status state
+  const [schedulerStatus, setSchedulerStatus] = useState<any>(null);
+  const [togglingDaemon, setTogglingDaemon] = useState(false);
+  const [runningHealthCheck, setRunningHealthCheck] = useState(false);
+
+  // Telegram Config state
+  const [tgConfig, setTgConfig] = useState<any>(null);
+  const [botTokenInput, setBotTokenInput] = useState('');
+  const [chatIdInput, setChatIdInput] = useState('@predictproAi');
+  const [isSavingTg, setIsSavingTg] = useState(false);
+  const [isSendingTestAlert, setIsSendingTestAlert] = useState(false);
+
+  const fetchSchedulerStatus = useCallback(async () => {
+    try {
+      const res = await fetch('/api/cron-status');
+      if (res.ok) {
+        const data = await res.json();
+        setSchedulerStatus(data);
+      }
+    } catch {}
+  }, []);
+
+  const fetchTgConfig = useCallback(async () => {
+    try {
+      const res = await fetch('/api/telegram-config');
+      if (res.ok) {
+        const data = await res.json();
+        setTgConfig(data);
+        if (data.chatId) setChatIdInput(data.chatId);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetchSchedulerStatus();
+    fetchTgConfig();
+    const interval = setInterval(fetchSchedulerStatus, 10000);
+    return () => clearInterval(interval);
+  }, [fetchSchedulerStatus, fetchTgConfig]);
+
+  const toggleAutonomousDaemon = async (start: boolean) => {
+    setTogglingDaemon(true);
+    try {
+      const res = await fetch('/api/cron-runner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: start ? 'start' : 'stop' }),
+      });
+      if (res.ok) {
+        toast.success(start ? '24/7 Autonomous Cron Daemon Started!' : 'Autonomous Cron Daemon Paused');
+        await fetchSchedulerStatus();
+      } else {
+        toast.error('Failed to update daemon state');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error controlling daemon');
+    } finally {
+      setTogglingDaemon(false);
+    }
+  };
+
+  const handleTriggerHealthCheck = async () => {
+    setRunningHealthCheck(true);
+    try {
+      const res = await fetch('/api/cron-runner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'health_check' }),
+      });
+      const data = await res.json();
+      if (res.ok && data?.result) {
+        const hc = data.result;
+        if (hc.stalledCount > 0) {
+          toast.warning(`Health Check: Re-initialized ${hc.stalledCount} stalled task(s)!`, {
+            description: hc.reinitializedTasks.map((t: any) => `${t.name}: ${t.reason}`).join('; '),
+          });
+        } else {
+          toast.success('Health Check: All scheduled tasks are healthy and reporting activity (<60m inactivity)');
+        }
+        await fetchSchedulerStatus();
+      } else {
+        toast.error('Health check failed to execute');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error executing health check');
+    } finally {
+      setRunningHealthCheck(false);
+    }
+  };
+
+  const handleSaveTgConfig = async () => {
+    if (!chatIdInput.trim()) {
+      toast.error('Telegram Chat ID or @Channel is required');
+      return;
+    }
+    setIsSavingTg(true);
+    try {
+      const res = await fetch('/api/telegram-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          botToken: botTokenInput.trim() || undefined,
+          channel: chatIdInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTgConfig(data);
+        toast.success(data.message || 'Telegram Bot settings saved & verified!');
+        setBotTokenInput('');
+      } else {
+        toast.error(data.error || 'Failed to configure Telegram Bot');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error saving Telegram config');
+    } finally {
+      setIsSavingTg(false);
+    }
+  };
+
+  const handleSendTestBanker = async () => {
+    setIsSendingTestAlert(true);
+    try {
+      const res = await fetch('/api/telegram-broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send_banker',
+          channel: chatIdInput.trim(),
+          banker: {
+            home_team: 'Arsenal',
+            away_team: 'Chelsea',
+            league: 'Premier League',
+            predicted_outcome: 'Home Win & Over 1.5 Goals',
+            odds: 1.88,
+            confidence_score: 87,
+            reasoning: 'Autonomous 24/7 Daemon Health Verification: Bivariate Poisson edge validated.',
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.simulated ? 'Test Banker alert simulated & preview logged!' : 'Test Banker posted to Telegram channel!');
+        await fetchTgConfig();
+      } else {
+        toast.error(data.error || 'Failed to dispatch test alert');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error dispatching test alert');
+    } finally {
+      setIsSendingTestAlert(false);
+    }
+  };
+
   const triggerCron = async (job: CronJobDef) => {
     setRunningMap(prev => ({ ...prev, [job.id]: true }));
     setLogsMap(prev => ({
@@ -195,6 +352,7 @@ export function AdminCronJobsManager() {
             responseSummary: `HTTP ${res.status}: ${data?.status || 'OK'}`,
           },
         }));
+        await fetchSchedulerStatus();
       } else {
         toast.error(`Failed to trigger ${job.name} (HTTP ${res.status})`);
         setLogsMap(prev => ({
@@ -243,41 +401,170 @@ export function AdminCronJobsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header card with global trigger */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <CardTitle className="text-xl">Automated Cron Jobs & Task Orchestrator</CardTitle>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                  {CRON_JOBS.length} Active Jobs
+      {/* 24/7 Autonomous Daemon Status Master Card */}
+      <Card className="border-emerald-500/30 bg-emerald-500/5">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="flex h-3 w-3 relative">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${schedulerStatus?.running ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  <span className={`relative inline-flex rounded-full h-3 w-3 ${schedulerStatus?.running ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                </div>
+                <h3 className="text-base font-bold text-foreground">
+                  Autonomous 24/7 Server Background Daemon
+                </h3>
+                <Badge variant="outline" className={`font-mono text-xs ${schedulerStatus?.running ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-amber-500/10 text-amber-500 border-amber-500/30'}`}>
+                  {schedulerStatus?.running ? 'Running Forever (Active)' : 'Paused'}
                 </Badge>
               </div>
-              <CardDescription className="mt-1">
-                Every task is configured in <code className="font-mono text-xs bg-background/60 px-1 py-0.5 rounded">vercel.json</code> and GitHub Actions to run autonomously in production.
-              </CardDescription>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Self-healing background worker running continuously on the server process. Executes settlement cycles, value scanning, SportPesa jackpots, and Telegram broadcasts without requiring active browser sessions.
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-mono text-muted-foreground pt-0.5">
+                <span>Heartbeat: <strong className="text-foreground">Every 30s</strong></span>
+                <span>•</span>
+                <span>Total Executions: <strong className="text-emerald-500">{schedulerStatus?.totalRuns ?? 0}</strong></span>
+                <span>•</span>
+                <span>Failures: <strong className={schedulerStatus?.totalFails ? 'text-destructive' : 'text-foreground'}>{schedulerStatus?.totalFails ?? 0}</strong></span>
+                {schedulerStatus?.startedAt && (
+                  <>
+                    <span>•</span>
+                    <span>Started: <strong className="text-foreground">{new Date(schedulerStatus.startedAt).toLocaleTimeString()}</strong></span>
+                  </>
+                )}
+                <span>•</span>
+                <span>Sentinel Health: <strong className="text-sky-500">Auto-Check (&gt;60m inactivity)</strong></span>
+                {schedulerStatus?.healthCheck?.stalledCount > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="text-amber-500 font-semibold">Auto-Recovered: {schedulerStatus.healthCheck.stalledCount} tasks</span>
+                  </>
+                )}
+              </div>
             </div>
-            <Button
-              onClick={triggerAllCrons}
-              disabled={runningAll}
-              className="gap-2 shrink-0 font-medium"
-            >
-              {runningAll ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Executing Pipeline...</span>
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 fill-current" />
-                  <span>Run All Tasks Now</span>
-                </>
-              )}
-            </Button>
+
+            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+              <Button
+                variant={schedulerStatus?.running ? 'outline' : 'default'}
+                size="sm"
+                onClick={() => toggleAutonomousDaemon(!schedulerStatus?.running)}
+                disabled={togglingDaemon}
+                className="gap-1.5 text-xs font-semibold"
+              >
+                <Power className="h-3.5 w-3.5" />
+                {schedulerStatus?.running ? 'Pause Daemon' : 'Start 24/7 Daemon'}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTriggerHealthCheck}
+                disabled={runningHealthCheck}
+                className="gap-1.5 text-xs font-medium border-sky-500/30 hover:bg-sky-500/10 text-sky-600 dark:text-sky-400"
+              >
+                <HeartPulse className={`h-3.5 w-3.5 ${runningHealthCheck ? 'animate-pulse text-sky-500' : ''}`} />
+                {runningHealthCheck ? 'Checking Tasks...' : 'Run Health Check'}
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={triggerAllCrons}
+                disabled={runningAll}
+                className="gap-2 shrink-0 font-medium text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {runningAll ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    <span>Executing Pipeline...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                    <span>Run All Tasks Now</span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </CardHeader>
+        </CardContent>
+      </Card>
+
+      {/* Telegram Automation Quick Config & Health Widget */}
+      <Card className="border-sky-500/20 bg-card/60 backdrop-blur-sm">
+        <CardContent className="p-4 sm:p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500">
+                <Send className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm">Telegram Bot & Channel Dispatch Hub</h4>
+                <p className="text-xs text-muted-foreground">
+                  Configure Bot Token and Channel ID for permanent, reliable delivery without restarts.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`text-xs ${tgConfig?.configured ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/5' : 'text-amber-500 border-amber-500/30 bg-amber-500/5'}`}>
+                {tgConfig?.configured ? 'Bot Live & Connected' : 'Simulation / Preview Mode'}
+              </Badge>
+              <a
+                href="https://t.me/predictproAi"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-sky-500 hover:underline inline-flex items-center gap-1 font-medium"
+              >
+                Open Channel <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-border/50">
+            <div className="sm:col-span-5 space-y-1">
+              <label className="text-[11px] font-medium text-muted-foreground">Bot Token (BotFather)</label>
+              <Input
+                type="password"
+                placeholder={tgConfig?.botTokenMasked || 'Enter Telegram Bot Token...'}
+                value={botTokenInput}
+                onChange={(e) => setBotTokenInput(e.target.value)}
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+
+            <div className="sm:col-span-4 space-y-1">
+              <label className="text-[11px] font-medium text-muted-foreground">Target Channel or Chat ID</label>
+              <Input
+                placeholder="@predictproAi or -100xxxxxxxx"
+                value={chatIdInput}
+                onChange={(e) => setChatIdInput(e.target.value)}
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+
+            <div className="sm:col-span-3 flex items-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSaveTgConfig}
+                disabled={isSavingTg}
+                className="h-8 text-xs flex-1"
+              >
+                {isSavingTg ? 'Saving...' : 'Save Config'}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSendTestBanker}
+                disabled={isSendingTestAlert}
+                className="h-8 text-xs bg-sky-600 hover:bg-sky-700 text-white gap-1 flex-1"
+              >
+                <Send className="h-3 w-3" />
+                {isSendingTestAlert ? 'Sending...' : 'Test Send'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Midnight Match Sync Hook Live Telemetry & Trigger Suggestion Center */}
@@ -396,6 +683,7 @@ export function AdminCronJobsManager() {
           const Icon = job.icon;
           const isRunning = runningMap[job.id] || false;
           const log = logsMap[job.id];
+          const schedulerJobState = schedulerStatus?.activeJobs?.find((j: any) => j.id === job.id);
 
           return (
             <Card key={job.id} className="relative overflow-hidden flex flex-col justify-between hover:border-primary/40 transition-colors">
@@ -426,6 +714,15 @@ export function AdminCronJobsManager() {
                   {job.description}
                 </p>
 
+                {schedulerJobState?.nextRun && (
+                  <div className="flex items-center justify-between text-[10px] font-mono bg-muted/40 px-2 py-1 rounded text-muted-foreground">
+                    <span>Next Run: <strong className="text-foreground">{new Date(schedulerJobState.nextRun).toLocaleTimeString()}</strong></span>
+                    {schedulerJobState.runCount > 0 && (
+                      <span>Runs: <strong className="text-emerald-500">{schedulerJobState.runCount}</strong></span>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pt-2 border-t border-border/50">
                   <div className="text-[11px] text-muted-foreground">
                     {log ? (
@@ -435,8 +732,13 @@ export function AdminCronJobsManager() {
                         {log.status === 'failed' && <AlertCircle className="h-3 w-3 text-destructive" />}
                         <span>Last run {log.executedAt}</span>
                       </span>
+                    ) : schedulerJobState?.lastRun ? (
+                      <span className="inline-flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                        <span>Last run {new Date(schedulerJobState.lastRun).toLocaleTimeString()} ({schedulerJobState.lastDurationMs}ms)</span>
+                      </span>
                     ) : (
-                      <span className="text-muted-foreground/70">Scheduled on Vercel Edge</span>
+                      <span className="text-muted-foreground/70">Scheduled 24/7 on Server Daemon</span>
                     )}
                   </div>
 

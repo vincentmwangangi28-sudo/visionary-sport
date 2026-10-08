@@ -27,6 +27,7 @@
     "cron:reminders": "node scripts/run-scheduled-tasks.mjs --task=reminders",
     "cron:cleanup": "node scripts/run-scheduled-tasks.mjs --task=cleanup",
     "cron:all": "node scripts/run-scheduled-tasks.mjs --task=all",
+    "daemon:keepalive": "node scripts/keepalive-daemon.mjs",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"

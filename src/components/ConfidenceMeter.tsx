@@ -10,12 +10,7 @@ import {
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ConfidenceFactor, calculateConfidenceFactors } from '@/types/confidence';
-
-const ConfidenceFactorBreakdown = lazy(() =>
-  import('@/components/ConfidenceFactorBreakdown').then((m) => ({
-    default: m.ConfidenceFactorBreakdown,
-  }))
-);
+import { ConfidenceFactorBreakdown } from '@/components/ConfidenceFactorBreakdown';
 
 export interface ConfidenceMeterProps {
   confidence: number;
@@ -163,9 +158,7 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
                   {tier.badgeText}
                 </span>
               </div>
-              <Suspense fallback={null}>
-                <ConfidenceFactorBreakdown breakdown={breakdown} predictionTip={predictionTip} />
-              </Suspense>
+              <ConfidenceFactorBreakdown breakdown={breakdown} predictionTip={predictionTip} />
             </div>
           </PopoverContent>
         )}
@@ -315,14 +308,12 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
 
           {inlineExpanded && (
             <div className="mt-3 pt-2 border-t border-border/40">
-              <Suspense fallback={null}>
-                <ConfidenceFactorBreakdown
-                  breakdown={breakdown}
-                  predictionTip={predictionTip}
-                  homeTeam={homeTeam}
-                  awayTeam={awayTeam}
-                />
-              </Suspense>
+              <ConfidenceFactorBreakdown
+                breakdown={breakdown}
+                predictionTip={predictionTip}
+                homeTeam={homeTeam}
+                awayTeam={awayTeam}
+              />
             </div>
           )}
         </div>
@@ -414,14 +405,12 @@ export const ConfidenceMeter: React.FC<ConfidenceMeterProps> = React.memo(({
                   {tier.description}
                 </p>
 
-                <Suspense fallback={null}>
-                  <ConfidenceFactorBreakdown
-                    breakdown={breakdown}
-                    predictionTip={predictionTip}
-                    homeTeam={homeTeam}
-                    awayTeam={awayTeam}
-                  />
-                </Suspense>
+                <ConfidenceFactorBreakdown
+                  breakdown={breakdown}
+                  predictionTip={predictionTip}
+                  homeTeam={homeTeam}
+                  awayTeam={awayTeam}
+                />
 
                 <div className="pt-1 text-[10px] text-muted-foreground flex items-center justify-between border-t border-border/30">
                   <div className="flex items-center gap-1">

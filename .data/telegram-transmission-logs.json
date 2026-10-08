@@ -1,0 +1,52 @@
+[
+  {
+    "id": "tx-sim-1791488744345",
+    "timestamp": "2026-10-08T19:45:44.345Z",
+    "action": "broadcast",
+    "chatId": "@predictproAi",
+    "success": true,
+    "simulated": true,
+    "status": "simulated_preview",
+    "preview": "🏆 <b>PredictPro AI Matchday Results &amp; Win Rate Recap</b>\n\nToday's AI predictions have settled! Check full verified stats &amp; tomorrow's early l"
+  },
+  {
+    "id": "tx-sim-1791488739745",
+    "timestamp": "2026-10-08T19:45:39.745Z",
+    "action": "broadcast",
+    "chatId": "@predictproAi",
+    "success": true,
+    "simulated": true,
+    "status": "simulated_preview",
+    "preview": "🔥 <b>PredictPro AI Morning Banker Picks Ready!</b>\n\nDaily AI Pro Tips and high-confidence Value Bets (+EV) for today are live.\n\n👉 View today's full "
+  },
+  {
+    "id": "tx-sim-1791488734880",
+    "timestamp": "2026-10-08T19:45:34.880Z",
+    "action": "broadcast",
+    "chatId": "@predictproAi",
+    "success": true,
+    "simulated": true,
+    "status": "simulated_preview",
+    "preview": "🏆 <b>PredictPro AI Matchday Results &amp; Win Rate Recap</b>\n\nToday's AI predictions have settled! Check full verified stats &amp; tomorrow's early l"
+  },
+  {
+    "id": "tx-sim-1791488734862",
+    "timestamp": "2026-10-08T19:45:34.862Z",
+    "action": "broadcast",
+    "chatId": "@predictproAi",
+    "success": true,
+    "simulated": true,
+    "status": "simulated_preview",
+    "preview": "🔥 <b>PredictPro AI Morning Banker Picks Ready!</b>\n\nDaily AI Pro Tips and high-confidence Value Bets (+EV) for today are live.\n\n👉 View today's full "
+  },
+  {
+    "id": "tx-sim-1791488725663",
+    "timestamp": "2026-10-08T19:45:25.663Z",
+    "action": "broadcast",
+    "chatId": "@predictproAi",
+    "success": true,
+    "simulated": true,
+    "status": "simulated_preview",
+    "preview": "🔥 <b>PredictPro AI Morning Banker Picks Ready!</b>\n\nDaily AI Pro Tips and high-confidence Value Bets (+EV) for today are live.\n\n👉 View today's full "
+  }
+]

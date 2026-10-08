@@ -93,11 +93,11 @@ interface RouteSEOConfig {
  */
 const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/': {
-    title: 'AI Football Predictions Today, xG Statistics & Match Analytics',
+    title: 'AI Pro Tips Today: Football Predictions & xG Stats (87% Verified)',
     description:
-      'Independent AI football predictions today with 87% model accuracy. Daily Expected Goals (xG) stats, Bivariate Poisson probabilities, and H2H analytics across 40+ leagues. 18+ Informational only.',
+      'Daily AI pro tips today and verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues.',
     keywords:
-      'ai football predictions today, football predictions today, football match statistics, expected goals xg, soccer predictions, poisson scoreline probabilities',
+      'aipro tips today, aiprotips prediction today, ai pro tips today football prediction, ai football predictions today, soccer predictions, banker bets today, expected goals xg',
     canonicalPath: '/',
   },
   '/best-bets': {

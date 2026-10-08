@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
 import { PredictionsDashboard } from '@/components/PredictionsDashboard';
@@ -9,27 +9,15 @@ import { LiveMarketSteamTicker } from '@/components/LiveMarketSteamTicker';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
-
-const LiveMatches = lazy(() => import('@/components/LiveMatches').then((m) => ({ default: m.LiveMatches })));
-const AISmartSlipGenerator = lazy(() =>
-  import('@/components/AISmartSlipGenerator').then((m) => ({ default: m.AISmartSlipGenerator }))
-);
-const UpcomingMatches = lazy(() =>
-  import('@/components/UpcomingMatches').then((m) => ({ default: m.UpcomingMatches }))
-);
-const AIRecommendationsHub = lazy(() =>
-  import('@/components/AIRecommendationsHub').then((m) => ({ default: m.AIRecommendationsHub }))
-);
-const DailyAIDigestBanner = lazy(() =>
-  import('@/components/DailyAIDigestBanner').then((m) => ({ default: m.DailyAIDigestBanner }))
-);
-const BreakingNewsTicker = lazy(() =>
-  import('@/components/BreakingNewsTicker').then((m) => ({ default: m.BreakingNewsTicker }))
-);
-const PastResultsArchive = lazy(() =>
-  import('@/components/PastResultsArchive').then((m) => ({ default: m.PastResultsArchive }))
-);
-const Features = lazy(() => import('@/components/Features').then((m) => ({ default: m.Features })));
+import { LiveMatches } from '@/components/LiveMatches';
+import { AISmartSlipGenerator } from '@/components/AISmartSlipGenerator';
+import { UpcomingMatches } from '@/components/UpcomingMatches';
+import { AIRecommendationsHub } from '@/components/AIRecommendationsHub';
+import { DailyAIDigestBanner } from '@/components/DailyAIDigestBanner';
+import { BreakingNewsTicker } from '@/components/BreakingNewsTicker';
+import { PastResultsArchive } from '@/components/PastResultsArchive';
+import { Features } from '@/components/Features';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const HOME_JSON_LD = {
   '@context': 'https://schema.org',
@@ -119,10 +107,10 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title="PredictPro — AI Football Predictions & xG Match Stats"
-        description="Daily AI football predictions with 87% accuracy. Expected Goals (xG) stats, Poisson probabilities, and H2H analytics across 40+ global leagues."
+        title="PredictPro — AI Pro Tips Today: Football Predictions & xG"
+        description="Daily AI pro tips today & verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues."
         canonical="/"
-        keywords="AI football predictions today, accurate soccer predictions 100% free, premier league predictions this weekend, champions league AI tips, sure banker bets today, both teams to score BTTS tips, over 2.5 goals predictions, correct score mathematical model, sportpesa mega jackpot 17 games predictions, expected goals xG football analytics"
+        keywords="aipro tips today, aiprotips prediction today, AI football predictions today, accurate soccer predictions 100% free, premier league predictions this weekend, champions league AI tips, sure banker bets today, both teams to score BTTS tips, over 2.5 goals predictions, correct score mathematical model, expected goals xG football analytics"
         jsonLd={HOME_JSON_LD}
       />
       <Navbar />
@@ -139,27 +127,9 @@ const Index = () => {
                 <AccuracyTracker />
               </div>
               <div className="lg:col-span-2">
-                {deferredReady ? (
-                  <Suspense fallback={<div className="h-48 rounded-2xl bg-card border border-border/50" />}>
-                    <LiveMatches />
-                  </Suspense>
-                ) : (
-                  <div className="rounded-2xl border border-border/60 bg-card p-6 flex flex-col justify-between h-full">
-                    <div>
-                      <p className="text-sm font-bold text-foreground mb-1">Live In-Play Scoreboard & Real-Time Odds</p>
-                      <p className="text-xs text-muted-foreground">
-                        Real-time match telemetry across Premier League, UEFA Champions League, La Liga, Serie A, and global competitions.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setDeferredReady(true)}
-                      className="mt-4 self-start min-h-[44px] px-4 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
-                    >
-                      Load Live Scoreboard Stream
-                    </button>
-                  </div>
-                )}
+                <ErrorBoundary compact>
+                  <LiveMatches />
+                </ErrorBoundary>
               </div>
             </div>
           </div>
@@ -177,39 +147,53 @@ const Index = () => {
 
         {/* Deferred Below-the-Fold Interactive Modules */}
         {deferredReady && (
-          <Suspense fallback={null}>
+          <>
             {/* Breaking Football News & Gemini Tactical Wire */}
             <section className="pt-8 pb-2">
               <div className="container mx-auto px-4 max-w-6xl">
-                <BreakingNewsTicker />
+                <ErrorBoundary compact>
+                  <BreakingNewsTicker />
+                </ErrorBoundary>
               </div>
             </section>
 
             {/* Daily AI Digest & Featured Match of the Day */}
             <section className="py-6">
               <div className="container mx-auto px-4 max-w-6xl">
-                <DailyAIDigestBanner />
+                <ErrorBoundary compact>
+                  <DailyAIDigestBanner />
+                </ErrorBoundary>
               </div>
             </section>
 
             {/* AI Smart Slip Generator (One-Click Accumulator Builder) */}
-            <AISmartSlipGenerator />
+            <ErrorBoundary compact>
+              <AISmartSlipGenerator />
+            </ErrorBoundary>
 
             {/* Upcoming Matches */}
-            <UpcomingMatches />
+            <ErrorBoundary compact>
+              <UpcomingMatches />
+            </ErrorBoundary>
 
             {/* AI Recommendations Hub (Top Value Bets, High Confidence, Correct Score, BTTS) */}
-            <AIRecommendationsHub />
+            <ErrorBoundary compact>
+              <AIRecommendationsHub />
+            </ErrorBoundary>
 
             {/* Past Results & Historical Accuracy Archive */}
             <section className="py-12 bg-muted/15 border-t border-border/50">
               <div className="container mx-auto px-4 max-w-6xl">
-                <PastResultsArchive />
+                <ErrorBoundary compact>
+                  <PastResultsArchive />
+                </ErrorBoundary>
               </div>
             </section>
 
-            <Features />
-          </Suspense>
+            <ErrorBoundary compact>
+              <Features />
+            </ErrorBoundary>
+          </>
         )}
 
         <div style={{ contentVisibility: 'auto', containIntrinsicSize: '700px' }}>

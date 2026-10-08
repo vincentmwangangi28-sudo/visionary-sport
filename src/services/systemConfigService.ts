@@ -3,6 +3,9 @@ export interface SystemConfig {
   geminiModel: 'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gemini-3.8-flash';
   autoPublishPredictions: boolean;
   telegramAutoBroadcast: boolean;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  cronAutonomousMode: boolean;
   spinWheelMultiplier: 1 | 2 | 3;
   signupBonusCoins: number;
   minBankerConfidence: number;
@@ -22,6 +25,8 @@ const DEFAULT_CONFIG: SystemConfig = {
   geminiModel: 'gemini-2.5-flash',
   autoPublishPredictions: true,
   telegramAutoBroadcast: true,
+  telegramChatId: '@predictproAi',
+  cronAutonomousMode: true,
   spinWheelMultiplier: 1,
   signupBonusCoins: 50,
   minBankerConfidence: 85,

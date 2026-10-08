@@ -20,10 +20,10 @@ export default function PremierLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Premier League Predictions Today 2025/26 | Free AI Tips | PredictPro"
-        description="Free Premier League predictions for today's matches. AI tips with confidence scores, H2H stats, and value bets for Arsenal, Man City, and Chelsea."
+        title="Premier League Score Predictor & EPL Predictions Today | PredictPro"
+        description="Free Premier League predictions for today's matches. AI score predictor with confidence scores, H2H stats, and value bets for Arsenal, Man City, and Liverpool."
         canonical="/premier-league-predictions"
-        keywords="Premier League predictions today, EPL predictions, Premier League tips today, Arsenal predictions, Man City tips, Liverpool predictions, Chelsea prediction, Premier League AI tips free"
+        keywords="barclays premier league score predictor, Premier League predictions today, EPL score predictor, Premier League tips today, Arsenal predictions, Man City tips, Liverpool predictions, Chelsea prediction, Premier League AI tips free"
         structuredData={{
           '@type': 'FAQPage',
           mainEntity: FAQ.map(f => ({

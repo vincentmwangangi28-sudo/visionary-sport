@@ -14,10 +14,7 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { Link } from 'react-router-dom';
 import { hapticService } from '@/services/hapticService';
-
-const MatchAnalyticsModal = lazy(() =>
-  import('@/components/MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
-);
+import { MatchAnalyticsModal } from '@/components/MatchAnalyticsModal';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
   isPlayedOrPastMatch,
@@ -629,13 +626,11 @@ export const UpcomingMatches: React.FC = () => {
 
       {/* MATCH ANALYTICS MODAL */}
       {selectedMatch && (
-        <Suspense fallback={null}>
-          <MatchAnalyticsModal
-            prediction={selectedMatch}
-            open={!!selectedMatch}
-            onClose={() => setSelectedMatch(null)}
-          />
-        </Suspense>
+        <MatchAnalyticsModal
+          prediction={selectedMatch}
+          open={!!selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+        />
       )}
     </section>
   );

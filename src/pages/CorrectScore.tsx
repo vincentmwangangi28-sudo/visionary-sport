@@ -68,10 +68,20 @@ export default function CorrectScore() {
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3"><Target className="h-8 w-8 text-primary" />Correct Score</h1>
-            <p className="text-muted-foreground mt-1">High-Probability Exact Scoreline Vectors · 60%+ confidence threshold</p>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                🎯 AI Exact Poisson Scorelines
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
+                ⚡ Top Probable Score Matrices
+              </span>
+            </div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Target className="h-8 w-8 text-primary" />Guru Tips Correct Score Today
+            </h1>
+            <p className="text-muted-foreground mt-1">High-Probability Exact Scoreline Vectors &amp; Bivariate Poisson Matrices · 60%+ confidence threshold</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

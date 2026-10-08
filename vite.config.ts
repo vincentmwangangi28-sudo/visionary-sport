@@ -40,6 +40,15 @@ function cronTasksPlugin(): Plugin {
   return {
     name: "cron-tasks-api",
     configureServer(server) {
+      // Auto-start 24/7 background cron orchestrator daemon
+      import("./src/server/cronScheduler.ts")
+        .then(({ startAutonomousScheduler }) => {
+          startAutonomousScheduler();
+        })
+        .catch((err) => {
+          console.warn("[cronTasksPlugin] Failed to start autonomous cron scheduler:", err);
+        });
+
       server.middlewares.use(async (req, res, next) => {
         res.setHeader("X-Content-Type-Options", "nosniff");
         res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -59,6 +68,96 @@ function cronTasksPlugin(): Plugin {
           res.statusCode = 200;
           res.end(JSON.stringify({ status: "ok", service: "PredictPro.guru Quantitative Football Analytics", version: "2.4.0" }));
           return;
+        }
+
+        if (url === "/api/cron-status") {
+          try {
+            const { getCronSchedulerStatus } = await import("./src/server/cronScheduler.ts");
+            const status = getCronSchedulerStatus();
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(status));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: err?.message || "Failed to retrieve cron scheduler status" }));
+          }
+          return;
+        }
+
+        if (url === "/api/cron-runner") {
+          let body = "";
+          req.on("data", (c: any) => { body += c; });
+          req.on("end", async () => {
+            try {
+              const { triggerSchedulerJob, startAutonomousScheduler, stopAutonomousScheduler, getCronSchedulerStatus, checkAndReinitializeStalledTasks } = await import("./src/server/cronScheduler.ts");
+              const parsed = JSON.parse(body || "{}");
+              let result: any = { ok: true };
+
+              if (parsed.action === "start") {
+                startAutonomousScheduler();
+                result = { ok: true, message: "Autonomous scheduler started" };
+              } else if (parsed.action === "stop") {
+                stopAutonomousScheduler();
+                result = { ok: true, message: "Autonomous scheduler paused" };
+              } else if (parsed.action === "run_now" && parsed.jobId) {
+                result = await triggerSchedulerJob(parsed.jobId);
+              } else if (parsed.action === "health_check") {
+                result = checkAndReinitializeStalledTasks(parsed.thresholdMs);
+              }
+
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.setHeader("Access-Control-Allow-Origin", "*");
+              res.statusCode = 200;
+              res.end(JSON.stringify({ result, currentStatus: getCronSchedulerStatus() }));
+            } catch (err: any) {
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err?.message || "Failed to control cron runner" }));
+            }
+          });
+          return;
+        }
+
+        if (url === "/api/telegram-config") {
+          if (req.method === "POST") {
+            let body = "";
+            req.on("data", (c: any) => { body += c; });
+            req.on("end", async () => {
+              try {
+                const { handleTelegramRequest } = await import("./src/server/telegramHandler.ts");
+                const parsed = JSON.parse(body || "{}");
+                const result = await handleTelegramRequest({
+                  action: "configure_bot",
+                  ...parsed,
+                });
+                res.setHeader("Content-Type", "application/json; charset=utf-8");
+                res.setHeader("Access-Control-Allow-Origin", "*");
+                res.statusCode = 200;
+                res.end(JSON.stringify(result));
+              } catch (err: any) {
+                res.setHeader("Content-Type", "application/json; charset=utf-8");
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: err?.message || "Failed to configure Telegram" }));
+              }
+            });
+            return;
+          } else {
+            try {
+              const { handleTelegramRequest } = await import("./src/server/telegramHandler.ts");
+              const result = await handleTelegramRequest({ action: "get_config" });
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.setHeader("Access-Control-Allow-Origin", "*");
+              res.statusCode = 200;
+              res.end(JSON.stringify(result));
+            } catch (err: any) {
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err?.message || "Failed to get Telegram config" }));
+            }
+            return;
+          }
         }
 
         if (url === "/api/football") {
@@ -93,6 +192,23 @@ function cronTasksPlugin(): Plugin {
             res.setHeader("Content-Type", "application/json; charset=utf-8");
             res.statusCode = 500;
             res.end(JSON.stringify({ error: err?.message || "Failed to fetch direct jackpots" }));
+          }
+          return;
+        }
+
+        if (url === "/api/highlights") {
+          try {
+            const force = Boolean(req.url?.includes("force=true") || req.url?.includes("force=1") || req.url?.includes("refresh=true"));
+            const { handleHighlightsRequest } = await import("./src/server/highlightsHandler.ts");
+            const data = await handleHighlightsRequest(force);
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ success: false, error: err?.message || "Failed to fetch highlights" }));
           }
           return;
         }

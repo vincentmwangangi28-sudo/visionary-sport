@@ -51,9 +51,8 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { LEAGUE_HUBS } from "@/data/leagueHubs";
 import { UnifiedSearchTrigger } from "./UnifiedSearchTrigger";
 import { PWAInstallButton } from "./PWAInstallButton";
-
-const CoinBalance = lazy(() => import("./CoinBalance").then((m) => ({ default: m.CoinBalance })));
-const NotificationBell = lazy(() => import("./NotificationBell").then((m) => ({ default: m.NotificationBell })));
+import { CoinBalance } from "./CoinBalance";
+import { NotificationBell } from "./NotificationBell";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();

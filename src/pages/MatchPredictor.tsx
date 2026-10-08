@@ -255,7 +255,7 @@ export default function MatchPredictor() {
             <Sparkles className="h-3.5 w-3.5" /> AI Pro Tips Today · Updated Daily 06:00 UTC
           </div>
           <h1 className="text-3xl sm:text-4xl font-black flex items-center justify-center gap-3 mb-2 tracking-tight">
-            <Zap className="h-8 w-8 text-primary" />AI Pro Tips &amp; Match Predictor
+            <Zap className="h-8 w-8 text-primary" />AI Pro Tips Prediction Today
           </h1>
           <p className="text-muted-foreground text-sm max-w-lg mx-auto">
             Simulate any upcoming match worldwide through our Poisson xG model for instant win probabilities, fair odds, correct score projections, and BTTS confidence.

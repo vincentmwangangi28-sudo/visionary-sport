@@ -88,6 +88,19 @@ export const AdminSystemConfigTab: React.FC = () => {
     try {
       saveSystemConfig(config, 'Vincent Mwangangi');
       saveAdSenseConfig(adConfig);
+
+      // Synchronize Telegram credentials with server runtime if provided
+      if (config.telegramBotToken || config.telegramChatId) {
+        fetch('/api/telegram-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            botToken: config.telegramBotToken?.trim() || undefined,
+            channel: config.telegramChatId?.trim() || '@predictproAi',
+          }),
+        }).catch(() => {});
+      }
+
       logAdminAction({
         actorName: 'Vincent Mwangangi',
         actorEmail: 'vincentmwangangi28@gmail.com',
@@ -311,6 +324,50 @@ export const AdminSystemConfigTab: React.FC = () => {
               <Switch
                 checked={config.telegramAutoBroadcast}
                 onCheckedChange={(checked) => handleChange('telegramAutoBroadcast', checked)}
+              />
+            </div>
+
+            {config.telegramAutoBroadcast && (
+              <div className="rounded-lg border border-sky-500/30 bg-sky-500/5 p-3 space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium text-foreground">Telegram Channel / Chat ID</Label>
+                  <Input
+                    placeholder="@predictproAi or -100xxxxxxxx"
+                    value={config.telegramChatId || ''}
+                    onChange={(e) => handleChange('telegramChatId', e.target.value)}
+                    className="h-8 text-xs font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Public channel username (e.g. <code>@predictproAi</code>) or VIP private group ID.
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium text-foreground">Telegram Bot Token (Optional if set in server env)</Label>
+                  <Input
+                    type="password"
+                    placeholder="Enter Telegram bot token from @BotFather..."
+                    value={config.telegramBotToken || ''}
+                    onChange={(e) => handleChange('telegramBotToken', e.target.value)}
+                    className="h-8 text-xs font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Overrides or supplements <code>process.env.TELEGRAM_BOT_TOKEN</code> without needing server rebuilds.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between rounded-lg border border-border/60 p-3 bg-muted/30">
+              <div className="space-y-0.5 pr-2">
+                <Label className="text-xs font-medium cursor-pointer">24/7 Autonomous Background Scheduler</Label>
+                <p className="text-[11px] text-muted-foreground">
+                  Keep autonomous cron jobs running forever in the background without requiring user page visits.
+                </p>
+              </div>
+              <Switch
+                checked={config.cronAutonomousMode}
+                onCheckedChange={(checked) => handleChange('cronAutonomousMode', checked)}
               />
             </div>
           </CardContent>

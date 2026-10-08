@@ -175,24 +175,36 @@ class GeminiDailyCronService {
   }
 
   /**
-   * DISABLED - Telegram broadcasting is owned by the server, not the browser.
-   *
-   * This used to fire from every visitor's browser on page load. The "already
-   * sent today" guard was a localStorage key, which is PER-DEVICE, so it could
-   * not prevent duplicates across visitors: N distinct visitors in a day meant
-   * up to N duplicate broadcasts to the Telegram channel.
-   *
-   * It was also entirely redundant. Two server-side pg_cron jobs already own
-   * this and run exactly once per day for the whole site:
-   *   - telegram-nightly-broadcast  (02:20 UTC daily)
-   *   - send-daily-digest           (04:00 UTC daily)
-   *
-   * Kept as a no-op (rather than deleted) so any existing caller/import keeps
-   * compiling, and so a client with `autoBroadcastTelegram: true` already
-   * persisted in localStorage from a previous visit cannot resurrect the
-   * behaviour - the guard below ignores settings entirely and always returns.
+   * Dispatches the curated Daily AI Matchday Intelligence digest to the Telegram channel.
+   * Deduplicates per-device date to prevent redundant bursts.
    */
-  public async autoBroadcastToTelegram(_digest: DailyAIDigest): Promise<boolean> {
+  public async autoBroadcastToTelegram(digest: DailyAIDigest): Promise<boolean> {
+    const todayStr = new Date().toISOString().split('T')[0];
+    try {
+      const alreadySent = localStorage.getItem(TELEGRAM_AUTO_SENT_KEY);
+      if (alreadySent === todayStr) return false;
+
+      const topPicksText = (digest.topPicks || [])
+        .slice(0, 3)
+        .map((p, i) => `${i + 1}. <b>${p.match}</b> (${p.league})\n   🎯 Pick: <b>${p.pick}</b> @ ${p.odds} (${p.confidence}% Conf)`)
+        .join('\n\n');
+
+      const message = [
+        `🧠 <b>PREDICTPRO AI DAILY INTELLIGENCE DIGEST (${todayStr})</b>`,
+        ``,
+        `💡 <i>${digest.headline}</i>`,
+        ``,
+        topPicksText,
+        ``,
+        `🔗 <a href="https://predictpro.guru/best-bets">Load AI Bankers on PredictPro.guru</a>`,
+      ].join('\n');
+
+      const res = await broadcastCustomMessage(message);
+      if (res.success) {
+        localStorage.setItem(TELEGRAM_AUTO_SENT_KEY, todayStr);
+        return true;
+      }
+    } catch {}
     return false;
   }
 

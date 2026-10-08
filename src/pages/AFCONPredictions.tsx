@@ -36,10 +36,10 @@ export default function AFCONPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="AFCON, CAF & Pan-African Football Predictions Today | PredictPro"
-        description="Free AI football predictions across all 54 CAF nations: AFCON, CAF Champions League, KPL, NPFL, South Africa PSL, Botola Pro & Egyptian League."
+        title="AFCON & Pan-African Football Predictions Today | PredictPro"
+        description="Free AI football predictions across all 54 CAF nations: AFCON 2027 qualifiers, CAF Champions League, KPL, NPFL, South Africa PSL, Botola Pro & Egyptian League."
         canonical="/afcon-predictions"
-        keywords="AFCON predictions, CAF Champions League tips, African football predictions, Nigeria NPFL predictions, South Africa PSL tips, Kenya KPL tips, Egypt Al Ahly predictions"
+        keywords="AFCON predictions, afrikanska mästerskapen 2027 speltips, AFCON 2027 tips, CAF Champions League tips, African football predictions, Nigeria NPFL predictions, South Africa PSL tips, Kenya KPL tips, Egypt Al Ahly predictions"
       />
       <Navbar />
 

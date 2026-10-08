@@ -69,10 +69,13 @@ export const Hero = () => {
 
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl pt-24 pb-12 sm:pt-28 sm:pb-16">
         {/* Live badge */}
-        <div className="flex items-center justify-center gap-2 mb-4">
+        <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
           <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 px-3 py-1 font-semibold text-xs">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2 inline-block" />
             Live AI Inference Feed
+          </Badge>
+          <Badge variant="outline" className="px-3 py-1 text-xs font-semibold text-primary border-primary/30 bg-primary/5">
+            <Zap className="h-3 w-3 mr-1.5 text-primary" />AI Pro Tips Today (87% Win Rate)
           </Badge>
           <Badge variant="outline" className="px-3 py-1 text-xs font-semibold">
             <Globe className="h-3 w-3 mr-1.5 text-primary" />40+ Global Leagues
@@ -81,7 +84,7 @@ export const Hero = () => {
 
         {/* Headline */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-3 leading-[1.1]">
-          The Algorithmic Edge in{' '}
+          AI Pro Tips Today: The Algorithmic Edge in{' '}
           <span className="bg-gradient-to-r from-primary via-purple-600 dark:via-purple-400 to-accent bg-clip-text text-transparent">
             Football Markets
           </span>

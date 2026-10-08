@@ -65,22 +65,77 @@ async function runDailyPredictions() {
   }
 }
 
+async function dispatchTelegramMessageDirect(message) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID || '@predictproAi';
+
+  if (token) {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: 'HTML',
+          disable_web_page_preview: false,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok) {
+        return { success: true, status: res.status, data, mode: 'direct_bot' };
+      }
+      // retry stripped plain text if parse error
+      if (res.status === 400) {
+        const plainRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: message.replace(/<\/?[^>]+(>|$)/g, ''),
+            disable_web_page_preview: false,
+          }),
+        });
+        const plainData = await plainRes.json().catch(() => null);
+        return { success: plainRes.ok, status: plainRes.status, data: plainData, mode: 'direct_bot_plain_fallback' };
+      }
+      return { success: false, status: res.status, data };
+    } catch (e) {
+      console.warn('Direct telegram bot fetch error, trying local server endpoint:', e.message);
+    }
+  }
+
+  // Try local server endpoint first
+  try {
+    const localRes = await fetch('http://localhost:3000/api/telegram-broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'broadcast', parse_mode: 'HTML', message }),
+    });
+    if (localRes.ok) {
+      const data = await localRes.json();
+      return { success: data.success, status: localRes.status, data, mode: 'local_server' };
+    }
+  } catch {}
+
+  // Fallback to Supabase edge function
+  const url = `${SUPABASE_BASE_URL}/functions/v1/telegram-broadcast`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ action: 'broadcast', parse_mode: 'HTML', message }),
+  });
+  const data = await res.json().catch(() => null);
+  return { success: res.ok, status: res.status, data, mode: 'edge_function' };
+}
+
 async function runTelegramBroadcast() {
   console.log('📢 [3/4] Triggering Telegram VIP Banker Broadcast...');
-  const url = `${SUPABASE_BASE_URL}/functions/v1/telegram-broadcast`;
+  const msg = `🔥 <b>PredictPro AI Morning Banker Picks Ready!</b>\n\nDaily AI Pro Tips and high-confidence Value Bets (+EV) for today are live.\n\n👉 View today's full slate: https://predictpro.guru/predict\n👉 Accumulator Builder: https://predictpro.guru/accumulator\n\n<i>Trade responsibly. Verified AI predictions.</i>`;
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        action: 'broadcast',
-        parse_mode: 'HTML',
-        message: `🔥 <b>PredictPro AI Morning Banker Picks Ready!</b>\n\nDaily AI Pro Tips and high-confidence Value Bets (+EV) for today are live.\n\n👉 View today's full slate: https://predictpro.guru/predict\n👉 Accumulator Builder: https://predictpro.guru/accumulator\n\n<i>Trade responsibly. Verified AI predictions.</i>`,
-      }),
-    });
-    const data = await res.json().catch(() => null);
-    console.log(`✅ Telegram Broadcast status: HTTP ${res.status}`, data);
-    return { success: res.ok, status: res.status, data };
+    const result = await dispatchTelegramMessageDirect(msg);
+    console.log(`✅ Telegram Broadcast status: HTTP ${result.status} (${result.mode || 'dispatched'})`, result.data);
+    return result;
   } catch (err) {
     console.error('❌ Telegram Broadcast failed:', err.message);
     return { success: false, error: err.message };
@@ -174,20 +229,11 @@ async function runStandingsSync() {
 
 async function runEveningRecap() {
   console.log('🌙 [9/11] Broadcasting Evening Performance Recap...');
-  const url = `${SUPABASE_BASE_URL}/functions/v1/telegram-broadcast`;
+  const msg = `🏆 <b>PredictPro AI Matchday Results &amp; Win Rate Recap</b>\n\nToday's AI predictions have settled! Check full verified stats &amp; tomorrow's early locks.\n\n👉 Track Record: https://predictpro.guru/track-record\n👉 Early Bankers: https://predictpro.guru/best-bets`;
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        action: 'broadcast',
-        parse_mode: 'HTML',
-        message: `🏆 <b>PredictPro AI Matchday Results &amp; Win Rate Recap</b>\n\nToday's AI predictions have settled! Check full verified stats &amp; tomorrow's early locks.\n\n👉 Track Record: https://predictpro.guru/track-record\n👉 Early Bankers: https://predictpro.guru/best-bets`,
-      }),
-    });
-    const data = await res.json().catch(() => null);
-    console.log(`✅ Evening Recap status: HTTP ${res.status}`);
-    return { success: res.ok, status: res.status, data };
+    const result = await dispatchTelegramMessageDirect(msg);
+    console.log(`✅ Evening Recap status: HTTP ${result.status} (${result.mode || 'dispatched'})`, result.data);
+    return result;
   } catch (err) {
     console.error('❌ Evening Recap failed:', err.message);
     return { success: false, error: err.message };

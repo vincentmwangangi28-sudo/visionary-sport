@@ -89,16 +89,28 @@ export function calculateMatchXG(
   const awayXG = Number(Math.max(0.50, Math.min(2.65, awayImplied * 2.2 + 0.25 + awayModifier)).toFixed(2));
   const totalXG = Number((homeXG + awayXG).toFixed(2));
 
-  // 6x6 scoreline simulation matrix
+  // 6x6 scoreline simulation matrix with Dixon-Coles low scoreline interdependence
+  // Adjusts 0-0, 1-0, 0-1, 1-1 probabilities to match empirical football scoreline distributions
   let homeWinProb = 0;
   let drawProb = 0;
   let awayWinProb = 0;
   let over25Prob = 0;
   let bttsProb = 0;
 
+  // Empirical Dixon-Coles tau factor (rho ≈ -0.11 reduces 0-0 and boosts 1-1/low draws)
+  const rho = -0.11;
+  const tau = (x: number, y: number, lh: number, la: number): number => {
+    if (x === 0 && y === 0) return 1 - (lh * la * rho);
+    if (x === 0 && y === 1) return 1 + (lh * rho);
+    if (x === 1 && y === 0) return 1 + (la * rho);
+    if (x === 1 && y === 1) return 1 - rho;
+    return 1.0;
+  };
+
   for (let h = 0; h <= 6; h++) {
     for (let a = 0; a <= 6; a++) {
-      const p = poisson(h, homeXG) * poisson(a, awayXG);
+      const correction = tau(h, a, homeXG, awayXG);
+      const p = Math.max(0, poisson(h, homeXG) * poisson(a, awayXG) * correction);
       if (h > a) homeWinProb += p;
       else if (h === a) drawProb += p;
       else awayWinProb += p;

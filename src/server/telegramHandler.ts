@@ -1,12 +1,21 @@
 // Server-Side Telegram Bot API Integration
-// Uses process.env.TELEGRAM_BOT_TOKEN and process.env.TELEGRAM_CHAT_ID to dispatch
-// automated alerts for high-confidence AI predictions, live score updates, bankers, and accumulators.
+// Uses process.env.TELEGRAM_BOT_TOKEN or dynamically configured tokens,
+// and process.env.TELEGRAM_CHAT_ID to dispatch automated alerts for
+// high-confidence AI predictions, live score updates, bankers, and accumulators.
+
+import fs from 'fs';
+import path from 'path';
 
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
+const RUNTIME_CONFIG_PATH = path.join(process.cwd(), '.data', 'telegram-runtime-config.json');
+const RUNTIME_LOGS_PATH = path.join(process.cwd(), '.data', 'telegram-transmission-logs.json');
 
 export interface TelegramRequestPayload {
   action:
     | 'check_bot'
+    | 'configure_bot'
+    | 'get_config'
+    | 'clear_queue'
     | 'broadcast'
     | 'send_banker'
     | 'send_prediction'
@@ -16,6 +25,10 @@ export interface TelegramRequestPayload {
     | 'send_acca'
     | 'send_value_bet';
   channel?: string;
+  chatId?: string;
+  chat_id?: string;
+  botToken?: string;
+  bot_token?: string;
   message?: string;
   parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   banker?: Record<string, any>;
@@ -26,11 +39,112 @@ export interface TelegramRequestPayload {
   valueBet?: Record<string, any>;
 }
 
+export interface TelegramTransmissionLog {
+  id: string;
+  timestamp: string;
+  action: string;
+  chatId: string;
+  success: boolean;
+  simulated: boolean;
+  status: string;
+  preview: string;
+  error?: string;
+}
+
+// In-memory runtime state
+let cachedRuntimeConfig: { botToken?: string; chatId?: string; autoBroadcast?: boolean } | null = null;
+const transmissionLogs: TelegramTransmissionLog[] = [];
+
+function ensureDataDir() {
+  try {
+    const dir = path.dirname(RUNTIME_CONFIG_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch {}
+}
+
+export function getStoredTelegramConfig(): { botToken: string; chatId: string; autoBroadcast: boolean } {
+  if (cachedRuntimeConfig) {
+    return {
+      botToken: (cachedRuntimeConfig.botToken || process.env.TELEGRAM_BOT_TOKEN || '').trim(),
+      chatId: (cachedRuntimeConfig.chatId || process.env.TELEGRAM_CHAT_ID || '@predictproAi').trim(),
+      autoBroadcast: cachedRuntimeConfig.autoBroadcast ?? true,
+    };
+  }
+
+  ensureDataDir();
+  try {
+    if (fs.existsSync(RUNTIME_CONFIG_PATH)) {
+      const raw = fs.readFileSync(RUNTIME_CONFIG_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      cachedRuntimeConfig = parsed;
+      return {
+        botToken: (parsed.botToken || process.env.TELEGRAM_BOT_TOKEN || '').trim(),
+        chatId: (parsed.chatId || process.env.TELEGRAM_CHAT_ID || '@predictproAi').trim(),
+        autoBroadcast: parsed.autoBroadcast ?? true,
+      };
+    }
+  } catch {}
+
+  cachedRuntimeConfig = {
+    botToken: (process.env.TELEGRAM_BOT_TOKEN || '').trim(),
+    chatId: (process.env.TELEGRAM_CHAT_ID || '@predictproAi').trim(),
+    autoBroadcast: true,
+  };
+  return cachedRuntimeConfig as any;
+}
+
+export function saveStoredTelegramConfig(config: { botToken?: string; chatId?: string; autoBroadcast?: boolean }) {
+  ensureDataDir();
+  const current = getStoredTelegramConfig();
+  const updated = {
+    botToken: config.botToken !== undefined ? config.botToken.trim() : current.botToken,
+    chatId: config.chatId !== undefined ? config.chatId.trim() : current.chatId,
+    autoBroadcast: config.autoBroadcast !== undefined ? config.autoBroadcast : current.autoBroadcast,
+    updatedAt: new Date().toISOString(),
+  };
+  cachedRuntimeConfig = updated;
+  try {
+    fs.writeFileSync(RUNTIME_CONFIG_PATH, JSON.stringify(updated, null, 2), 'utf-8');
+  } catch {}
+  return updated;
+}
+
+function recordTransmission(entry: TelegramTransmissionLog) {
+  transmissionLogs.unshift(entry);
+  if (transmissionLogs.length > 50) {
+    transmissionLogs.pop();
+  }
+  ensureDataDir();
+  try {
+    fs.writeFileSync(RUNTIME_LOGS_PATH, JSON.stringify(transmissionLogs.slice(0, 30), null, 2), 'utf-8');
+  } catch {}
+}
+
+export function getTelegramTransmissionLogs(): TelegramTransmissionLog[] {
+  if (transmissionLogs.length > 0) return transmissionLogs;
+  try {
+    if (fs.existsSync(RUNTIME_LOGS_PATH)) {
+      const raw = fs.readFileSync(RUNTIME_LOGS_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        transmissionLogs.push(...parsed);
+      }
+    }
+  } catch {}
+  return transmissionLogs;
+}
+
 function escapeHtml(input: unknown): string {
   return String(input ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function stripHtmlTags(input: string): string {
+  return input.replace(/<\/?[^>]+(>|$)/g, '');
 }
 
 export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string {
@@ -170,136 +284,238 @@ export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string 
   return payload.message || '🔥 <b>PredictPro.guru AI Alert</b>';
 }
 
-export async function handleTelegramRequest(payload: TelegramRequestPayload): Promise<Record<string, any>> {
-  const botToken = (process.env.TELEGRAM_BOT_TOKEN || '').trim();
-  const defaultChatId = (process.env.TELEGRAM_CHAT_ID || '@predictproAi').trim();
-  const targetChatId = (payload.channel || defaultChatId || '@predictproAi').trim();
+/**
+ * Resilient Telegram dispatcher with rate-limit backoff and HTML entity recovery
+ */
+async function dispatchTelegramMessageDirect(
+  botToken: string,
+  targetChatId: string,
+  text: string,
+  parseMode: 'HTML' | 'Markdown' | 'MarkdownV2' = 'HTML',
+  retries = 2
+): Promise<{ success: boolean; data?: any; error?: string; usedFallback?: boolean }> {
+  const apiBase = `https://api.telegram.org/bot${botToken}`;
 
-  // 1. Direct Telegram Bot API execution when TELEGRAM_BOT_TOKEN is configured
-  if (botToken) {
-    const apiBase = `https://api.telegram.org/bot${botToken}`;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const mode = attempt === retries ? undefined : parseMode;
+      const sendText = attempt === retries ? stripHtmlTags(text) : text;
 
-    if (payload.action === 'check_bot') {
-      try {
-        const [meRes, chatRes] = await Promise.all([
-          fetch(`${apiBase}/getMe`),
-          fetch(`${apiBase}/getChat?chat_id=${encodeURIComponent(targetChatId)}`).catch(() => null),
-        ]);
-        const meJson = await meRes.json();
-        const chatJson = chatRes ? await chatRes.json().catch(() => null) : null;
+      const bodyObj: Record<string, any> = {
+        chat_id: targetChatId,
+        text: sendText,
+        disable_web_page_preview: false,
+      };
+      if (mode) {
+        bodyObj.parse_mode = mode;
+      }
 
-        if (!meJson?.ok) {
-          return {
-            success: false,
-            configured: false,
-            chatId: targetChatId,
-            error: meJson?.description || 'Invalid TELEGRAM_BOT_TOKEN',
-          };
+      const res = await fetch(`${apiBase}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyObj),
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (res.ok && json?.ok) {
+        return { success: true, data: json.result, usedFallback: attempt > 0 };
+      }
+
+      // 429 Too Many Requests -> wait retry_after
+      if (res.status === 429 && json?.parameters?.retry_after && attempt < retries) {
+        const waitSec = Number(json.parameters.retry_after) || 1;
+        await new Promise((r) => setTimeout(r, (waitSec + 0.5) * 1000));
+        continue;
+      }
+
+      // 400 Bad Request: can't parse entities -> immediately retry with stripped plain text
+      if (res.status === 400 && json?.description?.toLowerCase().includes('parse') && attempt < retries) {
+        const plainRes = await fetch(`${apiBase}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: targetChatId,
+            text: stripHtmlTags(text),
+            disable_web_page_preview: false,
+          }),
+        });
+        const plainJson = await plainRes.json().catch(() => null);
+        if (plainRes.ok && plainJson?.ok) {
+          return { success: true, data: plainJson.result, usedFallback: true };
         }
+      }
 
+      if (attempt === retries) {
         return {
-          success: true,
-          configured: true,
-          chatId: targetChatId,
-          bot: meJson.result,
-          channel: chatJson?.ok ? chatJson.result : { id: targetChatId, title: targetChatId },
-          message: `Connected to @${meJson.result?.username || 'Bot'} (Chat: ${targetChatId})`,
+          success: false,
+          error: json?.description || `Telegram API HTTP ${res.status}`,
         };
-      } catch (err: any) {
+      }
+    } catch (err: any) {
+      if (attempt === retries) {
+        return { success: false, error: err?.message || 'Network dispatch failure' };
+      }
+      await new Promise((r) => setTimeout(r, 800));
+    }
+  }
+
+  return { success: false, error: 'Max delivery attempts exceeded' };
+}
+
+export async function handleTelegramRequest(payload: TelegramRequestPayload): Promise<Record<string, any>> {
+  const stored = getStoredTelegramConfig();
+  const botToken = (payload.botToken || payload.bot_token || stored.botToken || '').trim();
+  const targetChatId = (payload.channel || payload.chatId || payload.chat_id || stored.chatId || '@predictproAi').trim();
+
+  // Action: configure_bot (saves credentials dynamically from UI or admin tab)
+  if (payload.action === 'configure_bot') {
+    const newConfig = saveStoredTelegramConfig({
+      botToken: payload.botToken || payload.bot_token,
+      chatId: payload.channel || payload.chatId || payload.chat_id,
+    });
+
+    let pingResult: any = { ok: false };
+    if (newConfig.botToken) {
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${newConfig.botToken}/getMe`);
+        pingResult = await res.json().catch(() => ({ ok: false }));
+      } catch {}
+    }
+
+    return {
+      success: true,
+      configured: Boolean(newConfig.botToken),
+      botTokenMasked: newConfig.botToken ? `${newConfig.botToken.slice(0, 6)}...${newConfig.botToken.slice(-4)}` : null,
+      chatId: newConfig.chatId,
+      bot: pingResult?.result || null,
+      message: pingResult?.ok
+        ? `Connected to @${pingResult.result?.username} (Target: ${newConfig.chatId})`
+        : 'Credentials saved successfully',
+    };
+  }
+
+  // Action: get_config
+  if (payload.action === 'get_config') {
+    return {
+      success: true,
+      configured: Boolean(botToken),
+      botTokenMasked: botToken ? `${botToken.slice(0, 6)}...${botToken.slice(-4)}` : null,
+      chatId: targetChatId,
+      autoBroadcast: stored.autoBroadcast,
+      recentDeliveries: getTelegramTransmissionLogs().slice(0, 10),
+    };
+  }
+
+  // Action: check_bot
+  if (payload.action === 'check_bot') {
+    if (!botToken) {
+      return {
+        success: true,
+        configured: false,
+        chatId: targetChatId,
+        message: 'No Telegram bot token configured. Running in preview simulation mode.',
+      };
+    }
+
+    try {
+      const apiBase = `https://api.telegram.org/bot${botToken}`;
+      const [meRes, chatRes] = await Promise.all([
+        fetch(`${apiBase}/getMe`),
+        fetch(`${apiBase}/getChat?chat_id=${encodeURIComponent(targetChatId)}`).catch(() => null),
+      ]);
+      const meJson = await meRes.json().catch(() => null);
+      const chatJson = chatRes ? await chatRes.json().catch(() => null) : null;
+
+      if (!meJson?.ok) {
         return {
           success: false,
           configured: false,
           chatId: targetChatId,
-          error: err?.message || 'Telegram Bot verification failed',
+          error: meJson?.description || 'Invalid Telegram bot token',
         };
       }
+
+      return {
+        success: true,
+        configured: true,
+        chatId: targetChatId,
+        bot: meJson.result,
+        channel: chatJson?.ok ? chatJson.result : { id: targetChatId, title: targetChatId },
+        message: `Connected to @${meJson.result?.username || 'Bot'} (Target: ${targetChatId})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        configured: false,
+        chatId: targetChatId,
+        error: err?.message || 'Telegram connection check failed',
+      };
     }
+  }
 
-    // Send formatted alert message via Telegram sendMessage API
-    const text = buildTelegramAlertHtml(payload);
-    try {
-      const sendRes = await fetch(`${apiBase}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: targetChatId,
-          text,
-          parse_mode: payload.parse_mode || 'HTML',
-          disable_web_page_preview: false,
-        }),
-      });
-      const sendJson = await sendRes.json();
+  // Formatting message
+  const text = buildTelegramAlertHtml(payload);
 
-      if (!sendJson?.ok) {
-        return {
-          success: false,
-          chatId: targetChatId,
-          previewText: text,
-          error: sendJson?.description || `Telegram API HTTP ${sendRes.status}`,
-        };
-      }
+  // 1. Live dispatch if bot token is present
+  if (botToken) {
+    const result = await dispatchTelegramMessageDirect(
+      botToken,
+      targetChatId,
+      text,
+      payload.parse_mode || 'HTML'
+    );
 
+    recordTransmission({
+      id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      action: payload.action,
+      chatId: targetChatId,
+      success: result.success,
+      simulated: false,
+      status: result.success ? (result.usedFallback ? 'dispatched_plain_fallback' : 'dispatched_ok') : 'failed',
+      preview: text.slice(0, 150),
+      error: result.error,
+    });
+
+    if (result.success) {
       return {
         success: true,
         simulated: false,
         chatId: targetChatId,
         previewText: text,
         message: `Alert dispatched to ${targetChatId}`,
-        data: sendJson.result,
+        data: result.data,
       };
-    } catch (err: any) {
+    } else {
       return {
         success: false,
+        simulated: false,
         chatId: targetChatId,
         previewText: text,
-        error: err?.message || 'Failed to send Telegram message',
+        error: result.error || 'Failed to dispatch to Telegram',
       };
     }
   }
 
-  // 2. Fallback: Try Supabase Edge Function if TELEGRAM_BOT_TOKEN is stored in Supabase secrets
-  try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      headers['Authorization'] = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`;
-    }
-    const edgeRes = await fetch(`${SUPABASE_BASE_URL}/functions/v1/telegram-broadcast`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        ...payload,
-        channel: targetChatId,
-        message: payload.message || buildTelegramAlertHtml(payload),
-      }),
-    });
-    if (edgeRes.ok) {
-      const edgeData = await edgeRes.json();
-      return {
-        ...edgeData,
-        chatId: edgeData.chatId || targetChatId,
-        previewText: edgeData.previewText || buildTelegramAlertHtml(payload),
-      };
-    }
-  } catch {
-    // Fall through to structured preview
-  }
-
-  // 3. Structured simulation preview when neither env var nor edge secret is set
-  const previewText = buildTelegramAlertHtml(payload);
-  if (payload.action === 'check_bot') {
-    return {
-      success: true,
-      configured: false,
-      chatId: targetChatId,
-      message: 'Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in environment to enable live Telegram dispatch.',
-    };
-  }
+  // 2. Simulated preview mode with persistent log recording
+  recordTransmission({
+    id: `tx-sim-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    action: payload.action,
+    chatId: targetChatId,
+    success: true,
+    simulated: true,
+    status: 'simulated_preview',
+    preview: text.slice(0, 150),
+  });
 
   return {
     success: true,
     simulated: true,
     chatId: targetChatId,
-    previewText,
-    message: 'Alert formatted in preview mode (configure TELEGRAM_BOT_TOKEN & TELEGRAM_CHAT_ID for live delivery).',
+    previewText: text,
+    message: `Alert formatted in preview mode (Target: ${targetChatId}). Add Bot Token in Admin / Telegram Hub for live delivery.`,
   };
 }
+

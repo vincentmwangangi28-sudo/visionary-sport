@@ -27,9 +27,7 @@ function formatMatchSlug(homeTeam: string, awayTeam: string, matchDate?: string)
   return `${clean(homeTeam)}-vs-${clean(awayTeam)}-${datePart}`;
 }
 
-const MatchAnalyticsModal = lazy(() =>
-  import('@/components/MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
-);
+import { MatchAnalyticsModal } from './MatchAnalyticsModal';
 
 interface Props {
   prediction: Prediction;
@@ -561,9 +559,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
       </Card>
 
       {showAnalytics && (
-        <Suspense fallback={null}>
-          <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
-        </Suspense>
+        <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
       )}
     </>
   );

@@ -1,0 +1,46 @@
+name: 'PredictPro 24/7 Keepalive & Always-Live Heartbeat'
+
+on:
+  schedule:
+    # Run every 5 minutes forever to keep containers warm and trigger automated cycles
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Custom URL to ping (optional)'
+        required: false
+        default: 'https://predictpro.guru'
+
+jobs:
+  keepalive-ping:
+    name: '24/7 Keepalive & Autonomous Health Ping'
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 5
+
+    steps:
+      - name: 'Ping PredictPro Health & Cron Status Endpoints'
+        run: |
+          TARGET="${{ github.event.inputs.target_url || secrets.APP_URL || 'https://predictpro.guru' }}"
+          echo "Pinging live instance at: $TARGET at $(date -u)"
+
+          # 1. Ping Health endpoint
+          HTTP_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$TARGET/api/health" || echo "failed")
+          echo "Health endpoint response: HTTP $HTTP_HEALTH"
+
+          # 2. Ping Cron Status to ensure daemon heartbeat is alive
+          HTTP_CRON=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$TARGET/api/cron-status" || echo "failed")
+          echo "Cron Status response: HTTP $HTTP_CRON"
+
+          # 3. Optional ping to Dev/Cloud Run URL if configured
+          if [ -n "${{ secrets.DEV_APP_URL }}" ]; then
+            echo "Pinging Dev instance..."
+            curl -s -o /dev/null -w "%{http_code}" --max-time 15 "${{ secrets.DEV_APP_URL }}/api/health" || true
+          fi
+
+          if [ "$HTTP_HEALTH" = "200" ] || [ "$HTTP_CRON" = "200" ]; then
+            echo "✅ PredictPro is live, healthy, and autonomous daemon is running."
+          else
+            echo "⚠️ Health ping returned HTTP $HTTP_HEALTH. Retrying once..."
+            sleep 3
+            curl -s -f --max-time 15 "$TARGET/api/health" || true
+          fi

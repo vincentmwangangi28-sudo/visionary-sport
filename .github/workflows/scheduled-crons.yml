@@ -46,6 +46,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || '@predictproAi' }}
           SITE_URL: 'https://predictpro.guru'
           INDEXNOW_KEY: 'predictpro789xyz456indexnow'
         run: |

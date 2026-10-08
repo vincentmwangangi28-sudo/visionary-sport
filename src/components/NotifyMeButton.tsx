@@ -1,12 +1,9 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useMatchNotifications } from '@/hooks/useMatchNotifications';
 import { Bell, BellRing, Check, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const MatchNotificationDialog = lazy(() =>
-  import('@/components/MatchNotificationDialog').then((m) => ({ default: m.MatchNotificationDialog }))
-);
+import { MatchNotificationDialog } from '@/components/MatchNotificationDialog';
 
 export interface NotifyMeButtonProps {
   match: {
@@ -214,15 +211,13 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
         </div>
       )}
 
-      {/* Dialog for fine-tuning match alert preferences (lazy mounted on click) */}
+      {/* Dialog for fine-tuning match alert preferences */}
       {dialogOpen && (
-        <Suspense fallback={null}>
-          <MatchNotificationDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            match={match}
-          />
-        </Suspense>
+        <MatchNotificationDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          match={match}
+        />
       )}
     </>
   );

@@ -177,8 +177,16 @@ export default function BestBets() {
 
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                👑 Free Guru Tips Today (75%–92% AI Strike Rate)
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
+                ⚡ 1X2 Banker Locks
+              </span>
+            </div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-primary" />Best Banker Football Bets Today
+              <Trophy className="h-8 w-8 text-primary" />Free Guru Tips &amp; Best Banker Football Bets Today
             </h1>
             <p className="text-muted-foreground mt-1">1X2 &amp; Double Chance outcome vectors ranked by confidence-weighted probability · {minConf}%+ threshold · Rolling 7-day window</p>
           </div>
