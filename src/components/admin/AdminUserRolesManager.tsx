@@ -161,12 +161,8 @@ export function AdminUserRolesManager() {
         const email = (item.email || '').toLowerCase().trim();
         const isVincent = isPrimaryAdminUser(email);
         
-        let assignedRole: 'primary_admin' | 'admin' | 'user' = 'user';
-        if (isVincent) {
-          assignedRole = 'primary_admin';
-        } else if (adminRolesMap[item.id] === 'admin' || adminRolesMap[email] === 'admin') {
-          assignedRole = 'admin';
-        }
+        // Sole Administrator Policy: ONLY Vincent Mwangangi holds admin privileges
+        const assignedRole: 'primary_admin' | 'admin' | 'user' = isVincent ? 'primary_admin' : 'user';
 
         return {
           id: item.id || `user-${Math.random().toString(36).slice(2, 7)}`,
@@ -227,10 +223,17 @@ export function AdminUserRolesManager() {
       return;
     }
 
-    // 3. Prepare next role and open confirmation modal
-    const nextRole: 'admin' | 'user' = targetUser.role === 'admin' ? 'user' : 'admin';
+    // 3. Sole Administrator Rule: Only Vincent Mwangangi can be admin
+    if (targetUser.role !== 'admin') {
+      toast.info('Sole Administrator Policy Enforced', {
+        description: `${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}) is the sole authorized administrator of PredictPro. Additional administrator privileges are restricted.`,
+      });
+      return;
+    }
+
+    // 4. Prepare demotion and open confirmation modal
     setPendingUser(targetUser);
-    setPendingNextRole(nextRole);
+    setPendingNextRole('user');
   };
 
   // Confirm and execute the role toggle
@@ -384,38 +387,22 @@ export function AdminUserRolesManager() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-sm text-foreground">
-                  {isPrimaryAdmin ? 'Primary Root Administrator Active' : 'Restricted Role View'}
+                  Sole System Administrator Active: Vincent Mwangangi
                 </span>
-                {isPrimaryAdmin ? (
-                  <Badge className="bg-amber-500 text-black font-semibold text-[10px] uppercase tracking-wider h-5 px-2">
-                    Authorized: Vincent Mwangangi
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-muted-foreground text-[10px] h-5 px-2">
-                    Read-Only (Non-Root)
-                  </Badge>
-                )}
+                <Badge className="bg-amber-500 text-black font-semibold text-[10px] uppercase tracking-wider h-5 px-2">
+                  Sole Administrator
+                </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                 {isPrimaryAdmin
-                  ? `You are verified as ${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}). You hold exclusive authority to promote or demote administrative accounts.`
-                  : `Role modifications are strictly reserved for primary administrator ${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}). Interactive toggles are disabled.`
+                  ? `You are verified as ${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}). You are the sole authorized administrator of PredictPro. All sensitive systems, database controls, and background automations are exclusively secured under your profile.`
+                  : `Administrative access is strictly restricted to designated sole administrator ${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}).`
                 }
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            {isPrimaryAdmin && (
-              <Button
-                size="sm"
-                onClick={() => setShowAddAdminModal(true)}
-                className="gap-1.5 text-xs h-8 bg-primary text-primary-foreground font-medium w-full sm:w-auto"
-              >
-                <UserPlus className="h-3.5 w-3.5" />
-                Promote by Email
-              </Button>
-            )}
             <Button
               variant="outline"
               size="sm"
@@ -679,19 +666,19 @@ export function AdminUserRolesManager() {
                                   <Switch
                                     checked={isAdmin}
                                     onCheckedChange={() => handleInitiateToggle(user)}
-                                    disabled={!isPrimaryAdmin || loading}
+                                    disabled={!isPrimaryAdmin || !isAdmin || loading}
                                     title={
                                       !isPrimaryAdmin
                                         ? 'Only primary admin Vincent Mwangangi can modify roles.'
                                         : isAdmin
                                         ? 'Click to revoke Administrator privilege'
-                                        : 'Click to promote to Administrator'
+                                        : 'Locked: Vincent Mwangangi is the sole system administrator'
                                     }
                                     className="data-[state=checked]:bg-violet-600"
                                   />
 
-                                  {!isPrimaryAdmin && (
-                                    <Lock className="h-3 w-3 text-muted-foreground" title="Role modification locked" />
+                                  {(!isPrimaryAdmin || !isAdmin) && (
+                                    <Lock className="h-3 w-3 text-muted-foreground" title="Role modification locked: Vincent Mwangangi is sole admin" />
                                   )}
                                 </div>
                               )}

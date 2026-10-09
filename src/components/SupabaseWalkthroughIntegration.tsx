@@ -2,8 +2,10 @@ import React from 'react';
 import { useSupabaseWalkthrough } from '@/hooks/useSupabaseWalkthrough';
 import { SupabaseWalkthroughModal } from '@/components/SupabaseWalkthroughModal';
 import { SupabaseFallbackBanner } from '@/components/SupabaseFallbackBanner';
+import { useAdmin } from '@/hooks/useAdmin';
 
 export const SupabaseWalkthroughIntegration: React.FC = () => {
+  const { isAdmin } = useAdmin();
   const {
     isOpen,
     closeWalkthrough,
@@ -15,6 +17,9 @@ export const SupabaseWalkthroughIntegration: React.FC = () => {
     shouldShowFallbackNotice,
     dismissNotice,
   } = useSupabaseWalkthrough();
+
+  // Strictly restricted to designated administrator Vincent Mwangangi
+  if (!isAdmin) return null;
 
   return (
     <>

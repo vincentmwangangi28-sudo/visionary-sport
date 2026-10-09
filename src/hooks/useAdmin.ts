@@ -2,10 +2,24 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-const AUTHORIZED_ADMIN_LABEL = 'Authorized Administrator';
-
 export const PRIMARY_ADMIN_NAME = 'Vincent Mwangangi';
 export const PRIMARY_ADMIN_EMAIL = 'vincentmwangangi28@gmail.com';
+
+/**
+ * Validates whether the provided user object or email matches Vincent Mwangangi,
+ * the sole authorized administrator of PredictPro.
+ */
+export function isPrimaryAdmin(
+  userOrEmail: { email?: string | null; user_metadata?: { full_name?: string } } | string | null | undefined
+): boolean {
+  if (!userOrEmail) return false;
+  if (typeof userOrEmail === 'string') {
+    return userOrEmail.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL.toLowerCase();
+  }
+  const email = (userOrEmail.email || '').toLowerCase().trim();
+  const name = (userOrEmail.user_metadata?.full_name || '').toLowerCase().trim();
+  return email === PRIMARY_ADMIN_EMAIL.toLowerCase() || name.includes('vincent mwangangi');
+}
 
 export function useAdmin() {
   const { user, loading: authLoading } = useAuth();
@@ -24,19 +38,21 @@ export function useAdmin() {
     setChecking(true);
 
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+      const isVincent = isPrimaryAdmin(user);
 
-      if (!error && data?.role === 'admin') {
+      if (isVincent) {
         setIsAdmin(true);
-        setRoleSource('Supabase user_roles (Admin)');
+        setRoleSource('Sole Designated Administrator (Vincent Mwangangi)');
+
+        // Ensure database user_roles reflects admin role for Vincent Mwangangi
+        supabase
+          .from('user_roles')
+          .upsert({ user_id: user.id, role: 'admin' }, { onConflict: 'user_id,role' })
+          .catch(() => {});
       } else {
+        // Enforce strict policy: Vincent Mwangangi is the ONLY admin
         setIsAdmin(false);
-        setRoleSource('Unauthorized');
+        setRoleSource('Unauthorized (Access restricted exclusively to Vincent Mwangangi)');
       }
     } catch {
       setIsAdmin(false);
@@ -50,16 +66,16 @@ export function useAdmin() {
     if (!authLoading) checkAdminStatus();
   }, [user, authLoading, checkAdminStatus]);
 
+  const isVincent = isPrimaryAdmin(user);
+
   return {
-    isAdmin,
-    isPrimaryAdmin: false,
-    designatedAdminName: AUTHORIZED_ADMIN_LABEL,
-    designatedAdminEmail: user?.email ?? '',
+    isAdmin: isVincent,
+    isPrimaryAdmin: isVincent,
+    designatedAdminName: PRIMARY_ADMIN_NAME,
+    designatedAdminEmail: PRIMARY_ADMIN_EMAIL,
     checking: authLoading || checking,
     roleSource,
-    grantAdminSession: () => {
-      // Admin access must be granted through Supabase user_roles.
-    },
+    grantAdminSession: () => {},
     revokeAdminSession: checkAdminStatus,
     refetch: checkAdminStatus,
   };

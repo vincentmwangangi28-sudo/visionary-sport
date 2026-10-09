@@ -390,20 +390,7 @@ export const Navbar = () => {
               </Button>
             </Link>
 
-            {/* Supabase Environment & Session Setup Walkthrough */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => window.openSupabaseWalkthrough?.()}
-              className="h-10 w-10 min-h-[42px] min-w-[42px] text-muted-foreground hover:text-foreground"
-              title="Supabase Environment & Session Setup Walkthrough (Ctrl+Shift+S)"
-              aria-label="Open Supabase Environment & Session Setup Walkthrough"
-            >
-              <Database className="h-4 w-4 text-primary" />
-            </Button>
-
-            {/* Quick Admin Shortcut if user has admin privileges */}
+            {/* Quick Admin Shortcut strictly for Vincent Mwangangi */}
             {isAdmin && (
               <Link to="/admin" title="PredictPro Admin Operations Hub">
                 <Button

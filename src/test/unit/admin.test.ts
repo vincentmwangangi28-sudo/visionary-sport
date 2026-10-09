@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { PRIMARY_ADMIN_EMAIL, PRIMARY_ADMIN_NAME } from '@/hooks/useAdmin';
+import { PRIMARY_ADMIN_EMAIL, PRIMARY_ADMIN_NAME, isPrimaryAdmin } from '@/hooks/useAdmin';
 
 describe('Admin Authorization and Portal Utilities', () => {
   beforeEach(() => {
@@ -10,6 +10,11 @@ describe('Admin Authorization and Portal Utilities', () => {
   it('verifies Vincent Mwangangi as the primary designated administrator', () => {
     expect(PRIMARY_ADMIN_EMAIL).toBe('vincentmwangangi28@gmail.com');
     expect(PRIMARY_ADMIN_NAME).toBe('Vincent Mwangangi');
+
+    expect(isPrimaryAdmin('vincentmwangangi28@gmail.com')).toBe(true);
+    expect(isPrimaryAdmin('VINCENTMWANGANGI28@GMAIL.COM')).toBe(true);
+    expect(isPrimaryAdmin({ email: 'vincentmwangangi28@gmail.com' })).toBe(true);
+    expect(isPrimaryAdmin({ user_metadata: { full_name: 'Vincent Mwangangi' } })).toBe(true);
 
     const testUserVincent = {
       email: 'vincentmwangangi28@gmail.com',
@@ -25,9 +30,10 @@ describe('Admin Authorization and Portal Utilities', () => {
       email: 'john.doe@example.com',
       user_metadata: { full_name: 'John Doe' },
     };
-    const isRegularAdmin = regularUser.email.toLowerCase().trim() === PRIMARY_ADMIN_EMAIL.toLowerCase() ||
-      regularUser.user_metadata.full_name.toLowerCase().includes('vincent mwangangi');
-    expect(isRegularAdmin).toBe(false);
+    expect(isPrimaryAdmin(regularUser)).toBe(false);
+    expect(isPrimaryAdmin('john.doe@example.com')).toBe(false);
+    expect(isPrimaryAdmin(null)).toBe(false);
+    expect(isPrimaryAdmin(undefined)).toBe(false);
   });
 
   it('blocks unauthorized users from spoofing admin access', () => {

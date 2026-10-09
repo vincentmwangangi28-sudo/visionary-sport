@@ -11,10 +11,12 @@ import { Link } from 'react-router-dom';
 import { 
   DollarSign, Sparkles, LayoutDashboard, Clock, ShieldCheck, 
   ShieldAlert, Zap, Users, AlertTriangle, LogIn, BarChart3, CheckCircle2, LogOut, Lock,
-  Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key, Radio
+  Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key, Radio, Globe, Database, ExternalLink
 } from 'lucide-react';
 import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomationHub';
 import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
+import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
+import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminOverviewTab } from '@/components/admin/AdminOverviewTab';
 import { AdminPredictionsTab } from '@/components/admin/AdminPredictionsTab';
@@ -30,6 +32,8 @@ import { AdminAuditLogTab } from '@/components/admin/AdminAuditLogTab';
 import { AdminDiagnosticsTab } from '@/components/admin/AdminDiagnosticsTab';
 import { AdminUserRolesManager } from '@/components/admin/AdminUserRolesManager';
 import { AdminExternalApisTab } from '@/components/admin/AdminExternalApisTab';
+import { AdminDatabaseTab } from '@/components/admin/AdminDatabaseTab';
+import { AdminGoogleIndexingSuite } from '@/components/admin/AdminGoogleIndexingSuite';
 
 interface DailyStat {
   date: string;
@@ -343,6 +347,16 @@ export default function AdminDashboard() {
                 <span>Diagnostics</span>
               </TabsTrigger>
 
+              <TabsTrigger value="seo" className="gap-2 text-xs">
+                <Globe className="h-3.5 w-3.5 text-sky-500" />
+                <span>SEO &amp; Indexing</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="database" className="gap-2 text-xs">
+                <Database className="h-3.5 w-3.5 text-teal-500" />
+                <span>Database &amp; Supabase</span>
+              </TabsTrigger>
+
               <TabsTrigger value="errors" className="gap-2 text-xs">
                 <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />
                 <span>Errors ({stats.errorCount})</span>
@@ -433,6 +447,37 @@ export default function AdminDashboard() {
           {/* System Health & Diagnostics Tab */}
           <TabsContent value="diagnostics" className="space-y-6">
             <AdminDiagnosticsTab />
+          </TabsContent>
+
+          {/* SEO & Search Indexing Tab */}
+          <TabsContent value="seo" className="space-y-6">
+            <Card className="border-sky-500/30 bg-sky-500/5">
+              <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-sky-500" />
+                    <h3 className="text-sm font-bold text-foreground">
+                      SEO Command Center &amp; Search Engine Indexing
+                    </h3>
+                    <Badge variant="outline" className="text-[10px] text-sky-500 border-sky-500/30">
+                      Vincent Mwangangi Private Admin Tool
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Direct access to Google Indexing Cron triggers, continental Africa broadcasts, Google Search Console integration, IndexNow pings, and technical SEO site audit.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <AdminGoogleIndexingSuite />
+            <GoogleSearchConsoleHub />
+            <SEOSiteAuditSuite />
+          </TabsContent>
+
+          {/* Database & Supabase Tab */}
+          <TabsContent value="database" className="space-y-6">
+            <AdminDatabaseTab />
           </TabsContent>
 
           {/* Error Logs Tab */}

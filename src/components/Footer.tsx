@@ -149,8 +149,8 @@ export const Footer = () => {
             <Link to="/sitemap" className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary hover:underline">
               Complete HTML Sitemap Directory
             </Link>
-            <Link to="/seo-indexing" className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary hover:underline">
-              Search Engine Indexing Monitor
+            <Link to="/tournaments" className="inline-flex items-center py-1 min-h-[32px] text-xs text-muted-foreground hover:text-primary hover:underline">
+              Global Tournaments &amp; Cups
             </Link>
             <Link to="/upcoming" className="inline-flex items-center py-1.5 min-h-[36px] text-xs text-primary font-semibold hover:underline">
               Browse All Upcoming Football Fixtures &rarr;

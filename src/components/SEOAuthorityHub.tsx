@@ -100,7 +100,7 @@ const LEAGUE_AUTHORITY_LINKS = [
   { to: '/us-soccer-predictions', label: 'MLS & US Soccer Moneyline Betting Picks' },
   { to: '/world-cup-predictions', label: '2026 FIFA World Cup Qualifiers & Tournament Predictions' },
   { to: '/screener', label: 'Quantitative Football Match Screener & Filter' },
-  { to: '/seo-indexing', label: 'Continental Content Syndication & Search Indexing Hub' },
+  { to: '/tournaments', label: 'Continental Content Syndication & Tournaments Hub' },
 ];
 
 export const SEOAuthorityHub: React.FC = () => {

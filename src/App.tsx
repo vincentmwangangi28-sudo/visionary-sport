@@ -33,7 +33,6 @@ const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").t
 const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m => ({ default: m.AIChatbot })));
 const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 const FirstVisitSignupModal = lazyWithRetry(() => import("@/components/FirstVisitSignupModal").then(m => ({ default: m.FirstVisitSignupModal })));
-const SupabaseWalkthroughIntegration = lazyWithRetry(() => import("@/components/SupabaseWalkthroughIntegration").then(m => ({ default: m.SupabaseWalkthroughIntegration })));
 const BackToTop = lazyWithRetry(() => import("@/components/BackToTop").then(m => ({ default: m.BackToTop })));
 
 import Index from "./pages/Index";
@@ -225,19 +224,20 @@ interface RouteBoundaryProps {
   component?: ComponentType<any>;
   children?: ReactNode;
   isProtected?: boolean;
+  adminOnly?: boolean;
 }
 
-const RouteBoundary = memo(({ component: Component, children, isProtected }: RouteBoundaryProps) => {
+const RouteBoundary = memo(({ component: Component, children, isProtected, adminOnly }: RouteBoundaryProps) => {
   const content = Component ? (
     isProtected ? (
-      <ProtectedRoute>
+      <ProtectedRoute adminOnly={adminOnly}>
         <Component />
       </ProtectedRoute>
     ) : (
       <Component />
     )
   ) : isProtected ? (
-    <ProtectedRoute>{children}</ProtectedRoute>
+    <ProtectedRoute adminOnly={adminOnly}>{children}</ProtectedRoute>
   ) : (
     children
   );
@@ -352,7 +352,6 @@ const DeferredGlobalOverlays = () => {
       <Suspense fallback={null}>
         <ErrorBoundary fallback={null}>
           <Sonner />
-          <SupabaseWalkthroughIntegration />
           <BackToTop />
         </ErrorBoundary>
       </Suspense>
@@ -420,7 +419,7 @@ const App = () => (
                             <Route path="/performance"   element={<RouteBoundary component={Performance} isProtected />} />
                             <Route path="/shop"          element={<RouteBoundary component={Shop} isProtected />} />
                             <Route path="/rewards"       element={<RouteBoundary component={Rewards} isProtected />} />
-                            <Route path="/admin"         element={<RouteBoundary component={AdminDashboard} isProtected />} />
+                            <Route path="/admin"         element={<RouteBoundary component={AdminDashboard} isProtected adminOnly />} />
                             <Route path="/correct-score" element={<RouteBoundary component={CorrectScore} />} />
                             <Route path="/btts"          element={<RouteBoundary component={BTTS} />} />
                             <Route path="/sports"        element={<RouteBoundary component={OtherSports} />} />
@@ -442,7 +441,7 @@ const App = () => (
                             <Route path="/afcon-predictions"            element={<RouteBoundary component={AFCONPredictions} />} />
                             <Route path="/blog"                         element={<RouteBoundary component={Blog} />} />
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
-                            <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
+                            <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} isProtected adminOnly />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
                             <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
                             <Route path="/disclaimer"                   element={<RouteBoundary component={ResponsibleGaming} />} />

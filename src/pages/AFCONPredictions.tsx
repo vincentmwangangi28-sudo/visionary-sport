@@ -167,9 +167,9 @@ export default function AFCONPredictions() {
                 Major African Club &amp; Regional Clash Predictions
               </h2>
             </div>
-            <Link to="/seo-indexing">
+            <Link to="/tournaments">
               <Button variant="ghost" size="sm" className="text-xs gap-1 font-semibold text-primary">
-                Continental Syndication Status <ArrowUpRight className="h-3.5 w-3.5" />
+                Continental Tournament Hub <ArrowUpRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
