@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  isUserAuthorizedAdminSync,
+  isUserAuthorizedAdminAsync,
+  CUSTOM_ADMINS_UPDATED_EVENT,
+} from '@/services/customAdminsService';
 
 export const PRIMARY_ADMIN_NAME = 'Vincent Mwangangi';
 export const PRIMARY_ADMIN_EMAIL = 'vincentmwangangi28@gmail.com';
 
 /**
  * Validates whether the provided user object or email matches Vincent Mwangangi,
- * the sole authorized administrator of PredictPro.
+ * the designated root administrator of PredictPro.
  */
 export function isPrimaryAdmin(
   userOrEmail: { email?: string | null; user_metadata?: { full_name?: string } } | string | null | undefined
@@ -23,7 +28,10 @@ export function isPrimaryAdmin(
 
 export function useAdmin() {
   const { user, loading: authLoading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    if (!user) return false;
+    return isPrimaryAdmin(user) || isUserAuthorizedAdminSync(user);
+  });
   const [checking, setChecking] = useState(true);
   const [roleSource, setRoleSource] = useState('');
 
@@ -42,34 +50,70 @@ export function useAdmin() {
 
       if (isVincent) {
         setIsAdmin(true);
-        setRoleSource('Sole Designated Administrator (Vincent Mwangangi)');
+        setRoleSource('Root Designated Administrator (Vincent Mwangangi)');
 
-        // Ensure database user_roles reflects admin role for Vincent Mwangangi
-        supabase
-          .from('user_roles')
-          .upsert({ user_id: user.id, role: 'admin' }, { onConflict: 'user_id,role' })
-          .catch(() => {});
+        // Ensure database reflects admin record for Vincent Mwangangi
+        try {
+          await supabase
+            .from('admins')
+            .upsert(
+              {
+                email: PRIMARY_ADMIN_EMAIL.toLowerCase(),
+                full_name: PRIMARY_ADMIN_NAME,
+                role: 'super_admin',
+                added_by: 'system',
+                notes: 'Root Primary Designated Administrator',
+                is_active: true,
+              },
+              { onConflict: 'email' }
+            );
+        } catch {
+          // Safe fallback
+        }
       } else {
-        // Enforce strict policy: Vincent Mwangangi is the ONLY admin
-        setIsAdmin(false);
-        setRoleSource('Unauthorized (Access restricted exclusively to Vincent Mwangangi)');
+        // Query custom Supabase 'admins' table
+        const isAuthorizedInAdminsTable = await isUserAuthorizedAdminAsync(user);
+
+        if (isAuthorizedInAdminsTable) {
+          setIsAdmin(true);
+          setRoleSource('Authorized Administrator (Supabase admins table)');
+        } else {
+          setIsAdmin(false);
+          setRoleSource('Unauthorized (Not in Supabase admins table)');
+        }
       }
     } catch {
-      setIsAdmin(false);
-      setRoleSource('Authorization check failed');
+      // Fallback to local synchronous check
+      const fallback = isPrimaryAdmin(user) || isUserAuthorizedAdminSync(user);
+      setIsAdmin(fallback);
+      setRoleSource(fallback ? 'Authorized Administrator (Cached)' : 'Authorization check failed');
     } finally {
       setChecking(false);
     }
   }, [user]);
 
   useEffect(() => {
-    if (!authLoading) checkAdminStatus();
+    if (!authLoading) {
+      checkAdminStatus();
+    }
   }, [user, authLoading, checkAdminStatus]);
+
+  // Listen to custom admins table updates
+  useEffect(() => {
+    const handleAdminsUpdate = () => {
+      checkAdminStatus();
+    };
+
+    window.addEventListener(CUSTOM_ADMINS_UPDATED_EVENT, handleAdminsUpdate);
+    return () => {
+      window.removeEventListener(CUSTOM_ADMINS_UPDATED_EVENT, handleAdminsUpdate);
+    };
+  }, [checkAdminStatus]);
 
   const isVincent = isPrimaryAdmin(user);
 
   return {
-    isAdmin: isVincent,
+    isAdmin: !!isAdmin,
     isPrimaryAdmin: isVincent,
     designatedAdminName: PRIMARY_ADMIN_NAME,
     designatedAdminEmail: PRIMARY_ADMIN_EMAIL,

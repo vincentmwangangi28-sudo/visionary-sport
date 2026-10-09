@@ -247,23 +247,28 @@ export default function AdminDashboard() {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Admin Operations & Control</h1>
               <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 gap-1 bg-emerald-500/5 text-xs font-semibold">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                {designatedAdminName} (Admin)
+                {isPrimaryAdmin ? designatedAdminName : (user?.email || 'Authorized Admin')} (Admin)
               </Badge>
-              {isPrimaryAdmin && (
+              {isPrimaryAdmin ? (
                 <Badge variant="outline" className="text-sky-500 border-sky-500/30 gap-1 bg-sky-500/5 text-[10px]">
                   <CheckCircle2 className="h-3 w-3" />
                   Root Administrator
                 </Badge>
+              ) : (
+                <Badge variant="outline" className="text-sky-500 border-sky-500/30 gap-1 bg-sky-500/5 text-[10px]">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Supabase &lsquo;admins&rsquo; Table Authorized
+                </Badge>
               )}
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Designated administrator terminal: <span className="font-semibold text-foreground">{user?.email}</span>. Live platform telemetry, Gemini AI automations, match prediction publishing, and error monitoring.
+              Administrator terminal: <span className="font-semibold text-foreground">{user?.email}</span>. Live platform telemetry, Gemini AI automations, match prediction publishing, error monitoring, and custom Supabase &lsquo;admins&rsquo; table access controls.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              Admin Session: <strong className="text-foreground">{designatedAdminName}</strong>
+              Admin Session: <strong className="text-foreground">{isPrimaryAdmin ? designatedAdminName : (user?.email || 'Authorized Administrator')}</strong>
             </span>
           </div>
         </div>
@@ -314,7 +319,7 @@ export default function AdminDashboard() {
 
               <TabsTrigger value="roles" className="gap-2 text-xs">
                 <Key className="h-3.5 w-3.5 text-amber-500" />
-                <span>Admin Roles</span>
+                <span>Supabase Admins &amp; Roles</span>
               </TabsTrigger>
 
               <TabsTrigger value="revenue" className="gap-2 text-xs">

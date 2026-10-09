@@ -25,7 +25,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminO
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Strict enforcement: Vincent Mwangangi is the only administrator
+  // Strict access control: only authorized administrators from the Supabase 'admins' table can access
   if (adminOnly && !isAdmin) {
     return <Navigate to="/auth" state={{ from: location, unauthorized: true }} replace />;
   }

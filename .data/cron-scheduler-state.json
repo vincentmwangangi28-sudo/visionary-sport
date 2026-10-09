@@ -1,47 +1,47 @@
 {
-  "updatedAt": "2026-10-09T15:17:36.982Z",
+  "updatedAt": "2026-10-09T15:33:31.036Z",
   "isRunning": false,
   "startedAt": null,
   "states": [
     {
       "id": "settle-results",
-      "lastRun": "2026-10-09T14:53:46.130Z",
-      "lastDurationMs": 714,
+      "lastRun": "2026-10-09T15:18:39.264Z",
+      "lastDurationMs": 492,
       "lastStatus": "idle",
       "lastError": "Auto-recovered: Stalled for 0m (Scheduled run was overdue by 0 minutes without executing)",
-      "nextRun": "2026-10-09T15:17:36.982Z",
-      "runCount": 38,
+      "nextRun": "2026-10-09T15:33:31.035Z",
+      "runCount": 39,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-09T15:17:36.982Z",
-      "reinitializedCount": 16,
-      "lastReinitializedAt": "2026-10-09T15:17:36.982Z"
+      "lastActivityAt": "2026-10-09T15:33:31.035Z",
+      "reinitializedCount": 34,
+      "lastReinitializedAt": "2026-10-09T15:33:31.035Z"
     },
     {
       "id": "value-bets",
-      "lastRun": "2026-10-09T15:12:48.278Z",
-      "lastDurationMs": 1044,
+      "lastRun": "2026-10-09T15:18:39.263Z",
+      "lastDurationMs": 477,
       "lastStatus": "idle",
       "lastError": "Auto-recovered: Stalled for 0m (Scheduled run was overdue by 0 minutes without executing)",
-      "nextRun": "2026-10-09T15:17:36.982Z",
-      "runCount": 57,
+      "nextRun": "2026-10-09T15:33:31.035Z",
+      "runCount": 58,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-09T15:17:36.982Z",
-      "reinitializedCount": 14,
-      "lastReinitializedAt": "2026-10-09T15:17:36.982Z"
+      "lastActivityAt": "2026-10-09T15:33:31.035Z",
+      "reinitializedCount": 31,
+      "lastReinitializedAt": "2026-10-09T15:33:31.035Z"
     },
     {
       "id": "odds-drift",
-      "lastRun": "2026-10-09T15:06:48.274Z",
-      "lastDurationMs": 1047,
+      "lastRun": "2026-10-09T15:21:59.321Z",
+      "lastDurationMs": 543,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-09T15:21:48.274Z",
-      "runCount": 75,
+      "nextRun": "2026-10-09T15:36:59.321Z",
+      "runCount": 76,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-09T15:06:48.274Z",
+      "lastActivityAt": "2026-10-09T15:21:59.321Z",
       "reinitializedCount": 0,
       "lastReinitializedAt": null
     },
@@ -174,259 +174,274 @@
   ],
   "auditLogs": [
     {
-      "id": "log-1791559056982-fanc",
+      "id": "log-1791560011035-9yfo",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:17:36.982Z",
+      "timestamp": "2026-10-09T15:33:31.035Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791559056982-t22l",
+      "id": "log-1791560011035-vj78",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:17:36.982Z",
+      "timestamp": "2026-10-09T15:33:31.035Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791559056981-neil",
+      "id": "log-1791560011034-f3tx",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:17:36.981Z",
+      "timestamp": "2026-10-09T15:33:31.034Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Task was stuck in 'running' state for 45 minutes (exceeded 30m limit)"
     },
     {
-      "id": "log-1791559056980-3tiq",
+      "id": "log-1791560011034-6bwx",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:17:36.980Z",
+      "timestamp": "2026-10-09T15:33:31.034Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791559056980-p0n1",
+      "id": "log-1791560011034-1wtl",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:17:36.980Z",
+      "timestamp": "2026-10-09T15:33:31.034Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791559056978-gx2d",
+      "id": "log-1791560011031-0u45",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:17:36.978Z",
+      "timestamp": "2026-10-09T15:33:31.031Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Task was stuck in 'running' state for 75 minutes (exceeded 60m limit)"
     },
     {
-      "id": "log-1791559056977-9srv",
+      "id": "log-1791560011030-es34",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:17:36.977Z",
+      "timestamp": "2026-10-09T15:33:31.030Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791559056977-7qv0",
+      "id": "log-1791560011030-7c7i",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:17:36.977Z",
+      "timestamp": "2026-10-09T15:33:31.030Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791559056972-spda",
+      "id": "log-1791560011025-78z5",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:17:36.972Z",
+      "timestamp": "2026-10-09T15:33:31.025Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
-      "error": "Scheduled run was overdue by 4 minutes without executing"
+      "error": "Scheduled run was overdue by 1 minutes without executing"
     },
     {
-      "id": "log-1791559056972-rwpf",
+      "id": "log-1791560011025-vd8q",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:17:36.972Z",
+      "timestamp": "2026-10-09T15:33:31.025Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
-      "error": "Scheduled run was overdue by 4 minutes without executing"
+      "error": "Scheduled run was overdue by 1 minutes without executing"
     },
     {
-      "id": "log-1791558797383-jwaa",
+      "id": "log-1791559940466-2dr4",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:13:17.383Z",
+      "timestamp": "2026-10-09T15:32:20.466Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791558797383-v02u",
+      "id": "log-1791559940466-vci7",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:13:17.383Z",
+      "timestamp": "2026-10-09T15:32:20.466Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791558797382-kx9x",
+      "id": "log-1791559940465-3i7e",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:13:17.382Z",
+      "timestamp": "2026-10-09T15:32:20.465Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Task was stuck in 'running' state for 45 minutes (exceeded 30m limit)"
     },
     {
-      "id": "log-1791558797381-nypl",
-      "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:13:17.381Z",
+      "id": "log-1791559940465-x9y2",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-09T15:32:20.465Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791558797378-sjqt",
+      "id": "log-1791559940464-4423",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T15:13:17.378Z",
+      "timestamp": "2026-10-09T15:32:20.465Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791559940463-is7r",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-09T15:32:20.463Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Task was stuck in 'running' state for 75 minutes (exceeded 60m limit)"
     },
     {
-      "id": "log-1791558768278-f5b7",
+      "id": "log-1791559940462-3fhy",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T15:12:48.278Z",
-      "durationMs": 1044,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-09T15:32:20.462Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791558408274-7n6p",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-09T15:06:48.274Z",
-      "durationMs": 1047,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791558256506-o964",
-      "jobId": "jackpot",
-      "timestamp": "2026-10-09T15:04:16.506Z",
-      "durationMs": 1069,
-      "status": "synced_80_matches",
-      "success": true
-    },
-    {
-      "id": "log-1791557626130-0r6h",
+      "id": "log-1791559940462-pam2",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T14:53:46.130Z",
-      "durationMs": 714,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-09T15:32:20.462Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791557565963-9s88",
+      "id": "log-1791559940457-giwz",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T14:52:45.963Z",
-      "durationMs": 548,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-09T15:32:20.457Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 1 minutes without executing"
     },
     {
-      "id": "log-1791557506302-dkws",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-09T14:51:46.302Z",
-      "durationMs": 888,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791556576310-8pdk",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-09T14:36:16.310Z",
-      "durationMs": 920,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791556426194-yilp",
-      "jobId": "jackpot",
-      "timestamp": "2026-10-09T14:33:46.194Z",
-      "durationMs": 805,
-      "status": "synced_80_matches",
-      "success": true
-    },
-    {
-      "id": "log-1791556335962-n79z",
-      "jobId": "value-bets",
-      "timestamp": "2026-10-09T14:32:15.962Z",
-      "durationMs": 576,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791555796511-bf4h",
+      "id": "log-1791559940457-eqqw",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T14:23:16.511Z",
-      "durationMs": 1140,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-09T15:32:20.457Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 1 minutes without executing"
     },
     {
-      "id": "log-1791555646124-80ou",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-09T14:20:46.124Z",
-      "durationMs": 757,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791555105837-10aa",
+      "id": "log-1791559858630-oqlb",
       "jobId": "value-bets",
-      "timestamp": "2026-10-09T14:11:45.837Z",
-      "durationMs": 487,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-09T15:30:58.630Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791554716268-f91y",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-09T14:05:16.268Z",
-      "durationMs": 927,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791554596391-krv9",
-      "jobId": "jackpot",
-      "timestamp": "2026-10-09T14:03:16.391Z",
-      "durationMs": 1055,
-      "status": "synced_80_matches",
-      "success": true
-    },
-    {
-      "id": "log-1791553965753-gh0h",
+      "id": "log-1791559858630-7t9h",
       "jobId": "settle-results",
-      "timestamp": "2026-10-09T13:52:45.753Z",
-      "durationMs": 435,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-09T15:30:58.630Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791559858629-k0mv",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-09T15:30:58.629Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Task was stuck in 'running' state for 45 minutes (exceeded 30m limit)"
+    },
+    {
+      "id": "log-1791559858627-qvqq",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-09T15:30:58.627Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791559858627-4rst",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-09T15:30:58.627Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791559858625-5a06",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-09T15:30:58.625Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Task was stuck in 'running' state for 75 minutes (exceeded 60m limit)"
+    },
+    {
+      "id": "log-1791559858624-x5wk",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-09T15:30:58.624Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791559858624-ew7k",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-09T15:30:58.624Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791559858619-j3yg",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-09T15:30:58.619Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 8 minutes without executing"
+    },
+    {
+      "id": "log-1791559858619-1l8e",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-09T15:30:58.619Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 8 minutes without executing"
     }
   ]
 }

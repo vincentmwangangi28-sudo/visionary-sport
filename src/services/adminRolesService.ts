@@ -158,7 +158,7 @@ export async function toggleUserAdminRole({
     ? targetRole 
     : (isCurrentlyAdmin ? 'user' : 'admin');
 
-  // 4. Update Database (Supabase user_roles)
+  // 4. Update Database (Supabase user_roles and custom admins table)
   let dbSynced = false;
   try {
     if (nextRole === 'admin') {
@@ -169,6 +169,24 @@ export async function toggleUserAdminRole({
           { onConflict: 'user_id,role' }
         );
       if (!error) dbSynced = true;
+
+      // Keep custom Supabase 'admins' table synchronized
+      try {
+        await supabase
+          .from('admins')
+          .upsert(
+            {
+              email: targetClean,
+              full_name: targetUserName || null,
+              role: 'admin',
+              added_by: currentActorEmail,
+              is_active: true,
+            },
+            { onConflict: 'email' }
+          );
+      } catch {
+        // Safe fallback
+      }
     } else {
       const { error } = await supabase
         .from('user_roles')
@@ -176,6 +194,16 @@ export async function toggleUserAdminRole({
         .eq('user_id', targetUserId)
         .eq('role', 'admin');
       if (!error) dbSynced = true;
+
+      // Keep custom Supabase 'admins' table synchronized
+      try {
+        await supabase
+          .from('admins')
+          .delete()
+          .or(`email.ilike.${targetClean},id.eq.${targetUserId}`);
+      } catch {
+        // Safe fallback
+      }
     }
   } catch (dbErr) {
     console.warn('Database user_roles sync note:', dbErr);

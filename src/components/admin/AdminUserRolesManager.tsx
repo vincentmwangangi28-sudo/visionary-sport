@@ -22,6 +22,8 @@ import {
   isPrimaryAdminUser,
   ADMIN_ROLES_EVENT,
 } from '@/services/adminRolesService';
+import { isUserAuthorizedAdminSync } from '@/services/customAdminsService';
+import { AdminCustomAdminsManager } from './AdminCustomAdminsManager';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -99,6 +101,7 @@ export function AdminUserRolesManager() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'user'>('all');
+  const [activeSubTab, setActiveSubTab] = useState<'admins_table' | 'user_directory'>('admins_table');
 
   // Confirmation modal state for role toggling
   const [pendingUser, setPendingUser] = useState<UserRoleItem | null>(null);
@@ -161,8 +164,11 @@ export function AdminUserRolesManager() {
         const email = (item.email || '').toLowerCase().trim();
         const isVincent = isPrimaryAdminUser(email);
         
-        // Sole Administrator Policy: ONLY Vincent Mwangangi holds admin privileges
-        const assignedRole: 'primary_admin' | 'admin' | 'user' = isVincent ? 'primary_admin' : 'user';
+        // Check if user is in custom Supabase 'admins' table or has admin role assigned
+        const isAuthorizedAdmin = isVincent || isUserAuthorizedAdminSync(email) || adminRolesMap[item.id] === 'admin' || adminRolesMap[email] === 'admin';
+        const assignedRole: 'primary_admin' | 'admin' | 'user' = isVincent
+          ? 'primary_admin'
+          : (isAuthorizedAdmin ? 'admin' : 'user');
 
         return {
           id: item.id || `user-${Math.random().toString(36).slice(2, 7)}`,
@@ -223,17 +229,9 @@ export function AdminUserRolesManager() {
       return;
     }
 
-    // 3. Sole Administrator Rule: Only Vincent Mwangangi can be admin
-    if (targetUser.role !== 'admin') {
-      toast.info('Sole Administrator Policy Enforced', {
-        description: `${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}) is the sole authorized administrator of PredictPro. Additional administrator privileges are restricted.`,
-      });
-      return;
-    }
-
-    // 4. Prepare demotion and open confirmation modal
+    // Prepare role toggle and open confirmation modal
     setPendingUser(targetUser);
-    setPendingNextRole('user');
+    setPendingNextRole(targetUser.role === 'admin' ? 'user' : 'admin');
   };
 
   // Confirm and execute the role toggle
@@ -370,11 +368,52 @@ export function AdminUserRolesManager() {
 
   return (
     <div className="space-y-6">
-      {/* Root Authority Status Banner */}
-      <Card className={isPrimaryAdmin 
-        ? "border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20" 
-        : "border-border/60 bg-muted/20"
-      }>
+      {/* Access Control Mode Sub-Tab Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 rounded-2xl bg-muted/40 border border-border/60">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('admins_table')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeSubTab === 'admins_table'
+                ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Database className="h-3.5 w-3.5 text-sky-500" />
+            <span>Supabase &lsquo;admins&rsquo; Table (Active Access Gate)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('user_directory')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeSubTab === 'user_directory'
+                ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Users className="h-3.5 w-3.5 text-violet-500" />
+            <span>User Accounts &amp; Directory ({stats.total})</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 px-2 text-[11px] text-muted-foreground">
+          <span>Active Interface:</span>
+          <Badge variant="outline" className="text-[10px] font-mono">
+            {activeSubTab === 'admins_table' ? 'Supabase admins Table' : 'Profiles Directory'}
+          </Badge>
+        </div>
+      </div>
+
+      {activeSubTab === 'admins_table' ? (
+        <AdminCustomAdminsManager />
+      ) : (
+        <>
+          {/* Root Authority Status Banner */}
+          <Card className={isPrimaryAdmin 
+            ? "border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20" 
+            : "border-border/60 bg-muted/20"
+          }>
         <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className={`p-2.5 rounded-xl ${
@@ -704,6 +743,8 @@ export function AdminUserRolesManager() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
 
       {/* Confirmation Dialog for Role Modification */}
       <Dialog open={!!pendingUser} onOpenChange={open => !open && setPendingUser(null)}>
