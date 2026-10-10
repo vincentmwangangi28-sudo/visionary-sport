@@ -71,16 +71,9 @@ export function useAdmin() {
           // Safe fallback
         }
       } else {
-        // Query custom Supabase 'admins' table
-        const isAuthorizedInAdminsTable = await isUserAuthorizedAdminAsync(user);
-
-        if (isAuthorizedInAdminsTable) {
-          setIsAdmin(true);
-          setRoleSource('Authorized Administrator (Supabase admins table)');
-        } else {
-          setIsAdmin(false);
-          setRoleSource('Unauthorized (Not in Supabase admins table)');
-        }
+        // Single Administrator Architecture: Vincent Mwangangi is the ONLY admin
+        setIsAdmin(false);
+        setRoleSource('Unauthorized (Access restricted exclusively to Vincent Mwangangi)');
       }
     } catch {
       // Fallback to local synchronous check

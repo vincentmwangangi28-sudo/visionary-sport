@@ -7,95 +7,71 @@ import {
   isUserAuthorizedAdminAsync,
   checkAdminsTableStatus,
   getLocalAdminsCache,
-  saveLocalAdminsCache,
   ROOT_ADMIN_RECORD,
   SUPABASE_ADMINS_TABLE_SQL,
-  CUSTOM_ADMINS_STORAGE_KEY,
 } from '@/services/customAdminsService';
 import { PRIMARY_ADMIN_EMAIL, PRIMARY_ADMIN_NAME } from '@/hooks/useAdmin';
 
-describe('Custom Supabase admins Table Service & Route Protection', () => {
+describe('Sole Administrator Policy & Route Protection', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
   });
 
-  it('guarantees Vincent Mwangangi as the root administrator in the cache', () => {
+  it('guarantees Vincent Mwangangi as the only administrator in the system', () => {
     const cached = getLocalAdminsCache();
-    expect(cached.length).toBeGreaterThanOrEqual(1);
+    expect(cached.length).toBe(1);
 
-    const vincent = cached.find(a => a.email.toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase());
-    expect(vincent).toBeDefined();
-    expect(vincent?.full_name).toBe(PRIMARY_ADMIN_NAME);
-    expect(vincent?.role).toBe('super_admin');
+    const soleAdmin = cached[0];
+    expect(soleAdmin.email.toLowerCase()).toBe(PRIMARY_ADMIN_EMAIL.toLowerCase());
+    expect(soleAdmin.full_name).toBe(PRIMARY_ADMIN_NAME);
+    expect(soleAdmin.role).toBe('super_admin');
   });
 
-  it('verifies that only authorized admins can pass the access check', () => {
-    // 1. Root admin Vincent Mwangangi is always authorized
+  it('verifies that ONLY Vincent Mwangangi passes the access check', async () => {
+    // 1. Root admin Vincent Mwangangi is authorized
     expect(isUserAuthorizedAdminSync(PRIMARY_ADMIN_EMAIL)).toBe(true);
     expect(isUserAuthorizedAdminSync(PRIMARY_ADMIN_EMAIL.toUpperCase())).toBe(true);
     expect(isUserAuthorizedAdminSync({ email: PRIMARY_ADMIN_EMAIL })).toBe(true);
+    expect(await isUserAuthorizedAdminAsync(PRIMARY_ADMIN_EMAIL)).toBe(true);
 
-    // 2. Unregistered user is not authorized
+    // 2. Any other user is strictly unauthorized
     expect(isUserAuthorizedAdminSync('random_visitor@test.com')).toBe(false);
     expect(isUserAuthorizedAdminSync({ email: 'random_visitor@test.com' })).toBe(false);
+    expect(isUserAuthorizedAdminSync('brian.omondi@predictpro.ke')).toBe(false);
     expect(isUserAuthorizedAdminSync(null)).toBe(false);
     expect(isUserAuthorizedAdminSync(undefined)).toBe(false);
     expect(isUserAuthorizedAdminSync('')).toBe(false);
+    expect(await isUserAuthorizedAdminAsync('attacker@example.com')).toBe(false);
   });
 
-  it('adds a new administrator and grants them access to protected routes', async () => {
+  it('enforces single administrator rule when attempting to add another admin', async () => {
     const candidateEmail = 'new.admin@predictpro.ke';
-    const candidateName = 'Grace Achieng';
 
-    // Before adding: unauthorized
+    // Adding another user must be rejected with single administrator policy notice
+    await expect(
+      addAdminToSupabase({
+        email: candidateEmail,
+        full_name: 'Secondary Admin',
+      })
+    ).rejects.toThrow('Single Administrator Policy Active');
+
+    // Candidate remains unauthorized
     expect(isUserAuthorizedAdminSync(candidateEmail)).toBe(false);
+  });
 
-    // Add to custom admins table
+  it('confirms Vincent Mwangangi can be safely verified and upserted', async () => {
     const result = await addAdminToSupabase({
-      email: candidateEmail,
-      full_name: candidateName,
-      role: 'admin',
-      added_by: PRIMARY_ADMIN_NAME,
-      notes: 'Lead match settler and predictions reviewer',
+      email: PRIMARY_ADMIN_EMAIL,
+      full_name: PRIMARY_ADMIN_NAME,
+      role: 'super_admin',
     });
 
     expect(result.success).toBe(true);
-    expect(result.admin.email).toBe(candidateEmail);
-    expect(result.admin.full_name).toBe(candidateName);
-    expect(result.admin.role).toBe('admin');
-
-    // After adding: now authorized to access protected routes!
-    expect(isUserAuthorizedAdminSync(candidateEmail)).toBe(true);
-    expect(isUserAuthorizedAdminSync({ email: candidateEmail })).toBe(true);
-
-    const isAuthAsync = await isUserAuthorizedAdminAsync(candidateEmail);
-    expect(isAuthAsync).toBe(true);
+    expect(result.admin.email).toBe(PRIMARY_ADMIN_EMAIL.toLowerCase());
   });
 
-  it('removes an administrator and revokes access to protected routes', async () => {
-    const targetEmail = 'temp.admin@predictpro.ke';
-
-    // Add first
-    await addAdminToSupabase({
-      email: targetEmail,
-      full_name: 'Temporary Admin',
-      role: 'operations_admin',
-    });
-
-    expect(isUserAuthorizedAdminSync(targetEmail)).toBe(true);
-
-    // Remove from custom admins table
-    const removeResult = await removeAdminFromSupabase(targetEmail);
-    expect(removeResult.success).toBe(true);
-    expect(removeResult.message).toContain('Successfully revoked');
-
-    // After removal: unauthorized to access protected routes
-    expect(isUserAuthorizedAdminSync(targetEmail)).toBe(false);
-  });
-
-  it('strictly protects Vincent Mwangangi from being removed as root administrator', async () => {
-    // Attempting to remove Vincent Mwangangi must fail and throw error
+  it('strictly protects Vincent Mwangangi from being removed as the sole administrator', async () => {
     await expect(
       removeAdminFromSupabase(PRIMARY_ADMIN_EMAIL)
     ).rejects.toThrow('Action Prohibited: Vincent Mwangangi');
@@ -108,7 +84,7 @@ describe('Custom Supabase admins Table Service & Route Protection', () => {
     expect(isUserAuthorizedAdminSync(PRIMARY_ADMIN_EMAIL)).toBe(true);
   });
 
-  it('validates email requirement when adding an administrator', async () => {
+  it('validates email requirement when checking admin operations', async () => {
     await expect(
       addAdminToSupabase({
         email: 'invalid-email-format',
@@ -122,26 +98,26 @@ describe('Custom Supabase admins Table Service & Route Protection', () => {
     ).rejects.toThrow('valid email address is required');
   });
 
-  it('generates the complete SQL schema script for the custom admins table', () => {
+  it('generates the complete SQL schema script for the sole administrator table', () => {
     expect(SUPABASE_ADMINS_TABLE_SQL).toContain('CREATE TABLE IF NOT EXISTS public.admins');
     expect(SUPABASE_ADMINS_TABLE_SQL).toContain('ENABLE ROW LEVEL SECURITY');
     expect(SUPABASE_ADMINS_TABLE_SQL).toContain('vincentmwangangi28@gmail.com');
     expect(SUPABASE_ADMINS_TABLE_SQL).toContain('super_admin');
   });
 
-  it('fetches admins and returns array containing authorized administrators', async () => {
+  it('fetches admins and returns array containing solely Vincent Mwangangi', async () => {
     const { admins } = await fetchAdminsFromSupabase();
     expect(Array.isArray(admins)).toBe(true);
-    expect(admins.length).toBeGreaterThanOrEqual(1);
+    expect(admins.length).toBe(1);
 
-    const hasVincent = admins.some(a => a.email.toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase());
-    expect(hasVincent).toBe(true);
+    expect(admins[0].email.toLowerCase()).toBe(PRIMARY_ADMIN_EMAIL.toLowerCase());
+    expect(admins[0].full_name).toBe(PRIMARY_ADMIN_NAME);
   });
 
-  it('checks status of custom admins table safely without throwing', async () => {
+  it('checks status of sole admin table safely without throwing', async () => {
     const status = await checkAdminsTableStatus();
     expect(status).toBeDefined();
     expect(typeof status.isTableReady).toBe('boolean');
-    expect(typeof status.adminCount).toBe('number');
+    expect(status.adminCount).toBe(1);
   });
 });

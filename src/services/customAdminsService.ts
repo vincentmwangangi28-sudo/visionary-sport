@@ -4,14 +4,14 @@ import { logAdminAction } from './adminAuditService';
 export const PRIMARY_ADMIN_EMAIL = 'vincentmwangangi28@gmail.com';
 export const PRIMARY_ADMIN_NAME = 'Vincent Mwangangi';
 
-export const CUSTOM_ADMINS_STORAGE_KEY = 'predictpro_custom_admins_table_cache_v2';
+export const CUSTOM_ADMINS_STORAGE_KEY = 'predictpro_custom_admins_table_cache_v3';
 export const CUSTOM_ADMINS_UPDATED_EVENT = 'predictpro:custom-admins-updated';
 
 export interface CustomAdminUser {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'super_admin' | 'admin' | 'analyst_admin' | 'operations_admin' | string;
+  role: 'super_admin' | 'admin' | string;
   created_at: string;
   added_by: string | null;
   notes?: string | null;
@@ -36,7 +36,7 @@ export interface AddCustomAdminParams {
 }
 
 /**
- * Checks if target user or email is Vincent Mwangangi (Root Administrator)
+ * Checks if target user or email is Vincent Mwangangi (Sole Administrator)
  */
 export function isVincentAdmin(
   userOrEmail: { email?: string | null; user_metadata?: { full_name?: string } } | string | null | undefined
@@ -51,23 +51,25 @@ export function isVincentAdmin(
 }
 
 /**
- * Root permanent administrator profile guaranteed to never be locked out.
+ * Sole designated administrator profile.
+ * Exactly one admin manages all PredictPro platform operations.
  */
 export const ROOT_ADMIN_RECORD: CustomAdminUser = {
-  id: 'root-vincent-primary-admin',
+  id: 'root-vincent-sole-admin',
   email: PRIMARY_ADMIN_EMAIL.toLowerCase(),
   full_name: PRIMARY_ADMIN_NAME,
   role: 'super_admin',
   created_at: '2025-01-01T00:00:00.000Z',
   added_by: 'system',
-  notes: 'Designated Root System Administrator',
+  notes: 'Sole Designated Platform Administrator (Vincent Mwangangi)',
   is_active: true,
 };
 
 /**
- * SQL script for creating and configuring the custom `admins` table in Supabase SQL editor.
+ * SQL script for creating and configuring the custom `admins` table in Supabase SQL editor
+ * with Vincent Mwangangi as the exclusive administrator.
  */
-export const SUPABASE_ADMINS_TABLE_SQL = `-- PredictPro: Custom 'admins' Table for Protected Route Access Control
+export const SUPABASE_ADMINS_TABLE_SQL = `-- PredictPro: Custom 'admins' Table for Single Administrator Access Control
 -- Run this in your Supabase Dashboard -> SQL Editor:
 
 CREATE TABLE IF NOT EXISTS public.admins (
@@ -81,28 +83,28 @@ CREATE TABLE IF NOT EXISTS public.admins (
   is_active BOOLEAN DEFAULT true
 );
 
--- Index on email for fast authorization lookups
+-- Index on email for fast lookups
 CREATE INDEX IF NOT EXISTS idx_admins_email ON public.admins(lower(email));
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
--- Allow read access for authenticated and public client authorization queries
+-- Allow read access for authorization queries
 CREATE POLICY "Allow read access to admins table" 
   ON public.admins FOR SELECT USING (true);
 
--- Allow authorized role management inserts, updates, and deletes
+-- Allow sole administrator management
 CREATE POLICY "Allow manage access to admins table" 
   ON public.admins FOR ALL USING (true);
 
--- Seed designated primary root administrator (Vincent Mwangangi)
+-- Seed Vincent Mwangangi as the sole designated administrator
 INSERT INTO public.admins (email, full_name, role, added_by, notes, is_active)
 VALUES (
   'vincentmwangangi28@gmail.com',
   'Vincent Mwangangi',
   'super_admin',
   'system',
-  'Designated Root System Administrator',
+  'Sole Designated Administrator',
   true
 )
 ON CONFLICT (email) DO NOTHING;
@@ -126,45 +128,22 @@ function withTimeout<T>(promise: Promise<T>, ms: number = 2000, fallbackVal?: T)
 }
 
 /**
- * Retrieves the local cache of authorized admins from localStorage.
+ * Retrieves the local cache of authorized admins.
+ * SINGLE ADMIN POLICY: Vincent Mwangangi is the ONLY admin.
  */
 export function getLocalAdminsCache(): CustomAdminUser[] {
-  if (typeof window === 'undefined') {
-    return [ROOT_ADMIN_RECORD];
-  }
-  try {
-    const raw = localStorage.getItem(CUSTOM_ADMINS_STORAGE_KEY);
-    if (!raw) {
-      saveLocalAdminsCache([ROOT_ADMIN_RECORD]);
-      return [ROOT_ADMIN_RECORD];
-    }
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure Vincent Mwangangi is always present
-      const hasVincent = parsed.some(
-        a => (a.email || '').toLowerCase().trim() === PRIMARY_ADMIN_EMAIL.toLowerCase()
-      );
-      if (!hasVincent) {
-        parsed.unshift(ROOT_ADMIN_RECORD);
-        saveLocalAdminsCache(parsed);
-      }
-      return parsed;
-    }
-    return [ROOT_ADMIN_RECORD];
-  } catch {
-    return [ROOT_ADMIN_RECORD];
-  }
+  return [ROOT_ADMIN_RECORD];
 }
 
 /**
  * Saves authorized admins to local cache and broadcasts an event to notify hooks/UI.
  */
-export function saveLocalAdminsCache(admins: CustomAdminUser[]): void {
+export function saveLocalAdminsCache(_admins: CustomAdminUser[]): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(CUSTOM_ADMINS_STORAGE_KEY, JSON.stringify(admins));
+    localStorage.setItem(CUSTOM_ADMINS_STORAGE_KEY, JSON.stringify([ROOT_ADMIN_RECORD]));
     window.dispatchEvent(
-      new CustomEvent(CUSTOM_ADMINS_UPDATED_EVENT, { detail: { admins } })
+      new CustomEvent(CUSTOM_ADMINS_UPDATED_EVENT, { detail: { admins: [ROOT_ADMIN_RECORD] } })
     );
   } catch {
     // Safe storage fallback
@@ -173,89 +152,22 @@ export function saveLocalAdminsCache(admins: CustomAdminUser[]): void {
 
 /**
  * Fast synchronous check if a user/email is authorized to access protected admin routes.
+ * STRICT ENFORCEMENT: Only Vincent Mwangangi has administrative clearance.
  */
 export function isUserAuthorizedAdminSync(
-  userOrEmail: { email?: string | null; id?: string } | string | null | undefined
+  userOrEmail: { email?: string | null; id?: string; user_metadata?: { full_name?: string } } | string | null | undefined
 ): boolean {
-  if (!userOrEmail) return false;
-
-  const targetEmail = (
-    typeof userOrEmail === 'string'
-      ? userOrEmail
-      : userOrEmail.email || ''
-  ).toLowerCase().trim();
-
-  if (!targetEmail) return false;
-
-  // 1. Direct check against primary admin
-  if (targetEmail === PRIMARY_ADMIN_EMAIL.toLowerCase()) {
-    return true;
-  }
-
-  // 2. Check cached admins
-  const cached = getLocalAdminsCache();
-  return cached.some(
-    a => (a.email || '').toLowerCase().trim() === targetEmail && a.is_active !== false
-  );
+  return isVincentAdmin(userOrEmail);
 }
 
 /**
- * Asynchronous check validating against the Supabase `admins` table.
+ * Asynchronous check validating against the single administrator rule.
+ * STRICT ENFORCEMENT: Only Vincent Mwangangi has administrative clearance.
  */
 export async function isUserAuthorizedAdminAsync(
-  userOrEmail: { email?: string | null; id?: string } | string | null | undefined
+  userOrEmail: { email?: string | null; id?: string; user_metadata?: { full_name?: string } } | string | null | undefined
 ): Promise<boolean> {
-  if (!userOrEmail) return false;
-
-  const targetEmail = (
-    typeof userOrEmail === 'string'
-      ? userOrEmail
-      : userOrEmail.email || ''
-  ).toLowerCase().trim();
-
-  if (!targetEmail) return false;
-
-  // 1. Vincent Mwangangi is always authorized
-  if (targetEmail === PRIMARY_ADMIN_EMAIL.toLowerCase()) {
-    return true;
-  }
-
-  // 2. Query Supabase custom `admins` table with timeout
-  try {
-    const queryPromise = supabase
-      .from('admins')
-      .select('id, email, is_active')
-      .ilike('email', targetEmail)
-      .limit(1);
-
-    const { data, error } = await withTimeout(queryPromise, 1500, { data: null, error: null } as any);
-
-    if (!error && Array.isArray(data) && data.length > 0) {
-      const match = data[0];
-      if (match && match.is_active !== false) {
-        // Update local cache if missing
-        const currentCache = getLocalAdminsCache();
-        if (!currentCache.some(a => a.email.toLowerCase() === targetEmail)) {
-          currentCache.push({
-            id: match.id || `admin-${Date.now()}`,
-            email: targetEmail,
-            full_name: null,
-            role: 'admin',
-            created_at: new Date().toISOString(),
-            added_by: 'supabase_sync',
-            is_active: true,
-          });
-          saveLocalAdminsCache(currentCache);
-        }
-        return true;
-      }
-    }
-  } catch {
-    // Fall back to local synchronized cache
-  }
-
-  // 3. Fallback to local storage check
-  return isUserAuthorizedAdminSync(userOrEmail);
+  return isVincentAdmin(userOrEmail);
 }
 
 /**
@@ -267,7 +179,8 @@ export async function checkAdminsTableStatus(): Promise<AdminsTableStatus> {
     const queryPromise = supabase
       .from('admins')
       .select('id, email')
-      .limit(10);
+      .eq('email', PRIMARY_ADMIN_EMAIL.toLowerCase())
+      .limit(1);
 
     const { data, error } = await withTimeout(queryPromise, 1200, { data: null, error: null } as any);
     const latency = Math.round(performance.now() - start);
@@ -282,7 +195,7 @@ export async function checkAdminsTableStatus(): Promise<AdminsTableStatus> {
       return {
         isTableReady: false,
         tableExists: !isMissingTable,
-        adminCount: getLocalAdminsCache().length,
+        adminCount: 1,
         lastChecked: new Date().toISOString(),
         errorMessage: error.message || 'Supabase table query failed',
         latencyMs: latency,
@@ -292,7 +205,7 @@ export async function checkAdminsTableStatus(): Promise<AdminsTableStatus> {
     return {
       isTableReady: true,
       tableExists: true,
-      adminCount: Array.isArray(data) && data.length > 0 ? data.length : getLocalAdminsCache().length,
+      adminCount: Array.isArray(data) && data.length > 0 ? 1 : 1,
       lastChecked: new Date().toISOString(),
       latencyMs: latency,
     };
@@ -301,7 +214,7 @@ export async function checkAdminsTableStatus(): Promise<AdminsTableStatus> {
     return {
       isTableReady: false,
       tableExists: false,
-      adminCount: getLocalAdminsCache().length,
+      adminCount: 1,
       lastChecked: new Date().toISOString(),
       errorMessage: err?.message || 'Local Sync Fallback Active',
       latencyMs: latency,
@@ -310,15 +223,14 @@ export async function checkAdminsTableStatus(): Promise<AdminsTableStatus> {
 }
 
 /**
- * Fetches all authorized admins from the custom `admins` table in Supabase,
- * merged with local fallback cache.
+ * Fetches all authorized admins.
+ * SINGLE ADMIN POLICY: Guarantees exactly ONE admin (Vincent Mwangangi) manages all platform operations.
  */
 export async function fetchAdminsFromSupabase(): Promise<{
   admins: CustomAdminUser[];
   fromDatabase: boolean;
   error?: string | null;
 }> {
-  let dbAdmins: CustomAdminUser[] = [];
   let fetchedFromDb = false;
   let queryError: string | null = null;
 
@@ -326,56 +238,22 @@ export async function fetchAdminsFromSupabase(): Promise<{
     const queryPromise = supabase
       .from('admins')
       .select('*')
-      .order('created_at', { ascending: false });
+      .eq('email', PRIMARY_ADMIN_EMAIL.toLowerCase())
+      .limit(1);
 
     const { data, error } = await withTimeout(queryPromise, 1500, { data: null, error: null } as any);
 
     if (!error && Array.isArray(data) && data.length > 0) {
-      dbAdmins = data.map(item => ({
-        id: item.id || `admin-${Math.random().toString(36).slice(2, 8)}`,
-        email: (item.email || '').toLowerCase().trim(),
-        full_name: item.full_name || null,
-        role: item.role || 'admin',
-        created_at: item.created_at || new Date().toISOString(),
-        added_by: item.added_by || null,
-        notes: item.notes || null,
-        is_active: item.is_active !== false,
-      }));
       fetchedFromDb = true;
     } else if (error) {
       queryError = error.message;
     }
   } catch (err: any) {
-    queryError = err?.message || 'Using local synchronized admin cache';
+    queryError = err?.message || 'Using local sole administrator configuration';
   }
 
-  // Combine with local cache to avoid lost admins during offline or initial states
-  const localCache = getLocalAdminsCache();
-  const mergedMap = new Map<string, CustomAdminUser>();
-
-  // Always seed Vincent Mwangangi first
-  mergedMap.set(PRIMARY_ADMIN_EMAIL.toLowerCase(), ROOT_ADMIN_RECORD);
-
-  // Add cached admins
-  localCache.forEach(a => {
-    if (a.email) mergedMap.set(a.email.toLowerCase().trim(), a);
-  });
-
-  // Overlay database admins
-  dbAdmins.forEach(a => {
-    if (a.email) mergedMap.set(a.email.toLowerCase().trim(), a);
-  });
-
-  const finalAdminsList = Array.from(mergedMap.values());
-
-  // Sort: Root admin first, then newest additions
-  finalAdminsList.sort((a, b) => {
-    if (a.email.toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase()) return -1;
-    if (b.email.toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase()) return 1;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-
-  // Save updated cache
+  // Sole administrator: strictly Vincent Mwangangi
+  const finalAdminsList = [ROOT_ADMIN_RECORD];
   saveLocalAdminsCache(finalAdminsList);
 
   return {
@@ -386,12 +264,13 @@ export async function fetchAdminsFromSupabase(): Promise<{
 }
 
 /**
- * Adds an authorized administrator to the custom `admins` table in Supabase.
+ * Enforces Single Administrator Policy.
+ * If attempting to add anyone other than Vincent Mwangangi, rejects with explanation.
  */
 export async function addAdminToSupabase({
   email,
   full_name,
-  role = 'admin',
+  role = 'super_admin',
   added_by = PRIMARY_ADMIN_NAME,
   notes,
 }: AddCustomAdminParams): Promise<{
@@ -403,34 +282,28 @@ export async function addAdminToSupabase({
   const cleanEmail = email.trim().toLowerCase();
 
   if (!cleanEmail || !cleanEmail.includes('@')) {
-    throw new Error('A valid email address is required to authorize an administrator.');
+    throw new Error('A valid email address is required.');
   }
 
-  // Build the new record
-  const newAdmin: CustomAdminUser = {
-    id: `admin-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-    email: cleanEmail,
-    full_name: full_name?.trim() || null,
-    role: role || 'admin',
-    created_at: new Date().toISOString(),
-    added_by: added_by || PRIMARY_ADMIN_EMAIL,
-    notes: notes?.trim() || null,
-    is_active: true,
-  };
+  // SINGLE ADMIN POLICY: Only Vincent Mwangangi can be admin
+  if (cleanEmail !== PRIMARY_ADMIN_EMAIL.toLowerCase()) {
+    throw new Error(
+      `Single Administrator Policy Active: Vincent Mwangangi (${PRIMARY_ADMIN_EMAIL}) is the only authorized administrator configured to manage all platform operations. Additional administrators are restricted.`
+    );
+  }
 
   let persistedToDb = false;
 
-  // 1. Attempt to insert into Supabase `admins` table with timeout
   try {
     const upsertPromise = supabase
       .from('admins')
       .upsert(
         {
-          email: cleanEmail,
-          full_name: newAdmin.full_name,
-          role: newAdmin.role,
-          added_by: newAdmin.added_by,
-          notes: newAdmin.notes,
+          email: PRIMARY_ADMIN_EMAIL.toLowerCase(),
+          full_name: full_name || PRIMARY_ADMIN_NAME,
+          role: role || 'super_admin',
+          added_by: added_by || 'system',
+          notes: notes || 'Sole Designated Administrator',
           is_active: true,
         },
         { onConflict: 'email' }
@@ -441,67 +314,25 @@ export async function addAdminToSupabase({
 
     if (!error && Array.isArray(data) && data.length > 0) {
       persistedToDb = true;
-      if (data[0].id) newAdmin.id = data[0].id;
     }
-  } catch (err) {
+  } catch {
     // Falls back gracefully
-  }
-
-  // 2. Also ensure Supabase `user_roles` is updated for compatibility
-  try {
-    withTimeout(
-      supabase.from('user_roles').upsert({ user_id: newAdmin.id, role: 'admin' }, { onConflict: 'user_id,role' }),
-      1000
-    ).catch(() => {});
-  } catch {
-    // Non-fatal
-  }
-
-  // 3. Update local cache and dispatch synchronization event
-  const currentAdmins = getLocalAdminsCache();
-  const existingIdx = currentAdmins.findIndex(a => a.email.toLowerCase() === cleanEmail);
-
-  if (existingIdx >= 0) {
-    currentAdmins[existingIdx] = { ...currentAdmins[existingIdx], ...newAdmin };
-  } else {
-    currentAdmins.push(newAdmin);
-  }
-
-  saveLocalAdminsCache(currentAdmins);
-
-  // 4. Record into admin audit log
-  try {
-    logAdminAction({
-      actorName: added_by || PRIMARY_ADMIN_NAME,
-      actorEmail: PRIMARY_ADMIN_EMAIL,
-      category: 'security',
-      action: 'Added Authorized Administrator to Supabase admins Table',
-      details: `Authorized ${cleanEmail} (${newAdmin.full_name || 'No Name'}) with role '${newAdmin.role}'. Synced to Supabase: ${persistedToDb ? 'Yes' : 'Local Registry Fallback'}.`,
-      severity: 'warning',
-      targetId: newAdmin.id,
-      ipAddress: '197.237.142.88 (Nairobi, KE)',
-    });
-  } catch {
-    // Safe
   }
 
   return {
     success: true,
-    admin: newAdmin,
+    admin: ROOT_ADMIN_RECORD,
     persistedToDb,
-    message: `Successfully added ${cleanEmail} to the authorized administrators list.${
-      persistedToDb ? ' Synced to Supabase database.' : ' (Saved to local access registry).'
-    }`,
+    message: `Vincent Mwangangi (${PRIMARY_ADMIN_EMAIL}) verified as the sole administrator.`,
   };
 }
 
 /**
- * Removes an authorized administrator from the custom `admins` table in Supabase.
- * Enforces strict protection that Vincent Mwangangi cannot be removed.
+ * Removes an administrator. Vincent Mwangangi cannot be removed as the sole admin.
  */
 export async function removeAdminFromSupabase(
   adminIdOrEmail: string,
-  actorEmail: string = PRIMARY_ADMIN_EMAIL
+  _actorEmail: string = PRIMARY_ADMIN_EMAIL
 ): Promise<{
   success: boolean;
   message: string;
@@ -509,60 +340,18 @@ export async function removeAdminFromSupabase(
 }> {
   const cleanTarget = adminIdOrEmail.trim().toLowerCase();
 
-  // 1. ROOT ADMIN DEFENSE: Vincent Mwangangi cannot be removed
   if (
     cleanTarget === PRIMARY_ADMIN_EMAIL.toLowerCase() ||
     isVincentAdmin(cleanTarget)
   ) {
     throw new Error(
-      `Action Prohibited: ${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}) is the root system administrator and cannot be removed from the authorized admins list.`
+      `Action Prohibited: ${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}) is the sole platform administrator and cannot be removed.`
     );
-  }
-
-  let persistedToDb = false;
-
-  // 2. Delete from Supabase `admins` table by email or id
-  try {
-    const deletePromise = supabase
-      .from('admins')
-      .delete()
-      .or(`email.ilike.${cleanTarget},id.eq.${cleanTarget}`);
-
-    const { error } = await withTimeout(deletePromise, 1500, { error: null } as any);
-    if (!error) {
-      persistedToDb = true;
-    }
-  } catch {
-    // Falls back gracefully
-  }
-
-  // 3. Update local cache
-  const currentAdmins = getLocalAdminsCache();
-  const updated = currentAdmins.filter(
-    a => a.id !== cleanTarget && a.email.toLowerCase() !== cleanTarget
-  );
-
-  saveLocalAdminsCache(updated);
-
-  // 4. Record into admin audit log
-  try {
-    logAdminAction({
-      actorName: PRIMARY_ADMIN_NAME,
-      actorEmail: actorEmail,
-      category: 'security',
-      action: 'Removed Administrator from Supabase admins Table',
-      details: `Revoked administrative privileges for ${cleanTarget}. Removed from protected route access. Database deletion: ${persistedToDb ? 'Synced' : 'Local Fallback'}.`,
-      severity: 'warning',
-      targetId: cleanTarget,
-      ipAddress: '197.237.142.88 (Nairobi, KE)',
-    });
-  } catch {
-    // Safe
   }
 
   return {
     success: true,
-    message: `Successfully revoked administrative access for ${cleanTarget}.`,
-    persistedToDb,
+    message: `Target ${cleanTarget} is not an authorized administrator.`,
+    persistedToDb: false,
   };
 }

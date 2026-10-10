@@ -164,11 +164,8 @@ export function AdminUserRolesManager() {
         const email = (item.email || '').toLowerCase().trim();
         const isVincent = isPrimaryAdminUser(email);
         
-        // Check if user is in custom Supabase 'admins' table or has admin role assigned
-        const isAuthorizedAdmin = isVincent || isUserAuthorizedAdminSync(email) || adminRolesMap[item.id] === 'admin' || adminRolesMap[email] === 'admin';
-        const assignedRole: 'primary_admin' | 'admin' | 'user' = isVincent
-          ? 'primary_admin'
-          : (isAuthorizedAdmin ? 'admin' : 'user');
+        // Single Administrator Policy: ONLY Vincent Mwangangi holds admin privileges
+        const assignedRole: 'primary_admin' | 'admin' | 'user' = isVincent ? 'primary_admin' : 'user';
 
         return {
           id: item.id || `user-${Math.random().toString(36).slice(2, 7)}`,
@@ -229,9 +226,17 @@ export function AdminUserRolesManager() {
       return;
     }
 
+    // 3. Single Administrator Policy: Only Vincent Mwangangi manages all platform systems
+    if (targetUser.role !== 'admin') {
+      toast.info('Single Administrator Architecture Active', {
+        description: `${PRIMARY_ADMIN_NAME} (${PRIMARY_ADMIN_EMAIL}) is configured as the sole administrator managing all platform operations. Additional administrator accounts are restricted.`,
+      });
+      return;
+    }
+
     // Prepare role toggle and open confirmation modal
     setPendingUser(targetUser);
-    setPendingNextRole(targetUser.role === 'admin' ? 'user' : 'admin');
+    setPendingNextRole('user');
   };
 
   // Confirm and execute the role toggle
