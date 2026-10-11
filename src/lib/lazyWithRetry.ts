@@ -1,4 +1,4 @@
-import { lazy, ComponentType } from 'react';
+import React, { lazy, ComponentType } from 'react';
 import { logger } from './logger';
 
 /**
@@ -52,59 +52,112 @@ function resolveComponent<T extends ComponentType<any>>(mod: any): T {
   throw new Error(`Lazy element type must resolve to a class or function, but got: ${typeof mod}`);
 }
 
+const safeSessionStorage = {
+  getItem(key: string): string | null {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        return sessionStorage.getItem(key);
+      }
+    } catch {
+      // Ignore sandboxed iframe storage restrictions
+    }
+    return null;
+  },
+  setItem(key: string, value: string): void {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.setItem(key, value);
+      }
+    } catch {
+      // Ignore
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.removeItem(key);
+      }
+    } catch {
+      // Ignore
+    }
+  },
+};
+
 /**
- * Enhanced React.lazy wrapper that automatically retries chunk loading up to 2 times
- * before falling back to a clean page reload if a build hash has been rotated.
- * Robust against any module bundling or interop format.
+ * Enhanced React.lazy wrapper that automatically retries chunk loading up to 3 times
+ * with backoff before falling back to a clean page reload if a build hash has been rotated.
+ * Robust against sandboxed iframes, network blips, and server restarts.
  */
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T } | any>
-) {
-  return lazy(async () => {
-    let attempts = 0;
-    const maxAttempts = 2;
+): React.ComponentType<any> {
+  const createLazy = () =>
+    lazy(async () => {
+      let attempts = 0;
+      const maxAttempts = 3;
 
-    while (attempts < maxAttempts) {
-      try {
-        const raw = await factory();
-        const Component = resolveComponent<T>(raw);
-        return { default: Component };
-      } catch (error: any) {
-        attempts++;
-        if (attempts < maxAttempts) {
-          // Short delay before retry
-          await new Promise(resolve => setTimeout(resolve, 800));
-          continue;
-        }
-
-        console.warn('[lazyWithRetry] Dynamic chunk import failed after retries:', error);
+      while (attempts < maxAttempts) {
         try {
-          logger.error(error, {
-            errorType: 'chunk_load_error',
-            severity: 'error',
-            metadata: {
-              attemptCount: attempts,
-              route: typeof window !== 'undefined' ? window.location.pathname : undefined,
-            },
-          });
-        } catch {
-          // Guard logger
-        }
-        
-        const pageHasBeenForceRefreshed = sessionStorage.getItem('chunk_load_retried') === 'true';
-        if (!pageHasBeenForceRefreshed && typeof window !== 'undefined') {
-          sessionStorage.setItem('chunk_load_retried', 'true');
-          window.location.reload();
-          return new Promise(() => {}); // prevent further error propagation while page reloads
-        }
+          const raw = await factory();
+          const Component = resolveComponent<T>(raw);
+          return { default: Component };
+        } catch (error: any) {
+          attempts++;
+          if (attempts < maxAttempts) {
+            // Incremental backoff delay before retry
+            await new Promise((resolve) => setTimeout(resolve, 600 * attempts));
+            continue;
+          }
 
-        sessionStorage.removeItem('chunk_load_retried');
-        throw error;
+          console.warn('[lazyWithRetry] Dynamic chunk import failed after retries:', error);
+          try {
+            logger.error(error, {
+              errorType: 'chunk_load_error',
+              severity: 'error',
+              metadata: {
+                attemptCount: attempts,
+                route: typeof window !== 'undefined' ? window.location.pathname : undefined,
+              },
+            });
+          } catch {
+            // Guard logger
+          }
+
+          const pageHasBeenForceRefreshed =
+            safeSessionStorage.getItem('chunk_load_retried') === 'true';
+
+          if (!pageHasBeenForceRefreshed && typeof window !== 'undefined') {
+            safeSessionStorage.setItem('chunk_load_retried', 'true');
+            try {
+              window.location.reload();
+              return new Promise(() => {}); // prevent further error propagation while page reloads
+            } catch {
+              // Ignore reload failure in restrictive environments
+            }
+          }
+
+          safeSessionStorage.removeItem('chunk_load_retried');
+          throw error;
+        }
       }
-    }
 
-    const fallbackRaw = await factory();
-    const FallbackComponent = resolveComponent<T>(fallbackRaw);
-    return { default: FallbackComponent };
+      const fallbackRaw = await factory();
+      const FallbackComponent = resolveComponent<T>(fallbackRaw);
+      return { default: FallbackComponent };
+    });
+
+  let currentLazy = createLazy();
+
+  const LazyWrapper = React.forwardRef<any, any>((props, ref) => {
+    return React.createElement(currentLazy, { ...props, ref });
   });
+
+  // Provide a method to invalidate and refresh the lazy component on retry
+  (LazyWrapper as any).retry = () => {
+    currentLazy = createLazy();
+  };
+
+  LazyWrapper.displayName = 'LazyWithRetry';
+  return LazyWrapper as any;
 }
+

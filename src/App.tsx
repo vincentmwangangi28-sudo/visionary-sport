@@ -18,7 +18,7 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
 import { queryClient } from "@/lib/queryClient";
-import React, { Suspense, memo, useState, useEffect, ComponentType, ReactNode } from "react";
+import React, { Suspense, memo, useState, useEffect, useCallback, ComponentType, ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
@@ -228,6 +228,15 @@ interface RouteBoundaryProps {
 }
 
 const RouteBoundary = memo(({ component: Component, children, isProtected, adminOnly }: RouteBoundaryProps) => {
+  const [retryKey, setRetryKey] = useState(0);
+
+  const handleReset = useCallback(() => {
+    if (Component && typeof (Component as any).retry === "function") {
+      (Component as any).retry();
+    }
+    setRetryKey((k) => k + 1);
+  }, [Component]);
+
   const content = Component ? (
     isProtected ? (
       <ProtectedRoute adminOnly={adminOnly}>
@@ -244,10 +253,19 @@ const RouteBoundary = memo(({ component: Component, children, isProtected, admin
 
   return (
     <ErrorBoundary
+      key={retryKey}
       compact
-      fallback={(error, reset) => <RouteErrorFallback error={error} onReset={reset} />}
+      fallback={(error, reset) => (
+        <RouteErrorFallback
+          error={error}
+          onReset={() => {
+            reset();
+            handleReset();
+          }}
+        />
+      )}
     >
-      <Suspense fallback={<RouteLoadingFallback />}>
+      <Suspense key={retryKey} fallback={<RouteLoadingFallback />}>
         {content}
       </Suspense>
     </ErrorBoundary>
