@@ -9,8 +9,7 @@
 name: Build and Deploy to IKS
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 # Environment variables available to all jobs and steps in this workflow
 env:
@@ -26,6 +25,7 @@ env:
 
 jobs:
   setup-build-publish-deploy:
+    if: ${{ secrets.IBM_CLOUD_API_KEY != '' }}
     name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
     environment: production

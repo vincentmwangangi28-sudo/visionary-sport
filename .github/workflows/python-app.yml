@@ -4,16 +4,14 @@
 name: Python application
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   build:
+    if: hashFiles('requirements.txt') != ''
 
     runs-on: ubuntu-latest
 

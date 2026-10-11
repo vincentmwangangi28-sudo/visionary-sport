@@ -34,9 +34,7 @@
 name: 'Build and Deploy to GKE'
 
 on:
-  push:
-    branches:
-      - '"main"'
+  workflow_dispatch:
 
 env:
   PROJECT_ID: 'my-project' # TODO: update to your Google Cloud project ID
@@ -50,6 +48,7 @@ env:
 
 jobs:
   setup-build-publish-deploy:
+    if: ${{ secrets.WIF_PROVIDER != '' }}
     name: 'Setup, Build, Publish, and Deploy'
     runs-on: 'ubuntu-latest'
     environment: 'production'
