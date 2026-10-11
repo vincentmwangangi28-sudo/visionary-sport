@@ -2,6 +2,7 @@ import "./App.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/hooks/useAuth";
 import { UserPreferencesProvider } from "@/hooks/useUserPreferences";
 import { GeoRegionProvider } from "@/hooks/useGeoRegion";
@@ -511,6 +512,7 @@ const App = () => (
             </UserPreferencesProvider>
           </AuthProvider>
         </BrowserRouter>
+        <Analytics />
       </QueryClientProvider>
     </HelmetProvider>
   </ErrorBoundary>
