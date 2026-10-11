@@ -288,6 +288,41 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         };
       }
 
+      case 'keepalive':
+      case 'keep-alive':
+      case 'heartbeat':
+      case 'site-active': {
+        let supabaseRes: any = null;
+        let supabaseStatus = 'standby';
+        try {
+          const dbStart = Date.now();
+          const res = await fetch(`${SUPABASE_BASE_URL}/rest/v1/jackpot_pools?select=provider_id&limit=1`, {
+            method: 'GET',
+            headers: getSupabaseHeaders(),
+          });
+          const dbLatency = Date.now() - dbStart;
+          supabaseStatus = res.ok ? `active_${dbLatency}ms` : `http_${res.status}`;
+          supabaseRes = { ok: res.ok, status: res.status, latencyMs: dbLatency };
+        } catch (err: any) {
+          supabaseStatus = `err_${err?.message || 'timeout'}`;
+        }
+
+        return {
+          success: true,
+          job: 'site-keepalive-sentinel',
+          schedule: '*/5 * * * * (Every 5 Mins / Continuous)',
+          status: `keepalive_${supabaseStatus}`,
+          executedAt,
+          durationMs: Date.now() - start,
+          data: {
+            supabaseConnection: supabaseStatus,
+            antiSleepProtected: true,
+            heartbeatActive: true,
+            timestamp: executedAt,
+          },
+        };
+      }
+
       case 'all':
       case 'cron-all': {
         const tasksToRun = ['sitemap', 'google-crawl', 'settle-results', 'value-bets', 'standings'];

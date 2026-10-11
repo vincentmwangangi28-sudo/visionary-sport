@@ -31,7 +31,7 @@ import { MatchAnalyticsModal } from './MatchAnalyticsModal';
 
 interface Props {
   prediction: Prediction;
-  viewMode?: 'card' | 'compact';
+  viewMode?: 'card' | 'compact' | 'condensed';
 }
 
 const OUTCOME_COLOR: Record<string, string> = {
@@ -191,6 +191,102 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
       confidence,
     });
   };
+
+  // Ultra-High-Density Condensed View (Single-line row, minimal scroll)
+  if (viewMode === 'condensed') {
+    return (
+      <>
+        <div
+          onClick={() => {
+            hapticService.selection();
+            if (!locked) setShowAnalytics(true);
+          }}
+          className={`py-2 px-3 rounded-lg border bg-card hover:bg-muted/40 transition-all cursor-pointer flex items-center justify-between gap-2.5 text-xs ${
+            locked ? 'opacity-75' : ''
+          } ${confidence >= 80 ? 'border-primary/40' : ''}`}
+        >
+          {/* Left: League & Matchup */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="text-[10px] font-mono font-bold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded shrink-0 hidden xs:inline-block">
+              {formatKickoff(p.match_date, { includeTimezone: false }).slice(-5)}
+            </span>
+            <div className="flex items-center gap-1.5 min-w-0 truncate">
+              <TeamLogo team={p.home_team} size="xs" />
+              <span className="font-bold truncate text-foreground">{p.home_team}</span>
+              <span className="text-muted-foreground text-[10px] font-semibold">v</span>
+              <TeamLogo team={p.away_team} size="xs" />
+              <span className="font-bold truncate text-foreground">{p.away_team}</span>
+            </div>
+          </div>
+
+          {/* Center: AI Tip */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`px-2 py-0.5 rounded text-[11px] font-black border ${OUTCOME_COLOR[outcome] ?? 'bg-muted text-foreground'}`}>
+              {locked ? '🔒 Pro' : displayOutcome}
+            </span>
+            {!locked && (
+              <span className="font-mono font-bold text-[11px] text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                {confidence}%
+              </span>
+            )}
+          </div>
+
+          {/* Right: Odds shortcuts & Action */}
+          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            {!locked && p.home_odds && (
+              <button
+                type="button"
+                onClick={(e) => handleOddsClick(e, 'Home Win', p.home_odds!)}
+                className={`px-1.5 py-1 rounded text-[11px] font-bold border transition-colors ${
+                  isMarketInSlip('Home Win') ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/60 hover:bg-primary/10'
+                }`}
+                title={`Home Win @ ${formatOdds(p.home_odds)}`}
+              >
+                1 {formatOdds(p.home_odds)}
+              </button>
+            )}
+            {!locked && p.draw_odds && (
+              <button
+                type="button"
+                onClick={(e) => handleOddsClick(e, 'Draw', p.draw_odds!)}
+                className={`px-1.5 py-1 rounded text-[11px] font-bold border transition-colors hidden md:inline-block ${
+                  isMarketInSlip('Draw') ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/60 hover:bg-primary/10'
+                }`}
+                title={`Draw @ ${formatOdds(p.draw_odds)}`}
+              >
+                X {formatOdds(p.draw_odds)}
+              </button>
+            )}
+            {!locked && p.away_odds && (
+              <button
+                type="button"
+                onClick={(e) => handleOddsClick(e, 'Away Win', p.away_odds!)}
+                className={`px-1.5 py-1 rounded text-[11px] font-bold border transition-colors ${
+                  isMarketInSlip('Away Win') ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/60 hover:bg-primary/10'
+                }`}
+                title={`Away Win @ ${formatOdds(p.away_odds)}`}
+              >
+                2 {formatOdds(p.away_odds)}
+              </button>
+            )}
+            <Link
+              to={matchUrl}
+              className="p-1 hover:text-primary text-muted-foreground"
+              title="Full match analysis"
+            >
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {showAnalytics && (
+          <Suspense fallback={null}>
+            <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+          </Suspense>
+        )}
+      </>
+    );
+  }
 
   // Compact View Layout
   if (viewMode === 'compact') {

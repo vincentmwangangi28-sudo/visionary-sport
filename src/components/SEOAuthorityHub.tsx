@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -10,7 +10,10 @@ import {
   Globe,
   HelpCircle,
   ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const FEATURED_SNIPPET_FAQS = [
   {
@@ -104,6 +107,9 @@ const LEAGUE_AUTHORITY_LINKS = [
 ];
 
 export const SEOAuthorityHub: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFaqExpanded, setIsFaqExpanded] = useState(false);
+
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -120,30 +126,69 @@ export const SEOAuthorityHub: React.FC = () => {
   return (
     <section
       aria-labelledby="seo-authority-heading"
-      className="py-14 bg-card/40 border-t border-b border-border/50"
+      className="py-6 bg-card/40 border-t border-b border-border/50"
     >
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>
 
-      <div className="container mx-auto px-4 max-w-6xl space-y-12">
-        {/* Section 1: Specialized Betting Market Hubs (Addresses Content Gap & Internal Linking) */}
-        <div>
-          <div className="max-w-3xl mb-7">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary mb-2">
-              <Target className="h-4 w-4" aria-hidden="true" />
-              <span>Quantitative Football Intelligence</span>
+      <div className="container mx-auto px-4 max-w-6xl space-y-6">
+        {/* Collapsible Header Drawer Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/30 border border-border/60">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+              <BookOpen className="h-4 w-4" aria-hidden="true" />
+              <span>Football Intelligence &amp; Search Directory</span>
             </div>
             <h2
               id="seo-authority-heading"
-              className="text-2xl sm:text-3xl font-black tracking-tight text-foreground"
+              className="text-base sm:text-lg font-black tracking-tight text-foreground"
             >
-              Specialized AI Football Betting Markets &amp; Statistical Hubs
+              Methodology Guides, Mathematical Hubs &amp; 40+ League FAQs
             </h2>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Each prediction hub targets a distinct statistical market—preventing overlapping picks and giving you direct access to verified Poisson scorelines, positive Expected Value (+EV) edges, and league-specific tactical models.
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Explore specialized Expected Goals (xG), Poisson goal expectancy models, and verified +EV bet directories.
             </p>
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsOpen(!isOpen)}
+            className="self-start sm:self-center shrink-0 gap-2 text-xs font-bold border-border/80 hover:bg-background"
+            aria-expanded={isOpen}
+          >
+            {isOpen ? (
+              <>
+                <ChevronUp className="h-3.5 w-3.5" />
+                <span>Collapse Knowledge Hub</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3.5 w-3.5" />
+                <span>Expand Hub &amp; FAQs (6 Hubs, 4 FAQs)</span>
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Expandable Content Container */}
+        {isOpen && (
+          <div className="space-y-10 pt-2 animate-in fade-in duration-200">
+            {/* Section 1: Specialized Betting Market Hubs */}
+            <div>
+              <div className="max-w-3xl mb-5">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
+                  <Target className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>Quantitative Football Intelligence</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+                  Specialized AI Football Betting Markets &amp; Statistical Hubs
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
+                  Each prediction hub targets a distinct statistical market—preventing overlapping picks and giving you direct access to verified Poisson scorelines, positive Expected Value (+EV) edges, and league-specific tactical models.
+                </p>
+              </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {MARKET_GAP_HUBS.map((hub) => (
@@ -187,7 +232,7 @@ export const SEOAuthorityHub: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {FEATURED_SNIPPET_FAQS.map((faq) => (
+            {(isFaqExpanded ? FEATURED_SNIPPET_FAQS : FEATURED_SNIPPET_FAQS.slice(0, 2)).map((faq) => (
               <article
                 key={faq.question}
                 className="bg-background rounded-xl p-5 border border-border/60 space-y-2.5"
@@ -208,28 +253,54 @@ export const SEOAuthorityHub: React.FC = () => {
               </article>
             ))}
           </div>
+
+          {/* Expand / Collapse Control Button */}
+          <div className="mt-4 flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsFaqExpanded(!isFaqExpanded)}
+              className="gap-2 text-xs font-medium border-border/80 hover:bg-muted"
+            >
+              {isFaqExpanded ? (
+                <>
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  <span>Collapse Detailed Guides &amp; Directory</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                  <span>Expand Complete Methodology FAQs &amp; Directory (2 More)</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Section 3: Contextual League & Analytical Directory with Descriptive Anchors */}
-        <div className="pt-6 border-t border-border/40">
-          <div className="flex items-center gap-2 mb-3">
-            <Globe className="h-4 w-4 text-primary" aria-hidden="true" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-              Direct Competition &amp; Analytical Tool Links
-            </h3>
+        {isFaqExpanded && (
+          <div className="pt-6 border-t border-border/40 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe className="h-4 w-4 text-primary" aria-hidden="true" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                Direct Competition &amp; Analytical Tool Links
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {LEAGUE_AUTHORITY_LINKS.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="text-xs text-muted-foreground hover:text-primary hover:underline font-medium transition-colors flex items-center gap-1.5 py-1"
+                >
+                  › {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {LEAGUE_AUTHORITY_LINKS.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="text-xs text-muted-foreground hover:text-primary hover:underline font-medium transition-colors flex items-center gap-1.5 py-1"
-              >
-                › {item.label}
-              </Link>
-            ))}
+        )}
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

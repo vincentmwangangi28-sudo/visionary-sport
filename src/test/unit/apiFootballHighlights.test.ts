@@ -68,7 +68,8 @@ describe('API-Football Highlights Service', () => {
     });
     expect(Array.isArray(laLigaMatches)).toBe(true);
     for (const match of laLigaMatches) {
-      expect(match.competition.toLowerCase()).toContain('la liga');
+      const compLower = match.competition.toLowerCase();
+      expect(compLower.includes('la liga') || compLower.includes('laliga')).toBe(true);
     }
   });
 

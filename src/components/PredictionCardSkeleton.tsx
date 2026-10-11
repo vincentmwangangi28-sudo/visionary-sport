@@ -98,16 +98,44 @@ export const PredictionCompactSkeleton = () => (
   </div>
 );
 
+export const PredictionCondensedSkeleton = () => (
+  <div className="py-2 px-3 rounded-lg border bg-card flex items-center justify-between gap-2.5">
+    <div className="flex items-center gap-2 flex-1">
+      <Skeleton className="h-3.5 w-10 rounded" />
+      <Skeleton className="h-4 w-4 rounded-full" />
+      <Skeleton className="h-4 w-20" />
+      <Skeleton className="h-3 w-3" />
+      <Skeleton className="h-4 w-4 rounded-full" />
+      <Skeleton className="h-4 w-20" />
+    </div>
+    <div className="flex items-center gap-2">
+      <Skeleton className="h-5 w-16 rounded" />
+      <Skeleton className="h-6 w-12 rounded hidden sm:block" />
+      <Skeleton className="h-6 w-12 rounded hidden sm:block" />
+    </div>
+  </div>
+);
+
 /**
- * List skeleton responding to both card and compact layout modes.
+ * List skeleton responding to card, compact, and condensed layout modes.
  */
 export const PredictionListSkeleton = ({
   count = 6,
   viewMode = 'card',
 }: {
   count?: number;
-  viewMode?: 'card' | 'compact';
+  viewMode?: 'card' | 'compact' | 'condensed';
 }) => {
+  if (viewMode === 'condensed') {
+    return (
+      <div className="space-y-1.5">
+        {Array.from({ length: count }).map((_, i) => (
+          <PredictionCondensedSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
   if (viewMode === 'compact') {
     return (
       <div className="space-y-2.5">

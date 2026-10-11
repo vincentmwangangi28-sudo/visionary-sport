@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Users, DollarSign, TrendingUp, ShoppingCart, RefreshCw, Zap, 
-  ShieldCheck, AlertTriangle, Database, Wifi, CheckCircle2, HardDrive
+  ShieldCheck, AlertTriangle, Database, Wifi, CheckCircle2, HardDrive, HeartPulse
 } from 'lucide-react';
 import { triggerMatchDataRevalidation, prewarmOfflineCaches } from '@/services/offlineSyncService';
 import { AdminTrendsVisualization } from '@/components/admin/AdminTrendsVisualization';
@@ -217,6 +217,10 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
                 <div className="text-xs text-muted-foreground">Jump directly to admin operations modules</div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('crons')} className="text-xs h-8 font-semibold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
+                  <HeartPulse className="h-3 w-3 mr-1 text-emerald-500" />
+                  24/7 Keepalive &amp; Crons &rarr;
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('external-apis')} className="text-xs h-8 font-semibold text-emerald-800 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/5">
                   External APIs &amp; Latency &rarr;
                 </Button>

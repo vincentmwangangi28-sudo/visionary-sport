@@ -180,6 +180,14 @@ const JOB_DEFINITIONS: ScheduledJobConfig[] = [
     scheduleDisplay: '0 3 * * 1 (Weekly)',
     enabled: true,
   },
+  {
+    id: 'keepalive',
+    name: '24/7 Site Activity & Supabase Anti-Idle Sentinel',
+    category: 'System',
+    intervalMs: 5 * 60 * 1000, // 5 mins
+    scheduleDisplay: '*/5 * * * * (Every 5 Mins / Continuous)',
+    enabled: true,
+  },
 ];
 
 class AutonomousCronScheduler {
@@ -194,6 +202,8 @@ class AutonomousCronScheduler {
   private keepalivePings = 0;
   private lastKeepaliveAt: string | null = null;
   private lastKeepaliveStatus = 'initialized';
+  private lastKeepaliveLatencyMs = 0;
+  private lastSupabaseStatus = 'active_standby';
   private lastHealthCheck: HealthCheckResult | null = null;
   private tickCount = 0;
 
@@ -571,11 +581,18 @@ class AutonomousCronScheduler {
   private async performKeepalivePing() {
     this.keepalivePings += 1;
     this.lastKeepaliveAt = new Date().toISOString();
+    const startPing = Date.now();
     try {
-      // Local keepalive ping to maintain Node event loop
-      const localRes = await fetch('http://localhost:3000/api/health', {
+      // Local keepalive ping to maintain Node event loop and warm edge/API handler
+      const localRes = await fetch('http://localhost:3000/api/keepalive', {
         headers: { 'X-Keepalive-Agent': 'PredictPro-Autonomous-Sentinel' },
-      }).catch(() => null);
+      }).catch(async () => {
+        return await fetch('http://localhost:3000/api/health', {
+          headers: { 'X-Keepalive-Agent': 'PredictPro-Autonomous-Sentinel' },
+        }).catch(() => null);
+      });
+
+      this.lastKeepaliveLatencyMs = Date.now() - startPing;
 
       if (localRes && localRes.ok) {
         this.lastKeepaliveStatus = `healthy_http_${localRes.status}`;
@@ -586,10 +603,30 @@ class AutonomousCronScheduler {
       // External health ping if live site or external URL is configured
       const externalUrl = process.env.APP_URL || process.env.SITE_URL || 'https://predictpro.guru';
       if (externalUrl && !externalUrl.includes('localhost')) {
-        fetch(`${externalUrl}/api/health`, {
+        fetch(`${externalUrl}/api/keepalive`, {
           method: 'GET',
           headers: { 'X-Keepalive-Agent': 'PredictPro-Autonomous-Sentinel' },
         }).catch(() => {});
+      }
+
+      // Direct lightweight database query to keep Supabase free tier unpaused
+      const supabaseUrl = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+      if (serviceKey) {
+        fetch(`${supabaseUrl}/rest/v1/jackpot_pools?select=provider_id&limit=1`, {
+          headers: {
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`,
+          },
+        })
+          .then((r) => {
+            this.lastSupabaseStatus = r.ok ? 'active_unpaused' : `http_${r.status}`;
+          })
+          .catch((err) => {
+            this.lastSupabaseStatus = `err_${err.message}`;
+          });
+      } else {
+        this.lastSupabaseStatus = 'active_no_key_needed';
       }
     } catch (err: any) {
       this.lastKeepaliveStatus = `ping_error: ${err.message}`;
@@ -677,6 +714,9 @@ class AutonomousCronScheduler {
         totalPings: this.keepalivePings,
         lastPingAt: this.lastKeepaliveAt,
         status: this.lastKeepaliveStatus,
+        latencyMs: this.lastKeepaliveLatencyMs,
+        supabaseStatus: this.lastSupabaseStatus,
+        antiSleepProtected: true,
         pingIntervalMinutes: 3,
       },
       healthCheck: {

@@ -274,8 +274,17 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tab Navigation */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-          <div className="overflow-x-auto pb-1">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(val) => {
+            setActiveTab(val);
+            if (window.scrollY > 250) {
+              window.scrollTo({ top: 140, behavior: 'smooth' });
+            }
+          }} 
+          className="w-full space-y-6"
+        >
+          <div className="sticky top-14 z-20 bg-background/95 backdrop-blur-md pt-1 pb-2 overflow-x-auto border-b border-border/50">
             <TabsList className="inline-flex h-10 items-center justify-start rounded-xl bg-muted p-1 text-muted-foreground">
               <TabsTrigger value="overview" className="gap-2 text-xs">
                 <LayoutDashboard className="h-3.5 w-3.5" />

@@ -1,119 +1,119 @@
 {
-  "updatedAt": "2026-10-10T12:32:43.252Z",
+  "updatedAt": "2026-10-11T08:48:20.362Z",
   "isRunning": false,
   "startedAt": null,
   "states": [
     {
       "id": "settle-results",
-      "lastRun": "2026-10-10T12:24:31.241Z",
-      "lastDurationMs": 518,
+      "lastRun": "2026-10-11T08:33:42.961Z",
+      "lastDurationMs": 357,
       "lastStatus": "idle",
       "lastError": "Auto-recovered: Stalled for 0m (Scheduled run was overdue by 0 minutes without executing)",
-      "nextRun": "2026-10-10T12:32:43.252Z",
-      "runCount": 81,
+      "nextRun": "2026-10-11T08:48:20.362Z",
+      "runCount": 88,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T12:32:43.252Z",
-      "reinitializedCount": 37,
-      "lastReinitializedAt": "2026-10-10T12:32:43.252Z"
+      "lastActivityAt": "2026-10-11T08:48:20.362Z",
+      "reinitializedCount": 44,
+      "lastReinitializedAt": "2026-10-11T08:48:20.362Z"
     },
     {
       "id": "value-bets",
-      "lastRun": "2026-10-10T12:24:31.241Z",
-      "lastDurationMs": 517,
+      "lastRun": "2026-10-11T08:33:42.973Z",
+      "lastDurationMs": 358,
       "lastStatus": "idle",
       "lastError": "Auto-recovered: Stalled for 0m (Scheduled run was overdue by 0 minutes without executing)",
-      "nextRun": "2026-10-10T12:32:43.252Z",
-      "runCount": 120,
+      "nextRun": "2026-10-11T08:48:20.362Z",
+      "runCount": 130,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T12:32:43.252Z",
-      "reinitializedCount": 33,
-      "lastReinitializedAt": "2026-10-10T12:32:43.252Z"
+      "lastActivityAt": "2026-10-11T08:48:20.362Z",
+      "reinitializedCount": 38,
+      "lastReinitializedAt": "2026-10-11T08:48:20.362Z"
     },
     {
       "id": "odds-drift",
-      "lastRun": "2026-10-10T12:17:31.234Z",
-      "lastDurationMs": 522,
-      "lastStatus": "idle",
-      "lastError": "Auto-recovered: Stalled for 0m (Scheduled run was overdue by 0 minutes without executing)",
-      "nextRun": "2026-10-10T12:32:43.252Z",
-      "runCount": 157,
+      "lastRun": "2026-10-11T08:43:03.116Z",
+      "lastDurationMs": 500,
+      "lastStatus": "success",
+      "lastError": null,
+      "nextRun": "2026-10-11T08:58:03.116Z",
+      "runCount": 169,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T12:32:43.252Z",
-      "reinitializedCount": 4,
-      "lastReinitializedAt": "2026-10-10T12:32:43.252Z"
+      "lastActivityAt": "2026-10-11T08:43:03.116Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.007Z"
     },
     {
       "id": "jackpot",
-      "lastRun": "2026-10-10T12:25:02.623Z",
-      "lastDurationMs": 1900,
+      "lastRun": "2026-10-11T08:41:03.853Z",
+      "lastDurationMs": 1240,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-10T12:55:02.623Z",
-      "runCount": 81,
+      "nextRun": "2026-10-11T09:11:03.853Z",
+      "runCount": 87,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T12:25:02.623Z",
-      "reinitializedCount": 0,
-      "lastReinitializedAt": null
+      "lastActivityAt": "2026-10-11T08:41:03.853Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.008Z"
     },
     {
       "id": "daily-predictions",
-      "lastRun": "2026-10-10T04:00:31.641Z",
-      "lastDurationMs": 1682,
+      "lastRun": "2026-10-11T06:39:28.030Z",
+      "lastDurationMs": 1046,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-11T04:00:00.000Z",
-      "runCount": 2,
+      "nextRun": "2026-10-12T04:00:00.000Z",
+      "runCount": 4,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T04:00:31.641Z",
-      "reinitializedCount": 0,
-      "lastReinitializedAt": null
+      "lastActivityAt": "2026-10-11T06:39:28.030Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.008Z"
     },
     {
       "id": "telegram-broadcast",
-      "lastRun": "2026-10-10T07:00:00.219Z",
-      "lastDurationMs": 1,
+      "lastRun": "2026-10-11T07:00:16.992Z",
+      "lastDurationMs": 0,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-11T07:00:00.000Z",
-      "runCount": 3,
+      "nextRun": "2026-10-12T07:00:00.000Z",
+      "runCount": 4,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T07:00:00.219Z",
+      "lastActivityAt": "2026-10-11T07:00:16.992Z",
       "reinitializedCount": 0,
       "lastReinitializedAt": null
     },
     {
       "id": "evening-recap",
-      "lastRun": "2026-10-09T22:00:29.432Z",
-      "lastDurationMs": 3,
+      "lastRun": "2026-10-11T06:39:27.049Z",
+      "lastDurationMs": 40,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-10T22:00:00.000Z",
-      "runCount": 2,
+      "nextRun": "2026-10-12T22:00:00.000Z",
+      "runCount": 4,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-09T22:00:29.432Z",
-      "reinitializedCount": 0,
-      "lastReinitializedAt": null
+      "lastActivityAt": "2026-10-11T06:39:27.049Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.009Z"
     },
     {
       "id": "standings",
-      "lastRun": "2026-10-10T02:00:31.164Z",
-      "lastDurationMs": 1392,
+      "lastRun": "2026-10-11T06:39:28.495Z",
+      "lastDurationMs": 1510,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-11T02:00:00.000Z",
-      "runCount": 2,
+      "nextRun": "2026-10-12T02:00:00.000Z",
+      "runCount": 4,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T02:00:31.164Z",
-      "reinitializedCount": 0,
-      "lastReinitializedAt": null
+      "lastActivityAt": "2026-10-11T06:39:28.495Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.009Z"
     },
     {
       "id": "subscription-reminders",
@@ -131,31 +131,31 @@
     },
     {
       "id": "google-crawl",
-      "lastRun": "2026-10-10T11:46:31.219Z",
-      "lastDurationMs": 552,
+      "lastRun": "2026-10-11T06:39:27.614Z",
+      "lastDurationMs": 628,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-10T15:46:31.219Z",
-      "runCount": 10,
+      "nextRun": "2026-10-11T10:39:27.614Z",
+      "runCount": 12,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T11:46:31.219Z",
-      "reinitializedCount": 0,
-      "lastReinitializedAt": null
+      "lastActivityAt": "2026-10-11T06:39:27.614Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.010Z"
     },
     {
       "id": "sitemap",
-      "lastRun": "2026-10-10T03:00:29.957Z",
-      "lastDurationMs": 89,
+      "lastRun": "2026-10-11T06:39:27.176Z",
+      "lastDurationMs": 165,
       "lastStatus": "success",
       "lastError": null,
-      "nextRun": "2026-10-11T03:00:00.000Z",
-      "runCount": 2,
+      "nextRun": "2026-10-12T03:00:00.000Z",
+      "runCount": 4,
       "failCount": 0,
       "startedRunningAt": null,
-      "lastActivityAt": "2026-10-10T03:00:29.957Z",
-      "reinitializedCount": 0,
-      "lastReinitializedAt": null
+      "lastActivityAt": "2026-10-11T06:39:27.176Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.010Z"
     },
     {
       "id": "cleanup",
@@ -170,255 +170,270 @@
       "lastActivityAt": null,
       "reinitializedCount": 0,
       "lastReinitializedAt": null
+    },
+    {
+      "id": "keepalive",
+      "lastRun": "2026-10-11T08:45:32.674Z",
+      "lastDurationMs": 56,
+      "lastStatus": "success",
+      "lastError": null,
+      "nextRun": "2026-10-11T08:50:32.674Z",
+      "runCount": 26,
+      "failCount": 0,
+      "startedRunningAt": null,
+      "lastActivityAt": "2026-10-11T08:45:32.674Z",
+      "reinitializedCount": 1,
+      "lastReinitializedAt": "2026-10-11T06:39:27.024Z"
     }
   ],
   "auditLogs": [
     {
-      "id": "log-1791635563252-uj0i",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T12:32:43.252Z",
-      "durationMs": 0,
-      "status": "reinitialized_stalled_task",
-      "success": true,
-      "error": "Scheduled run was overdue by 0 minutes without executing"
-    },
-    {
-      "id": "log-1791635563252-4w8b",
+      "id": "log-1791708500362-i6w5",
       "jobId": "value-bets",
-      "timestamp": "2026-10-10T12:32:43.252Z",
+      "timestamp": "2026-10-11T08:48:20.362Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791635563252-2jy3",
+      "id": "log-1791708500362-51py",
       "jobId": "settle-results",
-      "timestamp": "2026-10-10T12:32:43.252Z",
+      "timestamp": "2026-10-11T08:48:20.362Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791635563251-kogs",
+      "id": "log-1791708500361-urix",
       "jobId": "value-bets",
-      "timestamp": "2026-10-10T12:32:43.251Z",
+      "timestamp": "2026-10-11T08:48:20.361Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Task was stuck in 'running' state for 45 minutes (exceeded 30m limit)"
     },
     {
-      "id": "log-1791635563250-983q",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T12:32:43.250Z",
+      "id": "log-1791708500360-z0ef",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-11T08:48:20.360Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791635563250-qh71",
+      "id": "log-1791708500357-ac5t",
       "jobId": "settle-results",
-      "timestamp": "2026-10-10T12:32:43.250Z",
-      "durationMs": 0,
-      "status": "reinitialized_stalled_task",
-      "success": true,
-      "error": "Scheduled run was overdue by 0 minutes without executing"
-    },
-    {
-      "id": "log-1791635563249-a6ww",
-      "jobId": "settle-results",
-      "timestamp": "2026-10-10T12:32:43.249Z",
+      "timestamp": "2026-10-11T08:48:20.357Z",
       "durationMs": 0,
       "status": "reinitialized_stalled_task",
       "success": true,
       "error": "Task was stuck in 'running' state for 75 minutes (exceeded 60m limit)"
     },
     {
-      "id": "log-1791635563248-tl5b",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T12:32:43.248Z",
-      "durationMs": 0,
-      "status": "reinitialized_stalled_task",
-      "success": true,
-      "error": "Scheduled run was overdue by 0 minutes without executing"
+      "id": "log-1791708332674-lv7k",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:45:32.674Z",
+      "durationMs": 56,
+      "status": "keepalive_http_401",
+      "success": true
     },
     {
-      "id": "log-1791635563244-8dsm",
+      "id": "log-1791708183116-g4cv",
       "jobId": "odds-drift",
-      "timestamp": "2026-10-10T12:32:43.244Z",
-      "durationMs": 0,
-      "status": "reinitialized_stalled_task",
-      "success": true,
-      "error": "Scheduled run was overdue by 0 minutes without executing"
+      "timestamp": "2026-10-11T08:43:03.116Z",
+      "durationMs": 500,
+      "status": "http_200",
+      "success": true
     },
     {
-      "id": "log-1791635102623-j0xj",
+      "id": "log-1791708063853-ok29",
       "jobId": "jackpot",
-      "timestamp": "2026-10-10T12:25:02.623Z",
-      "durationMs": 1900,
-      "status": "synced_80_matches",
+      "timestamp": "2026-10-11T08:41:03.853Z",
+      "durationMs": 1240,
+      "status": "synced_65_matches",
       "success": true
     },
     {
-      "id": "log-1791635071241-h4dx",
+      "id": "log-1791708002656-hi8b",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:40:02.656Z",
+      "durationMs": 42,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791707672654-hm7o",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:34:32.654Z",
+      "durationMs": 49,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791707622973-kw5b",
       "jobId": "value-bets",
-      "timestamp": "2026-10-10T12:24:31.241Z",
-      "durationMs": 517,
+      "timestamp": "2026-10-11T08:33:42.973Z",
+      "durationMs": 358,
       "status": "http_200",
       "success": true
     },
     {
-      "id": "log-1791635071241-tdrv",
+      "id": "log-1791707622961-g8gc",
       "jobId": "settle-results",
-      "timestamp": "2026-10-10T12:24:31.241Z",
-      "durationMs": 518,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791634651234-lx78",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T12:17:31.234Z",
-      "durationMs": 522,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791633841120-62xx",
-      "jobId": "value-bets",
-      "timestamp": "2026-10-10T12:04:01.120Z",
-      "durationMs": 427,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791633722744-i8rg",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T12:02:02.744Z",
-      "durationMs": 2053,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791633272286-244j",
-      "jobId": "jackpot",
-      "timestamp": "2026-10-10T11:54:32.286Z",
-      "durationMs": 1608,
-      "status": "synced_80_matches",
-      "success": true
-    },
-    {
-      "id": "log-1791633241328-zpnq",
-      "jobId": "settle-results",
-      "timestamp": "2026-10-10T11:54:01.328Z",
-      "durationMs": 650,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791632791503-ujpw",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T11:46:31.503Z",
-      "durationMs": 837,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791632791219-8iga",
-      "jobId": "google-crawl",
-      "timestamp": "2026-10-10T11:46:31.219Z",
-      "durationMs": 552,
-      "status": "indexnow_http_403_ping_http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791632610963-sltz",
-      "jobId": "value-bets",
-      "timestamp": "2026-10-10T11:43:30.963Z",
-      "durationMs": 301,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791631861304-jg1n",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T11:31:01.304Z",
-      "durationMs": 655,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791631441588-kq0n",
-      "jobId": "jackpot",
-      "timestamp": "2026-10-10T11:24:01.588Z",
-      "durationMs": 951,
-      "status": "synced_80_matches",
-      "success": true
-    },
-    {
-      "id": "log-1791631410994-otwp",
-      "jobId": "settle-results",
-      "timestamp": "2026-10-10T11:23:30.994Z",
+      "timestamp": "2026-10-11T08:33:42.961Z",
       "durationMs": 357,
       "status": "http_200",
       "success": true
     },
     {
-      "id": "log-1791631381379-tiy8",
+      "id": "log-1791707583425-c3yx",
       "jobId": "value-bets",
-      "timestamp": "2026-10-10T11:23:01.379Z",
-      "durationMs": 743,
-      "status": "http_200",
-      "success": true
+      "timestamp": "2026-10-11T08:33:03.425Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
     },
     {
-      "id": "log-1791630931228-l41h",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T11:15:31.228Z",
-      "durationMs": 602,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791630151142-99le",
-      "jobId": "value-bets",
-      "timestamp": "2026-10-10T11:02:31.142Z",
-      "durationMs": 539,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791630002317-o07o",
-      "jobId": "odds-drift",
-      "timestamp": "2026-10-10T11:00:02.317Z",
-      "durationMs": 1718,
-      "status": "http_200",
-      "success": true
-    },
-    {
-      "id": "log-1791629611920-updd",
-      "jobId": "jackpot",
-      "timestamp": "2026-10-10T10:53:31.920Z",
-      "durationMs": 1332,
-      "status": "synced_80_matches",
-      "success": true
-    },
-    {
-      "id": "log-1791629581399-m916",
+      "id": "log-1791707583425-4l6n",
       "jobId": "settle-results",
-      "timestamp": "2026-10-10T10:53:01.399Z",
-      "durationMs": 812,
+      "timestamp": "2026-10-11T08:33:03.425Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791707583423-ujy3",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-11T08:33:03.423Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Task was stuck in 'running' state for 45 minutes (exceeded 30m limit)"
+    },
+    {
+      "id": "log-1791707583423-ecf8",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-11T08:33:03.423Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Scheduled run was overdue by 0 minutes without executing"
+    },
+    {
+      "id": "log-1791707583420-hg51",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-11T08:33:03.420Z",
+      "durationMs": 0,
+      "status": "reinitialized_stalled_task",
+      "success": true,
+      "error": "Task was stuck in 'running' state for 75 minutes (exceeded 60m limit)"
+    },
+    {
+      "id": "log-1791707358187-sucm",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:29:18.187Z",
+      "durationMs": 1056,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791707267774-wc7y",
+      "jobId": "odds-drift",
+      "timestamp": "2026-10-11T08:27:47.774Z",
+      "durationMs": 646,
       "status": "http_200",
       "success": true
     },
     {
-      "id": "log-1791629070990-f9td",
+      "id": "log-1791707027157-ci9m",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:23:47.157Z",
+      "durationMs": 36,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791706907768-an6q",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-11T08:21:47.768Z",
+      "durationMs": 650,
+      "status": "http_200",
+      "success": true
+    },
+    {
+      "id": "log-1791706697187-d2y3",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:18:17.186Z",
+      "durationMs": 74,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791706367154-5gvg",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:12:47.154Z",
+      "durationMs": 52,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791706338030-hlc5",
       "jobId": "odds-drift",
-      "timestamp": "2026-10-10T10:44:30.990Z",
-      "durationMs": 427,
+      "timestamp": "2026-10-11T08:12:18.030Z",
+      "durationMs": 929,
+      "status": "http_200",
+      "success": true
+    },
+    {
+      "id": "log-1791706248514-9lqg",
+      "jobId": "jackpot",
+      "timestamp": "2026-10-11T08:10:48.514Z",
+      "durationMs": 1415,
+      "status": "synced_65_matches",
+      "success": true
+    },
+    {
+      "id": "log-1791706247738-25sw",
+      "jobId": "settle-results",
+      "timestamp": "2026-10-11T08:10:47.738Z",
+      "durationMs": 640,
+      "status": "http_200",
+      "success": true
+    },
+    {
+      "id": "log-1791706037189-3xkc",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:07:17.189Z",
+      "durationMs": 96,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791705707113-mll8",
+      "jobId": "keepalive",
+      "timestamp": "2026-10-11T08:01:47.113Z",
+      "durationMs": 29,
+      "status": "keepalive_http_401",
+      "success": true
+    },
+    {
+      "id": "log-1791705679020-0rcb",
+      "jobId": "value-bets",
+      "timestamp": "2026-10-11T08:01:19.020Z",
+      "durationMs": 1939,
+      "status": "http_200",
+      "success": true
+    },
+    {
+      "id": "log-1791705407850-79rp",
+      "jobId": "odds-drift",
+      "timestamp": "2026-10-11T07:56:47.850Z",
+      "durationMs": 776,
       "status": "http_200",
       "success": true
     }

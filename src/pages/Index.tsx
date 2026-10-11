@@ -18,6 +18,8 @@ import { BreakingNewsTicker } from '@/components/BreakingNewsTicker';
 import { PastResultsArchive } from '@/components/PastResultsArchive';
 import { Features } from '@/components/Features';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { HomeViewTabs, HomeViewMode } from '@/components/HomeViewTabs';
+import { ScrollNavigator } from '@/components/ScrollNavigator';
 
 const HOME_JSON_LD = {
   '@context': 'https://schema.org',
@@ -80,6 +82,7 @@ const HOME_JSON_LD = {
 
 const Index = () => {
   const [deferredReady, setDeferredReady] = useState(false);
+  const [activeMode, setActiveMode] = useState<HomeViewMode>('predictions');
 
   useEffect(() => {
     let activated = false;
@@ -104,6 +107,16 @@ const Index = () => {
     };
   }, []);
 
+  const handleModeChange = (mode: HomeViewMode) => {
+    setActiveMode(mode);
+    const contentTarget = document.getElementById('home-tab-content') || document.getElementById('section-predictions');
+    if (contentTarget && window.scrollY > 300) {
+      const yOffset = -90;
+      const y = contentTarget.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
@@ -117,83 +130,79 @@ const Index = () => {
       <LiveMarketSteamTicker />
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         <Hero />
-        <LeagueNavigationStrip />
+        <HomeViewTabs activeMode={activeMode} onModeChange={handleModeChange} />
+        <div id="home-tab-content" />
 
-        {/* Accuracy Tracker + Live Matches side-by-side above predictions */}
-        <section className="py-10 bg-muted/20">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <AccuracyTracker />
-              </div>
-              <div className="lg:col-span-2">
-                <ErrorBoundary compact>
-                  <LiveMatches />
-                </ErrorBoundary>
+        {/* 1. Primary Predictions View */}
+        {(activeMode === 'predictions' || activeMode === 'all') && (
+          <section id="section-predictions" className="py-4 space-y-4">
+            <LeagueNavigationStrip />
+            <div className="container mx-auto px-4 max-w-6xl">
+              <PredictionsDashboard />
+            </div>
+          </section>
+        )}
+
+        {/* 2. Live Matches & Accuracy Tracker View */}
+        {(activeMode === 'live' || activeMode === 'all') && (
+          <section id="section-live" className="py-8 bg-muted/20 border-t border-border/40">
+            <div className="container mx-auto px-4 max-w-6xl space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <AccuracyTracker />
+                </div>
+                <div className="lg:col-span-2">
+                  <ErrorBoundary compact>
+                    <LiveMatches />
+                  </ErrorBoundary>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Primary Predictions Grid — Always Above the Fold */}
-        <PredictionsDashboard />
-
-        {/* Real-Time Team News, Injury & Lineup Updates for Featured Matches */}
-        <section className="py-8 bg-muted/10 border-t border-border/50">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <TeamNewsInjuryUpdates />
-          </div>
-        </section>
-
-        {/* Deferred Below-the-Fold Interactive Modules */}
-        {deferredReady && (
-          <>
-            {/* Breaking Football News & Gemini Tactical Wire */}
-            <section className="pt-8 pb-2">
-              <div className="container mx-auto px-4 max-w-6xl">
-                <ErrorBoundary compact>
-                  <BreakingNewsTicker />
-                </ErrorBoundary>
-              </div>
-            </section>
-
-            {/* Daily AI Digest & Featured Match of the Day */}
-            <section className="py-6">
-              <div className="container mx-auto px-4 max-w-6xl">
-                <ErrorBoundary compact>
-                  <DailyAIDigestBanner />
-                </ErrorBoundary>
-              </div>
-            </section>
-
-            {/* AI Smart Slip Generator (One-Click Accumulator Builder) */}
+        {/* 3. AI Smart Slips & Acca Builder View */}
+        {(activeMode === 'slips' || activeMode === 'all') && (
+          <section id="section-slips" className="py-6 space-y-6 border-t border-border/40">
             <ErrorBoundary compact>
               <AISmartSlipGenerator />
             </ErrorBoundary>
-
-            {/* Upcoming Matches */}
-            <ErrorBoundary compact>
-              <UpcomingMatches />
-            </ErrorBoundary>
-
-            {/* AI Recommendations Hub (Top Value Bets, High Confidence, Correct Score, BTTS) */}
             <ErrorBoundary compact>
               <AIRecommendationsHub />
             </ErrorBoundary>
+          </section>
+        )}
 
-            {/* Past Results & Historical Accuracy Archive */}
-            <section className="py-12 bg-muted/15 border-t border-border/50">
-              <div className="container mx-auto px-4 max-w-6xl">
-                <ErrorBoundary compact>
-                  <PastResultsArchive />
-                </ErrorBoundary>
-              </div>
-            </section>
+        {/* 4. Team News, Injury & Tactical Digest View */}
+        {(activeMode === 'news' || activeMode === 'all') && (
+          <section id="section-news" className="py-6 space-y-6 border-t border-border/40">
+            <div className="container mx-auto px-4 max-w-6xl space-y-6">
+              <ErrorBoundary compact>
+                <BreakingNewsTicker />
+              </ErrorBoundary>
+              <ErrorBoundary compact>
+                <DailyAIDigestBanner />
+              </ErrorBoundary>
+              <TeamNewsInjuryUpdates />
+            </div>
+          </section>
+        )}
 
-            <ErrorBoundary compact>
-              <Features />
-            </ErrorBoundary>
-          </>
+        {/* 5. Historical Archive, Upcoming & Accuracy Proof */}
+        {(activeMode === 'archive' || activeMode === 'all') && (
+          <section id="section-archive" className="py-8 space-y-6 border-t border-border/40 bg-muted/10">
+            <div className="container mx-auto px-4 max-w-6xl space-y-6">
+              <ErrorBoundary compact>
+                <PastResultsArchive />
+              </ErrorBoundary>
+              <ErrorBoundary compact>
+                <UpcomingMatches />
+              </ErrorBoundary>
+              <ErrorBoundary compact>
+                <Features />
+              </ErrorBoundary>
+            </div>
+          </section>
         )}
 
         <div style={{ contentVisibility: 'auto', containIntrinsicSize: '700px' }}>
@@ -203,6 +212,7 @@ const Index = () => {
       <div style={{ contentVisibility: 'auto', containIntrinsicSize: '600px' }}>
         <Footer />
       </div>
+      <ScrollNavigator />
     </div>
   );
 };

@@ -2,13 +2,41 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { Zap, TrendingUp, Globe, Users, CheckCircle, ChevronRight } from "lucide-react";
+import { Zap, TrendingUp, Globe, Users, CheckCircle, ChevronRight, ChevronDown, Minimize2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface LiveStats { predictions: number; accuracy: number; users: number; leagues: number; }
 
 export const Hero = () => {
   const [stats, setStats] = useState<LiveStats>({ predictions: 500, accuracy: 87, users: 12000, leagues: 40 });
+  const [isCompact, setIsCompact] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('predictpro_compact_hero') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCompact = () => {
+    setIsCompact(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('predictpro_compact_hero', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const scrollToPredictions = () => {
+    const el = document.getElementById('section-predictions') || document.getElementById('main-content');
+    if (el) {
+      const yOffset = -80;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     let triggered = false;
@@ -40,9 +68,54 @@ export const Hero = () => {
     };
   }, []);
 
+  // Compact Focus View: High density, zero scroll fatigue, instant viewport presence for matches
+  if (isCompact) {
+    return (
+      <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-emerald-500/10 via-background to-background py-3 pt-18 sm:pt-20 px-4">
+        <div className="container mx-auto max-w-6xl flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              Live AI Feed
+            </span>
+            <span className="text-xs font-bold text-foreground">
+              PredictPro Algorithmic Edge
+            </span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              · {stats.accuracy}% AI Accuracy · 40+ Leagues Worldwide
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={scrollToPredictions}
+              className="h-8 text-xs font-semibold gap-1.5 text-primary border-primary/30 hover:bg-primary/10"
+              title="Jump directly to today's matches"
+            >
+              <span>Jump to Matches</span>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={toggleCompact}
+              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+              title="Expand full presentation banner"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Full Overview</span>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative flex items-center justify-center overflow-hidden border-b border-border/40">
-      {/* Zero-latency architectural stadium floodlight & tactical pitch backdrop */}
+      {/* Stadium floodlight & tactical pitch backdrop */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
           className="absolute inset-0 opacity-35 dark:opacity-45"
@@ -67,7 +140,21 @@ export const Hero = () => {
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/85 to-background pointer-events-none" />
 
-      <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl pt-24 pb-12 sm:pt-28 sm:pb-16">
+      {/* Floating Focus Mode Toggle button in top right of hero */}
+      <div className="absolute top-20 right-4 z-20">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={toggleCompact}
+          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border-border/80 shadow-xs gap-1.5"
+          title="Switch to Compact Focus Mode to reduce scrolling"
+        >
+          <Minimize2 className="h-3.5 w-3.5 text-primary" />
+          <span className="hidden sm:inline">Focus Mode (Compact)</span>
+        </Button>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl pt-24 pb-10 sm:pt-28 sm:pb-14">
         {/* Live badge */}
         <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
           <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 px-3 py-1 font-semibold text-xs">
@@ -83,20 +170,20 @@ export const Hero = () => {
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-3 leading-[1.1]">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-3 leading-[1.1]">
           AI Pro Tips Today: The Algorithmic Edge in{' '}
           <span className="bg-gradient-to-r from-primary via-purple-600 dark:via-purple-400 to-accent bg-clip-text text-transparent">
             Football Markets
           </span>
         </h1>
 
-        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed">
+        <p className="text-muted-foreground text-xs sm:text-sm md:text-base max-w-2xl mx-auto mb-6 leading-relaxed">
           Real-time Expected Goals (xG) modelling across 40+ leagues worldwide.
           Confidence-scored outcome vectors, H2H regression, form-weighted signals, and value-bet detection before kickoff.
         </p>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+        {/* CTAs with direct Jump to Matches action */}
+        <div className="flex flex-col sm:flex-row gap-2.5 justify-center items-center mb-6">
           <Link to="/best-bets">
             <Button
               size="lg"
@@ -117,10 +204,21 @@ export const Hero = () => {
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </Link>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            onClick={scrollToPredictions}
+            className="gap-2 px-5 h-11 min-h-[44px] text-sm font-bold bg-muted/80 hover:bg-muted text-foreground border border-border/80"
+            title="Skip scrolling and jump directly to matches"
+          >
+            <ChevronDown className="h-4 w-4 text-primary animate-bounce" />
+            <span>Jump to Fixtures</span>
+          </Button>
         </div>
 
         {/* Live stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
           {[
             { icon: CheckCircle, label: 'AI Accuracy', value: `${stats.accuracy}%`, color: 'text-emerald-700 dark:text-emerald-400' },
             { icon: Zap, label: 'Predictions', value: stats.predictions > 0 ? `${stats.predictions}+` : '500+', color: 'text-primary' },
@@ -128,32 +226,24 @@ export const Hero = () => {
             { icon: Users, label: 'Members', value: stats.users > 100 ? `${(stats.users / 1000).toFixed(1)}K+` : '10K+', color: 'text-amber-700 dark:text-amber-400' },
           ].map(({ icon: Icon, label, value, color }) => (
             <div key={label} className="bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/60">
-              <Icon className={`h-5 w-5 ${color} mx-auto mb-1`} aria-hidden="true" />
-              <p className="text-xl font-black text-foreground">{value}</p>
-              <p className="text-xs text-muted-foreground font-medium">{label}</p>
+              <Icon className={`h-4 w-4 ${color} mx-auto mb-1`} aria-hidden="true" />
+              <p className="text-lg sm:text-xl font-black text-foreground">{value}</p>
+              <p className="text-[11px] text-muted-foreground font-medium">{label}</p>
             </div>
           ))}
         </div>
 
-        {/* Trust badges & Above-the-Fold Google Ads Responsible Gambling / 18+ Disclosure */}
-        <div className="flex items-center justify-center gap-6 mt-8 flex-wrap">
-          {['M-Pesa', 'Stripe', 'API-Football', 'Gemini AI'].map(b => (
-            <span key={b} className="text-xs text-muted-foreground font-semibold">{b}</span>
-          ))}
-        </div>
-
-        <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 rounded-xl border border-border/70 bg-background/85 backdrop-blur-sm px-3.5 py-2.5 text-[11px] text-muted-foreground max-w-2xl mx-auto">
+        {/* 18+ Disclosure */}
+        <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 rounded-xl border border-border/70 bg-background/85 backdrop-blur-sm px-3.5 py-2 text-[11px] text-muted-foreground max-w-2xl mx-auto">
           <span className="inline-flex items-center rounded bg-rose-700 px-1.5 py-0.5 text-[10px] font-black text-white">
             18+ ONLY
           </span>
           <span className="font-semibold text-foreground">
-            Informational Football Statistics &amp; xG Analytics (Never for Minors)
+            Informational Football Statistics &amp; xG Analytics
           </span>
           <span aria-hidden="true">·</span>
-          <span>Not a bookmaker or real-money gambling site</span>
-          <span aria-hidden="true">·</span>
-          <Link to="/responsible-gaming" className="font-bold text-primary hover:underline inline-flex items-center min-h-[36px] px-1">
-            Responsible Gambling Policy &amp; Helplines
+          <Link to="/responsible-gaming" className="font-bold text-primary hover:underline inline-flex items-center px-1">
+            Responsible Policy
           </Link>
         </div>
       </div>

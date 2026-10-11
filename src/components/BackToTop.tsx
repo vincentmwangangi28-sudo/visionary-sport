@@ -30,7 +30,8 @@ export const BackToTop: React.FC = () => {
     });
   };
 
-  if (!visible) return null;
+  const isHomePage = typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '');
+  if (isHomePage || !visible) return null;
 
   return (
     <div

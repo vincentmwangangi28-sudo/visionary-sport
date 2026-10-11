@@ -433,7 +433,8 @@ export async function fetchApiFootballHighlights(
           const home = f.teams?.home?.name;
           const away = f.teams?.away?.name;
           if (!home || !away) continue;
-          const comp = f.league?.name || 'Football Match';
+          let comp = f.league?.name || 'Football Match';
+          if (comp.toLowerCase() === 'laliga') comp = 'La Liga';
           const matchDate = f.fixture?.date || new Date().toISOString();
           const id = `af-${f.fixture?.id || `${home}-${away}`}`;
 
@@ -472,10 +473,12 @@ export async function fetchApiFootballHighlights(
         if (!highlightsMap.has(id)) {
           const year = new Date(m.match_date).getFullYear();
           const scoreText = m.home_score !== null && m.away_score !== null ? `${m.home_score} - ${m.away_score}` : 'vs';
+          const rawComp = m.competition || 'Football League';
+          const compNormalized = rawComp.toLowerCase() === 'laliga' ? 'La Liga' : rawComp;
           highlightsMap.set(id, {
             id,
             title: `${m.home_team} ${scoreText} ${m.away_team} Highlights & Goals`,
-            competition: m.competition || 'Football League',
+            competition: compNormalized,
             date: m.match_date,
             homeTeam: m.home_team,
             awayTeam: m.away_team,
@@ -521,7 +524,8 @@ export async function fetchApiFootballHighlights(
 function normalizeHighlight(h: Partial<MatchVideoHighlight>): MatchVideoHighlight {
   const home = h.homeTeam || 'Home';
   const away = h.awayTeam || 'Away';
-  const comp = h.competition || 'Football Match';
+  let comp = h.competition || 'Football Match';
+  if (comp.toLowerCase() === 'laliga') comp = 'La Liga';
   const year = h.date ? new Date(h.date).getFullYear() : new Date().getFullYear();
 
   let embedUrl = h.embedUrl || '';
