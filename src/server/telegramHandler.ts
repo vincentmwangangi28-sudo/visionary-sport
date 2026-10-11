@@ -3,12 +3,7 @@
 // and process.env.TELEGRAM_CHAT_ID to dispatch automated alerts for
 // high-confidence AI predictions, live score updates, bankers, and accumulators.
 
-import fs from 'fs';
-import path from 'path';
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const RUNTIME_CONFIG_PATH = path.join(process.cwd(), '.data', 'telegram-runtime-config.json');
-const RUNTIME_LOGS_PATH = path.join(process.cwd(), '.data', 'telegram-transmission-logs.json');
 
 export interface TelegramRequestPayload {
   action:
@@ -51,18 +46,10 @@ export interface TelegramTransmissionLog {
   error?: string;
 }
 
-// In-memory runtime state
+// In-memory runtime state (Edge-runtime safe: no fs/path; state is per-instance and
+// falls back to TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID env vars).
 let cachedRuntimeConfig: { botToken?: string; chatId?: string; autoBroadcast?: boolean } | null = null;
 const transmissionLogs: TelegramTransmissionLog[] = [];
-
-function ensureDataDir() {
-  try {
-    const dir = path.dirname(RUNTIME_CONFIG_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  } catch {}
-}
 
 export function getStoredTelegramConfig(): { botToken: string; chatId: string; autoBroadcast: boolean } {
   if (cachedRuntimeConfig) {
@@ -73,20 +60,6 @@ export function getStoredTelegramConfig(): { botToken: string; chatId: string; a
     };
   }
 
-  ensureDataDir();
-  try {
-    if (fs.existsSync(RUNTIME_CONFIG_PATH)) {
-      const raw = fs.readFileSync(RUNTIME_CONFIG_PATH, 'utf-8');
-      const parsed = JSON.parse(raw);
-      cachedRuntimeConfig = parsed;
-      return {
-        botToken: (parsed.botToken || process.env.TELEGRAM_BOT_TOKEN || '').trim(),
-        chatId: (parsed.chatId || process.env.TELEGRAM_CHAT_ID || '@predictproAi').trim(),
-        autoBroadcast: parsed.autoBroadcast ?? true,
-      };
-    }
-  } catch {}
-
   cachedRuntimeConfig = {
     botToken: (process.env.TELEGRAM_BOT_TOKEN || '').trim(),
     chatId: (process.env.TELEGRAM_CHAT_ID || '@predictproAi').trim(),
@@ -96,7 +69,6 @@ export function getStoredTelegramConfig(): { botToken: string; chatId: string; a
 }
 
 export function saveStoredTelegramConfig(config: { botToken?: string; chatId?: string; autoBroadcast?: boolean }) {
-  ensureDataDir();
   const current = getStoredTelegramConfig();
   const updated = {
     botToken: config.botToken !== undefined ? config.botToken.trim() : current.botToken,
@@ -105,9 +77,6 @@ export function saveStoredTelegramConfig(config: { botToken?: string; chatId?: s
     updatedAt: new Date().toISOString(),
   };
   cachedRuntimeConfig = updated;
-  try {
-    fs.writeFileSync(RUNTIME_CONFIG_PATH, JSON.stringify(updated, null, 2), 'utf-8');
-  } catch {}
   return updated;
 }
 
@@ -116,23 +85,9 @@ function recordTransmission(entry: TelegramTransmissionLog) {
   if (transmissionLogs.length > 50) {
     transmissionLogs.pop();
   }
-  ensureDataDir();
-  try {
-    fs.writeFileSync(RUNTIME_LOGS_PATH, JSON.stringify(transmissionLogs.slice(0, 30), null, 2), 'utf-8');
-  } catch {}
 }
 
 export function getTelegramTransmissionLogs(): TelegramTransmissionLog[] {
-  if (transmissionLogs.length > 0) return transmissionLogs;
-  try {
-    if (fs.existsSync(RUNTIME_LOGS_PATH)) {
-      const raw = fs.readFileSync(RUNTIME_LOGS_PATH, 'utf-8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        transmissionLogs.push(...parsed);
-      }
-    }
-  } catch {}
   return transmissionLogs;
 }
 
