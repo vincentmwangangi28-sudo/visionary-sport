@@ -17,6 +17,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { queryClient } from "@/lib/queryClient";
 import React, { Suspense, memo, useState, useEffect, useCallback, ComponentType, ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -88,6 +89,10 @@ const USSoccerPredictions    = lazyWithRetry(() => import("./pages/USSoccerPredi
 const StreaksRadar           = lazyWithRetry(() => import("./pages/StreaksRadar"));
 const H2HComparisonPage      = lazyWithRetry(() => import("./pages/H2HComparisonPage"));
 const ResponsibleGaming      = lazyWithRetry(() => import("./pages/ResponsibleGaming"));
+const PrivacyPolicy          = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
+const TermsOfService         = lazyWithRetry(() => import("./pages/TermsOfService"));
+const CookiePolicy           = lazyWithRetry(() => import("./pages/CookiePolicy"));
+const Contact                = lazyWithRetry(() => import("./pages/Contact"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -400,6 +405,7 @@ const App = () => (
                       <OfflineBanner />
                       <SiteAnnouncementBanner />
                       <BreadcrumbLayoutSchema />
+                      <CookieConsentBanner />
                       <Suspense fallback={<RouteLoadingFallback />}>
                         <ErrorBoundary>
                           <Routes>
@@ -461,6 +467,14 @@ const App = () => (
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
                             <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} isProtected adminOnly />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
+                            <Route path="/privacy"                      element={<RouteBoundary component={PrivacyPolicy} />} />
+                            <Route path="/privacy-policy"               element={<RouteBoundary component={PrivacyPolicy} />} />
+                            <Route path="/terms"                        element={<RouteBoundary component={TermsOfService} />} />
+                            <Route path="/terms-of-service"             element={<RouteBoundary component={TermsOfService} />} />
+                            <Route path="/cookies"                      element={<RouteBoundary component={CookiePolicy} />} />
+                            <Route path="/cookie-policy"                element={<RouteBoundary component={CookiePolicy} />} />
+                            <Route path="/contact"                      element={<RouteBoundary component={Contact} />} />
+                            <Route path="/contact-us"                   element={<RouteBoundary component={Contact} />} />
                             <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
                             <Route path="/disclaimer"                   element={<RouteBoundary component={ResponsibleGaming} />} />
                             <Route path="/ads-policy"                   element={<RouteBoundary component={ResponsibleGaming} />} />

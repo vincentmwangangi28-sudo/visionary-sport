@@ -143,6 +143,22 @@ const ROUTE_META = {
     title: 'Responsible Gaming, 18+ Protection & Analytics Disclaimer',
     description: 'PredictPro Responsible Gambling Policy, 18+ minor protection standards, international support helplines, and informational sports statistics disclaimer.',
   },
+  '/privacy': {
+    title: 'Privacy Policy | PredictPro Quantitative Sports Analytics',
+    description: 'PredictPro Privacy Policy: Learn how we protect your personal data, our cookie usage, and our Google AdSense and GDPR advertising compliance.',
+  },
+  '/terms': {
+    title: 'Terms of Service | PredictPro Quantitative Football Analytics',
+    description: 'PredictPro Terms of Service: Read our terms governing platform access, informational analytics, 18+ eligibility, and Google AdSense compliance.',
+  },
+  '/cookies': {
+    title: 'Cookie Policy | PredictPro Quantitative Football Analytics',
+    description: 'PredictPro Cookie Policy: Understand how we use cookies, Google AdSense advertising cookies, analytics, and how to manage your privacy settings.',
+  },
+  '/contact': {
+    title: 'Contact Us | PredictPro Quantitative Football Analytics',
+    description: 'Contact the PredictPro team for support, editorial inquiries, data partnerships, or feedback. 24-hour response guarantee.',
+  },
   '/sitemap': {
     title: 'PredictPro HTML Sitemap & Indexed Football Directory',
     description: 'Navigate all indexed PredictPro football prediction hubs, league tables, quantitative betting tools, strategy articles, and live match previews.',

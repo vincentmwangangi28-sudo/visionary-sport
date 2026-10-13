@@ -74,6 +74,16 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/sports", label: "Multi-Sport AI Predictions" },
     { to: "/about", label: "About PredictPro AI Intelligence" },
   ],
+  "Legal & Trust": [
+    { to: "/privacy", label: "Privacy Policy (AdSense & GDPR)" },
+    { to: "/terms", label: "Terms of Service & Agreement" },
+    { to: "/cookies", label: "Cookie Policy & Preferences" },
+    { to: "/contact", label: "Contact Us & Support Desk" },
+    { to: "/about", label: "About PredictPro & Team" },
+    { to: "/methodology", label: "Expected Goals (xG) Methodology" },
+    { to: "/responsible-gaming", label: "18+ Responsible Gaming Policy" },
+    { to: "/disclaimer", label: "Non-Gambling Entity Disclaimer" },
+  ],
 };
 
 const FEATURED_MATCHES = [
@@ -173,21 +183,49 @@ export const Footer = () => {
       <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
         <p>© {new Date().getFullYear()} PredictPro. All rights reserved. <span className="mx-1">·</span> predictpro.guru</p>
         
-        <div className="flex items-center gap-2.5 flex-wrap justify-center">
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          <Link
+            to="/privacy"
+            className="inline-flex items-center min-h-[36px] px-2 text-xs text-muted-foreground hover:text-primary transition-colors underline"
+          >
+            Privacy Policy
+          </Link>
+          <span className="text-muted-foreground/40">·</span>
+          <Link
+            to="/terms"
+            className="inline-flex items-center min-h-[36px] px-2 text-xs text-muted-foreground hover:text-primary transition-colors underline"
+          >
+            Terms of Service
+          </Link>
+          <span className="text-muted-foreground/40">·</span>
+          <Link
+            to="/cookies"
+            className="inline-flex items-center min-h-[36px] px-2 text-xs text-muted-foreground hover:text-primary transition-colors underline"
+          >
+            Cookie Policy
+          </Link>
+          <span className="text-muted-foreground/40">·</span>
+          <Link
+            to="/contact"
+            className="inline-flex items-center min-h-[36px] px-2 text-xs text-muted-foreground hover:text-primary transition-colors underline"
+          >
+            Contact Us
+          </Link>
+          <span className="text-muted-foreground/40">·</span>
           <Link
             to="/responsible-gaming"
-            className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 transition-colors text-xs font-bold border border-rose-500/30"
+            className="inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 transition-colors text-xs font-bold border border-rose-500/30"
           >
-            <span>18+ Responsible Gaming &amp; Disclaimer</span>
+            <span>18+ Responsible Gaming</span>
           </Link>
           <Link
             to="/preferences"
-            className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-full bg-background hover:bg-primary/10 text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors text-xs font-semibold border border-border shadow-xs"
+            className="inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1 rounded-full bg-background hover:bg-primary/10 text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors text-xs font-semibold border border-border shadow-xs"
             title="Configure Language, Region, Currency and Timezone"
             aria-label="Open Preferences and Regional Settings"
           >
             <SlidersHorizontal className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-            <span className="text-zinc-900 dark:text-zinc-100 font-semibold">Preferences & Regional Settings</span>
+            <span className="text-zinc-900 dark:text-zinc-100 font-semibold">Preferences</span>
           </Link>
         </div>
 

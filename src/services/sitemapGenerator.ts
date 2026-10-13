@@ -118,6 +118,10 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/screener', title: 'Match Screener & Multi-Filter Football Stats Scanner', priority: 0.85, changeFreq: 'daily' },
     { path: '/track-record', title: 'Verified AI Prediction Track Record & Strike Rate History', priority: 0.85, changeFreq: 'daily' },
     { path: '/responsible-gaming', title: 'Responsible Gaming & 18+ Minor Protection Policy', priority: 0.75, changeFreq: 'monthly' },
+    { path: '/privacy', title: 'Privacy Policy - GDPR & Google AdSense Compliance', priority: 0.70, changeFreq: 'monthly' },
+    { path: '/terms', title: 'Terms of Service & User Agreement', priority: 0.70, changeFreq: 'monthly' },
+    { path: '/cookies', title: 'Cookie Policy & Advertising Transparency', priority: 0.70, changeFreq: 'monthly' },
+    { path: '/contact', title: 'Contact Us & Publisher Support Desk', priority: 0.70, changeFreq: 'monthly' },
     { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.65, changeFreq: 'daily' },
   ];
 

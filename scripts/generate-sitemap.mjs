@@ -52,6 +52,10 @@ const CORE_PAGES = [
   { path: '/leaderboard', priority: 0.75, freq: 'daily', title: 'Community Prediction Leaderboard & Tipster Rankings' },
   { path: '/about', priority: 0.70, freq: 'monthly', title: 'About PredictPro - AI Sports Analytics Platform' },
   { path: '/responsible-gaming', priority: 0.75, freq: 'monthly', title: 'Responsible Gaming & 18+ Age Restriction Policy' },
+  { path: '/privacy', priority: 0.70, freq: 'monthly', title: 'Privacy Policy - GDPR & Google AdSense Compliance' },
+  { path: '/terms', priority: 0.70, freq: 'monthly', title: 'Terms of Service & User Agreement' },
+  { path: '/cookies', priority: 0.70, freq: 'monthly', title: 'Cookie Policy & Advertising Transparency' },
+  { path: '/contact', priority: 0.70, freq: 'monthly', title: 'Contact Us & Editorial Support Desk' },
   { path: '/sitemap', priority: 0.70, freq: 'daily', title: 'HTML Predictions Directory & Sitemap' },
   { path: '/seo-indexing', priority: 0.70, freq: 'daily', title: 'Google Indexing & Search Engine Management Console' },
 ];
