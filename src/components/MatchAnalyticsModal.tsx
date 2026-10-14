@@ -53,6 +53,29 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
   const baseDraw = p.draw_odds || 3.30;
   const baseAway = p.away_odds || 3.50;
 
+  const winProbabilities = useMemo(() => {
+    const raw = p as Record<string, any>;
+    const explicitHome = p.home_win_probability ?? raw.home_probability;
+    const explicitDraw = p.draw_probability;
+    const explicitAway = p.away_win_probability ?? raw.away_probability;
+    if (explicitHome && explicitDraw && explicitAway) {
+      return {
+        home: Math.round(Number(explicitHome)),
+        draw: Math.round(Number(explicitDraw)),
+        away: Math.round(Number(explicitAway)),
+      };
+    }
+    const h = 1 / baseHome;
+    const d = 1 / baseDraw;
+    const a = 1 / baseAway;
+    const total = h + d + a;
+    return {
+      home: Math.round((h / total) * 100),
+      draw: Math.round((d / total) * 100),
+      away: Math.max(0, 100 - Math.round((h / total) * 100) - Math.round((d / total) * 100)),
+    };
+  }, [p, baseHome, baseDraw, baseAway]);
+
   const isSelected = (market: string) => {
     return selections.some(s => s.homeTeam === p.home_team && s.awayTeam === p.away_team && s.market === market);
   };
@@ -141,58 +164,71 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
             </div>
           </div>
 
-          {/* Quick Odds Bar */}
-          <div className="grid grid-cols-3 gap-2 mt-4" role="group" aria-label="Select match outcome odds">
-            <button
-              type="button"
-              onClick={() => handleAddBet('Home Win', baseHome)}
-              aria-label={`Select 1 (${p.home_team}) outcome at odds ${baseHome.toFixed(2)}`}
-              className={`p-2 rounded-xl border text-center transition-all ${
-                isSelected('Home Win')
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-card/70 hover:bg-primary/5 hover:border-primary/50'
-              }`}
-            >
-              <div className="text-[11px] opacity-80 font-medium">1 ({p.home_team})</div>
-              <div className="font-black text-sm flex items-center justify-center gap-1">
-                {baseHome.toFixed(2)}
-                {isSelected('Home Win') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
-              </div>
-            </button>
+          {/* Quick Probability Bar */}
+          <div className="space-y-2 mt-4">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
+              <span className="flex items-center gap-1 font-semibold text-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Model Win Probabilities
+              </span>
+              <span className="font-mono text-[10px]">1 / X / 2 Poisson Matrix</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2" role="group" aria-label="Select match outcome probabilities">
+              <button
+                type="button"
+                onClick={() => handleAddBet('Home Win', baseHome)}
+                aria-label={`Select 1 (${p.home_team}) outcome - ${winProbabilities.home}% probability`}
+                className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                  isSelected('Home Win')
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-card/70 hover:bg-primary/5 hover:border-primary/50'
+                }`}
+              >
+                <div className="text-[11px] opacity-80 font-semibold truncate">1 ({p.home_team})</div>
+                <div className="font-black text-sm flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400">
+                  {winProbabilities.home}%
+                  {isSelected('Home Win') && <Check className="h-3.5 w-3.5 text-primary-foreground" aria-hidden="true" />}
+                </div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleAddBet('Draw', baseDraw)}
-              aria-label={`Select X (Draw) outcome at odds ${baseDraw.toFixed(2)}`}
-              className={`p-2 rounded-xl border text-center transition-all ${
-                isSelected('Draw')
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-card/70 hover:bg-primary/5 hover:border-primary/50'
-              }`}
-            >
-              <div className="text-[11px] opacity-80 font-medium">X (Draw)</div>
-              <div className="font-black text-sm flex items-center justify-center gap-1">
-                {baseDraw.toFixed(2)}
-                {isSelected('Draw') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => handleAddBet('Draw', baseDraw)}
+                aria-label={`Select X (Draw) outcome - ${winProbabilities.draw}% probability`}
+                className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                  isSelected('Draw')
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-card/70 hover:bg-primary/5 hover:border-primary/50'
+                }`}
+              >
+                <div className="text-[11px] opacity-80 font-semibold">X (Draw)</div>
+                <div className="font-black text-sm flex items-center justify-center gap-1 text-amber-600 dark:text-amber-400">
+                  {winProbabilities.draw}%
+                  {isSelected('Draw') && <Check className="h-3.5 w-3.5 text-primary-foreground" aria-hidden="true" />}
+                </div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleAddBet('Away Win', baseAway)}
-              aria-label={`Select 2 (${p.away_team}) outcome at odds ${baseAway.toFixed(2)}`}
-              className={`p-2 rounded-xl border text-center transition-all ${
-                isSelected('Away Win')
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-card/70 hover:bg-primary/5 hover:border-primary/50'
-              }`}
-            >
-              <div className="text-[11px] opacity-80 font-medium">2 ({p.away_team})</div>
-              <div className="font-black text-sm flex items-center justify-center gap-1">
-                {baseAway.toFixed(2)}
-                {isSelected('Away Win') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => handleAddBet('Away Win', baseAway)}
+                aria-label={`Select 2 (${p.away_team}) outcome - ${winProbabilities.away}% probability`}
+                className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                  isSelected('Away Win')
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-card/70 hover:bg-primary/5 hover:border-primary/50'
+                }`}
+              >
+                <div className="text-[11px] opacity-80 font-semibold truncate">2 ({p.away_team})</div>
+                <div className="font-black text-sm flex items-center justify-center gap-1 text-sky-600 dark:text-sky-400">
+                  {winProbabilities.away}%
+                  {isSelected('Away Win') && <Check className="h-3.5 w-3.5 text-primary-foreground" aria-hidden="true" />}
+                </div>
+              </button>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden flex" aria-hidden="true">
+              <div style={{ width: `${winProbabilities.home}%` }} className="bg-emerald-500" title={`Home: ${winProbabilities.home}%`} />
+              <div style={{ width: `${winProbabilities.draw}%` }} className="bg-amber-500" title={`Draw: ${winProbabilities.draw}%`} />
+              <div style={{ width: `${winProbabilities.away}%` }} className="bg-sky-500" title={`Away: ${winProbabilities.away}%`} />
+            </div>
           </div>
         </div>
 

@@ -20,6 +20,7 @@ export interface UserPreferences {
   favoriteLeagues: string[];
   preferredMarkets: string[];
   oddsFormat: OddsFormat;
+  displayMode: 'probabilities' | 'odds';
   language: SupportedLanguage;
   timezone: string; // 'auto' or IANA identifier like 'Africa/Nairobi'
   dateFormat: 'auto' | DetectedDateFormat;
@@ -43,6 +44,7 @@ const getDefaultPreferencesWithAutoLocale = (): UserPreferences => {
     favoriteLeagues: ['Premier League', 'Champions League', 'La Liga', 'KPL'],
     preferredMarkets: ['1X2', 'Over/Under 2.5', 'BTTS'],
     oddsFormat: 'decimal',
+    displayMode: 'probabilities',
     language: detectedLang.isSupported ? detectedLang.supportedLanguage : 'en',
     timezone: 'auto',
     dateFormat: detectedDate.format,
@@ -68,6 +70,8 @@ interface UserPreferencesContextType {
   setLanguage: (lang: SupportedLanguage) => void;
   setTimezone: (tz: string) => void;
   setOddsFormat: (format: OddsFormat) => void;
+  setDisplayMode: (mode: 'probabilities' | 'odds') => void;
+  isProbabilitiesMode: boolean;
   setDateFormat: (format: 'auto' | DetectedDateFormat) => void;
   setTimeFormat: (format: 'auto' | DetectedTimeFormat) => void;
   toggleDataSaver: () => void;
@@ -155,6 +159,10 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
   const setOddsFormat = (format: OddsFormat) => {
     updatePreferences({ oddsFormat: format });
+  };
+
+  const setDisplayMode = (mode: 'probabilities' | 'odds') => {
+    updatePreferences({ displayMode: mode });
   };
 
   const toggleDataSaver = () => {
@@ -252,6 +260,8 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         setLanguage,
         setTimezone,
         setOddsFormat,
+        setDisplayMode,
+        isProbabilitiesMode: preferences.displayMode !== 'odds',
         setDateFormat,
         setTimeFormat,
         toggleDataSaver,
