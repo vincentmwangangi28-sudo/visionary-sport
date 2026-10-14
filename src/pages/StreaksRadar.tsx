@@ -35,7 +35,7 @@ import {
 
 export default function StreaksRadar() {
   const { addSelection, addSelections, selections, setIsOpen } = useBetSlip();
-  const { formatOdds } = useUserPreferences();
+  const { formatOdds, isProbabilitiesMode } = useUserPreferences();
 
   const [selectedCategory, setSelectedCategory] = useState<StreakCategory>('all');
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
@@ -475,13 +475,13 @@ export default function StreaksRadar() {
 
                           <div className="flex items-center justify-between pt-1">
                             <div>
-                              <span className="text-[10px] text-muted-foreground block">Recommended Bet:</span>
+                              <span className="text-[10px] text-muted-foreground block">{isProbabilitiesMode ? 'Recommended Market:' : 'Recommended Bet:'}</span>
                               <span className="font-bold text-sm text-foreground">{streak.nextMatch.marketName}</span>
                             </div>
                             <div className="text-right">
-                              <span className="text-[10px] text-muted-foreground block font-mono">{streak.nextMatch.bookmaker}</span>
+                              <span className="text-[10px] text-muted-foreground block font-mono">Market Confidence</span>
                               <Badge className="font-mono text-xs font-bold px-2 py-0.5 bg-primary text-primary-foreground">
-                                @ {formatOdds(streak.nextMatch.odds)}
+                                {isProbabilitiesMode ? `${Math.round((1 / streak.nextMatch.odds) * 100)}% Prob` : `@ ${formatOdds(streak.nextMatch.odds)}`}
                               </Badge>
                             </div>
                           </div>
@@ -596,7 +596,7 @@ export default function StreaksRadar() {
                           </>
                         ) : (
                           <>
-                            <PlusCircle className="h-3.5 w-3.5" /> Back Streak @ {formatOdds(streak.nextMatch.odds)}
+                            <PlusCircle className="h-3.5 w-3.5" /> {isProbabilitiesMode ? `Track Streak (${Math.round((1 / streak.nextMatch.odds) * 100)}% Prob)` : `Back Streak @ ${formatOdds(streak.nextMatch.odds)}`}
                           </>
                         )}
                       </Button>

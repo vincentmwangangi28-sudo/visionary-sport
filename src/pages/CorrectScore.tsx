@@ -62,9 +62,9 @@ export default function CorrectScore() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Guru Tips Correct Score Today: AI Score Predictions | PredictPro"
-        description="Daily correct score guru tips today and exact scoreline predictions powered by Monte Carlo goal probability models. Top 3 probable scores with verified odds."
+        description="Daily correct score guru tips today and exact scoreline predictions powered by Monte Carlo goal probability models. Top 3 probable scores with verified probability distribution."
         canonical="/correct-score"
-        keywords="guru tips correct score today, correct score predictions today, exact score football tips, a league bettingpro correct score prediction today, scoreline predictions, correct score odds"
+        keywords="guru tips correct score today, correct score predictions today, exact score football tips, a league bettingpro correct score prediction today, scoreline predictions, correct score probabilities"
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
@@ -144,10 +144,43 @@ export default function CorrectScore() {
                       </div>
                     )}
                     {p.home_odds && (
-                      <div className="flex gap-2 mt-2 text-xs text-muted-foreground justify-center">
-                        <span>1: <b>{p.home_odds.toFixed(2)}</b></span>
-                        {p.draw_odds && <span>X: <b>{p.draw_odds.toFixed(2)}</b></span>}
-                        <span>2: <b>{p.away_odds?.toFixed(2)}</b></span>
+                      <div className="mt-3 pt-2.5 border-t border-border/50 space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-mono">
+                          {(() => {
+                            const h = 1 / p.home_odds;
+                            const d = p.draw_odds ? 1 / p.draw_odds : 0.3;
+                            const a = p.away_odds ? 1 / p.away_odds : 0.25;
+                            const total = h + d + a;
+                            const hp = Math.round((h / total) * 100);
+                            const dp = Math.round((d / total) * 100);
+                            const ap = Math.max(0, 100 - hp - dp);
+                            return (
+                              <>
+                                <span className="font-bold text-emerald-600 dark:text-emerald-400">1: {hp}%</span>
+                                <span className="text-muted-foreground">X: {dp}%</span>
+                                <span className="font-bold text-sky-600 dark:text-sky-400">2: {ap}%</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                        <div className="h-1 w-full rounded-full bg-muted overflow-hidden flex">
+                          {(() => {
+                            const h = 1 / p.home_odds;
+                            const d = p.draw_odds ? 1 / p.draw_odds : 0.3;
+                            const a = p.away_odds ? 1 / p.away_odds : 0.25;
+                            const total = h + d + a;
+                            const hp = Math.round((h / total) * 100);
+                            const dp = Math.round((d / total) * 100);
+                            const ap = Math.max(0, 100 - hp - dp);
+                            return (
+                              <>
+                                <div style={{ width: `${hp}%` }} className="bg-emerald-500" />
+                                <div style={{ width: `${dp}%` }} className="bg-amber-500" />
+                                <div style={{ width: `${ap}%` }} className="bg-sky-500" />
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
                     )}
                   </CardContent>

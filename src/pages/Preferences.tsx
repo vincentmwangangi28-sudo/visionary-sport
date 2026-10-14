@@ -80,6 +80,8 @@ export default function Preferences() {
     setLanguage,
     setTimezone,
     setOddsFormat,
+    setDisplayMode,
+    isProbabilitiesMode,
     setDateFormat,
     setTimeFormat,
     setDataSaver,
@@ -405,6 +407,56 @@ export default function Preferences() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
+              {/* Display Mode: Probabilities vs Odds */}
+              <div className="space-y-2 p-3.5 rounded-xl border bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-foreground">
+                    Primary Match Metric Display
+                  </Label>
+                  <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                    {isProbabilitiesMode ? 'AI Probability Mode (Default)' : 'Odds Mode'}
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Choose whether match tables display mathematical win percentages and Poisson xG (recommended for statistical analysis) or raw bookmaker odds.
+                </p>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode('probabilities')}
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                      isProbabilitiesMode
+                        ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                        : 'border-border hover:border-primary/40 bg-card'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold">Win Probabilities (%)</span>
+                      {isProbabilitiesMode && <Check className="h-3.5 w-3.5 text-primary" />}
+                    </div>
+                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">1: 58% · X: 24% · 2: 18%</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">FiveThirtyEight &amp; Opta standard</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode('odds')}
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                      !isProbabilitiesMode
+                        ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                        : 'border-border hover:border-primary/40 bg-card'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold">Bookmaker Odds</span>
+                      {!isProbabilitiesMode && <Check className="h-3.5 w-3.5 text-primary" />}
+                    </div>
+                    <div className="text-[11px] text-primary font-mono mt-0.5">1 @ 1.85 · X @ 3.30 · 2 @ 3.50</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">Traditional bookmaker format</div>
+                  </button>
+                </div>
+              </div>
+
               {/* Odds formats */}
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
