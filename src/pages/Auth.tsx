@@ -25,6 +25,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const [googleAccountDetected, setGoogleAccountDetected] = useState(false);
+
   // Redirect if already logged in
   useEffect(() => { if (user) navigate('/'); }, [user, navigate]);
 
@@ -34,44 +36,157 @@ export default function Auth() {
     catch { setGoogleLoading(false); }
   };
 
+  const isGmailAddress = (addr: string) => {
+    const lower = addr.trim().toLowerCase();
+    return lower.endsWith('@gmail.com') || lower.endsWith('@googlemail.com');
+  };
+
   const handleSubmit = async () => {
-    if (!email) { toast.error('Enter your email'); return; }
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    // Basic email format check to prevent Supabase 400 validation error
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error('Please enter a valid email address (e.g. name@gmail.com)');
+      return;
+    }
+
     setLoading(true);
+    setGoogleAccountDetected(false);
+
     try {
       if (mode === 'forgot') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: `${window.location.origin}/auth?mode=reset`,
         });
         if (error) throw error;
-        toast.success('Password reset link sent! Check your inbox.');
+        toast.success('Password reset link sent! Check your email inbox.');
         setMode('login');
         return;
       }
+
       if (mode === 'register') {
-        if (!password || password.length < 6) { toast.error('Password must be 6+ characters'); return; }
-        const refCode = params.get('ref');
-        const { data: signUpData, error } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { full_name: fullName || email.split('@')[0], referral_code: refCode || undefined } },
-        });
-        if (error) throw error;
-        if (refCode && signUpData.user) {
-          callEdgeFn('apply-referral-on-signup', { referral_code: refCode, new_user_id: signUpData.user.id }).catch(() => {});
+        if (!cleanPassword || cleanPassword.length < 6) {
+          toast.error('Password must be at least 6 characters');
+          return;
         }
-        toast.success('Account created! Check your email to verify.');
+
+        const refCode = params.get('ref');
+        const displayName = fullName.trim() || cleanEmail.split('@')[0];
+
+        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: cleanPassword,
+          options: {
+            data: {
+              full_name: displayName,
+              referral_code: refCode || undefined,
+            },
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+
+        if (signUpErr) {
+          const errText = (signUpErr.message || '').toLowerCase();
+          // If the user is already registered (very common if they previously clicked 'Continue with Google')
+          if (errText.includes('already registered') || errText.includes('already exists')) {
+            // Check if their typed password actually works
+            const { data: directSignIn, error: directSignInErr } = await supabase.auth.signInWithPassword({
+              email: cleanEmail,
+              password: cleanPassword,
+            });
+
+            if (!directSignInErr && directSignIn?.session) {
+              toast.success('Account found! Welcome back 🎉');
+              navigate('/');
+              return;
+            }
+
+            // If sign-in with password fails, they created this via Google OAuth
+            if (isGmailAddress(cleanEmail)) {
+              setGoogleAccountDetected(true);
+              toast.info('This Gmail is already registered! Click "Continue with Google" above to sign in.');
+            } else {
+              toast.error('An account with this email already exists. Sign in or reset your password.');
+            }
+            setMode('login');
+            return;
+          }
+          throw signUpErr;
+        }
+
+        if (refCode && signUpData.user) {
+          callEdgeFn('apply-referral-on-signup', {
+            referral_code: refCode,
+            new_user_id: signUpData.user.id,
+          }).catch(() => {});
+        }
+
+        // If a session was returned immediately (auto-confirmation enabled in Supabase)
+        if (signUpData.session) {
+          toast.success('Account created successfully! Welcome to PredictPro 🎉');
+          navigate('/');
+          return;
+        }
+
+        // Auto-signin fallback
+        const { data: autoLogin, error: autoLoginErr } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPassword,
+        });
+
+        if (!autoLoginErr && autoLogin?.session) {
+          toast.success('Account created successfully! Welcome to PredictPro 🎉');
+          navigate('/');
+          return;
+        }
+
+        toast.success('Account created! Check your email to verify if needed.');
+        navigate('/');
         return;
       }
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast.success('Welcome back! 🎉');
-      navigate('/');
+
+      // LOGIN MODE
+      const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword,
+      });
+
+      if (loginErr) {
+        const msg = loginErr.message || '';
+        if (msg.toLowerCase().includes('invalid login credentials') && isGmailAddress(cleanEmail)) {
+          setGoogleAccountDetected(true);
+          toast.error('Invalid credentials. If you created this account with Google, click "Continue with Google" above.');
+          return;
+        }
+        throw loginErr;
+      }
+
+      if (loginData?.session) {
+        toast.success('Welcome back! 🎉');
+        navigate('/');
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Authentication failed';
-      if (msg.includes('Invalid login')) toast.error('Wrong email or password.');
-      else if (msg.includes('Email not confirmed')) toast.error('Please verify your email first.');
-      else if (msg.includes('already registered')) { toast.error('Account exists. Sign in instead.'); setMode('login'); }
-      else toast.error(msg);
-    } finally { setLoading(false); }
+      if (msg.includes('Invalid login')) {
+        toast.error('Wrong email or password.');
+      } else if (msg.includes('Email not confirmed')) {
+        toast.error('Please verify your email first.');
+      } else if (msg.includes('already registered')) {
+        toast.error('Account already exists. Please sign in.');
+        setMode('login');
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const TITLES = {
@@ -111,7 +226,11 @@ export default function Auth() {
                   onClick={handleGoogle}
                   disabled={googleLoading}
                   variant="outline"
-                  className="w-full gap-3 h-11 border-2 hover:bg-muted/50 font-medium"
+                  className={`w-full gap-3 h-11 border-2 font-medium transition-all ${
+                    googleAccountDetected
+                      ? 'border-primary ring-2 ring-primary/30 bg-primary/10 text-primary font-bold'
+                      : 'hover:bg-muted/50'
+                  }`}
                 >
                   {googleLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -123,7 +242,7 @@ export default function Auth() {
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                     </svg>
                   )}
-                  Continue with Google
+                  {googleAccountDetected ? 'Sign In with Google (Detected)' : 'Continue with Google'}
                 </Button>
 
                 <div className="relative">
@@ -170,12 +289,26 @@ export default function Auth() {
                       type="email"
                       toolparamdescription="Email address for PredictPro account authentication"
                       value={email}
-                      onChange={e => setEmail(e.target.value)}
+                      onChange={e => {
+                        setEmail(e.target.value);
+                        if (googleAccountDetected) setGoogleAccountDetected(false);
+                      }}
                       placeholder="you@example.com"
                       className="pl-9"
                       autoComplete="email"
                     />
                   </div>
+                  {isGmailAddress(email) && mode === 'register' && (
+                    <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                      <span className="text-primary font-medium">Tip:</span> You can sign up with password below, or use 1-click Google sign-in above.
+                    </p>
+                  )}
+                  {googleAccountDetected && (
+                    <div className="mt-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-foreground space-y-1">
+                      <p className="font-semibold text-primary">Google Account Detected</p>
+                      <p>This email is linked to Google sign-in. Click the highlighted <b>"Sign In with Google"</b> button above to log in instantly.</p>
+                    </div>
+                  )}
                 </div>
                 {mode !== 'forgot' && (
                   <div>

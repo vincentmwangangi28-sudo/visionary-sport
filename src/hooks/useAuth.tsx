@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName?: string, referralCode?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -101,45 +101,104 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    if (hasStoredAuthSession()) {
-      initAuth();
-      return () => {
-        unsubscribed = true;
-        authSub?.unsubscribe();
-      };
-    }
-
-    const timer = setTimeout(initAuth, 12000);
-    const events = ['pointerdown', 'keydown', 'touchstart'] as const;
-    events.forEach((evt) => window.addEventListener(evt, initAuth, { once: true, passive: true }));
+    initAuth();
 
     return () => {
       unsubscribed = true;
-      clearTimeout(timer);
-      events.forEach((evt) => window.removeEventListener(evt, initAuth));
       authSub?.unsubscribe();
     };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { toast.error(error.message || 'Failed to sign in'); throw error; }
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
+    if (error) {
+      const msg = error.message || 'Failed to sign in';
+      if (msg.toLowerCase().includes('invalid login credentials') && (cleanEmail.includes('gmail.com') || cleanEmail.includes('googlemail.com'))) {
+        toast.error('Invalid credentials. If you created your account with Google, please click "Continue with Google".');
+      } else {
+        toast.error(msg);
+      }
+      throw error;
+    }
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+    }
     toast.success('Welcome back!');
     navigate('/');
   }, [navigate]);
 
-  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
+  const signUp = useCallback(async (email: string, password: string, fullName?: string, referralCode?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const cleanName = fullName?.trim() || cleanEmail.split('@')[0];
+
+    const { data, error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password: cleanPassword,
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: cleanName,
+          referral_code: referralCode || undefined,
+        },
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
-    if (error) { toast.error(error.message || 'Failed to sign up'); throw error; }
-    toast.success('Account created! You can now sign in.');
-  }, []);
+
+    if (error) {
+      const msg = error.message || '';
+      // If user already registered, test if password signs in
+      if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPassword,
+        });
+        if (!signInErr && signInData.session) {
+          setSession(signInData.session);
+          setUser(signInData.session.user);
+          toast.success('Welcome back! Signed you into your account. 🎉');
+          navigate('/');
+          return;
+        }
+        const friendlyMsg = cleanEmail.includes('gmail.com')
+          ? 'An account with this Gmail already exists. Click "Continue with Google" to sign in.'
+          : 'An account with this email already exists. Please sign in or reset your password.';
+        toast.error(friendlyMsg);
+        throw error;
+      }
+      toast.error(error.message || 'Failed to sign up');
+      throw error;
+    }
+
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+      toast.success('Account created! Welcome to PredictPro 🎉');
+      navigate('/');
+      return;
+    }
+
+    // Try immediate sign-in in case auto-confirmation occurred
+    try {
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword,
+      });
+      if (!signInErr && signInData?.session) {
+        setSession(signInData.session);
+        setUser(signInData.session.user);
+        toast.success('Account created! Welcome to PredictPro 🎉');
+        navigate('/');
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    toast.success('Account created! Please check your email to verify.');
+  }, [navigate]);
 
   const signInWithGoogle = useCallback(async () => {
     const { error } = await supabase.auth.signInWithOAuth({

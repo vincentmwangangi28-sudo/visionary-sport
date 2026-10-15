@@ -332,12 +332,21 @@ export const FirstVisitSignupModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanEmail = email.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     if (!cleanEmail) {
       toast.error('Please enter your email address');
       return;
     }
-    if (!password || password.length < 6) {
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    if (!cleanPassword || cleanPassword.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
@@ -348,13 +357,39 @@ export const FirstVisitSignupModal: React.FC = () => {
         const displayName = fullName.trim() || cleanEmail.split('@')[0];
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail,
-          password,
+          password: cleanPassword,
           options: {
             data: { full_name: displayName },
             emailRedirectTo: `${window.location.origin}/`,
           },
         });
-        if (error) throw error;
+
+        if (error) {
+          const msg = (error.message || '').toLowerCase();
+          if (msg.includes('already registered') || msg.includes('already exists')) {
+            // Attempt direct password sign-in
+            const { data: directSignIn, error: signInErr } = await supabase.auth.signInWithPassword({
+              email: cleanEmail,
+              password: cleanPassword,
+            });
+
+            if (!signInErr && directSignIn?.session) {
+              try { localStorage.setItem(STORAGE_COMPLETED_KEY, 'true'); } catch {}
+              toast.success('Welcome back to PredictPro! Signed you in. 🎉');
+              setOpen(false);
+              return;
+            }
+
+            if (cleanEmail.includes('gmail.com') || cleanEmail.includes('googlemail.com')) {
+              toast.info('This Gmail is already registered. Click "Continue with Google" above to sign in.');
+            } else {
+              toast.info('An account with this email already exists. Please sign in.');
+            }
+            setMode('login');
+            return;
+          }
+          throw error;
+        }
 
         try {
           localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
@@ -366,16 +401,36 @@ export const FirstVisitSignupModal: React.FC = () => {
         if (data.session) {
           toast.success('Welcome to PredictPro! Your free account is active.');
           setOpen(false);
-        } else {
-          setAccountCreated(true);
-          toast.success('Account created! Please check your email to confirm.');
+          return;
         }
+
+        // Auto-signin fallback
+        const { data: autoLogin, error: autoLoginErr } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPassword,
+        });
+
+        if (!autoLoginErr && autoLogin?.session) {
+          toast.success('Welcome to PredictPro! Your free account is active.');
+          setOpen(false);
+          return;
+        }
+
+        setAccountCreated(true);
+        toast.success('Account created! Please check your email to confirm.');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
-          password,
+          password: cleanPassword,
         });
-        if (error) throw error;
+        if (error) {
+          const msg = error.message || '';
+          if (msg.toLowerCase().includes('invalid login credentials') && (cleanEmail.includes('gmail.com') || cleanEmail.includes('googlemail.com'))) {
+            toast.error('Invalid credentials. If you created this account with Google, click "Continue with Google" above.');
+            return;
+          }
+          throw error;
+        }
         try {
           localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
         } catch {
