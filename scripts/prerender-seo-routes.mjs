@@ -328,26 +328,11 @@ function runPrerender() {
     const escapedTitle = escapeHtml(title);
     const escapedDesc = escapeHtml(description);
 
-    const GLOBAL_HREFLANGS = [
-      'x-default', 'en', 'en-US', 'en-GB', 'en-KE', 'en-NG', 'en-ZA', 'en-GH', 'en-TZ', 'en-UG',
-      'en-ZM', 'en-ZW', 'en-RW', 'en-CM', 'en-IN', 'en-CA', 'en-AU', 'en-NZ', 'en-PH', 'en-SG',
-      'en-MY', 'en-IE', 'en-AE', 'es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-US',
-      'fr', 'fr-FR', 'fr-CA', 'fr-SN', 'fr-CI', 'fr-CD', 'fr-CM', 'fr-MA', 'pt', 'pt-BR',
-      'pt-PT', 'pt-AO', 'pt-MZ', 'sw', 'sw-KE', 'sw-TZ', 'de-DE', 'it-IT', 'nl-NL', 'ar',
-      'ar-EG', 'ar-SA', 'ar-AE', 'ar-MA'
-    ];
-    const ogLocales = ['en_GB', 'en_KE', 'en_NG', 'en_ZA', 'en_GH', 'en_IN', 'en_CA', 'en_AU', 'es_ES', 'es_MX', 'pt_BR', 'fr_FR', 'de_DE', 'sw_KE', 'ar_SA'];
-
     const canonicalLinksBlock = [
       `<link rel="canonical" href="${canonicalUrl}" />`,
-      ...GLOBAL_HREFLANGS.map(lang => {
-        const altHref = (lang === 'x-default' || lang === 'en')
-          ? canonicalUrl
-          : `${canonicalUrl}${canonicalUrl.includes('?') ? '&' : '?'}lang=${encodeURIComponent(lang)}`;
-        return `<link rel="alternate" hreflang="${lang}" href="${altHref}" />`;
-      }),
+      `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
+      `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`,
       `<meta property="og:url" content="${canonicalUrl}" />`,
-      ...ogLocales.map(loc => `<meta property="og:locale:alternate" content="${loc}" />`),
     ].join('\n    ');
 
     let routeHtml = baseHtml

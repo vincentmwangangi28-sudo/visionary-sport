@@ -228,8 +228,8 @@ export default function Highlights() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO
-        title="Official Football Match Video Highlights & Tactical Recap | PredictPro"
-        description="Watch verified football match video highlights, goal previews, and official extended clips dynamically from Premier League, Champions League, La Liga, and global tournaments."
+        title="Official Football Match Video Highlights & Tactical Recap"
+        description="Watch verified football match video highlights and goal previews from Premier League, Champions League, and global tournaments with AI xG analysis."
         canonical="/highlights"
       />
       <Navbar />

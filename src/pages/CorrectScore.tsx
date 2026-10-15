@@ -61,8 +61,8 @@ export default function CorrectScore() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Guru Tips Correct Score Today: AI Score Predictions | PredictPro"
-        description="Daily correct score guru tips today and exact scoreline predictions powered by Monte Carlo goal probability models. Top 3 probable scores with verified probability distribution."
+        title="Guru Tips Correct Score Today: AI Score Predictions"
+        description="Daily correct score guru tips today and exact scoreline predictions powered by Poisson probability matrices. High-odds 1-0, 2-1, and 1-1 football picks."
         canonical="/correct-score"
         keywords="guru tips correct score today, correct score predictions today, exact score football tips, a league bettingpro correct score prediction today, scoreline predictions, correct score probabilities"
       />

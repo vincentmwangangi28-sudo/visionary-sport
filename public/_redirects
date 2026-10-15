@@ -51,6 +51,17 @@
 /table                      /standings                    301
 /tables                     /standings                    301
 /odds                       /dropping-odds                301
+/privacy-policy             /privacy                      301
+/terms-of-service           /terms                        301
+/cookie-policy              /cookies                      301
+/contact-us                 /contact                      301
+/upcoming-fixtures          /upcoming                     301
+/global-tournaments         /tournaments                  301
+/trends                     /streaks                      301
+/results                    /archive                      301
+/compare                    /h2h                          301
+/disclaimer                 /responsible-gaming           301
+/ads-policy                 /responsible-gaming           301
 
 # Enforce HTTPS on custom domain
 http://predictpro.guru/*     https://predictpro.guru/:splat 301!

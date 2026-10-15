@@ -63,7 +63,18 @@
     { "source": "/asian-handicap", "destination": "/blog/asian-handicap-betting-explained", "permanent": true },
     { "source": "/table", "destination": "/standings", "permanent": true },
     { "source": "/tables", "destination": "/standings", "permanent": true },
-    { "source": "/odds", "destination": "/dropping-odds", "permanent": true }
+    { "source": "/odds", "destination": "/dropping-odds", "permanent": true },
+    { "source": "/privacy-policy", "destination": "/privacy", "permanent": true },
+    { "source": "/terms-of-service", "destination": "/terms", "permanent": true },
+    { "source": "/cookie-policy", "destination": "/cookies", "permanent": true },
+    { "source": "/contact-us", "destination": "/contact", "permanent": true },
+    { "source": "/upcoming-fixtures", "destination": "/upcoming", "permanent": true },
+    { "source": "/global-tournaments", "destination": "/tournaments", "permanent": true },
+    { "source": "/trends", "destination": "/streaks", "permanent": true },
+    { "source": "/results", "destination": "/archive", "permanent": true },
+    { "source": "/compare", "destination": "/h2h", "permanent": true },
+    { "source": "/disclaimer", "destination": "/responsible-gaming", "permanent": true },
+    { "source": "/ads-policy", "destination": "/responsible-gaming", "permanent": true }
   ],
   "rewrites": [
     {

@@ -411,11 +411,11 @@ const App = () => (
                           <Routes>
                             <Route path="/"              element={<RouteBoundary component={Index} />} />
                             <Route path="/dashboard"     element={<RouteBoundary component={PersonalizedDashboard} />} />
-                            <Route path="/my-dashboard"  element={<RouteBoundary component={PersonalizedDashboard} />} />
+                            <Route path="/my-dashboard"  element={<Navigate to="/dashboard" replace />} />
                             <Route path="/auth"          element={<RouteBoundary component={Auth} />} />
                             <Route path="/about"         element={<RouteBoundary component={About} />} />
                             <Route path="/archive"       element={<RouteBoundary component={Archive} />} />
-                            <Route path="/results"       element={<RouteBoundary component={Archive} />} />
+                            <Route path="/results"       element={<Navigate to="/archive" replace />} />
                             <Route path="/methodology"   element={<RouteBoundary component={Methodology} />} />
                             <Route path="/preferences"   element={<RouteBoundary component={Preferences} />} />
                             <Route path="/leaderboard"   element={<RouteBoundary component={Leaderboard} />} />
@@ -424,21 +424,21 @@ const App = () => (
                             <Route path="/live"          element={<RouteBoundary component={LiveScores} />} />
                             <Route path="/value-bets"    element={<RouteBoundary component={ValueBets} />} />
                             <Route path="/streaks"       element={<RouteBoundary component={StreaksRadar} />} />
-                            <Route path="/trends"        element={<RouteBoundary component={StreaksRadar} />} />
+                            <Route path="/trends"        element={<Navigate to="/streaks" replace />} />
                             <Route path="/dropping-odds" element={<RouteBoundary component={DroppingOddsPage} />} />
                             <Route path="/screener"      element={<RouteBoundary component={MatchScreenerPage} />} />
                             <Route path="/track-record"  element={<RouteBoundary component={TrackRecordPage} />} />
                             <Route path="/tournaments"   element={<RouteBoundary component={GlobalTournaments} />} />
-                            <Route path="/global-tournaments" element={<RouteBoundary component={GlobalTournaments} />} />
+                            <Route path="/global-tournaments" element={<Navigate to="/tournaments" replace />} />
                             <Route path="/accumulator"   element={<RouteBoundary component={AccumulatorBuilder} />} />
                             <Route path="/tipsters"      element={<RouteBoundary component={Tipsters} />} />
                             <Route path="/bankroll"      element={<RouteBoundary component={BankrollManager} />} />
                             <Route path="/predict"       element={<RouteBoundary component={MatchPredictor} />} />
                             <Route path="/predict/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
-                            <Route path="/match/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
+                            <Route path="/match/:matchSlug" element={<Navigate to="/predict/:matchSlug" replace />} />
                             <Route path="/best-bets"     element={<RouteBoundary component={BestBets} />} />
                             <Route path="/upcoming"      element={<RouteBoundary component={UpcomingFixturesPage} />} />
-                            <Route path="/upcoming-fixtures" element={<RouteBoundary component={UpcomingFixturesPage} />} />
+                            <Route path="/upcoming-fixtures" element={<Navigate to="/upcoming" replace />} />
                             <Route path="/recommendations" element={<RouteBoundary component={Recommendations} />} />
                             <Route path="/performance"   element={<RouteBoundary component={Performance} isProtected />} />
                             <Route path="/shop"          element={<RouteBoundary component={Shop} isProtected />} />
@@ -448,7 +448,7 @@ const App = () => (
                             <Route path="/btts"          element={<RouteBoundary component={BTTS} />} />
                             <Route path="/sports"        element={<RouteBoundary component={OtherSports} />} />
                             <Route path="/h2h"           element={<RouteBoundary component={H2HComparisonPage} />} />
-                            <Route path="/compare"       element={<RouteBoundary component={H2HComparisonPage} />} />
+                            <Route path="/compare"       element={<Navigate to="/h2h" replace />} />
                             <Route path="/statistics"    element={<RouteBoundary component={Statistics} />} />
                             <Route path="/highlights"    element={<RouteBoundary component={Highlights} />} />
                             <Route path="/players"       element={<RouteBoundary component={PlayerSearch} />} />
@@ -468,16 +468,16 @@ const App = () => (
                             <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} isProtected adminOnly />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
                             <Route path="/privacy"                      element={<RouteBoundary component={PrivacyPolicy} />} />
-                            <Route path="/privacy-policy"               element={<RouteBoundary component={PrivacyPolicy} />} />
+                            <Route path="/privacy-policy"               element={<Navigate to="/privacy" replace />} />
                             <Route path="/terms"                        element={<RouteBoundary component={TermsOfService} />} />
-                            <Route path="/terms-of-service"             element={<RouteBoundary component={TermsOfService} />} />
+                            <Route path="/terms-of-service"             element={<Navigate to="/terms" replace />} />
                             <Route path="/cookies"                      element={<RouteBoundary component={CookiePolicy} />} />
-                            <Route path="/cookie-policy"                element={<RouteBoundary component={CookiePolicy} />} />
+                            <Route path="/cookie-policy"                element={<Navigate to="/cookies" replace />} />
                             <Route path="/contact"                      element={<RouteBoundary component={Contact} />} />
-                            <Route path="/contact-us"                   element={<RouteBoundary component={Contact} />} />
+                            <Route path="/contact-us"                   element={<Navigate to="/contact" replace />} />
                             <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
-                            <Route path="/disclaimer"                   element={<RouteBoundary component={ResponsibleGaming} />} />
-                            <Route path="/ads-policy"                   element={<RouteBoundary component={ResponsibleGaming} />} />
+                            <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
+                            <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
                             <Route path="/predictions"                  element={<Navigate to="/predict" replace />} />
                             <Route path="/football-predictions"         element={<Navigate to="/" replace />} />
