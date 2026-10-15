@@ -56,6 +56,8 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
     setLanguage,
     setTimezone,
     setOddsFormat,
+    setDisplayMode,
+    isProbabilitiesMode,
     setDateFormat,
     setTimeFormat,
     toggleDataSaver,
@@ -137,7 +139,7 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
               <Clock className="h-3.5 w-3.5 hidden sm:inline" /> Timezone
             </TabsTrigger>
             <TabsTrigger value="odds" className="text-xs gap-1 data-[state=active]:font-bold">
-              <Percent className="h-3.5 w-3.5 hidden sm:inline" /> Odds
+              <Percent className="h-3.5 w-3.5 hidden sm:inline" /> Metrics
             </TabsTrigger>
           </TabsList>
 
@@ -448,43 +450,123 @@ export const GlobalSettingsModal: React.FC<GlobalSettingsModalProps> = ({
             </div>
           </TabsContent>
 
-          {/* TAB 5: ODDS FORMAT & DATA SAVER */}
+          {/* TAB 5: DISPLAY METRIC MODE & PERFORMANCE */}
           <TabsContent value="odds" className="space-y-4 pt-3">
-            <p className="text-xs text-muted-foreground">
-              Select how betting lines and probabilities are displayed across all prediction tables.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {SUPPORTED_ODDS_FORMATS.map((fmt) => {
-                const isSelected = preferences.oddsFormat === fmt.id;
-                return (
-                  <button
-                    key={fmt.id}
-                    type="button"
-                    onClick={() => {
-                      setOddsFormat(fmt.id as SupportedOddsFormat);
-                      toast.success(`Odds format set to ${fmt.name}`);
-                    }}
-                    className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
-                        : 'border-border hover:border-primary/40 bg-muted/10'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold">{fmt.name}</span>
-                        <span className="text-xs font-mono text-primary font-black bg-primary/10 px-1.5 py-0.5 rounded">
-                          {fmt.example}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-1">{fmt.description}</p>
-                    </div>
-                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-1" />}
-                  </button>
-                );
-              })}
+            <div>
+              <p className="text-xs font-bold text-foreground">Primary Metric Display Mode</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Choose how match outcomes and predictions are displayed across all cards, modals, and tables.
+              </p>
             </div>
+
+            {/* Dual Mode Switcher */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDisplayMode('probabilities');
+                  toast.success('Display mode set to AI Win Probabilities %');
+                }}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  isProbabilitiesMode
+                    ? 'border-primary bg-primary/10 ring-1 ring-primary/40 shadow-xs'
+                    : 'border-border/70 hover:border-primary/40 bg-card'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                    AI Outcome Probabilities %
+                  </span>
+                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
+                    Recommended
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Pure Poisson statistical percentages (e.g. <strong>1: 54% · X: 26% · 2: 20%</strong>). Eliminates commercial betting clutter and complies with ad policies.
+                </p>
+                {/* Visual Preview */}
+                <div className="mt-2.5 pt-2 border-t border-border/50 space-y-1">
+                  <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
+                    <span>1: 54%</span>
+                    <span>X: 26%</span>
+                    <span>2: 20%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden flex">
+                    <div className="bg-emerald-500 w-[54%]" />
+                    <div className="bg-amber-500 w-[26%]" />
+                    <div className="bg-sky-500 w-[20%]" />
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDisplayMode('odds');
+                  toast.info('Display mode set to Commercial Betting Odds');
+                }}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  !isProbabilitiesMode
+                    ? 'border-primary bg-primary/10 ring-1 ring-primary/40 shadow-xs'
+                    : 'border-border/70 hover:border-primary/40 bg-card'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+                    Commercial Betting Odds
+                  </span>
+                  {!isProbabilitiesMode && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Traditional bookmaker decimal or fractional prices (e.g. <strong>1: 1.85 · X: 3.40 · 2: 4.20</strong>) for comparing market liquidity.
+                </p>
+                <div className="mt-2.5 pt-2 border-t border-border/50 flex items-center gap-1.5">
+                  <Badge variant="outline" className="text-[10px] font-mono font-bold">1: 1.85</Badge>
+                  <Badge variant="outline" className="text-[10px] font-mono font-bold">X: 3.40</Badge>
+                  <Badge variant="outline" className="text-[10px] font-mono font-bold">2: 4.20</Badge>
+                </div>
+              </button>
+            </div>
+
+            {/* If Odds Mode, show formats */}
+            {!isProbabilitiesMode && (
+              <div className="space-y-2 pt-2 animate-in fade-in-50 duration-150">
+                <Label className="text-xs font-bold text-foreground">Preferred Odds Number Format:</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {SUPPORTED_ODDS_FORMATS.map((fmt) => {
+                    const isSelected = preferences.oddsFormat === fmt.id;
+                    return (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        onClick={() => {
+                          setOddsFormat(fmt.id as SupportedOddsFormat);
+                          toast.success(`Odds format set to ${fmt.name}`);
+                        }}
+                        className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 ring-1 ring-primary/30 font-bold'
+                            : 'border-border/70 hover:border-primary/40 bg-card'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold">{fmt.name}</span>
+                            <span className="text-xs font-mono text-primary font-black bg-primary/10 px-1.5 py-0.5 rounded">
+                              {fmt.example}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{fmt.description}</p>
+                        </div>
+                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Performance & Data Saver */}
             <div className="pt-3 border-t flex items-center justify-between bg-muted/30 p-3 rounded-xl">

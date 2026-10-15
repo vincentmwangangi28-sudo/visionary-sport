@@ -192,7 +192,23 @@ async function runOddsDrift() {
 }
 
 async function runJackpotEngine() {
-  console.log('🏆 [7/11] Generating 17-Game Mega Jackpot Combinations...');
+  console.log('🏆 [7/11] Running Direct Jackpot Cron & Settlement Engine (SportPesa 17 & Betika 15)...');
+  const targetHost = process.env.SITE_URL || 'http://localhost:3000';
+  try {
+    const res = await fetch(`${targetHost}/api/jackpot-cron?action=all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      console.log(`✅ Direct Jackpot Cron & Settlement status: HTTP ${res.status}`, data?.status || 'OK');
+      return { success: true, status: res.status, data };
+    }
+  } catch (localErr) {
+    console.warn('Local jackpot-cron endpoint unavailable, attempting edge fallback:', localErr.message);
+  }
+
+  // Fallback to Supabase cron edge function
   const url = `${SUPABASE_BASE_URL}/functions/v1/cron-daily-predictions`;
   try {
     const res = await fetch(url, {
@@ -201,7 +217,7 @@ async function runJackpotEngine() {
       body: JSON.stringify({ trigger: 'cli_cron', mode: 'jackpot_17_games', timestamp: new Date().toISOString() }),
     });
     const data = await res.json().catch(() => null);
-    console.log(`✅ Jackpot Engine status: HTTP ${res.status}`);
+    console.log(`✅ Jackpot Engine fallback status: HTTP ${res.status}`);
     return { success: res.ok, status: res.status, data };
   } catch (err) {
     console.error('❌ Jackpot Engine failed:', err.message);
@@ -321,7 +337,7 @@ async function main() {
   if (targetTask === 'odds-drift' || targetTask === 'all') {
     results.oddsDrift = await runOddsDrift();
   }
-  if (targetTask === 'jackpot' || targetTask === 'all') {
+  if (targetTask === 'jackpot' || targetTask === 'jackpot-settle' || targetTask === 'jackpot-rollover' || targetTask === 'all') {
     results.jackpot = await runJackpotEngine();
   }
   if (targetTask === 'standings' || targetTask === 'all') {

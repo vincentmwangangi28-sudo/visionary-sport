@@ -50,7 +50,21 @@ async function ping() {
       }
     }
 
-    console.log(`[Keepalive Daemon #${pingCount}] [${now}] HTTP ${res.status} OK (${elapsed}ms) | DB: ${dbStatus}`);
+    // 3. Periodic Jackpot Sync & Settlement Trigger (Every 15 mins = every 5th cycle)
+    let jackpotStatus = 'standby';
+    if (pingCount % 5 === 1) {
+      try {
+        const jpRes = await fetch(`${TARGET_URL}/api/jackpot-cron?action=all`, {
+          method: 'POST',
+          headers: { 'X-Keepalive-Agent': 'PredictPro-CLI-Daemon/2.5' },
+        }).catch(() => null);
+        jackpotStatus = jpRes ? `cron_http_${jpRes.status}` : 'offline';
+      } catch (jpErr) {
+        jackpotStatus = `err: ${jpErr.message}`;
+      }
+    }
+
+    console.log(`[Keepalive Daemon #${pingCount}] [${now}] HTTP ${res.status} OK (${elapsed}ms) | DB: ${dbStatus} | Jackpot: ${jackpotStatus}`);
   } catch (err) {
     console.warn(`[Keepalive Daemon #${pingCount}] [${now}] Ping error: ${err.message}`);
   }

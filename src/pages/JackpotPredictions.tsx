@@ -40,7 +40,24 @@ import {
   Share2,
   AlertTriangle,
   Award,
+  CheckCircle,
+  XCircle,
+  History,
+  PlayCircle,
+  BarChart2,
+  Zap,
+  Timer,
+  ChevronRight,
 } from 'lucide-react';
+import {
+  settleJackpotPool,
+  getHistoricalJackpotEditions,
+  triggerJackpotCronAction,
+  rollOverToNextJackpotSlate,
+  JackpotMatchResult,
+  JackpotSettlementSummary,
+  HistoricalJackpotEdition,
+} from '@/services/jackpotResultsService';
 
 const FAQS = [
   {
@@ -84,6 +101,10 @@ export default function JackpotPredictions() {
     'MOZZART OFFICIAL',
   ]);
   const [customPicks, setCustomPicks] = useState<Record<string, JackpotPickOption>>({});
+  const [activeView, setActiveView] = useState<'predictions' | 'results' | 'history'>('predictions');
+  const [cronTriggering, setCronTriggering] = useState<boolean>(false);
+  const [cronStatusMessage, setCronStatusMessage] = useState<string | null>(null);
+  const [selectedHistoryEditionId, setSelectedHistoryEditionId] = useState<string | null>(null);
   const [copiedSlip, setCopiedSlip] = useState(false);
   const [calculatorDoubles, setCalculatorDoubles] = useState<number>(3);
 
@@ -343,6 +364,57 @@ export default function JackpotPredictions() {
     });
   };
 
+  const { matches: settledMatches, summary: settlementSummary } = useMemo(() => {
+    return settleJackpotPool(provider, currentPool, activePicks);
+  }, [provider, currentPool, activePicks]);
+
+  const historicalEditions = useMemo(() => {
+    return getHistoricalJackpotEditions(provider);
+  }, [provider]);
+
+  const activeHistoryEdition = useMemo(() => {
+    if (!selectedHistoryEditionId) return historicalEditions[0] || null;
+    return historicalEditions.find((h) => h.roundId === selectedHistoryEditionId) || historicalEditions[0] || null;
+  }, [historicalEditions, selectedHistoryEditionId]);
+
+  const handleTriggerCronAction = async (action: 'settle' | 'rollover' | 'sync' | 'all') => {
+    hapticService.boost();
+    setCronTriggering(true);
+    setCronStatusMessage(`Triggering cron: ${action}...`);
+
+    try {
+      const res = await triggerJackpotCronAction(action);
+      setLastSyncedAt(res.timestamp);
+      setCronStatusMessage(res.message);
+
+      if (action === 'rollover') {
+        const nextSlate = rollOverToNextJackpotSlate(currentPool, provider);
+        setPools((prev) => ({ ...prev, [provider]: nextSlate }));
+        setActiveView('predictions');
+        toast({
+          title: '🔄 Rolled Over to Upcoming Jackpot Edition',
+          description: `Archived completed matches and refreshed schedule to next upcoming draw with live Poisson calculations.`,
+        });
+      } else if (action === 'settle') {
+        setActiveView('results');
+        toast({
+          title: '⚡ Real-Time Match Settlement Triggered',
+          description: `Checked FT scores & live progression. Won ${settlementSummary.correctSingleCount}/${settlementSummary.totalGames} picks (${settlementSummary.hitBonusTier || 'Tracking'}).`,
+        });
+      } else {
+        await loadRealJackpotData(true);
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Cron Execution Warning',
+        description: err?.message || 'Trigger completed via local worker.',
+      });
+    } finally {
+      setCronTriggering(false);
+      setTimeout(() => setCronStatusMessage(null), 6000);
+    }
+  };
+
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -559,214 +631,652 @@ export default function JackpotPredictions() {
         </section>
 
         {/* Main Table Section */}
-        <section className="py-10 container mx-auto px-4 max-w-6xl space-y-6">
-          {/* Action & Strategy Preset Strip */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
-            <div className="space-y-1">
-              <h2 className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" /> {currentMeta.name} — Full Match Slate
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Select 1-click strategy presets or customize individual picks below. Raw bookmaker odds replaced with Bivariate Poisson probabilities.
-              </p>
+        <section className="py-8 container mx-auto px-4 max-w-6xl space-y-6">
+          {/* Automated Cron Job & Trigger Console */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-card via-muted/20 to-card border border-border/80 shadow-xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <Zap className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-xs sm:text-sm text-foreground">
+                      Automated Jackpot Cron &amp; Settlement Trigger
+                    </span>
+                    <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Schedule: */15 * * * * (Every 15 Mins)
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Continuous cron updates scores after matches are played, verifies won/missed picks, tracks bonus tiers, and auto-fetches the new upcoming slate once the jackpot round ends.
+                  </p>
+                </div>
+              </div>
+
+              {/* Trigger Buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleTriggerCronAction('settle')}
+                  disabled={cronTriggering}
+                  className="text-xs h-8 px-2.5 font-bold gap-1.5 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+                  title="Trigger cron to check match results and settle won/missed picks"
+                >
+                  <CheckCircle className={`h-3.5 w-3.5 ${cronTriggering ? 'animate-spin' : ''}`} />
+                  <span>⚡ Settle Scores</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleTriggerCronAction('rollover')}
+                  disabled={cronTriggering}
+                  className="text-xs h-8 px-2.5 font-bold gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+                  title="Trigger cron to archive finished round and ingest new upcoming jackpot slate"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${cronTriggering ? 'animate-spin' : ''}`} />
+                  <span>🔄 Rollover Next Round</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleTriggerCronAction('sync')}
+                  disabled={cronTriggering}
+                  className="text-xs h-8 px-2.5 font-bold gap-1.5 border-border hover:bg-muted"
+                  title="Force sync official bookmaker pools"
+                >
+                  <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>Sync Feeds</span>
+                </Button>
+              </div>
             </div>
 
-            {/* Presets & Actions */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleResetToSingleSlip}
-                className="text-xs h-8 px-2.5 font-bold border-border hover:bg-muted"
-                title="Reset to 1 single slip with highest probability picks"
+            {/* Live Settlement Pulse & Round Status Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/50 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground text-[11px]">Round Status:</span>
+                <Badge className={`text-[10px] font-bold ${settlementSummary.isOver ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40' : settlementSummary.liveGames > 0 ? 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40 animate-pulse' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/40'}`}>
+                  {settlementSummary.isOver ? 'COMPLETED (Rolled Over)' : settlementSummary.liveGames > 0 ? `${settlementSummary.liveGames} IN PLAY` : 'ACTIVE UPCOMING'}
+                </Badge>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground text-[11px]">Matches Played:</span>
+                <span className="font-mono font-bold text-foreground">
+                  {settlementSummary.finishedGames} / {settlementSummary.totalGames} ({Math.round((settlementSummary.finishedGames / (settlementSummary.totalGames || 1)) * 100)}%)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground text-[11px]">Picks Settled Won:</span>
+                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  {settlementSummary.correctSingleCount} Singles · {settlementSummary.correctDoubleCount} Doubles
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground text-[11px]">Bonus Status:</span>
+                <span className="font-bold text-primary truncate">
+                  {settlementSummary.hitBonusTier ? settlementSummary.hitBonusTier : 'Tracking matches'}
+                </span>
+              </div>
+            </div>
+
+            {cronStatusMessage && (
+              <div className="text-[11px] text-primary font-mono bg-primary/5 px-2.5 py-1 rounded-md border border-primary/20 flex items-center gap-1.5 animate-in fade-in">
+                <Sparkles className="h-3 w-3 animate-spin text-primary" />
+                {cronStatusMessage}
+              </div>
+            )}
+          </div>
+
+          {/* View Mode Navigation Tabs */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/40 border border-border/80 overflow-x-auto scrollbar-none">
+              <button
+                type="button"
+                onClick={() => { hapticService.selection(); setActiveView('predictions'); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  activeView === 'predictions' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                🎯 Pure Banker (1x)
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleApplyBalancedPro}
-                className="text-xs h-8 px-2.5 font-bold border-primary/40 text-primary hover:bg-primary/10"
-                title="Apply 3 Double Chances on highest draw risk matches (8 slips)"
+                <Target className="h-3.5 w-3.5 text-primary" />
+                Active Match Slate ({currentPool.length})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { hapticService.selection(); setActiveView('results'); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  activeView === 'results' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                ⚖️ Balanced Pro (8x)
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleApplyMaxBonusHedges}
-                className="text-xs h-8 px-2.5 font-bold border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"
-                title="Apply 5 Double Chances for maximum bonus payout protection (32 slips)"
+                <BarChart2 className="h-3.5 w-3.5 text-emerald-600" />
+                Live Settlement &amp; Results Tracker
+                {settlementSummary.finishedGames > 0 && (
+                  <Badge variant="secondary" className="text-[9px] px-1 py-0 font-mono font-bold ml-0.5">
+                    {settlementSummary.correctSingleCount}/{settlementSummary.finishedGames} Won
+                  </Badge>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { hapticService.selection(); setActiveView('history'); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  activeView === 'history' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                🛡️ Max Bonus (32x)
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => handleLoadToBetSlip(false)}
-                className="text-xs h-8 px-3 font-black gap-1.5 bg-primary text-primary-foreground shadow-xs"
-              >
-                <Layers className="h-3.5 w-3.5" /> Load to Bet Slip
-              </Button>
+                <History className="h-3.5 w-3.5 text-amber-600" />
+                Settled Editions Archive ({historicalEditions.length})
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 text-primary" />
+              <span>Next Draw: <strong>{settlementSummary.nextScheduledDraw}</strong></span>
             </div>
           </div>
 
-          {/* Matches Table */}
-          {loading && currentPool.length === 0 ? (
-            <div className="space-y-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-16 rounded-xl bg-card border border-border/40 animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-2xl border border-border/70 bg-card shadow-xs">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-border/70 bg-muted/40 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                    <th className="py-3 px-3 w-10">#</th>
-                    <th className="py-3 px-4 min-w-[220px]">Live Match &amp; Kickoff</th>
-                    <th className="py-3 px-3 text-center min-w-[170px]">AI Probability (1 / X / 2 %)</th>
-                    <th className="py-3 px-3 text-center min-w-[120px]">xG &amp; Predicted Score</th>
-                    <th className="py-3 px-3 text-center min-w-[100px]">AI Pick</th>
-                    <th className="py-3 px-3 text-center min-w-[200px]">Pick / Double Chance Selector</th>
-                    <th className="py-3 px-4 min-w-[200px]">Model Rationale</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50 text-xs">
-                  {filteredGames.map((g) => {
-                    const userPick = activePicks[g.fixtureId] || g.recommendedPick;
-                    const inBetSlip = slipItems.some((item) => item.matchId === g.fixtureId);
+          {/* VIEW 1: ACTIVE PREDICTIONS & COMBINATIONS */}
+          {activeView === 'predictions' && (
+            <div className="space-y-6">
+              {/* Action & Strategy Preset Strip */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
+                <div className="space-y-1">
+                  <h2 className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" /> {currentMeta.name} — Full Match Slate
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Select 1-click strategy presets or customize individual picks below. Raw bookmaker odds replaced with Bivariate Poisson probabilities.
+                  </p>
+                </div>
 
-                    return (
-                      <tr key={g.fixtureId} className="hover:bg-muted/20 transition-colors">
-                        {/* Game Number */}
-                        <td className="py-3.5 px-3 font-black text-muted-foreground font-mono">
-                          {g.id}
-                        </td>
+                {/* Presets & Actions */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleResetToSingleSlip}
+                    className="text-xs h-8 px-2.5 font-bold border-border hover:bg-muted"
+                    title="Reset to 1 single slip with highest probability picks"
+                  >
+                    🎯 Pure Banker (1x)
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleApplyBalancedPro}
+                    className="text-xs h-8 px-2.5 font-bold border-primary/40 text-primary hover:bg-primary/10"
+                    title="Apply 3 Double Chances on highest draw risk matches (8 slips)"
+                  >
+                    ⚖️ Balanced Pro (8x)
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleApplyMaxBonusHedges}
+                    className="text-xs h-8 px-2.5 font-bold border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"
+                    title="Apply 5 Double Chances for maximum bonus payout protection (32 slips)"
+                  >
+                    🛡️ Max Bonus (32x)
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleLoadToBetSlip(false)}
+                    className="text-xs h-8 px-3 font-black gap-1.5 bg-primary text-primary-foreground shadow-xs"
+                  >
+                    <Layers className="h-3.5 w-3.5" /> Load to Bet Slip
+                  </Button>
+                </div>
+              </div>
 
-                        {/* Teams & Kickoff */}
-                        <td className="py-3.5 px-4">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 font-bold text-foreground text-xs sm:text-sm">
-                              <TeamLogo team={g.homeTeam} logoUrl={g.homeLogo} size="xs" />
-                              <span className="truncate">{g.homeTeam}</span>
-                              <span className="text-muted-foreground font-semibold px-0.5">vs</span>
-                              <TeamLogo team={g.awayTeam} logoUrl={g.awayLogo} size="xs" />
-                              <span className="truncate">{g.awayTeam}</span>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
-                              {g.smsId && (
-                                <Badge variant="secondary" className="text-[9px] px-1 py-0 font-mono font-bold">
-                                  ID: {g.smsId}
-                                </Badge>
-                              )}
-                              <span className="font-medium">{g.league}</span>
-                              <span>·</span>
-                              <span>{g.kickoff}</span>
-                              {g.isBanker && (
-                                <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-[9px] py-0 px-1 font-bold">
-                                  BANKER
-                                </Badge>
-                              )}
-                              {g.isValueDraw && (
-                                <Badge className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 text-[9px] py-0 px-1 font-bold">
-                                  DRAW ALERT
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* AI Probability % (REPLACING RAW BETTING ODDS) */}
-                        <td className="py-3.5 px-3 text-center">
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold">
-                              <span className={g.homeProb >= 50 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-foreground'}>
-                                1: {g.homeProb}%
-                              </span>
-                              <span className="text-muted-foreground">·</span>
-                              <span className={g.drawProb >= 30 ? 'text-amber-600 dark:text-amber-400 font-black' : 'text-muted-foreground'}>
-                                X: {g.drawProb}%
-                              </span>
-                              <span className="text-muted-foreground">·</span>
-                              <span className={g.awayProb >= 50 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-foreground'}>
-                                2: {g.awayProb}%
-                              </span>
-                            </div>
-                            <div className="h-1.5 w-32 mx-auto rounded-full bg-muted overflow-hidden flex">
-                              <div style={{ width: `${g.homeProb}%` }} className="bg-emerald-500" title={`Home: ${g.homeProb}%`} />
-                              <div style={{ width: `${g.drawProb}%` }} className="bg-amber-500" title={`Draw: ${g.drawProb}%`} />
-                              <div style={{ width: `${g.awayProb}%` }} className="bg-sky-500" title={`Away: ${g.awayProb}%`} />
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* xG & Projected Score */}
-                        <td className="py-3.5 px-3 text-center">
-                          <Badge variant="secondary" className="font-mono font-black text-xs px-2 py-0.5">
-                            {g.scoreline}
-                          </Badge>
-                          <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
-                            xG: {g.homeXG} vs {g.awayXG}
-                          </div>
-                        </td>
-
-                        {/* Recommended Single Pick */}
-                        <td className="py-3.5 px-3 text-center">
-                          <span
-                            className={`inline-flex items-center justify-center w-7 h-7 rounded-lg font-black text-xs ${
-                              g.recommendedPick === '1'
-                                ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40'
-                                : g.recommendedPick === 'X'
-                                ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40'
-                                : 'bg-sky-500/20 text-sky-800 dark:text-sky-300 border border-sky-500/40'
-                            }`}
-                          >
-                            {g.recommendedPick}
-                          </span>
-                        </td>
-
-                        {/* Interactive Pick Selector */}
-                        <td className="py-3.5 px-3 text-center">
-                          <div className="inline-flex items-center gap-1 flex-wrap justify-center">
-                            {(['1', 'X', '2', '1X', 'X2', '12'] as JackpotPickOption[]).map((opt) => {
-                              const isSelected = userPick === opt;
-                              const isAIHedge = g.doubleChance === opt && opt.length === 2;
-                              return (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => handleSelectPick(g.fixtureId, opt)}
-                                  title={isAIHedge ? `AI Recommended Double Chance (${opt})` : `Select ${opt}`}
-                                  aria-label={`Select ${opt} for ${g.match}`}
-                                  className={`h-7 px-2 rounded text-[11px] font-black border transition-all cursor-pointer ${
-                                    isSelected
-                                      ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-105'
-                                      : isAIHedge
-                                      ? 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20'
-                                      : 'bg-muted/40 text-muted-foreground border-border/50 hover:text-foreground hover:bg-muted'
-                                  }`}
-                                >
-                                  {opt}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </td>
-
-                        {/* Quantitative Rationale */}
-                        <td className="py-3.5 px-4 text-[11px] text-muted-foreground leading-relaxed">
-                          <p className="line-clamp-2">{g.rationale}</p>
-                          {inBetSlip && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                              <Check className="h-3 w-3" /> In Slip
-                            </span>
-                          )}
-                        </td>
+              {/* Matches Table */}
+              {loading && currentPool.length === 0 ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="h-16 rounded-xl bg-card border border-border/40 animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-border/70 bg-card shadow-xs">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/70 bg-muted/40 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                        <th className="py-3 px-3 w-10">#</th>
+                        <th className="py-3 px-4 min-w-[220px]">Live Match &amp; Kickoff</th>
+                        <th className="py-3 px-3 text-center min-w-[170px]">AI Probability (1 / X / 2 %)</th>
+                        <th className="py-3 px-3 text-center min-w-[120px]">xG &amp; Predicted Score</th>
+                        <th className="py-3 px-3 text-center min-w-[100px]">AI Pick</th>
+                        <th className="py-3 px-3 text-center min-w-[200px]">Pick / Double Chance Selector</th>
+                        <th className="py-3 px-4 min-w-[200px]">Model Rationale</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="divide-y divide-border/50 text-xs">
+                      {filteredGames.map((g) => {
+                        const userPick = activePicks[g.fixtureId] || g.recommendedPick;
+                        const inBetSlip = slipItems.some((item) => item.matchId === g.fixtureId);
+
+                        return (
+                          <tr key={g.fixtureId} className="hover:bg-muted/20 transition-colors">
+                            {/* Game Number */}
+                            <td className="py-3.5 px-3 font-black text-muted-foreground font-mono">
+                              {g.id}
+                            </td>
+
+                            {/* Teams & Kickoff */}
+                            <td className="py-3.5 px-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5 font-bold text-foreground text-xs sm:text-sm">
+                                  <TeamLogo team={g.homeTeam} logoUrl={g.homeLogo} size="xs" />
+                                  <span className="truncate">{g.homeTeam}</span>
+                                  <span className="text-muted-foreground font-semibold px-0.5">vs</span>
+                                  <TeamLogo team={g.awayTeam} logoUrl={g.awayLogo} size="xs" />
+                                  <span className="truncate">{g.awayTeam}</span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                                  {g.smsId && (
+                                    <Badge variant="secondary" className="text-[9px] px-1 py-0 font-mono font-bold">
+                                      ID: {g.smsId}
+                                    </Badge>
+                                  )}
+                                  <span className="font-medium">{g.league}</span>
+                                  <span>·</span>
+                                  <span>{g.kickoff}</span>
+                                  {g.isBanker && (
+                                    <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-[9px] py-0 px-1 font-bold">
+                                      BANKER
+                                    </Badge>
+                                  )}
+                                  {g.isValueDraw && (
+                                    <Badge className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 text-[9px] py-0 px-1 font-bold">
+                                      DRAW ALERT
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* AI Probability % */}
+                            <td className="py-3.5 px-3 text-center">
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold">
+                                  <span className={g.homeProb >= 50 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-foreground'}>
+                                    1: {g.homeProb}%
+                                  </span>
+                                  <span className="text-muted-foreground">·</span>
+                                  <span className={g.drawProb >= 30 ? 'text-amber-600 dark:text-amber-400 font-black' : 'text-muted-foreground'}>
+                                    X: {g.drawProb}%
+                                  </span>
+                                  <span className="text-muted-foreground">·</span>
+                                  <span className={g.awayProb >= 50 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-foreground'}>
+                                    2: {g.awayProb}%
+                                  </span>
+                                </div>
+                                <div className="h-1.5 w-32 mx-auto rounded-full bg-muted overflow-hidden flex">
+                                  <div style={{ width: `${g.homeProb}%` }} className="bg-emerald-500" title={`Home: ${g.homeProb}%`} />
+                                  <div style={{ width: `${g.drawProb}%` }} className="bg-amber-500" title={`Draw: ${g.drawProb}%`} />
+                                  <div style={{ width: `${g.awayProb}%` }} className="bg-sky-500" title={`Away: ${g.awayProb}%`} />
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* xG & Projected Score */}
+                            <td className="py-3.5 px-3 text-center">
+                              <Badge variant="secondary" className="font-mono font-black text-xs px-2 py-0.5">
+                                {g.scoreline}
+                              </Badge>
+                              <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                                xG: {g.homeXG} vs {g.awayXG}
+                              </div>
+                            </td>
+
+                            {/* Recommended Single Pick */}
+                            <td className="py-3.5 px-3 text-center">
+                              <span
+                                className={`inline-flex items-center justify-center w-7 h-7 rounded-lg font-black text-xs ${
+                                  g.recommendedPick === '1'
+                                    ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40'
+                                    : g.recommendedPick === 'X'
+                                    ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40'
+                                    : 'bg-sky-500/20 text-sky-800 dark:text-sky-300 border border-sky-500/40'
+                                }`}
+                              >
+                                {g.recommendedPick}
+                              </span>
+                            </td>
+
+                            {/* Interactive Pick Selector */}
+                            <td className="py-3.5 px-3 text-center">
+                              <div className="inline-flex items-center gap-1 flex-wrap justify-center">
+                                {(['1', 'X', '2', '1X', 'X2', '12'] as JackpotPickOption[]).map((opt) => {
+                                  const isSelected = userPick === opt;
+                                  const isAIHedge = g.doubleChance === opt && opt.length === 2;
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => handleSelectPick(g.fixtureId, opt)}
+                                      title={isAIHedge ? `AI Recommended Double Chance (${opt})` : `Select ${opt}`}
+                                      aria-label={`Select ${opt} for ${g.match}`}
+                                      className={`h-7 px-2 rounded text-[11px] font-black border transition-all cursor-pointer ${
+                                        isSelected
+                                          ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-105'
+                                          : isAIHedge
+                                          ? 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20'
+                                          : 'bg-muted/40 text-muted-foreground border-border/50 hover:text-foreground hover:bg-muted'
+                                      }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </td>
+
+                            {/* Quantitative Rationale */}
+                            <td className="py-3.5 px-4 text-[11px] text-muted-foreground leading-relaxed">
+                              <p className="line-clamp-2">{g.rationale}</p>
+                              {inBetSlip && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                  <Check className="h-3 w-3" /> In Slip
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* VIEW 2: LIVE SETTLEMENT & RESULTS TRACKER */}
+          {activeView === 'results' && (
+            <div className="space-y-6">
+              {/* Big Milestone & Bonus Progress Card */}
+              <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-emerald-600 text-white font-black text-xs">
+                        VERIFIED SETTLEMENT ENGINE
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {settlementSummary.roundName}
+                      </span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-foreground">
+                      Jackpot Results: <span className="text-emerald-600 dark:text-emerald-400">{settlementSummary.correctSingleCount} of {settlementSummary.totalGames} Picks Correct</span>
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Live tracking of full-time scores, match outcomes (1/X/2), and official bonus payout thresholds.
+                    </p>
+                  </div>
+
+                  <div className="text-right sm:border-l sm:pl-6 border-border/60">
+                    <p className="text-xs text-muted-foreground">Bonus Payout Status</p>
+                    <p className="text-xl font-black text-primary">
+                      {settlementSummary.hitBonusTier || 'Tracking Active Matches'}
+                    </p>
+                    {settlementSummary.estimatedBonusPayout && (
+                      <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        Est. Payout: {settlementSummary.estimatedBonusPayout}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Visual Bonus Threshold Milestone Meter */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-bold text-foreground">
+                    <span>Bonus Progress Meter</span>
+                    <span className="font-mono text-primary font-black">
+                      {settlementSummary.correctSingleCount} / {settlementSummary.totalGames} ({settlementSummary.strikeRate}% Strike Rate)
+                    </span>
+                  </div>
+                  <div className="h-3 w-full bg-muted rounded-full overflow-hidden flex relative">
+                    <div
+                      style={{ width: `${(settlementSummary.correctSingleCount / (settlementSummary.totalGames || 1)) * 100}%` }}
+                      className="bg-gradient-to-r from-emerald-500 via-primary to-emerald-400 transition-all duration-500"
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono pt-1">
+                    <span>0 Correct</span>
+                    <span>10 (Tier 5)</span>
+                    <span>12 (Tier 4)</span>
+                    <span>13 (Tier 3)</span>
+                    <span>14 (Tier 2)</span>
+                    <span>15 (Tier 1)</span>
+                    <span className="font-bold text-foreground">17 (GRAND JACKPOT)</span>
+                  </div>
+                </div>
+
+                {/* Rollover Next Round Notice if Round Completed */}
+                {settlementSummary.isOver && (
+                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                    <div>
+                      <p className="font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                        <Trophy className="h-4 w-4 text-amber-600" /> This Jackpot Round Has Concluded!
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">
+                        All fixtures have finished. The automated cron engine has archived this round and prepared the upcoming edition.
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleTriggerCronAction('rollover')}
+                      disabled={cronTriggering}
+                      className="font-bold text-xs gap-1.5 flex-shrink-0"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${cronTriggering ? 'animate-spin' : ''}`} />
+                      Load Next Upcoming Slate
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Match-by-Match Results Scorecard Table */}
+              <div className="overflow-x-auto rounded-2xl border border-border/70 bg-card shadow-xs">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/70 bg-muted/40 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                      <th className="py-3 px-3 w-10">#</th>
+                      <th className="py-3 px-4 min-w-[200px]">Fixture &amp; Competition</th>
+                      <th className="py-3 px-3 text-center min-w-[100px]">Match Status</th>
+                      <th className="py-3 px-3 text-center min-w-[100px]">FT / Live Score</th>
+                      <th className="py-3 px-3 text-center min-w-[90px]">Actual Outcome</th>
+                      <th className="py-3 px-3 text-center min-w-[90px]">Model Pick</th>
+                      <th className="py-3 px-3 text-center min-w-[110px]">Result Status</th>
+                      <th className="py-3 px-3 text-center min-w-[100px]">Double Chance</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50 text-xs">
+                    {settledMatches.map((m) => {
+                      const isFinished = m.status === 'finished';
+                      const isLive = m.status === 'live';
+
+                      return (
+                        <tr key={m.fixtureId} className="hover:bg-muted/20 transition-colors">
+                          <td className="py-3.5 px-3 font-black text-muted-foreground font-mono">
+                            {m.id}
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-1.5 font-bold text-foreground">
+                                <TeamLogo team={m.homeTeam} logoUrl={m.homeLogo} size="xs" />
+                                <span className="truncate">{m.homeTeam}</span>
+                                <span className="text-muted-foreground font-semibold px-0.5">vs</span>
+                                <TeamLogo team={m.awayTeam} logoUrl={m.awayLogo} size="xs" />
+                                <span className="truncate">{m.awayTeam}</span>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">{m.league}</p>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center">
+                            {isFinished ? (
+                              <Badge variant="outline" className="text-[10px] font-mono font-bold bg-muted text-muted-foreground">
+                                FT
+                              </Badge>
+                            ) : isLive ? (
+                              <Badge className="text-[10px] font-bold bg-rose-600 text-white animate-pulse">
+                                {m.minute || 'LIVE'}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                                Scheduled
+                              </Badge>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center font-mono font-black text-sm">
+                            {m.homeScore != null && m.awayScore != null ? (
+                              <span className="px-2 py-0.5 rounded bg-muted">
+                                {m.homeScore} - {m.awayScore}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground font-normal">-</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center">
+                            {m.actualOutcome ? (
+                              <span className="font-mono font-black text-xs px-2 py-1 rounded bg-muted/60 border border-border">
+                                {m.actualOutcome}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center font-bold font-mono">
+                            <span className="px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
+                              {m.userPick || m.recommendedPick}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center">
+                            {isFinished ? (
+                              m.isWon ? (
+                                <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 text-[10px] font-bold gap-1">
+                                  <CheckCircle className="h-3 w-3" /> WON
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30 text-[10px] font-bold gap-1">
+                                  <XCircle className="h-3 w-3" /> MISSED
+                                </Badge>
+                              )
+                            ) : isLive ? (
+                              <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40 text-[10px] font-bold animate-pulse">
+                                IN PLAY ⏳
+                              </Badge>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground">Awaiting Kickoff</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center font-mono text-[11px]">
+                            {m.doubleChance && (
+                              <span className={`px-1.5 py-0.5 rounded font-bold ${m.doubleChanceWon ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground'}`}>
+                                {m.doubleChance} {m.doubleChanceWon ? '✅' : ''}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 3: HISTORICAL SETTLED ROUNDS ARCHIVE */}
+          {activeView === 'history' && (
+            <div className="space-y-6">
+              <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs space-y-2">
+                <h3 className="text-lg font-black text-foreground flex items-center gap-2">
+                  <History className="h-5 w-5 text-amber-500" /> Settled Jackpot Rounds Archive &amp; Audit Trail
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Browse previous official rounds, verified winning outcomes, strike rates, and bonus tier payouts.
+                </p>
+              </div>
+
+              {/* Historical Edition Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {historicalEditions.map((ed) => (
+                  <div
+                    key={ed.roundId}
+                    className="p-5 rounded-2xl border bg-card/60 border-border/80 hover:border-primary/50 transition-all space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
+                          {ed.roundId}
+                        </Badge>
+                        <h4 className="font-black text-base text-foreground mt-1">{ed.title}</h4>
+                        <p className="text-xs text-muted-foreground">{ed.dateLabel}</p>
+                      </div>
+                      <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 font-bold text-xs">
+                        {ed.bonusWon}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-muted/30 border border-border/50 text-xs text-center font-mono">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block">Correct Picks</span>
+                        <span className="font-black text-sm text-emerald-600 dark:text-emerald-400">
+                          {ed.correctSingles} / {ed.totalGames}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block">Double Hedges</span>
+                        <span className="font-black text-sm text-primary">
+                          {ed.correctDoubles} / {ed.totalGames}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block">Bonus Payout</span>
+                        <span className="font-black text-sm text-foreground">
+                          {ed.estimatedPayout}
+                        </span>
+                      </div>
+                    </div>
+
+                    {ed.matches.length > 0 && (
+                      <div className="space-y-1 pt-1 text-xs">
+                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                          Sample Match Results:
+                        </p>
+                        <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                          {ed.matches.slice(0, 6).map((m) => (
+                            <div key={m.id} className="flex items-center justify-between py-1 border-b border-border/40 text-[11px]">
+                              <span className="truncate mr-2">
+                                #{m.id} {m.homeTeam} vs {m.awayTeam}
+                              </span>
+                              <div className="flex items-center gap-2 flex-shrink-0 font-mono">
+                                <span className="font-bold">{m.homeScore} - {m.awayScore}</span>
+                                <Badge className="text-[9px] py-0 px-1 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                                  Outcome: {m.actualOutcome} ✅
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </section>

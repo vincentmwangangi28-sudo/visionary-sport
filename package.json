@@ -23,6 +23,8 @@
     "cron:value-bets": "node scripts/run-scheduled-tasks.mjs --task=value-bets",
     "cron:odds-drift": "node scripts/run-scheduled-tasks.mjs --task=odds-drift",
     "cron:jackpot": "node scripts/run-scheduled-tasks.mjs --task=jackpot",
+    "cron:jackpot-settle": "node scripts/run-scheduled-tasks.mjs --task=jackpot-settle",
+    "cron:jackpot-rollover": "node scripts/run-scheduled-tasks.mjs --task=jackpot-rollover",
     "cron:standings": "node scripts/run-scheduled-tasks.mjs --task=standings",
     "cron:reminders": "node scripts/run-scheduled-tasks.mjs --task=reminders",
     "cron:cleanup": "node scripts/run-scheduled-tasks.mjs --task=cleanup",
