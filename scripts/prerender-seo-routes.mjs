@@ -211,6 +211,22 @@ const ROUTE_META = {
     title: 'Football Betting Strategy Blog: +EV, xG & Handicap Guides',
     description: 'Master quantitative football betting with our in-depth strategy guides on Expected Value (+EV), Asian Handicap lines, Closing Line Value, and Kelly staking.',
   },
+  '/widgets': {
+    title: 'Embeddable AI Football Predictions Widget & Free Odds Feed',
+    description: 'Embed live AI football match predictions, Poisson win probability bars, and banker of the day widgets on your sports blog, forum, or website for free.',
+  },
+  '/shop': {
+    title: 'PredictPro VIP Club: Premium AI Football Tips & Banker Passes',
+    description: 'Unlock VIP high-yield banker predictions, +EV value bets, and 17-game Mega Jackpot slips. Instant access via M-Pesa or card.',
+  },
+  '/sports': {
+    title: 'Basketball & Tennis AI Predictions: +EV Spreads & Moneylines',
+    description: 'Daily multi-sport AI predictions for NBA basketball, Grand Slam tennis, and international rugby. Poisson totals and moneyline value odds.',
+  },
+  '/rewards': {
+    title: 'Daily Rewards, Coin Wheel & Prediction Unlocks | PredictPro',
+    description: 'Spin the daily reward wheel to earn prediction coins. Unlock VIP banker matches, Expected Goals reports, and accumulator boosts for free.',
+  },
 };
 
 function clampTitle(raw) {
@@ -378,7 +394,7 @@ function runPrerender() {
       const targetDir = path.join(DIST_DIR, relPath);
       fs.mkdirSync(targetDir, { recursive: true });
       fs.writeFileSync(path.join(targetDir, 'index.html'), routeHtml, 'utf-8');
-      fs.writeFileSync(path.join(DIST_DIR, `${relPath}.html`), routeHtml, 'utf-8');
+      // Note: Only write targetDir/index.html to prevent duplicate identical title/description pages (.html vs /)
       generatedCount++;
     }
   }

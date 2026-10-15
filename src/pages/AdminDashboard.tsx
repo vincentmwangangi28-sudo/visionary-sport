@@ -17,6 +17,7 @@ import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomati
 import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
+import { SEO } from '@/components/SEO';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminOverviewTab } from '@/components/admin/AdminOverviewTab';
 import { AdminPredictionsTab } from '@/components/admin/AdminPredictionsTab';
@@ -238,6 +239,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Admin Operations & SEO Monitoring Suite | PredictPro"
+        description="PredictPro administrative management console, SEO automation triggers, and system analytics."
+        noIndex={true}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-7xl">
         {/* Header */}

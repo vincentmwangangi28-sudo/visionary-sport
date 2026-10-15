@@ -12,10 +12,10 @@ export default function LaLigaPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="La Liga Predictions 2025/26 | Free AI Tips | PredictPro"
-        description="Free La Liga predictions for 2025/26. AI tips for Real Madrid, Barcelona, Atletico Madrid and every Primera Division match."
+        title="Spanish La Liga Predictions: Real Madrid, Barca & El Clasico"
+        description="Deep statistical La Liga football predictions. Attacking xG metrics, Asian Handicap lines, and 1X2 picks for Real Madrid, Barcelona, and Atletico Madrid."
         canonical="/la-liga-predictions"
-        keywords="La Liga predictions today, Spanish football tips, Real Madrid prediction, Barcelona tips, Atletico Madrid La Liga prediction"
+        keywords="la liga predictions today, spanish football tips, real madrid vs barcelona prediction, el clasico odds, la liga betting tips"
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">

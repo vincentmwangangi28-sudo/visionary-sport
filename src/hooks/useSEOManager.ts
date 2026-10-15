@@ -156,14 +156,6 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'upcoming football fixtures, tomorrow football predictions, weekend soccer predictions, early match odds',
     canonicalPath: '/upcoming',
   },
-  '/upcoming-fixtures': {
-    title: 'Upcoming Football Fixtures & 7-Day AI Match Predictions',
-    description:
-      'Browse upcoming football fixtures across 40+ global leagues with early AI win probabilities, Expected Goals (xG) projections, and fair decimal odds.',
-    keywords:
-      'upcoming football fixtures, tomorrow football predictions, weekend soccer predictions',
-    canonicalPath: '/upcoming',
-  },
   '/live': {
     title: 'Live Football Scores Today: In-Play AI Odds & Real-Time xG Momentum',
     description:
@@ -186,14 +178,6 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'Identify clubs on active winning streaks, unbeaten runs, and consecutive Over 2.5 Goals or Both Teams to Score trends before bookmakers adjust their lines.',
     keywords:
       'football winning streaks, team form trends, consecutive over 2.5 goals, btts streaks radar',
-    canonicalPath: '/streaks',
-  },
-  '/trends': {
-    title: 'Football Team Winning Streaks & Over 2.5 / BTTS Trend Radar',
-    description:
-      'Identify clubs on active winning streaks, unbeaten runs, and consecutive Over 2.5 Goals or Both Teams to Score trends before bookmakers adjust their lines.',
-    keywords:
-      'football winning streaks, team form trends, consecutive over 2.5 goals',
     canonicalPath: '/streaks',
   },
   '/dropping-odds': {
@@ -226,14 +210,6 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'Compare any two football clubs head-to-head. Analyze historical H2H results, attacking vs defensive xG radar charts, and custom Poisson score simulations.',
     keywords:
       'head to head football comparison, h2h soccer stats, team vs team predictor, poisson match comparison',
-    canonicalPath: '/h2h',
-  },
-  '/compare': {
-    title: 'Interactive Head-to-Head (H2H) Football Team Comparison & Poisson Tool',
-    description:
-      'Compare any two football clubs head-to-head. Analyze historical H2H results, attacking vs defensive xG radar charts, and custom Poisson score simulations.',
-    keywords:
-      'head to head football comparison, h2h soccer stats, team vs team predictor',
     canonicalPath: '/h2h',
   },
   '/premier-league-predictions': {
@@ -340,14 +316,6 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'past football predictions archive, verified prediction results, settled football tips',
     canonicalPath: '/archive',
   },
-  '/results': {
-    title: 'Past Match Prediction Archive & Verified Result Settlement',
-    description:
-      'Browse PredictPro’s complete archive of past football predictions, final 90-minute scorelines, and transparent win/loss settlement records.',
-    keywords:
-      'past football predictions archive, verified prediction results, settled football tips',
-    canonicalPath: '/archive',
-  },
   '/seo-indexing': {
     title: 'PredictPro SEO Command Center, 12-Pillar Site Audit & Indexing Cron',
     description:
@@ -372,13 +340,132 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'responsible gambling policy, 18+ age restriction, sports statistics disclaimer, begambleaware, gamcare helpline',
     canonicalPath: '/responsible-gaming',
   },
-  '/disclaimer': {
-    title: 'Responsible Gaming, 18+ Minor Protection & Analytics Disclaimer',
+  '/widgets': {
+    title: 'Embeddable AI Football Predictions Widget & Free Odds Feed',
     description:
-      'PredictPro Responsible Gambling Policy, 18+ minor protection standards, international support helplines, and informational sports statistics disclaimer.',
+      'Embed live AI football match predictions, Poisson win probability bars, and banker of the day widgets on your sports blog, forum, or website for free.',
     keywords:
-      'responsible gambling policy, 18+ age restriction, sports statistics disclaimer, begambleaware, gamcare helpline',
-    canonicalPath: '/responsible-gaming',
+      'embed football predictions widget, free soccer odds widget, ai match predictor iframe, sports blog widgets',
+    canonicalPath: '/widgets',
+  },
+  '/shop': {
+    title: 'PredictPro VIP Club: Premium AI Football Tips & Banker Passes',
+    description:
+      'Unlock VIP high-yield banker predictions, +EV value bets, and 17-game Mega Jackpot slips. Instant access via M-Pesa or card.',
+    keywords: 'predictpro vip, premium football tips, buy football predictions, mpesa betting tips',
+    canonicalPath: '/shop',
+  },
+  '/about': {
+    title: 'About PredictPro: Quantitative Sports Modeling & AI Science',
+    description:
+      'Discover the Dixon-Coles Poisson distributions, machine learning pipelines, and sports analytics engineers powering PredictPro’s verified predictions.',
+    keywords: 'about predictpro, ai sports prediction team, football analytics platform',
+    canonicalPath: '/about',
+  },
+  '/contact': {
+    title: 'Contact Editorial & Technical Support Team | PredictPro',
+    description:
+      'Get in touch with PredictPro sports analysts, editorial desk, or technical support for inquiries, data partnerships, and feedback.',
+    keywords: 'contact predictpro, sports data support, football prediction inquiries',
+    canonicalPath: '/contact',
+  },
+  '/privacy': {
+    title: 'Privacy Policy & Data Protection Standards | PredictPro',
+    description:
+      'Read how PredictPro protects user privacy, encrypts account information, and complies with GDPR and international data standards.',
+    keywords: 'privacy policy, gdpr compliance, predictpro data protection',
+    canonicalPath: '/privacy',
+  },
+  '/terms': {
+    title: 'Terms of Service & User Conduct Guidelines | PredictPro',
+    description:
+      'Review PredictPro terms of service, platform usage rules, informational sports analytics disclaimers, and 18+ user qualifications.',
+    keywords: 'terms of service, user agreement, sports analytics terms',
+    canonicalPath: '/terms',
+  },
+  '/cookies': {
+    title: 'Cookie Policy & Advertising Transparency | PredictPro',
+    description:
+      'Detailed overview of cookies utilized on PredictPro for session security, language preferences, Google AdSense ads, and performance telemetry.',
+    keywords: 'cookie policy, adsense cookies, privacy settings',
+    canonicalPath: '/cookies',
+  },
+  '/sports': {
+    title: 'Basketball & Tennis AI Predictions: +EV Spreads & Moneylines',
+    description:
+      'Daily multi-sport AI predictions for NBA basketball, Grand Slam tennis, and international rugby. Poisson totals and moneyline value odds.',
+    keywords: 'multi-sport predictions, nba ai picks, tennis predictions today, basketball odds',
+    canonicalPath: '/sports',
+  },
+  '/rewards': {
+    title: 'Daily Rewards, Coin Wheel & Prediction Unlocks | PredictPro',
+    description:
+      'Spin the daily reward wheel to earn prediction coins. Unlock VIP banker matches, Expected Goals reports, and accumulator boosts for free.',
+    keywords: 'daily rewards football, earn prediction coins, free vip predictions',
+    canonicalPath: '/rewards',
+  },
+  '/highlights': {
+    title: 'Football Match Highlights & Post-Match xG Tactical Reviews',
+    description:
+      'Watch verified football match video highlights and goal previews synced with post-match Expected Goals (xG) stats and tactical breakdowns.',
+    keywords: 'football match highlights, soccer goal videos, post-match xg review',
+    canonicalPath: '/highlights',
+  },
+  '/statistics': {
+    title: 'Football League Statistics, Attacking xG & Defensive xGA',
+    description:
+      'Compare team offensive Expected Goals (xG), defensive Expected Goals Against (xGA), corner frequency, and clean sheet percentages across 40+ leagues.',
+    keywords: 'football xg statistics, team stats league, expected goals against ranking',
+    canonicalPath: '/statistics',
+  },
+  '/players': {
+    title: 'Football Player Database: Goals, Assists & Per-90 xG Stats',
+    description:
+      'Explore 500,000+ footballers worldwide. Analyze goalscorer probabilities, shot volume, assists, form trajectory, and transfer status.',
+    keywords: 'football player database, player xg stats, goalscorer probability',
+    canonicalPath: '/players',
+  },
+  '/tournaments': {
+    title: 'Global Football Tournaments & Continental Cup Predictions',
+    description:
+      'Comprehensive tournament simulations, bracket progressions, and match previews for Champions League, Copa America, Club World Cup, and AFCON.',
+    keywords: 'football tournaments predictions, continental cup tips, international soccer',
+    canonicalPath: '/tournaments',
+  },
+  '/recommendations': {
+    title: 'Personalized AI Match Recommendations & Banker Selections',
+    description:
+      'Tailored algorithmic football predictions matching your favorite leagues, risk tolerance, and optimal stake size based on Poisson modeling.',
+    keywords: 'personalized football predictions, recommended banker bets, smart picks',
+    canonicalPath: '/recommendations',
+  },
+  '/bankroll': {
+    title: 'Kelly Criterion Football Bankroll & Fractional Staking Tool',
+    description:
+      'Optimize your betting capital with fractional Kelly Criterion sizing, drawdown protection models, and multi-currency portfolio management.',
+    keywords: 'kelly criterion calculator, bankroll manager football, optimal stake sizing',
+    canonicalPath: '/bankroll',
+  },
+  '/insights': {
+    title: 'Tactical Matchday Intelligence & Algorithmic xG Briefings',
+    description:
+      'In-depth matchday intelligence dissecting pressing schemes, defensive shape, referee card biases, and rest-disparity win probability shifts.',
+    keywords: 'tactical match insights, matchday intelligence, football analytical preview',
+    canonicalPath: '/insights',
+  },
+  '/news': {
+    title: 'Football News Wire: Injury Bulletins & Lineup Impact Scores',
+    description:
+      'Breaking team news, confirmed starting lineups, key player injuries, and automated win probability adjustments for upcoming domestic fixtures.',
+    keywords: 'football news today, confirmed lineups, injury updates betting impact',
+    canonicalPath: '/news',
+  },
+  '/leaderboard': {
+    title: 'Tipster Leaderboard: Verified Strike Rates & Community Ranks',
+    description:
+      'See top-performing football forecasters on PredictPro. Audited by monthly ROI, active winning streaks, and Closing Line Value (CLV) yield.',
+    keywords: 'tipster leaderboard, top football predictors, tipster rankings',
+    canonicalPath: '/leaderboard',
   },
 };
 
@@ -389,12 +476,15 @@ export function normalizeSEOTitle(raw: string): string {
   const text = (raw || '').trim();
   if (text.length <= 60) return text;
   const withoutBrand = text.replace(/\s*[|—-]\s*PredictPro.*$/i, '').trim();
-  if (withoutBrand.length <= 60 && withoutBrand.length >= 25) {
+  if (withoutBrand.length <= 60 && withoutBrand.length >= 10) {
+    if (withoutBrand.length + 13 <= 60) {
+      return `${withoutBrand} | PredictPro`;
+    }
     return withoutBrand;
   }
   let truncated = text.slice(0, 57);
   const lastSpace = truncated.lastIndexOf(' ');
-  if (lastSpace > 38) {
+  if (lastSpace > 30) {
     truncated = truncated.slice(0, lastSpace).replace(/[,:&|—-]+$/, '');
   }
   return truncated.trim();
@@ -529,19 +619,32 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
     };
   }
 
-  // Fallback for any other route
+  // Fallback for any other route - generate distinctive, non-identical metadata
+  const readableName = cleanPath
+    .replace(/^\/+/, '')
+    .replace(/[-/]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\bBtts\b/i, 'BTTS')
+    .replace(/\bH2h\b/i, 'H2H')
+    .replace(/\bEpl\b/i, 'EPL')
+    .replace(/\bKpl\b/i, 'KPL')
+    .replace(/\bUcl\b/i, 'UCL')
+    .replace(/\bAi\b/i, 'AI');
+
   const fallbackTitle =
     cleanPath === '/'
       ? ROUTE_SEO_REGISTRY['/'].title
-      : `${cleanPath
-          .replace(/^\/+/, '')
-          .replace(/[-/]/g, ' ')
-          .replace(/\b\w/g, (c) => c.toUpperCase())} | AI Football Predictions`;
+      : `${readableName} | PredictPro AI`;
+
+  const fallbackDescription =
+    cleanPath === '/'
+      ? ROUTE_SEO_REGISTRY['/'].description
+      : `Explore ${readableName} on PredictPro. Quantitative AI football predictions, Poisson match probabilities, Expected Goals (xG), and tactical betting insights.`;
 
   return {
     title: fallbackTitle,
-    description: ROUTE_SEO_REGISTRY['/'].description,
-    keywords: ROUTE_SEO_REGISTRY['/'].keywords,
+    description: fallbackDescription,
+    keywords: `${readableName.toLowerCase()}, football predictions, ai soccer tips, predictpro`,
     canonicalPath: cleanPath,
     type: 'website',
   };

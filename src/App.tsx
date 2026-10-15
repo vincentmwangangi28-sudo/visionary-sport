@@ -93,6 +93,8 @@ const PrivacyPolicy          = lazyWithRetry(() => import("./pages/PrivacyPolicy
 const TermsOfService         = lazyWithRetry(() => import("./pages/TermsOfService"));
 const CookiePolicy           = lazyWithRetry(() => import("./pages/CookiePolicy"));
 const Contact                = lazyWithRetry(() => import("./pages/Contact"));
+const Widgets                = lazyWithRetry(() => import("./pages/Widgets"));
+const EmbedWidget            = lazyWithRetry(() => import("./pages/EmbedWidget"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -476,6 +478,8 @@ const App = () => (
                             <Route path="/contact"                      element={<RouteBoundary component={Contact} />} />
                             <Route path="/contact-us"                   element={<Navigate to="/contact" replace />} />
                             <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
+                            <Route path="/widgets"                      element={<RouteBoundary component={Widgets} />} />
+                            <Route path="/embed/:type"                  element={<RouteBoundary component={EmbedWidget} />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}

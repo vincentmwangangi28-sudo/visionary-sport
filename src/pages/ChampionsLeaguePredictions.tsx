@@ -12,10 +12,10 @@ export default function ChampionsLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Champions League Predictions 2025/26 | Free AI Tips | PredictPro"
-        description="Free UEFA Champions League predictions 2025/26. AI tips for Real Madrid, Bayern, Man City and every UCL match from Group Stage to Final."
+        title="UEFA Champions League Predictions: 36-Team Swiss Phase Odds"
+        description="Expert AI forecasting for the UEFA Champions League. Matchweek win probabilities, knockout qualification matrices, and European banker picks."
         canonical="/champions-league-predictions"
-        keywords="Champions League predictions today, UCL tips, Real Madrid UCL prediction, Bayern Munich Champions League, Man City UCL tips free"
+        keywords="champions league predictions today, ucl betting tips, uefa champions league ai picks, ucl winner odds, champions league accumulator"
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">

@@ -58,6 +58,8 @@ const CORE_PAGES = [
   { path: '/contact', priority: 0.70, freq: 'monthly', title: 'Contact Us & Editorial Support Desk' },
   { path: '/sitemap', priority: 0.70, freq: 'daily', title: 'HTML Predictions Directory & Sitemap' },
   { path: '/seo-indexing', priority: 0.70, freq: 'daily', title: 'Google Indexing & Search Engine Management Console' },
+  { path: '/widgets', priority: 0.85, freq: 'weekly', title: 'Free Embeddable AI Football Predictions Widgets & Odds Feeds' },
+  { path: '/shop', priority: 0.90, freq: 'daily', title: 'PredictPro VIP Club: Premium AI Football Tips & Banker Passes' },
 ];
 
 const LEAGUE_PAGES = [
@@ -231,19 +233,13 @@ const GLOBAL_HREFLANGS = [
 ];
 
   const xmlNodes = urlEntries.map(entry => {
-    const hreflangNodes = GLOBAL_HREFLANGS.map(lang => {
-      const altUrl = (lang === 'x-default' || lang === 'en')
-        ? entry.loc
-        : `${entry.loc}${entry.loc.includes('?') ? '&' : '?'}lang=${encodeURIComponent(lang)}`;
-      return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(altUrl)}" />`;
-    }).join('\n');
-
     return `  <url>
     <loc>${escapeXml(entry.loc)}</loc>
     <lastmod>${entry.lastmod}</lastmod>
     <changefreq>${entry.changefreq}</changefreq>
     <priority>${entry.priority}</priority>
-${hreflangNodes}
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(entry.loc)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(entry.loc)}" />
   </url>`;
   }).join('\n');
 

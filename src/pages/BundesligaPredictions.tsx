@@ -11,10 +11,10 @@ export default function BundesligaPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Bundesliga Predictions 2025/26 | Free AI Tips | PredictPro"
-        description="Free Bundesliga predictions for 2025/26. AI tips for Bayer Leverkusen, Bayern Munich, Dortmund and all 18 Bundesliga clubs."
+        title="German Bundesliga AI Predictions: Bayern, Dortmund & xG Odds"
+        description="Tactical German Bundesliga match previews, Over 2.5 goals trends, and Poisson win probabilities for Bayern Munich, Dortmund, Leverkusen, and RB Leipzig."
         canonical="/bundesliga-predictions"
-        keywords="Bundesliga predictions today, German football tips, Leverkusen prediction, Bayern Munich tips, Dortmund prediction Bundesliga"
+        keywords="bundesliga predictions today, german football betting tips, bayern dortmund odds, bayer leverkusen tips, bundesliga over 2.5"
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
