@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { SEO } from '@/components/SEO';
 import { Zap, Radio, TrendingUp, Sparkles, BarChart3, ExternalLink } from 'lucide-react';
 
 export default function EmbedWidget() {
@@ -80,6 +81,11 @@ export default function EmbedWidget() {
         isDark ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-900'
       }`}
     >
+      <SEO
+        title="PredictPro Football Predictions Widget Embed"
+        description="Free embeddable live AI football predictions and odds widget."
+        noIndex={true}
+      />
       <div className="space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between pb-2.5 border-b border-border/40">

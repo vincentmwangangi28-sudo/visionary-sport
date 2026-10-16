@@ -17,11 +17,13 @@ const FAQ = [
 export default function WorldCupPredictions() {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="World Cup 2026 Predictions | Free AI Tips | PredictPro"
-        description="Free FIFA World Cup 2026 predictions. Group stage tips, knockout analysis, odds and correct scores for all 48 teams. USA, Canada and Mexico hosting."
+      <SEO
+        title="FIFA World Cup 2026 Predictions: Qualifiers & Group Odds"
+        description="Mathematical simulations for the 48-team FIFA World Cup 2026 in North America. International Elo power ratings, qualifying tips, and trophy futures."
         canonical="/world-cup-predictions"
-        keywords="World Cup 2026 predictions, FIFA World Cup tips, who will win World Cup 2026, World Cup betting tips, World Cup 2026 odds"
-        structuredData={{ '@type': 'FAQPage', mainEntity: FAQ.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }} />
+        keywords="fifa world cup 2026 predictions, world cup qualifiers tips, 48 team world cup simulator, international football predictions, world cup winner odds"
+        structuredData={{ '@type': 'FAQPage', mainEntity: FAQ.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="text-center mb-10">

@@ -467,6 +467,150 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     keywords: 'tipster leaderboard, top football predictors, tipster rankings',
     canonicalPath: '/leaderboard',
   },
+  '/bet-of-the-day': {
+    title: 'Bet of the Day: Daily AI Banker & High-Confidence Lock',
+    description:
+      'Today’s single highest-conviction AI football bet. Verified Expected Goals (xG) advantage, Poisson win probability, fair decimal odds, and Kelly stake.',
+    keywords: 'bet of the day, banker bet of the day, nap of the day, sure win prediction today',
+    canonicalPath: '/bet-of-the-day',
+  },
+  '/over-under-predictions': {
+    title: 'Over/Under 2.5 Goals Predictions & Poisson Goal Probabilities',
+    description:
+      'Daily Over 2.5, Under 2.5, and Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy and high-scoring team trends.',
+    keywords: 'over 2.5 goals predictions today, under 2.5 tips, over 1.5 predictions, goal line predictions',
+    canonicalPath: '/over-under-predictions',
+  },
+  '/double-chance-predictions': {
+    title: 'Double Chance Predictions Today (1X / X2): 89% AI Strike Rate',
+    description:
+      'Daily 1X, X2, and 12 Double Chance football predictions with 89% AI confidence. Low-risk accumulator builders and underdog hedging across 40+ leagues.',
+    keywords: 'double chance predictions today, 1x predictions today, x2 tips, double chance sure wins',
+    canonicalPath: '/double-chance-predictions',
+  },
+  '/draw-predictions': {
+    title: 'Draw Predictions Today (X Tips): High-Odds Stalemate Picks',
+    description:
+      'Daily high-odds draw predictions (3.20 to 3.80 odds). Mathematical stalemate models detecting low-scoring defensive setups and equal Poisson expectations.',
+    keywords: 'draw predictions today, sure draw tips today, x tips today, football draw prediction',
+    canonicalPath: '/draw-predictions',
+  },
+  '/halftime-fulltime-predictions': {
+    title: 'HT/FT Predictions Today: Half-Time/Full-Time (4.50+ Odds)',
+    description:
+      'Daily Half-Time / Full-Time (HT/FT) football predictions. High-odds 1/1, X/1, X/2, and 2/2 score turnaround strategies backed by first-half Poisson pace.',
+    keywords: 'ht/ft predictions today, half time full time predictions, ht ft tips today, draw half time win full time',
+    canonicalPath: '/halftime-fulltime-predictions',
+  },
+  '/europa-league-predictions': {
+    title: 'UEFA Europa League Predictions & Conference League AI Odds',
+    description:
+      'Expert AI predictions for UEFA Europa League and Conference League fixtures. Matchweek win probabilities, knockout progression odds, and Thursday banker tips.',
+    keywords: 'europa league predictions today, uefa europa league tips, conference league predictions',
+    canonicalPath: '/europa-league-predictions',
+  },
+  '/ligue-1-predictions': {
+    title: 'French Ligue 1 AI Predictions: PSG, Marseille & xG Odds',
+    description:
+      'French Ligue 1 football predictions. Comprehensive Expected Goals (xG) projections, BTTS probabilities, and value betting tips for PSG, Marseille, and Monaco.',
+    keywords: 'ligue 1 predictions today, french football tips, psg prediction, marseille odds',
+    canonicalPath: '/ligue-1-predictions',
+  },
+  '/poisson-calculator': {
+    title: 'Poisson Football Calculator & Expected Goals Score Simulator',
+    description:
+      'Free Dixon-Coles Poisson football calculator. Enter home and away team expected goals (xG) to simulate 10,000 matches, exact scores, 1X2 odds, and BTTS.',
+    keywords: 'poisson football calculator, expected goals calculator, football score simulator, fair odds calculator',
+    canonicalPath: '/poisson-calculator',
+  },
+  '/sure-win-predictions': {
+    title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets',
+    description:
+      'Daily 100% mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), low-variance acca anchors, and verified +EV odds.',
+    keywords:
+      'sure win prediction today, 100 sure wins, banker predictions today, sure banker picks, high confidence football tips, best sure bets today',
+    canonicalPath: '/sure-win-predictions',
+  },
+  '/corners-predictions': {
+    title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Match Corners Stats',
+    description:
+      'Daily football corner predictions and corner kick statistics. Explore Over/Under 9.5 corners probability, team corner averages, and high-tempo wing play analysis.',
+    keywords:
+      'corner predictions today, over 9.5 corners, football corner stats, corners betting tips, over 8.5 corners predictions, team most corners',
+    canonicalPath: '/corners-predictions',
+  },
+  '/cards-predictions': {
+    title: 'Cards & Bookings Predictions Today: Yellow & Red Card Stats',
+    description:
+      'Daily football cards and booking points predictions. Filter matches by referee strictness ratings, derby tension index, and Over/Under 3.5 & 4.5 yellow card trends.',
+    keywords:
+      'cards predictions today, yellow card betting tips, booking points predictions, red card predictions, referee card stats, football bookings tips',
+    canonicalPath: '/cards-predictions',
+  },
+  '/championship-predictions': {
+    title: 'English Championship Predictions & AI Betting Tips 2026/27',
+    description:
+      'EFL Championship predictions today. Free mathematical betting tips, promotion race xG stats, and Asian Handicap analysis for Leeds, Sunderland, Sheffield Utd, and West Brom.',
+    keywords:
+      'championship predictions today, efl championship betting tips, english championship tips, leeds united predictions, championship acca tips',
+    canonicalPath: '/championship-predictions',
+  },
+  '/eredivisie-predictions': {
+    title: 'Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG Tips',
+    description:
+      'Free Dutch Eredivisie predictions today. High-scoring Over 2.5 goals models, BTTS probabilities, and Asian Handicap picks for Ajax, PSV Eindhoven, Feyenoord, and AZ Alkmaar.',
+    keywords:
+      'eredivisie predictions today, dutch league betting tips, psv predictions, ajax amsterdam tips, feyenoord xg predictions, eredivisie over 2.5',
+    canonicalPath: '/eredivisie-predictions',
+  },
+  '/primeira-liga-predictions': {
+    title: 'Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto',
+    description:
+      'Daily Portuguese Primeira Liga (Liga Portugal) AI predictions. Verified win probabilities, handicap betting picks, and clean sheet metrics for Sporting CP, Benfica, and FC Porto.',
+    keywords:
+      'primeira liga predictions, portuguese league betting tips, sporting cp prediction, benfica odds, fc porto betting picks, liga portugal tips',
+    canonicalPath: '/primeira-liga-predictions',
+  },
+  '/conference-league-predictions': {
+    title: 'UEFA Conference League Predictions & AI Betting Tips',
+    description:
+      'UEFA Conference League predictions today. Thursday European night match previews, Poisson win percentages, and high-value underdog tips for all league phase and knockout fixtures.',
+    keywords:
+      'conference league predictions today, uefa conference league tips, conference league betting picks, uecl predictions, thursday football tips',
+    canonicalPath: '/conference-league-predictions',
+  },
+  '/copa-libertadores-predictions': {
+    title: 'Copa Libertadores AI Predictions: South American Odds & Tips',
+    description:
+      'CONMEBOL Copa Libertadores predictions today. Accurate AI tips, home altitude advantage adjustments, and match previews for Flamengo, Palmeiras, River Plate, and Boca Juniors.',
+    keywords:
+      'copa libertadores predictions today, libertadores tips, flamengo prediction, river plate odds, conmebol betting picks, south american football tips',
+    canonicalPath: '/copa-libertadores-predictions',
+  },
+  '/value-bet-calculator': {
+    title: 'Value Bet Calculator (+EV): Sports Betting Expected Value Tool',
+    description:
+      'Free +EV Value Bet Calculator. Calculate positive expected value, bookmaker edge vs true probability, fair decimal odds, and recommended Kelly staking size.',
+    keywords:
+      'value bet calculator, expected value sports betting calculator, +ev calculator, positive expected value betting, betting edge calculator, fair odds calculator',
+    canonicalPath: '/value-bet-calculator',
+  },
+  '/kelly-criterion-calculator': {
+    title: 'Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool',
+    description:
+      'Free Kelly Criterion Calculator. Calculate optimal bet sizing, fractional Kelly (Half/Quarter), expected bankroll growth rate, and bankroll protection.',
+    keywords:
+      'kelly criterion calculator, fractional kelly sports betting, bankroll management calculator, optimal bet sizing, half kelly calculator, kelly formula betting',
+    canonicalPath: '/kelly-criterion-calculator',
+  },
+  '/over-1-5-goals-predictions': {
+    title: 'Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips',
+    description:
+      'Daily Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy, 1st half goal frequency, and low-risk accumulator anchors.',
+    keywords:
+      'over 1.5 goals predictions today, over 1.5 tips today, over 1.5 goals sure wins, over 1.5 accumulator tips, over 1.5 match predictions',
+    canonicalPath: '/over-1-5-goals-predictions',
+  },
 };
 
 /**

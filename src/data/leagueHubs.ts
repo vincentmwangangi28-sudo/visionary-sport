@@ -8,12 +8,20 @@ export interface LeagueHubItem {
 export const LEAGUE_HUBS: LeagueHubItem[] = [
   { to: '/premier-league-predictions', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', shortName: 'EPL' },
   { to: '/champions-league-predictions', name: 'Champions League', flag: '🏆', shortName: 'UCL' },
+  { to: '/europa-league-predictions', name: 'Europa League', flag: '🏆', shortName: 'UEL' },
+  { to: '/conference-league-predictions', name: 'Conference League', flag: '🏆', shortName: 'UECL' },
   { to: '/la-liga-predictions', name: 'La Liga', flag: '🇪🇸', shortName: 'La Liga' },
   { to: '/bundesliga-predictions', name: 'Bundesliga', flag: '🇩🇪', shortName: 'Bundesliga' },
   { to: '/serie-a-predictions', name: 'Serie A', flag: '🇮🇹', shortName: 'Serie A' },
+  { to: '/ligue-1-predictions', name: 'French Ligue 1', flag: '🇫🇷', shortName: 'Ligue 1' },
+  { to: '/championship-predictions', name: 'EFL Championship', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', shortName: 'Championship' },
+  { to: '/eredivisie-predictions', name: 'Dutch Eredivisie', flag: '🇳🇱', shortName: 'Eredivisie' },
+  { to: '/primeira-liga-predictions', name: 'Primeira Liga', flag: '🇵🇹', shortName: 'Portugal' },
+  { to: '/copa-libertadores-predictions', name: 'Copa Libertadores', flag: '🏆', shortName: 'Libertadores' },
   { to: '/kpl-predictions', name: 'Kenya Premier League', flag: '🇰🇪', shortName: 'KPL' },
   { to: '/jackpot-predictions', name: 'Mega Jackpots', flag: '🎰', shortName: 'Jackpots' },
   { to: '/us-soccer-predictions', name: 'US Soccer & MLS', flag: '🇺🇸', shortName: 'MLS' },
   { to: '/world-cup-predictions', name: 'FIFA World Cup', flag: '🌍', shortName: 'World Cup' },
   { to: '/afcon-predictions', name: 'AFCON', flag: '🌍', shortName: 'AFCON' },
 ];
+

@@ -185,10 +185,10 @@ export default function USSoccerPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="US Soccer Picks Today: MLS & Premier League | PredictPro"
-        description="Daily US soccer picks, MLS moneyline predictions, Premier League morning picks, and Champions League +EV bets with American odds format (+/-)."
+        title="Major League Soccer (MLS) AI Picks: Moneyline & Spread Tips"
+        description="MLS and US Open Cup predictions with American moneyline (+/-), goal spreads, travel fatigue variables, and Inter Miami matchday analytics."
         canonical="/us-soccer-predictions"
-        keywords="us soccer picks today, epl soccer picks today, mls ai predictions, champions league moneyline picks, us soccer betting tips, soccer parlay picks today"
+        keywords="mls predictions today, us soccer betting picks, american moneyline soccer odds, inter miami predictions, mls spread picks"
         breadcrumbs={[
           { name: 'Home', item: '/' },
           { name: 'US Soccer & MLS Picks', item: '/us-soccer-predictions' }

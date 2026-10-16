@@ -25,7 +25,12 @@ const VALUES = [
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="About PredictPro | AI Football Predictions" description="PredictPro is a global AI football prediction platform covering 40+ leagues. Powered by Google Gemini AI, API-Football and real match data." />
+      <SEO
+        title="About PredictPro: Quantitative Sports Modeling & AI Science"
+        description="Discover the Dixon-Coles Poisson distributions, machine learning pipelines, and sports analytics engineers powering PredictPro’s verified predictions."
+        canonical="/about"
+        keywords="about predictpro, ai sports prediction team, football analytics platform, expected goals modeling, quantitative betting science"
+      />
       <Navbar />
       <main>
         {/* Hero */}

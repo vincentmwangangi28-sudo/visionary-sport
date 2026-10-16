@@ -95,6 +95,25 @@ const CookiePolicy           = lazyWithRetry(() => import("./pages/CookiePolicy"
 const Contact                = lazyWithRetry(() => import("./pages/Contact"));
 const Widgets                = lazyWithRetry(() => import("./pages/Widgets"));
 const EmbedWidget            = lazyWithRetry(() => import("./pages/EmbedWidget"));
+const BetOfTheDay            = lazyWithRetry(() => import("./pages/BetOfTheDay"));
+const OverUnderPredictions   = lazyWithRetry(() => import("./pages/OverUnderPredictions"));
+const DoubleChancePredictions = lazyWithRetry(() => import("./pages/DoubleChancePredictions"));
+const DrawPredictions        = lazyWithRetry(() => import("./pages/DrawPredictions"));
+const HalftimeFulltimePredictions = lazyWithRetry(() => import("./pages/HalftimeFulltimePredictions"));
+const EuropaLeaguePredictions = lazyWithRetry(() => import("./pages/EuropaLeaguePredictions"));
+const Ligue1Predictions      = lazyWithRetry(() => import("./pages/Ligue1Predictions"));
+const PoissonCalculatorPage  = lazyWithRetry(() => import("./pages/PoissonCalculatorPage"));
+const SureWinPredictions       = lazyWithRetry(() => import("./pages/SureWinPredictions"));
+const CornersPredictions       = lazyWithRetry(() => import("./pages/CornersPredictions"));
+const CardsPredictions         = lazyWithRetry(() => import("./pages/CardsPredictions"));
+const ChampionshipPredictions   = lazyWithRetry(() => import("./pages/ChampionshipPredictions"));
+const EredivisiePredictions     = lazyWithRetry(() => import("./pages/EredivisiePredictions"));
+const PrimeiraLigaPredictions   = lazyWithRetry(() => import("./pages/PrimeiraLigaPredictions"));
+const ConferenceLeaguePredictions = lazyWithRetry(() => import("./pages/ConferenceLeaguePredictions"));
+const CopaLibertadoresPredictions = lazyWithRetry(() => import("./pages/CopaLibertadoresPredictions"));
+const ValueBetCalculator       = lazyWithRetry(() => import("./pages/ValueBetCalculator"));
+const KellyCriterionCalculator = lazyWithRetry(() => import("./pages/KellyCriterionCalculator"));
+const Over15GoalsPredictions   = lazyWithRetry(() => import("./pages/Over15GoalsPredictions"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -480,9 +499,52 @@ const App = () => (
                             <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
                             <Route path="/widgets"                      element={<RouteBoundary component={Widgets} />} />
                             <Route path="/embed/:type"                  element={<RouteBoundary component={EmbedWidget} />} />
+                            <Route path="/bet-of-the-day"               element={<RouteBoundary component={BetOfTheDay} />} />
+                            <Route path="/over-under-predictions"       element={<RouteBoundary component={OverUnderPredictions} />} />
+                            <Route path="/double-chance-predictions"    element={<RouteBoundary component={DoubleChancePredictions} />} />
+                            <Route path="/draw-predictions"             element={<RouteBoundary component={DrawPredictions} />} />
+                            <Route path="/halftime-fulltime-predictions" element={<RouteBoundary component={HalftimeFulltimePredictions} />} />
+                            <Route path="/europa-league-predictions"    element={<RouteBoundary component={EuropaLeaguePredictions} />} />
+                            <Route path="/ligue-1-predictions"          element={<RouteBoundary component={Ligue1Predictions} />} />
+                            <Route path="/poisson-calculator"           element={<RouteBoundary component={PoissonCalculatorPage} />} />
+                            <Route path="/sure-win-predictions"         element={<RouteBoundary component={SureWinPredictions} />} />
+                            <Route path="/corners-predictions"          element={<RouteBoundary component={CornersPredictions} />} />
+                            <Route path="/cards-predictions"            element={<RouteBoundary component={CardsPredictions} />} />
+                            <Route path="/championship-predictions"      element={<RouteBoundary component={ChampionshipPredictions} />} />
+                            <Route path="/eredivisie-predictions"        element={<RouteBoundary component={EredivisiePredictions} />} />
+                            <Route path="/primeira-liga-predictions"      element={<RouteBoundary component={PrimeiraLigaPredictions} />} />
+                            <Route path="/conference-league-predictions" element={<RouteBoundary component={ConferenceLeaguePredictions} />} />
+                            <Route path="/copa-libertadores-predictions" element={<RouteBoundary component={CopaLibertadoresPredictions} />} />
+                            <Route path="/value-bet-calculator"          element={<RouteBoundary component={ValueBetCalculator} />} />
+                            <Route path="/kelly-criterion-calculator"    element={<RouteBoundary component={KellyCriterionCalculator} />} />
+                            <Route path="/over-1-5-goals-predictions"    element={<RouteBoundary component={Over15GoalsPredictions} />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
+                            <Route path="/sure-wins"                    element={<Navigate to="/sure-win-predictions" replace />} />
+                            <Route path="/100-sure-predictions"         element={<Navigate to="/sure-win-predictions" replace />} />
+                            <Route path="/sure-banker-picks"            element={<Navigate to="/sure-win-predictions" replace />} />
+                            <Route path="/corners"                      element={<Navigate to="/corners-predictions" replace />} />
+                            <Route path="/corner-predictions"           element={<Navigate to="/corners-predictions" replace />} />
+                            <Route path="/cards"                        element={<Navigate to="/cards-predictions" replace />} />
+                            <Route path="/card-predictions"             element={<Navigate to="/cards-predictions" replace />} />
+                            <Route path="/booking-predictions"          element={<Navigate to="/cards-predictions" replace />} />
+                            <Route path="/championship"                 element={<Navigate to="/championship-predictions" replace />} />
+                            <Route path="/efl"                          element={<Navigate to="/championship-predictions" replace />} />
+                            <Route path="/efl-championship"             element={<Navigate to="/championship-predictions" replace />} />
+                            <Route path="/eredivisie"                   element={<Navigate to="/eredivisie-predictions" replace />} />
+                            <Route path="/dutch-eredivisie"             element={<Navigate to="/eredivisie-predictions" replace />} />
+                            <Route path="/primeira-liga"                element={<Navigate to="/primeira-liga-predictions" replace />} />
+                            <Route path="/liga-portugal"                element={<Navigate to="/primeira-liga-predictions" replace />} />
+                            <Route path="/portuguese-league"            element={<Navigate to="/primeira-liga-predictions" replace />} />
+                            <Route path="/conference-league"            element={<Navigate to="/conference-league-predictions" replace />} />
+                            <Route path="/uefa-conference-league"       element={<Navigate to="/conference-league-predictions" replace />} />
+                            <Route path="/copa-libertadores"            element={<Navigate to="/copa-libertadores-predictions" replace />} />
+                            <Route path="/libertadores"                 element={<Navigate to="/copa-libertadores-predictions" replace />} />
+                            <Route path="/ev-calculator"                element={<Navigate to="/value-bet-calculator" replace />} />
+                            <Route path="/expected-value-calculator"    element={<Navigate to="/value-bet-calculator" replace />} />
+                            <Route path="/kelly-calculator"             element={<Navigate to="/kelly-criterion-calculator" replace />} />
+                            <Route path="/over-1-5"                     element={<Navigate to="/over-1-5-goals-predictions" replace />} />
                             <Route path="/predictions"                  element={<Navigate to="/predict" replace />} />
                             <Route path="/football-predictions"         element={<Navigate to="/" replace />} />
                             <Route path="/soccer-predictions"           element={<Navigate to="/" replace />} />

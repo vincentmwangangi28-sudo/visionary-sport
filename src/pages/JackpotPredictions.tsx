@@ -428,8 +428,8 @@ export default function JackpotPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="SportPesa Mega Jackpot Prediction 17 Games | Betika 15 & Mozzart Tips"
-        description="Free SportPesa Mega Jackpot prediction 17 games this weekend, Betika 15 Midweek & Mozzart tips. Verified Poisson AI banker locks & Double Chance combinations."
+        title="SportPesa Mega Jackpot 17 Games & Betika Grand AI Tips"
+        description="Algorithmic 17-game SportPesa Mega Jackpot selections and Betika Midweek combinations. Balance high-probability bankers with strategic Double Chance hedges."
         canonical="/jackpot-predictions"
         keywords="sportpesa mega jackpot prediction 17 games, sportpesa mega jackpot prediction this weekend, betika grand jackpot prediction 17 games, betika midweek jackpot 15 games, mozzart daily jackpot tips, mega jackpot sure banker predictions, double chance jackpot permutations"
         jsonLd={faqJsonLd}

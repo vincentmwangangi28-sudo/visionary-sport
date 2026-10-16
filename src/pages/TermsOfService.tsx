@@ -13,8 +13,9 @@ export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Terms of Service | PredictPro Quantitative Football Analytics"
-        description="PredictPro Terms of Service: Read our terms governing platform access, informational analytics, 18+ eligibility, and Google AdSense compliance."
+        title="Terms of Service & User Conduct Guidelines | PredictPro"
+        description="Review PredictPro terms of service, platform usage rules, informational sports analytics disclaimers, and 18+ user qualifications."
+        canonical="/terms"
       />
       <Navbar />
 

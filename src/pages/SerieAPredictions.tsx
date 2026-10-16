@@ -11,10 +11,10 @@ export default function SerieAPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Serie A Predictions 2025/26 | Free AI Tips | PredictPro"
-        description="Free Serie A predictions for 2025/26. AI tips for Inter Milan, AC Milan, Juventus, Napoli and all 20 Serie A teams."
+        title="Italian Serie A Predictions: Tactical Low-Block & xGA Tips"
+        description="Italian Serie A analytical previews targeting defensive xGA regression, Draw No Bet value lines, and derby odds for Inter, Milan, Juventus, and Napoli."
         canonical="/serie-a-predictions"
-        keywords="Serie A predictions today, Italian football tips, Inter Milan prediction, AC Milan tips, Juventus Serie A prediction"
+        keywords="serie a predictions today, italian football tips, inter milan vs ac milan odds, juventus prediction, serie a betting tips"
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">

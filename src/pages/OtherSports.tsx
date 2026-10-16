@@ -56,7 +56,12 @@ export default function OtherSports() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Multi-Sport Predictions | PredictPro" description="AI predictions for tennis, basketball, cricket and rugby. Global sports coverage." />
+      <SEO
+        title="Basketball & Tennis AI Predictions: +EV Spreads & Moneylines"
+        description="Daily multi-sport AI predictions for NBA basketball, Grand Slam tennis, and international rugby. Poisson totals and moneyline value odds."
+        canonical="/sports"
+        keywords="multi-sport predictions, nba ai picks, tennis predictions today, basketball odds, sports betting predictions"
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="mb-6">

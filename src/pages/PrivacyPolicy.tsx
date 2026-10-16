@@ -13,8 +13,9 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Privacy Policy | PredictPro Quantitative Football Analytics"
-        description="PredictPro Privacy Policy: Learn how we protect your data, our cookie usage, and our Google AdSense and third-party advertising compliance."
+        title="Privacy Policy & Data Protection Standards | PredictPro"
+        description="Read how PredictPro protects user privacy, encrypts account information, and complies with GDPR and international data standards."
+        canonical="/privacy"
       />
       <Navbar />
 

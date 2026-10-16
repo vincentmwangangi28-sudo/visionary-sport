@@ -13,10 +13,10 @@ export default function KPLPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="KPL Predictions Today | Free AI Tips | PredictPro"
-        description="Free Kenya Premier League (KPL) predictions. AI tips for Gor Mahia, AFC Leopards, Tusker FC, Bandari. Pay with M-Pesa."
+        title="Kenya Premier League (KPL) AI Tips: Gor Mahia & Leopards Odds"
+        description="FKF Kenya Premier League football predictions. Mashemeji derby analytics, home altitude factor modeling, and M-Pesa accessible banker tips."
         canonical="/kpl-predictions"
-        keywords="KPL predictions today, Kenya Premier League tips, Gor Mahia prediction, AFC Leopards tips, Tusker FC prediction, KPL betting tips Kenya"
+        keywords="kpl predictions today, kenya premier league tips, gor mahia vs afc leopards, tusker fc tips, mpesa football predictions kenya"
       />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">

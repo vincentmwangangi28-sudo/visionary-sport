@@ -16,8 +16,8 @@ const NotFound = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Page Not Found | PredictPro"
-        description="The page you're looking for doesn't exist. Browse our AI football predictions, live scores and betting tools."
+        title="Page Not Found (404) | Browse Football Predictions"
+        description="The requested page could not be found. Browse our daily AI football predictions, banker bets, and live scores."
         canonical={location.pathname}
         noIndex={true}
       />

@@ -74,7 +74,12 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Shop | PredictPro" description="Upgrade to premium AI football predictions. Available worldwide with card payment or M-Pesa." />
+      <SEO
+        title="PredictPro VIP Club: Premium AI Football Tips & Banker Passes"
+        description="Unlock VIP high-yield banker predictions, +EV value bets, and 17-game Mega Jackpot slips. Instant access via M-Pesa or card."
+        canonical="/shop"
+        keywords="predictpro vip, premium football tips, buy football predictions, mpesa betting tips, vip banker pass"
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
         <div className="text-center mb-10">

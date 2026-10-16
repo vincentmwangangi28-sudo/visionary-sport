@@ -20,6 +20,7 @@ import {
   Code2,
   Award,
   Layers,
+  Radio,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -890,14 +891,26 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               <pre className="p-3 rounded-xl bg-muted/60 border text-[11px] font-mono overflow-x-auto text-muted-foreground">
                 {embedWidgetSnippet}
               </pre>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => copyText(embedWidgetSnippet, 'Embeddable backlink widget HTML')}
-                className="gap-1.5 text-xs font-bold"
-              >
-                <Copy className="w-3.5 h-3.5" /> Copy Embeddable Backlink Snippet
-              </Button>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => copyText(embedWidgetSnippet, 'Embeddable backlink widget HTML')}
+                  className="gap-1.5 text-xs font-bold"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy Embeddable Backlink Snippet
+                </Button>
+                <Link to="/widgets">
+                  <Button size="sm" className="gap-1.5 text-xs font-bold bg-primary text-primary-foreground">
+                    <ExternalLink className="w-3.5 h-3.5" /> Open Full Widget Studio (/widgets)
+                  </Button>
+                </Link>
+                <a href="/feed-predictions.xml" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost" className="gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
+                    <Radio className="w-3.5 h-3.5 text-rose-500" /> Predictions RSS Feed
+                  </Button>
+                </a>
+              </div>
             </CardContent>
           </Card>
         </div>

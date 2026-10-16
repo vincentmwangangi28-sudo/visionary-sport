@@ -211,10 +211,10 @@ export default function MatchPredictor() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="AI Pro Tips Today: Match Winner & BTTS Predictions | PredictPro"
-        description="Get verified AI Pro Tips and football match predictions today. Win probabilities, expected goals (xG), Poisson BTTS, fair odds, and score projections."
+        title="Interactive AI Match Simulator & Head-to-Head Predictor"
+        description="Simulate any football fixture with custom team form, player injury adjustments, and Poisson score matrices. Generate instant fair match odds."
         canonical="/predict"
-        keywords="aiprotips prediction today, ai pro tips today, btts ai prediction today, gemini ai football predictions, ai match predictor, football prediction engine, soccer match outcome probabilities"
+        keywords="ai football match simulator, soccer fixture predictor, expected goals simulator, h2h match calculator, fair odds simulator"
         breadcrumbs={[
           { name: 'Home', item: '/' },
           { name: 'AI Pro Tips & Match Predictor', item: '/predict' }
