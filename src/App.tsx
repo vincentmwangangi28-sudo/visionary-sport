@@ -154,6 +154,9 @@ const NigerianNpflPredictions    = lazyWithRetry(() => import("./pages/NigerianN
 const EgyptianPremierLeaguePredictions = lazyWithRetry(() => import("./pages/EgyptianPremierLeaguePredictions"));
 const JLeaguePredictions         = lazyWithRetry(() => import("./pages/JLeaguePredictions"));
 const AustralianALeaguePredictions = lazyWithRetry(() => import("./pages/AustralianALeaguePredictions"));
+const TodayPredictions           = lazyWithRetry(() => import("./pages/TodayPredictions"));
+const TwoOddsPredictions         = lazyWithRetry(() => import("./pages/TwoOddsPredictions"));
+const FiveOddsPredictions        = lazyWithRetry(() => import("./pages/FiveOddsPredictions"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -598,6 +601,9 @@ const App = () => (
                             <Route path="/egyptian-premier-league-predictions" element={<RouteBoundary component={EgyptianPremierLeaguePredictions} />} />
                             <Route path="/j-league-predictions"         element={<RouteBoundary component={JLeaguePredictions} />} />
                             <Route path="/australian-a-league-predictions" element={<RouteBoundary component={AustralianALeaguePredictions} />} />
+                            <Route path="/today-predictions"            element={<RouteBoundary component={TodayPredictions} />} />
+                            <Route path="/2-odds-predictions"           element={<RouteBoundary component={TwoOddsPredictions} />} />
+                            <Route path="/5-odds-predictions"           element={<RouteBoundary component={FiveOddsPredictions} />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
@@ -608,7 +614,7 @@ const App = () => (
                             <Route path="/sure-2-odds"                  element={<Navigate to="/daily-2-odds-predictions" replace />} />
                             <Route path="/2-odds-daily-tips"            element={<Navigate to="/daily-2-odds-predictions" replace />} />
                             <Route path="/sure-3-odds-predictions"      element={<Navigate to="/daily-2-odds-predictions" replace />} />
-                            <Route path="/5-odds-predictions"           element={<Navigate to="/daily-2-odds-predictions" replace />} />
+                            <Route path="/10-odds-predictions"          element={<Navigate to="/5-odds-predictions" replace />} />
                             <Route path="/same-game-parlay-predictions" element={<Navigate to="/bet-builder-predictions" replace />} />
                             <Route path="/sgp-football-tips"            element={<Navigate to="/bet-builder-predictions" replace />} />
                             <Route path="/bet-builder-tips-today"       element={<Navigate to="/bet-builder-predictions" replace />} />
@@ -755,8 +761,7 @@ const App = () => (
                             <Route path="/kenya-premier-league"         element={<Navigate to="/kpl-predictions" replace />} />
                             <Route path="/world-cup"                    element={<Navigate to="/world-cup-predictions" replace />} />
                             <Route path="/afcon"                        element={<Navigate to="/afcon-predictions" replace />} />
-                            <Route path="/mls"                          element={<Navigate to="/us-soccer-predictions" replace />} />
-                            <Route path="/mls-predictions"              element={<Navigate to="/us-soccer-predictions" replace />} />
+                            <Route path="/mls"                          element={<Navigate to="/mls-predictions" replace />} />
                             <Route path="/livescore"                    element={<Navigate to="/live" replace />} />
                             <Route path="/livescores"                   element={<Navigate to="/live" replace />} />
                             <Route path="/live-scores"                  element={<Navigate to="/live" replace />} />
@@ -766,8 +771,7 @@ const App = () => (
                             <Route path="/over-2-5-goals"               element={<Navigate to="/btts" replace />} />
                             <Route path="/over-under-2-5"               element={<Navigate to="/btts" replace />} />
                             <Route path="/correct-scores"               element={<Navigate to="/correct-score" replace />} />
-                            <Route path="/ht-ft"                        element={<Navigate to="/blog/halftime-fulltime-ht-ft-predictions-strategy" replace />} />
-                            <Route path="/asian-handicap"               element={<Navigate to="/blog/asian-handicap-betting-explained" replace />} />
+                            <Route path="/ht-ft"                        element={<Navigate to="/halftime-fulltime-predictions" replace />} />
                             <Route path="/table"                        element={<Navigate to="/standings" replace />} />
                             <Route path="/tables"                       element={<Navigate to="/standings" replace />} />
                             <Route path="/odds"                         element={<Navigate to="/dropping-odds" replace />} />

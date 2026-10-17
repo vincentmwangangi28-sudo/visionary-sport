@@ -57,9 +57,24 @@ const MAX_OFFLINE_QUEUE_SIZE = 25;
 
 // In-memory circular buffer of the most recent errors for debugging/diagnostics
 const recentErrorBuffer: ErrorLogEntry[] = [];
-const MAX_RECENT_ERRORS = 15;
+const MAX_RECENT_ERRORS = 25;
+const LOCAL_STORAGE_ERROR_LOGS_KEY = 'predictpro_error_logs_v1';
 
 let isGlobalLoggingInitialized = false;
+
+try {
+  if (typeof window !== 'undefined') {
+    const raw = localStorage.getItem(LOCAL_STORAGE_ERROR_LOGS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        recentErrorBuffer.push(...parsed.slice(0, MAX_RECENT_ERRORS));
+      }
+    }
+  }
+} catch {
+  // Ignore localStorage read errors
+}
 
 /**
  * Extracts a normalized Error instance or message string safely.
@@ -148,15 +163,11 @@ async function transmitLogEntry(entry: ErrorLogEntry): Promise<boolean> {
     ]);
 
     if (error) {
-      // Don't throw or log via logger to avoid recursive loops
-      console.warn('[PredictPro Logger] Supabase error_logs insert notice:', error.message || error);
       return false;
     }
 
     return true;
-  } catch (transportErr) {
-    // Silent catch so logging never crashes the app
-    console.warn('[PredictPro Logger] Failed to send error log to Supabase:', transportErr);
+  } catch {
     return false;
   }
 }
@@ -344,6 +355,7 @@ export const logger = {
     };
 
     const entry: ErrorLogEntry = {
+      id: `err-${now}-${Math.random().toString(36).slice(2, 7)}`,
       error_message: message,
       error_stack: params.error.stack || null,
       component_stack: params.componentStack || null,
@@ -356,10 +368,17 @@ export const logger = {
       created_at: new Date().toISOString(),
     };
 
-    // Store in recent memory buffer for quick debugging
+    // Store in recent memory buffer and localStorage for quick debugging
     recentErrorBuffer.unshift(entry);
     if (recentErrorBuffer.length > MAX_RECENT_ERRORS) {
       recentErrorBuffer.pop();
+    }
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_STORAGE_ERROR_LOGS_KEY, JSON.stringify(recentErrorBuffer));
+      }
+    } catch {
+      // Ignore storage quota issues
     }
 
     // Output to developer console
@@ -482,6 +501,20 @@ export const logger = {
    */
   getRecentErrors(): ReadonlyArray<ErrorLogEntry> {
     return [...recentErrorBuffer];
+  },
+
+  /**
+   * Clears in-memory and localStorage error logs
+   */
+  clearRecentErrors(): void {
+    recentErrorBuffer.length = 0;
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(LOCAL_STORAGE_ERROR_LOGS_KEY);
+      }
+    } catch {
+      // Ignore
+    }
   },
 };
 

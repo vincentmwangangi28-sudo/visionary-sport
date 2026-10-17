@@ -123,21 +123,19 @@ export const AdminSystemConfigTab: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (confirm('Reset all system feature flags to factory defaults?')) {
-      const reset = resetSystemConfig();
-      setConfig(reset);
-      setIsDirty(false);
-      logAdminAction({
-        actorName: 'Vincent Mwangangi',
-        actorEmail: 'vincentmwangangi28@gmail.com',
-        category: 'config',
-        action: 'Reset System Configuration',
-        details: 'Restored factory default configuration for PredictPro.',
-        severity: 'warning',
-        ipAddress: '197.237.142.88 (Nairobi, KE)',
-      });
-      toast.info('Settings restored to default');
-    }
+    const reset = resetSystemConfig();
+    setConfig(reset);
+    setIsDirty(false);
+    logAdminAction({
+      actorName: 'Vincent Mwangangi',
+      actorEmail: 'vincentmwangangi28@gmail.com',
+      category: 'config',
+      action: 'Reset System Configuration',
+      details: 'Restored factory default configuration for PredictPro.',
+      severity: 'warning',
+      ipAddress: '197.237.142.88 (Nairobi, KE)',
+    });
+    toast.info('Settings restored to default');
   };
 
   return (

@@ -47,7 +47,7 @@ export default function EuropeanHandicapPredictions() {
         name: 'European Handicap (-1 / -2) 3-Way Football Predictions Today',
         description:
           'Daily 3-Way European Handicap (-1) football predictions for heavy favorites to win by 2+ goals, powered by Poisson goal differential simulations.',
-        url: 'https://statswise.Splitleague.com/handicap-1x2-predictions',
+        url: 'https://predictpro.guru/handicap-1x2-predictions',
       },
     ],
     []

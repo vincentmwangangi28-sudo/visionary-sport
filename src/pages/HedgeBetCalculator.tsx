@@ -49,7 +49,7 @@ export default function HedgeBetCalculator() {
         operatingSystem: 'All',
         description:
           'Free sports betting Hedge Bet Calculator. Compare bookmaker Cash-Out offers against manual live hedging to lock in maximum guaranteed profit.',
-        url: 'https://statswise.Splitleague.com/hedge-bet-calculator',
+        url: 'https://predictpro.guru/hedge-bet-calculator',
       },
     ],
     []

@@ -931,6 +931,30 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'a league predictions today, australian a league betting tips, sydney fc prediction, melbourne victory tips, a league over 2.5 goals',
     canonicalPath: '/australian-a-league-predictions',
   },
+  '/today-predictions': {
+    title: "Today's Football Predictions: Daily AI Match Tips & Odds",
+    description:
+      "Free football predictions for today's fixtures. Verified Expected Goals (xG) models, 1X2 win probabilities, BTTS tips, and banker picks updated hourly.",
+    keywords:
+      'todays football predictions, football predictions today, soccer tips today, sure wins today, match predictions today, banker bets today',
+    canonicalPath: '/today-predictions',
+  },
+  '/2-odds-predictions': {
+    title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips',
+    description:
+      'Free Sure 2 Odds and 3 Odds football predictions today. High-strike-rate 2-leg banker doubles and interactive 5-day rollover compounding calculator.',
+    keywords:
+      'sure 2 odds predictions today, 2 odds predictions, daily 2 odds rollover tips, sure 2 odds banker today',
+    canonicalPath: '/2-odds-predictions',
+  },
+  '/5-odds-predictions': {
+    title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips',
+    description:
+      'Free Sure 5 Odds and 10 Odds football accumulator predictions today. Curated 4-fold and 5-fold multi-bet tickets with high AI confidence.',
+    keywords:
+      'sure 5 odds predictions today, daily 5 odds tips, sure 10 odds predictions, 5 odds accumulator tips, 10 odds banker slip today',
+    canonicalPath: '/5-odds-predictions',
+  },
 };
 
 /**

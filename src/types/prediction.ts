@@ -22,6 +22,10 @@ export interface Prediction {
   ai_model?: string;
   metadata?: Record<string, unknown>;
   created_at: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  time?: string;
+  matchDate?: string;
 }
 
 export const getPrediction = (p: Prediction) => p.predicted_outcome ?? p.prediction ?? 'Unknown';

@@ -88,7 +88,66 @@ function getCachedInitialPredictionsPayload(league?: string) {
   return payload;
 }
 
-export const usePredictions = (page = 1, league?: string) => {
+export interface UsePredictionsOptions {
+  page?: number;
+  limit?: number;
+  league?: string;
+}
+
+export type PredictionsDataHybrid = Prediction[] & {
+  predictions: Prediction[];
+  allPredictions: Prediction[];
+  total: number;
+  isRealTime: boolean;
+};
+
+function enrichPredictionAliases(p: Prediction): Prediction {
+  const formattedTime = p.match_date
+    ? (() => {
+        try {
+          const d = new Date(p.match_date);
+          if (!isNaN(d.getTime())) {
+            return (
+              d.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'UTC',
+              }) + ' UTC'
+            );
+          }
+        } catch {
+          // ignore
+        }
+        return '15:00 UTC';
+      })()
+    : '15:00 UTC';
+
+  return {
+    ...p,
+    homeTeam: p.homeTeam || p.home_team,
+    awayTeam: p.awayTeam || p.away_team,
+    matchDate: p.matchDate || p.match_date,
+    time: p.time || formattedTime,
+  };
+}
+
+export const usePredictions = (
+  pageOrOptions: number | UsePredictionsOptions = 1,
+  leagueArg?: string
+) => {
+  const page =
+    typeof pageOrOptions === 'number'
+      ? Math.max(1, pageOrOptions)
+      : Math.max(1, pageOrOptions?.page ?? 1);
+  const effectivePageSize =
+    typeof pageOrOptions === 'object' && pageOrOptions?.limit
+      ? Math.max(1, pageOrOptions.limit)
+      : PAGE_SIZE;
+  const league =
+    typeof pageOrOptions === 'object' && pageOrOptions?.league
+      ? pageOrOptions.league
+      : leagueArg;
+
   const { isPremium } = useSubscription();
   const queryClient = useQueryClient();
   const leagueKey = league?.toLowerCase() ?? 'all';
@@ -240,8 +299,9 @@ export const usePredictions = (page = 1, league?: string) => {
   const hasPremiumAccess = isPremium();
   const gatedAll = useMemo(() => {
     const rawAll = query.data?.allPredictions ?? [];
-    if (hasPremiumAccess) return rawAll;
-    return rawAll.map(p => {
+    return rawAll.map((rawItem) => {
+      const p = enrichPredictionAliases(rawItem);
+      if (hasPremiumAccess) return p;
       const outcome = getPrediction(p);
       if (p.is_premium && !outcome.includes('🔒')) {
         return {
@@ -262,22 +322,23 @@ export const usePredictions = (page = 1, league?: string) => {
   }, [query.data?.allPredictions, hasPremiumAccess]);
 
   const gatedPage = useMemo(() => {
-    const start = Math.max(0, (page - 1) * PAGE_SIZE);
-    return gatedAll.slice(start, start + PAGE_SIZE);
-  }, [gatedAll, page]);
+    const start = Math.max(0, (page - 1) * effectivePageSize);
+    return gatedAll.slice(start, start + effectivePageSize);
+  }, [gatedAll, page, effectivePageSize]);
 
   const total = gatedAll.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / effectivePageSize));
 
-  const gatedData = useMemo(() => {
-    if (!query.data) return undefined;
-    return {
-      ...query.data,
+  const gatedData = useMemo<PredictionsDataHybrid>(() => {
+    const hybrid = [...gatedAll] as PredictionsDataHybrid;
+    Object.assign(hybrid, {
       predictions: gatedPage,
       allPredictions: gatedAll,
       total,
-    };
-  }, [query.data, gatedPage, gatedAll, total]);
+      isRealTime: true,
+    });
+    return hybrid;
+  }, [gatedPage, gatedAll, total]);
 
   return {
     ...query,
@@ -287,7 +348,7 @@ export const usePredictions = (page = 1, league?: string) => {
     predictions: gatedPage,
     allPredictions: gatedAll,
     totalPages,
-    pageSize: PAGE_SIZE,
+    pageSize: effectivePageSize,
     isRealTime: true,
   };
 };

@@ -46,7 +46,7 @@ export default function SecondHalfGoalsPredictions() {
         name: 'Second Half Goals & Highest Scoring Half Football Predictions',
         description:
           'AI football predictions for Over 1.5 Second Half Goals and 2nd Half Highest Scoring Half markets, powered by 60–90 minute xG fatigue curves.',
-        url: 'https://statswise.Splitleague.com/second-half-goals-predictions',
+        url: 'https://predictpro.guru/second-half-goals-predictions',
       },
     ],
     []

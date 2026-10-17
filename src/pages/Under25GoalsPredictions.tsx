@@ -47,7 +47,7 @@ export default function Under25GoalsPredictions() {
         name: 'Under 2.5 Goals Football Predictions Today (Low-xG AI Model)',
         description:
           'Daily Under 2.5 goals football predictions powered by Zero-Inflated Bivariate Poisson models, low-block xGA metrics, and pace-of-play analytics.',
-        url: 'https://statswise.Splitleague.com/under-2-5-goals-predictions',
+        url: 'https://predictpro.guru/under-2-5-goals-predictions',
       },
       {
         '@context': 'https://schema.org',

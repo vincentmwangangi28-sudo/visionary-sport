@@ -40,7 +40,7 @@ export default function MidweekJackpotPredictions() {
         name: '13-Game & 15-Game Midweek Jackpot Predictions Today (SportPesa & Betika)',
         description:
           'AI-modeled 13-game and 15-game Midweek Jackpot predictions with 6 mathematical bankers and optimal double-chance combinations.',
-        url: 'https://statswise.Splitleague.com/midweek-jackpot-predictions',
+        url: 'https://predictpro.guru/midweek-jackpot-predictions',
       },
     ],
     []

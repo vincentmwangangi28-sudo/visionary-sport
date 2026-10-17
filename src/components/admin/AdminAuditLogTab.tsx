@@ -68,11 +68,9 @@ export const AdminAuditLogTab: React.FC = () => {
   };
 
   const handleClear = () => {
-    if (confirm('Clear local administrative audit log entries?')) {
-      clearAuditLogs();
-      setLogs([]);
-      toast.info('Audit trail cleared');
-    }
+    clearAuditLogs();
+    setLogs([]);
+    toast.info('Audit trail cleared');
   };
 
   const getSeverityBadge = (severity: AuditSeverity) => {

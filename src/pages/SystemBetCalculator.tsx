@@ -102,7 +102,7 @@ export default function SystemBetCalculator() {
         operatingSystem: 'All',
         description:
           'Interactive sports betting System Bet Calculator for Trixie (4 bets), Patent (7 bets), Yankee (11 bets), and Lucky 15 (15 bets) combinations.',
-        url: 'https://statswise.Splitleague.com/system-bet-calculator',
+        url: 'https://predictpro.guru/system-bet-calculator',
       },
     ],
     []

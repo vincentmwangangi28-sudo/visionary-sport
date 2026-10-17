@@ -20,11 +20,16 @@ import { registerRuntimeTeamLogo } from '@/services/teamLogos';
 
 export { isHostInCooldown, setHostCooldown, getFootballCache, setFootballCache };
 
-export const ESPN_HEADERS: Record<string, string> = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'application/json',
-};
+export const ESPN_HEADERS: Record<string, string> =
+  typeof window === 'undefined'
+    ? {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'application/json',
+      }
+    : {
+        Accept: 'application/json',
+      };
 
 /**
  * Shared, deduplicated ESPN league scoreboard fetcher so live scores and upcoming fixtures
@@ -174,6 +179,11 @@ export const LEAGUES_LIST: LeagueDefinition[] = [
   { name: 'Botola Pro Morocco', espnCode: 'mar.1', apiFootballId: 200, country: 'Morocco' },
   { name: 'DR Congo Linafoot', espnCode: 'cod.1', apiFootballId: 420, country: 'DR Congo' },
   { name: 'CAF Confederation Cup', espnCode: 'caf.confed', apiFootballId: 20, country: 'Africa' },
+  { name: 'J1 League', espnCode: 'jpn.1', apiFootballId: 98, country: 'Japan' },
+  { name: 'Australian A-League', espnCode: 'aus.1', apiFootballId: 188, country: 'Australia' },
+  { name: 'Greek Super League', espnCode: 'gre.1', apiFootballId: 197, country: 'Greece' },
+  { name: 'Belgian Pro League', espnCode: 'bel.1', apiFootballId: 144, country: 'Belgium' },
+  { name: 'Turkish Süper Lig', espnCode: 'tur.1', apiFootballId: 203, country: 'Turkey' },
 ];
 
 /**
@@ -195,6 +205,36 @@ export function matchesLeagueFilter(itemLeague?: string, filterLeague?: string):
   // English Premier League strict disambiguation
   if (tL === 'premier league' || tL === 'epl' || tL === 'english premier league') {
     return pL === 'premier league' || pL === 'english premier league' || pL === 'epl';
+  }
+
+  // Egyptian Premier League
+  if (tL.includes('egypt')) {
+    return pL.includes('egypt');
+  }
+
+  // Scottish Premiership
+  if (tL.includes('scottish') || tL.includes('spfl')) {
+    return pL.includes('scottish') || pL.includes('spfl');
+  }
+
+  // Nigeria NPFL
+  if (tL === 'npfl' || tL.includes('nigeria')) {
+    return pL.includes('npfl') || pL.includes('nigeria');
+  }
+
+  // South Africa PSL
+  if (tL === 'psl' || tL.includes('south africa') || tL.includes('betway premiership')) {
+    return pL.includes('psl') || pL.includes('south africa') || pL.includes('betway');
+  }
+
+  // Japan J1 League
+  if (tL.includes('j1') || tL.includes('j-league') || tL.includes('j league') || tL.includes('japan')) {
+    return pL.includes('j1') || pL.includes('j-league') || pL.includes('j league') || pL.includes('japan');
+  }
+
+  // Australia A-League
+  if (tL.includes('a-league') || tL.includes('a league') || tL.includes('australia')) {
+    return pL.includes('a-league') || pL.includes('a league') || pL.includes('australia');
   }
 
   // UEFA Champions League strict disambiguation

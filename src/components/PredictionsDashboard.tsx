@@ -43,13 +43,22 @@ import {
 
 interface PredictionsDashboardProps {
   initialLeague?: string;
+  defaultLeague?: string;
 }
 
 type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 'today';
 
-export const PredictionsDashboard = ({ initialLeague }: PredictionsDashboardProps = {}) => {
+export const PredictionsDashboard = ({ initialLeague, defaultLeague }: PredictionsDashboardProps = {}) => {
+  const resolvedInitialLeague = initialLeague ?? defaultLeague;
   const [page, setPage] = useState(1);
-  const [league, setLeague] = useState<string | undefined>(initialLeague);
+  const [league, setLeague] = useState<string | undefined>(resolvedInitialLeague);
+
+  useEffect(() => {
+    if (resolvedInitialLeague !== undefined) {
+      setLeague(resolvedInitialLeague);
+      setPage(1);
+    }
+  }, [resolvedInitialLeague]);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');

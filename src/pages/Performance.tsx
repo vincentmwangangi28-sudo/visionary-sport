@@ -274,7 +274,7 @@ export default function Performance() {
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base">Bet History & Records ({bets.length})</CardTitle>
             {bets.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => { if (confirm('Reset tracking history?')) saveBets([]); }} className="text-xs text-muted-foreground hover:text-destructive h-7">
+              <Button variant="ghost" size="sm" onClick={() => { saveBets([]); }} className="text-xs text-muted-foreground hover:text-destructive h-7">
                 Reset
               </Button>
             )}

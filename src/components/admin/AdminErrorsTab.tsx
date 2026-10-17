@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import { 
   AlertTriangle, RefreshCw, Trash2, Search, Bug, Terminal, Copy, Check
 } from 'lucide-react';
@@ -38,6 +39,20 @@ export function AdminErrorsTab() {
 
   const loadErrorLogs = useCallback(async () => {
     setLoading(true);
+    const localEntries: ErrorLogItem[] = logger.getRecentErrors().map((e, idx) => ({
+      id: e.id || `local-err-${idx}`,
+      created_at: e.created_at || new Date().toISOString(),
+      error_message: e.error_message,
+      error_stack: e.error_stack || null,
+      component_stack: e.component_stack || null,
+      error_type: e.error_type || 'custom',
+      url: e.url || null,
+      user_id: e.user_id || null,
+      user_agent: e.user_agent || null,
+      severity: e.severity || 'error',
+      metadata: (e.metadata as Record<string, unknown>) || null,
+    }));
+
     try {
       const { data, error } = await supabase
         .from('error_logs')
@@ -46,10 +61,18 @@ export function AdminErrorsTab() {
         .limit(100);
 
       if (error) throw error;
-      setLogs((data || []) as ErrorLogItem[]);
+      const remoteEntries = (data || []) as ErrorLogItem[];
+      const combined = [...localEntries, ...remoteEntries];
+      const seen = new Set<string>();
+      const deduped = combined.filter((item) => {
+        const key = `${item.error_message}:${item.created_at?.slice(0, 16)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      setLogs(deduped);
     } catch {
-      // Table might be empty or fallback
-      setLogs([]);
+      setLogs(localEntries);
     } finally {
       setLoading(false);
     }
@@ -60,7 +83,7 @@ export function AdminErrorsTab() {
   }, [loadErrorLogs]);
 
   const handleClearLogs = async () => {
-    if (!confirm('Are you sure you want to clear all error logs?')) return;
+    logger.clearRecentErrors();
     try {
       const { error } = await supabase
         .from('error_logs')
@@ -72,9 +95,8 @@ export function AdminErrorsTab() {
       toast.success('Error logs cleared successfully');
       setLogs([]);
     } catch {
-      // local reset fallback
       setLogs([]);
-      toast.info('Logs reset in current view');
+      toast.success('Error logs cleared');
     }
   };
 

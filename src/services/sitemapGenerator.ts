@@ -111,9 +111,12 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
 
   // 3. Feature Tools & Betting Markets
   const featurePages: Array<{ path: string; title: string; priority: number; changeFreq: SitemapEntry['changeFrequency'] }> = [
+    { path: '/today-predictions', title: "Today's Football Predictions: Daily AI Match Tips & Odds", priority: 0.95, changeFreq: 'daily' },
     { path: '/sure-win-predictions', title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets', priority: 0.95, changeFreq: 'daily' },
     { path: '/rollover-bets-predictions', title: 'Rollover Bets Predictions Today: 7-Day 1.50 & 2.00 Odds Challenge', priority: 0.95, changeFreq: 'daily' },
     { path: '/daily-2-odds-predictions', title: 'Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips', priority: 0.95, changeFreq: 'daily' },
+    { path: '/2-odds-predictions', title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips', priority: 0.90, changeFreq: 'daily' },
+    { path: '/5-odds-predictions', title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips', priority: 0.90, changeFreq: 'daily' },
     { path: '/bet-builder-predictions', title: 'Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips', priority: 0.90, changeFreq: 'daily' },
     { path: '/tomorrow-predictions', title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds", priority: 0.95, changeFreq: 'daily' },
     { path: '/weekend-predictions', title: 'Weekend Football Predictions: Saturday & Sunday Banker Acca Tips', priority: 0.95, changeFreq: 'daily' },

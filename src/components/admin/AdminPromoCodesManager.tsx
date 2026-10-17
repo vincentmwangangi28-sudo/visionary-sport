@@ -402,10 +402,8 @@ export function AdminPromoCodesManager() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                if (confirm(`Delete promo code ${p.code}?`)) {
-                                  deletePromoCode(p.id);
-                                  toast.info(`Deleted promo code ${p.code}`);
-                                }
+                                deletePromoCode(p.id);
+                                toast.info(`Deleted promo code ${p.code}`);
                               }}
                               className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                             >
