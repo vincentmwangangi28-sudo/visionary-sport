@@ -112,10 +112,10 @@ export default function SystemBetCalculator() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
         title="System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Tool"
-        description="Free System Bet Calculator for football and sports betting. Calculate exact payouts for Trixie (4 bets), Patent (7), Yankee (11), and Lucky 15 (15) combinations."
+        description="Free System Bet Calculator for football betting. Calculate exact payouts for Trixie (4 bets), Patent (7), Yankee (11), and Lucky 15 (15) combinations."
         keywords="system bet calculator, trixie bet calculator, yankee calculator, patent bet calculator, lucky 15 calculator, round robin bet calculator"
-        canonicalPath="/system-bet-calculator"
-        schema={schemas}
+        canonical="/system-bet-calculator"
+        structuredData={schemas}
       />
       <Navbar />
       <MarketQuickStrip />

@@ -105,10 +105,10 @@ export default function AsianHandicapPredictions() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips"
-        description="Free Asian Handicap football predictions today. Beat bookmaker margins with expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines."
+        description="Free Asian Handicap football predictions today. Beat bookmaker margins with expected goal (xG) models for -0.5, -0.75, -1.0, and +0.5 handicap lines."
         canonical="/asian-handicap-predictions"
         keywords="asian handicap predictions today, asian handicap tips, -0.5 handicap football, -1.5 asian handicap predictions, -0.75 handicap meaning, sharp football handicap picks"
-        jsonLd={jsonLd}
+        structuredData={jsonLd}
       />
       <Navbar />
 

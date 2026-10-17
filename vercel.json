@@ -14,6 +14,7 @@
     },
     { "source": "/predictions", "destination": "/predict", "permanent": true },
     { "source": "/predictions/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
+    { "source": "/match/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
     { "source": "/football-predictions", "destination": "/", "permanent": true },
     { "source": "/soccer-predictions", "destination": "/", "permanent": true },
     { "source": "/tips", "destination": "/best-bets", "permanent": true },
@@ -22,8 +23,8 @@
     { "source": "/banker-bets", "destination": "/best-bets", "permanent": true },
     { "source": "/betting-tips", "destination": "/best-bets", "permanent": true },
     { "source": "/today", "destination": "/best-bets", "permanent": true },
-    { "source": "/tomorrow", "destination": "/upcoming", "permanent": true },
-    { "source": "/weekend", "destination": "/upcoming", "permanent": true },
+    { "source": "/tomorrow", "destination": "/tomorrow-predictions", "permanent": true },
+    { "source": "/weekend", "destination": "/weekend-predictions", "permanent": true },
     { "source": "/fixtures", "destination": "/upcoming", "permanent": true },
     { "source": "/vip", "destination": "/shop", "permanent": true },
     { "source": "/premium", "destination": "/shop", "permanent": true },
@@ -48,8 +49,7 @@
     { "source": "/kenya-premier-league", "destination": "/kpl-predictions", "permanent": true },
     { "source": "/world-cup", "destination": "/world-cup-predictions", "permanent": true },
     { "source": "/afcon", "destination": "/afcon-predictions", "permanent": true },
-    { "source": "/mls", "destination": "/us-soccer-predictions", "permanent": true },
-    { "source": "/mls-predictions", "destination": "/us-soccer-predictions", "permanent": true },
+    { "source": "/mls", "destination": "/mls-predictions", "permanent": true },
     { "source": "/livescore", "destination": "/live", "permanent": true },
     { "source": "/livescores", "destination": "/live", "permanent": true },
     { "source": "/live-scores", "destination": "/live", "permanent": true },
@@ -59,8 +59,8 @@
     { "source": "/over-2-5-goals", "destination": "/btts", "permanent": true },
     { "source": "/over-under-2-5", "destination": "/btts", "permanent": true },
     { "source": "/correct-scores", "destination": "/correct-score", "permanent": true },
-    { "source": "/ht-ft", "destination": "/blog/halftime-fulltime-ht-ft-predictions-strategy", "permanent": true },
-    { "source": "/asian-handicap", "destination": "/blog/asian-handicap-betting-explained", "permanent": true },
+    { "source": "/ht-ft", "destination": "/halftime-fulltime-predictions", "permanent": true },
+    { "source": "/asian-handicap", "destination": "/asian-handicap-predictions", "permanent": true },
     { "source": "/table", "destination": "/standings", "permanent": true },
     { "source": "/tables", "destination": "/standings", "permanent": true },
     { "source": "/odds", "destination": "/dropping-odds", "permanent": true },
@@ -74,7 +74,31 @@
     { "source": "/results", "destination": "/archive", "permanent": true },
     { "source": "/compare", "destination": "/h2h", "permanent": true },
     { "source": "/disclaimer", "destination": "/responsible-gaming", "permanent": true },
-    { "source": "/ads-policy", "destination": "/responsible-gaming", "permanent": true }
+    { "source": "/ads-policy", "destination": "/responsible-gaming", "permanent": true },
+    { "source": "/sure-wins", "destination": "/sure-win-predictions", "permanent": true },
+    { "source": "/100-sure-predictions", "destination": "/sure-win-predictions", "permanent": true },
+    { "source": "/sure-banker-picks", "destination": "/sure-win-predictions", "permanent": true },
+    { "source": "/corners", "destination": "/corners-predictions", "permanent": true },
+    { "source": "/corner-predictions", "destination": "/corners-predictions", "permanent": true },
+    { "source": "/cards", "destination": "/cards-predictions", "permanent": true },
+    { "source": "/card-predictions", "destination": "/cards-predictions", "permanent": true },
+    { "source": "/booking-predictions", "destination": "/cards-predictions", "permanent": true },
+    { "source": "/championship", "destination": "/championship-predictions", "permanent": true },
+    { "source": "/efl", "destination": "/championship-predictions", "permanent": true },
+    { "source": "/efl-championship", "destination": "/championship-predictions", "permanent": true },
+    { "source": "/eredivisie", "destination": "/eredivisie-predictions", "permanent": true },
+    { "source": "/dutch-eredivisie", "destination": "/eredivisie-predictions", "permanent": true },
+    { "source": "/primeira-liga", "destination": "/primeira-liga-predictions", "permanent": true },
+    { "source": "/liga-portugal", "destination": "/primeira-liga-predictions", "permanent": true },
+    { "source": "/portuguese-league", "destination": "/primeira-liga-predictions", "permanent": true },
+    { "source": "/conference-league", "destination": "/conference-league-predictions", "permanent": true },
+    { "source": "/uefa-conference-league", "destination": "/conference-league-predictions", "permanent": true },
+    { "source": "/copa-libertadores", "destination": "/copa-libertadores-predictions", "permanent": true },
+    { "source": "/libertadores", "destination": "/copa-libertadores-predictions", "permanent": true },
+    { "source": "/ev-calculator", "destination": "/value-bet-calculator", "permanent": true },
+    { "source": "/expected-value-calculator", "destination": "/value-bet-calculator", "permanent": true },
+    { "source": "/kelly-calculator", "destination": "/kelly-criterion-calculator", "permanent": true },
+    { "source": "/over-1-5", "destination": "/over-1-5-goals-predictions", "permanent": true }
   ],
   "rewrites": [
     {
@@ -94,7 +118,7 @@
       "destination": "/api/health"
     },
     {
-      "source": "/((?!api/|mcp|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt).*)",
+      "source": "/((?!api/|mcp|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|robots\\.txt|ads\\.txt|app-ads\\.txt|.*\\.xml|.*\\.txt|.*\\.json|.*\\.ico|.*\\.png|.*\\.svg|.*\\.jpg|.*\\.webp).*)",
       "has": [
         {
           "type": "header",
@@ -105,7 +129,7 @@
       "destination": "/api/markdown?path=/$1"
     },
     {
-      "source": "/((?!api/|mcp|assets/|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|h2u74xmxq17qqj7na6p7g5w29zwrhhq7\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|robots\\.txt|ads\\.txt|manifest\\.json|sw\\.js|.*\\.js|.*\\.mjs|.*\\.css|.*\\.woff2|.*\\.json|.*\\.md|.*\\.txt|.*\\.html|.*\\.png|.*\\.webp|.*\\.svg|.*\\.ico).*)",
+      "source": "/((?!api/|mcp|assets/|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|h2u74xmxq17qqj7na6p7g5w29zwrhhq7\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|rss\\.xml|feed\\.xml|feed-predictions\\.xml|robots\\.txt|ads\\.txt|app-ads\\.txt|manifest\\.json|sw\\.js|.*\\.js|.*\\.mjs|.*\\.css|.*\\.woff2|.*\\.json|.*\\.md|.*\\.txt|.*\\.xml|.*\\.html|.*\\.png|.*\\.jpg|.*\\.webp|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],
@@ -163,7 +187,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "<https://predictpro.guru/>; rel=\"canonical\", </.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/mcp/server-card.json>; rel=\"service-desc\"; type=\"application/json\", </openapi.json>; rel=\"service-desc\"; type=\"application/json\", </llms-full.txt>; rel=\"service-doc\"; type=\"text/plain\", </auth.md>; rel=\"service-doc\"; type=\"text/markdown\", </.well-known/agent-skills/index.json>; rel=\"describedby\"; type=\"application/json\", </.well-known/agent-card.json>; rel=\"describedby\"; type=\"application/json\", </.well-known/ai-catalog.json>; rel=\"ai-catalog\"; type=\"application/json\""
+          "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/mcp/server-card.json>; rel=\"service-desc\"; type=\"application/json\", </openapi.json>; rel=\"service-desc\"; type=\"application/json\", </llms-full.txt>; rel=\"service-doc\"; type=\"text/plain\", </auth.md>; rel=\"service-doc\"; type=\"text/markdown\", </.well-known/agent-skills/index.json>; rel=\"describedby\"; type=\"application/json\", </.well-known/agent-card.json>; rel=\"describedby\"; type=\"application/json\", </.well-known/ai-catalog.json>; rel=\"ai-catalog\"; type=\"application/json\""
         },
         {
           "key": "Vary",
@@ -176,7 +200,7 @@
       ]
     },
     {
-      "source": "/(sitemap\\.xml|sitemap-yandex\\.xml)",
+      "source": "/(sitemap\\.xml|sitemap-yandex\\.xml|rss\\.xml|feed\\.xml|feed-predictions\\.xml)",
       "headers": [
         {
           "key": "Content-Type",
@@ -193,6 +217,47 @@
         {
           "key": "X-Robots-Tag",
           "value": "all"
+        }
+      ]
+    },
+    {
+      "source": "/(ads\\.txt|app-ads\\.txt)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": ".*\\.vercel\\.app"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/(admin|auth)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     },

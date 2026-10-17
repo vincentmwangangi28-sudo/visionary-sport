@@ -57,10 +57,10 @@ export default function BttsAndWinPredictions() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="BTTS & Win Predictions Today: Both Teams to Score + Over 2.5 Tips"
-        description="Free Both Teams to Score and Win (BTTS & Win) and BTTS & Over 2.5 Goals football predictions today. High-value 3.00+ odds combo picks backed by 2-1 & 3-1 Poisson models."
+        description="Free Both Teams to Score and Win (BTTS & Win) and BTTS + Over 2.5 Goals football predictions today. High-value 3.00+ odds picks backed by Poisson xG."
         canonical="/both-teams-to-score-and-win-predictions"
         keywords="both teams to score and win predictions, btts and win tips today, btts and over 2.5 predictions, gg and over 2.5 tips, match result and both teams to score"
-        jsonLd={jsonLd}
+        structuredData={jsonLd}
       />
       <Navbar />
 

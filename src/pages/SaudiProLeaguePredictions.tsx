@@ -27,10 +27,10 @@ export default function SaudiProLeaguePredictions() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips"
-        description="Free Saudi Pro League (Roshn SPL) AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Asian Handicap picks for Al-Hilal, Al-Nassr & Al-Ittihad."
+        description="Free Saudi Pro League (Roshn SPL) AI football predictions today. Over 2.5 goals, BTTS, and Asian Handicap picks for Al-Hilal, Al-Nassr & Al-Ittihad."
         canonical="/saudi-pro-league-predictions"
         keywords="saudi pro league predictions, spl predictions today, al nassr prediction today, al hilal betting tips, saudi league over 2.5 goals"
-        jsonLd={jsonLd}
+        structuredData={jsonLd}
       />
       <Navbar />
 

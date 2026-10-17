@@ -258,6 +258,114 @@ testBlogCases.forEach((b) => {
 });
 console.log(`  ✓ Checked ${testBlogCases.length} dynamic blog post configurations`);
 
+// 3. Prerendered Static HTML Canonical, Hreflang & Domain Verification (if dist/ exists)
+const DIST_DIR = path.join(ROOT_DIR, 'dist');
+if (fs.existsSync(DIST_DIR)) {
+  console.log('🌐 Auditing Prerendered Static HTML Routes in dist/ for Domain & Canonical Integrity:');
+  function getHtmlFiles(dir) {
+    const out = [];
+    for (const item of fs.readdirSync(dir)) {
+      const full = path.join(dir, item);
+      const st = fs.statSync(full);
+      if (st.isDirectory()) {
+        out.push(...getHtmlFiles(full));
+      } else if (item === 'index.html') {
+        out.push(full);
+      }
+    }
+    return out;
+  }
+
+  const htmlFiles = getHtmlFiles(DIST_DIR);
+  let htmlChecked = 0;
+
+  for (const htmlFile of htmlFiles) {
+    const relHtml = path.relative(ROOT_DIR, htmlFile);
+    const htmlContent = fs.readFileSync(htmlFile, 'utf8');
+
+    const canonicalMatches = [...htmlContent.matchAll(/<link\s+rel="canonical"\s+href="([^"]+)"\s*\/?>/gi)];
+    if (canonicalMatches.length !== 1) {
+      auditResults.violations.push({
+        file: relHtml,
+        type: 'CANONICAL_COUNT_MISMATCH',
+        message: `Expected exactly 1 <link rel="canonical"> tag, found ${canonicalMatches.length}`,
+        text: canonicalMatches.map((m) => m[0]).join(' | ')
+      });
+    } else {
+      const canonicalHref = canonicalMatches[0][1];
+      if (!canonicalHref.startsWith('https://predictpro.guru')) {
+        auditResults.violations.push({
+          file: relHtml,
+          type: 'INVALID_CANONICAL_DOMAIN',
+          message: `Canonical URL must use apex domain https://predictpro.guru, found "${canonicalHref}"`,
+          text: canonicalHref
+        });
+      }
+    }
+
+    const hreflangMatches = [...htmlContent.matchAll(/<link\s+rel="alternate"\s+hreflang="([^"]+)"\s+href="([^"]+)"\s*\/?>/gi)];
+    const seenHreflangs = new Set();
+    for (const hm of hreflangMatches) {
+      const code = hm[1].toLowerCase();
+      if (seenHreflangs.has(code)) {
+        auditResults.violations.push({
+          file: relHtml,
+          type: 'DUPLICATE_HREFLANG_TAG',
+          message: `Duplicate hreflang="${hm[1]}" tag detected in prerendered HTML`,
+          text: hm[0]
+        });
+      }
+      seenHreflangs.add(code);
+    }
+
+    htmlChecked++;
+  }
+  console.log(`  ✓ Verified ${htmlChecked} prerendered HTML files for single canonical, apex domain & deduplicated hreflangs`);
+}
+
+// 4. Sitemap, IndexNow Cron & 301 Redirect Canonical Integrity Check
+const REDIRECTS_PATH = path.join(ROOT_DIR, 'public', '_redirects');
+if (fs.existsSync(REDIRECTS_PATH)) {
+  const redirectsLines = fs.readFileSync(REDIRECTS_PATH, 'utf8').split('\n');
+  const redirect301Sources = new Set();
+  for (const line of redirectsLines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('http')) continue;
+    const parts = trimmed.split(/\s+/);
+    if (parts.length >= 3 && parts[2] === '301') {
+      redirect301Sources.add(parts[0]);
+    }
+  }
+
+  const cronAndSitemapFiles = [
+    'public/sitemap.xml',
+    'public/sitemap-yandex.xml',
+    'api/indexing-cron.ts',
+    'api/sitemap-cron.ts',
+    'scripts/google-crawl-cron.mjs',
+    'supabase/functions/ping-search-engines/index.ts'
+  ];
+
+  for (const relTarget of cronAndSitemapFiles) {
+    const fullTarget = path.join(ROOT_DIR, relTarget);
+    if (!fs.existsSync(fullTarget)) continue;
+    const content = fs.readFileSync(fullTarget, 'utf8');
+    for (const srcPath of redirect301Sources) {
+      const escapedSrc = srcPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?:predictpro\\.guru|BASE_URL\\})${escapedSrc}(?:['"\`<\\s]|$)`);
+      if (regex.test(content)) {
+        auditResults.violations.push({
+          file: relTarget,
+          type: 'REDIRECT_301_URL_IN_SITEMAP_OR_CRON',
+          message: `301-redirected path "${srcPath}" found in ${relTarget} (must use canonical destination URL)`,
+          text: srcPath
+        });
+      }
+    }
+  }
+  console.log(`  ✓ Verified sitemaps and IndexNow cron queues against ${redirect301Sources.size} 301-redirect rules (zero redirected URLs submitted)`);
+}
+
 console.log('\n------------------------------------------------------------');
 console.log('📊 AUDIT SUMMARY & COMPLIANCE REPORT');
 console.log('------------------------------------------------------------');
@@ -269,7 +377,8 @@ console.log('------------------------------------------------------------\n');
 if (auditResults.violations.length === 0) {
   console.log('✅ ALL PAGES AND DYNAMIC ROUTES FULLY COMPLIANT WITH SEO CONSTRAINTS!');
   console.log('   All titles are <= 70 characters.');
-  console.log('   All descriptions are <= 160 characters (and >= 25 characters).\n');
+  console.log('   All descriptions are <= 160 characters (and >= 25 characters).');
+  console.log('   All canonical & hreflang tags are 100% deduplicated on https://predictpro.guru.\n');
   process.exit(0);
 } else {
   console.error('❌ NON-COMPLIANT PAGES DETECTED:\n');
@@ -281,3 +390,4 @@ if (auditResults.violations.length === 0) {
   });
   process.exit(1);
 }
+

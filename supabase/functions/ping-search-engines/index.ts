@@ -43,13 +43,23 @@ serve(async (req) => {
 
   const defaultUrls = [
     SITEMAP_URL,
+    'https://predictpro.guru/sitemap-yandex.xml',
+    'https://predictpro.guru/rss.xml',
+    'https://predictpro.guru/feed.xml',
     'https://predictpro.guru/',
     'https://predictpro.guru/best-bets',
+    'https://predictpro.guru/sure-win-predictions',
+    'https://predictpro.guru/bet-of-the-day',
+    'https://predictpro.guru/today-predictions',
+    'https://predictpro.guru/tomorrow-predictions',
+    'https://predictpro.guru/weekend-predictions',
     'https://predictpro.guru/predict',
     'https://predictpro.guru/live',
     'https://predictpro.guru/value-bets',
     'https://predictpro.guru/correct-score',
     'https://predictpro.guru/btts',
+    'https://predictpro.guru/over-under-predictions',
+    'https://predictpro.guru/double-chance-predictions',
     'https://predictpro.guru/accumulator',
     'https://predictpro.guru/standings',
     'https://predictpro.guru/dropping-odds',
@@ -57,11 +67,14 @@ serve(async (req) => {
     'https://predictpro.guru/recommendations',
     'https://predictpro.guru/tournaments',
     'https://predictpro.guru/track-record',
+    'https://predictpro.guru/jackpot-predictions',
+    'https://predictpro.guru/midweek-jackpot-predictions',
     'https://predictpro.guru/premier-league-predictions',
     'https://predictpro.guru/champions-league-predictions',
     'https://predictpro.guru/la-liga-predictions',
     'https://predictpro.guru/bundesliga-predictions',
     'https://predictpro.guru/serie-a-predictions',
+    'https://predictpro.guru/ligue-1-predictions',
     'https://predictpro.guru/kpl-predictions',
     'https://predictpro.guru/world-cup-predictions',
     'https://predictpro.guru/afcon-predictions',
@@ -73,22 +86,32 @@ serve(async (req) => {
   const urlList = customUrls.length > 0 ? customUrls : defaultUrls;
 
   try {
-    const res = await fetch('https://api.indexnow.org/indexnow', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify({
-        host: 'predictpro.guru',
-        key: indexNowKey,
-        keyLocation: `https://predictpro.guru/${indexNowKey}.txt`,
-        urlList: urlList.slice(0, 100),
-      }),
+    const payload = JSON.stringify({
+      host: 'predictpro.guru',
+      key: indexNowKey,
+      keyLocation: `https://predictpro.guru/${indexNowKey}.txt`,
+      urlList: urlList.slice(0, 100),
     });
+
+    const [res, yandexRes] = await Promise.all([
+      fetch('https://api.indexnow.org/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: payload,
+      }),
+      fetch('https://yandex.com/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: payload,
+      }).catch(() => null),
+    ]);
 
     return new Response(JSON.stringify({
       success: res.ok,
       pingedAt: new Date().toISOString(),
       urlsPushed: urlList.length,
       indexNow: { status: res.status, ok: res.ok },
+      yandexIndexNow: yandexRes ? { status: yandexRes.status, ok: yandexRes.ok } : { status: 0, ok: false },
       googleIndexing: {
         status: 'notified',
         mode: 'sitemap_and_direct_ping',

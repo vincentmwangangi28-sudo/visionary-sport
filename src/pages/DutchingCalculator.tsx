@@ -58,9 +58,9 @@ export default function DutchingCalculator() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
         title="Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool"
-        description="Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to guarantee the exact same profit if any selection wins."
+        description="Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to guarantee equal profit if any pick wins."
         keywords="dutching calculator, correct score dutching calculator, dutch betting calculator, split stake calculator football, equal profit betting tool"
-        canonicalPath="/dutching-calculator"
+        canonical="/dutching-calculator"
       />
       <Navbar />
       <MarketQuickStrip />

@@ -69,11 +69,10 @@ serve(async () => {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticPages.map(p => `  <url><loc>https://predictpro.guru${p.url}</loc><changefreq>${p.freq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`).join('\n')}
-${uniqueLeagues.map(l => `  <url><loc>https://predictpro.guru/?league=${encodeURIComponent(l)}</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>${today}</lastmod></url>`).join('\n')}
 ${blogUrls.join('\n')}
 </urlset>`;
 
   return new Response(sitemap, {
-    headers: { 'Content-Type': 'application/xml', 'Cache-Control': 'public, max-age=3600' },
+    headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
   });
 });

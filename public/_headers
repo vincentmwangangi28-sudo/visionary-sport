@@ -52,6 +52,24 @@
   Content-Type: application/xml; charset=utf-8
   X-Robots-Tag: all
 
+/rss.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/feed.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/feed-predictions.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
 /robots.txt
   Cache-Control: public, max-age=86400
   Access-Control-Allow-Origin: *
@@ -62,6 +80,17 @@
   Cache-Control: public, max-age=3600
   Access-Control-Allow-Origin: *
   Content-Type: text/plain; charset=utf-8
+
+/app-ads.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+
+/admin
+  X-Robots-Tag: noindex, nofollow
+
+/auth
+  X-Robots-Tag: noindex, nofollow
 
 /yandex_6aab6592f8d8ca55.html
   Cache-Control: public, max-age=3600

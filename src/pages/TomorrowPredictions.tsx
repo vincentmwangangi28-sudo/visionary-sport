@@ -118,10 +118,10 @@ export default function TomorrowPredictions() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds"
-        description="Free AI football predictions for tomorrow's fixtures. Beat dropping odds with early 1X2 banker picks, Over 2.5 goals, BTTS tips, and Expected Goals (xG) projections."
+        description="Free AI football predictions for tomorrow's fixtures. Beat dropping odds with early 1X2 banker picks, Over 2.5 goals, BTTS tips, and xG projections."
         canonical="/tomorrow-predictions"
         keywords="football predictions for tomorrow, tomorrow soccer predictions, tomorrow betting tips, early football odds tomorrow, sure wins tomorrow, btts tomorrow, over 2.5 goals tomorrow"
-        jsonLd={jsonLd}
+        structuredData={jsonLd}
       />
       <Navbar />
 

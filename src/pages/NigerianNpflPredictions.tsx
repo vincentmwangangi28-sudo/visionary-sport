@@ -13,9 +13,9 @@ export default function NigerianNpflPredictions() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
         title="Nigeria NPFL Predictions Today: Enyimba, Remo Stars & Rangers Tips"
-        description="Free Nigeria Premier Football League (NPFL) AI predictions today. Home-banker 1X2, Under 2.5, and Correct Score tips for Enyimba, Remo Stars, Rangers & Kano Pillars."
+        description="Free Nigeria Premier Football League (NPFL) AI predictions today. Home-banker 1X2, Under 2.5 & Correct Score tips for Enyimba, Remo Stars & Rangers."
         keywords="npfl predictions today, nigeria premier league predictions, enyimba prediction today, remo stars betting tips, sportybet npfl tips"
-        canonicalPath="/nigerian-npfl-predictions"
+        canonical="/nigerian-npfl-predictions"
       />
       <Navbar />
       <LeagueNavigationStrip />

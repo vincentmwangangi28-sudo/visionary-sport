@@ -504,9 +504,9 @@ const App = () => (
                             <Route path="/upcoming"      element={<RouteBoundary component={UpcomingFixturesPage} />} />
                             <Route path="/upcoming-fixtures" element={<Navigate to="/upcoming" replace />} />
                             <Route path="/recommendations" element={<RouteBoundary component={Recommendations} />} />
-                            <Route path="/performance"   element={<RouteBoundary component={Performance} isProtected />} />
-                            <Route path="/shop"          element={<RouteBoundary component={Shop} isProtected />} />
-                            <Route path="/rewards"       element={<RouteBoundary component={Rewards} isProtected />} />
+                            <Route path="/performance"   element={<RouteBoundary component={Performance} />} />
+                            <Route path="/shop"          element={<RouteBoundary component={Shop} />} />
+                            <Route path="/rewards"       element={<RouteBoundary component={Rewards} />} />
                             <Route path="/admin"         element={<RouteBoundary component={AdminDashboard} isProtected adminOnly />} />
                             <Route path="/correct-score" element={<RouteBoundary component={CorrectScore} />} />
                             <Route path="/btts"          element={<RouteBoundary component={BTTS} />} />

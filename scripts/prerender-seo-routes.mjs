@@ -463,6 +463,22 @@ const ROUTE_META = {
     title: 'Australian A-League Predictions Today: Over 2.5 Goals & Corners Tips',
     description: 'Free Australian A-League Men AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Over 10.5 Corners picks for Melbourne Victory & Sydney FC.',
   },
+  '/today-predictions': {
+    title: "Today's Football Predictions: Daily AI Match Tips & Odds",
+    description: "Free football predictions for today's fixtures. Verified Expected Goals (xG) models, 1X2 win probabilities, BTTS tips, and banker picks updated hourly.",
+  },
+  '/2-odds-predictions': {
+    title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips',
+    description: 'Free Sure 2 Odds and 3 Odds football predictions today. High-strike-rate 2-leg banker doubles and interactive 5-day rollover compounding calculator.',
+  },
+  '/5-odds-predictions': {
+    title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips',
+    description: 'Free Sure 5 Odds and 10 Odds football accumulator predictions today. Curated 4-fold and 5-fold multi-bet tickets with high AI confidence.',
+  },
+  '/performance': {
+    title: 'Personal Football Betting Performance & ROI Tracker | PredictPro',
+    description: 'Track your football betting strike rate, unit profit, Return on Investment (ROI), and Closing Line Value (CLV) across global leagues.',
+  },
 };
 
 function clampTitle(raw) {
@@ -580,18 +596,27 @@ function runPrerender() {
     const escapedTitle = escapeHtml(title);
     const escapedDesc = escapeHtml(description);
 
-    const canonicalLinksBlock = [
-      `<link rel="canonical" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`,
-      `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`,
-      `<meta property="og:url" content="${canonicalUrl}" />`,
-    ].join('\n    ');
-
     let routeHtml = baseHtml
       .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapedTitle}</title>`)
       .replace(
         /<meta name="description" content="[^"]*"\s*\/?>/,
         `<meta name="description" content="${escapedDesc}" />`
+      )
+      .replace(
+        /<link rel="canonical" href="[^"]*"\s*\/?>/,
+        `<link rel="canonical" href="${canonicalUrl}" />`
+      )
+      .replace(
+        /<link rel="alternate" hreflang="x-default" href="[^"]*"\s*\/?>/,
+        `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}" />`
+      )
+      .replace(
+        /<link rel="alternate" hreflang="en" href="[^"]*"\s*\/?>/,
+        `<link rel="alternate" hreflang="en" href="${canonicalUrl}" />`
+      )
+      .replace(
+        /<meta property="og:url" content="[^"]*"\s*\/?>/,
+        `<meta property="og:url" content="${canonicalUrl}" />`
       )
       .replace(
         /<meta property="og:title" content="[^"]*"\s*\/?>/,
@@ -610,16 +635,12 @@ function runPrerender() {
         `<meta name="twitter:description" content="${escapedDesc}" />`
       )
       .replace(
-        /<link rel="sitemap"/,
-        `${canonicalLinksBlock}\n    <link rel="sitemap"`
-      )
-      .replace(
         /"@id": "https:\/\/predictpro\.guru\/#webpage",\s*"url": "https:\/\/predictpro\.guru\/",\s*"name": "[^"]*",\s*"description": "[^"]*"/,
         `"@id": "${canonicalUrl}#webpage",\n          "url": "${canonicalUrl}",\n          "name": "${escapedTitle}",\n          "description": "${escapedDesc}"`
       )
       .replace(
-        /<h1>[\s\S]*?<\/h1>/,
-        `<h1>${escapedTitle}</h1>`
+        /<h1[^>]*>[\s\S]*?<\/h1>/,
+        `<h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 12px 0;">${escapedTitle}</h1>`
       );
 
     if (routePath === '/') {

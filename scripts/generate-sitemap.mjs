@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const SITEMAP_PATH = path.join(ROOT_DIR, 'public', 'sitemap.xml');
+const YANDEX_SITEMAP_PATH = path.join(ROOT_DIR, 'public', 'sitemap-yandex.xml');
 
 const BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
 const TODAY = new Date().toISOString().split('T')[0];
@@ -96,6 +97,11 @@ const CORE_PAGES = [
   { path: '/both-halves-predictions', priority: 0.90, freq: 'daily', title: 'Score in Both Halves & Win Both Halves Predictions Today' },
   { path: '/dutching-calculator', priority: 0.90, freq: 'weekly', title: 'Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool' },
   { path: '/roi-yield-calculator', priority: 0.90, freq: 'weekly', title: 'Betting ROI & Yield Calculator: Break-Even Win Rate Tool' },
+  { path: '/today-predictions', priority: 0.95, freq: 'daily', title: "Today's Football Predictions: Daily AI Match Tips & Odds" },
+  { path: '/2-odds-predictions', priority: 0.90, freq: 'daily', title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips' },
+  { path: '/5-odds-predictions', priority: 0.90, freq: 'daily', title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips' },
+  { path: '/rewards', priority: 0.75, freq: 'daily', title: 'Daily Rewards, Coin Wheel & Prediction Unlocks | PredictPro' },
+  { path: '/performance', priority: 0.75, freq: 'weekly', title: 'Personal Football Betting Performance & ROI Tracker | PredictPro' },
 ];
 
 const LEAGUE_PAGES = [
@@ -163,6 +169,11 @@ const FEATURED_MATCH_SLUGS = [
   'manchester-united-vs-tottenham',
   'psg-vs-marseille',
   'gor-mahia-vs-afc-leopards',
+  'simba-sc-vs-young-africans',
+  'kaizer-chiefs-vs-orlando-pirates',
+  'enyimba-vs-rangers-international',
+  'al-ahly-vs-zamalek',
+  'tp-mazembe-vs-as-vita-club',
   'juventus-vs-napoli',
   'atletico-madrid-vs-sevilla',
   'la-galaxy-vs-lafc',
@@ -309,11 +320,21 @@ ${xmlNodes}
 `;
 }
 
-// Write file
+export function buildYandexSitemapXml() {
+  const fullXml = buildSitemapXml();
+  return fullXml
+    .replace(' xmlns:xhtml="http://www.w3.org/1999/xhtml"', '')
+    .replace(/\n\s*<xhtml:link[^>]*\/>/g, '');
+}
+
+// Write files
 const xml = buildSitemapXml();
+const yandexXml = buildYandexSitemapXml();
 fs.writeFileSync(SITEMAP_PATH, xml, 'utf8');
+fs.writeFileSync(YANDEX_SITEMAP_PATH, yandexXml, 'utf8');
 
 const urlCount = (xml.match(/<loc>/g) || []).length;
-console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH}`);
+console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH} and ${YANDEX_SITEMAP_PATH}`);
 console.log(`📅 Generated date: ${TODAY}`);
 console.log(`🌐 Base URL: ${BASE_URL}`);
+

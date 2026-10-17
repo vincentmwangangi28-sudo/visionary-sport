@@ -187,6 +187,10 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/cookies', title: 'Cookie Policy & Advertising Transparency', priority: 0.70, changeFreq: 'monthly' },
     { path: '/contact', title: 'Contact Us & Publisher Support Desk', priority: 0.70, changeFreq: 'monthly' },
     { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.65, changeFreq: 'daily' },
+    { path: '/dashboard', title: 'Personalized AI Football Predictions & Custom Match Feed', priority: 0.80, changeFreq: 'daily' },
+    { path: '/preferences', title: 'Prediction Preferences, Odds Format & Notification Settings', priority: 0.65, changeFreq: 'monthly' },
+    { path: '/performance', title: 'AI Model Performance, ROI Analytics & League Accuracy', priority: 0.85, changeFreq: 'daily' },
+    { path: '/rewards', title: 'PredictPro Rewards, Prediction Challenges & VIP Points', priority: 0.80, changeFreq: 'weekly' },
   ];
 
   for (const page of featurePages) {

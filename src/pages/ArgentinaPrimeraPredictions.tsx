@@ -27,10 +27,10 @@ export default function ArgentinaPrimeraPredictions() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Argentina Primera División Predictions: Liga Profesional AI Tips"
-        description="Free Argentina Liga Profesional (Primera División) AI football predictions today. Get home-banker 1X2, Under 2.5, and Draw No Bet tips for River Plate & Boca Juniors."
+        description="Free Argentina Liga Profesional AI football predictions today. Home-banker 1X2, Under 2.5, and Draw No Bet tips for River Plate & Boca Juniors."
         canonical="/argentina-primera-predictions"
         keywords="argentina primera division predictions, liga profesional argentina tips, river plate prediction today, boca juniors betting tips, argentine football predictions"
-        jsonLd={jsonLd}
+        structuredData={jsonLd}
       />
       <Navbar />
 

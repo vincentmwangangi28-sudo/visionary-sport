@@ -21,12 +21,27 @@
     <script>
       (function () {
         try {
+          if (typeof window !== 'undefined' && window.location) {
+            var host = window.location.hostname;
+            if (host === 'www.predictpro.guru' || (host === 'predictpro.guru' && window.location.protocol === 'http:')) {
+              window.location.replace('https://predictpro.guru' + window.location.pathname + window.location.search + window.location.hash);
+              return;
+            }
+          }
           var rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '/';
           var cleanPath = rawPath === '/' ? '/' : rawPath.replace(/\/+$/, '');
           var canonicalHref = 'https://predictpro.guru' + (cleanPath === '/' ? '/' : cleanPath);
           var canonicalTag = document.querySelector('link[rel="canonical"]');
           if (canonicalTag) {
             canonicalTag.setAttribute('href', canonicalHref);
+          }
+          var xDefaultTag = document.querySelector('link[rel="alternate"][hreflang="x-default"]');
+          if (xDefaultTag) {
+            xDefaultTag.setAttribute('href', canonicalHref);
+          }
+          var enTag = document.querySelector('link[rel="alternate"][hreflang="en"]');
+          if (enTag) {
+            enTag.setAttribute('href', canonicalHref);
           }
         } catch (e) {}
       })();
@@ -46,16 +61,6 @@
     <!-- Enforce HTTPS & Strong Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <script>
-      (function () {
-        if (typeof window !== 'undefined' && window.location) {
-          var host = window.location.hostname;
-          if ((host === 'predictpro.guru' || host === 'www.predictpro.guru') && window.location.protocol === 'http:') {
-            window.location.replace('https://predictpro.guru' + window.location.pathname + window.location.search + window.location.hash);
-          }
-        }
-      })();
-    </script>
 
     <!-- Search Engine & Webmaster Ownership Verification -->
     <meta name="yandex-verification" content="6aab6592f8d8ca55" />
@@ -103,11 +108,12 @@
     <meta name="distribution" content="global" />
     <meta name="coverage" content="worldwide" />
 
-    <!-- Open Graph defaults (Helmet overrides per-route) -->
+    <!-- Open Graph defaults (Synchronized per-route) -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://predictpro.guru/" />
     <meta property="og:site_name" content="PredictPro — AI Football Predictions" />
-    <meta property="og:title" content="PredictPro — AI Football Predictions &amp; xG Match Stats" />
-    <meta property="og:description" content="Daily AI football predictions with 87% accuracy. Expected Goals (xG) stats, Poisson probabilities, and H2H analytics across 40+ global leagues." />
+    <meta property="og:title" content="PredictPro — AI Pro Tips Today: Football Predictions &amp; xG" />
+    <meta property="og:description" content="Daily AI pro tips today &amp; verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues." />
     <meta property="og:image" content="https://predictpro.guru/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -217,7 +223,7 @@
     </script>
 
     <!-- JSON-LD default structured data & Google Rich Snippets -->
-    <script type="application/ld+json">
+    <script id="predictpro-dynamic-seo-jsonld" type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
@@ -386,7 +392,16 @@
           <h2>Core AI Football Prediction Markets &amp; Tools</h2>
           <ul>
             <li><a href="/">Daily AI Football Predictions Hub</a></li>
+            <li><a href="/today-predictions">Today's Football Predictions &amp; AI Match Tips</a></li>
+            <li><a href="/tomorrow-predictions">Tomorrow's Football Predictions &amp; Early xG Odds</a></li>
+            <li><a href="/weekend-predictions">Weekend Football Predictions &amp; Banker Accas</a></li>
             <li><a href="/best-bets">Best Banker Football Bets Today</a></li>
+            <li><a href="/bet-of-the-day">Bet of the Day: Single Highest-Conviction Lock</a></li>
+            <li><a href="/sure-win-predictions">Sure Win Predictions Today (88%+ AI Confidence)</a></li>
+            <li><a href="/rollover-bets-predictions">7-Day 1.50 &amp; 2.00 Odds Rollover Predictions</a></li>
+            <li><a href="/daily-2-odds-predictions">Daily Sure 2 Odds, 3 Odds &amp; 5 Odds Slips</a></li>
+            <li><a href="/2-odds-predictions">Sure 2 Odds Rollover Banker Predictions</a></li>
+            <li><a href="/5-odds-predictions">Sure 5 Odds &amp; 10 Odds Accumulator Slips</a></li>
             <li><a href="/upcoming">Upcoming 7-Day Football Fixtures &amp; AI Odds</a></li>
             <li><a href="/predict">Interactive AI Football Match Predictor</a></li>
             <li><a href="/live">Live Football Scores &amp; In-Play xG Momentum</a></li>
@@ -395,6 +410,25 @@
             <li><a href="/h2h">Head-to-Head (H2H) Club Comparison &amp; Poisson Tool</a></li>
             <li><a href="/correct-score">Bivariate Poisson Correct Score Predictions</a></li>
             <li><a href="/btts">Both Teams to Score (BTTS) &amp; Over 2.5 Goals Tips</a></li>
+            <li><a href="/over-under-predictions">Over/Under 2.5 Goals Poisson Predictions</a></li>
+            <li><a href="/over-1-5-goals-predictions">Over 1.5 Goals Multi-Bet Predictions</a></li>
+            <li><a href="/over-3-5-goals-predictions">Over 3.5 Goals High-Scoring Match Predictions</a></li>
+            <li><a href="/under-2-5-goals-predictions">Under 2.5 Goals Low-Scoring Match Predictions</a></li>
+            <li><a href="/first-half-goals-predictions">Over 0.5 First Half Goals (1H) Predictions</a></li>
+            <li><a href="/second-half-goals-predictions">Second Half Goals (2H Over 1.5) Predictions</a></li>
+            <li><a href="/both-halves-predictions">Score in Both Halves &amp; Win Both Halves Tips</a></li>
+            <li><a href="/both-teams-to-score-and-win-predictions">BTTS &amp; Win / BTTS &amp; Over 2.5 Combo Tips</a></li>
+            <li><a href="/double-chance-predictions">Double Chance (1X / X2) Predictions Today</a></li>
+            <li><a href="/draw-predictions">Full-Time Draw (X) Stalemate Predictions</a></li>
+            <li><a href="/draw-no-bet-predictions">Draw No Bet (DNB) Safe Refund Predictions</a></li>
+            <li><a href="/win-to-nil-predictions">Win to Nil &amp; Clean Sheet Predictions</a></li>
+            <li><a href="/halftime-fulltime-predictions">Half-Time / Full-Time (HT/FT) Turnaround Tips</a></li>
+            <li><a href="/asian-handicap-predictions">Asian Handicap (-0.5, -0.75, -1.5) Predictions</a></li>
+            <li><a href="/handicap-1x2-predictions">European 3-Way Handicap (-1) Predictions</a></li>
+            <li><a href="/corners-predictions">Match Corners (Over 8.5, 9.5, 10.5) Predictions</a></li>
+            <li><a href="/cards-predictions">Yellow &amp; Red Card Bookings Predictions</a></li>
+            <li><a href="/anytime-goalscorer-predictions">Anytime Goalscorer &amp; Shots on Target Props</a></li>
+            <li><a href="/bet-builder-predictions">Bet Builder &amp; Same-Game Parlay (SGP) Tips</a></li>
             <li><a href="/accumulator">Smart Football Accumulator &amp; Multibet Builder</a></li>
             <li><a href="/standings">2026/27 Football League Standings &amp; Form Tables</a></li>
             <li><a href="/dropping-odds">Dropping Odds Radar &amp; Syndicate Steam Tracker</a></li>
@@ -402,6 +436,7 @@
             <li><a href="/recommendations">Personalized AI Football Betting Recommendations</a></li>
             <li><a href="/tournaments">Global Football Tournaments &amp; Cup Brackets</a></li>
             <li><a href="/track-record">Verified AI Prediction Track Record &amp; ROI</a></li>
+            <li><a href="/performance">Personal Betting Performance &amp; ROI Tracker</a></li>
             <li><a href="/statistics">Team &amp; League Expected Goals (xG) Statistics</a></li>
             <li><a href="/highlights">Official Football Match Video Highlights</a></li>
             <li><a href="/players">Player Expected Goals (xG) &amp; Assists Analytics</a></li>
@@ -409,12 +444,30 @@
             <li><a href="/news">Breaking Football Injury &amp; Lineup News</a></li>
             <li><a href="/tipsters">Verified Football Tipsters &amp; Community Picks</a></li>
             <li><a href="/bankroll">Kelly Criterion Football Bankroll Tracker</a></li>
+            <li><a href="/poisson-calculator">Dixon-Coles Poisson Score &amp; xG Calculator</a></li>
+            <li><a href="/value-bet-calculator">+EV Expected Value Betting Calculator</a></li>
+            <li><a href="/kelly-criterion-calculator">Fractional Kelly Criterion Staking Calculator</a></li>
+            <li><a href="/parlay-calculator">Parlay &amp; Accumulator Odds Payout Calculator</a></li>
+            <li><a href="/system-bet-calculator">Trixie, Yankee, Patent &amp; Lucky 15 System Calculator</a></li>
+            <li><a href="/hedge-bet-calculator">Live Hedge &amp; Cash-Out Profit Lock Calculator</a></li>
+            <li><a href="/margin-calculator">Bookmaker Margin &amp; No-Vig Fair Odds Calculator</a></li>
+            <li><a href="/arbitrage-calculator">2-Way &amp; 3-Way Surebet Arbitrage Calculator</a></li>
+            <li><a href="/odds-converter">Decimal, Fractional &amp; Moneyline Odds Converter</a></li>
+            <li><a href="/dutching-calculator">Equal-Profit Multi-Outcome Dutching Calculator</a></li>
+            <li><a href="/roi-yield-calculator">Sports Betting ROI, Yield &amp; Break-Even Calculator</a></li>
             <li><a href="/sports">Multi-Sport Quantitative Analytics Directory</a></li>
+            <li><a href="/shop">PredictPro VIP Club &amp; Premium Banker Passes</a></li>
+            <li><a href="/rewards">Daily Rewards Spin Wheel &amp; Prediction Coins</a></li>
+            <li><a href="/widgets">Free Embeddable AI Football Prediction Widgets</a></li>
             <li><a href="/methodology">Bivariate Poisson &amp; xG AI Methodology</a></li>
             <li><a href="/archive">Settled Football Match Prediction Archive</a></li>
             <li><a href="/leaderboard">Community Prediction Accuracy Leaderboard</a></li>
             <li><a href="/about">About PredictPro Sports Analytics</a></li>
             <li><a href="/responsible-gaming">Responsible Gaming &amp; 18+ Protection Policy</a></li>
+            <li><a href="/privacy">Privacy Policy &amp; GDPR Data Protection</a></li>
+            <li><a href="/terms">Terms of Service &amp; User Agreement</a></li>
+            <li><a href="/cookies">Cookie Policy &amp; Advertising Transparency</a></li>
+            <li><a href="/contact">Contact Editorial &amp; Support Desk</a></li>
             <li><a href="/sitemap">Complete HTML Sitemap &amp; Indexed Routes Directory</a></li>
             <li><a href="/seo-indexing">Search Engine Indexing &amp; Site Audit Console</a></li>
           </ul>
@@ -423,15 +476,38 @@
           <h2>League &amp; Competition AI Prediction Hubs</h2>
           <ul>
             <li><a href="/premier-league-predictions">English Premier League (EPL) AI Predictions</a></li>
+            <li><a href="/fa-cup-predictions">English FA Cup &amp; Carabao Cup AI Predictions</a></li>
+            <li><a href="/championship-predictions">English EFL Championship AI Predictions</a></li>
             <li><a href="/champions-league-predictions">UEFA Champions League AI Predictions</a></li>
+            <li><a href="/europa-league-predictions">UEFA Europa League AI Predictions</a></li>
+            <li><a href="/conference-league-predictions">UEFA Conference League AI Predictions</a></li>
             <li><a href="/la-liga-predictions">Spanish La Liga AI Football Predictions</a></li>
             <li><a href="/bundesliga-predictions">German Bundesliga AI Football Predictions</a></li>
             <li><a href="/serie-a-predictions">Italian Serie A AI Football Predictions</a></li>
-            <li><a href="/world-cup-predictions">2026 FIFA World Cup AI Predictions &amp; Odds</a></li>
-            <li><a href="/afcon-predictions">AFCON &amp; CAF Champions League Predictions</a></li>
-            <li><a href="/kpl-predictions">FKF Kenya Premier League (KPL) AI Predictions</a></li>
-            <li><a href="/jackpot-predictions">17-Game SportPesa &amp; Betika Mega Jackpot Predictions</a></li>
+            <li><a href="/ligue-1-predictions">French Ligue 1 AI Football Predictions</a></li>
+            <li><a href="/eredivisie-predictions">Dutch Eredivisie AI Football Predictions</a></li>
+            <li><a href="/primeira-liga-predictions">Portuguese Primeira Liga AI Predictions</a></li>
+            <li><a href="/scottish-premiership-predictions">Scottish Premiership (SPFL) AI Predictions</a></li>
+            <li><a href="/belgian-pro-league-predictions">Belgian Jupiler Pro League AI Predictions</a></li>
+            <li><a href="/turkish-super-lig-predictions">Turkish Süper Lig AI Football Predictions</a></li>
+            <li><a href="/greek-super-league-predictions">Greek Super League AI Football Predictions</a></li>
+            <li><a href="/copa-libertadores-predictions">CONMEBOL Copa Libertadores AI Predictions</a></li>
+            <li><a href="/brazilian-serie-a-predictions">Brazilian Serie A (Brasileirão) AI Predictions</a></li>
+            <li><a href="/argentina-primera-predictions">Argentina Liga Profesional AI Predictions</a></li>
+            <li><a href="/liga-mx-predictions">Mexican Liga MX AI Football Predictions</a></li>
+            <li><a href="/mls-predictions">Major League Soccer (MLS) AI Predictions</a></li>
             <li><a href="/us-soccer-predictions">MLS &amp; US Soccer Moneyline AI Predictions</a></li>
+            <li><a href="/saudi-pro-league-predictions">Saudi Pro League (Roshn SPL) AI Predictions</a></li>
+            <li><a href="/j-league-predictions">Japanese J1 League AI Football Predictions</a></li>
+            <li><a href="/australian-a-league-predictions">Australian A-League Men AI Predictions</a></li>
+            <li><a href="/kpl-predictions">FKF Kenya Premier League (KPL) AI Predictions</a></li>
+            <li><a href="/south-africa-psl-predictions">South Africa Betway Premiership (PSL) Predictions</a></li>
+            <li><a href="/nigerian-npfl-predictions">Nigeria Premier Football League (NPFL) Predictions</a></li>
+            <li><a href="/egyptian-premier-league-predictions">Egyptian Premier League AI Predictions</a></li>
+            <li><a href="/afcon-predictions">AFCON &amp; CAF Champions League Predictions</a></li>
+            <li><a href="/world-cup-predictions">2026 FIFA World Cup AI Predictions &amp; Odds</a></li>
+            <li><a href="/jackpot-predictions">17-Game SportPesa &amp; Betika Mega Jackpot Predictions</a></li>
+            <li><a href="/midweek-jackpot-predictions">13 &amp; 15-Game Midweek Jackpot AI Predictions</a></li>
           </ul>
         </nav>
         <nav aria-label="Quantitative Football Betting Strategy Guides">

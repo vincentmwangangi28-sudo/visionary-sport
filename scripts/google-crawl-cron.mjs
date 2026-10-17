@@ -66,26 +66,25 @@ const PRIORITY_CRAWL_URLS = [
   `${BASE_URL}/blog/correct-score-prediction-tips`,
   `${BASE_URL}/blog/sportpesa-mega-jackpot-prediction-17-games`,
   `${BASE_URL}/blog/us-soccer-betting-guide-mls-odds`,
+  `${BASE_URL}/blog/expected-goals-xg-betting-model-explained`,
+  `${BASE_URL}/blog/halftime-fulltime-ht-ft-predictions-strategy`,
+  `${BASE_URL}/blog/asian-handicap-betting-explained`,
+  `${BASE_URL}/blog/draw-no-bet-vs-double-chance-strategy`,
+  `${BASE_URL}/blog/closing-line-value-clv-dropping-odds`,
   `${BASE_URL}/methodology`,
   `${BASE_URL}/sitemap`,
   `${BASE_URL}/seo-indexing`
 ];
 
-const CORE_REGIONAL_LANGS = ['es', 'fr', 'pt', 'sw', 'de', 'ar'];
-const REGIONAL_URL_BATCH = [];
-for (const u of PRIORITY_CRAWL_URLS.slice(0, 15)) {
-  for (const lang of CORE_REGIONAL_LANGS) {
-    REGIONAL_URL_BATCH.push(`${u}${u.includes('?') ? '&' : '?'}lang=${lang}`);
-  }
-}
-const ALL_SUBMISSION_URLS = [...PRIORITY_CRAWL_URLS, ...REGIONAL_URL_BATCH];
+// Submit only clean, self-canonicalized URLs (never ?lang= query parameter variants that canonicalize back to root)
+const ALL_SUBMISSION_URLS = [...PRIORITY_CRAWL_URLS];
 
 async function runGoogleCrawlCron() {
   const startTime = Date.now();
   console.log('='.repeat(60));
   console.log(`[Google Crawl Cron] Starting automated execution at ${new Date().toISOString()}`);
   console.log(`[Google Crawl Cron] Target Domain: ${BASE_URL}`);
-  console.log(`[Google Crawl Cron] URLs in Priority Queue: ${ALL_SUBMISSION_URLS.length} (including ${REGIONAL_URL_BATCH.length} multi-country localized URLs)`);
+  console.log(`[Google Crawl Cron] Canonical URLs in Priority Queue: ${ALL_SUBMISSION_URLS.length}`);
   console.log('='.repeat(60));
 
   const results = {
@@ -93,6 +92,7 @@ async function runGoogleCrawlCron() {
     sitemapStatus: 'pending',
     robotsStatus: 'pending',
     indexNowStatus: 'pending',
+    yandexIndexNowStatus: 'pending',
     supabasePingStatus: 'pending',
     urlsProcessed: ALL_SUBMISSION_URLS.length,
     durationMs: 0
@@ -147,22 +147,30 @@ async function runGoogleCrawlCron() {
 
   // 3. Submit to IndexNow (Direct push to Bing, Yandex, Seznam, Naver)
   try {
-    console.log('\n🚀 [3/4] Dispatching priority batch to IndexNow API...');
-    const indexNowPayload = {
+    console.log('\n🚀 [3/4] Dispatching priority batch to IndexNow & Yandex IndexNow APIs...');
+    const indexNowPayload = JSON.stringify({
       host: new URL(BASE_URL).hostname,
       key: INDEXNOW_KEY,
       keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
       urlList: ALL_SUBMISSION_URLS.slice(0, 500)
-    };
-
-    const indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(indexNowPayload)
     });
+
+    const [indexNowRes, yandexRes] = await Promise.all([
+      fetch('https://api.indexnow.org/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: indexNowPayload
+      }),
+      fetch('https://yandex.com/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: indexNowPayload
+      }).catch(() => null)
+    ]);
 
     console.log(`📡 IndexNow response: HTTP ${indexNowRes.status} (${indexNowRes.ok ? 'Accepted' : 'Notice'})`);
     results.indexNowStatus = `http_${indexNowRes.status}`;
+    results.yandexIndexNowStatus = yandexRes ? `http_${yandexRes.status}` : 'network_notice';
   } catch (err) {
     console.warn(`⚠️ IndexNow submission notice: ${err.message}`);
     results.indexNowStatus = 'error';

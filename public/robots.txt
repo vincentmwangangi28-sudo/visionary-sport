@@ -21,9 +21,16 @@ Allow: /icon-192.png
 Allow: /icon-512.png
 Allow: /sitemap.xml
 Allow: /sitemap-yandex.xml
+Allow: /rss.xml
+Allow: /feed.xml
+Allow: /feed-predictions.xml
+Allow: /ads.txt
+Allow: /app-ads.txt
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 Disallow: /_vercel/
+Disallow: /admin
+Disallow: /auth
 
 User-agent: GPTBot
 Allow: /

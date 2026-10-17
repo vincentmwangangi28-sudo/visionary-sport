@@ -955,7 +955,56 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'sure 5 odds predictions today, daily 5 odds tips, sure 10 odds predictions, 5 odds accumulator tips, 10 odds banker slip today',
     canonicalPath: '/5-odds-predictions',
   },
+  '/dashboard': {
+    title: 'Personalized AI Football Predictions & Custom Match Feed',
+    description:
+      'Customize your PredictPro football dashboard. Track favorite clubs, leagues, live xG alerts, and personalized AI match predictions in real time.',
+    keywords:
+      'personalized football dashboard, custom soccer predictions feed, follow favorite football teams, ai match alerts',
+    canonicalPath: '/dashboard',
+  },
+  '/preferences': {
+    title: 'Prediction Preferences, Odds Format & Notification Settings',
+    description:
+      'Configure your PredictPro odds format (Decimal, Fractional, American), regional league priorities, bankroll defaults, and live match alert preferences.',
+    keywords:
+      'football odds settings, decimal to american odds preference, prediction notification settings, predictpro preferences',
+    canonicalPath: '/preferences',
+  },
+  '/performance': {
+    title: 'AI Model Performance, ROI Analytics & League Accuracy',
+    description:
+      'Verified PredictPro AI model performance analytics. Inspect historical strike rates, Brier calibration scores, league-by-league accuracy, and +EV yield.',
+    keywords:
+      'ai football model accuracy, prediction strike rate, football betting roi performance, brier score calibration',
+    canonicalPath: '/performance',
+  },
+  '/rewards': {
+    title: 'PredictPro Rewards, Prediction Challenges & VIP Points',
+    description:
+      'Earn PredictPro loyalty points, complete daily football prediction challenges, climb seasonal tipster tiers, and unlock VIP analytical passes.',
+    keywords:
+      'football prediction rewards, free football prediction challenge, tipster loyalty points, predictpro vip rewards',
+    canonicalPath: '/rewards',
+  },
+  '/auth': {
+    title: 'Sign In or Create Account — PredictPro AI Football Hub',
+    description:
+      'Sign in to your PredictPro account to sync custom accumulators, favorite leagues, bankroll tracking, and real-time AI match alerts across devices.',
+    keywords: 'predictpro login, sign in predictpro, football predictions account',
+    canonicalPath: '/auth',
+    noIndex: true,
+  },
+  '/admin': {
+    title: 'PredictPro Admin & Model Telemetry Console',
+    description:
+      'Administrative control center for PredictPro model calibration, fixture ingestion, and platform telemetry.',
+    keywords: 'predictpro admin',
+    canonicalPath: '/admin',
+    noIndex: true,
+  },
 };
+
 
 /**
  * Normalizes page <title> to strictly <= 60 characters for Ahrefs Site Audit & SERP display.
@@ -2413,6 +2462,33 @@ function upsertLinkTag(rel: string, href: string, hreflang?: string) {
   }
 }
 
+function upsertMultiMetaTagValues(attrName: 'name' | 'property', attrValue: string, values: string[]) {
+  if (typeof document === 'undefined') return;
+  const existing = Array.from(
+    document.head.querySelectorAll(`meta[${attrName}="${attrValue}"]`)
+  ) as HTMLMetaElement[];
+
+  for (let i = 0; i < values.length; i++) {
+    let el = existing[i] || null;
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attrName, attrValue);
+      document.head.appendChild(el);
+    }
+    if (el.getAttribute('content') !== values[i]) {
+      el.setAttribute('content', values[i]);
+    }
+  }
+
+  if (existing.length > values.length) {
+    for (let i = values.length; i < existing.length; i++) {
+      existing[i].remove();
+    }
+  }
+}
+
+let activeComponentSEOOverrideCount = 0;
+
 /**
  * Dynamically manages and synchronizes <title>, meta description, OpenGraph tags,
  * Twitter Cards, canonical URLs, and JSON-LD structured data based on the active route.
@@ -2420,6 +2496,17 @@ function upsertLinkTag(rel: string, href: string, hreflang?: string) {
 export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetadata {
   const location = useLocation();
   const activePathname = location.pathname || '/';
+  const isExplicitOverride = Boolean(
+    options.title ||
+      options.description ||
+      options.canonical ||
+      options.matchPrediction ||
+      options.article ||
+      options.faq ||
+      options.structuredData ||
+      options.noIndex !== undefined
+  );
+
 
   // Reactive locale state to handle URL changes, storage events, or preference updates
   const [userLocale, setUserLocale] = useState<UserLocaleProfile>(() => resolveUserLocale());
@@ -2840,12 +2927,26 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
   ]);
 
   useEffect(() => {
+    if (!isExplicitOverride) return;
+    activeComponentSEOOverrideCount++;
+    return () => {
+      activeComponentSEOOverrideCount = Math.max(0, activeComponentSEOOverrideCount - 1);
+    };
+  }, [isExplicitOverride]);
+
+  useEffect(() => {
     if (typeof document === 'undefined') return;
+    // If a child page component has mounted an explicit <SEO {...props} /> override,
+    // prevent the root fallback initializer from clobbering page-specific metadata.
+    if (!isExplicitOverride && activeComponentSEOOverrideCount > 0) {
+      return;
+    }
 
     // 1. Synchronize Document Title & HTML Document Root Attributes
     if (document.title !== resolved.fullTitle) {
       document.title = resolved.fullTitle;
     }
+
     if (document.documentElement) {
       document.documentElement.lang = resolved.detectedLocale.locale || resolved.detectedLocale.lang;
       document.documentElement.dir = resolved.detectedLocale.isRTL ? 'rtl' : 'ltr';
@@ -2910,9 +3011,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       'es_ES', 'es_MX', 'es_AR', 'pt_BR', 'pt_PT', 'fr_FR', 'fr_CA', 'de_DE', 'sw_KE', 'ar_SA', 'ar_EG'
     ].filter((loc) => loc !== resolved.detectedLocale.ogLocale);
 
-    for (const altLoc of ogAlternateLocales) {
-      upsertMetaTag('property', 'og:locale:alternate', altLoc);
-    }
+    upsertMultiMetaTagValues('property', 'og:locale:alternate', ogAlternateLocales);
 
     if (resolved.matchSeo) {
       upsertMetaTag('property', 'article:published_time', resolved.matchSeo.publishedTime);
@@ -2930,8 +3029,17 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     upsertMetaTag('name', 'twitter:image', resolved.image);
     upsertMetaTag('name', 'twitter:image:alt', imageAlt);
 
-    // 6. Synchronize JSON-LD Structured Data Script in <head>
+    // 6. Synchronize JSON-LD Structured Data Script in <head> and remove any duplicate JSON-LD scripts
     const scriptId = 'predictpro-dynamic-seo-jsonld';
+    const allJsonLdScripts = Array.from(
+      document.head.querySelectorAll('script[type="application/ld+json"]')
+    ) as HTMLScriptElement[];
+    for (const s of allJsonLdScripts) {
+      if (s.id !== scriptId) {
+        s.remove();
+      }
+    }
+
     let scriptEl = document.getElementById(scriptId) as HTMLScriptElement | null;
     if (!scriptEl) {
       scriptEl = document.createElement('script');
@@ -2943,7 +3051,8 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     if (scriptEl.textContent !== jsonString) {
       scriptEl.textContent = jsonString;
     }
-  }, [resolved]);
+  }, [resolved, isExplicitOverride]);
 
   return resolved;
 }
+
