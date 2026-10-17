@@ -771,6 +771,86 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'argentina primera division predictions, liga profesional argentina tips, river plate prediction today, boca juniors betting tips, argentine football predictions',
     canonicalPath: '/argentina-primera-predictions',
   },
+  '/under-2-5-goals-predictions': {
+    title: 'Under 2.5 Goals Predictions Today: Low-Scoring AI Tips',
+    description:
+      'Free Under 2.5 goals football predictions today. Backed by Zero-Inflated Poisson models, combined xG under 2.10 filters, and elite defensive xGA stats.',
+    keywords:
+      'under 2.5 goals predictions today, under 2.5 tips, low scoring football predictions, under 2.5 goals stats, defensive football betting tips',
+    canonicalPath: '/under-2-5-goals-predictions',
+  },
+  '/second-half-goals-predictions': {
+    title: 'Second Half Goals Predictions Today: 2H Over 1.5 & Late xG Tips',
+    description:
+      'Free Second Half Goals (2H Over 1.5) and Highest Scoring Half football predictions today. Powered by 60–90 minute fatigue xG spikes and bench impact data.',
+    keywords:
+      'second half goals predictions, 2nd half over 1.5 goals tips, highest scoring half predictions, late goals football tips, second half betting strategy',
+    canonicalPath: '/second-half-goals-predictions',
+  },
+  '/handicap-1x2-predictions': {
+    title: 'European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips',
+    description:
+      'Free European Handicap (-1 and +1) 3-Way football predictions today. Boost short 1.25 favorite odds to 2.10+ with AI 2+ goal margin xG forecasts.',
+    keywords:
+      'european handicap predictions, handicap -1 predictions today, 3 way handicap tips, team to win by 2 or more goals predictions, handicap 1x2 football tips',
+    canonicalPath: '/handicap-1x2-predictions',
+  },
+  '/midweek-jackpot-predictions': {
+    title: 'Midweek Jackpot Predictions Today: 13 & 15 Games AI Banker Tips',
+    description:
+      'Free 13-game and 15-game Midweek Jackpot predictions for SportPesa, Betika & Mozzart. Get 6 AI Banker locks and Double Combination slips for bonus payouts.',
+    keywords:
+      'midweek jackpot predictions, sportpesa midweek jackpot predictions, betika midweek jackpot 15 games, 13 games jackpot tips today, midweek jackpot bonuses',
+    canonicalPath: '/midweek-jackpot-predictions',
+  },
+  '/system-bet-calculator': {
+    title: 'System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Tool',
+    description:
+      'Free System Bet Calculator for football and sports betting. Calculate exact payouts for Trixie (4 bets), Patent (7), Yankee (11), and Lucky 15 (15) combinations.',
+    keywords:
+      'system bet calculator, trixie bet calculator, yankee calculator, patent bet calculator, lucky 15 calculator, round robin bet calculator',
+    canonicalPath: '/system-bet-calculator',
+  },
+  '/hedge-bet-calculator': {
+    title: 'Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool',
+    description:
+      'Free Hedge Bet & Cash-Out Calculator. Calculate the exact opposite stake needed on the final leg of your accumulator to lock in guaranteed risk-free profit.',
+    keywords:
+      'hedge bet calculator, cash out vs hedge calculator, lock in profit betting calculator, how to hedge a parlay calculator, live hedge staking tool',
+    canonicalPath: '/hedge-bet-calculator',
+  },
+  '/liga-mx-predictions': {
+    title: 'Liga MX Predictions Today: Club América, Monterrey & Mexican Tips',
+    description:
+      'Free Mexican Liga MX (Apertura & Clausura) AI football predictions today. High-altitude home xG picks, BTTS, and Liguilla tips for Club América, Tigres & Monterrey.',
+    keywords:
+      'liga mx predictions today, mexican football predictions, club america prediction today, monterrey vs tigres betting tips, liga mx btts predictions',
+    canonicalPath: '/liga-mx-predictions',
+  },
+  '/mls-predictions': {
+    title: 'MLS Predictions Today: Inter Miami, LAFC & Major League Soccer Tips',
+    description:
+      'Free Major League Soccer (MLS) AI predictions today. Get Over 2.5 goals, BTTS, and Moneyline picks for Inter Miami, LA Galaxy, LAFC, and Columbus Crew.',
+    keywords:
+      'mls predictions today, major league soccer betting tips, inter miami prediction today, mls over 2.5 goals tips, mls parlay picks',
+    canonicalPath: '/mls-predictions',
+  },
+  '/greek-super-league-predictions': {
+    title: 'Greek Super League Predictions: Olympiacos, PAOK, AEK & Panathinaikos',
+    description:
+      'Free Greek Super League (Stoiximan Super League) AI football predictions today. Home banker 1X2, Under 2.5, and Championship Playoff tips for Olympiacos & PAOK.',
+    keywords:
+      'greek super league predictions, super league greece tips today, olympiacos prediction today, paok vs aek athens betting tips, greek football predictions',
+    canonicalPath: '/greek-super-league-predictions',
+  },
+  '/south-africa-psl-predictions': {
+    title: 'South Africa PSL Predictions Today: Betway Premiership AI Tips',
+    description:
+      'Free South Africa PSL (Betway Premiership) AI football predictions today. Mamelodi Sundowns, Orlando Pirates & Kaizer Chiefs 1X2, Under 2.5, and Nedbank Cup tips.',
+    keywords:
+      'psl predictions today, betway premiership predictions, dstv premiership tips today, mamelodi sundowns prediction, orlando pirates vs kaizer chiefs tips',
+    canonicalPath: '/south-africa-psl-predictions',
+  },
 };
 
 /**

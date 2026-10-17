@@ -383,6 +383,46 @@ const ROUTE_META = {
     title: 'Argentina Primera División Predictions: Liga Profesional AI Tips',
     description: 'Free Argentina Liga Profesional (Primera División) AI football predictions today. Get home-banker 1X2, Under 2.5, and Draw No Bet tips for River Plate & Boca Juniors.',
   },
+  '/under-2-5-goals-predictions': {
+    title: 'Under 2.5 Goals Predictions Today: Low-Scoring AI Tips',
+    description: 'Free Under 2.5 goals football predictions today. Backed by Zero-Inflated Poisson models, combined xG under 2.10 filters, and elite defensive xGA stats.',
+  },
+  '/second-half-goals-predictions': {
+    title: 'Second Half Goals Predictions Today: 2H Over 1.5 & Late xG Tips',
+    description: 'Free Second Half Goals (2H Over 1.5) and Highest Scoring Half football predictions today. Powered by 60–90 minute fatigue xG spikes and bench impact data.',
+  },
+  '/handicap-1x2-predictions': {
+    title: 'European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips',
+    description: 'Free European Handicap (-1 and +1) 3-Way football predictions today. Boost short 1.25 favorite odds to 2.10+ with AI 2+ goal margin xG forecasts.',
+  },
+  '/midweek-jackpot-predictions': {
+    title: 'Midweek Jackpot Predictions Today: 13 & 15 Games AI Banker Tips',
+    description: 'Free 13-game and 15-game Midweek Jackpot predictions for SportPesa, Betika & Mozzart. Get 6 AI Banker locks and Double Combination slips for bonus payouts.',
+  },
+  '/system-bet-calculator': {
+    title: 'System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Tool',
+    description: 'Free System Bet Calculator for football and sports betting. Calculate exact payouts for Trixie (4 bets), Patent (7), Yankee (11), and Lucky 15 (15) combinations.',
+  },
+  '/hedge-bet-calculator': {
+    title: 'Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool',
+    description: 'Free Hedge Bet & Cash-Out Calculator. Calculate the exact opposite stake needed on the final leg of your accumulator to lock in guaranteed risk-free profit.',
+  },
+  '/liga-mx-predictions': {
+    title: 'Liga MX Predictions Today: Club América, Monterrey & Mexican Tips',
+    description: 'Free Mexican Liga MX (Apertura & Clausura) AI football predictions today. High-altitude home xG picks, BTTS, and Liguilla tips for Club América, Tigres & Monterrey.',
+  },
+  '/mls-predictions': {
+    title: 'MLS Predictions Today: Inter Miami, LAFC & Major League Soccer Tips',
+    description: 'Free Major League Soccer (MLS) AI predictions today. Get Over 2.5 goals, BTTS, and Moneyline picks for Inter Miami, LA Galaxy, LAFC, and Columbus Crew.',
+  },
+  '/greek-super-league-predictions': {
+    title: 'Greek Super League Predictions: Olympiacos, PAOK, AEK & Panathinaikos',
+    description: 'Free Greek Super League (Stoiximan Super League) AI football predictions today. Home banker 1X2, Under 2.5, and Championship Playoff tips for Olympiacos & PAOK.',
+  },
+  '/south-africa-psl-predictions': {
+    title: 'South Africa PSL Predictions Today: Betway Premiership AI Tips',
+    description: 'Free South Africa PSL (Betway Premiership) AI football predictions today. Mamelodi Sundowns, Orlando Pirates & Kaizer Chiefs 1X2, Under 2.5, and Nedbank Cup tips.',
+  },
 };
 
 function clampTitle(raw) {

@@ -84,7 +84,12 @@ const CORE_PAGES = [
   { path: '/both-teams-to-score-and-win-predictions', priority: 0.90, freq: 'daily', title: 'BTTS & Win Predictions Today: Both Teams to Score + Over 2.5 Tips' },
   { path: '/anytime-goalscorer-predictions', priority: 0.90, freq: 'daily', title: 'Anytime Goalscorer Predictions Today: Player xG & Shots on Target' },
   { path: '/parlay-calculator', priority: 0.90, freq: 'weekly', title: 'Parlay & Accumulator Odds Calculator: Multi-Bet Payout Tool' },
+  { path: '/system-bet-calculator', priority: 0.90, freq: 'weekly', title: 'System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Tool' },
+  { path: '/hedge-bet-calculator', priority: 0.90, freq: 'weekly', title: 'Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool' },
   { path: '/margin-calculator', priority: 0.90, freq: 'weekly', title: 'Bookmaker Margin & No-Vig Fair Odds Calculator (Overround Tool)' },
+  { path: '/under-2-5-goals-predictions', priority: 0.90, freq: 'daily', title: 'Under 2.5 Goals Predictions Today: Low-Scoring AI Tips' },
+  { path: '/second-half-goals-predictions', priority: 0.90, freq: 'daily', title: 'Second Half Goals Predictions Today: 2H Over 1.5 & Late xG Tips' },
+  { path: '/handicap-1x2-predictions', priority: 0.90, freq: 'daily', title: 'European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips' },
 ];
 
 const LEAGUE_PAGES = [
@@ -102,15 +107,20 @@ const LEAGUE_PAGES = [
   { path: '/primeira-liga-predictions', priority: 0.95, freq: 'daily', title: 'Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto' },
   { path: '/belgian-pro-league-predictions', priority: 0.90, freq: 'daily', title: 'Belgian Pro League Predictions Today: Jupiler League AI Tips' },
   { path: '/turkish-super-lig-predictions', priority: 0.95, freq: 'daily', title: 'Turkish Süper Lig Predictions Today: Galatasaray & Fenerbahçe Tips' },
+  { path: '/greek-super-league-predictions', priority: 0.90, freq: 'daily', title: 'Greek Super League Predictions: Olympiacos, PAOK, AEK & Panathinaikos' },
   { path: '/copa-libertadores-predictions', priority: 0.95, freq: 'daily', title: 'Copa Libertadores AI Predictions: South American Odds & Tips' },
   { path: '/saudi-pro-league-predictions', priority: 0.95, freq: 'daily', title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips' },
   { path: '/brazilian-serie-a-predictions', priority: 0.95, freq: 'daily', title: 'Brazilian Serie A Predictions Today: Brasileirão AI Tips & Odds' },
   { path: '/argentina-primera-predictions', priority: 0.90, freq: 'daily', title: 'Argentina Primera División Predictions: Liga Profesional AI Tips' },
+  { path: '/liga-mx-predictions', priority: 0.95, freq: 'daily', title: 'Liga MX Predictions Today: Club América, Monterrey & Mexican Tips' },
+  { path: '/mls-predictions', priority: 0.95, freq: 'daily', title: 'MLS Predictions Today: Inter Miami, LAFC & Major League Soccer Tips' },
   { path: '/scottish-premiership-predictions', priority: 0.95, freq: 'daily', title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips' },
+  { path: '/south-africa-psl-predictions', priority: 0.95, freq: 'daily', title: 'South Africa PSL Predictions Today: Betway Premiership AI Tips' },
   { path: '/world-cup-predictions', priority: 0.90, freq: 'daily', title: 'FIFA World Cup 2026 Predictions & Qualifying Tips' },
   { path: '/afcon-predictions', priority: 0.90, freq: 'daily', title: 'AFCON Predictions & African Football Odds' },
   { path: '/kpl-predictions', priority: 0.90, freq: 'daily', title: 'FKF Kenya Premier League Predictions & M-Pesa Tips' },
   { path: '/jackpot-predictions', priority: 0.95, freq: 'daily', title: 'SportPesa Mega Jackpot & Betika Grand AI Predictions (17 Games)' },
+  { path: '/midweek-jackpot-predictions', priority: 0.95, freq: 'daily', title: 'Midweek Jackpot Predictions Today: 13 & 15 Games AI Banker Tips' },
   { path: '/us-soccer-predictions', priority: 0.90, freq: 'daily', title: 'US Soccer Picks, MLS Moneyline & Champions League Odds' },
 ];
 
