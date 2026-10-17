@@ -10,10 +10,18 @@ export interface BetSelection {
   awayTeam: string;
   league: string;
   matchDate?: string;
+  kickoff?: string;
   market: string;
+  selection?: string;
+  marketCategory?: string;
   odds: number;
   confidence: number;
 }
+
+export type BetSelectionInput = Omit<BetSelection, 'id' | 'match'> & {
+  id?: string;
+  match?: string;
+};
 
 interface BetSlipContextType {
   selections: BetSelection[];
@@ -23,11 +31,12 @@ interface BetSlipContextType {
   setStake: (stake: number) => void;
   currency: string;
   setCurrency: (cur: string) => void;
-  addSelection: (selection: Omit<BetSelection, 'id'>) => void;
-  addSelections: (selections: Omit<BetSelection, 'id'>[]) => void;
+  addSelection: (selection: BetSelectionInput) => void;
+  addSelections: (selections: BetSelectionInput[]) => void;
   removeSelection: (id: string) => void;
   clearSlip: () => void;
-  isInSlip: (idOrMatch: string) => boolean;
+  isInSlip: (idOrMatch: string, selectionOrMarket?: string) => boolean;
+  isSelected: (idOrMatch: string, selectionOrMarket?: string) => boolean;
   totalOdds: number;
   bonusMultiplier: number;
   potentialReturn: number;
@@ -42,11 +51,43 @@ const BetSlipContext = createContext<BetSlipContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'predictpro_betslip_v2';
 
+function normalizeSelectionInput(sel: BetSelectionInput): BetSelection {
+  const homeTeam = sel.homeTeam || 'Home';
+  const awayTeam = sel.awayTeam || 'Away';
+  const resolvedMatch = sel.match || `${homeTeam} vs ${awayTeam}`;
+  const resolvedMarket = sel.selection || sel.market || 'Match Winner';
+  const resolvedCategory = sel.selection && sel.market && sel.selection !== sel.market ? sel.market : sel.marketCategory;
+  const resolvedDate = sel.matchDate || sel.kickoff;
+  const resolvedMatchId = sel.matchId || sel.id;
+  const id = (sel.id || `${homeTeam}-${awayTeam}-${resolvedMarket}`)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-');
+
+  return {
+    ...sel,
+    id,
+    matchId: resolvedMatchId ? String(resolvedMatchId) : undefined,
+    match: resolvedMatch,
+    homeTeam,
+    awayTeam,
+    league: sel.league || 'Football',
+    matchDate: resolvedDate,
+    kickoff: sel.kickoff || resolvedDate,
+    market: resolvedMarket,
+    selection: sel.selection || resolvedMarket,
+    marketCategory: resolvedCategory,
+    odds: Number(sel.odds) || 1.5,
+    confidence: Number(sel.confidence) || 75,
+  };
+}
+
 export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selections, setSelections] = useState<BetSelection[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.map(normalizeSelectionInput) : [];
     } catch {
       return [];
     }
@@ -64,23 +105,26 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [selections]);
 
-  const addSelection = (sel: Omit<BetSelection, 'id'>) => {
-    const id = `${sel.homeTeam}-${sel.awayTeam}-${sel.market}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    
+  const addSelection = (rawSel: BetSelectionInput) => {
+    const normalized = normalizeSelectionInput(rawSel);
+    const { id, homeTeam, awayTeam, market, odds } = normalized;
+
     // Check if already in bet slip
-    if (selections.some(s => s.id === id)) {
+    if (selections.some((s) => s.id === id)) {
       hapticService.warning();
-      toast.info(`Already added to bet slip: ${sel.market}`);
+      toast.info(`Already added to bet slip: ${market}`);
       return;
     }
 
     // Check if conflicting market for same match exists
-    const existingMatch = selections.find(s => s.homeTeam === sel.homeTeam && s.awayTeam === sel.awayTeam);
+    const existingMatch = selections.find(
+      (s) => s.homeTeam === homeTeam && s.awayTeam === awayTeam
+    );
     if (existingMatch) {
       // Replace with new market selection
-      setSelections(prev => prev.map(s => s.id === existingMatch.id ? { ...sel, id } : s));
+      setSelections((prev) => prev.map((s) => (s.id === existingMatch.id ? normalized : s)));
       hapticService.selection();
-      toast.success(`Updated ${sel.homeTeam} vs ${sel.awayTeam} to ${sel.market}`);
+      toast.success(`Updated ${homeTeam} vs ${awayTeam} to ${market}`);
       setIsOpen(true);
       return;
     }
@@ -99,32 +143,34 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       hapticService.selection();
     }
 
-    setSelections(prev => [...prev, { ...sel, id }]);
-    toast.success(`Added ${sel.homeTeam} vs ${sel.awayTeam} (${sel.market} @ ${sel.odds.toFixed(2)})`);
+    setSelections((prev) => [...prev, normalized]);
+    toast.success(`Added ${homeTeam} vs ${awayTeam} (${market} @ ${odds.toFixed(2)})`);
     setIsOpen(true);
   };
 
-  const addSelections = (newSels: Omit<BetSelection, 'id'>[]) => {
+  const addSelections = (newSels: BetSelectionInput[]) => {
     if (!newSels || newSels.length === 0) return;
 
-    setSelections(prev => {
+    setSelections((prev) => {
       const updated = [...prev];
       let addedCount = 0;
 
-      for (const sel of newSels) {
+      for (const rawSel of newSels) {
         if (updated.length >= 15) break;
-        const id = `${sel.homeTeam}-${sel.awayTeam}-${sel.market}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        
+        const normalized = normalizeSelectionInput(rawSel);
+
         // If exact selection exists, skip
-        if (updated.some(s => s.id === id)) continue;
+        if (updated.some((s) => s.id === normalized.id)) continue;
 
         // If same match exists, update market
-        const matchIdx = updated.findIndex(s => s.homeTeam === sel.homeTeam && s.awayTeam === sel.awayTeam);
+        const matchIdx = updated.findIndex(
+          (s) => s.homeTeam === normalized.homeTeam && s.awayTeam === normalized.awayTeam
+        );
         if (matchIdx >= 0) {
-          updated[matchIdx] = { ...sel, id };
+          updated[matchIdx] = normalized;
           addedCount++;
         } else {
-          updated.push({ ...sel, id });
+          updated.push(normalized);
           addedCount++;
         }
       }
@@ -145,7 +191,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const removeSelection = (id: string) => {
     hapticService.remove();
-    setSelections(prev => prev.filter(s => s.id !== id));
+    setSelections((prev) => prev.filter((s) => s.id !== id));
   };
 
   const clearSlip = () => {
@@ -154,31 +200,59 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     toast.info('Bet slip cleared');
   };
 
-  const isInSlip = (idOrMatch: string) => {
+  const isSelected = (idOrMatch: string, selectionOrMarket?: string): boolean => {
     if (!idOrMatch) return false;
-    const q = idOrMatch.toLowerCase();
-    return selections.some(
-      (s) =>
-        s.id.toLowerCase() === q ||
-        (s.matchId && s.matchId.toLowerCase() === q) ||
-        s.match.toLowerCase() === q
-    );
+    const q = String(idOrMatch).toLowerCase().trim();
+    const targetMarket = selectionOrMarket ? String(selectionOrMarket).toLowerCase().trim() : null;
+
+    return selections.some((s) => {
+      const idVal = (s.id || '').toLowerCase();
+      const matchIdVal = (s.matchId || '').toLowerCase();
+      const matchVal = (s.match || `${s.homeTeam} vs ${s.awayTeam}`).toLowerCase();
+      const pairDash = `${s.homeTeam}-${s.awayTeam}`.toLowerCase();
+
+      const matchesFixture =
+        idVal === q ||
+        idVal.startsWith(`${q}-`) ||
+        matchIdVal === q ||
+        matchVal === q ||
+        pairDash === q;
+
+      if (!matchesFixture) return false;
+      if (!targetMarket) return true;
+
+      const sMarket = (s.market || '').toLowerCase();
+      const sSelection = (s.selection || '').toLowerCase();
+      const sCategory = (s.marketCategory || '').toLowerCase();
+
+      return (
+        sMarket === targetMarket ||
+        sSelection === targetMarket ||
+        sCategory === targetMarket ||
+        idVal.includes(targetMarket.replace(/[^a-z0-9]/g, '-'))
+      );
+    });
+  };
+
+  const isInSlip = (idOrMatch: string, selectionOrMarket?: string): boolean => {
+    return isSelected(idOrMatch, selectionOrMarket);
   };
 
   const rawTotalOdds = selections.reduce((acc, s) => {
     const o = Number(s.odds);
     return acc * (Number.isFinite(o) && o > 0 ? o : 1);
   }, 1);
-  const totalOdds = selections.length > 0 && Number.isFinite(rawTotalOdds)
-    ? Math.max(1, Math.round(rawTotalOdds * 100) / 100)
-    : 1;
+  const totalOdds =
+    selections.length > 0 && Number.isFinite(rawTotalOdds)
+      ? Math.max(1, Math.round(rawTotalOdds * 100) / 100)
+      : 1;
 
   // Dynamic accumulator bonus
   const getBonusMultiplier = (count: number) => {
     if (count >= 12) return 0.50; // 50% bonus
-    if (count >= 8) return 0.30;  // 30% bonus
-    if (count >= 5) return 0.15;  // 15% bonus
-    if (count >= 3) return 0.05;  // 5% bonus
+    if (count >= 8) return 0.30; // 30% bonus
+    if (count >= 5) return 0.15; // 15% bonus
+    if (count >= 3) return 0.05; // 5% bonus
     return 0;
   };
 
@@ -187,14 +261,19 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const potentialReturn = Math.round(safeStake * totalOdds * 100) / 100;
   const boostedReturn = Math.round(potentialReturn * (1 + bonusMultiplier) * 100) / 100;
 
-  const combinedConfidence = selections.length > 0
-    ? Math.round(selections.reduce((acc, s) => acc * ((s.confidence || 65) / 100), 1) * 100)
-    : 0;
+  const combinedConfidence =
+    selections.length > 0
+      ? Math.round(selections.reduce((acc, s) => acc * ((s.confidence || 65) / 100), 1) * 100)
+      : 0;
 
   const generateBookingCode = (bookmaker: string) => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
-    const length = bookmaker.toLowerCase().includes('sporty') ? 6 : bookmaker.toLowerCase().includes('1x') ? 7 : 5;
+    const length = bookmaker.toLowerCase().includes('sporty')
+      ? 6
+      : bookmaker.toLowerCase().includes('1x')
+        ? 7
+        : 5;
     for (let i = 0; i < length; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -202,28 +281,31 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   return (
-    <BetSlipContext.Provider value={{
-      selections,
-      isOpen,
-      setIsOpen,
-      stake,
-      setStake,
-      currency,
-      setCurrency,
-      addSelection,
-      addSelections,
-      removeSelection,
-      clearSlip,
-      isInSlip,
-      totalOdds,
-      bonusMultiplier,
-      potentialReturn,
-      boostedReturn,
-      combinedConfidence,
-      generateBookingCode,
-      triggerHaptic: (pattern?: HapticPattern) => hapticService.trigger(pattern),
-      isHapticSupported: hapticService.isSupported(),
-    }}>
+    <BetSlipContext.Provider
+      value={{
+        selections,
+        isOpen,
+        setIsOpen,
+        stake,
+        setStake,
+        currency,
+        setCurrency,
+        addSelection,
+        addSelections,
+        removeSelection,
+        clearSlip,
+        isInSlip,
+        isSelected,
+        totalOdds,
+        bonusMultiplier,
+        potentialReturn,
+        boostedReturn,
+        combinedConfidence,
+        generateBookingCode,
+        triggerHaptic: (pattern?: HapticPattern) => hapticService.trigger(pattern),
+        isHapticSupported: hapticService.isSupported(),
+      }}
+    >
       {children}
     </BetSlipContext.Provider>
   );
@@ -242,6 +324,7 @@ const defaultFallbackContext: BetSlipContextType = {
   removeSelection: () => {},
   clearSlip: () => {},
   isInSlip: () => false,
+  isSelected: () => false,
   totalOdds: 1,
   bonusMultiplier: 0,
   potentialReturn: 0,

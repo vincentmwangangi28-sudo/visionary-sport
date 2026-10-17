@@ -465,13 +465,7 @@ export function useMatchSync() {
 
     if (storedDate !== todayDate) {
       const initialTimer = setTimeout(() => {
-        if ('requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(() => {
-            syncMatchData('init_cold_start', false).catch(() => {});
-          });
-        } else {
-          syncMatchData('init_cold_start', false).catch(() => {});
-        }
+        syncMatchData('init_cold_start', false).catch(() => {});
       }, 45000);
       return () => clearTimeout(initialTimer);
     }

@@ -51,25 +51,6 @@ export function useAdmin() {
       if (isVincent) {
         setIsAdmin(true);
         setRoleSource('Root Designated Administrator (Vincent Mwangangi)');
-
-        // Ensure database reflects admin record for Vincent Mwangangi
-        try {
-          await supabase
-            .from('admins')
-            .upsert(
-              {
-                email: PRIMARY_ADMIN_EMAIL.toLowerCase(),
-                full_name: PRIMARY_ADMIN_NAME,
-                role: 'super_admin',
-                added_by: 'system',
-                notes: 'Root Primary Designated Administrator',
-                is_active: true,
-              },
-              { onConflict: 'email' }
-            );
-        } catch {
-          // Safe fallback
-        }
       } else {
         // Single Administrator Architecture: Vincent Mwangangi is the ONLY admin
         setIsAdmin(false);

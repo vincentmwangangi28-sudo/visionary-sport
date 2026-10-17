@@ -29,13 +29,7 @@ export function useAutoIndexing() {
       let timerHandle: ReturnType<typeof setTimeout> | null = null;
 
       const runIndexing = () => {
-        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-          idleHandle = (window as any).requestIdleCallback(() => {
-            googleIndexingCronService.runCronNow('auto').catch(() => {});
-          });
-        } else {
-          googleIndexingCronService.runCronNow('auto').catch(() => {});
-        }
+        googleIndexingCronService.runCronNow('auto').catch(() => {});
       };
 
       timerHandle = setTimeout(runIndexing, 45000);

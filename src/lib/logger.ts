@@ -1,5 +1,5 @@
 import type { Json } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, getSupabaseConfigStatus } from '@/integrations/supabase/client';
 
 export type ErrorType =
   | 'react_boundary'
@@ -145,6 +145,11 @@ async function transmitLogEntry(entry: ErrorLogEntry): Promise<boolean> {
         offlineQueue.push(entry);
       }
       return false;
+    }
+
+    // Skip remote POST if using default fallback Supabase instance where error_logs table is not provisioned
+    if (getSupabaseConfigStatus().isFallback) {
+      return true;
     }
 
     // Attempt insert into Supabase error_logs

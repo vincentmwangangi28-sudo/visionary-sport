@@ -74,6 +74,54 @@ export function getSupabaseConfigStatus(): SupabaseConfigStatus {
   };
 }
 
+const UNPROVISIONED_FALLBACK_TABLES = new Set([
+  'error_logs',
+  'jackpot_pools',
+  'admins',
+]);
+
+/**
+ * Custom fetch wrapper for Supabase that prevents browser console 404/401 noise
+ * when optional telemetry or administrative tables are not provisioned in the remote schema.
+ */
+const resilientSupabaseFetch: typeof fetch = async (input, init) => {
+  const urlStr =
+    typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.toString()
+        : (input as Request)?.url || '';
+
+  const restMatch = urlStr.match(/\/rest\/v1\/([a-zA-Z0-9_]+)/);
+  if (restMatch) {
+    const tableName = restMatch[1];
+    if (UNPROVISIONED_FALLBACK_TABLES.has(tableName)) {
+      const isHead = init?.method?.toUpperCase() === 'HEAD';
+      return new Response(isHead ? null : '[]', {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Range': '0-0/0',
+        },
+      });
+    }
+  }
+
+  const res = await fetch(input, init);
+  if (restMatch && res.status === 404) {
+    UNPROVISIONED_FALLBACK_TABLES.add(restMatch[1]);
+    const isHead = init?.method?.toUpperCase() === 'HEAD';
+    return new Response(isHead ? null : '[]', {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Range': '0-0/0',
+      },
+    });
+  }
+  return res;
+};
+
 /**
  * Creates an instance of the Supabase client given resolved credentials
  */
@@ -87,6 +135,9 @@ function createClientInstance(url: string, key: string): SupabaseClient<Database
         detectSessionInUrl: true,
         flowType: 'pkce',
       },
+      global: {
+        fetch: resilientSupabaseFetch,
+      },
     });
   } catch (err) {
     console.warn('[Supabase] Initialized with fallback client due to init warning:', err);
@@ -94,6 +145,9 @@ function createClientInstance(url: string, key: string): SupabaseClient<Database
       auth: {
         persistSession: false,
         autoRefreshToken: false,
+      },
+      global: {
+        fetch: resilientSupabaseFetch,
       },
     });
   }

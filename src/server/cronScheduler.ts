@@ -613,7 +613,7 @@ class AutonomousCronScheduler {
       const supabaseUrl = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
       if (serviceKey) {
-        fetch(`${supabaseUrl}/rest/v1/jackpot_pools?select=provider_id&limit=1`, {
+        fetch(`${supabaseUrl}/rest/v1/predictions?select=id&limit=1`, {
           headers: {
             'apikey': serviceKey,
             'Authorization': `Bearer ${serviceKey}`,

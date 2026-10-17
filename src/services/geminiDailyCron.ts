@@ -321,11 +321,7 @@ class GeminiDailyCronService {
 
     // Defer first background check until well after initial page load completes
     setTimeout(() => {
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(check);
-      } else {
-        check();
-      }
+      check();
     }, 45000);
 
     // Heartbeat every 5 minutes to evaluate schedule

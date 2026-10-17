@@ -340,7 +340,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         let supabaseStatus = 'standby';
         try {
           const dbStart = Date.now();
-          const res = await fetch(`${SUPABASE_BASE_URL}/rest/v1/jackpot_pools?select=provider_id&limit=1`, {
+          const res = await fetch(`${SUPABASE_BASE_URL}/rest/v1/predictions?select=id&limit=1`, {
             method: 'GET',
             headers: getSupabaseHeaders(),
           });

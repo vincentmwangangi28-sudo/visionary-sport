@@ -16,18 +16,15 @@ export function useGeminiDailyCron() {
     let timerHandle: any = null;
 
     const startServices = () => {
-      // Start in-browser heartbeat timer with real prediction store accessor
-      geminiDailyCronService.startBackgroundHeartbeat(() => getSavedPredictionsList());
-
-      // Start automated backend news download & sync pipeline (every 15 min)
-      sportsNewsService.startAutomatedSync(15);
+      setTimeout(() => {
+        geminiDailyCronService.startBackgroundHeartbeat(() => getSavedPredictionsList());
+      }, 0);
+      setTimeout(() => {
+        sportsNewsService.startAutomatedSync(15);
+      }, 500);
     };
 
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      idleHandle = (window as any).requestIdleCallback(startServices, { timeout: 8000 });
-    } else {
-      timerHandle = setTimeout(startServices, 6000);
-    }
+    timerHandle = setTimeout(startServices, 6000);
 
     return () => {
       if (idleHandle && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {

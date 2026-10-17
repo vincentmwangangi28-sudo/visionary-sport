@@ -135,8 +135,8 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
     try {
       const dbStart = Date.now();
       const dbPromise = supabase
-        .from('jackpot_pools')
-        .select('provider_id')
+        .from('predictions')
+        .select('id')
         .limit(1);
 
       const timeoutPromise = new Promise<{ error: any }>((resolve) =>
