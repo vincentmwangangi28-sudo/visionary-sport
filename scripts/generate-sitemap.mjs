@@ -330,14 +330,83 @@ export function buildYandexSitemapXml() {
     .replace(/\n\s*<xhtml:link[^>]*\/>/g, '');
 }
 
-// Write files
+function buildUrlsetFromEntries(entries) {
+  const nodes = entries.map(entry => `  <url>
+    <loc>${escapeXml(entry.loc)}</loc>
+    <lastmod>${entry.lastmod}</lastmod>
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(entry.loc)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(entry.loc)}" />
+  </url>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${nodes}
+</urlset>
+`;
+}
+
+export function buildSitemapIndexXml() {
+  const subSitemaps = [
+    `${BASE_URL}/sitemap-core.xml`,
+    `${BASE_URL}/sitemap-leagues.xml`,
+    `${BASE_URL}/sitemap-matches.xml`,
+    `${BASE_URL}/sitemap-blog.xml`,
+  ];
+  const nodes = subSitemaps.map(loc => `  <sitemap>
+    <loc>${escapeXml(loc)}</loc>
+    <lastmod>${TODAY}</lastmod>
+  </sitemap>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${nodes}
+</sitemapindex>
+`;
+}
+
+// Write master sitemaps
 const xml = buildSitemapXml();
 const yandexXml = buildYandexSitemapXml();
 fs.writeFileSync(SITEMAP_PATH, xml, 'utf8');
 fs.writeFileSync(YANDEX_SITEMAP_PATH, yandexXml, 'utf8');
 
+// Write category sub-sitemaps & sitemap-index.xml
+const coreEntries = CORE_PAGES.map(page => ({
+  loc: `${BASE_URL}${page.path}`,
+  lastmod: TODAY,
+  changefreq: page.freq,
+  priority: page.priority.toFixed(2),
+}));
+const leagueEntries = LEAGUE_PAGES.map(page => ({
+  loc: `${BASE_URL}${page.path}`,
+  lastmod: TODAY,
+  changefreq: page.freq,
+  priority: page.priority.toFixed(2),
+}));
+const matchEntries = FEATURED_MATCH_SLUGS.map(slug => ({
+  loc: `${BASE_URL}/predict/${slug}`,
+  lastmod: TODAY,
+  changefreq: 'daily',
+  priority: '0.80',
+}));
+const blogEntries = [
+  { loc: `${BASE_URL}/blog`, lastmod: TODAY, changefreq: 'daily', priority: '0.85' },
+  ...BLOG_POSTS.map(post => ({
+    loc: `${BASE_URL}/blog/${post.slug}`,
+    lastmod: TODAY,
+    changefreq: 'weekly',
+    priority: post.priority.toFixed(2),
+  })),
+];
+
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-core.xml'), buildUrlsetFromEntries(coreEntries), 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-leagues.xml'), buildUrlsetFromEntries(leagueEntries), 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-matches.xml'), buildUrlsetFromEntries(matchEntries), 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-blog.xml'), buildUrlsetFromEntries(blogEntries), 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-index.xml'), buildSitemapIndexXml(), 'utf8');
+
 const urlCount = (xml.match(/<loc>/g) || []).length;
-console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH} and ${YANDEX_SITEMAP_PATH}`);
+console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH}, ${YANDEX_SITEMAP_PATH}, and sitemap-index.xml`);
 console.log(`📅 Generated date: ${TODAY}`);
 console.log(`🌐 Base URL: ${BASE_URL}`);
 

@@ -10,7 +10,7 @@ import {
   deriveRouteBreadcrumbs,
 } from '@/hooks/useSEOManager';
 import { resolveMatchPredictionForSEO } from '@/hooks/useMatchPredictionSEO';
-import { getAllSitemapEntries, generateSitemapXml } from '@/services/sitemapGenerator';
+import { getAllSitemapEntries, generateSitemapXml, generateSitemapIndexXml } from '@/services/sitemapGenerator';
 
 describe('useSEOManager - International SEO & Locale Detection', () => {
   const originalLocation = window.location;
@@ -348,5 +348,16 @@ describe('useSEOManager - International SEO & Locale Detection', () => {
       expect(xml).toContain('https://predictpro.guru/predict/arsenal-vs-chelsea');
       expect(xml).toContain('https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates');
     });
+
+    it('generates valid sitemap-index.xml referencing all category sub-sitemaps', () => {
+      const indexXml = generateSitemapIndexXml();
+      expect(indexXml).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+      expect(indexXml).toContain('https://predictpro.guru/sitemap-core.xml');
+      expect(indexXml).toContain('https://predictpro.guru/sitemap-leagues.xml');
+      expect(indexXml).toContain('https://predictpro.guru/sitemap-matches.xml');
+      expect(indexXml).toContain('https://predictpro.guru/sitemap-blog.xml');
+      expect(indexXml).toContain('https://predictpro.guru/sitemap-yandex.xml');
+    });
   });
 });
+

@@ -339,6 +339,11 @@ if (fs.existsSync(REDIRECTS_PATH)) {
 
   const cronAndSitemapFiles = [
     'public/sitemap.xml',
+    'public/sitemap-index.xml',
+    'public/sitemap-core.xml',
+    'public/sitemap-leagues.xml',
+    'public/sitemap-matches.xml',
+    'public/sitemap-blog.xml',
     'public/sitemap-yandex.xml',
     'api/indexing-cron.ts',
     'api/sitemap-cron.ts',

@@ -499,13 +499,13 @@ export function GoogleSearchConsoleHub({ onTriggerIndexNow }: GoogleSearchConsol
 
             <div className="rounded-xl border border-border/60 bg-background/70 p-3.5 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-foreground">Sitemap &amp; Crawler Parity</span>
+                <span className="font-bold text-foreground">Multi-Sitemap Index (149 Routes)</span>
                 <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-bold">
                   0 Redirect Errors
                 </Badge>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                <code className="font-mono text-[11px]">sitemap.xml</code> and <code className="font-mono text-[11px]">sitemap-yandex.xml</code> are 100% synchronized across all 97+ canonical routes with zero 301-redirected URLs or auth-blocked pages.
+                <code className="font-mono text-[11px]">sitemap-index.xml</code>, <code className="font-mono text-[11px]">sitemap.xml</code>, and category sitemaps (<code className="font-mono text-[11px]">core</code>, <code className="font-mono text-[11px]">leagues</code>, <code className="font-mono text-[11px]">matches</code>, <code className="font-mono text-[11px]">blog</code>, <code className="font-mono text-[11px]">yandex</code>) cover all 149 prerendered routes with zero 301-redirected URLs.
               </p>
             </div>
           </div>

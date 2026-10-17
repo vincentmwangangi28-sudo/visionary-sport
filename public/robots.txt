@@ -20,7 +20,13 @@ Allow: /apple-touch-icon.png
 Allow: /icon-192.png
 Allow: /icon-512.png
 Allow: /sitemap.xml
+Allow: /sitemap-index.xml
+Allow: /sitemap-core.xml
+Allow: /sitemap-leagues.xml
+Allow: /sitemap-matches.xml
+Allow: /sitemap-blog.xml
 Allow: /sitemap-yandex.xml
+Allow: /api/og
 Allow: /rss.xml
 Allow: /feed.xml
 Allow: /feed-predictions.xml
@@ -122,5 +128,10 @@ Allow: /
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
+Sitemap: https://predictpro.guru/sitemap-index.xml
 Sitemap: https://predictpro.guru/sitemap.xml
+Sitemap: https://predictpro.guru/sitemap-core.xml
+Sitemap: https://predictpro.guru/sitemap-leagues.xml
+Sitemap: https://predictpro.guru/sitemap-matches.xml
+Sitemap: https://predictpro.guru/sitemap-blog.xml
 Sitemap: https://predictpro.guru/sitemap-yandex.xml

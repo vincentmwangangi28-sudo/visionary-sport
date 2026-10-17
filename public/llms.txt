@@ -36,4 +36,12 @@ PredictPro combines historical head-to-head (H2H) records, rolling 10-match Expe
 - [League Standings & Form Tables](https://predictpro.guru/standings): Current league tables, points, and goal differentials.
 - [Quantitative Methodology](https://predictpro.guru/methodology): Documentation of PredictPro's bivariate Poisson, xG, and ensemble AI architecture.
 - [Football Betting Strategy Blog](https://predictpro.guru/blog): Educational guides on Value Betting (+EV), Asian Handicap lines, Draw No Bet vs Double Chance, and Kelly Criterion bankroll management.
-- [HTML Sitemap Directory](https://predictpro.guru/sitemap): Complete index of all public pages, leagues, and match predictions.
+- [HTML Sitemap Directory](https://predictpro.guru/sitemap): Complete index of all 149 canonical pages, leagues, tools, and match predictions.
+
+## Machine-Readable Sitemaps, Feeds & Social Card API
+
+- [Master Sitemap Index](https://predictpro.guru/sitemap-index.xml): Partitioned XML sitemaps (`/sitemap-core.xml`, `/sitemap-leagues.xml`, `/sitemap-matches.xml`, `/sitemap-blog.xml`, `/sitemap-yandex.xml`).
+- [Primary XML Sitemap](https://predictpro.guru/sitemap.xml): Unified 149-URL canonical sitemap with 24 regional hreflang annotations.
+- [RSS 2.0 & Atom 1.0 Syndication Feeds](https://predictpro.guru/rss.xml): Also available at `/feed.xml` (Atom 1.0) and `/feed-predictions.xml` (Daily Match Predictions RSS).
+- [Dynamic 1200×630 OpenGraph Card Generator](https://predictpro.guru/api/og): Edge-rendered SVG social cards for matches and multibet slips.
+

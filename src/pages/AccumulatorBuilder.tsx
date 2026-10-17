@@ -13,6 +13,7 @@ import { Trash2, Plus, Calculator, Share2, TrendingUp, Trophy, Sparkles, Copy, C
 import { toast } from 'sonner';
 import { curateAccaWithGemini } from '@/services/geminiTasksService';
 import { hapticService } from '@/services/hapticService';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 
 export default function AccumulatorBuilder() {
   const { predictions, isLoading } = usePredictions(1);
@@ -457,6 +458,23 @@ export default function AccumulatorBuilder() {
                         <Button variant="outline" onClick={clearSlip} className="w-full gap-2 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />Clear All
                         </Button>
+                      </div>
+
+                      {/* Viral Multi-Bet Slip Share Studio & Dynamic OG Card */}
+                      <div className="pt-3 border-t">
+                        <ViralSlipShareCard
+                          slipTitle={`${selections.length}-Fold AI Accumulator`}
+                          legs={selections.map((s) => ({
+                            match: `${s.homeTeam} vs ${s.awayTeam}`,
+                            league: s.league || 'Football',
+                            pick: s.market,
+                            odds: s.odds,
+                            confidence: s.confidence ?? 75,
+                          }))}
+                          totalOdds={totalOdds}
+                          avgConfidence={combinedConfidence}
+                          sharePath="/accumulator"
+                        />
                       </div>
                     </div>
                   </>

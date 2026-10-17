@@ -267,6 +267,25 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/api/og") {
+          try {
+            const ogHandler = (await import("./api/og.ts")).default;
+            const fullUrl = new URL(req.url || "/api/og", "https://predictpro.guru");
+            const webReq = new Request(fullUrl.toString(), { method: req.method || "GET" });
+            const webRes = await ogHandler(webReq);
+            const svgBody = await webRes.text();
+            res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(svgBody);
+          } catch (err: any) {
+            res.statusCode = 500;
+            res.end(err?.message || "Failed to render OG card");
+          }
+          return;
+        }
+
         if (url === "/mcp" || url === "/api/a2a") {
           let body = "";
           req.on("data", (c: any) => { body += c; });

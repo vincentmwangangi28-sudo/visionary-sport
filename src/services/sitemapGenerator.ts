@@ -362,6 +362,33 @@ ${xmlUrls}
 </urlset>`;
 }
 
+/**
+ * Generate Sitemap Index XML (sitemap-index.xml) referencing category sub-sitemaps
+ */
+export function generateSitemapIndexXml(baseUrl: string = BASE_URL): string {
+  const today = new Date().toISOString().split('T')[0];
+  const subSitemaps = [
+    'sitemap-core.xml',
+    'sitemap-leagues.xml',
+    'sitemap-matches.xml',
+    'sitemap-blog.xml',
+    'sitemap-yandex.xml',
+  ];
+  const entries = subSitemaps
+    .map(
+      (file) => `  <sitemap>
+    <loc>${escapeXml(`${baseUrl}/${file}`)}</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>`
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries}
+</sitemapindex>`;
+}
+
 function escapeXml(unsafe: string): string {
   return unsafe
     .replace(/&/g, '&amp;')
@@ -386,3 +413,4 @@ export function downloadSitemapXml(baseUrl: string = BASE_URL) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+

@@ -200,7 +200,7 @@
       ]
     },
     {
-      "source": "/(sitemap\\.xml|sitemap-yandex\\.xml|rss\\.xml|feed\\.xml|feed-predictions\\.xml)",
+      "source": "/(sitemap\\.xml|sitemap-index\\.xml|sitemap-core\\.xml|sitemap-leagues\\.xml|sitemap-matches\\.xml|sitemap-blog\\.xml|sitemap-yandex\\.xml|rss\\.xml|feed\\.xml|feed-predictions\\.xml)",
       "headers": [
         {
           "key": "Content-Type",

@@ -12,6 +12,7 @@ import {
   getAllSitemapEntries, 
   downloadSitemapXml, 
   generateSitemapXml, 
+  generateSitemapIndexXml,
   SitemapEntry 
 } from '@/services/sitemapGenerator';
 import { 
@@ -177,6 +178,60 @@ export default function Sitemap() {
             </CardContent>
           </Card>
         )}
+
+        {/* Multi-Sitemap Index & Category Sub-Sitemaps */}
+        <Card className="mb-8 border-primary/20 bg-card/60">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <FileCode2 className="h-4 w-4 text-primary" /> XML Sitemap Index &amp; Category Sub-Sitemaps
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Partitioned XML sitemaps for Google Search Console, Bing Webmaster Tools, and Yandex Webmaster crawl budget optimization.
+                </CardDescription>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-8 gap-1.5 font-semibold"
+                onClick={() => {
+                  navigator.clipboard.writeText(generateSitemapIndexXml());
+                  toast.success('Copied sitemap-index.xml to clipboard');
+                }}
+              >
+                <Copy className="h-3.5 w-3.5" /> Copy sitemap-index.xml
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+              {[
+                { file: '/sitemap-index.xml', label: 'Master Sitemap Index', desc: 'Root <sitemapindex> linking all category sitemaps' },
+                { file: '/sitemap-core.xml', label: 'Core & AI Tools Sitemap', desc: `${(categoryCounts.core || 0) + (categoryCounts.feature || 0)} core hubs & quantitative calculators` },
+                { file: '/sitemap-leagues.xml', label: 'Global Leagues Sitemap', desc: `${categoryCounts.league || 0} domestic & continental competition hubs` },
+                { file: '/sitemap-matches.xml', label: 'Match Previews Sitemap', desc: `${categoryCounts.match || 0} H2H & Poisson match prediction pages` },
+                { file: '/sitemap-blog.xml', label: 'Strategy Guides Sitemap', desc: `${categoryCounts.blog || 0} quantitative football betting guides` },
+                { file: '/sitemap-yandex.xml', label: 'Yandex Clean Sitemap', desc: 'Strict single-namespace XML for Yandex Webmaster' },
+              ].map((sm) => (
+                <a
+                  key={sm.file}
+                  href={sm.file}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-xl border bg-background/70 hover:border-primary/40 transition-all flex items-start justify-between gap-2 group"
+                >
+                  <div>
+                    <p className="font-mono font-bold text-primary group-hover:underline">{sm.file}</p>
+                    <p className="font-semibold text-foreground mt-0.5">{sm.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{sm.desc}</p>
+                  </div>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 mt-0.5" />
+                </a>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">

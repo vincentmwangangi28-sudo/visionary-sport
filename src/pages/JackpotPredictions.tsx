@@ -4,6 +4,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { TeamLogo } from '@/components/TeamLogo';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -993,6 +994,36 @@ export default function JackpotPredictions() {
                     </tbody>
                   </table>
                 </div>
+              )}
+
+              {/* Viral Jackpot Slip Share & Booking Code Studio */}
+              {currentPool.length > 0 && (
+                <ViralSlipShareCard
+                  slipTitle={`${currentMeta.name} (${currentPool.length} Games)`}
+                  legs={currentPool.map((g) => {
+                    const pick = activePicks[g.fixtureId] || g.recommendedPick;
+                    const odds =
+                      pick === '1'
+                        ? g.homeOdds
+                        : pick === 'X'
+                        ? g.drawOdds
+                        : pick === '2'
+                        ? g.awayOdds
+                        : Number((Math.min(g.homeOdds, g.awayOdds) * 0.65).toFixed(2));
+                    return {
+                      match: g.match,
+                      league: g.league,
+                      pick: `Pick: ${pick}`,
+                      odds,
+                      confidence: Math.max(g.homeProb, g.drawProb, g.awayProb),
+                    };
+                  })}
+                  avgConfidence={Math.round(
+                    currentPool.reduce((acc, g) => acc + Math.max(g.homeProb, g.drawProb, g.awayProb), 0) /
+                      (currentPool.length || 1)
+                  )}
+                  sharePath="/jackpot-predictions"
+                />
               )}
             </div>
           )}
