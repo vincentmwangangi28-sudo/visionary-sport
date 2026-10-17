@@ -169,7 +169,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
                     <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-900 rounded-full text-[9px] flex items-center justify-center font-bold">C</span>
                   )}
                   {player.isKeyPlayer && (
-                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full text-[8px] flex items-center justify-center font-bold">★</span>
+                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-700 text-white rounded-full text-[8px] flex items-center justify-center font-bold">★</span>
                   )}
                 </div>
                 <span className="mt-0.5 px-1.5 py-0.5 bg-black/75 backdrop-blur-sm text-[10px] sm:text-xs font-semibold text-white rounded shadow truncate max-w-[70px]">
@@ -236,7 +236,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
                   <p className="font-bold text-sm">{selectedPlayer.name}</p>
                   <Badge variant="outline" className="text-xs font-semibold">{selectedPlayer.pos}</Badge>
                   {selectedPlayer.isCaptain && <Badge className="bg-amber-500 text-slate-950 text-[10px] font-bold">Captain</Badge>}
-                  {selectedPlayer.isKeyPlayer && <Badge className="bg-red-500 text-white text-[10px] font-bold">Key Threat</Badge>}
+                  {selectedPlayer.isKeyPlayer && <Badge className="bg-red-700 text-white text-[10px] font-bold">Key Threat</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   AI Form Rating: <strong className="text-primary">{selectedPlayer.rating}/10</strong> · {selectedPlayer.goals ? `${selectedPlayer.goals} goals this season` : 'Core tactical starter'}

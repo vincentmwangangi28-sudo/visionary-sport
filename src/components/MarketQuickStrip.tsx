@@ -90,7 +90,7 @@ export const MarketQuickStrip: React.FC = () => {
                 <Icon className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
                 <span>{item.label}</span>
                 {item.badge && (
-                  <span className="ml-0.5 px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-500 text-[10px] font-black">
+                  <span className="ml-0.5 px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[10px] font-black">
                     {item.badge}
                   </span>
                 )}
@@ -103,7 +103,7 @@ export const MarketQuickStrip: React.FC = () => {
       {/* Viral Community Share Bar for Organic Word-of-Mouth Growth */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-xs">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
           <span>
             <strong className="text-foreground">Share Today&apos;s Free AI Banker Slip</strong> with your WhatsApp or Telegram group:
           </span>
@@ -114,7 +114,7 @@ export const MarketQuickStrip: React.FC = () => {
             onClick={() => {
               window.location.href = `https://wa.me/?text=${encodeURIComponent(viralMessage)}`;
             }}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-semibold transition-colors cursor-pointer"
           >
             <Share2 className="w-3 h-3" /> WhatsApp Share
           </button>
@@ -123,7 +123,7 @@ export const MarketQuickStrip: React.FC = () => {
             onClick={() => {
               window.location.href = `https://t.me/share/url?url=${encodeURIComponent('https://predictpro.guru')}&text=${encodeURIComponent(viralMessage)}`;
             }}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-semibold transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-sky-500/15 hover:bg-sky-500/25 text-sky-800 dark:text-sky-300 font-semibold transition-colors cursor-pointer"
           >
             <Send className="w-3 h-3" /> Telegram Share
           </button>

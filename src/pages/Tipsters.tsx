@@ -246,14 +246,14 @@ export default function Tipsters() {
                           type="button"
                           onClick={() => vote(tip.id, 'like')}
                           aria-label={`Like tip for ${tip.match}, currently ${tip.likes} likes`}
-                          className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full transition-colors ${tip.user_vote === 'like' ? 'bg-green-500 text-white' : 'bg-muted hover:bg-green-100 hover:text-green-700'}`}>
+                          className={`flex items-center gap-1.5 text-sm min-h-[44px] px-3 py-1.5 rounded-full transition-colors ${tip.user_vote === 'like' ? 'bg-green-700 text-white' : 'bg-muted hover:bg-green-100 hover:text-green-800'}`}>
                           <ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />{tip.likes}
                         </button>
                         <button
                           type="button"
                           onClick={() => vote(tip.id, 'dislike')}
                           aria-label={`Dislike tip for ${tip.match}, currently ${tip.dislikes} dislikes`}
-                          className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full transition-colors ${tip.user_vote === 'dislike' ? 'bg-red-500 text-white' : 'bg-muted hover:bg-red-100 hover:text-red-700'}`}>
+                          className={`flex items-center gap-1.5 text-sm min-h-[44px] px-3 py-1.5 rounded-full transition-colors ${tip.user_vote === 'dislike' ? 'bg-red-700 text-white' : 'bg-muted hover:bg-red-100 hover:text-red-800'}`}>
                           <ThumbsDown className="h-3.5 w-3.5" aria-hidden="true" />{tip.dislikes}
                         </button>
                       </div>

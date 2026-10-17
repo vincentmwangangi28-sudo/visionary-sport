@@ -89,17 +89,17 @@ export function useLocaleDetection(): UseLocaleDetectionReturn {
           updates.language = freshProfile.supportedLanguage;
         }
 
-        // Adjust timezone if default or auto
-        if (preferences.timezone === 'auto' || !preferences.timezone) {
-          updates.timezone = 'auto'; // 'auto' engine resolves to freshProfile.timezone
+        // Adjust timezone only if missing ('auto' is already default)
+        if (!preferences.timezone) {
+          updates.timezone = 'auto';
         }
 
-        // Adjust date and time formats
-        if (!preferences.dateFormat || preferences.dateFormat === 'auto') {
+        // Adjust date and time formats only when different from current preferences
+        if (freshProfile.dateFormat && freshProfile.dateFormat !== preferences.dateFormat) {
           updates.dateFormat = freshProfile.dateFormat;
         }
 
-        if (!preferences.timeFormat || preferences.timeFormat === 'auto') {
+        if (freshProfile.timeFormat && freshProfile.timeFormat !== preferences.timeFormat) {
           updates.timeFormat = freshProfile.timeFormat;
         }
 

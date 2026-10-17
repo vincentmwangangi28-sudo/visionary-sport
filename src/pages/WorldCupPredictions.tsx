@@ -27,7 +27,7 @@ export default function WorldCupPredictions() {
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="text-center mb-10">
-          <Badge className="mb-4 bg-amber-500 text-white px-4 py-1.5">🏆 FIFA World Cup 2026</Badge>
+          <Badge className="mb-4 bg-amber-400 text-slate-950 font-bold px-4 py-1.5">🏆 FIFA World Cup 2026</Badge>
           <h1 className="text-4xl font-black mb-3">World Cup 2026 Predictions</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">AI predictions for every World Cup 2026 match. Group stage, knockouts and final — powered by Google Gemini AI.</p>
           <div className="flex gap-2 justify-center mt-4 flex-wrap">

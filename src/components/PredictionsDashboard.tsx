@@ -596,9 +596,9 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                         <Calendar className="h-3 w-3" />
                         {group.isToday ? 'Today · Priority #1' : group.isTomorrow ? 'Tomorrow' : group.subLabel}
                       </span>
-                      <h3 className="text-xs sm:text-sm font-bold text-foreground">
+                      <h2 className="text-xs sm:text-sm font-bold text-foreground">
                         {group.label}
-                      </h3>
+                      </h2>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Badge variant="outline" className="text-[10px] font-mono">

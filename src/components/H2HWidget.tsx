@@ -24,9 +24,9 @@ export const H2HWidget = ({ h2h, homeTeam, awayTeam }: Props) => {
           <TeamLogo team={homeTeam} size="xs" />
         </div>
         <div className="flex gap-1.5 flex-shrink-0">
-          <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded">{homeWins}W</span>
-          <span className="px-2 py-1 bg-amber-400 text-white text-xs font-bold rounded">{draws}D</span>
-          <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded">{awayWins}W</span>
+          <span className="px-2 py-1 bg-green-700 text-white text-xs font-bold rounded">{homeWins}W</span>
+          <span className="px-2 py-1 bg-amber-400 text-slate-950 text-xs font-bold rounded">{draws}D</span>
+          <span className="px-2 py-1 bg-red-700 text-white text-xs font-bold rounded">{awayWins}W</span>
         </div>
         <div className="flex-1 flex items-center gap-1.5 text-sm font-medium min-w-0">
           <TeamLogo team={awayTeam} size="xs" />

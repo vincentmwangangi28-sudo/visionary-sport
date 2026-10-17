@@ -70,7 +70,7 @@ export const HomeViewTabs: React.FC<HomeViewTabsProps> = ({
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                         isActive
                           ? 'bg-primary-foreground/20 text-primary-foreground'
-                          : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
                       }`}
                     >
                       {tab.badgeText}

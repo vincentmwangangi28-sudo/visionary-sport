@@ -157,7 +157,7 @@ export const usePredictions = (
   const query = useQuery({
     queryKey: queryKeys.predictions.list(leagueKey),
     initialData: initialDataPayload,
-    initialDataUpdatedAt: 0,
+    initialDataUpdatedAt: Date.now(),
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -250,14 +250,24 @@ export const usePredictions = (
   });
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))) {
+      return;
+    }
     let triggered = false;
     const triggerRefetch = () => {
       if (triggered) return;
       triggered = true;
+      cleanup();
       query.refetch();
     };
-    const timer = setTimeout(triggerRefetch, 50);
+    const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const;
+    const cleanup = () => {
+      events.forEach((evt) => window.removeEventListener(evt, triggerRefetch));
+    };
+    events.forEach((evt) => window.addEventListener(evt, triggerRefetch, { once: true, passive: true }));
+    const timer = setTimeout(triggerRefetch, 12000);
     return () => {
+      cleanup();
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

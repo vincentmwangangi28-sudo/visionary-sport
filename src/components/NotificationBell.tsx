@@ -293,7 +293,7 @@ export const NotificationBell = () => {
           <div className="px-3 pt-2 bg-muted/10 border-b">
             <TabsList className="grid w-full grid-cols-2 h-8">
               <TabsTrigger value="feed" className="text-xs font-bold gap-1.5">
-                Feed {unread > 0 && <span className="px-1.5 py-0.2 bg-red-500 text-white rounded-full text-[9px]">{unread}</span>}
+                Feed {unread > 0 && <span className="px-1.5 py-0.2 bg-red-700 text-white rounded-full text-[9px]">{unread}</span>}
               </TabsTrigger>
               <TabsTrigger value="matches" className="text-xs font-bold gap-1.5">
                 Notify Me ({subscriptions.length})

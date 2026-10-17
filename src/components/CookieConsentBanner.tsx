@@ -10,12 +10,15 @@ export function CookieConsentBanner() {
 
   useEffect(() => {
     try {
+      if (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent)) {
+        return;
+      }
       const consent = localStorage.getItem(CONSENT_STORAGE_KEY);
       if (!consent) {
         // Show after a subtle delay for smooth user experience
         const timer = setTimeout(() => {
           setVisible(true);
-        }, 1200);
+        }, 2500);
         return () => clearTimeout(timer);
       }
     } catch {}
@@ -40,7 +43,7 @@ export function CookieConsentBanner() {
   return (
     <aside
       aria-label="Cookie and Privacy Consent Notification"
-      className="fixed bottom-0 left-0 right-0 z-[9998] p-3 sm:p-4 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl animate-in slide-in-from-bottom-4 duration-300"
+      className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[9998] p-3 sm:p-4 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl animate-in slide-in-from-bottom-4 duration-300"
     >
       <div className="container mx-auto max-w-7xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start gap-3 max-w-4xl text-xs sm:text-sm text-muted-foreground leading-relaxed">

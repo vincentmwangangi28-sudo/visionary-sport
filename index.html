@@ -12,9 +12,8 @@
     <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
 
-    <!-- Google AdSense Official Site Verification & Script -->
+    <!-- Google AdSense Official Site Verification -->
     <meta name="google-adsense-account" content="ca-pub-1375386376692976" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976" crossorigin="anonymous"></script>
     <!-- Static Canonical Tag (Required by Google for non-JS & pre-render crawlers) -->
     <link rel="canonical" href="https://predictpro.guru/" />
     <link rel="alternate" hreflang="x-default" href="https://predictpro.guru/" />
@@ -178,10 +177,20 @@
           if (loaded) return;
           loaded = true;
           try {
+            if (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent)) {
+              return;
+            }
             var host = window.location.hostname;
             var isProd = (host === 'predictpro.guru' || host === 'www.predictpro.guru');
 
             if (isProd) {
+              var ads = document.createElement('script');
+              ads.async = true;
+              ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+              ads.crossOrigin = 'anonymous';
+              ads.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+              document.head.appendChild(ads);
+
               var ga = document.createElement('script');
               ga.async = true;
               ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';

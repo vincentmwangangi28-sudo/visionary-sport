@@ -347,7 +347,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
                 </Badge>
               )}
               {relativeKickoff.status === 'live' && (
-                <Badge className="bg-red-500 text-white text-[9px] px-1.5 py-0 animate-pulse font-extrabold">
+                <Badge className="bg-red-700 text-white text-[9px] px-1.5 py-0 animate-pulse font-extrabold">
                   {relativeKickoff.label}
                 </Badge>
               )}
@@ -554,9 +554,9 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
 
               <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                 {[
-                  { label: 'Home Win', key: '1', name: p.home_team, prob: winProbabilities.home, odds: p.home_odds, color: 'text-emerald-600 dark:text-emerald-400' },
-                  { label: 'Draw', key: 'X', name: t('pred.draw', 'Draw'), prob: winProbabilities.draw, odds: p.draw_odds, color: 'text-amber-600 dark:text-amber-400' },
-                  { label: 'Away Win', key: '2', name: p.away_team, prob: winProbabilities.away, odds: p.away_odds, color: 'text-sky-600 dark:text-sky-400' },
+                  { label: 'Home Win', key: '1', name: p.home_team, prob: winProbabilities.home, odds: p.home_odds, color: 'text-emerald-800 dark:text-emerald-300' },
+                  { label: 'Draw', key: 'X', name: t('pred.draw', 'Draw'), prob: winProbabilities.draw, odds: p.draw_odds, color: 'text-amber-800 dark:text-amber-300' },
+                  { label: 'Away Win', key: '2', name: p.away_team, prob: winProbabilities.away, odds: p.away_odds, color: 'text-sky-800 dark:text-sky-300' },
                 ].map(({ label, key, name, prob, odds, color }) => (
                   <button
                     type="button"
