@@ -4,6 +4,14 @@
  */
 
 export interface BreadcrumbCrumb {
+  name?: string;
+  item?: string;
+  label?: string;
+  href?: string;
+  current?: boolean;
+}
+
+export interface NormalizedBreadcrumbCrumb {
   name: string;
   item: string;
   current?: boolean;
@@ -98,33 +106,73 @@ export function formatSlugToTitle(slug: string): string {
 export function getBreadcrumbsForPath(
   pathname: string,
   options: BreadcrumbOptions = {}
-): BreadcrumbCrumb[] {
-  // If custom items are provided, return them normalized
-  if (options.items && options.items.length > 0) {
-    return options.items.map((crumb, idx) => ({
-      ...crumb,
-      current: idx === options.items!.length - 1,
-    }));
-  }
-
+): NormalizedBreadcrumbCrumb[] {
   const cleanPath = (pathname || '/').trim().replace(/\/+$/, '') || '/';
+
+  // If custom items are provided, return them normalized (supporting both {name, item} and {label, href})
+  if (options.items && options.items.length > 0) {
+    return options.items.map((crumb, idx) => {
+      const isLast = idx === options.items!.length - 1;
+      const name =
+        crumb?.name ||
+        crumb?.label ||
+        (isLast && options.customTitle ? options.customTitle : formatSlugToTitle(cleanPath.replace(/^\/+/, ''))) ||
+        'Predictions';
+      const rawItem = crumb?.item || crumb?.href || (isLast ? cleanPath : '/');
+      const item =
+        typeof rawItem === 'string' && rawItem.trim().length > 0
+          ? rawItem.trim()
+          : isLast
+          ? cleanPath
+          : '/';
+
+      return {
+        name,
+        item,
+        current: isLast,
+      };
+    });
+  }
 
   // Home route
   if (cleanPath === '/') {
     return [{ name: 'Home', item: '/', current: true }];
   }
 
-  const crumbs: BreadcrumbCrumb[] = [{ name: 'Home', item: '/' }];
+  const crumbs: NormalizedBreadcrumbCrumb[] = [{ name: 'Home', item: '/' }];
 
   // 1. League Hubs (explicit hierarchy: Home > Predictions > [League])
   const leagueMappings: Record<string, string> = {
     '/premier-league-predictions': 'Premier League',
     '/champions-league-predictions': 'Champions League',
+    '/europa-league-predictions': 'Europa League',
+    '/conference-league-predictions': 'Conference League',
     '/la-liga-predictions': 'La Liga',
     '/bundesliga-predictions': 'Bundesliga',
     '/serie-a-predictions': 'Serie A',
+    '/ligue-1-predictions': 'Ligue 1',
+    '/championship-predictions': 'EFL Championship',
+    '/eredivisie-predictions': 'Dutch Eredivisie',
+    '/primeira-liga-predictions': 'Primeira Liga',
+    '/copa-libertadores-predictions': 'Copa Libertadores',
+    '/brazilian-serie-a-predictions': 'Brasileirão Série A',
+    '/argentina-primera-predictions': 'Argentina Primera',
+    '/saudi-pro-league-predictions': 'Saudi Pro League',
+    '/turkish-super-lig-predictions': 'Turkish Süper Lig',
+    '/belgian-pro-league-predictions': 'Belgian Pro League',
+    '/scottish-premiership-predictions': 'Scottish Premiership',
+    '/greek-super-league-predictions': 'Greek Super League',
+    '/liga-mx-predictions': 'Mexican Liga MX',
+    '/mls-predictions': 'Major League Soccer',
+    '/south-africa-psl-predictions': 'South Africa PSL',
+    '/nigerian-npfl-predictions': 'Nigeria NPFL',
+    '/egyptian-premier-league-predictions': 'Egypt Premier League',
+    '/j-league-predictions': 'Japan J1 League',
+    '/australian-a-league-predictions': 'Australia A-League',
+    '/fa-cup-predictions': 'FA Cup & EFL Cup',
     '/kpl-predictions': 'Kenya Premier League',
     '/jackpot-predictions': 'Mega Jackpot',
+    '/midweek-jackpot-predictions': 'Midweek Jackpot',
     '/us-soccer-predictions': 'US Soccer & MLS',
     '/world-cup-predictions': 'World Cup',
     '/afcon-predictions': 'AFCON',
@@ -140,6 +188,29 @@ export function getBreadcrumbsForPath(
   const predictionFeatureMappings: Record<string, string> = {
     '/value-bets': 'Value Bets',
     '/best-bets': 'Best Banker Bets',
+    '/sure-win-predictions': 'Sure Win Predictions',
+    '/tomorrow-predictions': 'Tomorrow Predictions',
+    '/weekend-predictions': 'Weekend Predictions',
+    '/over-1-5-goals-predictions': 'Over 1.5 Goals',
+    '/over-2-5-goals-predictions': 'Over 2.5 Goals',
+    '/over-3-5-goals-predictions': 'Over 3.5 Goals',
+    '/under-2-5-goals-predictions': 'Under 2.5 Goals',
+    '/first-half-goals-predictions': 'First Half (1H) Goals',
+    '/second-half-goals-predictions': 'Second Half (2H) Goals',
+    '/both-halves-predictions': 'Both Halves Predictions',
+    '/btts-and-win-predictions': 'BTTS & Win Combos',
+    '/bet-builder-predictions': 'Bet Builder & SGP',
+    '/rollover-bets-predictions': 'Rollover Challenge',
+    '/daily-2-odds-predictions': 'Daily 2, 3 & 5 Odds',
+    '/anytime-goalscorer-predictions': 'Goalscorer Predictions',
+    '/double-chance-predictions': 'Double Chance (1X/X2)',
+    '/ht-ft-predictions': 'HT/FT Predictions',
+    '/draw-predictions': 'Draw Predictions',
+    '/asian-handicap-predictions': 'Asian Handicap',
+    '/handicap-1x2-predictions': 'European Handicap (-1)',
+    '/corners-cards-predictions': 'Corners & Cards',
+    '/draw-no-bet-predictions': 'Draw No Bet (DNB)',
+    '/win-to-nil-predictions': 'Win to Nil & Clean Sheet',
     '/correct-score': 'Correct Score',
     '/btts': 'BTTS (Both Teams Score)',
     '/accumulator': 'Acca Builder',
@@ -213,6 +284,15 @@ export function getBreadcrumbsForPath(
     '/tipsters': 'Tipsters Community',
     '/leaderboard': 'Tipsters Leaderboard',
     '/bankroll': 'Bankroll Manager',
+    '/kelly-calculator': 'Kelly Criterion Calculator',
+    '/parlay-calculator': 'Parlay Odds Calculator',
+    '/system-bet-calculator': 'System Bet Calculator',
+    '/hedge-bet-calculator': 'Hedge & Cash-Out Calculator',
+    '/dutching-calculator': 'Dutching Calculator',
+    '/roi-yield-calculator': 'ROI & Yield Calculator',
+    '/margin-calculator': 'Bookmaker Margin Calculator',
+    '/arbitrage-calculator': 'Arbitrage Calculator',
+    '/odds-converter': 'Odds Converter',
     '/about': 'About PredictPro',
     '/methodology': 'Mathematical Methodology',
     '/sitemap': 'HTML Sitemap',
@@ -252,20 +332,23 @@ export function generateBreadcrumbJsonLd(
   crumbs: BreadcrumbCrumb[],
   baseUrl: string = DEFAULT_BASE_URL
 ) {
-  const cleanBase = baseUrl.replace(/\/+$/, '');
+  const cleanBase = (baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, '');
 
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: crumbs.map((crumb, index) => {
-      const fullUrl = crumb.item.startsWith('http')
-        ? crumb.item
-        : `${cleanBase}${crumb.item.startsWith('/') ? crumb.item : `/${crumb.item}`}`;
+    itemListElement: (crumbs || []).map((crumb, index) => {
+      const rawItem = crumb?.item || crumb?.href || '/';
+      const safeItem = typeof rawItem === 'string' && rawItem.trim().length > 0 ? rawItem.trim() : '/';
+      const safeName = crumb?.name || crumb?.label || 'PredictPro';
+      const fullUrl = safeItem.startsWith('http')
+        ? safeItem
+        : `${cleanBase}${safeItem.startsWith('/') ? safeItem : `/${safeItem}`}`;
 
       return {
         '@type': 'ListItem',
         position: index + 1,
-        name: crumb.name,
+        name: safeName,
         item: fullUrl,
       };
     }),

@@ -851,6 +851,86 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'psl predictions today, betway premiership predictions, dstv premiership tips today, mamelodi sundowns prediction, orlando pirates vs kaizer chiefs tips',
     canonicalPath: '/south-africa-psl-predictions',
   },
+  '/rollover-bets-predictions': {
+    title: 'Rollover Bets Predictions Today: 7-Day 1.50 & 2.00 Odds Challenge',
+    description:
+      'Free daily Rollover football predictions today. Join the 7-Day 1.50x & 2.00x Odds Rollover Challenge backed by 90%+ AI probability locks and compounding stakes.',
+    keywords:
+      'rollover bets predictions today, daily 2 odds rollover, 1.50 odds rollover challenge, 7 days rollover betting tips, safe rollover football tips',
+    canonicalPath: '/rollover-bets-predictions',
+  },
+  '/daily-2-odds-predictions': {
+    title: 'Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips',
+    description:
+      'Free Sure 2 Odds, 3 Odds, and 5 Odds football predictions today. High-strike-rate daily doubles and trebles backed by Bivariate Poisson and xG models.',
+    keywords:
+      'sure 2 odds predictions today, daily 2 odds tips, sure 3 odds predictions, 5 odds banker predictions today, free 2 odds daily football tips',
+    canonicalPath: '/daily-2-odds-predictions',
+  },
+  '/bet-builder-predictions': {
+    title: 'Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips',
+    description:
+      'Free Football Bet Builder and Same-Game Parlay (SGP) predictions today. Positive-correlation 4-leg match combos combining Goals, Corners, Cards & Shots on Target.',
+    keywords:
+      'bet builder predictions today, same game parlay soccer tips, football bet builder tips, sgp predictions today, bet365 bet builder tips',
+    canonicalPath: '/bet-builder-predictions',
+  },
+  '/both-halves-predictions': {
+    title: 'Score in Both Halves & Win Both Halves Predictions Today',
+    description:
+      'Free Team to Score in Both Halves (SBH) and Win Both Halves (WBH) football predictions today. Unlock 2.00+ value on heavy home favorites.',
+    keywords:
+      'score in both halves predictions, win both halves tips today, team to score in both halves tips, both halves over 0.5 goals predictions',
+    canonicalPath: '/both-halves-predictions',
+  },
+  '/dutching-calculator': {
+    title: 'Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool',
+    description:
+      'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to guarantee the exact same profit if any selection wins.',
+    keywords:
+      'dutching calculator, correct score dutching calculator, dutch betting calculator, split stake calculator football, equal profit betting tool',
+    canonicalPath: '/dutching-calculator',
+  },
+  '/roi-yield-calculator': {
+    title: 'Betting ROI & Yield Calculator: Break-Even Win Rate Tool',
+    description:
+      'Free Sports Betting ROI, Yield, and Break-Even Win Rate Calculator. Measure long-term profitability, turnover efficiency, and true mathematical edge.',
+    keywords:
+      'betting yield calculator, sports betting roi calculator, break even win rate calculator, football betting profit calculator',
+    canonicalPath: '/roi-yield-calculator',
+  },
+  '/nigerian-npfl-predictions': {
+    title: 'Nigeria NPFL Predictions Today: Enyimba, Remo Stars & Rangers Tips',
+    description:
+      'Free Nigeria Premier Football League (NPFL) AI predictions today. Home-banker 1X2, Under 2.5, and Correct Score tips for Enyimba, Remo Stars, Rangers & Kano Pillars.',
+    keywords:
+      'npfl predictions today, nigeria premier league predictions, enyimba prediction today, remo stars betting tips, sportybet npfl tips',
+    canonicalPath: '/nigerian-npfl-predictions',
+  },
+  '/egyptian-premier-league-predictions': {
+    title: 'Egyptian Premier League Predictions Today: Al Ahly & Zamalek Tips',
+    description:
+      'Free Egyptian Premier League (Nile League) AI football predictions today. Win-to-Nil, 1X2, and Under 2.5 tips for Al Ahly, Zamalek, Pyramids FC & Al Masry.',
+    keywords:
+      'egyptian premier league predictions, al ahly prediction today, zamalek betting tips, egypt football predictions today, pyramids fc tips',
+    canonicalPath: '/egyptian-premier-league-predictions',
+  },
+  '/j-league-predictions': {
+    title: 'Japan J1 League Predictions Today: Early Kickoff xG & Corners Tips',
+    description:
+      'Free Japanese J1 League AI football predictions today. Early-morning Over 2.5 goals, Corners Over 9.5, and BTTS picks for Vissel Kobe, Yokohama F. Marinos & Sanfrecce.',
+    keywords:
+      'j league predictions today, j1 league betting tips, japanese football predictions, vissel kobe prediction, yokohama f marinos tips',
+    canonicalPath: '/j-league-predictions',
+  },
+  '/australian-a-league-predictions': {
+    title: 'Australian A-League Predictions Today: Over 2.5 Goals & Corners Tips',
+    description:
+      'Free Australian A-League Men AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Over 10.5 Corners picks for Melbourne Victory & Sydney FC.',
+    keywords:
+      'a league predictions today, australian a league betting tips, sydney fc prediction, melbourne victory tips, a league over 2.5 goals',
+    canonicalPath: '/australian-a-league-predictions',
+  },
 };
 
 /**

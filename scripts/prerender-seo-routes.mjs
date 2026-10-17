@@ -423,6 +423,46 @@ const ROUTE_META = {
     title: 'South Africa PSL Predictions Today: Betway Premiership AI Tips',
     description: 'Free South Africa PSL (Betway Premiership) AI football predictions today. Mamelodi Sundowns, Orlando Pirates & Kaizer Chiefs 1X2, Under 2.5, and Nedbank Cup tips.',
   },
+  '/rollover-bets-predictions': {
+    title: 'Rollover Bets Predictions Today: 7-Day 1.50 & 2.00 Odds Challenge',
+    description: 'Free daily Rollover football predictions today. Join the 7-Day 1.50x & 2.00x Odds Rollover Challenge backed by 90%+ AI probability locks and compounding stakes.',
+  },
+  '/daily-2-odds-predictions': {
+    title: 'Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips',
+    description: 'Free Sure 2 Odds, 3 Odds, and 5 Odds football predictions today. High-strike-rate daily doubles and trebles backed by Bivariate Poisson and xG models.',
+  },
+  '/bet-builder-predictions': {
+    title: 'Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips',
+    description: 'Free Football Bet Builder and Same-Game Parlay (SGP) predictions today. Positive-correlation 4-leg match combos combining Goals, Corners, Cards & Shots on Target.',
+  },
+  '/both-halves-predictions': {
+    title: 'Score in Both Halves & Win Both Halves Predictions Today',
+    description: 'Free Team to Score in Both Halves (SBH) and Win Both Halves (WBH) football predictions today. Unlock 2.00+ value on heavy home favorites.',
+  },
+  '/dutching-calculator': {
+    title: 'Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool',
+    description: 'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to guarantee the exact same profit if any selection wins.',
+  },
+  '/roi-yield-calculator': {
+    title: 'Betting ROI & Yield Calculator: Break-Even Win Rate Tool',
+    description: 'Free Sports Betting ROI, Yield, and Break-Even Win Rate Calculator. Measure long-term profitability, turnover efficiency, and true mathematical edge.',
+  },
+  '/nigerian-npfl-predictions': {
+    title: 'Nigeria NPFL Predictions Today: Enyimba, Remo Stars & Rangers Tips',
+    description: 'Free Nigeria Premier Football League (NPFL) AI predictions today. Home-banker 1X2, Under 2.5, and Correct Score tips for Enyimba, Remo Stars, Rangers & Kano Pillars.',
+  },
+  '/egyptian-premier-league-predictions': {
+    title: 'Egyptian Premier League Predictions Today: Al Ahly & Zamalek Tips',
+    description: 'Free Egyptian Premier League (Nile League) AI football predictions today. Win-to-Nil, 1X2, and Under 2.5 tips for Al Ahly, Zamalek, Pyramids FC & Al Masry.',
+  },
+  '/j-league-predictions': {
+    title: 'Japan J1 League Predictions Today: Early Kickoff xG & Corners Tips',
+    description: 'Free Japanese J1 League AI football predictions today. Early-morning Over 2.5 goals, Corners Over 9.5, and BTTS picks for Vissel Kobe, Yokohama F. Marinos & Sanfrecce.',
+  },
+  '/australian-a-league-predictions': {
+    title: 'Australian A-League Predictions Today: Over 2.5 Goals & Corners Tips',
+    description: 'Free Australian A-League Men AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Over 10.5 Corners picks for Melbourne Victory & Sydney FC.',
+  },
 };
 
 function clampTitle(raw) {

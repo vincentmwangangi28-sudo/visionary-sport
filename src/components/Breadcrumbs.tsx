@@ -87,14 +87,18 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         >
           {crumbs.map((crumb, idx) => {
             const isLast = idx === crumbs.length - 1;
-            const isHome = idx === 0 && crumb.item === '/';
+            const itemPath = crumb.item || crumb.href || (isLast ? currentPath : '/') || '/';
+            const itemName = crumb.name || crumb.label || 'Predictions';
+            const isHome = idx === 0 && itemPath === '/';
             const position = idx + 1;
-            const fullUrl = crumb.item.startsWith('http')
-              ? crumb.item
-              : `${baseUrl.replace(/\/+$/, '')}${crumb.item.startsWith('/') ? crumb.item : `/${crumb.item}`}`;
+            const fullUrl = itemPath.startsWith('http')
+              ? itemPath
+              : `${(baseUrl || 'https://predictpro.guru').replace(/\/+$/, '')}${
+                  itemPath.startsWith('/') ? itemPath : `/${itemPath}`
+                }`;
 
             return (
-              <React.Fragment key={`${crumb.item}-${idx}`}>
+              <React.Fragment key={`${itemPath}-${idx}`}>
                 <BreadcrumbItem
                   itemProp="itemListElement"
                   itemScope
@@ -102,30 +106,30 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                   className="inline-flex items-center gap-1.5"
                 >
                   <meta itemProp="position" content={String(position)} />
-                  <meta itemProp="name" content={crumb.name} />
+                  <meta itemProp="name" content={itemName} />
                   <link itemProp="item" href={fullUrl} />
 
                   {isLast ? (
                     <BreadcrumbPage
                       className="font-medium text-foreground truncate max-w-[200px] sm:max-w-[340px]"
-                      title={crumb.name}
+                      title={itemName}
                     >
-                      {crumb.name}
+                      {itemName}
                     </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
                       <Link
-                        to={crumb.item}
+                        to={itemPath}
                         className="inline-flex items-center gap-1.5 hover:text-primary transition-colors font-normal hover:underline underline-offset-4"
-                        title={crumb.name}
+                        title={itemName}
                       >
                         {isHome && showHomeIcon ? (
                           <>
                             <Home className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                            <span className="sr-only sm:not-sr-only sm:inline">{crumb.name}</span>
+                            <span className="sr-only sm:not-sr-only sm:inline">{itemName}</span>
                           </>
                         ) : (
-                          crumb.name
+                          itemName
                         )}
                       </Link>
                     </BreadcrumbLink>
