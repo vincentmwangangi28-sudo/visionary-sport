@@ -133,7 +133,7 @@ export default function SureWinPredictions() {
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
         title="Sure Win Predictions Today: 88%+ AI Confidence Banker Bets"
-        description="Daily 100% mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), low-variance acca anchors, and verified +EV odds."
+        description="Daily mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), acca anchors, and +EV odds."
         canonical="/sure-win-predictions"
         keywords="sure win prediction today, 100 sure wins, banker predictions today, sure banker picks, high confidence football tips, best sure bets today"
       />

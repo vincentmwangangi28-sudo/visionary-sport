@@ -12,7 +12,7 @@ export default function CopaLibertadoresPredictions() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Copa Libertadores AI Predictions: South American Odds & Tips"
-        description="CONMEBOL Copa Libertadores predictions today. Accurate AI tips, home altitude advantage adjustments, and match previews for Flamengo, Palmeiras, River Plate, and Boca Juniors."
+        description="CONMEBOL Copa Libertadores predictions today. Accurate AI tips, altitude adjustments, and match previews for Flamengo, Palmeiras, and River Plate."
         canonical="/copa-libertadores-predictions"
         keywords="copa libertadores predictions today, libertadores tips, flamengo prediction, river plate odds, conmebol betting picks, south american football tips"
       />

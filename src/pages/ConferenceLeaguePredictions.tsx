@@ -12,7 +12,7 @@ export default function ConferenceLeaguePredictions() {
     <div className="min-h-screen bg-background">
       <SEO
         title="UEFA Conference League Predictions & AI Betting Tips"
-        description="UEFA Conference League predictions today. Thursday European night match previews, Poisson win percentages, and high-value underdog tips for all league phase and knockout fixtures."
+        description="UEFA Conference League predictions today. Thursday European match previews, Poisson win probabilities, and high-value tips for all knockout fixtures."
         canonical="/conference-league-predictions"
         keywords="conference league predictions today, uefa conference league tips, conference league betting picks, uecl predictions, thursday football tips"
       />

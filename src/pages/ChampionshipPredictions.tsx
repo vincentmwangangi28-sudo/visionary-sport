@@ -12,7 +12,7 @@ export default function ChampionshipPredictions() {
     <div className="min-h-screen bg-background">
       <SEO
         title="English Championship Predictions & AI Betting Tips 2026/27"
-        description="EFL Championship predictions today. Free mathematical betting tips, promotion race xG stats, and Asian Handicap analysis for Leeds, Sunderland, Sheffield Utd, and West Brom."
+        description="EFL Championship predictions today. Free AI betting tips, promotion xG stats, and Asian Handicap analysis for Leeds, Sunderland, and Sheffield United."
         canonical="/championship-predictions"
         keywords="championship predictions today, efl championship betting tips, english championship tips, leeds united predictions, championship acca tips"
       />

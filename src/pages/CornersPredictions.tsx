@@ -125,7 +125,7 @@ export default function CornersPredictions() {
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
         title="Corner Predictions Today: Over 8.5, 9.5 & 10.5 Match Corners Stats"
-        description="Daily football corner predictions and corner kick statistics. Explore Over/Under 9.5 corners probability, team corner averages, and high-tempo wing play analysis."
+        description="Daily football corner predictions and corner kick stats. Explore Over/Under 9.5 corners probability, team corner averages, and wing play analysis."
         canonical="/corners-predictions"
         keywords="corner predictions today, over 9.5 corners, football corner stats, corners betting tips, over 8.5 corners predictions, team most corners"
       />

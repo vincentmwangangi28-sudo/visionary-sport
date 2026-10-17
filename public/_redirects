@@ -62,6 +62,30 @@
 /compare                    /h2h                          301
 /disclaimer                 /responsible-gaming           301
 /ads-policy                 /responsible-gaming           301
+/sure-wins                  /sure-win-predictions         301
+/100-sure-predictions       /sure-win-predictions         301
+/sure-banker-picks          /sure-win-predictions         301
+/corners                    /corners-predictions          301
+/corner-predictions         /corners-predictions          301
+/cards                      /cards-predictions            301
+/card-predictions           /cards-predictions            301
+/booking-predictions        /cards-predictions            301
+/championship               /championship-predictions     301
+/efl                        /championship-predictions     301
+/efl-championship           /championship-predictions     301
+/eredivisie                 /eredivisie-predictions       301
+/dutch-eredivisie           /eredivisie-predictions       301
+/primeira-liga              /primeira-liga-predictions    301
+/liga-portugal              /primeira-liga-predictions    301
+/portuguese-league          /primeira-liga-predictions    301
+/conference-league          /conference-league-predictions 301
+/uefa-conference-league     /conference-league-predictions 301
+/copa-libertadores          /copa-libertadores-predictions 301
+/libertadores               /copa-libertadores-predictions 301
+/ev-calculator              /value-bet-calculator         301
+/expected-value-calculator  /value-bet-calculator         301
+/kelly-calculator           /kelly-criterion-calculator   301
+/over-1-5                   /over-1-5-goals-predictions   301
 
 # Enforce HTTPS on custom domain
 http://predictpro.guru/*     https://predictpro.guru/:splat 301!

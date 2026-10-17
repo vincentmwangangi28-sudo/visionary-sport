@@ -12,7 +12,7 @@ export default function PrimeiraLigaPredictions() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto"
-        description="Daily Portuguese Primeira Liga (Liga Portugal) AI predictions. Verified win probabilities, handicap betting picks, and clean sheet metrics for Sporting CP, Benfica, and FC Porto."
+        description="Portuguese Primeira Liga AI predictions today. Verified win probabilities, handicap picks, and clean sheet stats for Sporting CP, Benfica, and Porto."
         canonical="/primeira-liga-predictions"
         keywords="primeira liga predictions, portuguese league betting tips, sporting cp prediction, benfica odds, fc porto betting picks, liga portugal tips"
       />

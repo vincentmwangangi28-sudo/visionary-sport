@@ -12,7 +12,7 @@ export default function EredivisiePredictions() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG Tips"
-        description="Free Dutch Eredivisie predictions today. High-scoring Over 2.5 goals models, BTTS probabilities, and Asian Handicap picks for Ajax, PSV Eindhoven, Feyenoord, and AZ Alkmaar."
+        description="Free Dutch Eredivisie predictions today. High-scoring Over 2.5 goals models, BTTS probabilities, and Asian Handicap picks for Ajax, PSV, and Feyenoord."
         canonical="/eredivisie-predictions"
         keywords="eredivisie predictions today, dutch league betting tips, psv predictions, ajax amsterdam tips, feyenoord xg predictions, eredivisie over 2.5"
       />

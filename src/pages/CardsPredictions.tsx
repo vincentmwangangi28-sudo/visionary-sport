@@ -120,7 +120,7 @@ export default function CardsPredictions() {
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
         title="Cards & Bookings Predictions Today: Yellow & Red Card Stats"
-        description="Daily football cards and booking points predictions. Filter matches by referee strictness ratings, derby tension index, and Over/Under 3.5 & 4.5 yellow card trends."
+        description="Daily football cards and booking points predictions. Filter matches by referee strictness, derby tension, and Over/Under 3.5 & 4.5 yellow card trends."
         canonical="/cards-predictions"
         keywords="cards predictions today, yellow card betting tips, booking points predictions, red card predictions, referee card stats, football bookings tips"
       />

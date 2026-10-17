@@ -526,7 +526,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/sure-win-predictions': {
     title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets',
     description:
-      'Daily 100% mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), low-variance acca anchors, and verified +EV odds.',
+      'Daily mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), acca anchors, and +EV odds.',
     keywords:
       'sure win prediction today, 100 sure wins, banker predictions today, sure banker picks, high confidence football tips, best sure bets today',
     canonicalPath: '/sure-win-predictions',
@@ -534,7 +534,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/corners-predictions': {
     title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Match Corners Stats',
     description:
-      'Daily football corner predictions and corner kick statistics. Explore Over/Under 9.5 corners probability, team corner averages, and high-tempo wing play analysis.',
+      'Daily football corner predictions and corner kick stats. Explore Over/Under 9.5 corners probability, team corner averages, and wing play analysis.',
     keywords:
       'corner predictions today, over 9.5 corners, football corner stats, corners betting tips, over 8.5 corners predictions, team most corners',
     canonicalPath: '/corners-predictions',
@@ -542,7 +542,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/cards-predictions': {
     title: 'Cards & Bookings Predictions Today: Yellow & Red Card Stats',
     description:
-      'Daily football cards and booking points predictions. Filter matches by referee strictness ratings, derby tension index, and Over/Under 3.5 & 4.5 yellow card trends.',
+      'Daily football cards and booking points predictions. Filter matches by referee strictness, derby tension, and Over/Under 3.5 & 4.5 yellow card trends.',
     keywords:
       'cards predictions today, yellow card betting tips, booking points predictions, red card predictions, referee card stats, football bookings tips',
     canonicalPath: '/cards-predictions',
@@ -550,7 +550,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/championship-predictions': {
     title: 'English Championship Predictions & AI Betting Tips 2026/27',
     description:
-      'EFL Championship predictions today. Free mathematical betting tips, promotion race xG stats, and Asian Handicap analysis for Leeds, Sunderland, Sheffield Utd, and West Brom.',
+      'EFL Championship predictions today. Free AI betting tips, promotion xG stats, and Asian Handicap analysis for Leeds, Sunderland, and Sheffield United.',
     keywords:
       'championship predictions today, efl championship betting tips, english championship tips, leeds united predictions, championship acca tips',
     canonicalPath: '/championship-predictions',
@@ -558,7 +558,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/eredivisie-predictions': {
     title: 'Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG Tips',
     description:
-      'Free Dutch Eredivisie predictions today. High-scoring Over 2.5 goals models, BTTS probabilities, and Asian Handicap picks for Ajax, PSV Eindhoven, Feyenoord, and AZ Alkmaar.',
+      'Free Dutch Eredivisie predictions today. High-scoring Over 2.5 goals models, BTTS probabilities, and Asian Handicap picks for Ajax, PSV, and Feyenoord.',
     keywords:
       'eredivisie predictions today, dutch league betting tips, psv predictions, ajax amsterdam tips, feyenoord xg predictions, eredivisie over 2.5',
     canonicalPath: '/eredivisie-predictions',
@@ -566,7 +566,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/primeira-liga-predictions': {
     title: 'Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto',
     description:
-      'Daily Portuguese Primeira Liga (Liga Portugal) AI predictions. Verified win probabilities, handicap betting picks, and clean sheet metrics for Sporting CP, Benfica, and FC Porto.',
+      'Portuguese Primeira Liga AI predictions today. Verified win probabilities, handicap picks, and clean sheet stats for Sporting CP, Benfica, and Porto.',
     keywords:
       'primeira liga predictions, portuguese league betting tips, sporting cp prediction, benfica odds, fc porto betting picks, liga portugal tips',
     canonicalPath: '/primeira-liga-predictions',
@@ -574,7 +574,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/conference-league-predictions': {
     title: 'UEFA Conference League Predictions & AI Betting Tips',
     description:
-      'UEFA Conference League predictions today. Thursday European night match previews, Poisson win percentages, and high-value underdog tips for all league phase and knockout fixtures.',
+      'UEFA Conference League predictions today. Thursday European match previews, Poisson win probabilities, and high-value tips for all knockout fixtures.',
     keywords:
       'conference league predictions today, uefa conference league tips, conference league betting picks, uecl predictions, thursday football tips',
     canonicalPath: '/conference-league-predictions',
@@ -582,7 +582,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/copa-libertadores-predictions': {
     title: 'Copa Libertadores AI Predictions: South American Odds & Tips',
     description:
-      'CONMEBOL Copa Libertadores predictions today. Accurate AI tips, home altitude advantage adjustments, and match previews for Flamengo, Palmeiras, River Plate, and Boca Juniors.',
+      'CONMEBOL Copa Libertadores predictions today. Accurate AI tips, altitude adjustments, and match previews for Flamengo, Palmeiras, and River Plate.',
     keywords:
       'copa libertadores predictions today, libertadores tips, flamengo prediction, river plate odds, conmebol betting picks, south american football tips',
     canonicalPath: '/copa-libertadores-predictions',
