@@ -343,6 +343,46 @@ const ROUTE_META = {
     title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips',
     description: 'Free Scottish Premiership (SPFL) AI football predictions today. High-confidence Celtic & Rangers Asian Handicap picks, Over 2.5 goals, and corners tips.',
   },
+  '/first-half-goals-predictions': {
+    title: 'Over 0.5 First Half Goals Predictions Today: 1H Goal AI Tips',
+    description: 'Free Over 0.5 & Over 1.5 First Half Goals predictions today. Settle bets in 45 minutes with 84%+ strike-rate 1st half xG and early-goal probability picks.',
+  },
+  '/over-3-5-goals-predictions': {
+    title: 'Over 3.5 Goals Predictions Today: High-Scoring 4+ Goal AI Tips',
+    description: 'Free Over 3.5 goals football predictions today. Target high-odds (2.40+) goal-fest fixtures backed by 3.35+ combined Expected Goals (xG) and Poisson simulations.',
+  },
+  '/both-teams-to-score-and-win-predictions': {
+    title: 'BTTS & Win Predictions Today: Both Teams to Score + Over 2.5 Tips',
+    description: 'Free Both Teams to Score and Win (BTTS & Win) and BTTS & Over 2.5 Goals football predictions today. High-value 3.00+ odds combo picks backed by 2-1 & 3-1 Poisson models.',
+  },
+  '/anytime-goalscorer-predictions': {
+    title: 'Anytime Goalscorer Predictions Today: Player xG & Shots on Target',
+    description: 'Free Anytime Goalscorer, First Goalscorer, and Player Shots on Target predictions today. Backed by xG per 90, penalty-taker status, and defensive xGA matchups.',
+  },
+  '/parlay-calculator': {
+    title: 'Parlay & Accumulator Odds Calculator: Multi-Bet Payout Tool',
+    description: 'Free Parlay and Football Accumulator (Acca) odds calculator. Add up to 15 legs to calculate combined decimal odds, true hit probability, and net profit.',
+  },
+  '/margin-calculator': {
+    title: 'Bookmaker Margin & No-Vig Fair Odds Calculator (Overround Tool)',
+    description: 'Free bookmaker margin, overround, and no-vig fair odds calculator. Remove sportsbook vig from 1X2 and Over/Under lines to find true market probabilities.',
+  },
+  '/fa-cup-predictions': {
+    title: 'FA Cup & Carabao Cup Predictions Today: English Knockout AI Tips',
+    description: 'Free English FA Cup and Carabao EFL Cup AI football predictions today. Squad rotation xG models, cup upset alerts, BTTS, and Asian Handicap picks.',
+  },
+  '/turkish-super-lig-predictions': {
+    title: 'Turkish Süper Lig Predictions Today: Galatasaray & Fenerbahçe Tips',
+    description: 'Free Turkish Süper Lig AI football predictions today. High-confidence 1X2, Over 2.5 goals, and card booking picks for Galatasaray, Fenerbahçe & Beşiktaş.',
+  },
+  '/belgian-pro-league-predictions': {
+    title: 'Belgian Pro League Predictions Today: Jupiler League AI Tips',
+    description: 'Free Belgian Jupiler Pro League AI football predictions today. High-strike-rate BTTS, Over 2.5 goals, and 1X2 tips for Club Brugge, Anderlecht, Genk & Union SG.',
+  },
+  '/argentina-primera-predictions': {
+    title: 'Argentina Primera División Predictions: Liga Profesional AI Tips',
+    description: 'Free Argentina Liga Profesional (Primera División) AI football predictions today. Get home-banker 1X2, Under 2.5, and Draw No Bet tips for River Plate & Boca Juniors.',
+  },
 };
 
 function clampTitle(raw) {

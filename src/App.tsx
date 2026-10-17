@@ -124,6 +124,16 @@ const OddsConverter            = lazyWithRetry(() => import("./pages/OddsConvert
 const SaudiProLeaguePredictions = lazyWithRetry(() => import("./pages/SaudiProLeaguePredictions"));
 const BrazilianSerieAPredictions = lazyWithRetry(() => import("./pages/BrazilianSerieAPredictions"));
 const ScottishPremiershipPredictions = lazyWithRetry(() => import("./pages/ScottishPremiershipPredictions"));
+const FirstHalfGoalsPredictions = lazyWithRetry(() => import("./pages/FirstHalfGoalsPredictions"));
+const Over35GoalsPredictions   = lazyWithRetry(() => import("./pages/Over35GoalsPredictions"));
+const BttsAndWinPredictions    = lazyWithRetry(() => import("./pages/BttsAndWinPredictions"));
+const AnytimeGoalscorerPredictions = lazyWithRetry(() => import("./pages/AnytimeGoalscorerPredictions"));
+const ParlayCalculator         = lazyWithRetry(() => import("./pages/ParlayCalculator"));
+const MarginCalculator         = lazyWithRetry(() => import("./pages/MarginCalculator"));
+const FaCupPredictions         = lazyWithRetry(() => import("./pages/FaCupPredictions"));
+const TurkishSuperLigPredictions = lazyWithRetry(() => import("./pages/TurkishSuperLigPredictions"));
+const BelgianProLeaguePredictions = lazyWithRetry(() => import("./pages/BelgianProLeaguePredictions"));
+const ArgentinaPrimeraPredictions = lazyWithRetry(() => import("./pages/ArgentinaPrimeraPredictions"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -538,9 +548,39 @@ const App = () => (
                             <Route path="/saudi-pro-league-predictions"  element={<RouteBoundary component={SaudiProLeaguePredictions} />} />
                             <Route path="/brazilian-serie-a-predictions" element={<RouteBoundary component={BrazilianSerieAPredictions} />} />
                             <Route path="/scottish-premiership-predictions" element={<RouteBoundary component={ScottishPremiershipPredictions} />} />
+                            <Route path="/first-half-goals-predictions"  element={<RouteBoundary component={FirstHalfGoalsPredictions} />} />
+                            <Route path="/over-3-5-goals-predictions"    element={<RouteBoundary component={Over35GoalsPredictions} />} />
+                            <Route path="/both-teams-to-score-and-win-predictions" element={<RouteBoundary component={BttsAndWinPredictions} />} />
+                            <Route path="/anytime-goalscorer-predictions" element={<RouteBoundary component={AnytimeGoalscorerPredictions} />} />
+                            <Route path="/parlay-calculator"             element={<RouteBoundary component={ParlayCalculator} />} />
+                            <Route path="/margin-calculator"             element={<RouteBoundary component={MarginCalculator} />} />
+                            <Route path="/fa-cup-predictions"            element={<RouteBoundary component={FaCupPredictions} />} />
+                            <Route path="/turkish-super-lig-predictions" element={<RouteBoundary component={TurkishSuperLigPredictions} />} />
+                            <Route path="/belgian-pro-league-predictions" element={<RouteBoundary component={BelgianProLeaguePredictions} />} />
+                            <Route path="/argentina-primera-predictions" element={<RouteBoundary component={ArgentinaPrimeraPredictions} />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}
+                            <Route path="/over-0-5-first-half-goals"    element={<Navigate to="/first-half-goals-predictions" replace />} />
+                            <Route path="/ht-over-0-5-predictions"      element={<Navigate to="/first-half-goals-predictions" replace />} />
+                            <Route path="/1st-half-goals-tips"          element={<Navigate to="/first-half-goals-predictions" replace />} />
+                            <Route path="/over-3-5"                     element={<Navigate to="/over-3-5-goals-predictions" replace />} />
+                            <Route path="/over-3-5-goals"               element={<Navigate to="/over-3-5-goals-predictions" replace />} />
+                            <Route path="/btts-and-win"                 element={<Navigate to="/both-teams-to-score-and-win-predictions" replace />} />
+                            <Route path="/btts-over-2-5-predictions"    element={<Navigate to="/both-teams-to-score-and-win-predictions" replace />} />
+                            <Route path="/goalscorer-predictions"       element={<Navigate to="/anytime-goalscorer-predictions" replace />} />
+                            <Route path="/first-goalscorer-tips"        element={<Navigate to="/anytime-goalscorer-predictions" replace />} />
+                            <Route path="/player-shots-on-target"       element={<Navigate to="/anytime-goalscorer-predictions" replace />} />
+                            <Route path="/accumulator-calculator"       element={<Navigate to="/parlay-calculator" replace />} />
+                            <Route path="/acca-odds-calculator"         element={<Navigate to="/parlay-calculator" replace />} />
+                            <Route path="/overround-calculator"         element={<Navigate to="/margin-calculator" replace />} />
+                            <Route path="/vig-calculator"               element={<Navigate to="/margin-calculator" replace />} />
+                            <Route path="/no-vig-calculator"            element={<Navigate to="/margin-calculator" replace />} />
+                            <Route path="/carabao-cup-predictions"      element={<Navigate to="/fa-cup-predictions" replace />} />
+                            <Route path="/efl-cup-predictions"          element={<Navigate to="/fa-cup-predictions" replace />} />
+                            <Route path="/super-lig-predictions"        element={<Navigate to="/turkish-super-lig-predictions" replace />} />
+                            <Route path="/jupiler-pro-league-predictions" element={<Navigate to="/belgian-pro-league-predictions" replace />} />
+                            <Route path="/liga-profesional-predictions" element={<Navigate to="/argentina-primera-predictions" replace />} />
                             <Route path="/tomorrow"                     element={<Navigate to="/tomorrow-predictions" replace />} />
                             <Route path="/tomorrow-tips"                element={<Navigate to="/tomorrow-predictions" replace />} />
                             <Route path="/predictions-for-tomorrow"     element={<Navigate to="/tomorrow-predictions" replace />} />

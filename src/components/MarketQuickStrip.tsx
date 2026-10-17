@@ -25,9 +25,13 @@ const MARKET_QUICK_LINKS: MarketQuickItem[] = [
   { to: '/sure-win-predictions', label: 'Sure Wins', badge: '88%+', icon: ShieldCheck },
   { to: '/tomorrow-predictions', label: 'Tomorrow Picks', icon: Calendar },
   { to: '/weekend-predictions', label: 'Weekend Accas', icon: Trophy },
+  { to: '/first-half-goals-predictions', label: '1H Over 0.5 Goals', badge: 'Fast', icon: Flame },
   { to: '/over-1-5-goals-predictions', label: 'Over 1.5 Goals', icon: Flame },
   { to: '/over-under-predictions', label: 'Over 2.5 Goals', icon: Flame },
+  { to: '/over-3-5-goals-predictions', label: 'Over 3.5 Goals', icon: Flame },
   { to: '/btts', label: 'BTTS (GG)', icon: Zap },
+  { to: '/both-teams-to-score-and-win-predictions', label: 'BTTS & Win', icon: Zap },
+  { to: '/anytime-goalscorer-predictions', label: 'Goalscorers (xG)', icon: Trophy },
   { to: '/corners-predictions', label: 'Corners O/U', icon: Flag },
   { to: '/cards-predictions', label: 'Cards & Bookings', icon: Flag },
   { to: '/asian-handicap-predictions', label: 'Asian Handicap', icon: Scale },
@@ -35,7 +39,9 @@ const MARKET_QUICK_LINKS: MarketQuickItem[] = [
   { to: '/win-to-nil-predictions', label: 'Win to Nil', icon: Lock },
   { to: '/value-bet-calculator', label: '+EV Calculator', icon: Calculator },
   { to: '/kelly-criterion-calculator', label: 'Kelly Staking', icon: Calculator },
+  { to: '/parlay-calculator', label: 'Parlay Calc', icon: Calculator },
   { to: '/arbitrage-calculator', label: 'Surebet Arb Tool', icon: Calculator },
+  { to: '/margin-calculator', label: 'No-Vig Margin', icon: Calculator },
   { to: '/odds-converter', label: 'Odds Converter', icon: ArrowLeftRight },
 ];
 
