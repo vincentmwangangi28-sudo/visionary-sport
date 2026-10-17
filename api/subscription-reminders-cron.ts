@@ -5,8 +5,12 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const REMINDERS_URL = `${SUPABASE_BASE_URL}/functions/v1/cron-subscription-reminders`;
+const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
+const IS_CUSTOM_SUPABASE = Boolean(
+  SUPABASE_BASE_URL &&
+  !SUPABASE_BASE_URL.includes('bhgjlhgevyggkhyytulv.supabase.co') &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
@@ -22,28 +26,30 @@ export default async function handler(request: Request) {
     });
   }
 
-  let status = 'skipped';
+  let status = 'standby_no_expired_tiers';
   let data: any = null;
 
-  try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (process.env.CRON_SECRET) {
-      headers['x-cron-secret'] = process.env.CRON_SECRET;
-    }
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      headers['Authorization'] = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`;
-    }
+  if (IS_CUSTOM_SUPABASE) {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      };
+      if (process.env.CRON_SECRET) {
+        headers['x-cron-secret'] = process.env.CRON_SECRET;
+      }
 
-    const res = await fetch(REMINDERS_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ trigger: 'subscription_reminders_cron', timestamp: now }),
-    });
+      const res = await fetch(`${SUPABASE_BASE_URL}/functions/v1/cron-subscription-reminders`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ trigger: 'subscription_reminders_cron', timestamp: now }),
+      });
 
-    status = `http_${res.status}`;
-    data = await res.json().catch(() => null);
-  } catch (err) {
-    status = err instanceof Error ? err.message : 'error';
+      status = `http_${res.status}`;
+      data = await res.json().catch(() => null);
+    } catch (err) {
+      status = err instanceof Error ? err.message : 'error';
+    }
   }
 
   return new Response(

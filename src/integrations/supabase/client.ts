@@ -78,6 +78,8 @@ const UNPROVISIONED_FALLBACK_TABLES = new Set([
   'error_logs',
   'jackpot_pools',
   'admins',
+  'matches',
+  'coin_packages',
 ]);
 
 /**

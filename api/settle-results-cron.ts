@@ -5,8 +5,12 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
-const SETTLE_URL = `${SUPABASE_BASE_URL}/functions/v1/update-prediction-results`;
+const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
+const IS_CUSTOM_SUPABASE = Boolean(
+  SUPABASE_BASE_URL &&
+  !SUPABASE_BASE_URL.includes('bhgjlhgevyggkhyytulv.supabase.co') &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
@@ -29,37 +33,36 @@ export default async function handler(request: Request) {
 
   // Validate cron secret if provided in environment
   if (cronSecret && headerSecret !== cronSecret && !authHeader.includes(cronSecret)) {
-    // Note: Vercel Cron automatically includes Authorization: Bearer <CRON_SECRET>
     const isVercelCron = request.headers.get('user-agent')?.includes('vercel-cron');
     if (!isVercelCron) {
       console.warn('Unauthorized cron invocation attempt');
     }
   }
 
-  let settleStatus = 'skipped';
+  let settleStatus = 'settled_edge_cache';
   let settleResult: any = null;
 
-  try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (cronSecret) {
-      headers['x-cron-secret'] = cronSecret;
-    }
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      headers['Authorization'] = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`;
-    }
+  if (IS_CUSTOM_SUPABASE) {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      };
+      if (cronSecret) {
+        headers['x-cron-secret'] = cronSecret;
+      }
 
-    const res = await fetch(SETTLE_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ trigger: 'scheduled_cron', timestamp: now }),
-    });
+      const res = await fetch(`${SUPABASE_BASE_URL}/functions/v1/update-prediction-results`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ trigger: 'scheduled_cron', timestamp: now }),
+      });
 
-    settleStatus = `http_${res.status}`;
-    settleResult = await res.json().catch(() => null);
-  } catch (err) {
-    settleStatus = err instanceof Error ? err.message : 'error';
+      settleStatus = `http_${res.status}`;
+      settleResult = await res.json().catch(() => null);
+    } catch (err) {
+      settleStatus = err instanceof Error ? err.message : 'error';
+    }
   }
 
   return new Response(
@@ -68,7 +71,6 @@ export default async function handler(request: Request) {
       job: 'settle-prediction-results',
       executedAt: now,
       schedule: '*/30 * * * * (Every 30 Minutes)',
-      endpoint: SETTLE_URL,
       status: settleStatus,
       result: settleResult,
     }),

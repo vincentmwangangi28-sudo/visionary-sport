@@ -48,6 +48,9 @@ export async function callEdgeFn(name: string, body?: unknown, userToken?: strin
     } catch {
       localApiProxyUnavailable = true;
     }
+    const err: any = new Error('Local /api/gemini-tasks endpoint unavailable');
+    err.status = 503;
+    throw err;
   }
 
   // Check if this edge function is in cooldown due to prior CORS/network error

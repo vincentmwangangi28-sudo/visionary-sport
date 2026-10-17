@@ -7,7 +7,6 @@ export const config = {
 
 const BASE_URL = 'https://predictpro.guru';
 const INDEXNOW_KEY = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
-const SUPABASE_PING_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines';
 
 const PRIORITY_URLS = [
   `${BASE_URL}/`,
@@ -86,16 +85,19 @@ export default async function handler(request: Request) {
     indexNowStatus = err instanceof Error ? err.message : 'error';
   }
 
-  // 2. Trigger Supabase Edge Function to maintain search engine ping records
-  try {
-    const edgeRes = await fetch(SUPABASE_PING_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls: PRIORITY_URLS }),
-    });
-    supabaseStatus = `http_${edgeRes.status}`;
-  } catch (err) {
-    supabaseStatus = err instanceof Error ? err.message : 'error';
+  // 2. Trigger Supabase Edge Function only if a custom SUPABASE_URL is configured
+  const customSupabaseUrl = process.env.SUPABASE_URL;
+  if (customSupabaseUrl && !customSupabaseUrl.includes('bhgjlhgevyggkhyytulv.supabase.co')) {
+    try {
+      const edgeRes = await fetch(`${customSupabaseUrl}/functions/v1/ping-search-engines`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: PRIORITY_URLS }),
+      });
+      supabaseStatus = `http_${edgeRes.status}`;
+    } catch (err) {
+      supabaseStatus = err instanceof Error ? err.message : 'error';
+    }
   }
 
   return new Response(

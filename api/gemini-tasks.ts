@@ -1,5 +1,9 @@
 import { handleGeminiTask } from '../src/server/geminiHandler';
 
+export const config = {
+  runtime: 'edge',
+};
+
 export default async function handler(request: Request) {
   // CORS Preflight
   if (request.method === 'OPTIONS') {

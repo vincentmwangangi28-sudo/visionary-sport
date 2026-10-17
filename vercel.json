@@ -78,12 +78,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/gemini-tasks",
-      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/gemini-tasks"
-    },
-    {
       "source": "/api/ping-search-engines",
-      "destination": "https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines"
+      "destination": "/api/indexing-cron"
     },
     {
       "source": "/mcp",

@@ -12,9 +12,12 @@ import {
 } from '@/services/geoRegionService';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 
+const EMPTY_FAV_LEAGUES: string[] = [];
+
 export function useGeoRegion() {
   const { preferences } = useUserPreferences();
   const [geoState, setGeoState] = useState(() => detectUserGeographicRegion());
+  const favoriteLeagues = preferences?.favoriteLeagues ?? EMPTY_FAV_LEAGUES;
 
   // Listen for storage or external custom changes
   useEffect(() => {
@@ -37,26 +40,26 @@ export function useGeoRegion() {
   }, []);
 
   const prioritizedLeagues = useMemo(() => {
-    return getPrioritizedLeaguesForRegion(geoState.regionId, preferences?.favoriteLeagues || []);
-  }, [geoState.regionId, preferences?.favoriteLeagues]);
+    return getPrioritizedLeaguesForRegion(geoState.regionId, favoriteLeagues);
+  }, [geoState.regionId, favoriteLeagues]);
 
   const sortPredictions = useCallback(
     <T extends { league: string; match_date?: string | Date; confidence?: number; confidence_score?: number }>(items: T[]): T[] => {
-      return sortPredictionsByRegion(items, geoState.regionId, preferences?.favoriteLeagues || []);
+      return sortPredictionsByRegion(items, geoState.regionId, favoriteLeagues);
     },
-    [geoState.regionId, preferences?.favoriteLeagues]
+    [geoState.regionId, favoriteLeagues]
   );
 
   const sortLiveFixtures = useCallback(
     <T extends { league: string; status: string; minute?: number | string | null; match_date?: string | Date }>(items: T[]): T[] => {
-      return sortLiveFixturesByRegion(items, geoState.regionId, preferences?.favoriteLeagues || []);
+      return sortLiveFixturesByRegion(items, geoState.regionId, favoriteLeagues);
     },
-    [geoState.regionId, preferences?.favoriteLeagues]
+    [geoState.regionId, favoriteLeagues]
   );
 
   const getLeagueBadge = useCallback(
     (leagueName: string) => {
-      const info = getLeagueRelevanceScore(leagueName, geoState.regionId, preferences?.favoriteLeagues || []);
+      const info = getLeagueRelevanceScore(leagueName, geoState.regionId, favoriteLeagues);
       return {
         badgeLabel: info.badgeLabel,
         isDomestic: info.isDomestic,
@@ -64,7 +67,7 @@ export function useGeoRegion() {
         flag: info.flag,
       };
     },
-    [geoState.regionId, preferences?.favoriteLeagues]
+    [geoState.regionId, favoriteLeagues]
   );
 
   const allRegions = useMemo(() => Object.values(GEOGRAPHIC_REGIONS), []);

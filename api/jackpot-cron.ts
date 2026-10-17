@@ -8,7 +8,12 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
+const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
+const IS_CUSTOM_SUPABASE = Boolean(
+  SUPABASE_BASE_URL &&
+  !SUPABASE_BASE_URL.includes('bhgjlhgevyggkhyytulv.supabase.co') &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(request: Request) {
   const executedAt = new Date().toISOString();
@@ -70,14 +75,14 @@ export default async function handler(request: Request) {
       settlementAction: actionParam,
     };
 
-    // 3. If Supabase service role key is configured, also persist updated pools
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    // 3. If custom Supabase service role key is configured, also persist updated pools
+    if (IS_CUSTOM_SUPABASE) {
       const sbRes = await fetch(`${SUPABASE_BASE_URL}/rest/v1/jackpot_pools`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
           Prefer: 'resolution=merge-duplicates',
         },
         body: JSON.stringify([

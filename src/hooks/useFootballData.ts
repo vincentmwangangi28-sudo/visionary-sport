@@ -708,6 +708,11 @@ export function useStandings(leagueId: number, season?: number, enabled = true) 
   });
 }
 
+const EMPTY_LIVE_FIXTURES: ApiFootballLiveFixture[] = [];
+const EMPTY_LEAGUES: LeagueDefinition[] = [];
+const EMPTY_STANDINGS: StandingRow[] = [];
+const EMPTY_UPCOMING_FIXTURES: NormalizedMatch[] = [];
+
 /**
  * Comprehensive master hook for Football Data with robust 401/403 status detection,
  * console debugging logs, and fallback mechanism displaying 'Service Temporarily Unavailable'.
@@ -769,7 +774,8 @@ export function useFootballData(options?: {
     ? `Service Temporarily Unavailable: Authentication connecting (HTTP ${authErrorStatus || '401/403'}). Reconnecting live sports feed.`
     : 'Service Temporarily Unavailable: Live sports data feeds are temporarily unreachable.';
 
-  const activeLiveCount = (liveQuery.data || []).filter(
+  const liveFixtures = liveQuery.data ?? EMPTY_LIVE_FIXTURES;
+  const activeLiveCount = liveFixtures.filter(
     f => f.status === 'live' || f.status === 'halftime'
   ).length;
 
@@ -785,7 +791,7 @@ export function useFootballData(options?: {
 
   return {
     // Live Fixtures (returns live query data from active RapidAPI / ESPN / Sportmonks feeds)
-    liveFixtures: liveQuery.data || [],
+    liveFixtures,
     isLiveLoading: liveQuery.isLoading,
     isLiveFetching: liveQuery.isFetching,
     liveError: liveQuery.error,
@@ -805,17 +811,17 @@ export function useFootballData(options?: {
     authErrorStatus,
 
     // Leagues
-    leagues: leaguesQuery.data || [],
+    leagues: leaguesQuery.data ?? EMPTY_LEAGUES,
     isLeaguesLoading: leaguesQuery.isLoading,
 
     // Standings
-    standings: standingsQuery.data?.standings || [],
+    standings: standingsQuery.data?.standings ?? EMPTY_STANDINGS,
     isStandingsLive: standingsQuery.data?.isLive ?? false,
     isStandingsLoading: standingsQuery.isLoading,
     refetchStandings: standingsQuery.refetch,
 
     // Upcoming Fixtures / Predictions
-    upcomingFixtures: upcomingQuery.data || [],
+    upcomingFixtures: upcomingQuery.data ?? EMPTY_UPCOMING_FIXTURES,
     isUpcomingLoading: upcomingQuery.isLoading,
     refetchUpcoming: upcomingQuery.refetch,
 

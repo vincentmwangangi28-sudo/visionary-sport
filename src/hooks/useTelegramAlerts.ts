@@ -313,10 +313,15 @@ export function useGlobalTelegramAutomation() {
   const { autoDispatchHighConfidencePredictions } = useTelegramAlerts({ autoCheckOnMount: false });
 
   useEffect(() => {
-    let timer: any = null;
+    let warmupTimeout: ReturnType<typeof setTimeout> | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     const checkAndDispatch = async () => {
       try {
+        // Only auto-dispatch from browser if admin/user explicitly enabled auto-alerts in localStorage
+        const explicitOptIn = localStorage.getItem(AUTO_ALERTS_ENABLED_KEY) === 'true';
+        if (!explicitOptIn) return;
+
         const { getSystemConfig } = await import('@/services/systemConfigService');
         const config = getSystemConfig();
         if (!config.telegramAutoBroadcast) return;
@@ -331,15 +336,16 @@ export function useGlobalTelegramAutomation() {
       }
     };
 
-    // Warm-up after initial render (12 seconds)
-    timer = setTimeout(() => {
+    // Warm-up after initial render (25 seconds)
+    warmupTimeout = setTimeout(() => {
       checkAndDispatch();
       // Then check every 10 minutes
-      timer = setInterval(checkAndDispatch, 10 * 60 * 1000);
-    }, 12000);
+      pollInterval = setInterval(checkAndDispatch, 10 * 60 * 1000);
+    }, 25000);
 
     return () => {
-      if (timer) clearInterval(timer);
+      if (warmupTimeout) clearTimeout(warmupTimeout);
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, [autoDispatchHighConfidencePredictions]);
 }

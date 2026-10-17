@@ -609,25 +609,25 @@ class AutonomousCronScheduler {
         }).catch(() => {});
       }
 
-      // Direct lightweight database query to keep Supabase free tier unpaused
+      // Direct lightweight database query on predictions table to keep Supabase free tier unpaused
       const supabaseUrl = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-      if (serviceKey) {
-        fetch(`${supabaseUrl}/rest/v1/predictions?select=id&limit=1`, {
-          headers: {
-            'apikey': serviceKey,
-            'Authorization': `Bearer ${serviceKey}`,
-          },
+      const serviceKey =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_ANON_KEY ||
+        process.env.VITE_SUPABASE_ANON_KEY ||
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
+      fetch(`${supabaseUrl}/rest/v1/predictions?select=id&limit=1`, {
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+        },
+      })
+        .then((r) => {
+          this.lastSupabaseStatus = r.ok ? 'active_unpaused' : `http_${r.status}`;
         })
-          .then((r) => {
-            this.lastSupabaseStatus = r.ok ? 'active_unpaused' : `http_${r.status}`;
-          })
-          .catch((err) => {
-            this.lastSupabaseStatus = `err_${err.message}`;
-          });
-      } else {
-        this.lastSupabaseStatus = 'active_no_key_needed';
-      }
+        .catch((err) => {
+          this.lastSupabaseStatus = `err_${err.message}`;
+        });
     } catch (err: any) {
       this.lastKeepaliveStatus = `ping_error: ${err.message}`;
     }

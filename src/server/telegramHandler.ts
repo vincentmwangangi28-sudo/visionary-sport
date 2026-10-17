@@ -50,6 +50,24 @@ export interface TelegramTransmissionLog {
 // falls back to TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID env vars).
 let cachedRuntimeConfig: { botToken?: string; chatId?: string; autoBroadcast?: boolean } | null = null;
 const transmissionLogs: TelegramTransmissionLog[] = [];
+const recentDispatchedHashes = new Map<string, number>();
+const DEDUP_WINDOW_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+function isDuplicateTransmission(chatId: string, action: string, text: string): boolean {
+  const now = Date.now();
+  for (const [k, ts] of recentDispatchedHashes.entries()) {
+    if (now - ts > DEDUP_WINDOW_MS) {
+      recentDispatchedHashes.delete(k);
+    }
+  }
+  const key = `${chatId}::${action}::${text.slice(0, 240)}`;
+  const prev = recentDispatchedHashes.get(key);
+  if (prev && now - prev < DEDUP_WINDOW_MS) {
+    return true;
+  }
+  recentDispatchedHashes.set(key, now);
+  return false;
+}
 
 export function getStoredTelegramConfig(): { botToken: string; chatId: string; autoBroadcast: boolean } {
   if (cachedRuntimeConfig) {
@@ -411,6 +429,18 @@ export async function handleTelegramRequest(payload: TelegramRequestPayload): Pr
 
   // Formatting message
   const text = buildTelegramAlertHtml(payload);
+
+  // Deduplicate identical automated broadcasts within 6h window
+  if (payload.action !== 'broadcast' && isDuplicateTransmission(targetChatId, payload.action, text)) {
+    return {
+      success: true,
+      deduplicated: true,
+      simulated: !botToken,
+      chatId: targetChatId,
+      previewText: text,
+      message: `Alert already dispatched to ${targetChatId} within deduplication window`,
+    };
+  }
 
   // 1. Live dispatch if bot token is present
   if (botToken) {

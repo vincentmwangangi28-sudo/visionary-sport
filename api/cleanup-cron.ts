@@ -5,7 +5,12 @@ export const config = {
   runtime: 'edge',
 };
 
-const SUPABASE_BASE_URL = process.env.SUPABASE_URL || 'https://bhgjlhgevyggkhyytulv.supabase.co';
+const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
+const IS_CUSTOM_SUPABASE = Boolean(
+  SUPABASE_BASE_URL &&
+  !SUPABASE_BASE_URL.includes('bhgjlhgevyggkhyytulv.supabase.co') &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
@@ -25,16 +30,15 @@ export default async function handler(request: Request) {
   let cleanedCount = 0;
 
   try {
-    // Ping Supabase to clean up or archive matches finished over 14 days ago
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 14);
 
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const res = await fetch(`${SUPABASE_BASE_URL}/rest/v1/predictions?status=eq.finished&match_date=lt.${cutoffDate.toISOString()}`, {
+    if (IS_CUSTOM_SUPABASE) {
+      const res = await fetch(`${SUPABASE_BASE_URL}/rest/v1/matches?status=eq.finished&match_date=lt.${cutoffDate.toISOString()}`, {
         method: 'GET',
         headers: {
-          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
           'Range': '0-99',
         },
       });

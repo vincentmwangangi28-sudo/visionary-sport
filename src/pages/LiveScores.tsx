@@ -139,8 +139,8 @@ export default function LiveScores() {
   };
 
   useEffect(() => {
-    setLastSyncTime(new Date());
     if (matches && matches.length > 0) {
+      setLastSyncTime(new Date());
       autoDispatchLiveScoreChanges(
         matches
           .filter((m) => m.status === 'live' || m.status === 'halftime' || m.status === 'finished')
