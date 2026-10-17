@@ -132,7 +132,7 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/about", label: "About PredictPro & Team" },
     { to: "/methodology", label: "Expected Goals (xG) Methodology" },
     { to: "/responsible-gaming", label: "18+ Responsible Gaming Policy" },
-    { to: "/disclaimer", label: "Non-Gambling Entity Disclaimer" },
+    { to: "/sitemap", label: "HTML Sitemap & Route Directory" },
   ],
 };
 
@@ -155,6 +155,8 @@ const FEATURED_MATCHES = [
   { slug: 'tp-mazembe-vs-as-vita-club', label: 'TP Mazembe vs AS Vita Club (CD)' },
   { slug: 'juventus-vs-napoli', label: 'Juventus vs Napoli' },
   { slug: 'atletico-madrid-vs-sevilla', label: 'Atletico vs Sevilla' },
+  { slug: 'la-galaxy-vs-lafc', label: 'LA Galaxy vs LAFC (MLS)' },
+  { slug: 'inter-miami-vs-new-york-red-bulls', label: 'Inter Miami vs NY Red Bulls (MLS)' },
 ];
 
 export const Footer = () => {

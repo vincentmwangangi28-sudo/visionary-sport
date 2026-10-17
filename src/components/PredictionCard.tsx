@@ -17,14 +17,13 @@ import { hapticService } from '@/services/hapticService';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-function formatMatchSlug(homeTeam: string, awayTeam: string, matchDate?: string): string {
+function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string): string {
   const clean = (name: string) =>
     name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-  const datePart = matchDate ? matchDate.split('T')[0] : new Date().toISOString().split('T')[0];
-  return `${clean(homeTeam)}-vs-${clean(awayTeam)}-${datePart}`;
+  return `${clean(homeTeam)}-vs-${clean(awayTeam)}`;
 }
 
 import { MatchAnalyticsModal } from './MatchAnalyticsModal';

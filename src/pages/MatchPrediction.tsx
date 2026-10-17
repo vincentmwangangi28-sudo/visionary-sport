@@ -309,17 +309,19 @@ export default function MatchPrediction() {
   const over15Prob = 78 + (hash % 16);
   const under35Prob = 68 + (hash % 24);
 
+  const canonicalMatchSlug = (matchSlug || '').replace(/-\d{4}-\d{2}-\d{2}$/, '');
+
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
         title={title}
         description={description}
-        canonical={`/predict/${matchSlug}`}
+        canonical={`/predict/${canonicalMatchSlug}`}
         keywords={`${prediction.home_team} vs ${prediction.away_team} prediction, ${prediction.league} lineups, tactical formation ${prediction.home_team}, ${prediction.away_team} referee stats, xG match stats`}
         breadcrumbs={[
           { name: 'Home', item: '/' },
           { name: 'Predictions', item: '/best-bets' },
-          { name: `${prediction.home_team} vs ${prediction.away_team}`, item: `/predict/${matchSlug}` }
+          { name: `${prediction.home_team} vs ${prediction.away_team}`, item: `/predict/${canonicalMatchSlug}` }
         ]}
         matchPrediction={prediction}
       />

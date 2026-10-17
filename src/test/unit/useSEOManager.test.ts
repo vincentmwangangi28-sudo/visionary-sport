@@ -9,6 +9,8 @@ import {
   pruneAlternateHreflangTags,
   deriveRouteBreadcrumbs,
 } from '@/hooks/useSEOManager';
+import { resolveMatchPredictionForSEO } from '@/hooks/useMatchPredictionSEO';
+import { getAllSitemapEntries, generateSitemapXml } from '@/services/sitemapGenerator';
 
 describe('useSEOManager - International SEO & Locale Detection', () => {
   const originalLocation = window.location;
@@ -316,6 +318,35 @@ describe('useSEOManager - International SEO & Locale Detection', () => {
       const remaining = document.head.querySelectorAll('link[rel="alternate"]');
       expect(remaining.length).toBe(1);
       expect(remaining[0].getAttribute('hreflang')).toBe('es');
+    });
+  });
+
+  describe('Match Prediction Canonical URL Normalization & Sitemap Generator Integrity', () => {
+    it('strips trailing -YYYY-MM-DD date suffix from match slugs for canonicalUrl consolidation', () => {
+      const resolvedDated = resolveMatchPredictionForSEO('/predict/arsenal-vs-chelsea-2026-10-17');
+      expect(resolvedDated).not.toBeNull();
+      expect(resolvedDated?.canonicalPath).toBe('/predict/arsenal-vs-chelsea');
+      expect(resolvedDated?.canonicalUrl).toBe('https://predictpro.guru/predict/arsenal-vs-chelsea');
+
+      const resolvedClean = resolveMatchPredictionForSEO('/predict/gor-mahia-vs-afc-leopards');
+      expect(resolvedClean).not.toBeNull();
+      expect(resolvedClean?.canonicalPath).toBe('/predict/gor-mahia-vs-afc-leopards');
+      expect(resolvedClean?.canonicalUrl).toBe('https://predictpro.guru/predict/gor-mahia-vs-afc-leopards');
+    });
+
+    it('generates clean undated match slugs and self-canonicalized hreflangs in sitemapGenerator', () => {
+      const entries = getAllSitemapEntries();
+      const matchEntries = entries.filter((e) => e.category === 'match');
+      expect(matchEntries.length).toBeGreaterThanOrEqual(20);
+      for (const m of matchEntries) {
+        expect(m.path).not.toMatch(/-\d{4}-\d{2}-\d{2}$/);
+        expect(m.url).toBe(`https://predictpro.guru${m.path}`);
+      }
+
+      const xml = generateSitemapXml();
+      expect(xml).not.toContain('?lang=');
+      expect(xml).toContain('https://predictpro.guru/predict/arsenal-vs-chelsea');
+      expect(xml).toContain('https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates');
     });
   });
 });

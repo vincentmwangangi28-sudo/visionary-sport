@@ -36,10 +36,9 @@ export const BLOG_POSTS_METADATA = [
 /**
  * Generate match prediction slugs from team names and date
  */
-export function formatMatchSlug(homeTeam: string, awayTeam: string, matchDate: string): string {
+export function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string): string {
   const sanitize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const datePart = matchDate.split('T')[0] || new Date().toISOString().split('T')[0];
-  return `${sanitize(homeTeam)}-vs-${sanitize(awayTeam)}-${datePart}`;
+  return `${sanitize(homeTeam)}-vs-${sanitize(awayTeam)}`;
 }
 
 /**
@@ -187,8 +186,6 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { path: '/cookies', title: 'Cookie Policy & Advertising Transparency', priority: 0.70, changeFreq: 'monthly' },
     { path: '/contact', title: 'Contact Us & Publisher Support Desk', priority: 0.70, changeFreq: 'monthly' },
     { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.65, changeFreq: 'daily' },
-    { path: '/dashboard', title: 'Personalized AI Football Predictions & Custom Match Feed', priority: 0.80, changeFreq: 'daily' },
-    { path: '/preferences', title: 'Prediction Preferences, Odds Format & Notification Settings', priority: 0.65, changeFreq: 'monthly' },
     { path: '/performance', title: 'AI Model Performance, ROI Analytics & League Accuracy', priority: 0.85, changeFreq: 'daily' },
     { path: '/rewards', title: 'PredictPro Rewards, Prediction Challenges & VIP Points', priority: 0.80, changeFreq: 'weekly' },
   ];
@@ -227,11 +224,12 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
   // Add additional popular top matchups across all parts of the continent for comprehensive crawler coverage
   const featuredClubs = [
     { home: 'Arsenal', away: 'Chelsea', league: 'Premier League' },
-    { home: 'Manchester City', away: 'Liverpool', league: 'Premier League' },
+    { home: 'Liverpool', away: 'Manchester City', league: 'Premier League' },
     { home: 'Real Madrid', away: 'Barcelona', league: 'La Liga' },
     { home: 'Bayern Munich', away: 'Borussia Dortmund', league: 'Bundesliga' },
-    { home: 'Inter Milan', away: 'Juventus', league: 'Serie A' },
-    { home: 'Paris Saint-Germain', away: 'Marseille', league: 'Ligue 1' },
+    { home: 'Inter Milan', away: 'AC Milan', league: 'Serie A' },
+    { home: 'Manchester United', away: 'Tottenham', league: 'Premier League' },
+    { home: 'PSG', away: 'Marseille', league: 'Ligue 1' },
     { home: 'Gor Mahia', away: 'AFC Leopards', league: 'Kenya Premier League' },
     { home: 'Simba SC', away: 'Young Africans', league: 'Tanzania NBC Premier League' },
     { home: 'Kaizer Chiefs', away: 'Orlando Pirates', league: 'South Africa PSL' },
@@ -241,6 +239,10 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { home: 'Al Ahly', away: 'Zamalek', league: 'Egyptian Premier League' },
     { home: 'Wydad AC', away: 'Raja Casablanca', league: 'Botola Pro Morocco' },
     { home: 'TP Mazembe', away: 'AS Vita Club', league: 'DR Congo Linafoot' },
+    { home: 'Juventus', away: 'Napoli', league: 'Serie A' },
+    { home: 'Atletico Madrid', away: 'Sevilla', league: 'La Liga' },
+    { home: 'LA Galaxy', away: 'LAFC', league: 'Major League Soccer' },
+    { home: 'Inter Miami', away: 'New York Red Bulls', league: 'Major League Soccer' },
   ];
 
   for (const fixture of featuredClubs) {
@@ -341,10 +343,7 @@ export function generateSitemapXml(baseUrl: string = BASE_URL): string {
   const xmlUrls = entries
     .map((entry) => {
       const links = GLOBAL_HREFLANGS.map((lang) => {
-        const altUrl = (lang === 'x-default' || lang === 'en')
-          ? entry.url
-          : `${entry.url}${entry.url.includes('?') ? '&' : '?'}lang=${encodeURIComponent(lang)}`;
-        return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(altUrl)}" />`;
+        return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(entry.url)}" />`;
       }).join('\n');
 
       return `  <url>

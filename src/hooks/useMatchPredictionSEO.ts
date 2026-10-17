@@ -263,7 +263,8 @@ export function resolveMatchPredictionForSEO(
     det.analysis ||
     `${homeTeam} vs ${awayTeam} quantitative match analysis projects ${outcome} (${confidence}% model confidence) with ${expectedHomeGoals} vs ${expectedAwayGoals} Expected Goals (xG).`;
 
-  const canonicalPath = `/predict/${slug}`;
+  const cleanCanonicalSlug = slug.replace(/-\d{4}-\d{2}-\d{2}$/, '');
+  const canonicalPath = `/predict/${cleanCanonicalSlug}`;
   const canonicalUrl = `${BASE_URL}${canonicalPath}`;
 
   // Google Discover headline (<= 110 chars, high CTR, factual & non-clickbait)
