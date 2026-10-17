@@ -18,10 +18,14 @@ export const LEAGUE_HUBS: LeagueHubItem[] = [
   { to: '/eredivisie-predictions', name: 'Dutch Eredivisie', flag: '🇳🇱', shortName: 'Eredivisie' },
   { to: '/primeira-liga-predictions', name: 'Primeira Liga', flag: '🇵🇹', shortName: 'Portugal' },
   { to: '/copa-libertadores-predictions', name: 'Copa Libertadores', flag: '🏆', shortName: 'Libertadores' },
+  { to: '/brazilian-serie-a-predictions', name: 'Brasileirão Série A', flag: '🇧🇷', shortName: 'Brazil Serie A' },
+  { to: '/saudi-pro-league-predictions', name: 'Saudi Pro League', flag: '🇸🇦', shortName: 'Saudi SPL' },
+  { to: '/scottish-premiership-predictions', name: 'Scottish Premiership', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', shortName: 'Scotland SPFL' },
   { to: '/kpl-predictions', name: 'Kenya Premier League', flag: '🇰🇪', shortName: 'KPL' },
   { to: '/jackpot-predictions', name: 'Mega Jackpots', flag: '🎰', shortName: 'Jackpots' },
   { to: '/us-soccer-predictions', name: 'US Soccer & MLS', flag: '🇺🇸', shortName: 'MLS' },
   { to: '/world-cup-predictions', name: 'FIFA World Cup', flag: '🌍', shortName: 'World Cup' },
   { to: '/afcon-predictions', name: 'AFCON', flag: '🌍', shortName: 'AFCON' },
 ];
+
 

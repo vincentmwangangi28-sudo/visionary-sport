@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { LiveMarketSteamTicker } from '@/components/LiveMarketSteamTicker';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
+import { MarketQuickStrip } from '@/components/MarketQuickStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
 import { LiveMatches } from '@/components/LiveMatches';
@@ -135,8 +136,9 @@ const Index = () => {
 
         {/* 1. Primary Predictions View */}
         {(activeMode === 'predictions' || activeMode === 'all') && (
-          <section id="section-predictions" className="py-4 space-y-4">
+          <section id="section-predictions" className="py-4 space-y-3">
             <LeagueNavigationStrip />
+            <MarketQuickStrip />
             <div className="container mx-auto px-4 max-w-6xl">
               <PredictionsDashboard />
             </div>

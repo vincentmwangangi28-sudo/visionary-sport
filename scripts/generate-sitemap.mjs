@@ -72,6 +72,13 @@ const CORE_PAGES = [
   { path: '/over-1-5-goals-predictions', priority: 0.90, freq: 'daily', title: 'Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips' },
   { path: '/value-bet-calculator', priority: 0.90, freq: 'weekly', title: 'Value Bet Calculator (+EV): Sports Betting Expected Value Tool' },
   { path: '/kelly-criterion-calculator', priority: 0.90, freq: 'weekly', title: 'Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool' },
+  { path: '/tomorrow-predictions', priority: 0.95, freq: 'daily', title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds" },
+  { path: '/weekend-predictions', priority: 0.95, freq: 'daily', title: 'Weekend Football Predictions: Saturday & Sunday Banker Acca Tips' },
+  { path: '/asian-handicap-predictions', priority: 0.90, freq: 'daily', title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips' },
+  { path: '/draw-no-bet-predictions', priority: 0.90, freq: 'daily', title: 'Draw No Bet Predictions Today (DNB): Safe Football Refund Tips' },
+  { path: '/win-to-nil-predictions', priority: 0.90, freq: 'daily', title: 'Win to Nil & Clean Sheet Predictions Today: Defensive xGA Tips' },
+  { path: '/arbitrage-calculator', priority: 0.90, freq: 'weekly', title: 'Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool' },
+  { path: '/odds-converter', priority: 0.90, freq: 'weekly', title: 'Betting Odds Converter & Implied Probability Calculator (UK/US/EU)' },
 ];
 
 const LEAGUE_PAGES = [
@@ -87,6 +94,9 @@ const LEAGUE_PAGES = [
   { path: '/eredivisie-predictions', priority: 0.95, freq: 'daily', title: 'Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG Tips' },
   { path: '/primeira-liga-predictions', priority: 0.95, freq: 'daily', title: 'Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto' },
   { path: '/copa-libertadores-predictions', priority: 0.95, freq: 'daily', title: 'Copa Libertadores AI Predictions: South American Odds & Tips' },
+  { path: '/saudi-pro-league-predictions', priority: 0.95, freq: 'daily', title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips' },
+  { path: '/brazilian-serie-a-predictions', priority: 0.95, freq: 'daily', title: 'Brazilian Serie A Predictions Today: Brasileirão AI Tips & Odds' },
+  { path: '/scottish-premiership-predictions', priority: 0.95, freq: 'daily', title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips' },
   { path: '/world-cup-predictions', priority: 0.90, freq: 'daily', title: 'FIFA World Cup 2026 Predictions & Qualifying Tips' },
   { path: '/afcon-predictions', priority: 0.90, freq: 'daily', title: 'AFCON Predictions & African Football Odds' },
   { path: '/kpl-predictions', priority: 0.90, freq: 'daily', title: 'FKF Kenya Premier League Predictions & M-Pesa Tips' },

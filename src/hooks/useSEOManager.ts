@@ -611,6 +611,86 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'over 1.5 goals predictions today, over 1.5 tips today, over 1.5 goals sure wins, over 1.5 accumulator tips, over 1.5 match predictions',
     canonicalPath: '/over-1-5-goals-predictions',
   },
+  '/tomorrow-predictions': {
+    title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds",
+    description:
+      "Free AI football predictions for tomorrow's fixtures. Beat dropping odds with early 1X2 banker picks, Over 2.5 goals, BTTS tips, and Expected Goals (xG) projections.",
+    keywords:
+      'football predictions for tomorrow, tomorrow soccer predictions, tomorrow betting tips, early football odds tomorrow, sure wins tomorrow, btts tomorrow',
+    canonicalPath: '/tomorrow-predictions',
+  },
+  '/weekend-predictions': {
+    title: 'Weekend Football Predictions: Saturday & Sunday Banker Acca Tips',
+    description:
+      'Free AI weekend football predictions for Saturday and Sunday. Get 85%+ confidence banker picks, weekend 5-fold accumulator slips, BTTS, and Over 2.5 goals tips.',
+    keywords:
+      'weekend football predictions, saturday football predictions, sunday soccer predictions, weekend accumulator tips, weekend banker bets',
+    canonicalPath: '/weekend-predictions',
+  },
+  '/asian-handicap-predictions': {
+    title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips',
+    description:
+      'Free Asian Handicap football predictions today. Beat bookmaker margins with expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines.',
+    keywords:
+      'asian handicap predictions today, asian handicap tips, -0.5 handicap football, -1.5 asian handicap predictions, sharp football handicap picks',
+    canonicalPath: '/asian-handicap-predictions',
+  },
+  '/draw-no-bet-predictions': {
+    title: 'Draw No Bet Predictions Today (DNB): Safe Football Refund Tips',
+    description:
+      'Free Draw No Bet (DNB) football predictions today. Protect your bankroll with 89% non-losing AI picks where your full stake is refunded on a draw.',
+    keywords:
+      'draw no bet predictions today, dnb football tips, draw no bet meaning, safe dnb accumulator tips, asian handicap 0.0 predictions',
+    canonicalPath: '/draw-no-bet-predictions',
+  },
+  '/win-to-nil-predictions': {
+    title: 'Win to Nil & Clean Sheet Predictions Today: Defensive xGA Tips',
+    description:
+      'Free Win to Nil and Clean Sheet football predictions today. High-odds 2.25+ picks backed by Poisson zero-goal probability and defensive xGA metrics.',
+    keywords:
+      'win to nil predictions today, clean sheet predictions football, team to keep a clean sheet tips, win to nil betting tips',
+    canonicalPath: '/win-to-nil-predictions',
+  },
+  '/arbitrage-calculator': {
+    title: 'Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool',
+    description:
+      'Free 2-way and 3-way arbitrage betting calculator (Surebet & Dutching tool). Enter bookmaker odds to calculate exact stakes and lock in risk-free profit.',
+    keywords:
+      'arbitrage betting calculator, surebet calculator, 3 way arbitrage calculator, dutching calculator football, hedge bet calculator',
+    canonicalPath: '/arbitrage-calculator',
+  },
+  '/odds-converter': {
+    title: 'Betting Odds Converter & Implied Probability Calculator (UK/US/EU)',
+    description:
+      'Free sports betting odds converter and implied probability calculator. Instantly convert Decimal, Fractional (UK), American Moneyline, and implied win percentages.',
+    keywords:
+      'betting odds converter, implied probability calculator, fractional to decimal odds, american moneyline converter, sports betting payout calculator',
+    canonicalPath: '/odds-converter',
+  },
+  '/saudi-pro-league-predictions': {
+    title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips',
+    description:
+      'Free Saudi Pro League (Roshn SPL) AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Asian Handicap picks for Al-Hilal, Al-Nassr & Al-Ittihad.',
+    keywords:
+      'saudi pro league predictions, spl predictions today, al nassr prediction today, al hilal betting tips, saudi league over 2.5 goals',
+    canonicalPath: '/saudi-pro-league-predictions',
+  },
+  '/brazilian-serie-a-predictions': {
+    title: 'Brazilian Serie A Predictions Today: Brasileirão AI Tips & Odds',
+    description:
+      'Free Brazilian Serie A (Brasileirão) AI football predictions today. Get home-advantage 1X2 picks, BTTS, and xG forecasts for Palmeiras, Flamengo & Botafogo.',
+    keywords:
+      'brazilian serie a predictions, brasileirao predictions today, brazil serie a betting tips, flamengo prediction, palmeiras betting tips',
+    canonicalPath: '/brazilian-serie-a-predictions',
+  },
+  '/scottish-premiership-predictions': {
+    title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips',
+    description:
+      'Free Scottish Premiership (SPFL) AI football predictions today. High-confidence Celtic & Rangers Asian Handicap picks, Over 2.5 goals, and corners tips.',
+    keywords:
+      'scottish premiership predictions, spfl predictions today, celtic prediction today, rangers betting tips, scottish football accumulator tips',
+    canonicalPath: '/scottish-premiership-predictions',
+  },
 };
 
 /**

@@ -303,6 +303,46 @@ const ROUTE_META = {
     title: 'Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips',
     description: 'Daily Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy, 1st half goal frequency, and low-risk accumulator anchors.',
   },
+  '/tomorrow-predictions': {
+    title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds",
+    description: "Free AI football predictions for tomorrow's fixtures. Beat dropping odds with early 1X2 banker picks, Over 2.5 goals, BTTS tips, and Expected Goals (xG) projections.",
+  },
+  '/weekend-predictions': {
+    title: 'Weekend Football Predictions: Saturday & Sunday Banker Acca Tips',
+    description: 'Free AI weekend football predictions for Saturday and Sunday. Get 85%+ confidence banker picks, weekend 5-fold accumulator slips, BTTS, and Over 2.5 goals tips.',
+  },
+  '/asian-handicap-predictions': {
+    title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips',
+    description: 'Free Asian Handicap football predictions today. Beat bookmaker margins with expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines.',
+  },
+  '/draw-no-bet-predictions': {
+    title: 'Draw No Bet Predictions Today (DNB): Safe Football Refund Tips',
+    description: 'Free Draw No Bet (DNB) football predictions today. Protect your bankroll with 89% non-losing AI picks where your full stake is refunded on a draw.',
+  },
+  '/win-to-nil-predictions': {
+    title: 'Win to Nil & Clean Sheet Predictions Today: Defensive xGA Tips',
+    description: 'Free Win to Nil and Clean Sheet football predictions today. High-odds 2.25+ picks backed by Poisson zero-goal probability and defensive xGA metrics.',
+  },
+  '/arbitrage-calculator': {
+    title: 'Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool',
+    description: 'Free 2-way and 3-way arbitrage betting calculator (Surebet & Dutching tool). Enter bookmaker odds to calculate exact stakes and lock in risk-free profit.',
+  },
+  '/odds-converter': {
+    title: 'Betting Odds Converter & Implied Probability Calculator (UK/US/EU)',
+    description: 'Free sports betting odds converter and implied probability calculator. Instantly convert Decimal, Fractional (UK), American Moneyline, and implied win percentages.',
+  },
+  '/saudi-pro-league-predictions': {
+    title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips',
+    description: 'Free Saudi Pro League (Roshn SPL) AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Asian Handicap picks for Al-Hilal, Al-Nassr & Al-Ittihad.',
+  },
+  '/brazilian-serie-a-predictions': {
+    title: 'Brazilian Serie A Predictions Today: Brasileirão AI Tips & Odds',
+    description: 'Free Brazilian Serie A (Brasileirão) AI football predictions today. Get home-advantage 1X2 picks, BTTS, and xG forecasts for Palmeiras, Flamengo & Botafogo.',
+  },
+  '/scottish-premiership-predictions': {
+    title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips',
+    description: 'Free Scottish Premiership (SPFL) AI football predictions today. High-confidence Celtic & Rangers Asian Handicap picks, Over 2.5 goals, and corners tips.',
+  },
 };
 
 function clampTitle(raw) {
