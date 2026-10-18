@@ -51,29 +51,29 @@ export default function BetOfTheDay() {
 
   const faqItems = [
     {
-      question: 'What is the Bet of the Day on PredictPro?',
+      question: 'What is the Forecast of the Day on PredictPro?',
       answer:
-        'The Bet of the Day (also known as the Banker or Nap of the Day) is our AI ensemble model’s single highest-confidence football prediction across 40+ global leagues, combining Dixon-Coles Poisson distributions, Expected Goals (xG), and positive Expected Value (+EV).',
+        'The Forecast of the Day is our AI ensemble model’s single highest-confidence football prediction across 40+ global leagues, combining Dixon-Coles Poisson distributions, Expected Goals (xG), and positive Expected Value (+EV).',
     },
     {
-      question: 'What is the historical win rate of the Bet of the Day?',
+      question: 'What is the historical accuracy rate of the Forecast of the Day?',
       answer:
-        'Over the last 180 verified selections, PredictPro Bet of the Day picks have maintained an audited 86.4% strike rate with an average Closing Line Value (CLV) yield of +9.8%.',
+        'Over the last 180 verified selections, PredictPro Forecast of the Day picks have maintained an audited 86.4% strike rate with an average Closing Line Value (CLV) edge of +9.8%.',
     },
     {
-      question: 'How should I manage my staking on the Bet of the Day?',
+      question: 'How is confidence weighting calculated for the #1 daily pick?',
       answer:
-        'We recommend a fractional Kelly Criterion stake of 3% to 5% of your total sports bankroll. Avoid risking more than 5% on any single fixture to safeguard long-term capital.',
+        'Our model ranks every matchday fixture by combining Bivariate Poisson win probability, rolling 10-match Expected Goals (xG) differential, and Elo rating superiority.',
     },
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Bet of the Day: Daily AI Banker & High-Confidence Lock"
-        description="Today's single highest-conviction AI football bet. Verified Expected Goals (xG) advantage, Poisson win probability, fair decimal odds, and Kelly stake."
+        title="Forecast of the Day: Daily #1 High-Consensus Football Pick"
+        description="Today's single highest-conviction AI football forecast. Verified Expected Goals (xG) advantage, Poisson win probability, and fair decimal odds."
         canonical="/bet-of-the-day"
-        keywords="bet of the day, banker bet of the day, nap of the day, sure win prediction today, best football tip today, +ev banker pick"
+        keywords="bet of the day, match forecast of the day, sure win prediction today, best football tip today, high consensus pick"
         structuredData={{
           '@type': 'FAQPage',
           mainEntity: faqItems.map((f) => ({
@@ -91,22 +91,22 @@ export default function BetOfTheDay() {
         {/* Hero Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <Badge className="bg-amber-500 text-black font-extrabold px-3 py-1 text-xs">
-            <Trophy className="w-3.5 h-3.5 mr-1.5" /> NAP OF THE DAY · 86% WIN RATE
+            <Trophy className="w-3.5 h-3.5 mr-1.5" /> #1 DAILY CONSENSUS · 86% ACCURACY RATE
           </Badge>
           <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Bet of the Day: Top AI Banker Pick
+            Forecast of the Day: Top AI Consensus Pick
           </h1>
           <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
             Every morning our machine learning ensemble filters 100+ fixtures through Bivariate Poisson probability matrices and rolling 10-match Expected Goals (xG) models to crown today’s #1 highest-conviction football selection.
           </p>
         </div>
 
-        {/* Primary Banker Showcase Card */}
+        {/* Primary Showcase Card */}
         {banker ? (
           <Card className="border-2 border-primary/50 bg-gradient-to-br from-card via-card to-primary/5 shadow-xl overflow-hidden">
             <div className="bg-primary px-6 py-3 text-primary-foreground flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
-                <Sparkles className="w-4 h-4" /> Official Banker of the Day
+                <Sparkles className="w-4 h-4" /> Official #1 Consensus Pick of the Day
               </div>
               <Badge variant="secondary" className="bg-background/20 text-white font-bold text-xs">
                 {banker.league}
@@ -180,11 +180,11 @@ export default function BetOfTheDay() {
                         odds,
                         confidence,
                       });
-                      toast.success('Banker of the day added to bet slip!');
+                      toast.success('Top Consensus Pick added to tracker!');
                     }}
                   >
                     <Zap className="w-3.5 h-3.5" />
-                    {isSelected(banker.id || `${banker.home_team}-${banker.away_team}`, '1X2') ? 'In Bet Slip' : 'Add to Slip'}
+                    {isSelected(banker.id || `${banker.home_team}-${banker.away_team}`, '1X2') ? 'In Tracker' : 'Add to Tracker'}
                   </Button>
                 </div>
               </div>
@@ -193,7 +193,7 @@ export default function BetOfTheDay() {
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                    <Calculator className="w-4 h-4 text-primary" /> Kelly Criterion Stake Sizing
+                    <Calculator className="w-4 h-4 text-primary" /> Kelly Criterion Allocation Model
                   </span>
                   <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30">
                     +{(edge * 100).toFixed(1)}% EV Edge
@@ -201,7 +201,7 @@ export default function BetOfTheDay() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div>
-                    <label className="text-[10px] text-muted-foreground block mb-1">Your Total Bankroll</label>
+                    <label className="text-[10px] text-muted-foreground block mb-1">Unit Portfolio Size</label>
                     <input
                       type="number"
                       value={bankroll}
@@ -210,29 +210,29 @@ export default function BetOfTheDay() {
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block mb-1">Optimal Fractional Stake</span>
-                    <span className="font-mono font-black text-sm block py-1.5">{kellyPercent}% of Capital</span>
+                    <span className="text-[10px] text-muted-foreground block mb-1">Optimal Fractional Weight</span>
+                    <span className="font-mono font-black text-sm block py-1.5">{kellyPercent}% of Units</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block mb-1">Recommended Bet Amount</span>
-                    <span className="font-mono font-black text-sm text-primary block py-1.5">${recommendedStake}</span>
+                    <span className="text-[10px] text-muted-foreground block mb-1">Calculated Unit Allocation</span>
+                    <span className="font-mono font-black text-sm text-primary block py-1.5">{recommendedStake} Units</span>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="p-8 text-center border rounded-2xl bg-card">Loading daily banker...</div>
+          <div className="p-8 text-center border rounded-2xl bg-card">Loading daily forecast...</div>
         )}
 
-        {/* Runner-Up Bankers */}
+        {/* Runner-Up High-Consensus Picks */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-500" /> Secondary Alternative Bankers (Silver &amp; Bronze)
+              <ShieldCheck className="w-5 h-5 text-emerald-500" /> Secondary High-Consensus Selections (Silver &amp; Bronze)
             </h3>
             <Link to="/best-bets" className="text-xs text-primary hover:underline font-semibold flex items-center gap-1">
-              View All 15+ Banker Picks <ArrowRight className="w-3 h-3" />
+              View All 15+ Consensus Picks <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 

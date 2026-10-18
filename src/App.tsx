@@ -157,6 +157,7 @@ const AustralianALeaguePredictions = lazyWithRetry(() => import("./pages/Austral
 const TodayPredictions           = lazyWithRetry(() => import("./pages/TodayPredictions"));
 const TwoOddsPredictions         = lazyWithRetry(() => import("./pages/TwoOddsPredictions"));
 const FiveOddsPredictions        = lazyWithRetry(() => import("./pages/FiveOddsPredictions"));
+const TeamAnalyticsHub           = lazyWithRetry(() => import("./pages/TeamAnalyticsHub"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -514,6 +515,9 @@ const App = () => (
                             <Route path="/h2h"           element={<RouteBoundary component={H2HComparisonPage} />} />
                             <Route path="/compare"       element={<Navigate to="/h2h" replace />} />
                             <Route path="/statistics"    element={<RouteBoundary component={Statistics} />} />
+                            <Route path="/teams"         element={<RouteBoundary component={TeamAnalyticsHub} />} />
+                            <Route path="/teams/:teamSlug" element={<RouteBoundary component={TeamAnalyticsHub} />} />
+                            <Route path="/team/:teamSlug"  element={<RouteBoundary component={TeamAnalyticsHub} />} />
                             <Route path="/highlights"    element={<RouteBoundary component={Highlights} />} />
                             <Route path="/players"       element={<RouteBoundary component={PlayerSearch} />} />
                             <Route path="/standings"                    element={<RouteBoundary component={Standings} />} />

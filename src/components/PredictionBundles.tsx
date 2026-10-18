@@ -1,117 +1,51 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { usePredictionBundles } from '@/hooks/usePredictionBundles';
-import { useAuth } from '@/hooks/useAuth';
-import { MpesaPaymentDialog } from '@/components/MpesaPaymentDialog';
-import { Package, Loader2, Lock, Sparkles, Smartphone } from 'lucide-react';
+import { Package, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const FREE_BUNDLES = [
+  { id: 'daily', name: 'Today Match Digest', count: 'All Daily Fixtures', link: '/today-predictions' },
+  { id: 'consensus', name: '80%+ High Consensus', count: 'Top Statistical Picks', link: '/best-bets' },
+  { id: 'scores', name: 'Correct Score Matrices', count: '6×6 Poisson Heatmaps', link: '/correct-score' },
+  { id: 'clubs', name: 'Club xG & FDR Hub', count: 'Rolling xG & Schedules', link: '/teams' },
+];
+
 export const PredictionBundles = () => {
-  const { user } = useAuth();
-  const { bundles, loading } = usePredictionBundles();
-
-  if (loading) {
-    return (
-      <Card className="border-primary/20">
-        <CardContent className="flex items-center justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
           <Package className="h-6 w-6 text-primary" />
-          Prediction Bundles
+          Open-Access Forecast Bundles
         </h2>
         <p className="text-muted-foreground mt-2">
-          Buy predictions in bulk and save more!
+          Every match bundle is 100% free and unlocked with zero limits
         </p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {bundles.map((bundle, index) => {
-          const isBestValue = index === bundles.length - 1;
-          const originalPrice = bundle.discountPercent > 0
-            ? Math.round(bundle.priceKes / (1 - bundle.discountPercent / 100))
-            : bundle.priceKes;
-
-          return (
-            <Card
-              key={bundle.id}
-              className={`relative overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 ${
-                isBestValue ? 'border-primary ring-2 ring-primary/20' : ''
-              }`}
-            >
-              {bundle.discountPercent > 0 && (
-                <Badge className="absolute top-2 right-2 bg-red-500">
-                  -{bundle.discountPercent}%
-                </Badge>
-              )}
-
-              {isBestValue && (
-                <div className="absolute top-2 left-2">
-                  <Badge variant="default" className="bg-amber-500">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Best Value
-                  </Badge>
-                </div>
-              )}
-
-              <CardHeader className="pb-2 pt-8">
-                <CardTitle className="text-lg">{bundle.name}</CardTitle>
-                <CardDescription>
-                  {bundle.predictionsCount} Premium Predictions
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  {bundle.discountPercent > 0 && (
-                    <span className="text-sm text-muted-foreground line-through mr-2">
-                      KES {originalPrice}
-                    </span>
-                  )}
-                  <span className="text-2xl font-bold">KES {bundle.priceKes}</span>
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                  KES {Math.round(bundle.priceKes / bundle.predictionsCount)} per prediction
-                </div>
-
-                {!user ? (
-                  <Button asChild variant="outline" className="w-full">
-                    <Link to="/auth">
-                      <Lock className="mr-2 h-4 w-4" />
-                      Login to Purchase
-                    </Link>
-                  </Button>
-                ) : (
-                  <MpesaPaymentDialog
-                    plan={bundle.id}
-                    purpose="prediction_unlock"
-                    amount={bundle.priceKes}
-                    title={`${bundle.name} (${bundle.predictionsCount} Predictions)`}
-                    description={`Unlock ${bundle.predictionsCount} premium AI match predictions via M-Pesa STK Push.`}
-                    buttonText={`Pay KES ${bundle.priceKes}`}
-                  >
-                    <Button
-                      className={`w-full ${isBestValue ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' : ''}`}
-                      variant={isBestValue ? 'default' : 'outline'}
-                    >
-                      <Smartphone className="mr-2 h-4 w-4" />
-                      Buy {bundle.name}
-                    </Button>
-                  </MpesaPaymentDialog>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+        {FREE_BUNDLES.map((bundle) => (
+          <Card key={bundle.id} className="border-border/70 hover:border-primary/40 transition-all">
+            <CardHeader className="pb-2">
+              <Badge variant="outline" className="w-fit text-[10px] text-emerald-600 border-emerald-500/30 mb-1">
+                <Sparkles className="h-3 w-3 mr-1" />
+                100% Free
+              </Badge>
+              <CardTitle className="text-base">{bundle.name}</CardTitle>
+              <CardDescription>{bundle.count}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">FREE</div>
+              <Button asChild variant="outline" size="sm" className="w-full justify-between">
+                <Link to={bundle.link}>
+                  <span>Open Bundle</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

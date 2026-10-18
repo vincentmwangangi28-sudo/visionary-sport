@@ -36,9 +36,9 @@ import {
   RefreshCw,
   BellRing,
   Radio,
-  Volume2,
   Send,
 } from 'lucide-react';
+import { ForecastCalibrationPortfolio } from '@/components/ForecastCalibrationPortfolio';
 
 export default function PersonalizedDashboard() {
   const {
@@ -239,16 +239,11 @@ export default function PersonalizedDashboard() {
                       : 'text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold'
                   }
                 >
-                  {pushPermission === 'granted' ? 'Native Push Active' : 'In-App & Audio Only'}
+                  {pushPermission === 'granted' ? 'Native Push Active' : 'In-App Feed Active'}
                 </Badge>
-                {alertConfig.soundEnabled && (
-                  <Badge variant="secondary" className="text-[10px] font-semibold gap-1">
-                    <Volume2 className="h-2.5 w-2.5" /> Audio Chimes
-                  </Badge>
-                )}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Monitoring {pinnedTeams.length} clubs & {pinnedLeagues.length} tournaments. Kickoff alerts fire {alertConfig.kickoffLeadMinutes}m prior, plus {alertConfig.minConfidenceThreshold}%+ banker picks.
+                Monitoring {pinnedTeams.length} clubs &amp; {pinnedLeagues.length} tournaments. Kickoff alerts fire {alertConfig.kickoffLeadMinutes}m prior, plus {alertConfig.minConfidenceThreshold}%+ high-confidence model forecasts.
               </p>
             </div>
           </div>
@@ -270,7 +265,7 @@ export default function PersonalizedDashboard() {
               size="sm"
               onClick={() => testAlert('pinned_club')}
               className="h-8 text-xs font-semibold gap-1.5"
-              title="Dispatches a test match alert to verify sound and push"
+              title="Dispatches a test match alert to verify push and in-app feed"
             >
               <Send className="h-3 w-3" />
               Test Alert
@@ -689,6 +684,10 @@ export default function PersonalizedDashboard() {
             )}
           </TabsContent>
         </Tabs>
+
+        <div className="mt-8">
+          <ForecastCalibrationPortfolio />
+        </div>
       </main>
 
       <Footer />

@@ -132,10 +132,10 @@ export default function SureWinPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Sure Win Predictions Today: 88%+ AI Confidence Banker Bets"
-        description="Daily mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), acca anchors, and +EV odds."
+        title="Sure Win Predictions Today: 88%+ AI Consensus Forecasts"
+        description="Daily mathematical sure win predictions and high-consensus forecasts. Filter highest-confidence football picks (88%+ strike rate), multi-match anchors, and +EV models."
         canonical="/sure-win-predictions"
-        keywords="sure win prediction today, 100 sure wins, banker predictions today, sure banker picks, high confidence football tips, best sure bets today"
+        keywords="sure win prediction today, 100 sure wins, high consensus predictions today, high confidence football tips, best football forecasts today"
       />
       <Navbar />
 
@@ -148,10 +148,10 @@ export default function SureWinPredictions() {
             <ShieldCheck className="w-3.5 h-3.5 mr-1" /> VERIFIED 88%+ ALGORITHMIC STRIKE RATE
           </Badge>
           <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Sure Win Predictions Today
+            Sure Win &amp; High-Consensus Predictions Today
           </h1>
           <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Our highest-conviction football banker bets powered by Dixon-Coles Bivariate Poisson modeling. Every fixture is screened for massive Expected Goals (xG) dominance, home fortress form, and minimal variance.
+            Our highest-conviction football consensus forecasts powered by Dixon-Coles Bivariate Poisson modeling. Every fixture is screened for strong Expected Goals (xG) dominance, home fortress form, and minimal variance.
           </p>
         </div>
 
@@ -194,7 +194,7 @@ export default function SureWinPredictions() {
                 All Sure ({bankerMatches.length})
               </TabsTrigger>
               <TabsTrigger value="ultra" className="text-xs font-bold">
-                Ultra Bankers (1.25–1.45)
+                Ultra Consensus (1.25–1.45)
               </TabsTrigger>
               <TabsTrigger value="solid" className="text-xs font-bold">
                 Solid Picks (1.46–1.80)
@@ -238,7 +238,7 @@ export default function SureWinPredictions() {
                   <div className="p-3 bg-muted/50 rounded-xl border flex items-center justify-between">
                     <div>
                       <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                        Algorithmic Banker Pick
+                        Algorithmic Consensus Pick
                       </div>
                       <div className="text-sm font-black text-emerald-600 dark:text-emerald-400">
                         {match.recommendedPick}
@@ -340,9 +340,9 @@ export default function SureWinPredictions() {
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
                 3
               </div>
-              <h3 className="font-bold text-sm">Disciplined Staking</h3>
+              <h3 className="font-bold text-sm">Low-Variance Modeling</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Combine ultra-banker legs using Quarter-Kelly bankroll staking to protect capital while steadily growing long-term ROI.
+                Combine high-consensus legs using fractional probability weighting to evaluate multi-match outcome consistency.
               </p>
             </div>
           </div>
@@ -354,15 +354,15 @@ export default function SureWinPredictions() {
             <div className="space-y-3 text-xs text-muted-foreground">
               <div>
                 <strong className="text-foreground text-sm block mb-0.5">
-                  How often do these Sure Win picks hit?
+                  How often do these High-Consensus picks hit?
                 </strong>
-                PredictPro&apos;s Ultra Banker selections historically achieve an audited 86.4% to 89.2% win rate across major European domestic leagues.
+                PredictPro&apos;s Ultra Consensus selections historically achieve an audited 86.4% to 89.2% accuracy rate across major European domestic leagues.
               </div>
               <div>
                 <strong className="text-foreground text-sm block mb-0.5">
-                  Can I combine these into an accumulator?
+                  Can I combine these into a multi-match analysis?
                 </strong>
-                Yes! We recommend limiting accumulators to 3 or 4 banker legs (combined odds between 2.20 and 3.50) to avoid compounding unnecessary variance.
+                Yes! We recommend limiting multi-match combinations to 3 or 4 high-consensus legs to avoid compounding unnecessary statistical variance.
               </div>
             </div>
           </div>

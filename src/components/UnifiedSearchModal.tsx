@@ -296,11 +296,11 @@ export const UnifiedSearchModal: React.FC = () => {
                         AI Recommendations Hub
                       </span>
                       <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20 py-0 px-1.5 h-4">
-                        Daily Banker & +EV
+                        85%+ Consensus & +EV
                       </Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Browse algorithmic banker tips, goal machines & high-EV picks
+                      Browse algorithmic consensus forecasts, goal models & high-EV picks
                     </p>
                   </div>
                 </div>

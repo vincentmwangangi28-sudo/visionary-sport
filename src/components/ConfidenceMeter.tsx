@@ -39,7 +39,7 @@ function getCertaintyTier(confidence: number): CertaintyTier {
   if (confidence >= 85) {
     return {
       label: 'Ultra High Certainty',
-      badgeText: 'AI Banker',
+      badgeText: 'High Consensus',
       colorClass: 'text-emerald-800 dark:text-emerald-300',
       glowClass: 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/40',
       barColor: 'from-emerald-500 to-green-400',

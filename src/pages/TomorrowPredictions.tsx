@@ -117,8 +117,8 @@ export default function TomorrowPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds"
-        description="Free AI football predictions for tomorrow's fixtures. Beat dropping odds with early 1X2 banker picks, Over 2.5 goals, BTTS tips, and xG projections."
+        title="Tomorrow's Football Predictions: Early AI Forecasts & xG Models"
+        description="Free AI football predictions for tomorrow's fixtures. Analyze early 1X2 consensus picks, Over 2.5 goals, BTTS probabilities, and xG projections."
         canonical="/tomorrow-predictions"
         keywords="football predictions for tomorrow, tomorrow soccer predictions, tomorrow betting tips, early football odds tomorrow, sure wins tomorrow, btts tomorrow, over 2.5 goals tomorrow"
         structuredData={jsonLd}
@@ -164,7 +164,7 @@ export default function TomorrowPredictions() {
               <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Model Strike Rate</p>
                 <p className="text-2xl font-black text-primary">84.6%</p>
-                <p className="text-[11px] text-muted-foreground">Early Bankers</p>
+                <p className="text-[11px] text-muted-foreground">High Consensus</p>
               </div>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function TomorrowPredictions() {
                 onClick={() => setSelectedMarket('banker')}
                 className="text-xs font-bold"
               >
-                <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> 1X2 Early Bankers
+                <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> 1X2 High Consensus
               </Button>
               <Button
                 size="sm"

@@ -1,214 +1,168 @@
-import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useSubscription, SUBSCRIPTION_PLANS } from "@/hooks/useSubscription";
-import { useAuth } from "@/hooks/useAuth";
-import { PaymentDialog } from "@/components/PaymentDialog";
-import { MpesaPaymentDialog } from "@/components/MpesaPaymentDialog";
 import { CoinShop } from "@/components/CoinShop";
-import { PredictionBundles } from "@/components/PredictionBundles";
-import { Crown, Check, Star, Globe, Smartphone, Zap, Shield, BarChart2, Bell } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
-import { callEdgeFn } from "@/lib/callEdgeFunction";
-import { PaystackCheckoutButton } from "@/components/PaystackCheckoutButton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  CheckCircle2,
+  Sparkles,
+  Globe,
+  Zap,
+  ShieldCheck,
+  BarChart2,
+  Bell,
+  Layers,
+  SlidersHorizontal,
+  ArrowRight,
+  Flame,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
-const FEATURES: Record<string, { icon: typeof Check; label: string }[]> = {
-  basic: [
-    { icon: Zap, label: "10 AI predictions/day" },
-    { icon: BarChart2, label: "Basic stats & analysis" },
-    { icon: Globe, label: "5 leagues coverage" },
-    { icon: Check, label: "Email support" },
-  ],
-  pro: [
-    { icon: Zap, label: "Unlimited predictions" },
-    { icon: BarChart2, label: "Advanced stats + odds" },
-    { icon: Globe, label: "40+ leagues worldwide" },
-    { icon: Bell, label: "Live alerts & notifications" },
-    { icon: Star, label: "Value bet finder access" },
-    { icon: Check, label: "Priority support" },
-  ],
-  vip: [
-    { icon: Crown, label: "Everything in Pro" },
-    { icon: Star, label: "Correct score predictions" },
-    { icon: Zap, label: "AI chat unlimited" },
-    { icon: Shield, label: "Prediction insurance" },
-    { icon: BarChart2, label: "Expert 1-on-1 analysis" },
-    { icon: Check, label: "Ad-free experience" },
-  ],
-};
+const FREE_PLATFORM_MODULES = [
+  {
+    title: "Daily AI Match Predictions (40+ Leagues)",
+    description: "Unrestricted access to Bivariate Poisson & Expected Goals (xG) match forecasts across every major global competition.",
+    icon: Zap,
+    to: "/today-predictions",
+    cta: "Explore Today's Forecasts",
+    badge: "100% Free",
+  },
+  {
+    title: "Club Expected Goals (xG) & FDR Hub",
+    description: "Rolling 10-match xG vs xGA trendlines, Home/Away λ splits, 6-axis Tactical DNA, and 5-match Fixture Difficulty Ratings.",
+    icon: BarChart2,
+    to: "/teams",
+    cta: "Open Club xG Hub",
+    badge: "Unlocked",
+  },
+  {
+    title: "Exact Scoreline Poisson Matrices",
+    description: "Full 6×6 Bivariate Poisson scoreline probability heatmaps and top expected score vectors for every fixture.",
+    icon: Layers,
+    to: "/correct-score",
+    cta: "View Scoreline Matrices",
+    badge: "100% Free",
+  },
+  {
+    title: "Quantitative Match Screener",
+    description: "Filter daily fixtures by model consensus, Expected Goals (xG) totals, BTTS probability, and statistical edge.",
+    icon: SlidersHorizontal,
+    to: "/screener",
+    cta: "Launch Match Screener",
+    badge: "Unlocked",
+  },
+  {
+    title: "Live In-Play xG Momentum Engine",
+    description: "Real-time remaining-time Poisson probability simulator with red-card state adjustments and 10-minute momentum waves.",
+    icon: Flame,
+    to: "/live",
+    cta: "Open Live Match Center",
+    badge: "100% Free",
+  },
+  {
+    title: "Automated Match Alerts & Calibration",
+    description: "Browser push and Telegram match notifications plus Brier Score forecast calibration tracking on your personal dashboard.",
+    icon: Bell,
+    to: "/dashboard",
+    cta: "Open My Dashboard",
+    badge: "Unlocked",
+  },
+];
 
 export default function Shop() {
-  const { subscription, isPremium } = useSubscription();
-  const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const [currency, setCurrency] = useState<"usd" | "kes">("usd");
-
-  useEffect(() => {
-    if (searchParams.get("success") === "true") {
-      toast.success("Payment successful! Your subscription is being activated.");
-    }
-    const paystackRef = searchParams.get("reference") || searchParams.get("trxref");
-    if (searchParams.get("paystack") === "success" && paystackRef) {
-      callEdgeFn('paystack-verify', { reference: paystackRef })
-        .then((data) => {
-          const d = data as { success?: boolean };
-          if (d?.success) toast.success('Payment verified! Your subscription is now active.');
-          else toast.error('Payment verification failed. Contact support if you were charged.');
-        })
-        .catch(() => toast.error('Could not verify payment. Contact support if you were charged.'));
-    }
-  }, [searchParams]);
-
-  const plans = SUBSCRIPTION_PLANS.map(p => ({
-    ...p,
-    priceKes: p.price,
-    priceUsd: p.id === "basic" ? 299 : p.id === "pro" ? 599 : 999,
-    displayPrice: currency === "kes" ? `KES ${p.price}` : `$${(p.id === "basic" ? 2.99 : p.id === "pro" ? 5.99 : 9.99)}`,
-  }));
-
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="PredictPro VIP Club: Premium AI Football Tips & Banker Passes"
-        description="Unlock VIP high-yield banker predictions, +EV value bets, and 17-game Mega Jackpot slips. Instant access via M-Pesa or card."
+        title="100% Free AI Football Analytics & Open-Access Predictions | PredictPro"
+        description="All PredictPro AI football predictions, Expected Goals (xG) models, Correct Score Poisson matrices, and 40+ league analytics are 100% free with zero paywalls."
         canonical="/shop"
-        keywords="predictpro vip, premium football tips, buy football predictions, mpesa betting tips, vip banker pass"
+        keywords="free football predictions, free expected goals xg analytics, open access soccer predictions, free correct score model"
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-24 pb-20 md:pb-12 max-w-6xl">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black mb-3">Upgrade Your Game</h1>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Join 10,000+ football fans worldwide using AI predictions to stay ahead.
+          <Badge className="mb-3 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-3.5 py-1 text-xs font-bold">
+            <ShieldCheck className="h-3.5 w-3.5 mr-1.5 inline" />
+            100% Free Open-Access Platform · Zero Paywalls
+          </Badge>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">
+            Every Quantitative Model is 100% Free
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
+            PredictPro is completely free for all football fans and analysts worldwide. No subscriptions, no locked predictions, and no payment required.
           </p>
-          {/* Currency toggle */}
-          <div className="flex items-center justify-center gap-3 mt-4" role="group" aria-label="Select store display currency">
-            <button
-              type="button"
-              onClick={() => setCurrency("usd")}
-              aria-label="Switch display currency to USD ($)"
-              aria-pressed={currency === "usd"}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${currency === "usd" ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}
-            >
-              <Globe className="h-4 w-4" aria-hidden="true" /> USD ($)
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrency("kes")}
-              aria-label="Switch display currency to KES (M-Pesa)"
-              aria-pressed={currency === "kes"}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all ${currency === "kes" ? "bg-green-600 text-white border-green-600" : "hover:bg-muted"}`}
-            >
-              <Smartphone className="h-4 w-4" aria-hidden="true" /> KES (M-Pesa)
-            </button>
-          </div>
         </div>
 
-        <Tabs defaultValue="plans">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-            <TabsTrigger value="plans">Subscription Plans</TabsTrigger>
-            <TabsTrigger value="bundles">Prediction Bundles</TabsTrigger>
-            <TabsTrigger value="coins">Buy Coins</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="plans">
-            {isPremium() && (
-              <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3">
-                <Crown className="h-6 w-6 text-primary flex-shrink-0" />
-                <div>
-                  <p className="font-semibold">You're on the <span className="text-primary capitalize">{subscription?.plan}</span> plan</p>
-                  <p className="text-sm text-muted-foreground">Expires: {new Date(subscription?.expires_at ?? "").toLocaleDateString("en-KE", { dateStyle: "long" })}</p>
-                </div>
+        {/* Active Free Forever Banner */}
+        <Card className="mb-8 border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-primary/5 to-transparent">
+          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="h-11 w-11 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
-            )}
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {plans.map(plan => {
-                const isCurrentPlan = subscription?.plan === plan.id;
-                const isPopular = plan.id === "pro";
-                const features = FEATURES[plan.id] ?? [];
-
-                return (
-                  <Card key={plan.id} className={`relative flex flex-col ${isPopular ? "border-primary shadow-lg shadow-primary/10 scale-[1.02]" : ""}`}>
-                    {isPopular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-primary text-primary-foreground px-4">Most Popular</Badge>
-                      </div>
-                    )}
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 capitalize">
-                        {plan.id === "vip" && <Crown className="h-5 w-5 text-yellow-500" />}
-                        {plan.id === "pro" && <Star className="h-5 w-5 text-primary" />}
-                        {plan.name}
-                      </CardTitle>
-                      <CardDescription>
-                        <span className="text-3xl font-black text-foreground">{plan.displayPrice}</span>
-                        <span className="text-muted-foreground">/month</span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col gap-4">
-                      <ul className="space-y-2">
-                        {features.map(({ icon: Icon, label }) => (
-                          <li key={label} className="flex items-center gap-2 text-sm">
-                            <Icon className="h-4 w-4 text-primary flex-shrink-0" />
-                            {label}
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="mt-auto pt-4">
-                        {!user ? (
-                          <Link to="/auth"><Button className="w-full">Sign in to Subscribe</Button></Link>
-                        ) : isCurrentPlan ? (
-                          <Button className="w-full" disabled variant="outline">Current Plan ✓</Button>
-                        ) : currency === "kes" ? (
-                          <MpesaPaymentDialog
-                            plan={plan.id}
-                            purpose="premium_subscription"
-                            amount={plan.priceKes}
-                            title={`${plan.name} Plan — M-Pesa / Mobile Money`}
-                            buttonText={`Pay KES ${plan.priceKes}`}
-                          >
-                            <Button className="w-full" variant={isPopular ? "default" : "outline"}>
-                              <Smartphone className="h-4 w-4 mr-2" />Pay KES {plan.priceKes}
-                            </Button>
-                          </MpesaPaymentDialog>
-                        ) : (
-                          <PaymentDialog plan={plan.id} priceKes={plan.priceKes} priceUsd={plan.priceUsd * 100}>
-                            <Button className="w-full" variant={isPopular ? "default" : "outline"}>
-                              <Globe className="h-4 w-4 mr-2" />Get {plan.name}
-                            </Button>
-                          </PaymentDialog>
-                        )}
-                        {user && !isCurrentPlan && (
-                          <PaystackCheckoutButton plan={plan.id as 'basic' | 'pro' | 'vip'} className="w-full mt-2" />
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg font-black text-foreground">Full Open-Access Pass Active</h2>
+                  <Badge className="bg-emerald-600 text-white text-[10px] font-bold">$0 / Forever</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  All daily match forecasts, 80%+ high-consensus models, Correct Score matrices, Referee Set-Piece xG, and Club FDR analytics are unlocked automatically.
+                </p>
+              </div>
             </div>
+            <Link to="/today-predictions" className="shrink-0">
+              <Button className="gap-2 font-bold">
+                <Sparkles className="h-4 w-4" />
+                Explore Today&apos;s Forecasts
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
 
-            <div className="mt-8 text-center text-sm text-muted-foreground space-y-1">
-              <p>🔒 Payments secured by Stripe & Lipana (Safaricom) • Cancel anytime</p>
-              <p>🌍 Available worldwide — USD cards, M-Pesa, Apple Pay, Google Pay</p>
-            </div>
-          </TabsContent>
+        {/* Unlocked Platform Modules Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+          {FREE_PLATFORM_MODULES.map((mod) => {
+            const Icon = mod.icon;
+            return (
+              <Card key={mod.title} className="flex flex-col border-border/70 hover:border-primary/40 transition-all">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/5">
+                      {mod.badge}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-base font-bold">{mod.title}</CardTitle>
+                  <CardDescription className="text-xs leading-relaxed">
+                    {mod.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="mt-auto pt-3">
+                  <Link to={mod.to}>
+                    <Button variant="outline" size="sm" className="w-full justify-between text-xs font-bold">
+                      <span>{mod.cta}</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-          <TabsContent value="bundles">
-            <PredictionBundles />
-          </TabsContent>
+        {/* Community Bonus Coins & Voucher Redeemer (100% Free) */}
+        <div className="max-w-3xl mx-auto">
+          <CoinShop />
+        </div>
 
-          <TabsContent value="coins">
-            <CoinShop />
-          </TabsContent>
-        </Tabs>
+        <div className="mt-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+          <Globe className="h-4 w-4 text-primary" />
+          <span>Open-access football statistical intelligence · Free for everyone worldwide</span>
+        </div>
       </main>
       <Footer />
     </div>

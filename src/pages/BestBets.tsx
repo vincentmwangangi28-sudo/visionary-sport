@@ -136,31 +136,31 @@ export default function BestBets() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Free Guru Tips Today & Sure Banker Football Bets | PredictPro"
-        description="Verified daily football banker predictions and sure 1X2 guru tips today with 75%+ AI confidence, Double Chance (1X), and Draw No Bet locks."
+        title="Free Guru Tips Today & High-Consensus Football Forecasts | PredictPro"
+        description="Verified daily football high-consensus predictions and 1X2 statistical forecasts today with 75%+ AI confidence, Double Chance (1X), and Draw No Bet models."
         canonical="/best-bets"
-        keywords="free guru tips today football prediction, guru predictions for today, best football bets today, sure bets today, banker bet of the day, high confidence football predictions, 1x2 banker tips"
+        keywords="free guru tips today football prediction, guru predictions for today, best football forecasts today, high confidence football predictions, 1x2 consensus tips"
         breadcrumbs={[
           { name: 'Home', item: '/' },
-          { name: 'Best Banker Football Bets Today', item: '/best-bets' }
+          { name: 'Top Consensus Football Forecasts Today', item: '/best-bets' }
         ]}
         structuredData={{
           '@type': 'FAQPage',
           mainEntity: [
             {
               '@type': 'Question',
-              name: 'What qualifies as a Banker Football Bet on PredictPro?',
+              name: 'What qualifies as a High-Consensus Football Forecast on PredictPro?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'A Banker Football Bet on PredictPro requires a minimum 75% to 92% ensemble AI confidence score backed by positive Expected Goals (xG) differentials, superior 5-match rolling form, and favorable head-to-head (H2H) dominance.'
+                text: 'A High-Consensus Football Forecast on PredictPro requires a minimum 75% to 92% ensemble AI confidence score backed by positive Expected Goals (xG) differentials, superior 5-match rolling form, and favorable head-to-head (H2H) dominance.'
               }
             },
             {
               '@type': 'Question',
-              name: 'Should I use 1X2 Straight Win, Draw No Bet (DNB), or Double Chance (1X) for banker picks?',
+              name: 'Should I use 1X2 Straight Win, Draw No Bet (DNB), or Double Chance (1X) for high-consensus picks?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Use 1X2 Straight Win for home favourites with 80%+ model confidence, Draw No Bet (DNB) to protect your stake on competitive away favourites, and Double Chance (1X/X2) when combining 3 to 5 legs inside a multi-match accumulator slip.'
+                text: 'Use 1X2 Straight Win for home favourites with 80%+ model confidence, Draw No Bet (DNB) for competitive away favourites, and Double Chance (1X/X2) when combining 3 to 5 legs inside a multi-match analysis.'
               }
             }
           ]
@@ -172,7 +172,7 @@ export default function BestBets() {
         <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
-          <span className="text-foreground font-medium">Best Banker Football Bets Today</span>
+          <span className="text-foreground font-medium">Top Consensus Football Forecasts Today</span>
         </nav>
 
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -182,11 +182,11 @@ export default function BestBets() {
                 👑 Free Guru Tips Today (75%–92% AI Strike Rate)
               </span>
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
-                ⚡ 1X2 Banker Locks
+                ⚡ 1X2 High-Consensus Models
               </span>
             </div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-primary" />Free Guru Tips &amp; Best Banker Football Bets Today
+              <Trophy className="h-8 w-8 text-primary" />Free Guru Tips &amp; Top Consensus Football Forecasts Today
             </h1>
             <p className="text-muted-foreground mt-1">1X2 &amp; Double Chance outcome vectors ranked by confidence-weighted probability · {minConf}%+ threshold · Rolling 7-day window</p>
           </div>

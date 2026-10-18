@@ -1,0 +1,570 @@
+import React, { useState, useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
+import { SEO } from '@/components/SEO';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { TeamLogo } from '@/components/TeamLogo';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Activity,
+  BarChart3,
+  Calendar,
+  ChevronRight,
+  Globe,
+  Search,
+  Shield,
+  Target,
+  TrendingUp,
+} from 'lucide-react';
+
+export interface ClubAnalyticsProfile {
+  slug: string;
+  name: string;
+  league: string;
+  country: string;
+  elo: number;
+  xgFor90: number;
+  xgAgainst90: number;
+  poissonAttack: number;
+  poissonDefense: number;
+  cleanSheetPct: number;
+  bttsPct: number;
+  over25Pct: number;
+  ppda: number;
+  recentForm: Array<'W' | 'D' | 'L'>;
+  upcomingFixtures: Array<{
+    opponent: string;
+    venue: 'H' | 'A';
+    fdr: 1 | 2 | 3 | 4 | 5;
+    matchSlug: string;
+    projectedXg: string;
+    winProb: number;
+  }>;
+}
+
+export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
+  {
+    slug: 'arsenal',
+    name: 'Arsenal',
+    league: 'Premier League',
+    country: 'England',
+    elo: 1984,
+    xgFor90: 2.18,
+    xgAgainst90: 0.79,
+    poissonAttack: 1.42,
+    poissonDefense: 0.64,
+    cleanSheetPct: 48,
+    bttsPct: 52,
+    over25Pct: 64,
+    ppda: 8.4,
+    recentForm: ['W', 'W', 'D', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Chelsea', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '2.14 - 0.98', winProb: 68 },
+      { opponent: 'Liverpool', venue: 'A', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.42 - 1.56', winProb: 38 },
+      { opponent: 'Aston Villa', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '1.95 - 0.88', winProb: 64 },
+      { opponent: 'Tottenham Hotspur', venue: 'A', fdr: 4, matchSlug: 'manchester-united-vs-tottenham-hotspur', projectedXg: '1.76 - 1.24', winProb: 54 },
+      { opponent: 'Newcastle United', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '1.88 - 0.92', winProb: 62 },
+    ],
+  },
+  {
+    slug: 'real-madrid',
+    name: 'Real Madrid',
+    league: 'La Liga',
+    country: 'Spain',
+    elo: 2012,
+    xgFor90: 2.34,
+    xgAgainst90: 0.86,
+    poissonAttack: 1.51,
+    poissonDefense: 0.69,
+    cleanSheetPct: 45,
+    bttsPct: 58,
+    over25Pct: 69,
+    ppda: 9.1,
+    upcomingFixtures: [
+      { opponent: 'Barcelona', venue: 'H', fdr: 5, matchSlug: 'real-madrid-vs-barcelona', projectedXg: '2.08 - 1.46', winProb: 56 },
+      { opponent: 'Atletico Madrid', venue: 'A', fdr: 4, matchSlug: 'atletico-madrid-vs-sevilla', projectedXg: '1.62 - 1.18', winProb: 49 },
+      { opponent: 'Sevilla', venue: 'H', fdr: 2, matchSlug: 'atletico-madrid-vs-sevilla', projectedXg: '2.42 - 0.74', winProb: 76 },
+      { opponent: 'Bayern Munich', venue: 'H', fdr: 5, matchSlug: 'bayern-munich-vs-borussia-dortmund', projectedXg: '1.94 - 1.38', winProb: 54 },
+      { opponent: 'AC Milan', venue: 'A', fdr: 3, matchSlug: 'inter-milan-vs-ac-milan', projectedXg: '1.78 - 1.12', winProb: 58 },
+    ],
+    recentForm: ['W', 'W', 'W', 'D', 'W'],
+  },
+  {
+    slug: 'manchester-city',
+    name: 'Manchester City',
+    league: 'Premier League',
+    country: 'England',
+    elo: 2025,
+    xgFor90: 2.41,
+    xgAgainst90: 0.82,
+    poissonAttack: 1.56,
+    poissonDefense: 0.66,
+    cleanSheetPct: 46,
+    bttsPct: 56,
+    over25Pct: 71,
+    ppda: 7.9,
+    recentForm: ['W', 'D', 'W', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Liverpool', venue: 'A', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.64 - 1.58', winProb: 46 },
+      { opponent: 'Arsenal', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.86 - 1.14', winProb: 59 },
+      { opponent: 'Tottenham Hotspur', venue: 'H', fdr: 3, matchSlug: 'manchester-united-vs-tottenham-hotspur', projectedXg: '2.35 - 1.05', winProb: 71 },
+      { opponent: 'Chelsea', venue: 'A', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.92 - 1.22', winProb: 58 },
+      { opponent: 'Newcastle United', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '2.24 - 0.86', winProb: 72 },
+    ],
+  },
+  {
+    slug: 'liverpool',
+    name: 'Liverpool',
+    league: 'Premier League',
+    country: 'England',
+    elo: 1992,
+    xgFor90: 2.26,
+    xgAgainst90: 0.88,
+    poissonAttack: 1.47,
+    poissonDefense: 0.71,
+    cleanSheetPct: 44,
+    bttsPct: 60,
+    over25Pct: 68,
+    ppda: 8.1,
+    recentForm: ['W', 'W', 'W', 'D', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Manchester City', venue: 'H', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.78 - 1.52', winProb: 48 },
+      { opponent: 'Chelsea', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '2.12 - 1.08', winProb: 65 },
+      { opponent: 'Arsenal', venue: 'A', fdr: 5, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.38 - 1.64', winProb: 36 },
+      { opponent: 'Aston Villa', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '2.18 - 0.96', winProb: 68 },
+      { opponent: 'Manchester United', venue: 'A', fdr: 4, matchSlug: 'manchester-united-vs-tottenham-hotspur', projectedXg: '1.89 - 1.18', winProb: 57 },
+    ],
+  },
+  {
+    slug: 'barcelona',
+    name: 'Barcelona',
+    league: 'La Liga',
+    country: 'Spain',
+    elo: 1978,
+    xgFor90: 2.29,
+    xgAgainst90: 0.94,
+    poissonAttack: 1.49,
+    poissonDefense: 0.75,
+    cleanSheetPct: 42,
+    bttsPct: 62,
+    over25Pct: 72,
+    ppda: 8.3,
+    recentForm: ['W', 'W', 'L', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Real Madrid', venue: 'A', fdr: 5, matchSlug: 'real-madrid-vs-barcelona', projectedXg: '1.46 - 2.08', winProb: 34 },
+      { opponent: 'Atletico Madrid', venue: 'H', fdr: 4, matchSlug: 'atletico-madrid-vs-sevilla', projectedXg: '1.96 - 1.04', winProb: 63 },
+      { opponent: 'Sevilla', venue: 'H', fdr: 2, matchSlug: 'atletico-madrid-vs-sevilla', projectedXg: '2.48 - 0.78', winProb: 77 },
+      { opponent: 'Bayern Munich', venue: 'H', fdr: 5, matchSlug: 'bayern-munich-vs-borussia-dortmund', projectedXg: '1.88 - 1.52', winProb: 51 },
+      { opponent: 'Borussia Dortmund', venue: 'A', fdr: 4, matchSlug: 'bayern-munich-vs-borussia-dortmund', projectedXg: '1.74 - 1.36', winProb: 52 },
+    ],
+  },
+  {
+    slug: 'bayern-munich',
+    name: 'Bayern Munich',
+    league: 'Bundesliga',
+    country: 'Germany',
+    elo: 1996,
+    xgFor90: 2.52,
+    xgAgainst90: 0.96,
+    poissonAttack: 1.61,
+    poissonDefense: 0.77,
+    cleanSheetPct: 41,
+    bttsPct: 64,
+    over25Pct: 76,
+    ppda: 8.0,
+    recentForm: ['W', 'W', 'W', 'W', 'D'],
+    upcomingFixtures: [
+      { opponent: 'Borussia Dortmund', venue: 'H', fdr: 4, matchSlug: 'bayern-munich-vs-borussia-dortmund', projectedXg: '2.36 - 1.28', winProb: 67 },
+      { opponent: 'Real Madrid', venue: 'A', fdr: 5, matchSlug: 'real-madrid-vs-barcelona', projectedXg: '1.38 - 1.94', winProb: 35 },
+      { opponent: 'Inter Milan', venue: 'H', fdr: 4, matchSlug: 'inter-milan-vs-ac-milan', projectedXg: '2.04 - 1.08', winProb: 62 },
+      { opponent: 'PSG', venue: 'H', fdr: 4, matchSlug: 'psg-vs-marseille', projectedXg: '2.16 - 1.18', winProb: 64 },
+      { opponent: 'Ajax', venue: 'A', fdr: 3, matchSlug: 'ajax-vs-psv-eindhoven', projectedXg: '2.28 - 1.12', winProb: 66 },
+    ],
+  },
+  {
+    slug: 'inter-milan',
+    name: 'Inter Milan',
+    league: 'Serie A',
+    country: 'Italy',
+    elo: 1974,
+    xgFor90: 2.08,
+    xgAgainst90: 0.74,
+    poissonAttack: 1.36,
+    poissonDefense: 0.61,
+    cleanSheetPct: 52,
+    bttsPct: 48,
+    over25Pct: 58,
+    ppda: 9.4,
+    recentForm: ['W', 'D', 'W', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'AC Milan', venue: 'H', fdr: 4, matchSlug: 'inter-milan-vs-ac-milan', projectedXg: '1.84 - 1.06', winProb: 61 },
+      { opponent: 'Juventus', venue: 'A', fdr: 4, matchSlug: 'juventus-vs-napoli', projectedXg: '1.38 - 1.16', winProb: 46 },
+      { opponent: 'Napoli', venue: 'H', fdr: 4, matchSlug: 'juventus-vs-napoli', projectedXg: '1.79 - 0.98', winProb: 60 },
+      { opponent: 'Arsenal', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.52 - 1.28', winProb: 49 },
+      { opponent: 'Atletico Madrid', venue: 'A', fdr: 4, matchSlug: 'atletico-madrid-vs-sevilla', projectedXg: '1.34 - 1.26', winProb: 44 },
+    ],
+  },
+  {
+    slug: 'gor-mahia',
+    name: 'Gor Mahia',
+    league: 'FKF Premier League',
+    country: 'Kenya',
+    elo: 1685,
+    xgFor90: 1.84,
+    xgAgainst90: 0.66,
+    poissonAttack: 1.34,
+    poissonDefense: 0.58,
+    cleanSheetPct: 56,
+    bttsPct: 42,
+    over25Pct: 51,
+    ppda: 9.8,
+    recentForm: ['W', 'W', 'D', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'AFC Leopards', venue: 'H', fdr: 4, matchSlug: 'gor-mahia-vs-afc-leopards', projectedXg: '1.76 - 0.72', winProb: 69 },
+      { opponent: 'Tusker FC', venue: 'A', fdr: 4, matchSlug: 'gor-mahia-vs-afc-leopards', projectedXg: '1.42 - 0.94', winProb: 54 },
+      { opponent: 'Kenya Police FC', venue: 'H', fdr: 3, matchSlug: 'gor-mahia-vs-afc-leopards', projectedXg: '1.68 - 0.68', winProb: 66 },
+      { opponent: 'Al Ahly', venue: 'A', fdr: 5, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '0.88 - 1.82', winProb: 24 },
+      { opponent: 'Bandari FC', venue: 'H', fdr: 2, matchSlug: 'gor-mahia-vs-afc-leopards', projectedXg: '1.94 - 0.58', winProb: 74 },
+    ],
+  },
+  {
+    slug: 'al-ahly',
+    name: 'Al Ahly',
+    league: 'Egyptian Premier League',
+    country: 'Egypt',
+    elo: 1842,
+    xgFor90: 2.12,
+    xgAgainst90: 0.64,
+    poissonAttack: 1.46,
+    poissonDefense: 0.55,
+    cleanSheetPct: 58,
+    bttsPct: 44,
+    over25Pct: 56,
+    ppda: 8.6,
+    recentForm: ['W', 'W', 'W', 'W', 'D'],
+    upcomingFixtures: [
+      { opponent: 'Zamalek', venue: 'H', fdr: 4, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.92 - 0.84', winProb: 67 },
+      { opponent: 'Mamelodi Sundowns', venue: 'A', fdr: 5, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '1.28 - 1.36', winProb: 41 },
+      { opponent: 'Wydad AC', venue: 'H', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.86 - 0.76', winProb: 68 },
+      { opponent: 'Raja Casablanca', venue: 'A', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.44 - 1.08', winProb: 52 },
+      { opponent: 'Pyramids FC', venue: 'H', fdr: 4, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.78 - 0.88', winProb: 63 },
+    ],
+  },
+  {
+    slug: 'mamelodi-sundowns',
+    name: 'Mamelodi Sundowns',
+    league: 'South Africa PSL',
+    country: 'South Africa',
+    elo: 1818,
+    xgFor90: 2.04,
+    xgAgainst90: 0.68,
+    poissonAttack: 1.41,
+    poissonDefense: 0.57,
+    cleanSheetPct: 55,
+    bttsPct: 45,
+    over25Pct: 54,
+    ppda: 8.2,
+    recentForm: ['W', 'W', 'W', 'D', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Orlando Pirates', venue: 'H', fdr: 4, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '1.82 - 0.86', winProb: 65 },
+      { opponent: 'Kaizer Chiefs', venue: 'A', fdr: 3, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '1.76 - 0.82', winProb: 63 },
+      { opponent: 'Al Ahly', venue: 'H', fdr: 5, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.48 - 1.18', winProb: 51 },
+      { opponent: 'Wydad AC', venue: 'A', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.32 - 1.14', winProb: 46 },
+      { opponent: 'Stellenbosch FC', venue: 'H', fdr: 2, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '2.08 - 0.66', winProb: 74 },
+    ],
+  },
+];
+
+function buildFallbackClubProfile(slug: string): ClubAnalyticsProfile {
+  const cleanName = slug
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const seed = slug.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return {
+    slug,
+    name: cleanName,
+    league: 'Global Football Division',
+    country: 'International',
+    elo: 1760 + (seed % 210),
+    xgFor90: Number((1.55 + (seed % 8) * 0.1).toFixed(2)),
+    xgAgainst90: Number((0.88 + (seed % 6) * 0.08).toFixed(2)),
+    poissonAttack: Number((1.18 + (seed % 6) * 0.06).toFixed(2)),
+    poissonDefense: Number((0.72 + (seed % 5) * 0.05).toFixed(2)),
+    cleanSheetPct: 38 + (seed % 18),
+    bttsPct: 48 + (seed % 20),
+    over25Pct: 52 + (seed % 22),
+    ppda: Number((8.5 + (seed % 7) * 0.3).toFixed(1)),
+    recentForm: ['W', 'D', 'W', 'W', 'L'],
+    upcomingFixtures: [
+      { opponent: 'Arsenal', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.64 - 1.18', winProb: 54 },
+      { opponent: 'Real Madrid', venue: 'A', fdr: 5, matchSlug: 'real-madrid-vs-barcelona', projectedXg: '1.12 - 1.84', winProb: 32 },
+      { opponent: 'Inter Milan', venue: 'H', fdr: 4, matchSlug: 'inter-milan-vs-ac-milan', projectedXg: '1.58 - 1.06', winProb: 52 },
+      { opponent: 'Liverpool', venue: 'A', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.22 - 1.76', winProb: 35 },
+      { opponent: 'Bayern Munich', venue: 'H', fdr: 4, matchSlug: 'bayern-munich-vs-borussia-dortmund', projectedXg: '1.54 - 1.32', winProb: 48 },
+    ],
+  };
+}
+
+function getFdrBadgeClass(fdr: number): string {
+  if (fdr <= 2) return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+  if (fdr === 3) return 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30';
+  if (fdr === 4) return 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30';
+  return 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30';
+}
+
+export default function TeamAnalyticsHub() {
+  const { teamSlug } = useParams<{ teamSlug?: string }>();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const activeClub = useMemo(() => {
+    if (!teamSlug) return FEATURED_CLUB_PROFILES[0];
+    const found = FEATURED_CLUB_PROFILES.find(
+      (c) => c.slug.toLowerCase() === teamSlug.toLowerCase()
+    );
+    return found || buildFallbackClubProfile(teamSlug);
+  }, [teamSlug]);
+
+  const filteredClubs = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return FEATURED_CLUB_PROFILES;
+    return FEATURED_CLUB_PROFILES.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.league.toLowerCase().includes(q) ||
+        c.country.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
+
+  const canonicalPath = teamSlug ? `/teams/${activeClub.slug}` : '/teams';
+  const pageTitle = teamSlug
+    ? `${activeClub.name} xG Stats, Poisson Ratings & FDR Schedule | PredictPro`
+    : 'Club Expected Goals (xG) Analytics & Fixture Difficulty Hub | PredictPro';
+  const pageDesc = teamSlug
+    ? `${activeClub.name} (${activeClub.league}) quantitative profile: ${activeClub.xgFor90} xG/90, ${activeClub.xgAgainst90} xGA/90, ELO ${activeClub.elo}, Poisson ratings & 5-match FDR schedule.`
+    : 'Explore club-by-club Expected Goals (xG), Bivariate Poisson attack and defense coefficients, ELO ratings, and 5-match Fixture Difficulty Ratings (FDR).';
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
+      <SEO
+        title={pageTitle.length > 70 ? `${activeClub.name} xG Stats & FDR | PredictPro` : pageTitle}
+        description={pageDesc.slice(0, 158)}
+        canonical={canonicalPath}
+        keywords={`${activeClub.name} xG stats, ${activeClub.name} fixture difficulty rating, ${activeClub.name} poisson rating, club football analytics`}
+      />
+      <Navbar />
+
+      <main className="container mx-auto px-4 py-24 pb-20 max-w-6xl space-y-8" id="main-content">
+        <Breadcrumbs
+          currentTitle={teamSlug ? `${activeClub.name} Analytics` : 'Club Analytics & FDR Hub'}
+        />
+
+        {/* Hero Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-border/60">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className="bg-primary text-primary-foreground font-bold text-xs">
+                <BarChart3 className="h-3.5 w-3.5 mr-1" /> CLUB xG &amp; POISSON TELEMETRY HUB
+              </Badge>
+              <Badge variant="outline" className="text-xs font-mono">
+                ELO Rating: {activeClub.elo}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {activeClub.league} ({activeClub.country})
+              </Badge>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight flex items-center gap-3">
+              <TeamLogo team={activeClub.name} league={activeClub.league} size="md" />
+              <span>{activeClub.name} — Quantitative xG &amp; FDR Profile</span>
+            </h1>
+            <p className="text-sm text-muted-foreground max-w-3xl">
+              Rolling 10-match Expected Goals ($xG$ / $xGA$), Dixon-Coles Bivariate Poisson attack ($\alpha$) and defense ($\beta$) parameters, pressing intensity (PPDA), and upcoming 5-Match Fixture Difficulty Ratings (FDR).
+            </p>
+          </div>
+
+          <div className="w-full lg:w-72">
+            <div className="relative">
+              <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter clubs (Arsenal, Al Ahly...)"
+                className="pl-9 text-xs h-9"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Club Selector Strip */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {filteredClubs.map((club) => {
+            const isCurrent = club.slug === activeClub.slug;
+            return (
+              <Link
+                key={club.slug}
+                to={`/teams/${club.slug}`}
+                className={`px-3 py-2 rounded-xl border text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+                  isCurrent
+                    ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                    : 'bg-card hover:border-primary/40 text-foreground border-border/70'
+                }`}
+              >
+                <TeamLogo team={club.name} league={club.league} size="xs" />
+                <span>{club.name}</span>
+                <span className="font-mono text-[10px] opacity-75">{club.elo}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* 6 Core Statistical Metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Card className="border-border/70 bg-card">
+            <CardContent className="p-3.5">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                Expected Goals / 90
+              </span>
+              <span className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+                {activeClub.xgFor90} xG
+              </span>
+              <span className="text-[11px] text-muted-foreground">Attack α: {activeClub.poissonAttack}</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 bg-card">
+            <CardContent className="p-3.5">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                xG Conceded / 90
+              </span>
+              <span className="text-xl font-black font-mono text-sky-600 dark:text-sky-400 mt-1 block">
+                {activeClub.xgAgainst90} xGA
+              </span>
+              <span className="text-[11px] text-muted-foreground">Defense β: {activeClub.poissonDefense}</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 bg-card">
+            <CardContent className="p-3.5">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                Net xG Differential
+              </span>
+              <span className="text-xl font-black font-mono text-primary mt-1 block">
+                +{(activeClub.xgFor90 - activeClub.xgAgainst90).toFixed(2)}
+              </span>
+              <span className="text-[11px] text-muted-foreground">Per 90 Minutes</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 bg-card">
+            <CardContent className="p-3.5">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                Clean Sheet Rate
+              </span>
+              <span className="text-xl font-black font-mono text-foreground mt-1 block">
+                {activeClub.cleanSheetPct}%
+              </span>
+              <span className="text-[11px] text-muted-foreground">Defensive Solidity</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 bg-card">
+            <CardContent className="p-3.5">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                Over 2.5 Goals Freq
+              </span>
+              <span className="text-xl font-black font-mono text-foreground mt-1 block">
+                {activeClub.over25Pct}%
+              </span>
+              <span className="text-[11px] text-muted-foreground">BTTS: {activeClub.bttsPct}%</span>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 bg-card">
+            <CardContent className="p-3.5">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                Pressing Index (PPDA)
+              </span>
+              <span className="text-xl font-black font-mono text-amber-600 dark:text-amber-400 mt-1 block">
+                {activeClub.ppda}
+              </span>
+              <span className="text-[11px] text-muted-foreground">Passes Allowed/Def Action</span>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 5-Match Fixture Difficulty Rating (FDR) Calendar */}
+        <Card className="border-border/80 bg-card">
+          <CardHeader className="p-5 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  {activeClub.name} — 5-Match Fixture Difficulty Rating (FDR) &amp; xG Projections
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  FDR scale from 1 (Favorable Matchup) to 5 (Elite Opposition), weighted by opponent ELO and home/away venue adjustment.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {activeClub.recentForm.map((res, idx) => (
+                  <span
+                    key={idx}
+                    className={`h-6 w-6 rounded-md text-[11px] font-black flex items-center justify-center ${
+                      res === 'W'
+                        ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                        : res === 'D'
+                        ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                        : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                    }`}
+                  >
+                    {res}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-5 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {activeClub.upcomingFixtures.map((fix, i) => (
+                <Link
+                  key={i}
+                  to={`/predict/${fix.matchSlug}`}
+                  className="p-3.5 rounded-xl border border-border/70 bg-background/70 hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-2">
+                      <Badge variant="outline" className="text-[10px] font-mono">
+                        GW+{i + 1} ({fix.venue})
+                      </Badge>
+                      <Badge variant="outline" className={`text-[10px] font-bold ${getFdrBadgeClass(fix.fdr)}`}>
+                        FDR {fix.fdr}/5
+                      </Badge>
+                    </div>
+                    <p className="font-black text-sm text-foreground group-hover:text-primary transition-colors">
+                      vs {fix.opponent}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground font-mono mt-1">
+                      Proj xG: {fix.projectedXg}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Win Prob:</span>
+                    <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+                      {fix.winProb}% <ChevronRight className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+      <Footer />
+    </div>
+  );
+}

@@ -73,6 +73,7 @@ export const Navbar = () => {
     { to: "/track-record",  label: t('nav.track_record', "Track Record"),   icon: ShieldCheck },
     { to: "/value-bets",    label: t('nav.value_bets', "Value Bets"),     icon: TrendingUp },
     { to: "/streaks",       label: "Streaks & Trends Radar",              icon: Flame },
+    { to: "/teams",         label: "Club xG & FDR Hub",                   icon: BarChart2 },
     { to: "/h2h",           label: "H2H Matchup Simulator",               icon: ArrowLeftRight },
     { to: "/archive",       label: t('nav.archive', "Results Archive"),icon: CheckCircle2 },
     { to: "/live",          label: t('nav.live', "Live Scores"),    icon: Activity },
@@ -99,7 +100,6 @@ export const Navbar = () => {
     { to: "/highlights",    label: "Video Highlights",                   icon: Activity },
     { to: "/sports",        label: "Multi-Sports",                       icon: Globe },
     { to: "/performance",   label: t('nav.performance', "Performance"),    icon: BarChart2, protected: true },
-    { to: "/shop",          label: t('nav.shop', "Shop"),           icon: ShoppingBag, protected: true },
     { to: "/rewards",       label: t('nav.rewards', "Rewards"),        icon: Gift, protected: true },
     { to: "/best-bets",     label: t('nav.best_bets', "Best Bets"),      icon: Flame },
     { to: "/predict",       label: t('nav.predictor', "Predictor"),      icon: Zap },
@@ -122,6 +122,7 @@ export const Navbar = () => {
   ];
 
   const extendedDesktopLinks = [
+    { to: "/teams",         label: "Club xG Hub" },
     { to: "/streaks",       label: "Streaks Radar" },
     { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },
     { to: "/tournaments",   label: "Tournaments" },

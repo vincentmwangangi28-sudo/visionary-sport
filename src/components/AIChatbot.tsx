@@ -11,7 +11,7 @@ export const AIChatbot = () => {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([{
     role: 'assistant',
-    content: "Hi! I'm **PredictPro Scout** powered by Gemini AI 🤖. Ask me about any match, tactical lineups, banker accas, value bets, or today's top picks!",
+    content: "Hi! I'm **PredictPro Scout** powered by Gemini AI 🤖. Ask me about any match, tactical lineups, high-consensus forecasts, +EV edges, or today's top picks!",
   }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,16 +40,16 @@ export const AIChatbot = () => {
       } else if (isRecommendationQuery) {
         setMsgs(m => [...m, {
           role: 'assistant',
-          content: "🎯 **Today's Top AI Recommendations:**\n\n• 🛡️ **Banker**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **High EV Value**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **Goal Machine**: Liverpool vs Man City ➔ BTTS - Yes (81% Conf @ 1.68)\n\nTip: You can generate 1-click accumulator slips in our new **AI Recommendations Hub**!"
+          content: "🎯 **Today's Top AI Recommendations:**\n\n• 🛡️ **High Consensus**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **High EV Value**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **Goal Machine**: Liverpool vs Man City ➔ BTTS - Yes (81% Conf @ 1.68)\n\nTip: You can explore all statistical forecasts in our **AI Recommendations Hub**!"
         }]);
       } else {
-        setMsgs(m => [...m, { role: 'assistant', content: 'Sorry, I had trouble responding. Try asking about today\'s recommendations or banker bets!' }]);
+        setMsgs(m => [...m, { role: 'assistant', content: 'Sorry, I had trouble responding. Try asking about today\'s recommendations or high-consensus forecasts!' }]);
       }
     } catch {
       if (isRecommendationQuery) {
         setMsgs(m => [...m, {
           role: 'assistant',
-          content: "🎯 **Today's Top AI Recommendations:**\n\n• 🛡️ **Banker**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **High EV Value**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **Goal Machine**: Liverpool vs Man City ➔ BTTS - Yes (81% Conf @ 1.68)\n\nTip: You can generate 1-click accumulator slips in our new **AI Recommendations Hub**!"
+          content: "🎯 **Today's Top AI Recommendations:**\n\n• 🛡️ **High Consensus**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **High EV Value**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **Goal Machine**: Liverpool vs Man City ➔ BTTS - Yes (81% Conf @ 1.68)\n\nTip: You can explore all statistical forecasts in our **AI Recommendations Hub**!"
         }]);
       } else {
         setMsgs(m => [...m, { role: 'assistant', content: 'Connection error. Please try again or explore our Recommendations page for daily picks.' }]);
@@ -146,7 +146,7 @@ export const AIChatbot = () => {
 
           {/* Quick prompts */}
           <div className="px-3 pb-1.5 flex gap-1.5 overflow-x-auto flex-shrink-0">
-            {['⭐ AI Briefing', '🛡️ 3 Bankers', '💎 High EV Value', '⚽ Goal Machines', 'Tactical Analysis'].map(q => (
+            {['⭐ AI Briefing', '🛡️ Top 3 Consensus', '💎 High EV Value', '⚽ Goal Machines', 'Tactical Analysis'].map(q => (
               <button
                 key={q}
                 onClick={() => { setInput(q); }}

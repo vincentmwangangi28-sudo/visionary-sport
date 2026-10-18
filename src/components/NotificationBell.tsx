@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bell, Volume2, VolumeX, Sparkles, Trophy, Flame, Clock, Trash2, Send, Radio, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, Sparkles, Trophy, Flame, Clock, Trash2, Send, Radio, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,7 @@ const DEMO_NOTIFICATIONS: Notification[] = [
   {
     id: 'demo-rec-1',
     type: 'new_prediction',
-    message: '⭐ Daily AI Recommendations Hub updated: 4 Banker Tips and 3 +EV Value Edges are ready for today!',
+    message: '⭐ Daily AI Analytics Hub updated: 4 High-Confidence Forecasts and 3 +EV Statistical Edges are ready for today!',
     read: false,
     created_at: new Date(Date.now() - 5 * 60000).toISOString(),
   },
@@ -85,52 +85,7 @@ export const NotificationBell = () => {
   });
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'feed' | 'matches'>('feed');
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
-    return localStorage.getItem('predictpro_sound_alerts') !== 'false';
-  });
   const { formatKickoff } = useUserPreferences();
-
-  const audioCtxRef = useRef<AudioContext | null>(null);
-
-  const playChime = useCallback(() => {
-    if (!soundEnabled) return;
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioCtx();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') ctx.resume();
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.15); // A5
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
-    } catch (e) {
-      console.warn('Audio playback error', e);
-    }
-  }, [soundEnabled]);
-
-  const toggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    localStorage.setItem('predictpro_sound_alerts', String(next));
-    if (next) {
-      playChime();
-      toast.success('Sound alerts enabled');
-    } else {
-      toast.info('Sound alerts muted');
-    }
-  };
 
   const fetchSupabaseNotifications = useCallback(async () => {
     if (!user) return;
@@ -190,7 +145,6 @@ export const NotificationBell = () => {
       localStorage.setItem('predictpro_notifications', JSON.stringify(updated));
       return updated;
     });
-    playChime();
     toast.info(picked);
   };
 
@@ -208,14 +162,13 @@ export const NotificationBell = () => {
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         (payload) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
-          playChime();
         }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, playChime]);
+  }, [user]);
 
   // Sync with local automated alert feed updates
   useEffect(() => {
@@ -265,16 +218,6 @@ export const NotificationBell = () => {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSound}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              title={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
-              aria-label={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
-            >
-              {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" aria-hidden="true" /> : <VolumeX className="h-4 w-4" aria-hidden="true" />}
-            </Button>
             {activeTab === 'feed' && unread > 0 && (
               <button 
                 type="button" 

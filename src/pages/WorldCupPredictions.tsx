@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 const FAQ = [
   { q: "Who will win World Cup 2026?", a: "Our AI gives Brazil and France the highest probability based on squad depth, recent form and historical World Cup performance." },
   { q: "Where is World Cup 2026 hosted?", a: "FIFA World Cup 2026 is co-hosted by USA, Canada and Mexico — the first three-nation edition featuring 48 teams." },
-  { q: "Are World Cup 2026 predictions free?", a: "Yes — all standard predictions are free. Premium unlocks correct score tips and advanced H2H analysis." },
+  { q: "Are World Cup 2026 predictions free?", a: "Yes — 100% of PredictPro's World Cup predictions, including Correct Score matrices, Elo ratings, and H2H tactical analysis, are completely free." },
   { q: "How accurate are the predictions?", a: "Our AI achieved 76% accuracy on World Cup 2022 group stage vs the 65% industry benchmark." },
 ];
 

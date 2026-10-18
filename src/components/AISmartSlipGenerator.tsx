@@ -129,10 +129,10 @@ export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({
 
     return {
       banker: {
-        name: 'Banker Multi',
+        name: 'High-Consensus Multi',
         icon: ShieldCheck,
-        tagline: 'High probability locks from upcoming verified fixtures',
-        badge: 'High Confidence Acca',
+        tagline: 'High-probability statistical projections from upcoming verified fixtures',
+        badge: 'High Consensus Model',
         badgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30',
         legs: bankerLegs,
       },

@@ -104,7 +104,7 @@ export default function Rewards() {
           <h1 className="text-3xl font-bold flex items-center justify-center gap-3 mb-2">
             <Gift className="h-8 w-8 text-primary" />Daily Rewards
           </h1>
-          <p className="text-muted-foreground">Spin daily, earn coins, unlock premium predictions.</p>
+          <p className="text-muted-foreground">Spin daily, earn community coins, and climb the analyst leaderboard — all predictions are 100% free.</p>
           {user && (
             <div className="inline-flex items-center gap-2 mt-3 bg-primary/10 rounded-full px-4 py-1.5">
               <span className="text-lg">🪙</span>
@@ -192,19 +192,14 @@ export default function Rewards() {
 
             <EmailDigestToggle />
 
-            <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-primary/10 border-emerald-500/20">
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-3 flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" />Redeem Coins</h4>
-                <div className="space-y-1.5 text-sm">
-                  {[['Premium Prediction', '100'], ['Correct Score Unlock', '200'], ['Basic Plan (1 day)', '500'], ['Pro Plan (1 month)', '5,000']].map(([item, cost]) => (
-                    <div key={item} className="flex justify-between">
-                      <span className="text-muted-foreground">{item}</span>
-                      <span className="font-bold">🪙 {cost}</span>
-                    </div>
-                  ))}
-                </div>
-                <Link to="/shop">
-                  <Button size="sm" className="w-full mt-3 gap-2"><Trophy className="h-4 w-4" />Go to Shop</Button>
+                <h4 className="font-semibold mb-2 flex items-center gap-2"><Trophy className="h-4 w-4 text-emerald-500" />100% Free Open-Access Platform</h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  All daily match forecasts, Correct Score matrices, and Club xG analytics are unlocked for free. Use your coins for community badges and leaderboard status!
+                </p>
+                <Link to="/today-predictions">
+                  <Button size="sm" className="w-full gap-2"><Trophy className="h-4 w-4" />Explore Free Forecasts</Button>
                 </Link>
               </CardContent>
             </Card>

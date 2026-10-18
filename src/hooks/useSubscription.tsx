@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 
-interface Subscription {
+export interface Subscription {
   id: string;
   plan: string;
   status: string;
@@ -12,70 +10,66 @@ interface Subscription {
 }
 
 export const SUBSCRIPTION_PLANS = [
-  { id: 'basic', name: 'Basic', price: 299, predictionsPerDay: 10, color: '#3b82f6', features: ['10 AI predictions/day', 'Basic stats', '5 leagues'] },
-  { id: 'pro',   name: 'Pro',   price: 599, predictionsPerDay: -1, color: '#10b981', features: ['Unlimited predictions', '40+ leagues', 'Value bets', 'Live alerts'] },
-  { id: 'vip',   name: 'VIP',   price: 999, predictionsPerDay: -1, color: '#f59e0b', features: ['Everything in Pro', 'Correct score', 'AI chat unlimited', 'Ad-free'] },
+  {
+    id: 'basic',
+    name: 'Community Access',
+    price: 0,
+    predictionsPerDay: -1,
+    color: '#3b82f6',
+    features: ['Unlimited daily AI forecasts', 'Full Expected Goals (xG) stats', '40+ global leagues', '100% Free Forever'],
+  },
+  {
+    id: 'pro',
+    name: 'Quantitative Pro (Free)',
+    price: 0,
+    predictionsPerDay: -1,
+    color: '#10b981',
+    features: ['Unlimited match predictions', '40+ leagues worldwide', '+EV Value Screener & CLV', 'Live In-Play xG Momentum'],
+  },
+  {
+    id: 'vip',
+    name: 'Full Open Access',
+    price: 0,
+    predictionsPerDay: -1,
+    color: '#f59e0b',
+    features: ['All Quantitative Models Included', 'Correct Score Poisson Matrices', 'Club xG & FDR Intelligence Hub', 'Zero Paywalls or Subscriptions'],
+  },
 ];
 
+const FREE_FOREVER_SUBSCRIPTION: Subscription = {
+  id: 'free-open-access',
+  plan: 'vip',
+  status: 'active',
+  expires_at: '2099-12-31T23:59:59.000Z',
+  expiresAt: '2099-12-31T23:59:59.000Z',
+  price_kes: 0,
+};
+
 export const useSubscription = () => {
-  const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [subscription, setSubscription] = useState<Subscription | null>(FREE_FOREVER_SUBSCRIPTION);
+  const [loading] = useState(false);
 
-  const userId = user?.id;
+  // Entire platform is 100% free — all users have full unrestricted access
+  const isPremium = () => true;
 
-  useEffect(() => {
-    if (!userId) { setSubscription(null); return; }
-    let cancelled = false;
-    setLoading(true);
-    supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .gte('expires_at', new Date().toISOString())
-      .order('expires_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) console.warn('subscription:', error.message);
-        setSubscription(data ? { ...data, expiresAt: data.expires_at } : null);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  const isPremium = () => {
-    if (!subscription) return false;
-    return subscription.status === 'active' && new Date(subscription.expires_at) > new Date();
-  };
-
-  const activateSubscription = async (planId: string) => {
-    const selectedPlan = SUBSCRIPTION_PLANS.find(p => p.id === planId) || SUBSCRIPTION_PLANS[1];
-    const expiresAt = new Date(Date.now() + 30 * 86400000).toISOString();
+  const activateSubscription = async (planOrId: string | { id: string }) => {
+    const planId = typeof planOrId === 'string' ? planOrId : planOrId.id;
+    const selectedPlan = SUBSCRIPTION_PLANS.find((p) => p.id === planId) || SUBSCRIPTION_PLANS[2];
     const newSub: Subscription = {
-      id: `sub-${Date.now()}`,
+      id: 'free-open-access',
       plan: selectedPlan.id,
       status: 'active',
-      expires_at: expiresAt,
-      expiresAt,
-      price_kes: selectedPlan.price,
+      expires_at: '2099-12-31T23:59:59.000Z',
+      expiresAt: '2099-12-31T23:59:59.000Z',
+      price_kes: 0,
     };
     setSubscription(newSub);
-    return newSub;
+    return { ...newSub, success: true, message: 'All features are 100% free and active on your account!' };
   };
-
-  const plan = subscription?.plan ?? 'free';
 
   return {
     subscription,
-    plan,
+    plan: 'vip' as const,
     isPremium,
     loading,
     activateSubscription,

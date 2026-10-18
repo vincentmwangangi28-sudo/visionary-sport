@@ -57,6 +57,8 @@ import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { MatchHeadToHeadTimeline } from '@/components/MatchHeadToHeadTimeline';
+import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
+import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { QuickInsightCard } from '@/components/QuickInsightCard';
 import { toast } from 'sonner';
@@ -726,6 +728,11 @@ export default function MatchPrediction() {
 
           {/* TAB 2: Asian Handicap, Cards & Corners, and Poisson xG */}
           <TabsContent value="markets" className="space-y-6">
+            <RefereeSetPieceMatrix
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+              league={prediction.league}
+            />
             <AdvancedMarketsTab
               homeTeam={prediction.home_team}
               awayTeam={prediction.away_team}
@@ -776,6 +783,27 @@ export default function MatchPrediction() {
             />
           </TabsContent>
         </Tabs>
+
+        {/* Live Remaining-Time Poisson & xG Momentum Simulator + Referee Set-Piece Telemetry */}
+        <div className="mt-8 space-y-6">
+          <InPlayXgMomentumEngine
+            fixture={{
+              homeTeam: prediction.home_team,
+              awayTeam: prediction.away_team,
+              league: prediction.league,
+              initialMinute: 58,
+              initialHomeGoals: 1,
+              initialAwayGoals: 1,
+              baseHomeXg: Number(homeXgVal),
+              baseAwayXg: Number(awayXgVal),
+            }}
+          />
+          <RefereeSetPieceMatrix
+            homeTeam={prediction.home_team}
+            awayTeam={prediction.away_team}
+            league={prediction.league}
+          />
+        </div>
 
         {/* Verified Post-Match Settlement & Closing Line Value (CLV) Audit Archive */}
         <Card className="mt-8 border-emerald-500/25 bg-gradient-to-br from-emerald-500/5 via-card to-background">
@@ -836,6 +864,12 @@ export default function MatchPrediction() {
 
         {/* Footer Navigation */}
         <div className="mt-8 flex flex-col sm:flex-row gap-3">
+          <Link to="/teams" className="flex-1">
+            <Button variant="default" className="w-full gap-2 text-xs font-bold">
+              <BarChart3 className="h-3.5 w-3.5" />
+              Club xG &amp; FDR Analytics Hub
+            </Button>
+          </Link>
           <Link to="/screener" className="flex-1">
             <Button variant="secondary" className="w-full gap-2 text-xs font-bold">
               <Zap className="h-3.5 w-3.5 text-primary" />

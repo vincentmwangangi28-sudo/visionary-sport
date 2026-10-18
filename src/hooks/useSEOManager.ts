@@ -987,6 +987,14 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'football prediction rewards, free football prediction challenge, tipster loyalty points, predictpro vip rewards',
     canonicalPath: '/rewards',
   },
+  '/teams': {
+    title: 'Club Expected Goals (xG) Analytics & FDR Hub | PredictPro',
+    description:
+      'Explore club-by-club Expected Goals (xG), Bivariate Poisson attack and defense coefficients, ELO ratings, and 5-match Fixture Difficulty Ratings (FDR).',
+    keywords:
+      'club xg stats, fixture difficulty rating fdr, football team poisson ratings, club elo ratings, expected goals per 90',
+    canonicalPath: '/teams',
+  },
   '/auth': {
     title: 'Sign In or Create Account — PredictPro AI Football Hub',
     description:
@@ -1153,6 +1161,21 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
       keywords: `${slug.replace(/-/g, ' ')}, football betting strategy, ai football predictions`,
       canonicalPath: `/blog/${slug}`,
       type: 'article',
+    };
+  }
+
+  // Dynamic Club Analytics Route: /teams/:teamSlug or /team/:teamSlug
+  const teamRoute = cleanPath.match(/^\/teams?\/([^/]+)$/i);
+  if (teamRoute) {
+    const slug = teamRoute[1].toLowerCase();
+    const humanized = slug
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      title: `${humanized} xG Stats, Poisson Ratings & FDR | PredictPro`,
+      description: `${humanized} quantitative football profile: Expected Goals (xG/90), Bivariate Poisson attack & defense ratings, ELO strength, and 5-match FDR schedule.`,
+      keywords: `${humanized.toLowerCase()} xg stats, ${humanized.toLowerCase()} fixture difficulty, ${humanized.toLowerCase()} poisson rating`,
+      canonicalPath: `/teams/${slug}`,
     };
   }
 

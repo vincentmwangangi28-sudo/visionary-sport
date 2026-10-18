@@ -39,7 +39,7 @@ export default function MidweekJackpotPredictions() {
         '@type': 'Dataset',
         name: '13-Game & 15-Game Midweek Jackpot Predictions Today (SportPesa & Betika)',
         description:
-          'AI-modeled 13-game and 15-game Midweek Jackpot predictions with 6 mathematical bankers and optimal double-chance combinations.',
+          'AI-modeled 13-game and 15-game Midweek Jackpot predictions with 6 mathematical core selections and optimal double-chance combinations.',
         url: 'https://predictpro.guru/midweek-jackpot-predictions',
       },
     ],
@@ -49,8 +49,8 @@ export default function MidweekJackpotPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Midweek Jackpot Predictions Today: 13 & 15 Games AI Banker Tips"
-        description="Free 13-game and 15-game Midweek Jackpot predictions for SportPesa, Betika & Mozzart. Get 6 AI Banker locks and Double Combination slips for bonus payouts."
+        title="Midweek Jackpot Predictions Today: 13 & 15 Games AI Pool Models"
+        description="Free 13-game and 15-game Midweek Jackpot predictions. Get 6 AI High-Consensus core selections and Double Combination models."
         keywords="midweek jackpot predictions, sportpesa midweek jackpot predictions, betika midweek jackpot 15 games, 13 games jackpot tips today, midweek jackpot bonuses"
         canonicalPath="/midweek-jackpot-predictions"
         schema={schemas}
@@ -74,15 +74,15 @@ export default function MidweekJackpotPredictions() {
               <Trophy className="w-3.5 h-3.5 mr-1.5" /> 13 &amp; 15 Games Midweek Pool
             </Badge>
             <Badge variant="outline" className="text-xs border-border/60">
-              6 Fixed Bankers + 7 Strategic Hedges
+              6 Core Selections + 7 Strategic Hedges
             </Badge>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
-            Midweek Jackpot Predictions (13-Game &amp; 15-Game AI Combination Slip)
+            Midweek Jackpot Predictions (13-Game &amp; 15-Game AI Combination Model)
           </h1>
           <p className="text-muted-foreground max-w-3xl text-sm sm:text-base leading-relaxed mb-5">
-            Midweek Jackpots feature high-parity Championship, Champions League, and Europa League fixtures. Our Monte Carlo pool model locks in
-            <strong> 6 high-confidence fixed bankers (81%+ probability)</strong> so you can concentrate your Double Combinations on tight 50/50 draw-prone games to hit 10/13, 11/13, 12/13, and 13/13 payouts.
+            Midweek Fixture Pools feature high-parity Championship, Champions League, and Europa League fixtures. Our Monte Carlo pool model locks in
+            <strong> 6 high-confidence core selections (81%+ probability)</strong> so you can concentrate your Double Combinations on tight 50/50 draw-prone games.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button
@@ -129,7 +129,7 @@ export default function MidweekJackpotPredictions() {
                       {item.match}
                       {item.isBanker && (
                         <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">
-                          FIXED BANKER
+                          CORE SELECTION
                         </Badge>
                       )}
                     </div>

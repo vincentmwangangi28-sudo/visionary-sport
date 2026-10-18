@@ -70,8 +70,8 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'card' }: Props)
   const outcome = getPrediction(p);
   const confidence = getConfidence(p);
   const analysis = getAnalysis(p);
-  const isPremiumLocked = p.is_premium && !isPremium() && outcome.includes('🔒');
-  const locked = isPremiumLocked && !coinUnlocked;
+  const isPremiumLocked = false;
+  const locked = false;
   const relativeKickoff = getKickoffRelative(p.match_date);
   const matchSlug = formatMatchSlug(p.home_team, p.away_team, p.match_date);
   const matchUrl = `/predict/${matchSlug}`;

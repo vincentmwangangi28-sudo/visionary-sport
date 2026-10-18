@@ -125,7 +125,7 @@ export const PWAInstallPrompt: React.FC = () => {
                 Add PredictPro to Home Screen
               </h3>
               <p id="pwa-prompt-desc" className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                Enjoy instant 1-tap app launch, zero browser URL bar, and 100% offline access to banker tips!
+                Enjoy instant 1-tap app launch, zero browser URL bar, and 100% offline access to Expected Goals (xG) forecasts!
               </p>
             </div>
           </div>

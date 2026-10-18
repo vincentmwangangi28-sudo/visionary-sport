@@ -500,7 +500,7 @@ export const UpcomingMatches: React.FC = () => {
                           </Badge>
                           {isBanker && (
                             <Badge variant="secondary" className="text-[10px] font-black bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 gap-1">
-                              <Flame className="h-2.5 w-2.5" /> Banker
+                              <Flame className="h-2.5 w-2.5" /> 80%+ Model
                             </Badge>
                           )}
                         </div>

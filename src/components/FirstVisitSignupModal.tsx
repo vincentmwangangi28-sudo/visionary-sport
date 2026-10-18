@@ -469,17 +469,17 @@ export const FirstVisitSignupModal: React.FC = () => {
           {/* Top Accent Header */}
           <div className="bg-card border-b border-border/60 px-6 pt-6 pb-5">
             <div className="flex items-center gap-2 text-xs font-semibold text-primary mb-2">
-              <span>Free Member Access</span>
+              <span>100% Free Forever</span>
               <span aria-hidden="true">·</span>
-              <span>50 Welcome Coins Included</span>
+              <span>Zero Paywalls or Subscriptions</span>
             </div>
             <DialogHeader className="text-left space-y-1.5">
               <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
                 {accountCreated
                   ? 'Check Your Inbox to Activate'
                   : mode === 'register'
-                    ? 'Save Your Picks & Unlock Daily AI Banker Alerts'
-                    : 'Sign In to Your PredictPro Account'}
+                    ? 'Save Your Forecasts & Sync Custom Match Alerts'
+                    : 'Sign In to Your Free PredictPro Account'}
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {accountCreated
@@ -494,11 +494,11 @@ export const FirstVisitSignupModal: React.FC = () => {
               <div className="grid grid-cols-3 gap-2.5 mt-4 pt-3.5 border-t border-border/50 text-xs">
                 <div className="flex items-start gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-                  <span className="text-muted-foreground leading-tight">Daily 80%+ Banker Locks</span>
+                  <span className="text-muted-foreground leading-tight">100% Free 80%+ Consensus</span>
                 </div>
                 <div className="flex items-start gap-1.5">
                   <BookmarkCheck className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                  <span className="text-muted-foreground leading-tight">Sync &amp; Save Bet Slips</span>
+                  <span className="text-muted-foreground leading-tight">Sync Saved Match Forecasts</span>
                 </div>
                 <div className="flex items-start gap-1.5">
                   <Bell className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />

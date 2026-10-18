@@ -28,8 +28,6 @@ import {
   Filter,
   BarChart3,
   Calendar,
-  Volume2,
-  VolumeX,
   ExternalLink,
 } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
@@ -39,6 +37,7 @@ import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { RealtimeIndicator } from '@/components/RealtimeIndicator';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
+import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -49,7 +48,6 @@ export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
   const [statusTab, setStatusTab] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [soundAlerts, setSoundAlerts] = useState<boolean>(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { region, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
@@ -211,39 +209,16 @@ export default function LiveScores() {
     return groups;
   }, [filteredMatches]);
 
-  // Synthesize Web Audio alert chime for live goals (Sofascore style)
-  const playGoalAlertSound = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-      osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.12); // G5
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.38);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.4);
-    } catch {
-      // AudioContext may be restricted by autoplay policy until user gesture
-    }
-  };
-
   const prevGoalsRef = React.useRef<number | null>(null);
   useEffect(() => {
     if (matches && matches.length > 0) {
       const totalGoals = matches.reduce((acc, m) => acc + (m.home_score || 0) + (m.away_score || 0), 0);
-      if (prevGoalsRef.current !== null && totalGoals > prevGoalsRef.current && soundAlerts) {
-        playGoalAlertSound();
+      if (prevGoalsRef.current !== null && totalGoals > prevGoalsRef.current) {
         toast.success('⚽ GOAL scored in in-play matches!');
       }
       prevGoalsRef.current = totalGoals;
     }
-  }, [matches, soundAlerts]);
+  }, [matches]);
 
   // Compute live statistics, attack momentum, and match timeline for Sofascore/Flashscore display
   const getMatchStats = (m: ApiFootballLiveFixture) => {
@@ -366,28 +341,6 @@ export default function LiveScores() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const next = !soundAlerts;
-                setSoundAlerts(next);
-                if (next) {
-                  playGoalAlertSound();
-                  toast.success('Goal audio alerts activated');
-                } else {
-                  toast.info('Goal audio alerts muted');
-                }
-              }}
-              className={`text-xs min-h-[38px] gap-1.5 font-semibold ${
-                soundAlerts ? 'border-primary/40 text-primary' : 'text-muted-foreground'
-              }`}
-              title={soundAlerts ? 'Goal audio chime active' : 'Goal audio alerts muted'}
-            >
-              {soundAlerts ? <Volume2 className="h-3.5 w-3.5 text-primary" /> : <VolumeX className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{soundAlerts ? 'Sound ON' : 'Muted'}</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => refresh()}
               disabled={loading || isLiveFetching}
               className="text-xs min-h-[38px] gap-1.5 font-semibold"
@@ -397,6 +350,23 @@ export default function LiveScores() {
             </Button>
           </div>
         </div>
+
+        {/* Interactive In-Play Poisson & xG Momentum Simulator */}
+        <InPlayXgMomentumEngine
+          compact
+          fixture={
+            matches[0]
+              ? {
+                  homeTeam: matches[0].home_team,
+                  awayTeam: matches[0].away_team,
+                  league: matches[0].league,
+                  initialMinute: 62,
+                  initialHomeGoals: matches[0].home_score ?? 1,
+                  initialAwayGoals: matches[0].away_score ?? 1,
+                }
+              : undefined
+          }
+        />
 
         {/* Status Tab Navigation & Search Bar (Flashscore / Sofascore Layout) */}
         <div className="space-y-3">

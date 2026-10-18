@@ -51,7 +51,7 @@ export const FooterFAQ: React.FC = () => {
               </span>
             </h2>
             <p className="text-xs text-muted-foreground">
-              Mathematical modeling, Expected Goals (xG) statistics, and algorithmic banker picks explained
+              Mathematical modeling, Expected Goals (xG) statistics, and algorithmic consensus forecasts explained
             </p>
           </div>
         </div>

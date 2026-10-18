@@ -31,13 +31,13 @@ export const TelegramPromoBanner = () => {
           <div className="container mx-auto px-4 py-2.5 flex items-center gap-3">
             <Send className="h-4 w-4 flex-shrink-0" style={{ color: '#229ED9' }} aria-hidden="true" />
             <p className="text-xs sm:text-sm text-white/90 flex-1 truncate">
-              Get the daily <b className="text-white">Banker Bet</b> free on our Telegram channel — before it hits the site.
+              Get the daily <b className="text-white">High-Confidence Match Forecast</b> free on our Telegram channel — before kickoff.
             </p>
             <a
               href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Join PredictPro Telegram channel for free daily Banker Bets"
+              aria-label="Join PredictPro Telegram channel for daily AI match forecasts"
               className="relative flex-shrink-0 text-xs sm:text-sm font-bold text-white px-3.5 py-1.5 rounded-full shadow-sm"
               style={{ background: '#0284c7' }}
             >

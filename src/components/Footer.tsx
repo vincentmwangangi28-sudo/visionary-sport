@@ -5,7 +5,7 @@ import { FooterFAQ } from "@/components/FooterFAQ";
 const LINKS: Record<string, Array<{ to: string; label: string }>> = {
   Predictions: [
     { to: "/", label: "AI Football Predictions Hub" },
-    { to: "/sure-win-predictions", label: "Sure Win Banker Picks (88%+)" },
+    { to: "/sure-win-predictions", label: "High-Consensus Picks (88%+)" },
     { to: "/rollover-bets-predictions", label: "7-Day 1.55x Rollover Challenge" },
     { to: "/daily-2-odds-predictions", label: "Sure 2 Odds, 3 Odds & 5 Odds" },
     { to: "/bet-builder-predictions", label: "Bet Builder & Same-Game Parlays" },
@@ -26,7 +26,7 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/cards-predictions", label: "Cards & Bookings Predictions" },
     { to: "/over-1-5-goals-predictions", label: "Over 1.5 Goals Multi-Bet Picks" },
     { to: "/over-under-predictions", label: "Over/Under 2.5 Goals Radar" },
-    { to: "/best-bets", label: "Today's Best Banker Football Bets" },
+    { to: "/best-bets", label: "Today's Top Consensus Forecasts" },
     { to: "/predict", label: "Interactive AI Match Outcome Predictor" },
     { to: "/btts", label: "Both Teams to Score (BTTS) Tips" },
     { to: "/value-bets", label: "Mathematical Value Bets (+EV Edge)" },
@@ -63,7 +63,7 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/nigerian-npfl-predictions", label: "Nigeria NPFL Football Predictions" },
     { to: "/egyptian-premier-league-predictions", label: "Egyptian Premier League Tips" },
     { to: "/kpl-predictions", label: "Kenya Premier League (FKF) Tips" },
-    { to: "/jackpot-predictions", label: "17-Game Mega Jackpot Banker Picks" },
+    { to: "/jackpot-predictions", label: "17-Game Mega Jackpot Pool Models" },
     { to: "/midweek-jackpot-predictions", label: "13-Game Midweek Jackpot Tips" },
     { to: "/us-soccer-predictions", label: "US Soccer & Concacaf Picks" },
   ],
@@ -115,8 +115,8 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
   Platform: [
     { to: "/insights", label: "Deep Tactical Matchday Insights" },
     { to: "/highlights", label: "Official Match Video Highlights" },
-    { to: "/dashboard", label: "Personalized Betting Dashboard" },
-    { to: "/shop", label: "Upgrade to PredictPro VIP" },
+    { to: "/dashboard", label: "Personalized Analytics Dashboard" },
+    { to: "/teams", label: "Club Expected Goals (xG) & FDR Hub" },
     { to: "/rewards", label: "Daily Rewards & Prediction Coins" },
     { to: "/tipsters", label: "Verified Football Tipster Directory" },
     { to: "/leaderboard", label: "Global ROI Tipster Leaderboard" },

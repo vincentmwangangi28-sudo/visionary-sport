@@ -5,13 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAutomatedAlerts } from '@/hooks/useAutomatedAlerts';
-import { playAlertChime } from '@/utils/audioAlert';
 import {
   BellRing,
   Sparkles,
   ShieldCheck,
   TrendingUp,
-  Volume2,
   Clock,
   Send,
   CheckCircle2,
@@ -49,7 +47,7 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
               Automated Alerts & Proactive Match Engine
             </CardTitle>
             <CardDescription className="text-xs mt-1">
-              Real-time automated alerts for your pinned clubs, global leagues, high-confidence banker picks, and positive expected value (+EV) opportunities.
+              Real-time automated alerts for your pinned clubs, global leagues, high-confidence statistical forecasts, and positive expected value (+EV) analytical edges.
             </CardDescription>
           </div>
 
@@ -92,7 +90,7 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
                 Enable Native Browser Push Alerts
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Receive kickoff reminders, banker tips, and full-time scores even when your browser tab is closed.
+                Receive kickoff reminders, high-confidence model forecasts, and full-time scores even when your browser tab is closed.
               </p>
             </div>
             <Button
@@ -148,17 +146,17 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
             />
           </div>
 
-          {/* Rule 2: High Confidence Banker Picks */}
+          {/* Rule 2: High Confidence Model Forecasts */}
           <div className="flex items-start justify-between gap-3 py-1 border-t border-border/40 pt-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Flame className="h-4 w-4 text-amber-500" />
-                <Label htmlFor="toggle-banker-picks" className="font-semibold text-sm text-foreground cursor-pointer">
-                  High-Confidence Banker Picks
+                <Label htmlFor="toggle-high-conf-picks" className="font-semibold text-sm text-foreground cursor-pointer">
+                  High-Confidence Statistical Forecasts
                 </Label>
               </div>
               <p className="text-xs text-muted-foreground">
-                Auto-alert whenever algorithm calculates confidence at or above your threshold.
+                Auto-alert whenever the Bivariate Poisson &amp; xG ensemble calculates probability at or above your threshold.
               </p>
               <div className="flex items-center gap-2 mt-2">
                 <span className="text-xs text-muted-foreground font-medium">Trigger threshold:</span>
@@ -169,18 +167,18 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
                   className="h-7 text-xs bg-muted rounded-md px-2 border border-border text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
                   aria-label="Minimum Confidence Threshold"
                 >
-                  <option value={80}>≥ 80% (More picks)</option>
-                  <option value={85}>≥ 85% (Balanced Bankers)</option>
-                  <option value={90}>≥ 90% (Ultra-Safe Only)</option>
+                  <option value={80}>≥ 80% (Standard Consensus)</option>
+                  <option value={85}>≥ 85% (Strong Statistical Consensus)</option>
+                  <option value={90}>≥ 90% (Elite Probability Only)</option>
                 </select>
               </div>
             </div>
             <Switch
-              id="toggle-banker-picks"
+              id="toggle-high-conf-picks"
               disabled={!config.enabled}
               checked={config.alertOnHighConfidence}
               onCheckedChange={(checked) => updateConfig({ alertOnHighConfidence: checked })}
-              aria-label="Toggle Banker Picks Alerts"
+              aria-label="Toggle High-Confidence Forecast Alerts"
             />
           </div>
 
@@ -271,47 +269,17 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
             </div>
           </div>
 
-          {/* Rule 6: Sound Chimes */}
-          <div className="flex items-start justify-between gap-3 py-1 border-t border-border/40 pt-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Volume2 className="h-4 w-4 text-primary" />
-                <Label htmlFor="toggle-sound-alerts" className="font-semibold text-sm text-foreground cursor-pointer">
-                  Auditory Alert Chimes
-                </Label>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Plays a pleasant audio tone whenever an automated match or banker tip alert is triggered.
-              </p>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => playAlertChime('value')}
-                className="h-7 text-xs text-primary hover:text-primary px-2 gap-1 font-semibold"
-              >
-                <Volume2 className="h-3 w-3" /> Test Sound Chime
-              </Button>
-            </div>
-            <Switch
-              id="toggle-sound-alerts"
-              checked={config.soundEnabled}
-              onCheckedChange={(checked) => updateConfig({ soundEnabled: checked })}
-              aria-label="Toggle Sound Alerts"
-            />
-          </div>
-
-          {/* Rule 7: Daily Morning Digest */}
+          {/* Rule 6: Daily Morning Digest */}
           <div className="flex items-start justify-between gap-3 py-1 border-t border-border/40 pt-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <Label htmlFor="toggle-daily-digest" className="font-semibold text-sm text-foreground cursor-pointer">
-                  Daily Morning Digest (8:00 AM UTC)
+                  Daily Morning Analytical Digest (8:00 AM UTC)
                 </Label>
               </div>
               <p className="text-xs text-muted-foreground">
-                Curated daily dispatch highlighting the top 3 value bets, banker accumulators, and highest edge markets.
+                Curated daily dispatch highlighting the top 3 xG differentials, high-confidence match projections, and statistical edges.
               </p>
             </div>
             <Switch
@@ -340,7 +308,7 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Test how automated alerts appear across your device (push notification, sound effect, and in-app alert feed):
+            Test how automated alerts appear across your device (push notification and in-app alert feed):
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             <Button
@@ -357,7 +325,7 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
               onClick={() => testAlert('high_confidence')}
               className="text-xs h-8 font-semibold justify-center hover:border-amber-500/50 text-amber-600 dark:text-amber-400"
             >
-              🔥 89% Banker
+              📊 89% Consensus
             </Button>
             <Button
               variant="outline"
@@ -365,7 +333,7 @@ export const AutomatedAlertsSettingsCard: React.FC<AutomatedAlertsSettingsCardPr
               onClick={() => testAlert('value_bet')}
               className="text-xs h-8 font-semibold justify-center hover:border-emerald-500/50 text-emerald-600 dark:text-emerald-400"
             >
-              ⚡ +EV Value
+              ⚡ +EV Model Edge
             </Button>
             <Button
               variant="outline"

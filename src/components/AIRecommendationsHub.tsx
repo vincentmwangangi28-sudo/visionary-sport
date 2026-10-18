@@ -103,7 +103,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
         results.push({
           prediction: p,
           category: 'banker',
-          categoryLabel: 'Banker Lock',
+          categoryLabel: 'High Consensus',
           categoryBadgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 font-bold',
           categoryIcon: ShieldCheck,
           market,
@@ -356,7 +356,7 @@ export const AIRecommendationsHub: React.FC<AIRecommendationsHubProps> = ({
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Recommendation Categories">
         {[
           { id: 'all', label: 'All Recommended', icon: Sparkles },
-          { id: 'banker', label: '🛡️ Safe Bankers', icon: ShieldCheck },
+          { id: 'banker', label: '🛡️ 85%+ Consensus', icon: ShieldCheck },
           { id: 'value', label: '💎 Value Edges', icon: TrendingUp },
           { id: 'goals', label: '⚽ Goals & BTTS', icon: Flame },
           { id: 'moonshot', label: '🚀 High Yield', icon: Zap },

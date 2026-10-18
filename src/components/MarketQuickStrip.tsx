@@ -59,13 +59,14 @@ const MARKET_QUICK_LINKS: MarketQuickItem[] = [
   { to: '/arbitrage-calculator', label: 'Surebet Arb Tool', icon: Calculator },
   { to: '/margin-calculator', label: 'No-Vig Margin', icon: Calculator },
   { to: '/odds-converter', label: 'Odds Converter', icon: ArrowLeftRight },
+  { to: '/teams', label: 'Club xG & FDR Hub', badge: 'NEW', icon: Flame },
 ];
 
 export const MarketQuickStrip: React.FC = () => {
   const location = useLocation();
 
   const viralMessage =
-    '🔥 Free AI Football Banker Picks Today (88%+ Strike Rate): Sure 2 Odds, 7-Day Rollover & 17-Game Jackpot Slips -> https://predictpro.guru';
+    '📊 Daily AI Football Statistical Forecasts (87%+ Verified Accuracy): Expected Goals (xG), Poisson Scorelines & Match Analytics -> https://predictpro.guru';
 
   return (
     <div className="container mx-auto px-4 max-w-6xl space-y-1.5">
@@ -105,7 +106,7 @@ export const MarketQuickStrip: React.FC = () => {
         <div className="flex items-center gap-2 text-muted-foreground">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
           <span>
-            <strong className="text-foreground">Share Today&apos;s Free AI Banker Slip</strong> with your WhatsApp or Telegram group:
+            <strong className="text-foreground">Share Today&apos;s AI Statistical Match Digest</strong> with your WhatsApp or Telegram community:
           </span>
         </div>
         <div className="flex items-center gap-2">

@@ -130,19 +130,11 @@ export default function CorrectScore() {
                         <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{p.away_team}</span>
                       </div>
                     </Link>
-                    {isPremium ? (
-                      <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/20 rounded-lg p-3">
-                        <Lock className="h-5 w-5 text-amber-500" />
-                        <div><p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Premium Pick</p>
-                          <Link to="/shop"><Button size="sm" variant="outline" className="mt-1 h-6 text-xs px-2">Unlock</Button></Link></div>
-                      </div>
-                    ) : (
-                      <div className="text-center bg-primary/10 rounded-xl p-3">
-                        <p className="text-xs text-muted-foreground mb-1">Scoreline Vector</p>
-                        <p className="text-3xl font-black text-primary">{score}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{p.confidence}% confidence</p>
-                      </div>
-                    )}
+                    <div className="text-center bg-primary/10 rounded-xl p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Scoreline Vector</p>
+                      <p className="text-3xl font-black text-primary">{score}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{p.confidence}% confidence</p>
+                    </div>
                     {p.home_odds && (
                       <div className="mt-3 pt-2.5 border-t border-border/50 space-y-1">
                         <div className="flex justify-between items-center text-[11px] font-mono">

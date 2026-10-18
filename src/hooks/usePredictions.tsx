@@ -305,31 +305,11 @@ export const usePredictions = (
     return created;
   };
 
-  // Gate premium predictions consistently across allPredictions and paginated slice for free users
-  const hasPremiumAccess = isPremium();
+  // All predictions are 100% free and unlocked across the entire platform
   const gatedAll = useMemo(() => {
     const rawAll = query.data?.allPredictions ?? [];
-    return rawAll.map((rawItem) => {
-      const p = enrichPredictionAliases(rawItem);
-      if (hasPremiumAccess) return p;
-      const outcome = getPrediction(p);
-      if (p.is_premium && !outcome.includes('🔒')) {
-        return {
-          ...p,
-          prediction: '🔒 Premium',
-          predicted_outcome: '🔒 Premium',
-          analysis: 'Upgrade to Pro to unlock this premium mathematical prediction.',
-          reasoning: 'Full probability vector and statistical metrics restricted to Pro subscribers.',
-          confidence: 0,
-          confidence_score: 0,
-          home_odds: undefined,
-          draw_odds: undefined,
-          away_odds: undefined,
-        };
-      }
-      return p;
-    });
-  }, [query.data?.allPredictions, hasPremiumAccess]);
+    return rawAll.map((rawItem) => enrichPredictionAliases(rawItem));
+  }, [query.data?.allPredictions]);
 
   const gatedPage = useMemo(() => {
     const start = Math.max(0, (page - 1) * effectivePageSize);

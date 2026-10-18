@@ -117,7 +117,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
       subtitle: `${selectedBookie} Code: ${bookingCode} · Combined Odds ${totalOdds.toFixed(2)}`,
       tip: items[0]
         ? `${items[0].homeTeam} vs ${items[0].awayTeam} (${items[0].market})`
-        : 'Verified AI Banker Selections',
+        : 'Verified Statistical Match Forecasts',
       conf: String(combinedConfidence || 82),
       code: bookingCode,
     });

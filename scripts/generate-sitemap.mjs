@@ -43,6 +43,7 @@ const CORE_PAGES = [
   { path: '/statistics', priority: 0.80, freq: 'weekly', title: 'Football Statistics, Head-to-Head & xG Matrices' },
   { path: '/highlights', priority: 0.80, freq: 'daily', title: 'Football Video Highlights & Match Replays' },
   { path: '/players', priority: 0.80, freq: 'weekly', title: 'Player Profiles, Form Ratings & Goalscorer Stats' },
+  { path: '/teams', priority: 0.90, freq: 'daily', title: 'Club Expected Goals (xG) Analytics & Fixture Difficulty Rating (FDR) Hub' },
   { path: '/insights', priority: 0.80, freq: 'daily', title: 'Tactical Match Insights & Statistical Previews' },
   { path: '/news', priority: 0.80, freq: 'hourly', title: 'Football News, Transfer Intel & Team News' },
   { path: '/tipsters', priority: 0.75, freq: 'weekly', title: 'Top AI Tipster Profiles & Verified Win Rates' },

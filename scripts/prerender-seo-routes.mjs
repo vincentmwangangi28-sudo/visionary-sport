@@ -103,6 +103,10 @@ const ROUTE_META = {
     title: 'Football Player xG, Shots & Assists Analytics | PredictPro',
     description: 'Search player-level Expected Goals (xG), Expected Assists (xA), per-90 shot volume, and goalscorer probabilities across major European and global leagues.',
   },
+  '/teams': {
+    title: 'Club Expected Goals (xG) Analytics & Fixture Difficulty Rating (FDR) Hub | PredictPro',
+    description: 'Explore rolling 5-match Expected Goals (xG vs xGA) trendlines, Home vs Away Poisson λ splits, 6-axis tactical DNA profiles, and 5-match Fixture Difficulty Ratings (FDR).',
+  },
   '/insights': {
     title: 'Tactical Football Matchday Intelligence & xG Briefings',
     description: 'Daily quantitative matchday briefings analyzing pressing intensity, squad rotation impact, referee card tendencies, and weather-adjusted goal totals.',

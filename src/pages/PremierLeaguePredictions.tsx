@@ -11,7 +11,7 @@ import { Zap, TrendingUp, Target } from "lucide-react";
 
 const FAQ = [
   { q: "How accurate are PredictPro's Premier League predictions?", a: "Our AI analyses form, head-to-head records, injuries and historical data to achieve an average accuracy of 74-87% on Premier League matches, depending on the confidence tier." },
-  { q: "Are Premier League predictions free?", a: "Yes — all standard predictions are free. Premium subscribers get correct score predictions, higher-confidence picks and advanced H2H analysis." },
+  { q: "Are Premier League predictions free?", a: "Yes — 100% of PredictPro's Premier League predictions, including Correct Score matrices, high-consensus picks, Expected Goals (xG) models, and H2H analysis, are completely free with no subscriptions or paywalls." },
   { q: "Which Premier League teams are hardest to predict?", a: "Derby matches (Arsenal vs Chelsea, Man City vs Liverpool) and mid-table clashes tend to have lower confidence scores due to tactical unpredictability." },
   { q: "How often are predictions updated?", a: "Predictions are generated daily at 6AM EAT and updated whenever new team news, injuries or odds changes are detected." },
 ];

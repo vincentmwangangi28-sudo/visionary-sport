@@ -45,8 +45,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     return unsub;
   }, []);
 
-  // Subscribers on active VIP plans enjoy an ad-free experience
-  const isVipUser = isPremium();
+  // AdSense display is controlled globally via adConfig.enabled
+  const isVipUser = false;
 
   const activeSlot = slot || (
     format === 'rectangle' ? adConfig.slots.rectangle :

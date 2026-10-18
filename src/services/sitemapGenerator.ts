@@ -110,6 +110,7 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
 
   // 3. Feature Tools & Betting Markets
   const featurePages: Array<{ path: string; title: string; priority: number; changeFreq: SitemapEntry['changeFrequency'] }> = [
+    { path: '/teams', title: 'Club Expected Goals (xG) Analytics & Fixture Difficulty Rating (FDR) Hub', priority: 0.95, changeFreq: 'daily' },
     { path: '/today-predictions', title: "Today's Football Predictions: Daily AI Match Tips & Odds", priority: 0.95, changeFreq: 'daily' },
     { path: '/sure-win-predictions', title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets', priority: 0.95, changeFreq: 'daily' },
     { path: '/rollover-bets-predictions', title: 'Rollover Bets Predictions Today: 7-Day 1.50 & 2.00 Odds Challenge', priority: 0.95, changeFreq: 'daily' },

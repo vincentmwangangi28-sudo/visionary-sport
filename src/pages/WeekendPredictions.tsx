@@ -62,8 +62,8 @@ export default function WeekendPredictions() {
     const text = weekendAccaTop5
       .map((m, i) => `${i + 1}. ${m.home_team} vs ${m.away_team} — ${m.prediction} (@${m.odds}) [${m.confidence}%]`)
       .join('\n');
-    navigator.clipboard.writeText(`PredictPro Weekend 5-Fold Banker Acca (Combined Odds: ${combinedAccaOdds}x):\n${text}`);
-    toast.success('Weekend 5-Fold Accumulator copied to clipboard!');
+    navigator.clipboard.writeText(`PredictPro Weekend 5-Fold High-Consensus Digest (Combined Odds: ${combinedAccaOdds}x):\n${text}`);
+    toast.success('Weekend 5-Fold Statistical Digest copied to clipboard!');
   };
 
   const jsonLd = useMemo(
@@ -103,10 +103,10 @@ export default function WeekendPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Weekend Football Predictions: Saturday & Sunday Banker Acca Tips"
-        description="Free AI weekend football predictions for Saturday and Sunday. Get 85%+ confidence banker picks, weekend 5-fold accumulator slips, BTTS, and Over 2.5 goals tips."
+        title="Weekend Football Predictions: Saturday & Sunday High-Consensus Forecasts"
+        description="Free AI weekend football predictions for Saturday and Sunday. Get 85%+ confidence consensus picks, weekend 5-fold statistical digests, BTTS, and Over 2.5 goals models."
         canonical="/weekend-predictions"
-        keywords="weekend football predictions, saturday football predictions, sunday soccer predictions, weekend accumulator tips, weekend banker bets, premier league weekend predictions"
+        keywords="weekend football predictions, saturday football predictions, sunday soccer predictions, weekend football forecasts, premier league weekend predictions"
         jsonLd={jsonLd}
       />
       <Navbar />
@@ -134,10 +134,10 @@ export default function WeekendPredictions() {
                 </Badge>
               </div>
               <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
-                Weekend Football Predictions: Saturday &amp; Sunday AI Bankers
+                Weekend Football Predictions: Saturday &amp; Sunday High-Consensus Forecasts
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Full matchday coverage across Europe&apos;s Top 5 Leagues, EFL Championship, and 17-game Weekend Mega Jackpots. Filter by Saturday 15:00 kickoffs or Sunday headline derbies.
+                Full matchday coverage across Europe&apos;s Top 5 Leagues, EFL Championship, and 17-game Weekend Fixture Pools. Filter by Saturday 15:00 kickoffs or Sunday headline derbies.
               </p>
             </div>
 
@@ -145,14 +145,14 @@ export default function WeekendPredictions() {
             <div className="p-4 rounded-xl bg-background/90 border border-amber-500/30 sm:w-80 shrink-0 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5" /> Weekend 5-Fold Acca
+                  <Sparkles className="h-3.5 w-3.5" /> Weekend Top 5 Digest
                 </span>
                 <Badge variant="secondary" className="font-mono font-bold">
-                  {combinedAccaOdds}x Odds
+                  {combinedAccaOdds}x Index
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                Top 5 highest-confidence Saturday &amp; Sunday banker picks combined into one optimized slip.
+                Top 5 highest-confidence Saturday &amp; Sunday consensus picks combined into one matchday digest.
               </p>
               <Button size="sm" onClick={copyWeekendAcca} className="w-full font-bold text-xs">
                 Copy Weekend 5-Fold Slip

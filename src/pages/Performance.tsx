@@ -338,8 +338,8 @@ export default function Performance() {
         </Card>
 
         <div className="mt-6 p-4 bg-muted/30 rounded-xl flex items-center justify-between gap-4 flex-wrap">
-          <div><p className="font-semibold">Want better picks?</p><p className="text-sm text-muted-foreground">Upgrade to unlock high-confidence predictions and value bets.</p></div>
-          <Link to="/shop"><Button className="gap-2"><Trophy className="h-4 w-4" />Upgrade to Pro</Button></Link>
+          <div><p className="font-semibold">Looking for high-consensus match forecasts?</p><p className="text-sm text-muted-foreground">All 80%+ consensus forecasts, xG models, and Correct Score matrices are 100% free.</p></div>
+          <Link to="/screener"><Button className="gap-2"><Trophy className="h-4 w-4" />Open Free Match Screener</Button></Link>
         </div>
       </main>
       <Footer />

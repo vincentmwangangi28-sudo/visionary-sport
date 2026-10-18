@@ -74,25 +74,25 @@ export default function TermsOfService() {
               PredictPro provides quantitative sports data, automated algorithmic evaluations, Poisson probability distribution calculations, and editorial previews.
             </p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>No prediction, tip, confidence percentage, or banker recommendation constitutes financial, betting, or investment advice.</li>
+              <li>No prediction, tip, confidence percentage, or statistical forecast constitutes financial, wagering, or investment advice.</li>
               <li>Sports events are inherently volatile and subject to unforeseen variables (injuries, weather, referee decisions, tactical shifts).</li>
-              <li>You acknowledge that you use all information provided on PredictPro solely at your own discretion and risk. PredictPro accepts zero liability for any financial loss incurred from sports betting decisions.</li>
+              <li>You acknowledge that you use all information provided on PredictPro solely at your own discretion and risk. PredictPro accepts zero liability for any financial loss incurred from external decisions.</li>
             </ul>
           </div>
         </section>
 
-        {/* 3. User Accounts & Subscriptions */}
+        {/* 3. User Accounts & 100% Free Open Access */}
         <section className="space-y-3">
           <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold">3</span>
-            User Accounts, Coins &amp; VIP Subscriptions
+            User Accounts, Community Coins &amp; 100% Free Open Access
           </h2>
           <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
             <p>
               When you create an account on PredictPro, you agree to maintain the security of your account credentials. You are solely responsible for all activity conducted through your account.
             </p>
             <p>
-              PredictPro offers virtual prediction coins, gamification rewards, and optional VIP subscription tiers for advanced analytics. Virtual coins hold zero real-world monetary cash value and cannot be redeemed for fiat currency. VIP memberships are billed on a recurring or fixed period basis as described during checkout via authorized payment gateways (Stripe and Lipana M-Pesa).
+              PredictPro is a 100% free and open-access sports analytics platform with zero paid subscriptions, paywalls, or recurring charges. Community prediction coins and gamification rewards hold zero real-world monetary cash value and cannot be purchased or redeemed for fiat currency.
             </p>
           </div>
         </section>

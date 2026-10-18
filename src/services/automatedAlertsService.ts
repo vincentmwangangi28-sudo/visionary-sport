@@ -2,13 +2,12 @@
  * Automated Alerts Service
  * Orchestrates proactive, automated notifications for:
  * 1. Pinned clubs & leagues (kickoff reminders, match starts, final scores)
- * 2. High-confidence AI Banker Picks (e.g. >= 85% confidence)
- * 3. +EV Value Bets (positive expected value / CLV edge >= 5%)
+ * 2. High-confidence AI Model Forecasts (e.g. >= 85% confidence)
+ * 3. +EV Value Edges (positive expected value / CLV edge >= 5%)
  * 4. In-play live goal flash alerts
  */
 
 import { showBrowserNotification, isPushSupported, requestPushPermission, getPushPermission } from './matchNotificationService';
-import { playAlertChime } from '@/utils/audioAlert';
 import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
 import { Prediction } from '@/types/prediction';
 
@@ -36,7 +35,7 @@ export const DEFAULT_ALERTS_CONFIG: AutomatedAlertsConfig = {
   alertOnValueBets: true,
   minValueEdgeThreshold: 5,
   kickoffLeadMinutes: 30,
-  soundEnabled: true,
+  soundEnabled: false,
   browserPushEnabled: true,
   inAppToastEnabled: true,
   dailyDigestEnabled: true,
@@ -160,13 +159,7 @@ export async function dispatchAutomatedAlert(alert: AutomatedAlertItem): Promise
 
   markAlertAsNotified(alert.id);
 
-  // 1. Play auditory chime
-  if (config.soundEnabled) {
-    const chimeType = alert.type === 'goal_alert' ? 'goal' : alert.type === 'value_bet' ? 'value' : 'kickoff';
-    playAlertChime(chimeType);
-  }
-
-  // 2. Append to persistent in-app notifications
+  // 1. Append to persistent in-app notifications
   appendInAppNotification(alert);
 
   // 3. Dispatch global custom event for interactive toast / listeners
@@ -270,19 +263,19 @@ export async function evaluateAutomatedAlerts(): Promise<number> {
       if (triggered) alertsCount++;
     }
 
-    // Rule B: High-Confidence Banker Pick Alert (>= minConfidenceThreshold)
+    // Rule B: High-Confidence Statistical Forecast Alert (>= minConfidenceThreshold)
     if (
       config.alertOnHighConfidence &&
       match.confidence >= config.minConfidenceThreshold &&
       diffMinutes > 0 &&
       diffMinutes <= 1440 // Next 24 hours
     ) {
-      const alertId = `auto-banker-${match.id}-${new Date().toISOString().split('T')[0]}`;
+      const alertId = `auto-highconf-${match.id}-${new Date().toISOString().split('T')[0]}`;
       const triggered = await dispatchAutomatedAlert({
         id: alertId,
         type: 'high_confidence',
-        title: `🔥 Banker Pick (${match.confidence}%): ${match.home_team} vs ${match.away_team}`,
-        message: `High confidence AI Pick [${match.prediction}] identified for ${match.home_team} vs ${match.away_team} in ${match.league}.`,
+        title: `📊 High-Confidence Forecast (${match.confidence}%): ${match.home_team} vs ${match.away_team}`,
+        message: `High-probability model projection [${match.prediction}] identified for ${match.home_team} vs ${match.away_team} in ${match.league}.`,
         matchId: match.id,
         matchTitle: `${match.home_team} vs ${match.away_team}`,
         league: match.league,
@@ -351,10 +344,10 @@ export async function sendSimulatedAutomatedAlert(
       break;
     case 'high_confidence':
       alertItem = {
-        id: `sim-banker-${Date.now()}`,
+        id: `sim-highconf-${Date.now()}`,
         type: 'high_confidence',
-        title: `🔥 89% Banker Pick: Real Madrid vs Real Sociedad`,
-        message: `AI Core detected a high probability Home Win tip with 89% confidence. Projected scoreline: 2-0.`,
+        title: `📊 89% Model Consensus: Real Madrid vs Real Sociedad`,
+        message: `Poisson & xG ensemble detected an 89% probability Home Win projection. Projected scoreline: 2-0.`,
         matchTitle: 'Real Madrid vs Real Sociedad',
         league: 'La Liga',
         confidence: 89,
