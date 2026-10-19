@@ -6,6 +6,7 @@ import { AccuracyTracker } from '@/components/AccuracyTracker';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { LiveMarketSteamTicker } from '@/components/LiveMarketSteamTicker';
+import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { MarketQuickStrip } from '@/components/MarketQuickStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
@@ -28,7 +29,7 @@ const HOME_JSON_LD = {
     {
       '@type': 'WebSite',
       '@id': 'https://predictpro.guru/#website',
-      name: 'PredictPro.guru — AI Football Predictions Today, Expected Goals (xG) & Value Betting Tips',
+      name: 'PredictPro.guru — AI Football Predictions Today, Live xG & Player Ratings',
       alternateName: ['PredictPro', 'PredictPro.guru', 'PredictPro AI Football Analytics'],
       url: 'https://predictpro.guru',
       inLanguage: 'en',
@@ -54,7 +55,56 @@ const HOME_JSON_LD = {
       },
       sport: 'Association Football (Soccer)',
       description:
-        'Enterprise AI football prediction engine delivering 87% verified accuracy across Premier League, UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, KPL, and Mega Jackpot fixtures using Bivariate Poisson distributions, Expected Goals (xG), and Closing Line Value (+EV) models.',
+        '100% free quantitative football intelligence platform delivering 87% verified accuracy across Premier League, UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, KPL, and CAF fixtures using Bivariate Poisson distributions, 2D Expected Goals (xG) shot maps, 10.0 player ratings, and live broadcast directories.',
+    },
+    {
+      '@type': 'ItemList',
+      '@id': 'https://predictpro.guru/#matchday-events',
+      name: 'Featured Matchday Live xG, Player Ratings & TV Broadcast Schedule',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          item: {
+            '@type': 'SportsEvent',
+            name: 'Arsenal vs Chelsea — Premier League xG & Tactical Forecast',
+            startDate: '2026-10-19T19:00:00Z',
+            eventStatus: 'https://schema.org/EventScheduled',
+            sport: 'Association Football',
+            homeTeam: { '@type': 'SportsTeam', name: 'Arsenal' },
+            awayTeam: { '@type': 'SportsTeam', name: 'Chelsea' },
+            isAccessibleForFree: true,
+          },
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          item: {
+            '@type': 'SportsEvent',
+            name: 'Real Madrid vs Barcelona — El Clasico xG & Poisson Analysis',
+            startDate: '2026-10-19T20:00:00Z',
+            eventStatus: 'https://schema.org/EventScheduled',
+            sport: 'Association Football',
+            homeTeam: { '@type': 'SportsTeam', name: 'Real Madrid' },
+            awayTeam: { '@type': 'SportsTeam', name: 'Barcelona' },
+            isAccessibleForFree: true,
+          },
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          item: {
+            '@type': 'SportsEvent',
+            name: 'Gor Mahia vs AFC Leopards — FKF Premier League Mashemeji Derby xG',
+            startDate: '2026-10-19T15:00:00Z',
+            eventStatus: 'https://schema.org/EventScheduled',
+            sport: 'Association Football',
+            homeTeam: { '@type': 'SportsTeam', name: 'Gor Mahia' },
+            awayTeam: { '@type': 'SportsTeam', name: 'AFC Leopards' },
+            isAccessibleForFree: true,
+          },
+        },
+      ],
     },
     {
       '@type': 'FAQPage',
@@ -65,15 +115,15 @@ const HOME_JSON_LD = {
           name: 'How accurate are PredictPro.guru AI football predictions today?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'PredictPro.guru achieves an 84% to 87% verified accuracy rate on high-confidence AI Banker Picks (75%+ certainty) by combining Bivariate Poisson goal modeling, Expected Goals (xG) differentials, ELO team strength ratings, and real-time market steam across 40+ global football leagues.',
+            text: 'PredictPro.guru achieves an 84% to 87% verified accuracy rate on high-confidence AI Consensus Forecasts (75%+ certainty) by combining Bivariate Poisson goal modeling, Expected Goals (xG) differentials, 0.0–10.0 player performance ratings, ELO team strength ratings, and real-time market steam across 40+ global football leagues.',
           },
         },
         {
           '@type': 'Question',
-          name: 'Which leagues and betting markets does PredictPro.guru cover?',
+          name: 'Which leagues and statistical markets does PredictPro.guru cover?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'We provide daily mathematical predictions for the English Premier League (EPL), UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, Kenyan Premier League (KPL), MLS, and 17-game Mega & Midweek Jackpots across 1X2 Match Winner, Both Teams To Score (BTTS), Over/Under 2.5 Goals, Exact Correct Score, and Asian Handicap markets.',
+            text: 'We provide 100% free daily mathematical predictions, 2D live shot maps, 10.0 player ratings, and official TV/stream broadcast guides for the English Premier League (EPL), UEFA Champions League, La Liga, Serie A, Bundesliga, Ligue 1, Kenyan Premier League (KPL), MLS, and 17-game Mega & Midweek Jackpots.',
           },
         },
       ],
@@ -82,7 +132,7 @@ const HOME_JSON_LD = {
 };
 
 const Index = () => {
-  const [deferredReady, setDeferredReady] = useState(false);
+  const [, setDeferredReady] = useState(false);
   const [activeMode, setActiveMode] = useState<HomeViewMode>('predictions');
 
   useEffect(() => {
@@ -122,14 +172,18 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <SEO
         title="PredictPro — AI Pro Tips Today: Football Predictions & xG"
-        description="Daily AI pro tips today & verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues."
+        description="Free daily AI football predictions today with 87% accuracy. Expected Goals (xG), Poisson probabilities, and high-consensus forecasts across 40+ leagues."
         canonical="/"
-        keywords="aipro tips today, aiprotips prediction today, AI football predictions today, accurate soccer predictions 100% free, premier league predictions this weekend, champions league AI tips, sure banker bets today, both teams to score BTTS tips, over 2.5 goals predictions, correct score mathematical model, expected goals xG football analytics"
+        keywords="aipro tips today, aiprotips prediction today, AI football predictions today, accurate soccer predictions 100% free, premier league predictions this weekend, champions league AI tips, high consensus football forecasts, both teams to score BTTS tips, over 2.5 goals predictions, correct score mathematical model, expected goals xG football analytics"
         jsonLd={HOME_JSON_LD}
       />
       <Navbar />
       <LiveMarketSteamTicker />
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+        {/* ESPN / FotMob / SofaScore / Marca / Chess.com Top Matchday Command Ribbon */}
+        <ErrorBoundary compact>
+          <GlobalMatchdayCommandRibbon />
+        </ErrorBoundary>
         <Hero />
         <HomeViewTabs activeMode={activeMode} onModeChange={handleModeChange} />
         <div id="home-tab-content" />

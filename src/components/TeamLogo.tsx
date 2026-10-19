@@ -27,6 +27,35 @@ const SIZE_MAP: Record<string, { container: string; img: string; text: string; d
   xl: { container: 'w-16 h-16 rounded-2xl p-2', img: 'w-11 h-11', text: 'text-base font-black', dim: 44 },
 };
 
+/**
+ * Strips `/combiner/i?img=` from ESPN CDN URLs because `a.espncdn.com/robots.txt`
+ * disallows `/combiner/`, which causes Googlebot URL Inspection to report "Other error" on images.
+ */
+export function sanitizeLogoCdnUrl(rawUrl: string | null | undefined): string | null {
+  if (!rawUrl) return null;
+  try {
+    if (rawUrl.includes('espncdn.com/combiner/i')) {
+      const parsed = new URL(rawUrl);
+      const imgPath = parsed.searchParams.get('img');
+      if (imgPath && imgPath.startsWith('/')) {
+        return `https://a.espncdn.com${imgPath}`;
+      }
+    }
+  } catch {
+    // ignore malformed URL
+  }
+  return rawUrl;
+}
+
+function isSearchCrawlerAgent(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  if (navigator.webdriver) return true;
+  const ua = navigator.userAgent || '';
+  return /googlebot|inspectiontool|adsbot|mediapartners|bingbot|yandex|baiduspider|duckduckbot|slurp|applebot|ahrefsbot|semrushbot|headlesschrome|lighthouse|ptst|speed insights|crawler|spider|robot/i.test(
+    ua
+  );
+}
+
 export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   team: rawTeam,
   teamName,
@@ -38,39 +67,31 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   showName = false,
   nameClassName = '',
   alt,
+  badgeOnly = false,
 }) => {
   const team = rawTeam || teamName || '';
   const effectiveLeague = leagueId ?? league ?? null;
   const [imageError, setImageError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  const isCrawler = badgeOnly || isSearchCrawlerAgent();
+
   // Synchronous resolution path using league context and multi-tier memory cache
-  const resolvedUrl = !imageError && team ? getTeamLogoWithLeague(team, effectiveLeague, logoUrl) : null;
+  const rawResolvedUrl =
+    !isCrawler && !imageError && team
+      ? getTeamLogoWithLeague(team, effectiveLeague, logoUrl)
+      : null;
+  const resolvedUrl = sanitizeLogoCdnUrl(rawResolvedUrl);
   const { initials, bgColor, textColor } = getTeamInitialsAndColor(team);
 
   const sizeConfig = typeof size === 'number'
-    ? { container: `w-[${size}px] h-[${size}px] rounded-lg p-1`, img: `w-[${size - 8}px] h-[${size - 8}px]`, text: 'text-xs', dim: Math.max(12, size - 8) }
-    : SIZE_MAP[size] || SIZE_MAP.md;
-
-  const optimizeEspnUrl = (url: string, px: number): string => {
-    try {
-      if (!url.includes('espncdn.com/') || url.includes('/combiner/i')) return url;
-      const parsed = new URL(url);
-      if (
-        parsed.hostname.endsWith('espncdn.com') &&
-        (parsed.pathname.startsWith('/i/') || parsed.pathname.startsWith('/guid/'))
-      ) {
-        return `https://a.espncdn.com/combiner/i?img=${parsed.pathname}&w=${px}&h=${px}&scale=crop`;
+    ? {
+        container: `w-[${size}px] h-[${size}px] rounded-lg p-1`,
+        img: `w-[${size - 8}px] h-[${size - 8}px]`,
+        text: 'text-xs',
+        dim: Math.max(12, size - 8),
       }
-    } catch {
-      // ignore
-    }
-    return url;
-  };
-
-  const src1x = resolvedUrl ? optimizeEspnUrl(resolvedUrl, sizeConfig.dim) : null;
-  const src2x = resolvedUrl ? optimizeEspnUrl(resolvedUrl, sizeConfig.dim * 2) : null;
-  const srcSet = src1x && src2x && src1x !== resolvedUrl ? `${src1x} 1x, ${src2x} 2x` : undefined;
+    : SIZE_MAP[size] || SIZE_MAP.md;
 
   const logoElement = (
     <div
@@ -79,10 +100,9 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
       } ${className}`}
       title={team}
     >
-      {resolvedUrl && src1x ? (
+      {resolvedUrl ? (
         <img
-          src={src1x}
-          srcSet={srcSet}
+          src={resolvedUrl}
           alt={alt || `${team} crest`}
           loading="lazy"
           decoding="async"

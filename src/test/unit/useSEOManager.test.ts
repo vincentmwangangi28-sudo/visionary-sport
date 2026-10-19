@@ -11,6 +11,7 @@ import {
 } from '@/hooks/useSEOManager';
 import { resolveMatchPredictionForSEO } from '@/hooks/useMatchPredictionSEO';
 import { getAllSitemapEntries, generateSitemapXml, generateSitemapIndexXml } from '@/services/sitemapGenerator';
+import { buildMarkdownForRoute } from '@/server/agentDiscovery';
 
 describe('useSEOManager - International SEO & Locale Detection', () => {
   const originalLocation = window.location;
@@ -357,6 +358,20 @@ describe('useSEOManager - International SEO & Locale Detection', () => {
       expect(indexXml).toContain('https://predictpro.guru/sitemap-matches.xml');
       expect(indexXml).toContain('https://predictpro.guru/sitemap-blog.xml');
       expect(indexXml).toContain('https://predictpro.guru/sitemap-yandex.xml');
+    });
+
+    it('generates route-specific AI Search Markdown titles & summaries for Semrush indexed routes (/about, /accumulator, /afcon-predictions, /archive)', () => {
+      const aboutMd = buildMarkdownForRoute('/about');
+      expect(aboutMd.markdown).toContain('About PredictPro Quantitative Sports Analytics');
+
+      const accaMd = buildMarkdownForRoute('/accumulator');
+      expect(accaMd.markdown).toContain('Smart Football Accumulator & Multibet Builder');
+
+      const afconMd = buildMarkdownForRoute('/afcon-predictions');
+      expect(afconMd.markdown).toContain('AFCON, CAF Champions League & Pan-African Football Predictions');
+
+      const archiveMd = buildMarkdownForRoute('/archive');
+      expect(archiveMd.markdown).toContain('Settled Football Prediction Archive');
     });
   });
 });

@@ -61,6 +61,9 @@ import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
 import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { QuickInsightCard } from '@/components/QuickInsightCard';
+import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
+import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
+import { Tv, Play } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
@@ -116,6 +119,7 @@ export default function MatchPrediction() {
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showStreamHub, setShowStreamHub] = useState(false);
   const [isFallback, setIsFallback] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
@@ -390,28 +394,55 @@ export default function MatchPrediction() {
           </div>
 
           <div className="text-center text-xs text-muted-foreground mt-4 pt-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="flex items-center gap-2">
+            <span className="flex flex-wrap items-center gap-2">
               <span>{formatKickoff(prediction.match_date, { includeWeekday: true, includeDate: true, includeTimezone: true })}</span>
-              <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-muted-foreground border-border">
-                {region.flag} {region.name}
-              </Badge>
+              <span className="text-[11px] font-medium text-foreground/80">
+                · {region.flag} {region.name}
+              </span>
+              {(() => {
+                const bInfo = getMatchBroadcastInfo({
+                  matchId: prediction.id,
+                  homeTeam: prediction.home_team,
+                  awayTeam: prediction.away_team,
+                  league: prediction.league,
+                  regionId: region.id,
+                });
+                return (
+                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    · <Tv className="h-3 w-3" /> {bInfo.primaryBroadcaster.shortName}
+                    {bInfo.hasFreeStream ? ' (Free Stream Available)' : ''}
+                  </span>
+                );
+              })()}
             </span>
-            <NotifyMeButton
-              match={{
-                id: prediction.id,
-                home_team: prediction.home_team,
-                away_team: prediction.away_team,
-                league: prediction.league,
-                match_date: prediction.match_date,
-                prediction: outcome,
-                confidence,
-                home_odds: prediction.home_odds,
-                draw_odds: prediction.draw_odds,
-                away_odds: prediction.away_odds,
-              }}
-              variant="button"
-              size="sm"
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowStreamHub(true)}
+                className="h-8 gap-1.5 text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
+                data-testid="match-prediction-watch-live-btn"
+              >
+                <Play className="h-3.5 w-3.5 fill-current" />
+                <span>Watch Live / TV Guide</span>
+              </Button>
+              <NotifyMeButton
+                match={{
+                  id: prediction.id,
+                  home_team: prediction.home_team,
+                  away_team: prediction.away_team,
+                  league: prediction.league,
+                  match_date: prediction.match_date,
+                  prediction: outcome,
+                  confidence,
+                  home_odds: prediction.home_odds,
+                  draw_odds: prediction.draw_odds,
+                  away_odds: prediction.away_odds,
+                }}
+                variant="button"
+                size="sm"
+              />
+            </div>
           </div>
         </div>
 
@@ -888,6 +919,27 @@ export default function MatchPrediction() {
       </main>
       <Footer />
       {showModal && <PredictionDetailModal prediction={prediction} open={showModal} onClose={() => setShowModal(false)} />}
+      {showStreamHub && (
+        <LiveStreamHubModal
+          match={{
+            id: prediction.id,
+            homeTeam: prediction.home_team,
+            awayTeam: prediction.away_team,
+            league: prediction.league,
+            homeScore: settledHomeGoals,
+            awayScore: settledAwayGoals,
+            minute: "65'",
+            status: 'live',
+            homeXG: Number(homeXgVal),
+            awayXG: Number(awayXgVal),
+            homePossession: 54,
+            awayPossession: 46,
+            prediction: outcome,
+          }}
+          regionId={region.id}
+          onClose={() => setShowStreamHub(false)}
+        />
+      )}
     </div>
   );
 }

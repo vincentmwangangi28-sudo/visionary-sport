@@ -71,6 +71,56 @@ export function buildMarkdownForRoute(pathname: string): { markdown: string; tok
       summary:
         'AI football tips, Poisson scorelines, and M-Pesa jackpot selections for Gor Mahia, AFC Leopards, Tusker FC, Simba SC, and Young Africans.',
     },
+    '/about': {
+      title: 'About PredictPro Quantitative Sports Analytics & AI Science',
+      summary:
+        'Discover the Dixon-Coles Bivariate Poisson distributions, Expected Goals (xG) telemetry pipelines, and quantitative sports data scientists powering PredictPro.guru across 40+ global leagues.',
+    },
+    '/accumulator': {
+      title: 'Smart Football Accumulator & Multibet Builder | PredictPro',
+      summary:
+        'Build low-correlation 3-fold Banker, 4-fold +EV Value, and 5-fold football accumulators with joint Poisson probability, Kelly Criterion staking, and instant SportyBet/Betway/Bet9ja booking codes.',
+    },
+    '/archive': {
+      title: 'Settled Football Prediction Archive & Audited 90-Minute Results',
+      summary:
+        'Browse PredictPro’s complete historical archive of settled football predictions, closing decimal odds, final 90-minute scorelines, and transparent 1.0-unit ROI settlement records.',
+    },
+    '/live': {
+      title: 'Live Football Scores Today: 2D Pitch Match Cast, In-Play xG & Broadcast Guide',
+      summary:
+        'Track real-time live football scores with 2D SVG tactical shot maps, 15-minute momentum waves, 0.0–10.0 live player ratings, and regional TV/streaming channel directories.',
+    },
+    '/standings': {
+      title: 'Football League Standings, Expected Points (xPTS) Justice Table & Venue Splits',
+      summary:
+        'Compare official 2026/27 league standings against Expected Goals (xG / xGA), Expected Points (xPTS) Justice Tables, live in-play rank projections, and Home/Away splits.',
+    },
+    '/players': {
+      title: 'Football Player 0.0–10.0 Ratings, 5-Axis Tactical Radar & xG/90 Analytics',
+      summary:
+        'Compare global and CAF football players head-to-head using algorithmic 0.0–10.0 season form ratings, 5-axis SVG percentile radars, non-penalty xG/90, and Expected Assists (xA/90).',
+    },
+    '/highlights': {
+      title: 'Official Football Match Video Highlights, TV Guide & xG Fairness Recaps',
+      summary:
+        'Watch verified football match video highlights paired with regional live TV broadcaster directories (Showmax PL, SuperSport, Sky Sports, DAZN, FIFA+) and post-match xG fairness ratings.',
+    },
+    '/news': {
+      title: 'Breaking Football Injury News, Confirmed Starting XI & Tactical xG Wire',
+      summary:
+        'Real-time confirmed starting lineups, injury/suspension alerts, quantified win-probability shifts, and regional press desk intelligence across UK, Spain, Europe, and Africa.',
+    },
+    '/methodology': {
+      title: 'AI Football Prediction Methodology: Dixon-Coles Bivariate Poisson & xG Science',
+      summary:
+        'Mathematical documentation of PredictPro’s Bivariate Poisson distribution, rolling 10-match non-penalty Expected Goals (npxG), Elo adjustments, and Closing Line Value (CLV) verification.',
+    },
+    '/track-record': {
+      title: 'Verified AI Prediction Track Record, Historical Yield & Closing Line Value (CLV)',
+      summary:
+        'Audited historical strike rate (87.2% on 75%+ Banker tier), flat-unit Return on Investment (ROI), and league-by-league performance ledger.',
+    },
   };
 
   let meta = routeTitles[cleanPath];

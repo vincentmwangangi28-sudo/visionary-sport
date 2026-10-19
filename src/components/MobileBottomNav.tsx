@@ -106,8 +106,8 @@ export const MobileBottomNav = () => {
               ? 'text-primary font-bold'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="Open Accumulator Bet Slip"
-          aria-label={`Bet Slip: ${selections.length} picks`}
+          title="Open Multi-Match Tracker Slip"
+          aria-label={`Match Slip: ${selections.length} picks`}
         >
           {(pathname === '/accumulator' || selections.length > 0) && (
             <span className="absolute top-0 w-8 h-0.5 rounded-full bg-amber-500" />
@@ -121,7 +121,7 @@ export const MobileBottomNav = () => {
             )}
           </div>
           <span className="text-[10px] tracking-tight leading-none">
-            {selections.length > 0 ? `${selections.length} Picks` : 'Bet Slip'}
+            {selections.length > 0 ? `${selections.length} Picks` : 'Match Slip'}
           </span>
         </button>
 

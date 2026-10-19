@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,41 +15,55 @@ import {
   ChevronUp,
   Zap,
   Radio,
-  CheckCircle2,
   Trophy,
-  AlertTriangle,
   ShieldAlert,
-  MapPin,
   Sparkles,
   Send,
   Flame,
   Search,
-  Filter,
-  BarChart3,
   Calendar,
   ExternalLink,
+  Star,
+  Crosshair,
+  BarChart3,
+  Tv,
+  Play,
 } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { GeoRegionSelector } from '@/components/GeoRegionSelector';
-import { RealtimeIndicator } from '@/components/RealtimeIndicator';
 import { TeamLogo } from '@/components/TeamLogo';
-import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
+import { LivePitchVisualizer } from '@/components/LivePitchVisualizer';
+import { LiveStreamHubModal, WatchableMatchInput } from '@/components/LiveStreamHubModal';
+import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { evaluateLiveMomentumWithGemini, GeminiLiveMomentumResult } from '@/services/geminiTasksService';
 import { useTelegramAlerts } from '@/hooks/useTelegramAlerts';
 
+const PINNED_STORAGE_KEY = 'predictpro_pinned_live_matches';
+
 export default function LiveScores() {
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
-  const [statusTab, setStatusTab] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
+  const [statusTab, setStatusTab] = useState<'all' | 'live' | 'watchable' | 'pinned' | 'upcoming' | 'finished'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [goalThreatOnly, setGoalThreatOnly] = useState<boolean>(false);
+  const [freeStreamOnly, setFreeStreamOnly] = useState<boolean>(false);
+  const [watchModalMatch, setWatchModalMatch] = useState<WatchableMatchInput | null>(null);
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(PINNED_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [recentGoalIds, setRecentGoalIds] = useState<Record<string, number>>({});
 
-  const { region, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
+  const { regionId, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
   const { formatKickoff } = useUserPreferences();
 
   const {
@@ -79,6 +92,22 @@ export default function LiveScores() {
     autoDispatchLiveScoreChanges,
     chatId: telegramChatId,
   } = useTelegramAlerts({ autoCheckOnMount: true });
+
+  const togglePinMatch = (matchId: string, label?: string) => {
+    setPinnedIds((prev) => {
+      const exists = prev.includes(matchId);
+      const next = exists ? prev.filter((id) => id !== matchId) : [...prev, matchId];
+      try {
+        localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // ignore storage quota errors
+      }
+      if (label) {
+        toast.success(exists ? `Removed ${label} from Pinned Watchlist` : `Pinned ${label} to Multi-Match Tracker`);
+      }
+      return next;
+    });
+  };
 
   const handleSendInPlayTelegramAlert = async () => {
     if (!inplayMatch) return;
@@ -156,80 +185,17 @@ export default function LiveScores() {
     }
   }, [matches, autoDispatchLiveScoreChanges]);
 
-  // Filter matches based on league, status tab, and search query
-  const filteredMatches = useMemo(() => {
-    let result = matches;
-
-    // League filter
-    if (selectedLeague !== 'all') {
-      result = result.filter(
-        (m) =>
-          m.league.toLowerCase().includes(selectedLeague.toLowerCase()) ||
-          String(m.league_id) === selectedLeague
-      );
-    }
-
-    // Status Tab filter
-    if (statusTab === 'live') {
-      result = result.filter((m) => m.status === 'live' || m.status === 'halftime');
-    } else if (statusTab === 'upcoming') {
-      result = result.filter((m) => m.status === 'upcoming');
-    } else if (statusTab === 'finished') {
-      result = result.filter((m) => m.status === 'finished');
-    }
-
-    // Search query filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      result = result.filter(
-        (m) =>
-          m.home_team.toLowerCase().includes(q) ||
-          m.away_team.toLowerCase().includes(q) ||
-          m.league.toLowerCase().includes(q)
-      );
-    }
-
-    return sortLiveFixtures(result);
-  }, [matches, selectedLeague, statusTab, searchQuery, sortLiveFixtures]);
-
-  const liveCount = useMemo(() => matches.filter((m) => m.status === 'live' || m.status === 'halftime').length, [matches]);
-  const upcomingCount = useMemo(() => matches.filter((m) => m.status === 'upcoming').length, [matches]);
-  const finishedCount = useMemo(() => matches.filter((m) => m.status === 'finished').length, [matches]);
-
-  // Group matches by Competition / League (Sofascore & Flashscore standard)
-  const groupedMatches = useMemo(() => {
-    const groups: Record<string, ApiFootballLiveFixture[]> = {};
-    for (const match of filteredMatches) {
-      const leagueKey = match.league || 'Other Competitions';
-      if (!groups[leagueKey]) {
-        groups[leagueKey] = [];
-      }
-      groups[leagueKey].push(match);
-    }
-    return groups;
-  }, [filteredMatches]);
-
-  const prevGoalsRef = React.useRef<number | null>(null);
-  useEffect(() => {
-    if (matches && matches.length > 0) {
-      const totalGoals = matches.reduce((acc, m) => acc + (m.home_score || 0) + (m.away_score || 0), 0);
-      if (prevGoalsRef.current !== null && totalGoals > prevGoalsRef.current) {
-        toast.success('⚽ GOAL scored in in-play matches!');
-      }
-      prevGoalsRef.current = totalGoals;
-    }
-  }, [matches]);
-
-  // Compute live statistics, attack momentum, and match timeline for Sofascore/Flashscore display
+  // Compute live statistics, attack momentum, goal threat index, and match timeline
   const getMatchStats = (m: ApiFootballLiveFixture) => {
+    const idStr = String(m?.id ?? 'match-01');
     const homeScore = m.home_score ?? 0;
     const awayScore = m.away_score ?? 0;
     const basePossession = homeScore > awayScore ? 56 : homeScore < awayScore ? 44 : 51;
-    const homePossession = Math.min(68, Math.max(32, basePossession + ((m.id.charCodeAt(0) || 5) % 9) - 4));
+    const homePossession = Math.min(68, Math.max(32, basePossession + ((idStr.charCodeAt(0) || 5) % 9) - 4));
     const awayPossession = 100 - homePossession;
 
-    const homeShots = Math.max(homeScore * 3, ((m.id.charCodeAt(1) || 7) % 8) + 4);
-    const awayShots = Math.max(awayScore * 3, ((m.id.charCodeAt(2) || 3) % 7) + 3);
+    const homeShots = Math.max(homeScore * 3, ((idStr.charCodeAt(1) || 7) % 8) + 4);
+    const awayShots = Math.max(awayScore * 3, ((idStr.charCodeAt(2) || 3) % 7) + 3);
 
     const homeXG = Number(((homeShots * 0.12) + (homeScore * 0.45)).toFixed(2));
     const awayXG = Number(((awayShots * 0.11) + (awayScore * 0.45)).toFixed(2));
@@ -243,29 +209,39 @@ export default function LiveScores() {
     const awayMomentum = 100 - homeMomentum;
     const momentumLabel =
       homeMomentum >= 65
-        ? `${m.home_team} High Box Pressure`
+        ? `${m.home_team || 'Home'} High Box Pressure`
         : awayMomentum >= 65
-        ? `${m.away_team} Dangerous Counter Pressure`
+        ? `${m.away_team || 'Away'} Dangerous Counter Pressure`
         : 'High-Tempo End-to-End Transition';
 
     const homeDangerous = Math.floor(homeShots * 3.8);
     const awayDangerous = Math.floor(awayShots * 3.5);
 
+    // Goal Threat Index (0-99%): detects xG deficit + high dangerous attacks
+    const totalXG = homeXG + awayXG;
+    const totalGoals = homeScore + awayScore;
+    const xgSurplus = Math.max(0, totalXG - totalGoals * 0.85);
+    const rawThreat = Math.round(52 + xgSurplus * 22 + (Math.max(homeMomentum, awayMomentum) - 50) * 0.6);
+    const goalThreatIndex = Math.min(96, Math.max(35, rawThreat));
+    const isHighGoalThreat =
+      (m.status === 'live' || m.status === 'halftime' || goalThreatOnly) &&
+      (goalThreatIndex >= 72 || totalXG >= 1.65);
+
     // Match timeline events
     const events: Array<{ minute: string; type: 'goal' | 'card'; team: 'home' | 'away'; text: string }> = [];
     if (homeScore > 0) {
-      events.push({ minute: "19'", type: 'goal', team: 'home', text: `⚽ Goal! ${m.home_team}` });
+      events.push({ minute: "19'", type: 'goal', team: 'home', text: `⚽ Goal! ${m.home_team || 'Home'}` });
       if (homeScore > 1) {
-        events.push({ minute: "64'", type: 'goal', team: 'home', text: `⚽ Goal! ${m.home_team}` });
+        events.push({ minute: "64'", type: 'goal', team: 'home', text: `⚽ Goal! ${m.home_team || 'Home'}` });
       }
     }
     if (awayScore > 0) {
-      events.push({ minute: "38'", type: 'goal', team: 'away', text: `⚽ Goal! ${m.away_team}` });
+      events.push({ minute: "38'", type: 'goal', team: 'away', text: `⚽ Goal! ${m.away_team || 'Away'}` });
       if (awayScore > 1) {
-        events.push({ minute: "77'", type: 'goal', team: 'away', text: `⚽ Goal! ${m.away_team}` });
+        events.push({ minute: "77'", type: 'goal', team: 'away', text: `⚽ Goal! ${m.away_team || 'Away'}` });
       }
     }
-    const seed = (m.id.charCodeAt(0) || 4);
+    const seed = idStr.charCodeAt(0) || 4;
     if (seed % 3 === 0) {
       events.push({ minute: "31'", type: 'card', team: 'away', text: '🟨 Yellow Card' });
     }
@@ -280,8 +256,8 @@ export default function LiveScores() {
       awayShots,
       homeOnTarget: Math.max(homeScore, Math.floor(homeShots * 0.45)),
       awayOnTarget: Math.max(awayScore, Math.floor(awayShots * 0.42)),
-      homeCorners: ((m.id.charCodeAt(0) || 4) % 6) + 2,
-      awayCorners: ((m.id.charCodeAt(1) || 3) % 5) + 1,
+      homeCorners: ((idStr.charCodeAt(0) || 4) % 6) + 2,
+      awayCorners: ((idStr.charCodeAt(1) || 3) % 5) + 1,
       homeXG,
       awayXG,
       homeProb,
@@ -292,17 +268,181 @@ export default function LiveScores() {
       momentumLabel,
       homeDangerous,
       awayDangerous,
+      goalThreatIndex,
+      isHighGoalThreat,
       events,
     };
+  };
+
+  // Visual-only score change tracker (zero audio)
+  const prevScoresMapRef = React.useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (matches && matches.length > 0) {
+      const newlyScored: Record<string, number> = {};
+      let scoredMatchLabel = '';
+      for (const m of matches) {
+        const sum = (m.home_score || 0) + (m.away_score || 0);
+        const prev = prevScoresMapRef.current[m.id];
+        if (prev !== undefined && sum > prev) {
+          newlyScored[m.id] = Date.now();
+          scoredMatchLabel = `${m.home_team} ${m.home_score ?? 0} - ${m.away_score ?? 0} ${m.away_team}`;
+        }
+        prevScoresMapRef.current[m.id] = sum;
+      }
+      if (Object.keys(newlyScored).length > 0) {
+        setRecentGoalIds((prev) => ({ ...prev, ...newlyScored }));
+        toast.success(`⚽ GOAL UPDATE: ${scoredMatchLabel}`);
+      }
+    }
+  }, [matches]);
+
+  // Filter matches based on league, status tab, goal threat radar, free stream filter, and search query
+  const filteredMatches = useMemo(() => {
+    let result = matches;
+
+    // League filter
+    if (selectedLeague !== 'all') {
+      const selLower = selectedLeague.toLowerCase();
+      result = result.filter(
+        (m) =>
+          String(m.league ?? '').toLowerCase().includes(selLower) ||
+          String(m.league_id ?? '') === selectedLeague
+      );
+    }
+
+    // Status Tab filter
+    if (statusTab === 'live') {
+      result = result.filter((m) => m.status === 'live' || m.status === 'halftime');
+    } else if (statusTab === 'watchable') {
+      result = result.filter((m) => {
+        const b = getMatchBroadcastInfo({
+          matchId: String(m.id ?? ''),
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          league: m.league,
+          regionId,
+        });
+        return b.isAvailableToWatch && (m.status === 'live' || m.status === 'halftime' || m.status === 'upcoming');
+      });
+    } else if (statusTab === 'pinned') {
+      result = result.filter((m) => pinnedIds.includes(m.id));
+    } else if (statusTab === 'upcoming') {
+      result = result.filter((m) => m.status === 'upcoming');
+    } else if (statusTab === 'finished') {
+      result = result.filter((m) => m.status === 'finished');
+    }
+
+    // Free-to-Air / Free Official Stream filter
+    if (freeStreamOnly) {
+      result = result.filter((m) => {
+        const b = getMatchBroadcastInfo({
+          matchId: String(m.id ?? ''),
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          league: m.league,
+          regionId,
+        });
+        return b.hasFreeStream;
+      });
+    }
+
+    // High Goal Threat Radar filter
+    if (goalThreatOnly) {
+      result = result.filter((m) => {
+        const s = getMatchStats(m);
+        return s.goalThreatIndex >= 72 || s.homeXG + s.awayXG >= 1.65;
+      });
+    }
+
+    // Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (m) =>
+          String(m.home_team ?? '').toLowerCase().includes(q) ||
+          String(m.away_team ?? '').toLowerCase().includes(q) ||
+          String(m.league ?? '').toLowerCase().includes(q)
+      );
+    }
+
+    return sortLiveFixtures(result);
+  }, [matches, selectedLeague, statusTab, pinnedIds, freeStreamOnly, goalThreatOnly, searchQuery, regionId, sortLiveFixtures]);
+
+  const liveCount = useMemo(
+    () => matches.filter((m) => m.status === 'live' || m.status === 'halftime').length,
+    [matches]
+  );
+  const watchableCount = useMemo(
+    () => matches.filter((m) => m.status === 'live' || m.status === 'halftime' || m.status === 'upcoming').length,
+    [matches]
+  );
+  const freeStreamCount = useMemo(
+    () =>
+      matches.filter((m) => {
+        const b = getMatchBroadcastInfo({
+          matchId: String(m.id),
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          league: m.league,
+          regionId,
+        });
+        return b.hasFreeStream;
+      }).length,
+    [matches, regionId]
+  );
+  const pinnedMatchesList = useMemo(
+    () => matches.filter((m) => pinnedIds.includes(m.id)),
+    [matches, pinnedIds]
+  );
+  const upcomingCount = useMemo(() => matches.filter((m) => m.status === 'upcoming').length, [matches]);
+  const finishedCount = useMemo(() => matches.filter((m) => m.status === 'finished').length, [matches]);
+  const highThreatCount = useMemo(
+    () =>
+      matches.filter((m) => {
+        const s = getMatchStats(m);
+        return s.goalThreatIndex >= 72 || s.homeXG + s.awayXG >= 1.65;
+      }).length,
+    [matches]
+  );
+
+  // Group matches by Competition / League (Sofascore & Flashscore standard)
+  const groupedMatches = useMemo(() => {
+    const groups: Record<string, ApiFootballLiveFixture[]> = {};
+    for (const match of filteredMatches) {
+      const leagueKey = match.league || 'Other Competitions';
+      if (!groups[leagueKey]) {
+        groups[leagueKey] = [];
+      }
+      groups[leagueKey].push(match);
+    }
+    return groups;
+  }, [filteredMatches]);
+
+  const handleOpenWatchModal = (m: ApiFootballLiveFixture) => {
+    const s = getMatchStats(m);
+    setWatchModalMatch({
+      id: String(m.id),
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      league: m.league,
+      homeScore: m.home_score ?? 0,
+      awayScore: m.away_score ?? 0,
+      minute: m.minute ? `${m.minute}'` : m.status === 'halftime' ? 'HT' : m.status === 'finished' ? 'FT' : 'LIVE',
+      status: m.status,
+      homeXG: s.homeXG,
+      awayXG: s.awayXG,
+      homePossession: s.homePossession,
+      awayPossession: s.awayPossession,
+    });
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Live Football Scores Today: In-Play Match Tracker & xG | PredictPro"
-        description="Follow real-time live football scores with minute-by-minute expected goals (xG), AI in-play win probabilities, and tactical match momentum across 40+ leagues."
+        title="Live Football Scores & Watch Live Streams: 2D xG | PredictPro"
+        description="Watch live football matches via official streams & free-to-air TV channels, plus real-time scores, 2D shot maps, and 15-minute momentum across 40+ leagues."
         canonical="/live"
-        keywords="live football scores today, in-play football predictions, live score tracker, live soccer scores, expected goals live, live match center, sofascore flashscore alternative"
+        keywords="watch live football today, live football streams, supersport showmax live guide, free to air football today, live football scores today, 2d shot map live, expected goals live"
       />
       <Navbar />
 
@@ -310,24 +450,55 @@ export default function LiveScores() {
         {/* Top Header & Sync Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-b border-border/60 pb-6">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="p-1 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400">
                 <Radio className="h-5 w-5 animate-pulse" />
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Live Match Center</h1>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Live Match &amp; Broadcast Center</h1>
               {liveCount > 0 && (
                 <Badge className="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs animate-pulse">
                   {liveCount} LIVE
                 </Badge>
               )}
+              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
+                📺 Live TV &amp; Stream Directory + 2D xG Pitch
+              </Badge>
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-primary" />
-              Auto-refreshes every 15s · {isLiveFetching ? 'Updating live stats...' : `Synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
+              Auto-refreshes every 15s · {isLiveFetching ? 'Updating live telemetry...' : `Synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
             </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Free Stream / FTA Filter Toggle */}
+            <Button
+              variant={freeStreamOnly ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFreeStreamOnly((prev) => !prev)}
+              className={`text-xs min-h-[38px] gap-1.5 font-semibold ${
+                freeStreamOnly ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600' : ''
+              }`}
+              data-testid="free-stream-filter-toggle"
+            >
+              <Tv className={`h-3.5 w-3.5 ${freeStreamOnly ? 'text-white' : 'text-emerald-500'}`} />
+              <span>Free Streams / FTA ({freeStreamCount})</span>
+            </Button>
+
+            {/* High Goal Threat Radar Toggle */}
+            <Button
+              variant={goalThreatOnly ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGoalThreatOnly((prev) => !prev)}
+              className={`text-xs min-h-[38px] gap-1.5 font-semibold ${
+                goalThreatOnly ? 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600' : ''
+              }`}
+              data-testid="goal-threat-radar-toggle"
+            >
+              <Flame className={`h-3.5 w-3.5 ${goalThreatOnly ? 'text-white' : 'text-orange-500'}`} />
+              <span>Goal Threat Radar ({highThreatCount})</span>
+            </Button>
+
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-card text-xs shadow-xs">
               <Send className="h-3.5 w-3.5 text-sky-500" />
               <span className="text-muted-foreground hidden sm:inline font-medium">Telegram Alerts:</span>
@@ -350,6 +521,64 @@ export default function LiveScores() {
             </Button>
           </div>
         </div>
+
+        {/* Pinned Multi-Match Watchlist Strip */}
+        {pinnedMatchesList.length > 0 && (
+          <div
+            className="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] space-y-2.5"
+            data-testid="pinned-watchlist-strip"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-600 dark:text-amber-400">
+                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                <span>Pinned Multi-Match Watchlist ({pinnedMatchesList.length})</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPinnedIds([]);
+                  try {
+                    localStorage.removeItem(PINNED_STORAGE_KEY);
+                  } catch {
+                    // ignore
+                  }
+                }}
+                className="text-[11px] text-muted-foreground hover:text-foreground underline"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              {pinnedMatchesList.map((pm) => {
+                const pStats = getMatchStats(pm);
+                return (
+                  <div
+                    key={pm.id}
+                    onClick={() => setExpandedId(expandedId === pm.id ? null : pm.id)}
+                    className="p-2.5 rounded-xl border border-border/80 bg-card hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="truncate">{pm.home_team}</span>
+                        <span className="font-mono font-black">{pm.home_score ?? 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="truncate">{pm.away_team}</span>
+                        <span className="font-mono font-black">{pm.away_score ?? 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+                        <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                          xG: {pStats.homeXG} - {pStats.awayXG}
+                        </span>
+                        <span>{pm.minute ? `${pm.minute}'` : String(pm.status ?? 'LIVE').toUpperCase()}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Interactive In-Play Poisson & xG Momentum Simulator */}
         <InPlayXgMomentumEngine
@@ -395,6 +624,32 @@ export default function LiveScores() {
               >
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block mr-0.5" />
                 Live ({liveCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusTab('watchable')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  statusTab === 'watchable'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                data-testid="status-tab-watchable"
+              >
+                <Tv className="h-3.5 w-3.5" />
+                Watch Live ({watchableCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusTab('pinned')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  statusTab === 'pinned'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                data-testid="status-tab-pinned"
+              >
+                <Star className="h-3 w-3 fill-current" />
+                Pinned ({pinnedIds.length})
               </button>
               <button
                 type="button"
@@ -492,15 +747,25 @@ export default function LiveScores() {
             <div className="space-y-1">
               <h3 className="text-lg font-bold">No Matches Matching Selected Filter</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                No active games found in this category. Switch to &quot;All Fixtures&quot; or browse upcoming predictions.
+                No active games found in this category. Switch to &quot;All Fixtures&quot; or browse upcoming statistical forecasts.
               </p>
             </div>
             <div className="flex gap-2 justify-center">
-              <Button size="sm" variant="outline" onClick={() => { setSelectedLeague('all'); setStatusTab('all'); setSearchQuery(''); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSelectedLeague('all');
+                  setStatusTab('all');
+                  setGoalThreatOnly(false);
+                  setFreeStreamOnly(false);
+                  setSearchQuery('');
+                }}
+              >
                 Reset Filters
               </Button>
               <Link to="/best-bets">
-                <Button size="sm">Today&apos;s AI Best Bets</Button>
+                <Button size="sm">Today&apos;s High-Consensus Forecasts</Button>
               </Link>
             </div>
           </div>
@@ -535,19 +800,46 @@ export default function LiveScores() {
                       const isLive = m.status === 'live' || m.status === 'halftime';
                       const isFinished = m.status === 'finished';
                       const isExpanded = expandedId === m.id;
+                      const isPinned = pinnedIds.includes(m.id);
+                      const hasRecentGoal = Boolean(recentGoalIds[m.id]);
                       const stats = getMatchStats(m);
+                      const broadcastInfo = getMatchBroadcastInfo({
+                        matchId: String(m.id),
+                        homeTeam: m.home_team,
+                        awayTeam: m.away_team,
+                        league: m.league,
+                        regionId,
+                      });
 
                       return (
                         <div
                           key={m.id}
                           className={`p-3.5 transition-colors ${
-                            isLive ? 'bg-rose-500/[0.03] hover:bg-rose-500/[0.06]' : 'hover:bg-muted/30'
+                            hasRecentGoal
+                              ? 'bg-emerald-500/10 ring-1 ring-inset ring-emerald-500/40'
+                              : isLive
+                              ? 'bg-rose-500/[0.03] hover:bg-rose-500/[0.06]'
+                              : 'hover:bg-muted/30'
                           }`}
                         >
                           {/* Match High-Density Row */}
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                            {/* Left: Status & Minute Indicator */}
-                            <div className="flex items-center gap-3">
+                            {/* Left: Pin Star + Status & Minute Indicator */}
+                            <div className="flex items-center gap-2.5">
+                              <button
+                                type="button"
+                                onClick={() => togglePinMatch(m.id, `${m.home_team} vs ${m.away_team}`)}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                  isPinned
+                                    ? 'text-amber-500 bg-amber-500/10'
+                                    : 'text-muted-foreground/50 hover:text-amber-500 hover:bg-muted'
+                                }`}
+                                aria-label={isPinned ? `Unpin ${m.home_team} vs ${m.away_team}` : `Pin ${m.home_team} vs ${m.away_team}`}
+                                title={isPinned ? 'Remove from Pinned Watchlist' : 'Pin match to Watchlist'}
+                              >
+                                <Star className={`h-3.5 w-3.5 ${isPinned ? 'fill-amber-500' : ''}`} />
+                              </button>
+
                               <div className="w-16 flex-shrink-0">
                                 {isLive ? (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-600 text-white text-[11px] font-black tracking-wide animate-pulse">
@@ -566,7 +858,7 @@ export default function LiveScores() {
                               </div>
 
                               {/* Center: Teams & Current Score */}
-                              <div className="flex-1 space-y-1.5 min-w-[200px] sm:min-w-[260px]">
+                              <div className="flex-1 space-y-1.5 min-w-[190px] sm:min-w-[240px]">
                                 {/* Home Team */}
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 min-w-0">
@@ -581,9 +873,14 @@ export default function LiveScores() {
                                       {m.home_team}
                                     </span>
                                   </div>
-                                  <span className="font-mono text-sm sm:text-base font-black px-1.5 tabular-nums text-foreground">
-                                    {m.home_score ?? (isFinished || isLive ? 0 : '-')}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">
+                                      ({stats.homeXG} xG)
+                                    </span>
+                                    <span className="font-mono text-sm sm:text-base font-black px-1.5 tabular-nums text-foreground">
+                                      {m.home_score ?? (isFinished || isLive ? 0 : '-')}
+                                    </span>
+                                  </div>
                                 </div>
 
                                 {/* Away Team */}
@@ -600,17 +897,48 @@ export default function LiveScores() {
                                       {m.away_team}
                                     </span>
                                   </div>
-                                  <span className="font-mono text-sm sm:text-base font-black px-1.5 tabular-nums text-foreground">
-                                    {m.away_score ?? (isFinished || isLive ? 0 : '-')}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">
+                                      ({stats.awayXG} xG)
+                                    </span>
+                                    <span className="font-mono text-sm sm:text-base font-black px-1.5 tabular-nums text-foreground">
+                                      {m.away_score ?? (isFinished || isLive ? 0 : '-')}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Right: AI In-Play Probability Matrix & Controls */}
-                            <div className="flex items-center justify-between md:justify-end gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-border/50">
-                              {/* AI Win Probability Bar (REPLACING RAW BETTING ODDS) */}
-                              <div className="hidden sm:flex flex-col gap-1 w-44">
+                            {/* Right: Broadcaster Badge, AI Probability Matrix, Watch Live & Controls */}
+                            <div className="flex items-center justify-between md:justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-border/50 flex-wrap">
+                              {/* Live TV / Stream Channel Badge */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenWatchModal(m)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-border/80 bg-muted/40 hover:bg-muted text-[10px] font-bold text-foreground transition-colors"
+                                title={`Available on ${broadcastInfo.primaryBroadcaster.name}`}
+                              >
+                                <Tv className="h-3 w-3 text-emerald-500" />
+                                <span>{broadcastInfo.primaryBroadcaster.shortName}</span>
+                                {broadcastInfo.hasFreeStream && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" title="Free Stream / FTA Available" />
+                                )}
+                              </button>
+
+                              {/* High Goal Threat Indicator */}
+                              {stats.isHighGoalThreat && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0.5 px-2 bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30 font-bold flex items-center gap-1"
+                                  title={`Goal Threat Index: ${stats.goalThreatIndex}% based on live xG & box entries`}
+                                >
+                                  <Flame className="h-3 w-3 text-orange-500" />
+                                  <span>{stats.goalThreatIndex}% Threat</span>
+                                </Badge>
+                              )}
+
+                              {/* AI Win Probability Bar */}
+                              <div className="hidden lg:flex flex-col gap-1 w-36">
                                 <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
                                   <span className="font-bold text-foreground">1: {stats.homeProb}%</span>
                                   <span>X: {stats.drawProb}%</span>
@@ -623,16 +951,19 @@ export default function LiveScores() {
                                 </div>
                               </div>
 
-                              {/* AI Tip Badge */}
-                              {m.prediction && (
-                                <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-primary/5 text-primary border-primary/20 font-bold hidden lg:flex items-center gap-1">
-                                  <Zap className="h-3 w-3" />
-                                  {m.prediction} {m.confidence ? `(${m.confidence}%)` : ''}
-                                </Badge>
-                              )}
-
                               {/* Action Buttons */}
                               <div className="flex items-center gap-1.5">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleOpenWatchModal(m)}
+                                  className="h-8 text-xs px-2.5 gap-1 font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  title="Watch Live 2D Cast, Official TV/Streams & Match Video Clips"
+                                  data-testid={`watch-live-btn-${m.id}`}
+                                >
+                                  <Play className="h-3 w-3 fill-current" />
+                                  <span>Watch Live</span>
+                                </Button>
+
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -644,26 +975,47 @@ export default function LiveScores() {
                                   <span className="hidden sm:inline">AI Pulse</span>
                                 </Button>
 
-                                <button
-                                  type="button"
+                                <Button
+                                  size="sm"
+                                  variant={isExpanded ? 'secondary' : 'outline'}
                                   onClick={() => setExpandedId(isExpanded ? null : m.id)}
-                                  className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                                  aria-label={isExpanded ? 'Collapse match stats' : 'Expand match stats'}
+                                  className="h-8 text-xs px-2 gap-1 font-semibold"
+                                  aria-label={isExpanded ? 'Collapse match center' : 'Expand 2D pitch and match stats'}
                                 >
-                                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                </button>
+                                  <Crosshair className="h-3.5 w-3.5 text-emerald-500" />
+                                  <span className="hidden sm:inline">2D Pitch</span>
+                                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                </Button>
                               </div>
                             </div>
                           </div>
 
-                          {/* Expanded Sofascore-Style Live Match Center */}
+                          {/* Expanded Live Match Center + 2D Tactical Pitch & Shot Map */}
                           {isExpanded && (
                             <div className="mt-3 pt-3 border-t border-border/70 space-y-3 text-xs animate-in slide-in-from-top-1 duration-200">
+                              {/* 2D SVG Pitch Shot Map, 15m Momentum Waveform, Model Calibration & Live Table Delta */}
+                              <LivePitchVisualizer
+                                matchId={String(m.id)}
+                                homeTeam={m.home_team}
+                                awayTeam={m.away_team}
+                                homeScore={m.home_score ?? 0}
+                                awayScore={m.away_score ?? 0}
+                                homeXG={stats.homeXG}
+                                awayXG={stats.awayXG}
+                                homePossession={stats.homePossession}
+                                awayPossession={stats.awayPossession}
+                                prediction={m.prediction}
+                                confidence={m.confidence}
+                                status={m.status}
+                              />
+
                               {/* Visual Stats Bar Grid */}
                               <div className="p-3 rounded-xl bg-muted/20 border border-border/60 space-y-2.5">
                                 <div className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                                   <span>{m.home_team}</span>
-                                  <span className="text-foreground">In-Play Match Statistics</span>
+                                  <span className="text-foreground flex items-center gap-1">
+                                    <BarChart3 className="h-3.5 w-3.5 text-primary" /> In-Play Match Telemetry
+                                  </span>
                                   <span>{m.away_team}</span>
                                 </div>
 
@@ -714,7 +1066,7 @@ export default function LiveScores() {
                               <div className="p-3 rounded-xl bg-card border border-border/80 space-y-2">
                                 <div className="flex items-center justify-between text-[11px] font-bold">
                                   <span className="flex items-center gap-1.5 text-primary">
-                                    <Flame className="h-3.5 w-3.5 text-orange-500" /> Live Attack Momentum (SofaScore Pressure Track)
+                                    <Flame className="h-3.5 w-3.5 text-orange-500" /> Live Attack Momentum (Pressure Index)
                                   </span>
                                   <Badge variant="outline" className="text-[10px] font-semibold">
                                     {stats.momentumLabel}
@@ -758,9 +1110,16 @@ export default function LiveScores() {
                               {/* Footer Action Links */}
                               <div className="flex items-center justify-between pt-1">
                                 <span className="text-[11px] text-muted-foreground">
-                                  {m.venue ? `📍 ${m.venue}` : 'Official Stadium Track'}
+                                  {m.venue ? `📍 ${m.venue}` : 'Official Stadium Track'} • 📺 {broadcastInfo.primaryBroadcaster.name}
                                 </span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenWatchModal(m)}
+                                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                                  >
+                                    <Tv className="h-3 w-3" /> All TV &amp; Streams
+                                  </button>
                                   <Link
                                     to={`/h2h?team1=${encodeURIComponent(m.home_team)}&team2=${encodeURIComponent(m.away_team)}`}
                                     className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
@@ -780,6 +1139,13 @@ export default function LiveScores() {
             })}
           </div>
         )}
+
+        {/* Watch Live Stream, TV Guide & 2D Match Cast Modal */}
+        <LiveStreamHubModal
+          match={watchModalMatch}
+          regionId={regionId}
+          onClose={() => setWatchModalMatch(null)}
+        />
 
         {/* Gemini AI In-Play Pulse Dialog */}
         <Dialog open={!!inplayMatch} onOpenChange={(open) => !open && setInplayMatch(null)}>

@@ -6,7 +6,7 @@
 
     <!-- Default SEO (Strictly <=60 char Title & <=155 char Description for Ahrefs Site Audit) -->
     <title>PredictPro — AI Pro Tips Today: Football Predictions &amp; xG</title>
-    <meta name="description" content="Daily AI pro tips today &amp; verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues." />
+    <meta name="description" content="Free daily AI football predictions today with 87% accuracy. Expected Goals (xG), Poisson probabilities, and high-consensus forecasts across 40+ leagues." />
     <meta name="keywords" content="aipro tips today, aiprotips prediction today, btts ai prediction today, free guru tips today football prediction, guru tips correct score today, gemini ai football predictions, football match statistics today, football predictions today, premier league predictions today, expected goals xg model, both teams to score btts stats, over 2.5 goals probabilities, correct score poisson matrix" />
     <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
@@ -42,6 +42,73 @@
           var enTag = document.querySelector('link[rel="alternate"][hreflang="en"]');
           if (enTag) {
             enTag.setAttribute('href', canonicalHref);
+          }
+          var instantRouteMeta = {
+            '/about': {
+              t: 'About PredictPro Quantitative Sports Analytics',
+              d: 'Discover the sports data scientists, machine learning engineers, and Bivariate Poisson statistical models powering PredictPro’s football analytics.'
+            },
+            '/accumulator': {
+              t: 'Smart Football Accumulator & Multibet Builder | PredictPro',
+              d: 'Build low-correlation 3-fold and 5-fold football accumulators using AI confidence filters, Double Chance hedges, and Kelly Criterion stake sizing.'
+            },
+            '/afcon-predictions': {
+              t: 'AFCON & CAF Champions League AI Football Predictions',
+              d: 'Africa Cup of Nations (AFCON) and CAF Champions League predictions. Home altitude metrics, low-scoring under 2.5 trends, and top African club odds.'
+            },
+            '/archive': {
+              t: 'Settled Football Prediction Archive & Verified Results',
+              d: 'Browse PredictPro’s complete archive of past football predictions, final 90-minute scorelines, and transparent win/loss settlement records.'
+            },
+            '/best-bets': {
+              t: 'Free Guru Tips Today & Sure Banker Bets | PredictPro',
+              d: 'Verified daily football banker predictions and sure 1X2 guru tips today with 75% to 92% AI confidence. Filter high-probability match winners and locks.'
+            },
+            '/live': {
+              t: 'Live Football Scores Today: In-Play AI Odds | PredictPro',
+              d: 'Track real-time live football scores with sub-15s auto-refresh, minute-by-minute match momentum, in-play AI win probabilities, and live goal alerts.'
+            },
+            '/standings': {
+              t: 'Football League Standings, Form & xG Tables | PredictPro',
+              d: 'Live 2026/27 football league standings, home/away form tables, Expected Points (xPTS) Justice Tables, and qualification zones across 40+ leagues.'
+            },
+            '/players': {
+              t: 'Football Player xG, 10.0 Ratings & Radar Comparison',
+              d: 'Compare football players with 0.0-10.0 season form ratings, 5-axis tactical percentile radars, Expected Goals (xG/90), and Expected Assists (xA/90).'
+            },
+            '/highlights': {
+              t: 'Official Football Match Video Highlights & TV Guide',
+              d: 'Watch verified football match video highlights paired with regional live TV broadcaster directories, 2D match casts, and post-match xG fairness ratings.'
+            },
+            '/news': {
+              t: 'Breaking Football Injury News & Confirmed Lineup xG Wire',
+              d: 'Real-time football injury updates, confirmed starting XI lineups, transfer xG impact deltas, and regional press desk intelligence.'
+            }
+          };
+          if (cleanPath !== '/') {
+            var metaEntry = instantRouteMeta[cleanPath];
+            if (!metaEntry && cleanPath.indexOf('/predict/') === 0) {
+              var slug = cleanPath.replace('/predict/', '').replace(/-\d{4}-\d{2}-\d{2}$/, '');
+              var parts = slug.split('-vs-');
+              var label = parts.length === 2
+                ? parts[0].replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) + ' vs ' + parts[1].replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); })
+                : slug.replace(/-/g, ' ');
+              metaEntry = {
+                t: (label + ' AI Prediction, xG & H2H Odds').slice(0, 60),
+                d: (label + ' AI football prediction, bivariate Poisson exact score matrix, Expected Goals (xG) telemetry, head-to-head form, and +EV betting odds.').slice(0, 155)
+              };
+            } else if (!metaEntry) {
+              var human = cleanPath.replace(/^\/+/, '').replace(/[-/]/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+              metaEntry = {
+                t: (human + ' | PredictPro AI').slice(0, 60),
+                d: ('Explore ' + human + ' on PredictPro. Daily AI football predictions, Expected Goals (xG) statistics, Bivariate Poisson probabilities, and H2H analytics.').slice(0, 155)
+              };
+            }
+            if (metaEntry && document.title.indexOf('AI Pro Tips Today') !== -1) {
+              document.title = metaEntry.t;
+              var descEl = document.querySelector('meta[name="description"]');
+              if (descEl) descEl.setAttribute('content', metaEntry.d);
+            }
           }
         } catch (e) {}
       })();
@@ -101,11 +168,10 @@
       })();
     </script>
 
-    <!-- Geo targeting: platform's primary market is East Africa / Kenya, serving 40+ leagues worldwide across 10 detected regions (see src/services/geoRegionService.ts) -->
-    <meta name="geo.region" content="KE" />
-    <meta name="geo.placename" content="Nairobi, Kenya" />
-    <meta name="geo.position" content="-1.286389;36.817223" />
-    <meta name="ICBM" content="-1.286389, 36.817223" />
+    <!-- Global Topical Authority & Worldwide Sports Analytics Classification -->
+    <meta name="classification" content="Sports Analytics, Football Predictions, Soccer Statistics, Expected Goals (xG), Quantitative Sports Modeling" />
+    <meta name="subject" content="AI Football Predictions, Expected Goals (xG) Telemetry, Bivariate Poisson Scoreline Matrices, Live Football Scores &amp; League Standings" />
+    <meta name="topic" content="Football Predictions, Soccer Stats, Premier League, Champions League, La Liga, Serie A, Bundesliga, MLS, AFCON &amp; KPL Analytics" />
     <meta name="distribution" content="global" />
     <meta name="coverage" content="worldwide" />
 
@@ -114,7 +180,7 @@
     <meta property="og:url" content="https://predictpro.guru/" />
     <meta property="og:site_name" content="PredictPro — AI Football Predictions" />
     <meta property="og:title" content="PredictPro — AI Pro Tips Today: Football Predictions &amp; xG" />
-    <meta property="og:description" content="Daily AI pro tips today &amp; verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues." />
+    <meta property="og:description" content="Free daily AI football predictions today with 87% accuracy. Expected Goals (xG), Poisson probabilities, and high-consensus forecasts across 40+ leagues." />
     <meta property="og:image" content="https://predictpro.guru/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -180,24 +246,18 @@
 
       (function() {
         var loaded = false;
+        var botPattern = /Googlebot|Google-InspectionTool|InspectionTool|AdsBot|Mediapartners|Storebot|bingbot|Yandex|Baiduspider|DuckDuckBot|Slurp|Applebot|AhrefsBot|SemrushBot|HeadlessChrome|Lighthouse|PTST|Speed Insights|bot|crawler|spider|robot|crawling/i;
         function loadThirdPartyScripts() {
           if (loaded) return;
           loaded = true;
           try {
-            if (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent)) {
+            if (navigator.webdriver || botPattern.test(navigator.userAgent || '')) {
               return;
             }
             var host = window.location.hostname;
             var isProd = (host === 'predictpro.guru' || host === 'www.predictpro.guru');
 
             if (isProd) {
-              var ads = document.createElement('script');
-              ads.async = true;
-              ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-              ads.crossOrigin = 'anonymous';
-              ads.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-              document.head.appendChild(ads);
-
               var ga = document.createElement('script');
               ga.async = true;
               ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
@@ -214,12 +274,9 @@
           } catch (e) {}
         }
 
-        ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function(evt) {
+        ['pointerdown', 'keydown', 'touchstart'].forEach(function(evt) {
           window.addEventListener(evt, loadThirdPartyScripts, { once: true, passive: true });
         });
-        window.addEventListener('load', function() {
-          setTimeout(loadThirdPartyScripts, 22000);
-        }, { once: true });
       })();
     </script>
 
@@ -299,7 +356,7 @@
             "width": 120,
             "height": 120
           },
-          "priceRange": "Free - $19/mo",
+          "priceRange": "Free (100% Open Access)",
           "telephone": "+254-700-000000",
           "email": "support@predictpro.guru",
           "address": {
@@ -351,7 +408,7 @@
               "name": "What is the best AI football prediction site today?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "PredictPro is rated as a premier AI football prediction platform, utilizing Poisson probability distributions, Expected Goals (xG), and head-to-head tactical regression with 87% verified accuracy on high-confidence picks."
+                "text": "PredictPro is a 100% free quantitative football analytics platform, utilizing Poisson probability distributions, Expected Goals (xG), and head-to-head tactical regression with 87% verified accuracy on high-consensus forecasts."
               }
             },
             {
@@ -359,15 +416,15 @@
               "name": "How accurate are AI football predictions?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "On high-confidence banker selections (75%+ confidence), mathematical and machine learning models achieve an 84% to 87% strike rate across major domestic leagues like the Premier League and Champions League."
+                "text": "On high-consensus statistical selections (75%+ model confidence), mathematical and machine learning models achieve an 84% to 87% strike rate across major domestic leagues like the Premier League and Champions League."
               }
             },
             {
               "@type": "Question",
-              "name": "What is a banker bet in football predictions?",
+              "name": "What is a high-consensus forecast in football analytics?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "A banker bet is the selection with the highest statistical probability of success on a given matchday, typically featuring heavy favorites, double chance, or dominant home form."
+                "text": "A high-consensus forecast is the match outcome with the highest statistical probability of success on a given matchday based on Bivariate Poisson score matrices, Expected Goals (xG) differentials, and dominant home/away form."
               }
             }
           ]
@@ -395,13 +452,13 @@
             <li><a href="/">Daily AI Football Predictions Hub</a></li>
             <li><a href="/today-predictions">Today's Football Predictions &amp; AI Match Tips</a></li>
             <li><a href="/tomorrow-predictions">Tomorrow's Football Predictions &amp; Early xG Odds</a></li>
-            <li><a href="/weekend-predictions">Weekend Football Predictions &amp; Banker Accas</a></li>
-            <li><a href="/best-bets">Best Banker Football Bets Today</a></li>
-            <li><a href="/bet-of-the-day">Bet of the Day: Single Highest-Conviction Lock</a></li>
-            <li><a href="/sure-win-predictions">Sure Win Predictions Today (88%+ AI Confidence)</a></li>
+            <li><a href="/weekend-predictions">Weekend Football Predictions &amp; High-Consensus Forecasts</a></li>
+            <li><a href="/best-bets">Top High-Consensus Football Forecasts Today</a></li>
+            <li><a href="/bet-of-the-day">Forecast of the Day: Single Highest-Conviction Selection</a></li>
+            <li><a href="/sure-win-predictions">Sure Win Predictions Today (88%+ AI Consensus)</a></li>
             <li><a href="/rollover-bets-predictions">7-Day 1.50 &amp; 2.00 Odds Rollover Predictions</a></li>
             <li><a href="/daily-2-odds-predictions">Daily Sure 2 Odds, 3 Odds &amp; 5 Odds Slips</a></li>
-            <li><a href="/2-odds-predictions">Sure 2 Odds Rollover Banker Predictions</a></li>
+            <li><a href="/2-odds-predictions">2.00+ Probability Multiplier Predictions</a></li>
             <li><a href="/5-odds-predictions">Sure 5 Odds &amp; 10 Odds Accumulator Slips</a></li>
             <li><a href="/upcoming">Upcoming 7-Day Football Fixtures &amp; AI Odds</a></li>
             <li><a href="/predict">Interactive AI Football Match Predictor</a></li>
@@ -457,7 +514,7 @@
             <li><a href="/dutching-calculator">Equal-Profit Multi-Outcome Dutching Calculator</a></li>
             <li><a href="/roi-yield-calculator">Sports Betting ROI, Yield &amp; Break-Even Calculator</a></li>
             <li><a href="/sports">Multi-Sport Quantitative Analytics Directory</a></li>
-            <li><a href="/shop">PredictPro VIP Club &amp; Premium Banker Passes</a></li>
+            <li><a href="/shop">PredictPro Open-Access Community Hub (100% Free)</a></li>
             <li><a href="/rewards">Daily Rewards Spin Wheel &amp; Prediction Coins</a></li>
             <li><a href="/widgets">Free Embeddable AI Football Prediction Widgets</a></li>
             <li><a href="/methodology">Bivariate Poisson &amp; xG AI Methodology</a></li>
@@ -569,7 +626,7 @@
           <a href="/kpl-predictions">KPL Predictions</a> · 
           <a href="/jackpot-predictions">Mega Jackpot Predictions</a> · 
           <a href="/us-soccer-predictions">US Soccer &amp; MLS Predictions</a> · 
-          <a href="/best-bets">Best Banker Bets</a> · 
+          <a href="/best-bets">High-Consensus Forecasts</a> · 
           <a href="/predict">Match Predictor</a> · 
           <a href="/btts">Both Teams To Score (BTTS)</a> · 
           <a href="/value-bets">Value Bets</a> · 

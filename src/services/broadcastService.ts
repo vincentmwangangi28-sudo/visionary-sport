@@ -17,13 +17,13 @@ const STORAGE_KEY = 'predictpro_site_announcement';
 const DISMISSED_KEY_PREFIX = 'predictpro_announcement_dismissed_';
 
 export const DEFAULT_ANNOUNCEMENT: SiteAnnouncement = {
-  id: 'announcement-1',
+  id: 'announcement-2',
   enabled: true,
-  headline: 'Weekend AI Banker Slate Ready!',
-  message: 'Premier League & Champions League algorithmic value bets with 87% accuracy now live.',
+  headline: '100% Free AI Football Analytics & xG Slate Live!',
+  message: 'Premier League & Champions League Expected Goals (xG) and Poisson probability models with 87% accuracy now live.',
   theme: 'promo',
   targetAudience: 'all',
-  ctaText: 'View Banker Picks',
+  ctaText: 'View Consensus Forecasts',
   ctaUrl: '/best-bets',
   dismissible: true,
   updatedAt: new Date().toISOString(),
@@ -38,7 +38,15 @@ export function getSiteAnnouncement(): SiteAnnouncement {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_ANNOUNCEMENT));
       return DEFAULT_ANNOUNCEMENT;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw) as SiteAnnouncement;
+    if (
+      /banker/i.test(parsed.headline || '') ||
+      /banker/i.test(parsed.ctaText || '')
+    ) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_ANNOUNCEMENT));
+      return DEFAULT_ANNOUNCEMENT;
+    }
+    return parsed;
   } catch {
     return DEFAULT_ANNOUNCEMENT;
   }

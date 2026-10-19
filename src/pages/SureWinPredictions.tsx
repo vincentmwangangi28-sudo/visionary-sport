@@ -132,8 +132,8 @@ export default function SureWinPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Sure Win Predictions Today: 88%+ AI Consensus Forecasts"
-        description="Daily mathematical sure win predictions and high-consensus forecasts. Filter highest-confidence football picks (88%+ strike rate), multi-match anchors, and +EV models."
+        title="Sure Win Predictions Today: 88%+ AI Consensus | PredictPro"
+        description="Daily mathematical sure win predictions and high-consensus forecasts. Filter highest-confidence football picks (88%+ strike rate) and multi-match anchors."
         canonical="/sure-win-predictions"
         keywords="sure win prediction today, 100 sure wins, high consensus predictions today, high confidence football tips, best football forecasts today"
       />

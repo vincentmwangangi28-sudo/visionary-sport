@@ -4,7 +4,6 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { TeamLogo } from '@/components/TeamLogo';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,12 +16,11 @@ import {
 import { VideoHighlightListSkeleton } from '@/components/PredictionCardSkeleton';
 import {
   fetchApiFootballHighlights,
-  testApiFootballHighlightsConnection,
-  saveApiFootballApiKey,
-  getApiFootballApiKey,
   MatchVideoHighlight,
-  ApiFootballConnectionResult,
 } from '@/services/apiFootballHighlights';
+import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
+import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
+import { useGeoRegion } from '@/hooks/useGeoRegion';
 import {
   Film,
   Play,
@@ -35,13 +33,9 @@ import {
   Share2,
   Calendar,
   MapPin,
-  CheckCircle2,
   X,
-  Volume2,
-  Sparkles,
-  KeyRound,
   ChevronRight,
-  Info,
+  Radio,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -56,33 +50,22 @@ const LEAGUES = [
   'KPL',
 ];
 
-const LEAGUE_BADGE_COLORS: Record<string, string> = {
-  'Premier League': 'bg-purple-600 text-white border-purple-500/40',
-  'Champions League': 'bg-blue-700 text-white border-blue-500/40',
-  'La Liga': 'bg-amber-600 text-white border-amber-500/40',
-  'Bundesliga': 'bg-red-600 text-white border-red-500/40',
-  'Serie A': 'bg-emerald-700 text-white border-emerald-500/40',
-  'Ligue 1': 'bg-blue-600 text-white border-blue-400/40',
-  'KPL': 'bg-green-600 text-white border-green-500/40',
-};
+const FALLBACK_PITCH_SVG_DATA_URI =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'><rect width='640' height='360' fill='%23064e3b'/><rect x='24' y='24' width='592' height='312' fill='none' stroke='%2310b981' stroke-width='2' stroke-opacity='0.5'/><line x1='320' y1='24' x2='320' y2='336' stroke='%2310b981' stroke-width='2' stroke-opacity='0.5'/><circle cx='320' cy='180' r='48' fill='none' stroke='%2310b981' stroke-width='2' stroke-opacity='0.5'/></svg>";
 
 export default function Highlights() {
   const { toast } = useToast();
+  const { region } = useGeoRegion();
   const [highlights, setHighlights] = useState<MatchVideoHighlight[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Dynamic Active Video Preview State
   const [activeHighlight, setActiveHighlight] = useState<MatchVideoHighlight | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalHighlight, setModalHighlight] = useState<MatchVideoHighlight | null>(null);
-  
-  // API-Football Settings & Status Dialog
-  const [isKeyDialogOpen, setIsKeyDialogOpen] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionResult, setConnectionResult] = useState<ApiFootballConnectionResult | null>(null);
+  const [streamHubMatch, setStreamHubMatch] = useState<MatchVideoHighlight | null>(null);
 
   const playerRef = useRef<HTMLDivElement>(null);
 
@@ -91,9 +74,9 @@ export default function Highlights() {
     try {
       const data = await fetchApiFootballHighlights({ forceRefresh: force });
       setHighlights(data);
-      setActiveHighlight(prev => (prev ? prev : (data.length > 0 ? data[0] : null)));
+      setActiveHighlight((prev) => (prev ? prev : data.length > 0 ? data[0] : null));
     } catch (err) {
-      console.error('Error fetching API-Football highlights:', err);
+      console.error('Error fetching highlights:', err);
     } finally {
       setLoading(false);
     }
@@ -101,19 +84,14 @@ export default function Highlights() {
 
   useEffect(() => {
     loadHighlights();
-    const stored = getApiFootballApiKey();
-    if (stored) {
-      setApiKeyInput(stored);
-    }
   }, [loadHighlights]);
 
-  // Filtered highlights based on league & search query
   const filteredHighlights = useMemo(() => {
     let list = [...highlights];
 
     if (selectedLeague !== 'All') {
       const target = selectedLeague.toLowerCase();
-      list = list.filter(item => {
+      list = list.filter((item) => {
         const comp = item.competition.toLowerCase();
         if (target === 'premier league') return comp.includes('premier league') || comp.includes('epl');
         if (target === 'champions league') return comp.includes('champions league') || comp.includes('ucl');
@@ -129,7 +107,7 @@ export default function Highlights() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       list = list.filter(
-        item =>
+        (item) =>
           item.homeTeam.toLowerCase().includes(query) ||
           item.awayTeam.toLowerCase().includes(query) ||
           item.title.toLowerCase().includes(query) ||
@@ -165,7 +143,9 @@ export default function Highlights() {
       try {
         await navigator.share(shareData);
         return;
-      } catch {}
+      } catch {
+        // fallback to clipboard
+      }
     }
 
     try {
@@ -182,42 +162,9 @@ export default function Highlights() {
     }
   };
 
-  const handleTestKey = async () => {
-    setTestingConnection(true);
-    setConnectionResult(null);
-    try {
-      const res = await testApiFootballHighlightsConnection(apiKeyInput);
-      setConnectionResult(res);
-      if (res.success) {
-        toast({
-          title: 'API-Football Connected',
-          description: res.message,
-        });
-      }
-    } catch (e: any) {
-      setConnectionResult({
-        success: false,
-        message: e?.message || 'Connection failed. Please check network/key.',
-      });
-    } finally {
-      setTestingConnection(false);
-    }
-  };
-
-  const handleSaveKey = () => {
-    saveApiFootballApiKey(apiKeyInput);
-    toast({
-      title: 'API Configuration Saved',
-      description: 'Custom key stored. Refreshing official highlights pipeline...',
-    });
-    setIsKeyDialogOpen(false);
-    loadHighlights(true);
-  };
-
-  // Move to next highlight in list
   const handlePlayNext = () => {
     if (!activeHighlight || filteredHighlights.length === 0) return;
-    const currentIndex = filteredHighlights.findIndex(h => h.id === activeHighlight.id);
+    const currentIndex = filteredHighlights.findIndex((h) => h.id === activeHighlight.id);
     const nextIndex = (currentIndex + 1) % filteredHighlights.length;
     setActiveHighlight(filteredHighlights[nextIndex]);
     if (playerRef.current) {
@@ -226,74 +173,72 @@ export default function Highlights() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Official Football Match Video Highlights & Tactical Recap"
-        description="Watch verified football match video highlights and goal previews from Premier League, Champions League, and global tournaments with AI xG analysis."
+        title="Official Football Match Video Highlights, Live TV & Stream Hub"
+        description="Watch verified football match video highlights, goal clips, and official TV/streaming broadcasts from Premier League, Champions League, La Liga, and KPL."
         canonical="/highlights"
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-20 pb-24 md:pb-16 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 pb-24 md:pb-16 max-w-6xl flex-1 space-y-6">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/70 pb-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 gap-1 text-xs px-2.5 py-0.5">
-                <Sparkles className="h-3 w-3" /> API-Football Video Hub
-              </Badge>
-              <Badge variant="secondary" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <CheckCircle2 className="h-3 w-3 mr-1 inline" /> Dynamic Player Active
-              </Badge>
-            </div>
+            <p className="text-xs font-semibold text-primary mb-1">
+              ScoreBat Video Feed · FIFA+ Free Streams · Regional Broadcast Directory ({region.flag} {region.name})
+            </p>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-2.5">
-              <Film className="h-7 w-7 text-primary" /> Official Match Video Highlights
+              <Film className="h-7 w-7 text-primary shrink-0" />
+              <span>Official Match Video Highlights &amp; Broadcast Center</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Stream official match video previews, goal clips, and extended recaps directly in-app.
+              Stream official match video recaps, extended goal clips, and check regional live TV / streaming channels.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsKeyDialogOpen(true)}
-              className="gap-1.5 text-xs h-9 border-border/80 hover:bg-accent"
-            >
-              <KeyRound className="h-3.5 w-3.5 text-primary" />
-              API-Football Settings
-            </Button>
+          <div className="flex items-center gap-2 self-start md:self-auto">
+            {activeHighlight && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStreamHubMatch(activeHighlight)}
+                className="gap-1.5 text-xs h-9 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 font-bold whitespace-nowrap"
+                data-testid="open-broadcast-guide-btn"
+              >
+                <Radio className="h-3.5 w-3.5" />
+                <span>Live TV &amp; Stream Directory</span>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
               onClick={() => loadHighlights(true)}
               disabled={loading}
-              className="h-9 px-3 gap-1.5 text-xs"
+              className="h-9 px-3 gap-1.5 text-xs whitespace-nowrap"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
+              <span>Refresh Feed</span>
             </Button>
           </div>
         </div>
 
         {/* Dynamic Featured Video Preview Showcase */}
         {activeHighlight && (
-          <div ref={playerRef} className="mb-8 scroll-mt-24">
-            <Card className="border border-border/70 shadow-xl overflow-hidden bg-gradient-to-b from-card to-card/95">
-              <div className="p-3 sm:p-4 bg-muted/40 border-b border-border/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div ref={playerRef} className="scroll-mt-24">
+            <Card className="border border-border/80 overflow-hidden bg-card">
+              <div className="p-3 sm:p-4 bg-muted/30 border-b border-border/60 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="flex items-center gap-1.5 font-semibold text-primary">
-                    <Tv className="h-4 w-4" /> Official Match Video Preview
+                  <span className="flex items-center gap-1.5 font-bold text-primary">
+                    <Tv className="h-4 w-4" /> Official Match Video Player
                   </span>
-                  <span className="text-muted-foreground">•</span>
-                  <Badge className={`${LEAGUE_BADGE_COLORS[activeHighlight.competition] || 'bg-primary text-white'} text-[11px]`}>
-                    {activeHighlight.competition}
-                  </Badge>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="font-semibold text-foreground">{activeHighlight.competition}</span>
                   {activeHighlight.badge && (
-                    <Badge variant="outline" className="border-border/60 text-muted-foreground text-[10px]">
-                      {activeHighlight.badge}
-                    </Badge>
+                    <>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-muted-foreground">{activeHighlight.badge}</span>
+                    </>
                   )}
                 </div>
 
@@ -340,19 +285,15 @@ export default function Highlights() {
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center gap-3">
                       <TeamLogo team={activeHighlight.homeTeam} logoUrl={activeHighlight.homeLogo} size="sm" />
-                      <span className="font-bold text-sm sm:text-base">
-                        {activeHighlight.homeTeam}
-                      </span>
+                      <span className="font-bold text-sm sm:text-base">{activeHighlight.homeTeam}</span>
                       {activeHighlight.homeScore !== null && activeHighlight.awayScore !== null ? (
-                        <span className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-sm">
+                        <span className="px-2.5 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary font-mono tabular-nums font-black text-sm">
                           {activeHighlight.homeScore} - {activeHighlight.awayScore}
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground font-semibold px-2">vs</span>
                       )}
-                      <span className="font-bold text-sm sm:text-base">
-                        {activeHighlight.awayTeam}
-                      </span>
+                      <span className="font-bold text-sm sm:text-base">{activeHighlight.awayTeam}</span>
                       <TeamLogo team={activeHighlight.awayTeam} logoUrl={activeHighlight.awayLogo} size="sm" />
                     </div>
 
@@ -360,7 +301,7 @@ export default function Highlights() {
                       {activeHighlight.title}
                     </h2>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                         {new Date(activeHighlight.date).toLocaleDateString('en-GB', {
@@ -369,14 +310,26 @@ export default function Highlights() {
                           year: 'numeric',
                         })}
                       </span>
-                      {activeHighlight.duration && (
-                        <span>• Duration: {activeHighlight.duration}</span>
-                      )}
+                      {activeHighlight.duration && <span>· Duration: {activeHighlight.duration}</span>}
                       {activeHighlight.venue && (
                         <span className="flex items-center gap-1">
-                          • <MapPin className="h-3 w-3" /> {activeHighlight.venue}
+                          · <MapPin className="h-3 w-3" /> {activeHighlight.venue}
                         </span>
                       )}
+                      {(() => {
+                        const bInfo = getMatchBroadcastInfo({
+                          matchId: activeHighlight.id,
+                          homeTeam: activeHighlight.homeTeam,
+                          awayTeam: activeHighlight.awayTeam,
+                          league: activeHighlight.competition,
+                          regionId: region.id,
+                        });
+                        return (
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                            · TV/Stream: {bInfo.primaryBroadcaster.name}
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     {activeHighlight.summary && (
@@ -387,6 +340,15 @@ export default function Highlights() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs h-9"
+                      onClick={() => setStreamHubMatch(activeHighlight)}
+                    >
+                      <Tv className="h-3.5 w-3.5 text-emerald-600" />
+                      Where to Watch Live
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -415,20 +377,20 @@ export default function Highlights() {
         )}
 
         {/* Filters and Search Bar */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3">
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-            {/* Search Input */}
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search highlights by club, derby, or league..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 h-10 text-sm bg-card border-border/80"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm bg-card border-border/80"
               />
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={() => setSearchQuery('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
@@ -437,23 +399,24 @@ export default function Highlights() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-auto">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-auto font-mono tabular-nums">
               <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span>{filteredHighlights.length} match highlights available</span>
+              <span>{filteredHighlights.length} match videos available</span>
             </div>
           </div>
 
-          {/* League Filter Badges */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-            {LEAGUES.map(league => {
+          {/* League Filter Buttons */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+            {LEAGUES.map((league) => {
               const isSelected = selectedLeague === league;
               return (
                 <button
                   key={league}
+                  type="button"
                   onClick={() => setSelectedLeague(league)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                      ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border/70'
                   }`}
                 >
@@ -472,7 +435,7 @@ export default function Highlights() {
             <Film className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
             <h3 className="font-bold text-lg text-foreground mb-1">No match highlights found</h3>
             <p className="text-muted-foreground text-sm max-w-md mx-auto mb-4">
-              No official video previews match your search filter "{searchQuery}". Try selecting another league or resetting your query.
+              No official video previews match your search filter &ldquo;{searchQuery}&rdquo;. Try selecting another league or resetting your query.
             </p>
             <Button
               variant="outline"
@@ -487,15 +450,22 @@ export default function Highlights() {
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredHighlights.map(h => {
+            {filteredHighlights.map((h) => {
               const isActive = activeHighlight?.id === h.id;
+              const bInfo = getMatchBroadcastInfo({
+                matchId: h.id,
+                homeTeam: h.homeTeam,
+                awayTeam: h.awayTeam,
+                league: h.competition,
+                regionId: region.id,
+              });
               return (
                 <Card
                   key={h.id}
                   onClick={() => handleSelectHighlight(h)}
-                  className={`group cursor-pointer overflow-hidden transition-all duration-200 border hover:shadow-lg flex flex-col justify-between ${
+                  className={`group cursor-pointer overflow-hidden transition-all duration-150 border flex flex-col justify-between ${
                     isActive
-                      ? 'ring-2 ring-primary border-primary bg-card/90 shadow-md'
+                      ? 'ring-2 ring-primary border-primary bg-card/95'
                       : 'hover:border-primary/50 bg-card'
                   }`}
                 >
@@ -503,34 +473,34 @@ export default function Highlights() {
                     {/* Video Thumbnail Header */}
                     <div className="relative aspect-video bg-muted/60 overflow-hidden">
                       <img
-                        src={h.thumbnail}
+                        src={h.thumbnail || FALLBACK_PITCH_SVG_DATA_URI}
                         alt={h.title}
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={e => {
-                          (e.currentTarget as HTMLImageElement).src =
-                            'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80';
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = FALLBACK_PITCH_SVG_DATA_URI;
                         }}
                       />
 
                       {/* Video Player Hover Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-center justify-center opacity-85 group-hover:opacity-100 transition-opacity">
-                        <div className="w-12 h-12 rounded-full bg-red-600/90 group-hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
-                          <Play className="h-5 w-5 text-white ml-0.5" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-center justify-center opacity-85 group-hover:opacity-100 transition-opacity">
+                        <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shadow-md transition-transform group-hover:scale-105">
+                          <Play className="h-5 w-5 text-primary-foreground ml-0.5" />
                         </div>
                       </div>
 
-                      {/* Top Badges */}
+                      {/* Top Competition Label */}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                        <Badge className={`${LEAGUE_BADGE_COLORS[h.competition] || 'bg-primary text-white'} text-[10px] font-semibold shadow-sm`}>
+                        <span className="px-2 py-0.5 rounded bg-black/75 text-white text-[10px] font-bold">
                           {h.competition}
-                        </Badge>
+                        </span>
                       </div>
 
                       {/* Bottom Duration Badge */}
                       <div className="absolute bottom-2 right-2 flex items-center gap-1">
                         {h.duration && (
-                          <span className="px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white tracking-wider">
+                          <span className="px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono tabular-nums text-white">
                             {h.duration}
                           </span>
                         )}
@@ -539,14 +509,13 @@ export default function Highlights() {
 
                     {/* Card Content & Match Details */}
                     <CardContent className="p-4">
-                      {/* Teams & Score Preview */}
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <TeamLogo team={h.homeTeam} logoUrl={h.homeLogo} size="xs" />
                           <span className="text-xs font-semibold truncate">{h.homeTeam}</span>
                         </div>
                         {h.homeScore !== null && h.awayScore !== null ? (
-                          <span className="text-xs font-bold text-primary font-mono px-1.5 py-0.5 rounded bg-primary/10 flex-shrink-0">
+                          <span className="text-xs font-bold text-primary font-mono tabular-nums px-1.5 py-0.5 rounded bg-primary/10 flex-shrink-0">
                             {h.homeScore} - {h.awayScore}
                           </span>
                         ) : (
@@ -558,44 +527,50 @@ export default function Highlights() {
                         </div>
                       </div>
 
-                      {/* Highlight Title */}
-                      <h3 className="font-semibold text-xs sm:text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-2">
+                      <h3 className="font-semibold text-xs sm:text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-1.5">
                         {h.title}
                       </h3>
 
-                      {h.summary && (
-                        <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3">
-                          {h.summary}
-                        </p>
-                      )}
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {bInfo.primaryBroadcaster.shortName} ·{' '}
+                        {new Date(h.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                      </p>
                     </CardContent>
                   </div>
 
                   {/* Card Action Footer */}
-                  <div className="px-4 pb-3 pt-1 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="text-[11px]">
-                      {new Date(h.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                    </span>
+                  <div className="px-4 pb-3 pt-2 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStreamHubMatch(h);
+                      }}
+                      className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                    >
+                      <Tv className="h-3 w-3" />
+                      <span>TV &amp; Streams</span>
+                    </button>
 
                     <div className="flex items-center gap-1.5">
                       <Button
                         size="sm"
                         variant={isActive ? 'default' : 'secondary'}
-                        onClick={e => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleSelectHighlight(h);
                         }}
-                        className="h-7 px-2 text-[11px] gap-1"
+                        className="h-7 px-2.5 text-[11px] gap-1 font-bold"
                       >
                         <Play className="h-3 w-3" />
-                        {isActive ? 'Playing' : 'Preview'}
+                        {isActive ? 'Playing' : 'Watch Clip'}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={e => handleOpenModal(h, e)}
+                        onClick={(e) => handleOpenModal(h, e)}
                         className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                        title="Open Modal"
+                        title="Open Fullscreen Player"
                       >
                         <Maximize2 className="h-3.5 w-3.5" />
                       </Button>
@@ -616,25 +591,24 @@ export default function Highlights() {
               <DialogHeader className="p-4 pb-2 border-b border-border/60">
                 <div className="flex items-center justify-between gap-3 pr-6">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge className={`${LEAGUE_BADGE_COLORS[modalHighlight.competition] || 'bg-primary text-white'} text-[10px]`}>
-                        {modalHighlight.competition}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(modalHighlight.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                    </div>
+                    <p className="text-xs text-muted-foreground mb-0.5">
+                      {modalHighlight.competition} ·{' '}
+                      {new Date(modalHighlight.date).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </p>
                     <DialogTitle className="text-base sm:text-lg font-bold">
                       {modalHighlight.title}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                      {modalHighlight.homeTeam} vs {modalHighlight.awayTeam} • Official Video Highlights
+                      {modalHighlight.homeTeam} vs {modalHighlight.awayTeam} · Official Video Highlights
                     </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
 
-              {/* 16:9 Modal Video Embed Frame */}
               <div className="relative w-full aspect-video bg-black">
                 <iframe
                   src={modalHighlight.embedUrl}
@@ -646,13 +620,12 @@ export default function Highlights() {
                 />
               </div>
 
-              {/* Modal Footer Info */}
               <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-muted/20">
                 <div className="flex items-center gap-3">
                   <TeamLogo team={modalHighlight.homeTeam} logoUrl={modalHighlight.homeLogo} size="xs" />
                   <span className="font-semibold">{modalHighlight.homeTeam}</span>
                   {modalHighlight.homeScore !== null && modalHighlight.awayScore !== null && (
-                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono font-bold">
                       {modalHighlight.homeScore} - {modalHighlight.awayScore}
                     </span>
                   )}
@@ -683,100 +656,27 @@ export default function Highlights() {
         </DialogContent>
       </Dialog>
 
-      {/* API-Football Configuration Dialog */}
-      <Dialog open={isKeyDialogOpen} onOpenChange={setIsKeyDialogOpen}>
-        <DialogContent className="max-w-md p-6">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <KeyRound className="h-5 w-5 text-primary" /> API-Football Integration Settings
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Configure your direct API-Football or RapidAPI credentials to stream live match video highlights and official fixture endpoints.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="p-3 rounded-lg bg-muted/50 border border-border/80 text-xs space-y-1">
-              <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                <Info className="h-3.5 w-3.5 text-primary" /> Multi-Source Highlights Pipeline
-              </div>
-              <p className="text-muted-foreground">
-                PredictPro natively integrates API-Football, ESPN scoreboards, and official broadcaster video feeds. Adding your custom key connects your private quota tier.
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">
-                API-Football / RapidAPI Key
-              </label>
-              <Input
-                type="password"
-                placeholder="Paste API-Football or RapidAPI key here..."
-                value={apiKeyInput}
-                onChange={e => setApiKeyInput(e.target.value)}
-                className="text-xs font-mono h-9"
-              />
-              <p className="text-[11px] text-muted-foreground">
-                Supports <code className="text-primary font-mono">api-football-v1.p.rapidapi.com</code> or direct <code className="text-primary font-mono">v3.football.api-sports.io</code>.
-              </p>
-            </div>
-
-            {connectionResult && (
-              <div
-                className={`p-3 rounded-lg text-xs border ${
-                  connectionResult.success
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-destructive/10 border-destructive/30 text-destructive'
-                }`}
-              >
-                <div className="font-semibold flex items-center gap-1.5">
-                  {connectionResult.success ? (
-                    <CheckCircle2 className="h-4 w-4" />
-                  ) : (
-                    <X className="h-4 w-4" />
-                  )}
-                  {connectionResult.success ? 'Connection Successful' : 'Connection Failed'}
-                </div>
-                <p className="mt-1">{connectionResult.message}</p>
-                {connectionResult.latency && (
-                  <p className="text-[10px] opacity-80 mt-1">Latency: {connectionResult.latency}ms</p>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleTestKey}
-                disabled={testingConnection}
-                className="text-xs h-9 gap-1.5"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${testingConnection ? 'animate-spin' : ''}`} />
-                Test Connection
-              </Button>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsKeyDialogOpen(false)}
-                  className="text-xs h-9"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSaveKey}
-                  className="text-xs h-9 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Save & Connect
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Live Stream & Regional TV Directory Modal */}
+      {streamHubMatch && (
+        <LiveStreamHubModal
+          match={{
+            id: streamHubMatch.id,
+            homeTeam: streamHubMatch.homeTeam,
+            awayTeam: streamHubMatch.awayTeam,
+            league: streamHubMatch.competition,
+            homeScore: streamHubMatch.homeScore ?? 1,
+            awayScore: streamHubMatch.awayScore ?? 1,
+            minute: 'FT',
+            status: 'finished',
+            homeXG: 1.68,
+            awayXG: 1.14,
+            homePossession: 54,
+            awayPossession: 46,
+          }}
+          regionId={region.id}
+          onClose={() => setStreamHubMatch(null)}
+        />
+      )}
 
       <Footer />
     </div>
