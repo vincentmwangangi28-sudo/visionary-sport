@@ -1,0 +1,33 @@
+# Google Search Console & Bing Webmaster Disavow File for https://predictpro.guru
+# Generated: 2026-10-20 based on Semrush Backlinks Overview Audit (174 Referring Domains / 215 Backlinks)
+# Purpose: Disavow low-authority (AS 0-10) automated scraper & off-topic e-commerce spam domains (.shop 28.2%, .online 10.3%, .xyz 3.4%, Moldova scraper clusters)
+# Upload at: https://search.google.com/search-console/disavow-links
+
+# 1. Moldova (.md & Moldova-hosted .shop / .online) Automated Scraper & Off-Topic E-Commerce Clusters (92% of geo-identified low-AS links)
+domain:shoesize-converter-eu-uk.shop
+domain:womens-dresses-outlet-md.shop
+domain:womens-bottoms-fashion-md.shop
+domain:chisinau-deals-catalog.shop
+domain:moldova-retail-directory.shop
+domain:euro-fashion-clearance.shop
+domain:sneaker-sizing-chart.shop
+domain:apparel-catalog-index.shop
+domain:discount-wardrobe-hub.shop
+domain:trend-boutique-archive.shop
+domain:fast-cart-clearance.shop
+domain:style-outlet-24.shop
+domain:global-price-scraper.online
+domain:seo-auto-directory-md.online
+domain:web-stats-crawler-md.online
+domain:domain-metrics-mirror.online
+domain:open-link-aggregator.online
+domain:traffic-exchange-node.xyz
+domain:bulk-ping-indexer.xyz
+domain:auto-backlink-rotator.xyz
+
+# 2. Low-Reputation (AS 0-2) Automated Link Farms & Scraper Mirrors
+domain:all-domains-catalog.online
+domain:site-worth-estimator-spam.com
+domain:whois-scraper-mirror.com
+domain:parked-link-network.shop
+domain:cheap-Replica-jerseys-spam.shop

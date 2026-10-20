@@ -446,27 +446,28 @@ export default function LiveScores() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-20 pb-20 max-w-5xl space-y-6" id="main-content">
+      <main className="flex-1 container mx-auto px-4 py-8 pb-20 max-w-6xl space-y-6" id="main-content">
         {/* Top Header & Sync Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-b border-border/60 pb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="p-1 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400">
-                <Radio className="h-5 w-5 animate-pulse" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Live Match &amp; Broadcast Center</h1>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-5">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
+              <span className="text-primary font-semibold">Live Match &amp; Broadcast Directory</span>
+              <span aria-hidden="true">·</span>
+              <span>2D Tactical xG Pitch</span>
               {liveCount > 0 && (
-                <Badge className="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs animate-pulse">
-                  {liveCount} LIVE
-                </Badge>
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="font-mono tabular-nums font-bold text-rose-600 dark:text-rose-400">
+                    {liveCount} Live In-Play
+                  </span>
+                </>
               )}
-              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
-                📺 Live TV &amp; Stream Directory + 2D xG Pitch
-              </Badge>
             </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5 text-primary" />
-              Auto-refreshes every 15s · {isLiveFetching ? 'Updating live telemetry...' : `Synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+              Live Football Scores, Streams &amp; 2D xG Center
+            </h1>
+            <p className="text-xs text-muted-foreground font-mono tabular-nums">
+              15s live telemetry sync · {isLiveFetching ? 'Updating live feed...' : `Last synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
             </p>
           </div>
 

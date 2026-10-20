@@ -225,75 +225,75 @@ export default function StreaksRadar() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto max-w-7xl px-4 py-24 pb-28 md:pb-16 space-y-8">
-        {/* Header Hero */}
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
-            <Flame className="h-3.5 w-3.5 text-orange-500 animate-pulse" />
-            Active Team Streaks &amp; Betting Trends Radar
-          </div>
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="max-w-2xl space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
-                Football Streaks &amp; <span className="text-primary">AI Trends Radar</span>
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-28 md:pb-16 space-y-6">
+        {/* Dark Broadcast Header Banner */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="max-w-2xl space-y-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                Active Club Form Runs · Statistical Trend &amp; Regression Tracker
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Team Streaks &amp; Form Trends
               </h1>
-              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                Track active statistical anomalies across global football. Our machine learning engine analyzes opponent xGA, tactical matchups, and squad rotation to quantify streak sustainability.
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Track active unbeaten runs, Over 2.5 goal sequences, BTTS streaks, and clean-sheet form across major leagues, weighted by opponent xGA and regression risk.
               </p>
             </div>
 
             {/* Quick action buttons */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               <Button
                 onClick={handleBuildBankerAcca}
-                className="gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-md shadow-orange-500/20"
+                size="sm"
+                className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
               >
-                <Zap className="h-4 w-4" />
-                Build Banker Streak Acca ({formatOdds(combinedBankerOdds)})
+                <Zap className="h-3.5 w-3.5" />
+                Load Top Streak Acca ({formatOdds(combinedBankerOdds)})
               </Button>
 
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => {
                   setDutchingInitial(undefined);
                   setDutchingOpen(true);
                 }}
-                className="gap-2 border-border/80 hover:border-primary"
+                className="gap-2 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white text-xs"
               >
-                <Calculator className="h-4 w-4 text-primary" />
+                <Calculator className="h-3.5 w-3.5 text-emerald-400" />
                 Dutching Calculator
               </Button>
             </div>
           </div>
 
-          {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-            <Card className="p-4 bg-card/60 border-border/60">
-              <span className="text-xs text-muted-foreground block font-medium">Monitored Streaks</span>
-              <span className="text-2xl font-black text-foreground">{TEAM_STREAKS_DATA.length}</span>
-              <span className="text-[11px] text-muted-foreground block mt-0.5">Updated live across 8 leagues</span>
-            </Card>
+          {/* Quick Metrics Strip inside Dark Header */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800">
+            <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
+              <span className="text-[11px] text-slate-400 block font-medium">Monitored Club Streaks</span>
+              <span className="text-xl font-extrabold font-mono text-white">{TEAM_STREAKS_DATA.length}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Active across 8 major leagues</span>
+            </div>
 
-            <Card className="p-4 bg-card/60 border-border/60">
-              <span className="text-xs text-muted-foreground block font-medium">Longest Active Streak</span>
-              <span className="text-2xl font-black text-orange-500 flex items-center gap-1">
-                14 <span className="text-xs font-normal text-muted-foreground">Games</span>
+            <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
+              <span className="text-[11px] text-slate-400 block font-medium">Longest Unbeaten Run</span>
+              <span className="text-xl font-extrabold font-mono text-amber-400">
+                14 <span className="text-xs font-sans font-normal text-slate-300">Matches</span>
               </span>
-              <span className="text-[11px] text-muted-foreground block mt-0.5">Real Madrid (Unbeaten)</span>
-            </Card>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Real Madrid (LaLiga)</span>
+            </div>
 
-            <Card className="p-4 bg-card/60 border-border/60">
-              <span className="text-xs text-muted-foreground block font-medium">Top AI Sustainability</span>
-              <span className="text-2xl font-black text-emerald-500">91%</span>
-              <span className="text-[11px] text-muted-foreground block mt-0.5">Bayer Leverkusen (Away Goal)</span>
-            </Card>
+            <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
+              <span className="text-[11px] text-slate-400 block font-medium">Highest Continuation Rate</span>
+              <span className="text-xl font-extrabold font-mono text-emerald-400">91%</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Bayer Leverkusen (Away Scoring)</span>
+            </div>
 
-            <Card className="p-4 bg-card/60 border-border/60">
-              <span className="text-xs text-muted-foreground block font-medium">Historical Hit Rate</span>
-              <span className="text-2xl font-black text-primary">88.5%</span>
-              <span className="text-[11px] text-muted-foreground block mt-0.5">Average across last 10 fixtures</span>
-            </Card>
+            <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
+              <span className="text-[11px] text-slate-400 block font-medium">Last 10 Match Hit Rate</span>
+              <span className="text-xl font-extrabold font-mono text-white">88.5%</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Verified across top-tier leagues</span>
+            </div>
           </div>
         </div>
 

@@ -341,14 +341,14 @@ export default function MatchPrediction() {
         matchPrediction={prediction}
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-12 max-w-5xl">
+      <main className="container mx-auto px-4 py-8 pb-20 md:pb-12 max-w-5xl">
         <Breadcrumbs
           currentTitle={`${prediction.home_team} vs ${prediction.away_team}`}
           className="mb-4"
         />
         <div className="flex items-center justify-between mb-4">
-          <Link to="/best-bets" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
-            <ChevronLeft className="h-4 w-4" />All Predictions
+          <Link to="/" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <ChevronLeft className="h-4 w-4" />All Fixtures
           </Link>
           <Button variant="ghost" size="sm" onClick={handleRetry} disabled={retrying} className="h-8 gap-1.5 text-xs text-muted-foreground">
             <RefreshCw className={`h-3.5 w-3.5 ${retrying ? 'animate-spin' : ''}`} />
@@ -356,8 +356,8 @@ export default function MatchPrediction() {
           </Button>
         </div>
 
-        {/* Team Matchup Header with Logos */}
-        <div className="bg-card border rounded-2xl p-6 mb-6 shadow-sm">
+        {/* Broadcast Match Center Scoreboard Header */}
+        <div className="bg-slate-900 text-white border border-slate-800 rounded-2xl p-6 mb-6 shadow-xs">
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
               <TeamLogo
@@ -365,16 +365,16 @@ export default function MatchPrediction() {
                 leagueId={prediction.league}
                 league={prediction.league}
                 size="lg"
-                className="mb-2 shadow-sm"
+                className="mb-2 shadow-xs"
               />
-              <h2 className="text-base sm:text-2xl font-black text-foreground truncate w-full">{prediction.home_team}</h2>
-              <span className="text-[11px] text-muted-foreground uppercase font-bold mt-0.5">Home Team</span>
+              <h2 className="text-base sm:text-2xl font-extrabold text-white truncate w-full">{prediction.home_team}</h2>
+              <span className="text-xs text-slate-400 font-mono mt-0.5">{homeXgVal} xG</span>
             </div>
 
             <div className="flex flex-col items-center justify-center flex-shrink-0 px-2">
-              <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 mb-1.5">{prediction.league}</Badge>
-              <span className="px-3 py-1 bg-muted/80 rounded-full text-xs font-black text-muted-foreground border">VS</span>
-              <span className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1 font-medium">
+              <Badge className="text-xs font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 mb-2">{prediction.league}</Badge>
+              <span className="px-3 py-1 bg-slate-800 rounded-md text-xs font-mono font-bold text-slate-200 border border-slate-700">VS</span>
+              <span className="text-[11px] text-slate-300 mt-2 flex items-center gap-1 font-mono tabular-nums">
                 <Calendar className="h-3 w-3" />
                 {formatKickoff(prediction.match_date, { includeTimezone: true })}
               </span>
@@ -386,18 +386,18 @@ export default function MatchPrediction() {
                 leagueId={prediction.league}
                 league={prediction.league}
                 size="lg"
-                className="mb-2 shadow-sm"
+                className="mb-2 shadow-xs"
               />
-              <h2 className="text-base sm:text-2xl font-black text-foreground truncate w-full">{prediction.away_team}</h2>
-              <span className="text-[11px] text-muted-foreground uppercase font-bold mt-0.5">Away Team</span>
+              <h2 className="text-base sm:text-2xl font-extrabold text-white truncate w-full">{prediction.away_team}</h2>
+              <span className="text-xs text-slate-400 font-mono mt-0.5">{awayXgVal} xG</span>
             </div>
           </div>
 
-          <div className="text-center text-xs text-muted-foreground mt-4 pt-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-center text-xs text-slate-300 mt-5 pt-3.5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="flex flex-wrap items-center gap-2">
               <span>{formatKickoff(prediction.match_date, { includeWeekday: true, includeDate: true, includeTimezone: true })}</span>
-              <span className="text-[11px] font-medium text-foreground/80">
-                · {region.flag} {region.name}
+              <span className="text-[11px] font-medium text-slate-300">
+                · {region.name}
               </span>
               {(() => {
                 const bInfo = getMatchBroadcastInfo({
@@ -408,7 +408,7 @@ export default function MatchPrediction() {
                   regionId: region.id,
                 });
                 return (
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
                     · <Tv className="h-3 w-3" /> {bInfo.primaryBroadcaster.shortName}
                     {bInfo.hasFreeStream ? ' (Free Stream Available)' : ''}
                   </span>
@@ -420,7 +420,7 @@ export default function MatchPrediction() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowStreamHub(true)}
-                className="h-8 gap-1.5 text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
+                className="h-8 gap-1.5 text-xs font-bold bg-slate-800 border-slate-700 text-emerald-400 hover:bg-slate-700 hover:text-emerald-300"
                 data-testid="match-prediction-watch-live-btn"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
@@ -446,7 +446,7 @@ export default function MatchPrediction() {
           </div>
         </div>
 
-        {/* AI Quick Insight: Key Injuries & H2H Tactical Trends (Gemini API) */}
+        {/* Key Injuries & H2H Tactical Trends */}
         <div className="mb-6">
           <QuickInsightCard
             homeTeam={prediction.home_team}
@@ -460,33 +460,33 @@ export default function MatchPrediction() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid grid-cols-2 sm:grid-cols-6 w-full h-auto p-1 bg-muted/60">
             <TabsTrigger value="overview" className="text-xs py-2.5 font-bold gap-1">
-              <Sparkles className="h-3.5 w-3.5" /> AI Prediction
+              <Target className="h-3.5 w-3.5" /> Match Overview
             </TabsTrigger>
             <TabsTrigger value="markets" className="text-xs py-2.5 font-bold gap-1">
-              <Layers className="h-3.5 w-3.5" /> Asian & Props
+              <Layers className="h-3.5 w-3.5" /> Asian &amp; Props
             </TabsTrigger>
             <TabsTrigger value="h2h" className="text-xs py-2.5 font-bold gap-1">
-              <History className="h-3.5 w-3.5" /> H2H & Flow
+              <History className="h-3.5 w-3.5" /> H2H &amp; Flow
             </TabsTrigger>
             <TabsTrigger value="lineups" className="text-xs py-2.5 font-bold gap-1">
               <Shield className="h-3.5 w-3.5" /> Lineups
             </TabsTrigger>
             <TabsTrigger value="tactics" className="text-xs py-2.5 font-bold gap-1">
-              <Activity className="h-3.5 w-3.5" /> Tactics & xG
+              <Activity className="h-3.5 w-3.5" /> Tactics &amp; xG
             </TabsTrigger>
             <TabsTrigger value="odds" className="text-xs py-2.5 font-bold gap-1">
               <DollarSign className="h-3.5 w-3.5" /> Bookmakers
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: AI Prediction & Multi-Markets */}
+          {/* TAB 1: Match Overview & Multi-Markets */}
           <TabsContent value="overview" className="space-y-6">
             {/* Primary Prediction Banner */}
-            <Card className="border-primary/40 bg-gradient-to-r from-card via-primary/5 to-card shadow-sm">
+            <Card className="border-border bg-card shadow-2xs">
               <CardContent className="p-6 text-center space-y-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5 uppercase font-bold tracking-wider">Algorithmic Projected Outcome</p>
-                  <Badge className={`text-lg px-5 py-2 font-black ${outcome === 'Home Win' ? 'bg-emerald-600' : outcome === 'Away Win' ? 'bg-rose-600' : 'bg-amber-600'} text-white shadow-md`}>
+                  <p className="text-xs text-muted-foreground mb-1.5 uppercase font-bold tracking-wider">Projected Match Outcome</p>
+                  <Badge className={`text-lg px-5 py-2 font-black ${outcome === 'Home Win' ? 'bg-emerald-600' : outcome === 'Away Win' ? 'bg-rose-600' : 'bg-amber-600'} text-white shadow-xs`}>
                     {outcome}
                   </Badge>
                 </div>

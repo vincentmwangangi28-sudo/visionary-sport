@@ -160,25 +160,25 @@ export default function ValueBets() {
         }}
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
         {/* Visual Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
           <span className="text-foreground font-medium">Daily Value Bets (+EV)</span>
         </nav>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-semibold">
-                <Sparkles className="h-3 w-3 mr-1" /> Mathematical Edge Finder · Live +EV Scanner
-              </Badge>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-primary" />
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              Mathematical Edge Scanner · Fair Odds vs Bookmaker Price (+EV)
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Daily Value Bets Today (+EV)
             </h1>
+            <p className="text-slate-300 text-xs sm:text-sm mt-1">
+              Fixtures where our Expected Goals (xG) fair-odds model diverges from bookmaker implied probabilities by 8% or more.
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -186,48 +186,45 @@ export default function ValueBets() {
               size="sm"
               onClick={handleGeminiScreenTopBet}
               disabled={loadingGemini || bets.length === 0}
-              className="gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10"
-              aria-label="Screen top value bets with Gemini AI"
+              className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
+              aria-label="Screen top value bet edge"
             >
-              <Sparkles className={`h-4 w-4 ${loadingGemini ? 'animate-spin' : ''}`} aria-hidden="true" />
-              <span>{loadingGemini ? 'Screening...' : 'Gemini EV Screener'}</span>
+              <TrendingUp className={`h-3.5 w-3.5 text-emerald-400 ${loadingGemini ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <span>{loadingGemini ? 'Calculating...' : 'Audit Top +EV Edge'}</span>
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={fetch_} 
               disabled={loading} 
-              className="gap-2 text-xs font-semibold"
+              className="gap-1.5 text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
               aria-label="Refresh Value Bets data"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span>Refresh</span>
             </Button>
           </div>
         </div>
-        <p className="text-muted-foreground text-sm mb-4">
-          Fixtures where our Expected Goals (xG) Matrix diverges from the bookmaker's implied probability — quantifying the statistical edge (+EV) before lines adjust.
-        </p>
 
-        {/* High Equity Cross-Linking Ribbon */}
-        <div className="mb-6 p-3.5 rounded-xl bg-muted/40 border text-xs flex flex-wrap items-center justify-between gap-3">
+        {/* Cross-Linking Ribbon */}
+        <div className="p-3.5 rounded-xl bg-card border border-border text-xs flex flex-wrap items-center justify-between gap-3">
           <span className="text-muted-foreground">
-            Compare models: Run custom simulations in our <Link to="/predict" className="font-bold text-primary underline">Interactive AI Match Predictor</Link>, check <Link to="/btts" className="font-bold text-primary underline">Both Teams to Score (BTTS) Poisson Tips</Link>, or read our <Link to="/blog/closing-line-value-clv-dropping-odds" className="font-bold text-primary underline">Closing Line Value (CLV) &amp; Dropping Odds Guide</Link>.
+            Compare models: Run custom simulations in our <Link to="/predict" className="font-bold text-primary underline">Match Simulator</Link>, check <Link to="/btts" className="font-bold text-primary underline">BTTS &amp; Over 2.5 Tips</Link>, or read our <Link to="/blog/closing-line-value-clv-dropping-odds" className="font-bold text-primary underline">Closing Line Value (CLV) Guide</Link>.
           </span>
           <Link to="/best-bets" className="text-primary font-bold hover:underline flex items-center gap-1">
-            View Today's 75%+ Banker Football Bets &rarr;
+            View Today's 75%+ Banker Picks &rarr;
           </Link>
         </div>
 
-        {/* Gemini AI EV Screener Report */}
+        {/* Fair Price Audit Report */}
         {geminiScreenResult && (
-          <div className="mb-6 p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
+          <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" />
-                Gemini Poisson EV Screener Verdict
+                <TrendingUp className="h-3.5 w-3.5" />
+                Poisson Fair-Price Edge Audit
               </span>
-              <Badge className="bg-green-600 text-white text-[10px]">
+              <Badge className="bg-emerald-600 text-white text-[10px]">
                 {geminiScreenResult.verdict} (+{geminiScreenResult.ev_percentage}% EV)
               </Badge>
             </div>

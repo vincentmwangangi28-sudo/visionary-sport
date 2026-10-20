@@ -184,30 +184,29 @@ export default function Standings() {
         keywords="Premier League table 2026, xPTS expected points table, La Liga standings, Bundesliga table, Serie A standings, Champions League table, KPL standings"
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-8 pb-24 md:pb-12 max-w-5xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/70 pb-4">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-24 md:pb-12 space-y-6">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-primary mb-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
               Official Standings · Expected Points (xPTS) Justice Table · Live In-Play Deltas
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2.5">
-              <Trophy className="h-7 w-7 text-primary shrink-0" />
-              <span>League Standings &amp; xG Justice Tables</span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              League Standings &amp; xG Justice Tables
             </h1>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
               Compare official league points against Bivariate Poisson Expected Points (xPTS) and Home/Away venue splits.
             </p>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
-            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            <span className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
               {isLive ? (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                   <span>API-Football Live</span>
                 </>
               ) : (
                 <>
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                  <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
                   <span>Verified Season Feed</span>
                 </>
               )}
@@ -217,7 +216,7 @@ export default function Standings() {
               size="sm"
               onClick={handleSync}
               disabled={loading || isFetching}
-              className="gap-1.5 whitespace-nowrap"
+              className="gap-1.5 whitespace-nowrap bg-slate-800 border-slate-700 text-slate-100 hover:bg-slate-700 hover:text-white"
               aria-label="Sync league standings"
             >
               <RefreshCw className={`h-4 w-4 ${loading || isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />

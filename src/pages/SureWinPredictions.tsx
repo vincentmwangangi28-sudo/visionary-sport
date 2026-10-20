@@ -139,48 +139,41 @@ export default function SureWinPredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold px-3 py-1">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> VERIFIED 88%+ ALGORITHMIC STRIKE RATE
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Sure Win &amp; High-Consensus Predictions Today
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Our highest-conviction football consensus forecasts powered by Dixon-Coles Bivariate Poisson modeling. Every fixture is screened for strong Expected Goals (xG) dominance, home fortress form, and minimal variance.
-          </p>
-        </div>
+        {/* Dark Broadcast Header Banner */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-1.5 max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+              High-Conviction Consensus Picks · Low-Variance Matchday Anchors
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Daily Bankers &amp; High-Probability Picks
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Highest-conviction football forecasts screened for strong Expected Goals (xG) dominance, home fortress form, and minimal scoreline variance.
+            </p>
+          </div>
 
-        {/* Quick Acca Banner */}
-        <Card className="bg-gradient-to-r from-emerald-500/10 via-primary/10 to-emerald-500/5 border-emerald-500/30 shadow-sm">
-          <CardContent className="p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                  TODAY&apos;S ACCA ANCHOR
-                </Badge>
-                <span className="text-xs text-muted-foreground">Combined Odds ~ 3.10</span>
-              </div>
-              <h2 className="text-lg font-black text-foreground">
-                4-Fold Mathematical Sure Win Multi-Bet
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Stack our top 4 lowest-variance selections into a bankroll multiplier slip with 91% individual leg consistency.
-              </p>
+          <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                Today&apos;s 4-Fold Banker Anchor
+              </span>
+              <span className="text-sm font-extrabold text-white">Combined Odds ~ 3.10x</span>
+              <span className="text-[11px] text-slate-400 block">Top 4 lowest-variance selections</span>
             </div>
             <Button
               onClick={handleAddAllAcca}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 shadow-sm gap-2"
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs gap-1.5 shrink-0"
             >
               <Zap className="w-3.5 h-3.5" />
-              Add 4-Leg Acca to Slip
+              Load 4-Leg Banker Slip
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Filter Navigation */}
         <div className="flex justify-center">

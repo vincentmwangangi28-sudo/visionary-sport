@@ -1,520 +1,370 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Radio,
-  Tv,
-  Activity,
-  Award,
-  Flame,
-  Newspaper,
-  ChevronRight,
-  CheckCircle2,
-  Trophy,
-  Crosshair,
-  Calendar,
-} from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 
 export interface CommandRibbonMatch {
   id: string;
+  slug: string;
   league: string;
   homeTeam: string;
   awayTeam: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  status: 'live' | 'upcoming' | 'finished';
-  minuteOrTime: string;
-  homeXG: number;
-  awayXG: number;
-  homeProb: number;
-  drawProb: number;
-  awayProb: number;
-  mvpPlayer: string;
-  mvpRating: number;
-  broadcaster: string;
-  isFreeStream: boolean;
-  previewSlug: string;
+  status: 'LIVE' | 'UPCOMING' | 'FT';
+  minute?: number;
+  homeScore?: number;
+  awayScore?: number;
+  homeXg: number;
+  awayXg: number;
+  kickoffTime: string;
+  tvChannels: string[];
+  topPlayer: {
+    name: string;
+    team: string;
+    rating: number;
+    keyStat: string;
+  };
+  aiPick: string;
+  confidence: number;
 }
 
-export interface TopRatedPlayerItem {
+export interface LineupNewsAlert {
   id: string;
-  name: string;
-  club: string;
+  team: string;
   league: string;
-  position: string;
-  rating: number;
-  xgPlusXa: string;
-  keyStat: string;
+  player: string;
+  status: 'CONFIRMED XI' | 'LATE FITNESS TEST' | 'RULED OUT' | 'TACTICAL SHIFT';
+  impact: 'HIGH' | 'MEDIUM';
+  summary: string;
+  updatedAgo: string;
 }
 
-export interface TacticalPulseNewsItem {
-  id: string;
-  tag: string;
-  clubOrMatch: string;
-  headline: string;
-  xgImpact: string;
-  timeAgo: string;
-}
-
-const DEFAULT_RIBBON_MATCHES: CommandRibbonMatch[] = [
+const FEATURED_MATCHDAY_RIBBON: CommandRibbonMatch[] = [
   {
-    id: 'cmd-1',
-    league: 'Premier League',
+    id: 'epl-ars-che',
+    slug: 'arsenal-vs-chelsea',
+    league: 'EPL',
     homeTeam: 'Arsenal',
     awayTeam: 'Chelsea',
+    status: 'LIVE',
+    minute: 68,
     homeScore: 2,
     awayScore: 1,
-    status: 'live',
-    minuteOrTime: "68'",
-    homeXG: 1.94,
-    awayXG: 0.88,
-    homeProb: 74,
-    drawProb: 17,
-    awayProb: 9,
-    mvpPlayer: 'B. Saka',
-    mvpRating: 8.8,
-    broadcaster: 'Showmax PL / Sky',
-    isFreeStream: false,
-    previewSlug: '/predict/arsenal-vs-chelsea',
+    homeXg: 1.94,
+    awayXg: 0.88,
+    kickoffTime: '19:00 UTC',
+    tvChannels: ['Sky Sports Main Event', 'Peacock', 'SuperSport EPL', 'Showmax Pro KE'],
+    topPlayer: {
+      name: 'Bukayo Saka',
+      team: 'Arsenal',
+      rating: 8.9,
+      keyStat: '1G · 0.78 xG · 4 Key Passes',
+    },
+    aiPick: 'Arsenal Win & Over 2.5',
+    confidence: 86,
   },
   {
-    id: 'cmd-2',
-    league: 'Champions League',
+    id: 'epl-liv-mci',
+    slug: 'liverpool-vs-manchester-city',
+    league: 'EPL',
+    homeTeam: 'Liverpool',
+    awayTeam: 'Man City',
+    status: 'LIVE',
+    minute: 54,
+    homeScore: 1,
+    awayScore: 1,
+    homeXg: 1.42,
+    awayXg: 1.38,
+    kickoffTime: '19:30 UTC',
+    tvChannels: ['TNT Sports 1', 'USA Network', 'SuperSport Maximo', 'Canal+ Foot'],
+    topPlayer: {
+      name: 'Mohamed Salah',
+      team: 'Liverpool',
+      rating: 8.6,
+      keyStat: '1G · 5 Progressive Carries',
+    },
+    aiPick: 'Both Teams To Score',
+    confidence: 88,
+  },
+  {
+    id: 'laliga-rma-bar',
+    slug: 'real-madrid-vs-barcelona',
+    league: 'LaLiga',
     homeTeam: 'Real Madrid',
     awayTeam: 'Barcelona',
-    homeScore: 1,
-    awayScore: 1,
-    status: 'live',
-    minuteOrTime: "54'",
-    homeXG: 1.42,
-    awayXG: 1.38,
-    homeProb: 44,
-    drawProb: 28,
-    awayProb: 28,
-    mvpPlayer: 'J. Bellingham',
-    mvpRating: 8.6,
-    broadcaster: 'SuperSport / Paramount+',
-    isFreeStream: true,
-    previewSlug: '/predict/real-madrid-vs-barcelona',
+    status: 'UPCOMING',
+    homeXg: 1.85,
+    awayXg: 1.62,
+    kickoffTime: '20:00 UTC',
+    tvChannels: ['ESPN+', 'Premier Sports 1', 'SuperSport LaLiga', 'DAZN LaLiga'],
+    topPlayer: {
+      name: 'Jude Bellingham',
+      team: 'Real Madrid',
+      rating: 8.5,
+      keyStat: '0.64 xG + xA / 90',
+    },
+    aiPick: 'Over 2.5 Goals',
+    confidence: 84,
   },
   {
-    id: 'cmd-3',
-    league: 'FKF Premier League',
+    id: 'kpl-gor-afc',
+    slug: 'gor-mahia-vs-afc-leopards',
+    league: 'KPL',
     homeTeam: 'Gor Mahia',
     awayTeam: 'AFC Leopards',
-    homeScore: 1,
-    awayScore: 0,
-    status: 'live',
-    minuteOrTime: "72'",
-    homeXG: 1.56,
-    awayXG: 0.54,
-    homeProb: 78,
-    drawProb: 15,
-    awayProb: 7,
-    mvpPlayer: 'A. Odhiambo',
-    mvpRating: 8.4,
-    broadcaster: 'Azam HD / KBC FTA',
-    isFreeStream: true,
-    previewSlug: '/predict/gor-mahia-vs-afc-leopards',
+    status: 'UPCOMING',
+    homeXg: 1.56,
+    awayXg: 0.79,
+    kickoffTime: '15:00 EAT',
+    tvChannels: ['Azam Sports 1 HD', 'KBC Channel 1', 'FKF Live Stream'],
+    topPlayer: {
+      name: 'Austin Odhiambo',
+      team: 'Gor Mahia',
+      rating: 8.3,
+      keyStat: '0.58 xG+xA · 3 Key Passes/90',
+    },
+    aiPick: 'Gor Mahia Win (1X2)',
+    confidence: 82,
   },
   {
-    id: 'cmd-4',
-    league: 'Premier League',
-    homeTeam: 'Liverpool',
-    awayTeam: 'Manchester City',
-    homeScore: null,
-    awayScore: null,
-    status: 'upcoming',
-    minuteOrTime: '19:30',
-    homeXG: 1.78,
-    awayXG: 1.61,
-    homeProb: 43,
-    drawProb: 26,
-    awayProb: 31,
-    mvpPlayer: 'M. Salah',
-    mvpRating: 8.9,
-    broadcaster: 'SuperSport 203 / Peacock',
-    isFreeStream: false,
-    previewSlug: '/predict/liverpool-vs-manchester-city',
-  },
-  {
-    id: 'cmd-5',
+    id: 'ucl-bay-bvb',
+    slug: 'bayern-munich-vs-borussia-dortmund',
     league: 'Bundesliga',
     homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    homeScore: 3,
-    awayScore: 1,
-    status: 'finished',
-    minuteOrTime: 'FT',
-    homeXG: 2.65,
-    awayXG: 1.12,
-    homeProb: 82,
-    drawProb: 11,
-    awayProb: 7,
-    mvpPlayer: 'H. Kane',
-    mvpRating: 9.2,
-    broadcaster: 'FIFA+ / ESPN+',
-    isFreeStream: true,
-    previewSlug: '/predict/bayern-munich-vs-borussia-dortmund',
+    awayTeam: 'Dortmund',
+    status: 'UPCOMING',
+    homeXg: 2.34,
+    awayXg: 1.28,
+    kickoffTime: '17:30 UTC',
+    tvChannels: ['Sky Sport Bundesliga 1', 'ESPN+', 'StarTimes World Football'],
+    topPlayer: {
+      name: 'Harry Kane',
+      team: 'Bayern Munich',
+      rating: 9.1,
+      keyStat: '1.12 xG/90 · 5 Shots On Target',
+    },
+    aiPick: 'Bayern Win & Over 2.5',
+    confidence: 89,
   },
 ];
 
-const TOP_RATED_PLAYERS: TopRatedPlayerItem[] = [
+const CONFIRMED_LINEUP_WIRE: LineupNewsAlert[] = [
   {
-    id: 'p-1',
-    name: 'Harry Kane',
-    club: 'Bayern Munich',
-    league: 'Bundesliga',
-    position: 'ST',
-    rating: 9.2,
-    xgPlusXa: '1.48 xG + 0.42 xA',
-    keyStat: '2 Goals · 6 Box Touches',
-  },
-  {
-    id: 'p-2',
-    name: 'Mohamed Salah',
-    club: 'Liverpool',
+    id: 'lw-1',
+    team: 'Arsenal',
     league: 'Premier League',
-    position: 'RW',
-    rating: 8.9,
-    xgPlusXa: '1.15 xG + 0.68 xA',
-    keyStat: '4 Key Passes · 91% Pass Acc',
+    player: 'Martin Ødegaard & Bukayo Saka',
+    status: 'CONFIRMED XI',
+    impact: 'HIGH',
+    summary: 'Both start in Arsenal 4-3-3 high-press setup; boosts home attacking xG by +0.34.',
+    updatedAgo: '4m ago',
   },
   {
-    id: 'p-3',
-    name: 'Bukayo Saka',
-    club: 'Arsenal',
-    league: 'Premier League',
-    position: 'RW',
-    rating: 8.8,
-    xgPlusXa: '0.92 xG + 0.74 xA',
-    keyStat: '7 Progressive Carries',
+    id: 'lw-2',
+    team: 'Real Madrid',
+    league: 'LaLiga',
+    player: 'Kylian Mbappé & Vinícius Jr.',
+    status: 'CONFIRMED XI',
+    impact: 'HIGH',
+    summary: 'Ancelotti deploys dual-split forwards to target high defensive line in transition.',
+    updatedAgo: '11m ago',
   },
   {
-    id: 'p-4',
-    name: 'Jude Bellingham',
-    club: 'Real Madrid',
-    league: 'La Liga / UCL',
-    position: 'CAM',
-    rating: 8.6,
-    xgPlusXa: '0.78 xG + 0.51 xA',
-    keyStat: '11 Duels Won · 3 Tackles',
+    id: 'lw-3',
+    team: 'Gor Mahia',
+    league: 'FKF Premier League',
+    player: 'Austin Odhiambo',
+    status: 'CONFIRMED XI',
+    impact: 'MEDIUM',
+    summary: 'Cleared to start in central attacking midfield for the Mashemeji Derby clash.',
+    updatedAgo: '18m ago',
   },
 ];
-
-const TACTICAL_PULSE_ITEMS: TacticalPulseNewsItem[] = [
-  {
-    id: 'tp-1',
-    tag: 'Confirmed Lineup Impact',
-    clubOrMatch: 'Arsenal vs Chelsea',
-    headline: 'High-press 4-3-3 confirmed; Ødegaard & Saka start in right half-space overload.',
-    xgImpact: '+0.34 Home xG',
-    timeAgo: '12m ago',
-  },
-  {
-    id: 'tp-2',
-    tag: 'Tactical Press Shift',
-    clubOrMatch: 'Liverpool vs Man City',
-    headline: 'Midblock transition model projects 14+ high turnovers in central midfield zone.',
-    xgImpact: '68% BTTS Prob',
-    timeAgo: '24m ago',
-  },
-  {
-    id: 'tp-3',
-    tag: 'CAF & East Africa Derby',
-    clubOrMatch: 'Gor Mahia vs AFC Leopards',
-    headline: 'Full-back overlapping width driving 64% final-third field tilt in Nairobi.',
-    xgImpact: '+0.41 Home xG',
-    timeAgo: '35m ago',
-  },
-];
-
-const IQ_STORAGE_KEY = 'predictpro_daily_iq_picks_v1';
 
 export const GlobalMatchdayCommandRibbon: React.FC = () => {
-  const [activeDrawer, setActiveDrawer] = useState<'none' | 'ratings' | 'pulse' | 'iq_challenge'>('none');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'upcoming' | 'free_stream'>('all');
-  const [userPicks, setUserPicks] = useState<Record<string, '1' | 'X' | '2'>>(() => {
-    try {
-      const raw = localStorage.getItem(IQ_STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'LIVE' | 'TV'>('ALL');
+  const [activeDrawer, setActiveDrawer] = useState<'NONE' | 'RATINGS' | 'LINEUPS' | 'TRIVIA'>('NONE');
+  const [triviaSelected, setTriviaSelected] = useState<number | null>(null);
 
   const filteredMatches = useMemo(() => {
-    if (statusFilter === 'live') return DEFAULT_RIBBON_MATCHES.filter((m) => m.status === 'live');
-    if (statusFilter === 'upcoming') return DEFAULT_RIBBON_MATCHES.filter((m) => m.status === 'upcoming');
-    if (statusFilter === 'free_stream') return DEFAULT_RIBBON_MATCHES.filter((m) => m.isFreeStream);
-    return DEFAULT_RIBBON_MATCHES;
-  }, [statusFilter]);
-
-  const handleSelectIqPick = (matchId: string, choice: '1' | 'X' | '2') => {
-    setUserPicks((prev) => {
-      const next = { ...prev, [matchId]: choice };
-      try {
-        localStorage.setItem(IQ_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  };
-
-  const iqScore = useMemo(() => {
-    let aligned = 0;
-    const total = Object.keys(userPicks).length;
-    for (const m of DEFAULT_RIBBON_MATCHES) {
-      const pick = userPicks[m.id];
-      if (!pick) continue;
-      const modelFav = m.homeProb >= m.awayProb && m.homeProb >= m.drawProb ? '1' : m.awayProb > m.homeProb ? '2' : 'X';
-      if (pick === modelFav) aligned++;
+    if (activeFilter === 'LIVE') {
+      return FEATURED_MATCHDAY_RIBBON.filter((m) => m.status === 'LIVE');
     }
-    return { total, aligned, rating: 1200 + total * 25 + aligned * 40 };
-  }, [userPicks]);
+    return FEATURED_MATCHDAY_RIBBON;
+  }, [activeFilter]);
+
+  const toggleDrawer = (drawer: 'RATINGS' | 'LINEUPS' | 'TRIVIA') => {
+    setActiveDrawer((prev) => (prev === drawer ? 'NONE' : drawer));
+  };
 
   return (
     <section
-      aria-label="Live Matchday Scoreboard, Player Ratings & Tactical Command Ribbon"
-      className="border-b border-border/70 bg-card/80 backdrop-blur-md"
+      aria-label="Live Matchday Scoreboard & Broadcast Ticker"
       data-testid="global-matchday-command-ribbon"
+      className="w-full bg-card border-b border-border"
     >
-      <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-2.5 space-y-2.5">
-        {/* Top Control Row: Mode Filters (ESPN/Flashscore) + Feature Drawers (FotMob/Marca/Chess.com IQ) */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Left: Quick Matchday Filter Buttons */}
-          <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/60 overflow-x-auto no-scrollbar">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between gap-3 py-1.5 text-xs">
+          {/* Left: Subtle Scoreboard Filter */}
+          <div className="flex items-center gap-1 shrink-0 border-r border-border pr-3">
             <button
               type="button"
-              onClick={() => setStatusFilter('all')}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors whitespace-nowrap ${
-                statusFilter === 'all'
-                  ? 'bg-background text-foreground shadow-2xs'
+              onClick={() => setActiveFilter('ALL')}
+              data-testid="ribbon-filter-all"
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                activeFilter === 'ALL'
+                  ? 'bg-muted text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Matchday Pulse ({DEFAULT_RIBBON_MATCHES.length})
+              Scores
             </button>
             <button
               type="button"
-              onClick={() => setStatusFilter('live')}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors flex items-center gap-1 whitespace-nowrap ${
-                statusFilter === 'live'
-                  ? 'bg-rose-600 text-white shadow-2xs'
+              onClick={() => setActiveFilter('LIVE')}
+              data-testid="ribbon-filter-live"
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors inline-flex items-center gap-1 cursor-pointer ${
+                activeFilter === 'LIVE'
+                  ? 'bg-muted text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping inline-block" />
-              In-Play ({DEFAULT_RIBBON_MATCHES.filter((m) => m.status === 'live').length})
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+              Live
             </button>
             <button
               type="button"
-              onClick={() => setStatusFilter('free_stream')}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors flex items-center gap-1 whitespace-nowrap ${
-                statusFilter === 'free_stream'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
+              onClick={() => setActiveFilter('TV')}
+              data-testid="ribbon-filter-tv"
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                activeFilter === 'TV'
+                  ? 'bg-muted text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Tv className="h-3 w-3" />
-              Free Streams / TV ({DEFAULT_RIBBON_MATCHES.filter((m) => m.isFreeStream).length})
+              TV
             </button>
           </div>
 
-          {/* Right: FotMob 10.0 Ratings, Marca Tactical Wire & Daily IQ Streak Toggles */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            <button
-              type="button"
-              onClick={() => setActiveDrawer(activeDrawer === 'ratings' ? 'none' : 'ratings')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-                activeDrawer === 'ratings'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted/70 text-foreground border-border/80'
-              }`}
-              data-testid="toggle-player-ratings-drawer"
-            >
-              <Award className="h-3.5 w-3.5 text-amber-500" />
-              <span>Player Ratings (10.0)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveDrawer(activeDrawer === 'pulse' ? 'none' : 'pulse')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-                activeDrawer === 'pulse'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted/70 text-foreground border-border/80'
-              }`}
-              data-testid="toggle-tactical-pulse-drawer"
-            >
-              <Newspaper className="h-3.5 w-3.5 text-sky-500" />
-              <span>Lineup &amp; xG Wire</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveDrawer(activeDrawer === 'iq_challenge' ? 'none' : 'iq_challenge')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-                activeDrawer === 'iq_challenge'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted/70 text-foreground border-border/80'
-              }`}
-              data-testid="toggle-iq-challenge-drawer"
-            >
-              <Trophy className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Daily IQ Challenge ({iqScore.rating} ELO)</span>
-            </button>
-
-            <Link
-              to="/live"
-              className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 whitespace-nowrap"
-            >
-              <Crosshair className="h-3 w-3" />
-              <span>2D Live Center</span>
-              <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
-
-        {/* ESPN / SofaScore / FotMob Horizontal Matchday Scoreboard Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-          {filteredMatches.map((m) => (
-            <div
-              key={m.id}
-              className="p-2.5 rounded-xl border border-border/70 bg-background/90 hover:border-primary/40 transition-all flex flex-col justify-between gap-2"
-            >
-              {/* Top Meta Line: Unboxed Clean Typography (League · Status · TV) */}
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                <span className="font-semibold truncate max-w-[115px] text-foreground/80">
+          {/* Center: Clean Horizontal Scoreboard Strip (ESPN / BBC Sport Style) */}
+          <div className="flex items-center divide-x divide-border overflow-x-auto no-scrollbar flex-1 min-w-0">
+            {filteredMatches.map((m) => (
+              <Link
+                key={m.id}
+                to={m.status === 'LIVE' ? '/live' : `/predict/${m.slug}`}
+                data-testid={`ribbon-match-card-${m.id}`}
+                className="px-3 py-0.5 hover:bg-muted/40 transition-colors shrink-0 flex items-center gap-2.5 text-xs"
+              >
+                <span className="text-[10px] font-medium text-muted-foreground">
                   {m.league}
                 </span>
-                <div className="flex items-center gap-1.5 font-mono">
-                  {m.status === 'live' ? (
-                    <span className="text-rose-600 dark:text-rose-400 font-black">
-                      ● {m.minuteOrTime}
+
+                <div className="flex items-center gap-1.5">
+                  <TeamLogo team={m.homeTeam} size="xs" badgeOnly />
+                  <span className="font-medium text-foreground">{m.homeTeam}</span>
+                  {m.status === 'LIVE' ? (
+                    <span className="font-mono tabular-nums font-bold text-foreground px-1">
+                      {m.homeScore} - {m.awayScore}
                     </span>
                   ) : (
-                    <span className="font-bold">{m.minuteOrTime}</span>
+                    <span className="text-muted-foreground text-[11px]">v</span>
                   )}
-                </div>
-              </div>
-
-              {/* Teams & Score / xG */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between gap-1.5 text-xs">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <TeamLogo team={m.homeTeam} size="xs" badgeOnly />
-                    <span className="font-bold truncate text-foreground">{m.homeTeam}</span>
-                  </div>
-                  <div className="flex items-center gap-1 font-mono shrink-0">
-                    <span className="text-[10px] text-muted-foreground">({m.homeXG})</span>
-                    <span className="font-black text-foreground">{m.homeScore ?? '-'}</span>
-                  </div>
+                  <TeamLogo team={m.awayTeam} size="xs" badgeOnly />
+                  <span className="font-medium text-foreground">{m.awayTeam}</span>
                 </div>
 
-                <div className="flex items-center justify-between gap-1.5 text-xs">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <TeamLogo team={m.awayTeam} size="xs" badgeOnly />
-                    <span className="font-bold truncate text-foreground">{m.awayTeam}</span>
-                  </div>
-                  <div className="flex items-center gap-1 font-mono shrink-0">
-                    <span className="text-[10px] text-muted-foreground">({m.awayXG})</span>
-                    <span className="font-black text-foreground">{m.awayScore ?? '-'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 1X2 Probability Bar + FotMob MVP Rating & Broadcast Link */}
-              <div className="pt-1 border-t border-border/50 space-y-1">
-                <div className="h-1 w-full rounded-full bg-muted overflow-hidden flex">
-                  <div style={{ width: `${m.homeProb}%` }} className="bg-emerald-500" />
-                  <div style={{ width: `${m.drawProb}%` }} className="bg-amber-500" />
-                  <div style={{ width: `${m.awayProb}%` }} className="bg-sky-500" />
-                </div>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span className="font-mono text-foreground font-semibold">
-                    ★ {m.mvpPlayer} {m.mvpRating.toFixed(1)}
+                {activeFilter === 'TV' ? (
+                  <span className="text-[10px] text-muted-foreground truncate max-w-[100px]">
+                    {m.tvChannels[0]}
                   </span>
-                  <Link
-                    to={m.status === 'live' ? '/live' : m.previewSlug}
-                    className="font-bold text-primary hover:underline truncate max-w-[95px]"
-                  >
-                    {m.broadcaster} →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
+                ) : m.status === 'LIVE' ? (
+                  <span className="font-mono tabular-nums text-[10px] font-semibold text-rose-600 dark:text-rose-400">
+                    {m.minute}&apos;
+                  </span>
+                ) : (
+                  <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
+                    {m.kickoffTime.replace(' UTC', '')}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right: Quiet Text Toggles for Matchday Drawers */}
+          <div className="hidden md:flex items-center gap-3 shrink-0 border-l border-border pl-3 text-[11px]">
+            <button
+              type="button"
+              onClick={() => toggleDrawer('RATINGS')}
+              data-testid="toggle-player-ratings-drawer"
+              className={`transition-colors cursor-pointer whitespace-nowrap ${
+                activeDrawer === 'RATINGS'
+                  ? 'text-foreground font-semibold underline underline-offset-4'
+                  : 'text-muted-foreground hover:text-foreground font-medium'
+              }`}
+            >
+              Player Ratings
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleDrawer('LINEUPS')}
+              data-testid="toggle-tactical-pulse-drawer"
+              className={`transition-colors cursor-pointer whitespace-nowrap ${
+                activeDrawer === 'LINEUPS'
+                  ? 'text-foreground font-semibold underline underline-offset-4'
+                  : 'text-muted-foreground hover:text-foreground font-medium'
+              }`}
+            >
+              Lineups
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleDrawer('TRIVIA')}
+              data-testid="toggle-iq-challenge-drawer"
+              className={`transition-colors cursor-pointer whitespace-nowrap ${
+                activeDrawer === 'TRIVIA'
+                  ? 'text-foreground font-semibold underline underline-offset-4'
+                  : 'text-muted-foreground hover:text-foreground font-medium'
+              }`}
+            >
+              Daily Quiz
+            </button>
+          </div>
         </div>
 
-        {/* DRAWER 1: FotMob / SofaScore 10.0 Algorithmic Player Ratings */}
-        {activeDrawer === 'ratings' && (
+        {/* Expandable Drawers */}
+        {activeDrawer === 'RATINGS' && (
           <div
-            className="p-3 rounded-xl border border-border/80 bg-background space-y-2.5 animate-in fade-in duration-150"
             data-testid="player-ratings-drawer"
+            className="py-3 border-t border-border animate-fade-in space-y-2.5"
           >
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-foreground flex items-center gap-1.5">
-                <Award className="h-4 w-4 text-amber-500" />
-                Matchday Top Player Performance Ratings (0.0–10.0 Opta/xG Index)
-              </span>
-              <Link to="/players" className="text-[11px] font-bold text-primary hover:underline">
-                Full Player xG Database →
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-foreground">
+                Matchday Player Ratings &amp; TV Broadcast Channels
+              </p>
+              <Link to="/players" className="text-xs font-medium text-foreground hover:underline">
+                Full Player Database →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              {TOP_RATED_PLAYERS.map((p) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+              {FEATURED_MATCHDAY_RIBBON.map((m) => (
                 <div
-                  key={p.id}
-                  className="p-2.5 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between gap-2"
+                  key={m.id}
+                  className="p-2.5 rounded-md border border-border bg-background flex flex-col justify-between gap-1.5"
                 >
-                  <div className="min-w-0">
-                    <p className="text-xs font-extrabold text-foreground truncate">
-                      {p.name} <span className="text-[10px] font-mono text-muted-foreground">({p.position})</span>
-                    </p>
-                    <p className="text-[10px] text-muted-foreground truncate">
-                      {p.club} · {p.xgPlusXa}
-                    </p>
-                    <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                      {p.keyStat}
-                    </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{m.topPlayer.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {m.topPlayer.team} · {m.league}
+                      </p>
+                    </div>
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono tabular-nums text-xs font-bold shrink-0">
+                      {m.topPlayer.rating.toFixed(1)}
+                    </span>
                   </div>
-                  <div className="px-2 py-1 rounded-md bg-emerald-600 text-white font-mono text-xs font-black shrink-0">
-                    {p.rating.toFixed(1)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* DRAWER 2: Marca / Kicker / Gazzetta Breaking Lineup & Tactical xG Wire */}
-        {activeDrawer === 'pulse' && (
-          <div
-            className="p-3 rounded-xl border border-border/80 bg-background space-y-2.5 animate-in fade-in duration-150"
-            data-testid="tactical-pulse-drawer"
-          >
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-foreground flex items-center gap-1.5">
-                <Newspaper className="h-4 w-4 text-sky-500" />
-                Confirmed Starting Lineups &amp; Tactical xG Impact Wire
-              </span>
-              <Link to="/news" className="text-[11px] font-bold text-primary hover:underline">
-                All Injury &amp; Lineup Intel →
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {TACTICAL_PULSE_ITEMS.map((item) => (
-                <div key={item.id} className="p-2.5 rounded-lg border border-border/60 bg-muted/20 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span className="font-bold text-primary">{item.tag}</span>
-                    <span>{item.timeAgo}</span>
-                  </div>
-                  <p className="text-xs font-extrabold text-foreground">{item.clubOrMatch}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug">{item.headline}</p>
-                  <p className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    Model Shift: {item.xgImpact}
+                  <p className="text-[11px] font-mono tabular-nums text-muted-foreground">
+                    {m.topPlayer.keyStat}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate pt-1 border-t border-border">
+                    TV: {m.tvChannels.slice(0, 2).join(', ')}
                   </p>
                 </div>
               ))}
@@ -522,62 +372,89 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
           </div>
         )}
 
-        {/* DRAWER 3: Chess.com-Style Free Daily Football IQ Challenge */}
-        {activeDrawer === 'iq_challenge' && (
+        {activeDrawer === 'LINEUPS' && (
           <div
-            className="p-3 rounded-xl border border-border/80 bg-background space-y-2.5 animate-in fade-in duration-150"
-            data-testid="iq-challenge-drawer"
+            data-testid="tactical-pulse-drawer"
+            className="py-3 border-t border-border animate-fade-in space-y-2.5"
           >
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-bold text-foreground flex items-center gap-1.5">
-                <Trophy className="h-4 w-4 text-emerald-500" />
-                Daily Football IQ Challenge — Test Your Forecast vs. Gemini Poisson AI (100% Free)
-              </span>
-              <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
-                Your Analyst ELO: {iqScore.rating} · {iqScore.aligned}/{iqScore.total || 0} Aligned with AI Consensus
-              </span>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-foreground">
+                Confirmed Starting XIs &amp; Team News
+              </p>
+              <Link to="/news" className="text-xs font-medium text-foreground hover:underline">
+                All Team News →
+              </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {DEFAULT_RIBBON_MATCHES.slice(0, 3).map((m) => {
-                const picked = userPicks[m.id];
-                const aiFav = m.homeProb >= m.awayProb ? `${m.homeTeam} (${m.homeProb}%)` : `${m.awayTeam} (${m.awayProb}%)`;
-                return (
-                  <div key={m.id} className="p-2.5 rounded-lg border border-border/60 bg-muted/20 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="truncate">{m.homeTeam} vs {m.awayTeam}</span>
-                      <span className="text-[10px] font-mono text-muted-foreground">{m.league}</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {(['1', 'X', '2'] as const).map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => handleSelectIqPick(m.id, opt)}
-                          className={`py-1 rounded text-xs font-bold border transition-colors ${
-                            picked === opt
-                              ? 'bg-emerald-600 text-white border-emerald-600'
-                              : 'bg-background hover:bg-muted text-foreground border-border/70'
-                          }`}
-                        >
-                          {opt === '1' ? '1 (Home)' : opt === 'X' ? 'X (Draw)' : '2 (Away)'}
-                        </button>
-                      ))}
-                    </div>
-                    {picked && (
-                      <p className="text-[10px] text-muted-foreground flex items-center justify-between">
-                        <span>Your Call: <strong>{picked}</strong></span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                          AI Consensus: {aiFav}
-                        </span>
-                      </p>
-                    )}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              {CONFIRMED_LINEUP_WIRE.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-2.5 rounded-md border border-border bg-background space-y-1"
+                >
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-foreground">
+                      {item.team} · {item.status}
+                    </span>
+                    <span className="font-mono tabular-nums text-muted-foreground">{item.updatedAgo}</span>
                   </div>
-                );
-              })}
+                  <p className="text-xs font-medium text-foreground">{item.player}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{item.summary}</p>
+                </div>
+              ))}
             </div>
+          </div>
+        )}
+
+        {activeDrawer === 'TRIVIA' && (
+          <div
+            data-testid="iq-challenge-drawer"
+            className="py-3 border-t border-border animate-fade-in"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <p className="text-xs font-semibold text-foreground">
+                  Daily Football Quiz: Which Premier League club posted the highest single-match xG (4.38) this season?
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {['Arsenal vs Chelsea', 'Liverpool vs Spurs', 'Man City vs Newcastle'].map((opt, idx) => {
+                  const isCorrect = idx === 1;
+                  const isChosen = triviaSelected === idx;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setTriviaSelected(idx)}
+                      data-testid={`trivia-option-${idx}`}
+                      className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors cursor-pointer ${
+                        isChosen
+                          ? isCorrect
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-rose-600 text-white border-rose-600'
+                          : 'bg-background hover:bg-muted text-foreground border-border'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {triviaSelected !== null && (
+              <p
+                data-testid="trivia-feedback"
+                className="mt-2 text-xs font-medium text-foreground"
+              >
+                {triviaSelected === 1
+                  ? 'Correct! Liverpool generated 4.38 xG from 9 big chances created.'
+                  : 'Not quite — Liverpool vs Spurs recorded the 4.38 xG peak this campaign.'}
+              </p>
+            )}
           </div>
         )}
       </div>
     </section>
   );
 };
+
+export default GlobalMatchdayCommandRibbon;

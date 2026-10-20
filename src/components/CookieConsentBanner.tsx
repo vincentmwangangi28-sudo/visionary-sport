@@ -15,11 +15,18 @@ export function CookieConsentBanner() {
       }
       const consent = localStorage.getItem(CONSENT_STORAGE_KEY);
       if (!consent) {
-        // Show after a subtle delay for smooth user experience
-        const timer = setTimeout(() => {
-          setVisible(true);
-        }, 2500);
-        return () => clearTimeout(timer);
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        const onScroll = () => {
+          window.removeEventListener('scroll', onScroll);
+          timer = setTimeout(() => {
+            setVisible(true);
+          }, 12000);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true, once: true });
+        return () => {
+          window.removeEventListener('scroll', onScroll);
+          if (timer) clearTimeout(timer);
+        };
       }
     } catch {}
   }, []);

@@ -67,28 +67,30 @@ export default function CorrectScore() {
         keywords="guru tips correct score today, correct score predictions today, exact score football tips, a league bettingpro correct score prediction today, scoreline predictions, correct score probabilities"
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
-                🎯 AI Exact Poisson Scorelines
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
-                ⚡ Top Probable Score Matrices
-              </span>
-            </div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Target className="h-8 w-8 text-primary" />Guru Tips Correct Score Today
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-4">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              Bivariate Poisson Scoreline Matrix · Exact Score Projections
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Correct Score Predictions Today
             </h1>
-            <p className="text-muted-foreground mt-1">High-Probability Exact Scoreline Vectors &amp; Bivariate Poisson Matrices · 60%+ confidence threshold</p>
+            <p className="text-slate-300 text-xs sm:text-sm mt-1">
+              Most probable exact scoreline projections (1-0, 2-1, 1-1, 2-0) derived from club attacking and defensive Expected Goals (xG) rates.
+            </p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetch_} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetch_}
+            disabled={loading}
+            className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
           </Button>
         </div>
-
-        <AdBannerHorizontal className="mb-6" />
 
         {loading ? (
           <CorrectScoreListSkeleton count={6} />

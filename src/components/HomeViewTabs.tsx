@@ -13,74 +13,44 @@ interface HomeViewTabsProps {
 export const HomeViewTabs: React.FC<HomeViewTabsProps> = ({
   activeMode,
   onModeChange,
-  matchesCount = 24,
-  liveCount = 0,
 }) => {
   const tabs: Array<{
     id: HomeViewMode;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
-    count?: number;
-    badgeText?: string;
   }> = [
-    { id: 'predictions', label: 'Predictions Feed', icon: Trophy, count: matchesCount },
-    { id: 'live', label: 'Live & In-Play', icon: Zap, badgeText: liveCount > 0 ? `${liveCount} Live` : 'Live' },
-    { id: 'slips', label: 'Smart Slips & Accas', icon: Layers, badgeText: 'AI Slip' },
-    { id: 'news', label: 'News & Lineups', icon: Newspaper },
-    { id: 'archive', label: 'Results & Archive', icon: Archive },
-    { id: 'all', label: 'All Modules', icon: LayoutList, badgeText: 'Full' },
+    { id: 'predictions', label: 'Fixtures & Odds', icon: Trophy },
+    { id: 'live', label: 'In-Play & TV', icon: Zap },
+    { id: 'slips', label: 'Acca Builder', icon: Layers },
+    { id: 'news', label: 'Lineups & News', icon: Newspaper },
+    { id: 'archive', label: 'Results', icon: Archive },
+    { id: 'all', label: 'All Views', icon: LayoutList },
   ];
 
   return (
-    <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-md border-b border-border/80 shadow-xs py-2 px-2 sm:px-4">
-      <div className="container mx-auto max-w-6xl">
-        <div className="flex items-center justify-between gap-2">
-          {/* Scrollable Tabs on Mobile */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeMode === tab.id;
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-4">
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Workspace view modes">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeMode === tab.id;
 
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => onModeChange(tab.id)}
-                  aria-pressed={isActive}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                  }`}
-                >
-                  <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
-                  <span>{tab.label}</span>
-                  {tab.count !== undefined && tab.count > 0 && (
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isActive
-                          ? 'bg-primary-foreground/20 text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
-                  {tab.badgeText && (
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isActive
-                          ? 'bg-primary-foreground/20 text-primary-foreground'
-                          : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
-                      }`}
-                    >
-                      {tab.badgeText}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onModeChange(tab.id)}
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 shrink-0 ${
+                isActive
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

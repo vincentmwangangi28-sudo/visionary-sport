@@ -133,27 +133,24 @@ export default function BTTS() {
       />
 
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
         {/* Visual Breadcrumb Trail */}
-        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
-          <span className="text-foreground font-medium">BTTS AI Prediction Today</span>
+          <span className="text-foreground font-medium">BTTS (Both Teams To Score) &amp; Over 2.5 Goals</span>
         </nav>
 
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-semibold">
-                <Sparkles className="h-3 w-3 mr-1" /> Google Top Search Topic · 55% CTR
-              </Badge>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-3 mt-1">
-              <BarChart2 className="h-8 w-8 text-primary" />
-              BTTS AI Prediction Today (Both Teams To Score)
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-4">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              Goal Expectancy Matrix · Attacking xG vs Defensive xGA
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Both Teams To Score (BTTS) &amp; Over 2.5 Goals
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Poisson goal expectancy &amp; defensive vulnerability modeling · Refreshed hourly
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              Bivariate Poisson goal expectancy and defensive concession probabilities across 40+ leagues.
             </p>
           </div>
           <Button 
@@ -161,21 +158,21 @@ export default function BTTS() {
             size="sm" 
             onClick={fetch_} 
             disabled={loading} 
-            className="gap-1.5 text-xs font-semibold"
+            className="gap-1.5 text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
             aria-label="Refresh BTTS Prediction Model"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
-            <span>Refresh Model</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+            <span>Refresh Data</span>
           </Button>
         </div>
 
-        {/* High Equity Cross-Linking Banner */}
-        <div className="mb-6 p-3.5 rounded-xl bg-muted/40 border text-xs flex flex-wrap items-center justify-between gap-3">
+        {/* Cross-Linking Banner */}
+        <div className="p-3.5 rounded-xl bg-card border border-border text-xs flex flex-wrap items-center justify-between gap-3">
           <span className="text-muted-foreground">
-            Explore related goal &amp; outcome markets: Check <Link to="/correct-score" className="font-bold text-primary underline">Exact Correct Score Poisson Matrices</Link>, <Link to="/value-bets" className="font-bold text-primary underline">Daily Positive Expected Value (+EV) Bets</Link>, or read our <Link to="/blog/btts-over-under-strategy" className="font-bold text-primary underline">BTTS &amp; Over 2.5 Poisson Strategy Guide</Link>.
+            Explore related goal &amp; outcome markets: Check <Link to="/correct-score" className="font-bold text-primary underline">Correct Score Matrices</Link>, <Link to="/value-bets" className="font-bold text-primary underline">Daily Value Bets (+EV)</Link>, or read our <Link to="/blog/btts-over-under-strategy" className="font-bold text-primary underline">BTTS &amp; Over 2.5 Strategy Guide</Link>.
           </span>
           <Link to="/accumulator" className="text-primary font-bold hover:underline flex items-center gap-1">
-            Build 5-Fold BTTS Accumulator Slip &rarr;
+            Build 5-Fold Goals Accumulator Slip &rarr;
           </Link>
         </div>
 

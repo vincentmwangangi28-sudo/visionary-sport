@@ -15,7 +15,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { OfflineBanner } from "@/components/OfflineBanner";
-import { SiteAnnouncementBanner } from "@/components/SiteAnnouncementBanner";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { queryClient } from "@/lib/queryClient";
@@ -31,10 +30,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 
 const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
 const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
-const AIChatbot = lazyWithRetry(() => import("@/components/AIChatbot").then(m => ({ default: m.AIChatbot })));
-const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
-const FirstVisitSignupModal = lazyWithRetry(() => import("@/components/FirstVisitSignupModal").then(m => ({ default: m.FirstVisitSignupModal })));
-const BackToTop = lazyWithRetry(() => import("@/components/BackToTop").then(m => ({ default: m.BackToTop })));
 
 import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -424,23 +419,7 @@ const DeferredGlobalOverlays = () => {
       </Suspense>
       <Suspense fallback={null}>
         <ErrorBoundary fallback={null}>
-          <AIChatbot />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <PWAInstallPrompt />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <FirstVisitSignupModal />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
           <Sonner />
-          <BackToTop />
         </ErrorBoundary>
       </Suspense>
     </>
@@ -468,7 +447,6 @@ const App = () => (
                         Skip to content
                       </a>
                       <OfflineBanner />
-                      <SiteAnnouncementBanner />
                       <BreadcrumbLayoutSchema />
                       <CookieConsentBanner />
                       <Suspense fallback={<RouteLoadingFallback />}>

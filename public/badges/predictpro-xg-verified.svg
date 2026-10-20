@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="60" viewBox="0 0 260 60" fill="none">
+  <rect width="260" height="60" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1.5"/>
+  <rect x="12" y="14" width="32" height="32" rx="8" fill="#16A34A"/>
+  <path d="M21 31L26 36L36 24" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="54" y="26" fill="#22C55E" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="800" letter-spacing="0.08em">VERIFIED XG TELEMETRY</text>
+  <text x="54" y="43" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="800">PredictPro.guru Analytics</text>
+</svg>

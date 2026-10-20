@@ -1,41 +1,24 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { 
-  Menu, 
-  LogOut, 
-  Flame, 
-  Activity, 
-  TrendingUp, 
-  TrendingDown, 
-  Calculator, 
-  Users, 
-  Wallet, 
-  Newspaper, 
-  BarChart2, 
-  Trophy, 
-  ShoppingBag, 
-  Gift, 
-  Zap, 
-  Info, 
-  Search, 
-  CheckCircle2, 
-  SlidersHorizontal, 
-  ShieldCheck, 
-  Layers,
-  Globe,
-  Sparkles,
-  Settings,
-  Pin,
+import {
+  Menu,
+  LogOut,
+  SlidersHorizontal,
+  Shield,
+  Ticket,
   ChevronDown,
-  ArrowLeftRight,
-  BookOpen,
-  Calendar,
-  Map,
-  Database,
-  ShieldAlert
+  Sun,
+  Moon,
 } from "lucide-react";
-import { hapticService } from "@/services/hapticService";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
+import { useBetSlip } from "@/hooks/useBetSlip";
+import { useUserPreferences, OddsFormat } from "@/hooks/useUserPreferences";
+import { UnifiedSearchTrigger } from "@/components/UnifiedSearchTrigger";
+import { GeoRegionSelector } from "@/components/GeoRegionSelector";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,526 +27,380 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { useAdmin } from "@/hooks/useAdmin";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { LEAGUE_HUBS } from "@/data/leagueHubs";
-import { UnifiedSearchTrigger } from "./UnifiedSearchTrigger";
-import { PWAInstallButton } from "./PWAInstallButton";
-import { CoinBalance } from "./CoinBalance";
-import { NotificationBell } from "./NotificationBell";
+
+const CORE_LINKS = [
+  { to: "/", label: "Matches" },
+  { to: "/live", label: "Live Scores", isLive: true },
+  { to: "/standings", label: "Standings" },
+  { to: "/tournaments", label: "Leagues" },
+  { to: "/screener", label: "Stats Screener" },
+  { to: "/accumulator", label: "Acca Builder" },
+];
+
+const MORE_CATEGORIES = [
+  {
+    heading: "Top Competitions",
+    items: [
+      { to: "/premier-league-predictions", label: "Premier League" },
+      { to: "/champions-league-predictions", label: "UEFA Champions League" },
+      { to: "/la-liga-predictions", label: "Spanish LaLiga" },
+      { to: "/serie-a-predictions", label: "Italian Serie A" },
+      { to: "/bundesliga-predictions", label: "German Bundesliga" },
+      { to: "/ligue-1-predictions", label: "French Ligue 1" },
+      { to: "/kpl-predictions", label: "FKF Premier League" },
+      { to: "/mls-predictions", label: "Major League Soccer" },
+    ],
+  },
+  {
+    heading: "Statistical Markets",
+    items: [
+      { to: "/sure-win-predictions", label: "High Probability (80%+)" },
+      { to: "/both-teams-to-score-and-win-predictions", label: "BTTS & Win" },
+      { to: "/over-under-predictions", label: "Over / Under 2.5 Goals" },
+      { to: "/correct-score", label: "Exact Correct Score" },
+      { to: "/draw-no-bet-predictions", label: "Draw No Bet (DNB)" },
+      { to: "/asian-handicap-predictions", label: "Asian Handicap" },
+      { to: "/jackpot-predictions", label: "17-Game Mega Jackpot" },
+    ],
+  },
+  {
+    heading: "Pro Tools & Data",
+    items: [
+      { to: "/h2h", label: "Head-to-Head Simulator" },
+      { to: "/players", label: "Player 10.0 Ratings" },
+      { to: "/teams", label: "Club xG & Form Hub" },
+      { to: "/streaks", label: "Winning Streaks Radar" },
+      { to: "/dropping-odds", label: "Dropping Odds Movement" },
+      { to: "/value-bet-calculator", label: "Value (+EV) Calculator" },
+      { to: "/archive", label: "Settled Results Archive" },
+    ],
+  },
+];
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
-  const { t } = useUserPreferences();
-  const location = useLocation();
+  const { selections, setIsOpen: setSlipOpen } = useBetSlip();
+  const { preferences, setOddsFormat } = useUserPreferences();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
-  const navLinks = [
-    ...(isAdmin ? [{ to: "/admin", label: "Admin Operations", icon: ShieldCheck, protected: true }] : []),
-    { to: "/",              label: t('nav.predictions', "Predictions"),    icon: Zap },
-    { to: "/upcoming",      label: "Upcoming Fixtures",                   icon: Calendar },
-    { to: "/dashboard",     label: "My Dashboard",                        icon: Pin },
-    { to: "/recommendations", label: "AI Recommended",                    icon: Sparkles },
-    { to: "/tournaments",   label: "Global Tournaments",                  icon: Globe },
-    { to: "/screener",      label: t('nav.screener', "Match Screener"), icon: SlidersHorizontal },
-    { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds"),  icon: TrendingDown },
-    { to: "/track-record",  label: t('nav.track_record', "Track Record"),   icon: ShieldCheck },
-    { to: "/value-bets",    label: t('nav.value_bets', "Value Bets"),     icon: TrendingUp },
-    { to: "/streaks",       label: "Streaks & Trends Radar",              icon: Flame },
-    { to: "/teams",         label: "Club xG & FDR Hub",                   icon: BarChart2 },
-    { to: "/h2h",           label: "H2H Matchup Simulator",               icon: ArrowLeftRight },
-    { to: "/archive",       label: t('nav.archive', "Results Archive"),icon: CheckCircle2 },
-    { to: "/live",          label: t('nav.live', "Live Scores"),    icon: Activity },
-    { to: "/accumulator",   label: t('nav.acca', "Acca Builder"),   icon: Calculator },
-    { to: "/correct-score", label: t('nav.correct_score', "Correct Score"),  icon: Layers },
-    { to: "/btts",          label: t('nav.btts', "BTTS (GG)"),      icon: Flame },
-    { to: "/blog",          label: "Strategy Blog Hub",                   icon: BookOpen },
-    { to: "/premier-league-predictions", label: "Premier League Tips",     icon: Trophy },
-    { to: "/champions-league-predictions", label: "Champions League",      icon: Trophy },
-    { to: "/la-liga-predictions", label: "La Liga Predictions",           icon: Trophy },
-    { to: "/bundesliga-predictions", label: "Bundesliga Analysis",        icon: Trophy },
-    { to: "/serie-a-predictions", label: "Serie A Predictions",           icon: Trophy },
-    { to: "/kpl-predictions", label: "Kenya Premier League",              icon: Trophy },
-    { to: "/jackpot-predictions", label: "Mega Jackpot Picks",            icon: Trophy },
-    { to: "/us-soccer-predictions", label: "US Soccer & MLS",             icon: Trophy },
-    { to: "/world-cup-predictions", label: "FIFA World Cup",              icon: Globe },
-    { to: "/afcon-predictions", label: "AFCON Predictions",               icon: Globe },
-    { to: "/tipsters",      label: t('nav.tipsters', "Tipsters"),       icon: Users },
-    { to: "/bankroll",      label: t('nav.bankroll', "Bankroll"),       icon: Wallet },
-    { to: "/leaderboard",   label: t('nav.leaderboard', "Leaderboard"),    icon: Trophy },
-    { to: "/news",          label: t('nav.news', "News"),           icon: Newspaper },
-    { to: "/insights",      label: t('nav.insights', "Insights"),       icon: BarChart2 },
-    { to: "/statistics",    label: "H2H Statistics",                     icon: BarChart2 },
-    { to: "/highlights",    label: "Video Highlights",                   icon: Activity },
-    { to: "/sports",        label: "Multi-Sports",                       icon: Globe },
-    { to: "/performance",   label: t('nav.performance', "Performance"),    icon: BarChart2, protected: true },
-    { to: "/rewards",       label: t('nav.rewards', "Rewards"),        icon: Gift, protected: true },
-    { to: "/best-bets",     label: t('nav.best_bets', "Best Bets"),      icon: Flame },
-    { to: "/predict",       label: t('nav.predictor', "Predictor"),      icon: Zap },
-    { to: "/standings",     label: t('nav.standings', "Standings"),       icon: Trophy },
-    { to: "/players",       label: t('nav.players', "Player Search"),  icon: Search },
-    { to: "/sitemap",       label: "HTML Sitemap",                       icon: Map },
-    { to: "/preferences",   label: t('nav.preferences', "Preferences"),  icon: SlidersHorizontal },
-    { to: "/methodology",   label: "Methodology",    icon: ShieldCheck },
-    { to: "/responsible-gaming", label: "18+ Responsible Gaming", icon: ShieldAlert },
-    { to: "/about",         label: "About",          icon: Info },
-  ];
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
 
-  const primaryDesktopLinks = [
-    { to: "/",              label: t('nav.predictions', "Predictions") },
-    { to: "/upcoming",      label: "Upcoming" },
-    { to: "/recommendations", label: "AI Picks" },
-    { to: "/value-bets",    label: t('nav.value_bets', "Value Bets") },
-    { to: "/live",          label: t('nav.live', "Live"), isLive: true },
-    { to: "/accumulator",   label: t('nav.acca', "Acca Builder") },
-  ];
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    const nextDark = !root.classList.contains("dark");
+    if (nextDark) {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+    setIsDark(nextDark);
+  };
 
-  const extendedDesktopLinks = [
-    { to: "/teams",         label: "Club xG Hub" },
-    { to: "/streaks",       label: "Streaks Radar" },
-    { to: "/dropping-odds", label: t('nav.dropping_odds', "Dropping Odds") },
-    { to: "/tournaments",   label: "Tournaments" },
-    { to: "/track-record",  label: t('nav.track_record', "Track Record") },
-  ];
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out");
+    navigate("/");
+  };
 
-  const visibleLinks = navLinks.filter(l => !l.protected || user);
+  const isActive = (path: string) =>
+    path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(path + "/");
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-xl border-b border-border">
-      <div className="container mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-16 gap-2">
-          {/* Logo & Prominent 18+ Warning Icon */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2 group min-h-[42px]">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shadow-sm group-hover:scale-105 transition-transform">PP</div>
-              <span className="text-lg font-bold hidden sm:block tracking-tight">PredictPro</span>
-            </Link>
-            <Link
-              to="/responsible-gaming"
-              title="18+ Age Restriction Policy — Strictly for Adults Only (Never Intended for Minors)"
-              aria-label="18+ Age Restriction Warning — View Responsible Gaming Policy"
-              className="inline-flex items-center justify-center gap-1 rounded-full bg-rose-700 hover:bg-rose-800 text-white px-2.5 py-1.5 min-h-[36px] min-w-[44px] text-[11px] font-black tracking-tight shadow-xs ring-1 ring-rose-400/50 transition-transform hover:scale-105 select-none"
-            >
-              <ShieldAlert className="h-3 w-3 shrink-0 text-white" aria-hidden="true" />
-              <span>18+</span>
-            </Link>
-          </div>
+    <header className="sticky top-0 z-50 bg-slate-900 text-white border-b border-slate-800 shadow-xs">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between h-14 gap-5">
+          {/* ZONE 1: Broadcast Brand Wordmark */}
+          <Link to="/" className="flex items-center gap-2 shrink-0 group">
+            <span className="h-7 w-7 rounded-md bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center tracking-tighter">
+              PP
+            </span>
+            <span className="font-extrabold text-lg tracking-tight text-white">
+              Predict<span className="text-emerald-400">Pro</span>
+            </span>
+          </Link>
 
-          {/* Desktop nav (responsive for both tablets/laptops md: and wide desktops xl:) */}
-          <nav className="hidden md:flex items-center gap-1 xl:gap-1.5" aria-label="Main Navigation">
-            {primaryDesktopLinks.map(({ to, label, isLive }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`relative text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:text-primary ${
-                  location.pathname === to
-                    ? 'text-primary bg-primary/10 font-bold'
-                    : 'text-muted-foreground hover:bg-muted/50'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  {label}
-                  {isLive && (
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                  )}
-                </span>
-              </Link>
-            ))}
-
-            {/* Extended links visible on large desktop viewports */}
-            {extendedDesktopLinks.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`hidden xl:inline-flex text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:text-primary ${
-                  location.pathname === to
-                    ? 'text-primary bg-primary/10 font-bold'
-                    : 'text-muted-foreground hover:bg-muted/50'
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
-
-            {/* Desktop Leagues Hub Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  aria-label="League Prediction Hubs"
+          {/* ZONE 2: Primary Broadcast Navigation */}
+          <nav
+            aria-label="Primary Navigation"
+            className="hidden lg:flex items-center gap-1 flex-1"
+          >
+            {CORE_LINKS.map(({ to, label, isLive }) => {
+              const active = isActive(to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`px-3 py-1.5 rounded-md text-[13px] transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                    active
+                      ? "bg-emerald-500 text-slate-950 font-bold"
+                      : "text-slate-300 hover:text-white hover:bg-slate-800 font-medium"
+                  }`}
                 >
-                  <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                  <span>Leagues</span>
-                  <ChevronDown className="h-3 w-3 opacity-60" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64 p-1.5 shadow-xl bg-popover/95 backdrop-blur-md">
-                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
-                  League Prediction Hubs
-                </DropdownMenuLabel>
-                {LEAGUE_HUBS.map((league) => (
-                  <DropdownMenuItem key={league.to} asChild>
-                    <Link to={league.to} className="flex items-center gap-2.5 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                      <span className="text-sm">{league.flag}</span>
-                      <span className="font-medium">{league.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {isLive && (
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        active ? "bg-slate-950" : "bg-emerald-400 animate-pulse"
+                      }`}
+                    />
+                  )}
+                  <span>{label}</span>
+                </Link>
+              );
+            })}
 
-            {/* Desktop Quick Directory Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  aria-label="More navigation links"
+                  className="px-3 py-1.5 rounded-md text-[13px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors inline-flex items-center gap-1 whitespace-nowrap cursor-pointer"
                 >
                   <span>More</span>
-                  <ChevronDown className="h-3 w-3 opacity-60" />
+                  <ChevronDown className="h-3.5 w-3.5 opacity-70" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-60 p-1.5 shadow-xl bg-popover/95 backdrop-blur-md">
-                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
-                  Markets & Radar
-                </DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <Link to="/screener" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <SlidersHorizontal className="h-3.5 w-3.5 text-purple-500" />
-                    <span>Match Screener</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/streaks" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Flame className="h-3.5 w-3.5 text-orange-500" />
-                    <span>Streaks &amp; Trends Radar</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/h2h" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <ArrowLeftRight className="h-3.5 w-3.5 text-sky-500" />
-                    <span>H2H Matchup Simulator</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/btts" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Flame className="h-3.5 w-3.5 text-amber-500" />
-                    <span>BTTS (Both Teams Score)</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/correct-score" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Layers className="h-3.5 w-3.5 text-blue-500" />
-                    <span>Correct Score Matrices</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/dropping-odds" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <TrendingDown className="h-3.5 w-3.5 text-red-500" />
-                    <span>Dropping Odds Radar</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/tournaments" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Globe className="h-3.5 w-3.5 text-amber-500" />
-                    <span>Global Tournaments</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
-                  Strategy & Insights
-                </DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <Link to="/blog" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer font-semibold text-primary">
-                    <BookOpen className="h-3.5 w-3.5 text-primary" />
-                    <span>Strategy Blog &amp; Guides</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/track-record" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>Verified Track Record</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/standings" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                    <span>League Standings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/statistics" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <BarChart2 className="h-3.5 w-3.5 text-cyan-500" />
-                    <span>H2H Statistics</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/players" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Search className="h-3.5 w-3.5 text-indigo-500" />
-                    <span>Player Search</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/highlights" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Activity className="h-3.5 w-3.5 text-rose-500" />
-                    <span>Video Highlights</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/tipsters" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Users className="h-3.5 w-3.5 text-green-500" />
-                    <span>Verified Tipsters</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/archive" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>Results Archive</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/methodology" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                    <span>Mathematical Methodology</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/sitemap" className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer">
-                    <Map className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>HTML Sitemap</span>
-                  </Link>
-                </DropdownMenuItem>
+              <DropdownMenuContent align="start" className="w-[560px] p-4 grid grid-cols-3 gap-4">
+                {MORE_CATEGORIES.map((cat) => (
+                  <div key={cat.heading} className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-primary px-2">
+                      {cat.heading}
+                    </p>
+                    <div className="space-y-0.5">
+                      {cat.items.map((item) => (
+                        <DropdownMenuItem key={item.to} asChild className="cursor-pointer py-1.5 px-2 text-xs">
+                          <Link
+                            to={item.to}
+                            className={`w-full ${
+                              isActive(item.to) ? "font-bold text-primary" : "text-foreground/85"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>
 
-          {/* Unified Global Search Trigger */}
-          <div className="hidden lg:flex items-center">
-            <UnifiedSearchTrigger variant="full" className="w-48 xl:w-64" />
-          </div>
+          {/* ZONE 3: Search, Slip & Settings */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Suspense fallback={null}>
+              <UnifiedSearchTrigger variant="pill" />
+            </Suspense>
 
-          {/* Global Controls & Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Mobile / Tablet search icon button */}
-            <div className="lg:hidden">
-              <UnifiedSearchTrigger variant="icon" />
-            </div>
+            {/* Match Slip Trigger */}
+            <button
+              type="button"
+              onClick={() => setSlipOpen(true)}
+              aria-label={`Open Match Slip (${selections.length} selections)`}
+              className={`h-8 px-3 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 border transition-colors cursor-pointer ${
+                selections.length > 0
+                  ? "bg-amber-400 text-slate-950 border-amber-400 font-bold"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+              }`}
+            >
+              <Ticket className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Slip</span>
+              <span className="font-mono tabular-nums text-[11px]">({selections.length})</span>
+            </button>
 
-            {/* PWA In-App Install Button */}
-            <div className="hidden sm:flex items-center">
-              <PWAInstallButton variant="outline" size="sm" />
-            </div>
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              className="h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800"
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
 
-            {/* Quick My Dashboard Shortcut */}
-            <Link to="/dashboard" title="Personalized Match Dashboard & Pinned Stats">
-              <Button
-                variant={location.pathname === '/dashboard' ? 'default' : 'ghost'}
-                size="sm"
-                className={`h-10 min-h-[42px] min-w-[42px] gap-1.5 text-xs font-semibold px-2.5 ${
-                  location.pathname === '/dashboard'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                aria-label="Open Personalized Dashboard"
-              >
-                <Pin className="h-4 w-4 fill-current" />
-                <span className="hidden md:inline">My Dashboard</span>
-              </Button>
-            </Link>
-
-            {/* Quick Preferences Shortcut */}
-            <Link to="/preferences" title="Customize Strategy, Region, Odds & Currency">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 min-h-[42px] min-w-[42px] text-muted-foreground hover:text-foreground"
-                aria-label="Open Preferences and Regional Settings"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-
-            {/* Quick Admin Shortcut strictly for Vincent Mwangangi */}
-            {isAdmin && (
-              <Link to="/admin" title="PredictPro Admin Operations Hub">
-                <Button
-                  variant={location.pathname === '/admin' ? 'default' : 'outline'}
-                  size="sm"
-                  className={`h-8 gap-1.5 text-xs font-semibold px-2.5 ${
-                    location.pathname === '/admin'
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'
-                      : 'text-emerald-500 hover:text-emerald-600 border-emerald-500/30 bg-emerald-500/5'
-                  }`}
-                  aria-label="Open Admin Dashboard"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Admin</span>
-                </Button>
-              </Link>
-            )}
-
-            {user ? (
-              <Suspense fallback={null}>
-                <CoinBalance />
-                <NotificationBell />
-                <Button variant="outline" size="sm" onClick={signOut} className="gap-1.5 hidden sm:flex">
-                  <LogOut className="h-4 w-4" />{t('nav.signout', 'Sign Out')}
-                </Button>
-              </Suspense>
-            ) : (
-              <Link to="/auth"><Button variant="default" size="sm">{t('nav.signin', 'Sign In')}</Button></Link>
-            )}
-
-            {/* Mobile / All links drawer */}
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
+            {/* Display Settings Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Open navigation menu"
-                  onClick={() => hapticService.menuTap()}
+                  aria-label="Odds format and regional settings"
+                  className="hidden sm:inline-flex h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800"
                 >
-                  <Menu className="h-5 w-5" />
+                  <SlidersHorizontal className="h-4 w-4" />
                 </Button>
-              </SheetTrigger>
-              {open && (
-              <SheetContent side="right" className="w-80 overflow-y-auto p-4 flex flex-col">
-                <SheetHeader className="text-left pb-2 border-b">
-                  <SheetTitle className="text-base font-bold flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-black">PP</div>
-                    <span>PredictPro Global</span>
-                    <Link
-                      to="/responsible-gaming"
-                      onClick={() => {
-                        hapticService.menuTap();
-                        setOpen(false);
-                      }}
-                      title="18+ Age Restriction Policy"
-                      className="inline-flex items-center gap-1 rounded-full bg-rose-600 text-white px-2 py-0.5 text-[10px] font-black shadow-xs"
-                    >
-                      <ShieldAlert className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
-                      <span>18+</span>
-                    </Link>
-                  </SheetTitle>
-                </SheetHeader>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60 p-3 space-y-3">
+                <DropdownMenuLabel className="p-0 text-xs font-semibold text-foreground">
+                  Display Preferences
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
 
-                {/* Mobile Search Trigger */}
-                <div className="mt-3">
-                  <UnifiedSearchTrigger
-                    variant="full"
-                    placeholder="Search matches, leagues, teams..."
-                    className="w-full max-w-none"
-                  />
-                </div>
-
-                {/* Mobile Dashboard & Preferences Shortcuts */}
-                <div className="my-3 space-y-2">
-                  <div className="w-full">
-                    <PWAInstallButton className="w-full justify-center" size="sm" variant="outline" />
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-medium text-muted-foreground block">
+                    Odds Format
+                  </span>
+                  <div className="grid grid-cols-4 gap-1 bg-muted p-1 rounded-md">
+                    {(
+                      [
+                        { id: "decimal", label: "1.85" },
+                        { id: "probabilities", label: "%" },
+                        { id: "fractional", label: "5/6" },
+                        { id: "american", label: "+120" },
+                      ] as { id: OddsFormat; label: string }[]
+                    ).map((fmt) => (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        onClick={() => setOddsFormat(fmt.id)}
+                        className={`py-1 rounded text-[11px] font-mono tabular-nums font-medium transition-colors ${
+                          preferences.oddsFormat === fmt.id
+                            ? "bg-primary text-primary-foreground font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {fmt.label}
+                      </button>
+                    ))}
                   </div>
-                  <Link
-                    to="/dashboard"
-                    onClick={() => {
-                      hapticService.menuTap();
-                      setOpen(false);
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl border bg-primary/5 border-primary/20 hover:bg-primary/10 transition-colors text-xs font-semibold text-foreground"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Pin className="h-4 w-4 text-primary fill-primary/30" />
-                      My Pinned Dashboard
-                    </span>
-                    <span className="text-[10px] text-primary font-bold">Open &rarr;</span>
-                  </Link>
-                  <Link
-                    to="/preferences"
-                    onClick={() => {
-                      hapticService.menuTap();
-                      setOpen(false);
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors text-xs font-semibold text-foreground"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Settings className="h-4 w-4 text-primary" />
-                      Preferences &amp; Regional Settings
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">Configure</span>
-                  </Link>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      hapticService.menuTap();
-                      setOpen(false);
-                      window.openSupabaseWalkthrough?.();
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors text-xs font-semibold text-foreground text-left w-full"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Database className="h-4 w-4 text-primary" />
-                      Supabase Environment &amp; Session Setup
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">Setup</span>
-                  </button>
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-medium text-muted-foreground block">
+                    Region
+                  </span>
+                  <GeoRegionSelector variant="compact" />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
+            {/* Auth Control */}
+            <div className="hidden md:flex items-center gap-1.5">
+              {user ? (
+                <>
                   {isAdmin && (
-                    <Link
-                      to="/admin"
-                      onClick={() => {
-                        hapticService.menuTap();
-                        setOpen(false);
-                      }}
-                      className="flex items-center justify-between p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 transition-colors text-xs font-semibold text-foreground"
-                    >
-                      <span className="flex items-center gap-2 text-emerald-500">
-                        <ShieldCheck className="h-4 w-4" />
-                        Admin Operations Hub
-                      </span>
-                      <span className="text-[10px] text-emerald-500 font-bold">Open &rarr;</span>
+                    <Link to="/admin">
+                      <Button variant="outline" size="sm" className="h-8 text-xs gap-1 bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                        <Shield className="h-3.5 w-3.5" /> Admin
+                      </Button>
                     </Link>
                   )}
-                </div>
-
-                <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
-                  {visibleLinks.map(({ to, label, icon: Icon }) => (
-                    <Link
-                      key={to}
-                      to={to}
-                      onClick={() => {
-                        hapticService.menuTap();
-                        setOpen(false);
-                      }}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        location.pathname === to
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {label}
-                    </Link>
-                  ))}
-                  {user && (
-                    <Button variant="ghost" size="sm" onClick={() => { hapticService.menuTap(); signOut(); setOpen(false); }} className="justify-start gap-3 px-3 mt-2 text-muted-foreground">
-                      <LogOut className="h-4 w-4" />{t('nav.signout', 'Sign Out')}
-                    </Button>
-                  )}
-                </div>
-              </SheetContent>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSignOut}
+                    aria-label="Sign out"
+                    className="h-8 w-8 text-slate-300 hover:text-white hover:bg-slate-800"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth">
+                  <Button size="sm" className="h-8 px-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950">
+                    Sign In
+                  </Button>
+                </Link>
               )}
-            </Sheet>
+            </div>
+
+            {/* Mobile Drawer Trigger */}
+            <div className="lg:hidden">
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Open navigation menu" className="h-8 w-8 text-slate-200 hover:text-white hover:bg-slate-800">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[340px] overflow-y-auto p-5">
+                  <SheetHeader className="text-left pb-4 border-b border-border">
+                    <SheetTitle className="text-base font-extrabold">
+                      Predict<span className="text-primary">Pro</span>
+                    </SheetTitle>
+                  </SheetHeader>
+
+                  <div className="py-4 space-y-5">
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-muted-foreground px-2 mb-1">
+                        Navigation
+                      </p>
+                      {CORE_LINKS.map(({ to, label }) => (
+                        <Link
+                          key={to}
+                          to={to}
+                          onClick={() => setOpen(false)}
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-md text-sm font-medium transition-colors ${
+                            isActive(to)
+                              ? "bg-primary text-primary-foreground font-bold"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          }`}
+                        >
+                          <span>{label}</span>
+                        </Link>
+                      ))}
+                    </div>
+
+                    {MORE_CATEGORIES.map((cat) => (
+                      <div key={cat.heading} className="space-y-1">
+                        <p className="text-xs font-semibold text-primary px-2 mb-1">
+                          {cat.heading}
+                        </p>
+                        <div className="grid grid-cols-1 gap-0.5">
+                          {cat.items.map(({ to, label }) => (
+                            <Link
+                              key={to}
+                              to={to}
+                              onClick={() => setOpen(false)}
+                              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                                isActive(to)
+                                  ? "bg-primary/10 text-primary font-bold"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                              }`}
+                            >
+                              {label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="pt-4 border-t border-border">
+                      {user ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setOpen(false);
+                            handleSignOut();
+                          }}
+                          className="w-full justify-center gap-2 text-xs"
+                        >
+                          <LogOut className="h-3.5 w-3.5" /> Sign Out
+                        </Button>
+                      ) : (
+                        <Link to="/auth" onClick={() => setOpen(false)}>
+                          <Button size="sm" className="w-full text-xs font-bold">
+                            Sign In
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
     </header>
   );
 };
-

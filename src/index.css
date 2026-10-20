@@ -2,148 +2,140 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Pro Sports Broadcast & Analytics Design System (FotMob / Sofascore / Sky Sports) */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Cool slate-gray canvas (#F1F5F9) so pure white match tables & widgets pop */
+    --background: 214 32% 96%;
+    --foreground: 222 47% 11%;
 
+    /* Pure white elevated cards & fixture tables (#FFFFFF) */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Pitch Green - Primary brand color (WCAG AA compliant contrast ratio >= 5.8:1 with white and light surfaces) */
-    --primary: 142 76% 25%;
+    /* Authentic Pitch Turf Green (#16A34A) for brand highlights, selected odds & active states */
+    --primary: 142 72% 35%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 76% 36%;
 
-    /* Victory Gold - Secondary accent */
-    --secondary: 38 92% 48%;
-    --secondary-foreground: 0 0% 0%;
+    /* Crisp cool slate for secondary buttons & odds cells */
+    --secondary: 214 25% 93%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 240 4.8% 95.5%;
-    --muted-foreground: 240 6% 28%;
+    --muted: 214 25% 93%;
+    --muted-foreground: 215 18% 42%;
 
-    /* Kenyan Red - Accent color */
-    --accent: 0 78% 46%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 142 60% 94%;
+    --accent-foreground: 142 76% 24%;
 
-    --destructive: 0 78% 46%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 88%;
-    --input: 240 5.9% 88%;
-    --ring: 142 76% 25%;
+    /* Defined 1px table & card borders */
+    --border: 214 24% 87%;
+    --input: 214 24% 87%;
+    --ring: 142 72% 35%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Gradients */
-    --gradient-victory: linear-gradient(135deg, hsl(142 76% 25%), hsl(142 76% 36%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 25%), hsl(38 92% 48%));
-    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 25% / 0.1), hsl(142 76% 25% / 0));
-    
-    /* Shadows */
-    --shadow-glow: 0 0 40px hsl(142 76% 36% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(240 10% 3.9% / 0.1);
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 142 72% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 25% 93%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 24% 87%;
+    --sidebar-ring: 142 72% 35%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Deep stadium floodlight slate canvas (#0B0F17) */
+    --background: 222 38% 7%;
+    --foreground: 210 25% 96%;
 
-    --card: 240 6% 10%;
-    --card-foreground: 0 0% 98%;
+    /* Elevated dark slate match cards (#131A26) */
+    --card: 220 32% 11%;
+    --card-foreground: 210 25% 96%;
 
-    --popover: 240 6% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 32% 11%;
+    --popover-foreground: 210 25% 96%;
 
+    /* Floodlight Pitch Green (#22C55E) in dark mode */
     --primary: 142 70% 45%;
-    --primary-foreground: 240 10% 3.9%;
-    --primary-glow: 142 70% 52%;
+    --primary-foreground: 222 47% 7%;
 
-    --secondary: 38 92% 50%;
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 218 25% 16%;
+    --secondary-foreground: 210 20% 92%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 72%;
+    --muted: 218 25% 15%;
+    --muted-foreground: 215 16% 64%;
 
-    --accent: 0 84% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 142 50% 16%;
+    --accent-foreground: 142 70% 65%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 3.7% 18%;
-    --input: 240 3.7% 18%;
+    --border: 218 22% 19%;
+    --input: 218 22% 19%;
     --ring: 142 70% 45%;
 
-    /* Dark mode gradients */
-    --gradient-victory: linear-gradient(135deg, hsl(142 76% 28%), hsl(142 76% 38%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 28%), hsl(38 92% 50%));
-    --gradient-prediction: linear-gradient(180deg, hsl(142 76% 28% / 0.15), hsl(142 76% 28% / 0));
-    
-    /* Dark shadows */
-    --shadow-glow: 0 0 50px hsl(142 76% 38% / 0.4);
-    --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.5);
+    --sidebar-background: 220 32% 10%;
+    --sidebar-foreground: 210 20% 92%;
+    --sidebar-primary: 142 70% 45%;
+    --sidebar-primary-foreground: 222 47% 7%;
+    --sidebar-accent: 218 25% 15%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 218 22% 19%;
+    --sidebar-ring: 142 70% 45%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
-    -webkit-tap-highlight-color: transparent;
   }
 
   html {
-    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-foreground;
-    touch-action: manipulation;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  button, a, input, select {
-    touch-action: manipulation;
-  }
-  
-  /* Hover effects */
-  .hover-lift {
-    @apply transition-transform duration-300 hover:scale-105 hover:shadow-card;
-  }
-  
-  .hover-glow {
-    @apply transition-all duration-300 hover:shadow-glow;
-  }
-  
-  /* Animations */
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out;
-  }
-  
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Ergonomic Touch & Scroll utilities */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .font-mono,
+  .tabular-nums {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.14s ease-out forwards;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

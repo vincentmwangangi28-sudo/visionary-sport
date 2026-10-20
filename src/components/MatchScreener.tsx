@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,8 +9,9 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { hapticService } from '@/services/hapticService';
-import { SlidersHorizontal, Sparkles, Filter, Zap, ArrowRight, Download, Check, RefreshCw } from 'lucide-react';
+import { Download, RefreshCw, Plus, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface ScreenedMatch {
   id: string;
@@ -28,14 +28,20 @@ interface ScreenedMatch {
   xGExpectancy: number;
 }
 
+function formatSlug(home: string, away: string): string {
+  const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return `${clean(home)}-vs-${clean(away)}`;
+}
+
 export const MatchScreener: React.FC = () => {
   const [minConfidence, setMinConfidence] = useState<number>(65);
-  const [minValueEdge, setMinValueEdge] = useState<number>(5);
+  const [minValueEdge, setMinValueEdge] = useState<number>(4);
   const [selectedMarket, setSelectedMarket] = useState<string>('all');
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
+  const [displayMode, setDisplayMode] = useState<'table' | 'grid'>('table');
   const [matches, setMatches] = useState<ScreenedMatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { addSelection } = useBetSlip();
+  const { addSelection, selections } = useBetSlip();
 
   const loadData = async () => {
     setLoading(true);
@@ -49,18 +55,17 @@ export const MatchScreener: React.FC = () => {
         const hash = (f.home_team + f.away_team).split('').reduce((a, b) => a + b.charCodeAt(0), 0);
 
         let odds = f.home_odds || 1.95;
-        let market = 'Home Win (1)';
+        let market = 'Home Win';
         if (pred === 'Away Win') {
           odds = f.away_odds || 2.60;
-          market = 'Away Win (2)';
+          market = 'Away Win';
         } else if (pred === 'Draw') {
           odds = f.draw_odds || 3.30;
-          market = 'Draw (X)';
+          market = 'Draw';
         }
 
-        const impliedProb = 1 / odds;
         const actualProb = conf / 100;
-        const valueEdge = Math.round(((actualProb * odds) - 1) * 100);
+        const valueEdge = Math.round((actualProb * odds - 1) * 100);
 
         const bttsProb = 50 + (hash % 38);
         const over25Prob = 48 + (hash % 42);
@@ -75,16 +80,14 @@ export const MatchScreener: React.FC = () => {
           market,
           odds,
           aiConfidence: conf,
-          valueEdge: Math.max(0, valueEdge),
+          valueEdge: Math.max(2, valueEdge),
           bttsProb,
           over25Prob,
           xGExpectancy,
         });
       });
 
-      // Sort upcoming matches strictly by matchDate in ascending order
-      list.sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
-
+      list.sort((a, b) => b.aiConfidence - a.aiConfidence);
       setMatches(list);
     } catch (err) {
       console.warn('Match screener load error:', err);
@@ -97,8 +100,7 @@ export const MatchScreener: React.FC = () => {
     loadData();
   }, []);
 
-  // Filter evaluation
-  const filtered = matches.filter(m => {
+  const filtered = matches.filter((m) => {
     if (m.aiConfidence < minConfidence) return false;
     if (m.valueEdge < minValueEdge) return false;
     if (selectedLeague !== 'all' && !m.league.toLowerCase().includes(selectedLeague.toLowerCase())) return false;
@@ -112,8 +114,8 @@ export const MatchScreener: React.FC = () => {
   const handleAddAllToAcca = () => {
     if (filtered.length === 0) return;
     hapticService.boost();
-    const toAdd = filtered.slice(0, 6);
-    toAdd.forEach(m => {
+    const toAdd = filtered.slice(0, 5);
+    toAdd.forEach((m) => {
       addSelection({
         match: `${m.homeTeam} vs ${m.awayTeam}`,
         homeTeam: m.homeTeam,
@@ -125,58 +127,78 @@ export const MatchScreener: React.FC = () => {
         confidence: m.aiConfidence,
       });
     });
-    toast.success(`Added ${toAdd.length} high-edge selections into your Bet Slip!`);
+    toast.success(`Added top ${toAdd.length} screened picks to Match Slip`);
   };
 
   const handleExportCSV = () => {
     hapticService.success();
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + ["Match,League,Market,Odds,AI Confidence,Edge,Date",
-        ...filtered.map(m => `"${m.homeTeam} vs ${m.awayTeam}","${m.league}","${m.market}",${m.odds},${m.aiConfidence}%,+${m.valueEdge}%,${m.matchDate}`)
-      ].join("\n");
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [
+        'Match,League,Market,Odds,Confidence,Edge,xG,BTTS,Over2.5,Date',
+        ...filtered.map(
+          (m) =>
+            `"${m.homeTeam} vs ${m.awayTeam}","${m.league}","${m.market}",${m.odds},${m.aiConfidence}%,+${m.valueEdge}%,${m.xGExpectancy},${m.bttsProb}%,${m.over25Prob}%,${m.matchDate}`
+        ),
+      ].join('\n');
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `predictpro_screener_results_${new Date().toISOString().split('T')[0]}.csv`);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `predictpro_screener_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Strategy exported as CSV successfully.");
+    toast.success('Screener table exported as CSV');
   };
 
   return (
-    <div className="space-y-6">
-      {/* Interactive Screener Controls Bar */}
-      <Card className="border-border/80 bg-card/80 backdrop-blur-md shadow-md">
-        <CardContent className="p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                <SlidersHorizontal className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base">Custom Statistical Screener</h3>
-                <p className="text-xs text-muted-foreground">Isolate fixtures matching strict mathematical criteria</p>
-              </div>
+    <div className="space-y-5">
+      {/* Screener Parameter Controls */}
+      <Card className="border-border bg-card shadow-2xs">
+        <CardContent className="p-5 space-y-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border pb-3.5">
+            <div>
+              <h2 className="font-bold text-sm text-foreground">Filter Parameters</h2>
+              <p className="text-xs text-muted-foreground">
+                Adjust minimum win probability, value edge, market type, and competition
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="gap-1.5 text-xs">
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Feed
+              <div className="flex items-center gap-0.5 bg-muted p-0.5 rounded-md">
+                <Button
+                  size="icon"
+                  variant={displayMode === 'table' ? 'secondary' : 'ghost'}
+                  onClick={() => setDisplayMode('table')}
+                  className="h-7 w-7"
+                  title="Table View"
+                >
+                  <List className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant={displayMode === 'grid' ? 'secondary' : 'ghost'}
+                  onClick={() => setDisplayMode('grid')}
+                  className="h-7 w-7"
+                  title="Grid View"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="h-8 gap-1.5 text-xs">
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filtered.length === 0} className="gap-1.5 text-xs">
+              <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filtered.length === 0} className="h-8 gap-1.5 text-xs">
                 <Download className="h-3.5 w-3.5" /> Export CSV
               </Button>
             </div>
           </div>
 
-          {/* Granular Sliders and Selects */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Slider 1: Min AI Confidence */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-muted-foreground">Min AI Confidence</span>
-                <span className="text-primary font-black">{minConfidence}%</span>
+                <span className="text-muted-foreground">Min Probability</span>
+                <span className="font-mono tabular-nums text-primary font-bold">{minConfidence}%</span>
               </div>
               <Slider
                 value={[minConfidence]}
@@ -186,14 +208,14 @@ export const MatchScreener: React.FC = () => {
                 onValueChange={(val) => setMinConfidence(val[0])}
                 className="w-full"
               />
-              <p className="text-[10px] text-muted-foreground">Default recommended: ≥65%</p>
             </div>
 
-            {/* Slider 2: Min Value Edge */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-muted-foreground">Min Positive Edge (+EV)</span>
-                <span className="text-emerald-500 font-black">+{minValueEdge}%</span>
+                <span className="text-muted-foreground">Min Value Edge (+EV)</span>
+                <span className="font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
+                  +{minValueEdge}%
+                </span>
               </div>
               <Slider
                 value={[minValueEdge]}
@@ -203,41 +225,38 @@ export const MatchScreener: React.FC = () => {
                 onValueChange={(val) => setMinValueEdge(val[0])}
                 className="w-full"
               />
-              <p className="text-[10px] text-muted-foreground">Discrepancy over bookmaker probability</p>
             </div>
 
-            {/* Select 1: Market Focus */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Market Filter</label>
+              <label className="text-xs font-semibold text-muted-foreground">Market</label>
               <Select value={selectedMarket} onValueChange={setSelectedMarket}>
                 <SelectTrigger className="w-full text-xs h-9">
                   <SelectValue placeholder="Market" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Available Markets</SelectItem>
-                  <SelectItem value="home_win">Home Win Outright</SelectItem>
-                  <SelectItem value="away_win">Away Win Outright</SelectItem>
-                  <SelectItem value="over25">Over 2.5 Goals (&gt;60% Prob)</SelectItem>
-                  <SelectItem value="btts">Both Teams to Score (&gt;60% Prob)</SelectItem>
+                  <SelectItem value="all">All Markets</SelectItem>
+                  <SelectItem value="home_win">Home Win (1)</SelectItem>
+                  <SelectItem value="away_win">Away Win (2)</SelectItem>
+                  <SelectItem value="over25">Over 2.5 Goals (&gt;60%)</SelectItem>
+                  <SelectItem value="btts">Both Teams to Score (&gt;60%)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Select 2: League Filter */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">League Selection</label>
+              <label className="text-xs font-semibold text-muted-foreground">Competition</label>
               <Select value={selectedLeague} onValueChange={setSelectedLeague}>
                 <SelectTrigger className="w-full text-xs h-9">
-                  <SelectValue placeholder="League" />
+                  <SelectValue placeholder="Competition" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Leagues & Competitions</SelectItem>
+                  <SelectItem value="all">All Competitions</SelectItem>
                   <SelectItem value="Premier League">Premier League</SelectItem>
                   <SelectItem value="Champions League">UEFA Champions League</SelectItem>
-                  <SelectItem value="La Liga">La Liga (Spain)</SelectItem>
-                  <SelectItem value="Serie A">Serie A (Italy)</SelectItem>
-                  <SelectItem value="Bundesliga">Bundesliga (Germany)</SelectItem>
-                  <SelectItem value="Kenya">Kenyan Premier League (FKF)</SelectItem>
+                  <SelectItem value="La Liga">LaLiga</SelectItem>
+                  <SelectItem value="Serie A">Serie A</SelectItem>
+                  <SelectItem value="Bundesliga">Bundesliga</SelectItem>
+                  <SelectItem value="Kenya">FKF Premier League</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -245,90 +264,156 @@ export const MatchScreener: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Screen Results Summary Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1">
-        <div className="flex items-center gap-2">
-          <Badge className="bg-primary font-bold text-xs py-1 px-2.5">
-            {filtered.length} Matches Matched
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            Meeting all statistical constraints
-          </span>
-        </div>
+      {/* Summary Action Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p className="text-xs font-medium text-muted-foreground">
+          Showing <strong className="font-mono text-foreground">{filtered.length}</strong> fixtures matching filter criteria
+        </p>
 
         {filtered.length > 0 && (
-          <Button
-            size="sm"
-            onClick={handleAddAllToAcca}
-            className="gap-1.5 text-xs bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-700 font-bold text-white shadow"
-          >
-            <Zap className="h-3.5 w-3.5" /> Build Multi-Acca with Filtered ({Math.min(6, filtered.length)})
+          <Button size="sm" onClick={handleAddAllToAcca} className="h-8 gap-1.5 text-xs font-bold">
+            <Plus className="h-3.5 w-3.5" /> Load Top {Math.min(5, filtered.length)} Picks to Slip
           </Button>
         )}
       </div>
 
-      {/* Screened Match Cards Grid */}
+      {/* Results View */}
       {loading ? (
         <ScreenerMatchGridSkeleton count={6} />
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center border-dashed">
-          <Filter className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-50" />
-          <h4 className="font-bold text-base">No matches match these strict parameters</h4>
+        <Card className="p-12 text-center border-border bg-card">
+          <h4 className="font-bold text-sm">No fixtures match these thresholds</h4>
           <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-            Try loosening your confidence or positive edge sliders to capture a wider range of fixtures.
+            Lower the minimum probability or value edge slider to broaden the results.
           </p>
         </Card>
+      ) : displayMode === 'table' ? (
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-muted/40 border-b border-border text-muted-foreground text-[11px] uppercase tracking-wider">
+                  <th className="py-2.5 px-4 text-left font-semibold">Match</th>
+                  <th className="py-2.5 px-3 text-left font-semibold">Competition</th>
+                  <th className="py-2.5 px-3 text-right font-semibold font-mono">Total xG</th>
+                  <th className="py-2.5 px-3 text-right font-semibold font-mono">BTTS</th>
+                  <th className="py-2.5 px-3 text-right font-semibold font-mono">O2.5</th>
+                  <th className="py-2.5 px-3 text-left font-semibold">Forecast</th>
+                  <th className="py-2.5 px-3 text-right font-semibold font-mono">Prob</th>
+                  <th className="py-2.5 px-3 text-right font-semibold font-mono">Edge</th>
+                  <th className="py-2.5 px-4 text-right font-semibold">Odds / Slip</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {filtered.map((m) => {
+                  const inSlip = selections.some(
+                    (s) => s.homeTeam === m.homeTeam && s.awayTeam === m.awayTeam && s.market === m.market
+                  );
+                  return (
+                    <tr key={m.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 px-4 font-semibold text-foreground">
+                        <Link
+                          to={`/predict/${formatSlug(m.homeTeam, m.awayTeam)}`}
+                          className="flex items-center gap-2 hover:text-primary transition-colors"
+                        >
+                          <TeamLogo team={m.homeTeam} size="xs" badgeOnly />
+                          <span>{m.homeTeam}</span>
+                          <span className="text-muted-foreground font-normal">v</span>
+                          <TeamLogo team={m.awayTeam} size="xs" badgeOnly />
+                          <span>{m.awayTeam}</span>
+                        </Link>
+                      </td>
+                      <td className="py-2.5 px-3 text-muted-foreground">{m.league}</td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-medium text-foreground">
+                        {m.xGExpectancy.toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums text-muted-foreground">
+                        {m.bttsProb}%
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums text-muted-foreground">
+                        {m.over25Prob}%
+                      </td>
+                      <td className="py-2.5 px-3 font-semibold text-foreground">{m.market}</td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-primary">
+                        {m.aiConfidence}%
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                        +{m.valueEdge}%
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono tabular-nums">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            hapticService.selection();
+                            addSelection({
+                              match: `${m.homeTeam} vs ${m.awayTeam}`,
+                              homeTeam: m.homeTeam,
+                              awayTeam: m.awayTeam,
+                              league: m.league,
+                              matchDate: m.matchDate,
+                              market: m.market,
+                              odds: m.odds,
+                              confidence: m.aiConfidence,
+                            });
+                          }}
+                          className={`px-2.5 py-1 rounded text-xs font-bold border transition-colors cursor-pointer ${
+                            inSlip
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-muted/50 hover:bg-muted border-border text-foreground'
+                          }`}
+                        >
+                          {m.odds.toFixed(2)}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m) => (
-            <Card key={m.id} className="border-border/70 hover:border-primary/50 transition-all hover:shadow-md">
+            <Card key={m.id} className="border-border hover:border-primary/50 transition-colors shadow-2xs">
               <CardContent className="p-4 space-y-3">
-                {/* Header */}
                 <div className="flex items-center justify-between text-xs">
-                  <Badge variant="outline" className="font-semibold truncate max-w-[130px]">{m.league}</Badge>
-                  <div className="flex items-center gap-1.5">
-                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold text-[11px]">
-                      +{m.valueEdge}% Edge
-                    </Badge>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 font-bold text-[11px]">
-                      {m.aiConfidence}% Conf
-                    </Badge>
-                  </div>
+                  <span className="font-semibold text-primary truncate">{m.league}</span>
+                  <span className="font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                    +{m.valueEdge}% Edge · {m.aiConfidence}%
+                  </span>
                 </div>
 
-                {/* Matchup */}
                 <div className="flex items-center justify-between gap-1 py-1">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <TeamLogo team={m.homeTeam} size="sm" />
                     <span className="font-bold text-xs truncate">{m.homeTeam}</span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground font-bold px-1">VS</span>
+                  <span className="text-[10px] text-muted-foreground font-mono px-1">v</span>
                   <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                     <span className="font-bold text-xs truncate text-right">{m.awayTeam}</span>
                     <TeamLogo team={m.awayTeam} size="sm" />
                   </div>
                 </div>
 
-                {/* Metrics Breakdown */}
-                <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] py-1.5 bg-muted/40 rounded-lg border">
+                <div className="grid grid-cols-3 gap-1.5 text-center text-[11px] py-1.5 bg-muted/40 rounded-lg border border-border/60 font-mono tabular-nums">
                   <div>
-                    <span className="text-muted-foreground block">BTTS</span>
-                    <strong className="text-foreground font-bold">{m.bttsProb}%</strong>
+                    <span className="text-muted-foreground block font-sans text-[10px]">BTTS</span>
+                    <strong className="text-foreground">{m.bttsProb}%</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block">Over 2.5</span>
-                    <strong className="text-foreground font-bold">{m.over25Prob}%</strong>
+                    <span className="text-muted-foreground block font-sans text-[10px]">Over 2.5</span>
+                    <strong className="text-foreground">{m.over25Prob}%</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block">xG Exp.</span>
-                    <strong className="text-foreground font-bold">{m.xGExpectancy}</strong>
+                    <span className="text-muted-foreground block font-sans text-[10px]">Total xG</span>
+                    <strong className="text-foreground">{m.xGExpectancy}</strong>
                   </div>
                 </div>
 
-                {/* Footer Action */}
                 <div className="flex items-center justify-between pt-1">
                   <div className="text-xs">
-                    <span className="text-muted-foreground text-[10px] block">Recommendation</span>
+                    <span className="text-muted-foreground text-[10px] block">Pick</span>
                     <span className="font-bold text-foreground">{m.market}</span>
                   </div>
 
@@ -346,11 +431,10 @@ export const MatchScreener: React.FC = () => {
                         odds: m.odds,
                         confidence: m.aiConfidence,
                       });
-                      toast.success(`Added ${m.homeTeam} vs ${m.awayTeam} to slip!`);
                     }}
-                    className="gap-1 text-xs font-bold h-8"
+                    className="gap-1 text-xs font-mono font-bold h-8"
                   >
-                    Bet @ {m.odds.toFixed(2)}
+                    {m.odds.toFixed(2)}
                   </Button>
                 </div>
               </CardContent>

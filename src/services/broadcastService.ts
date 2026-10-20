@@ -39,10 +39,7 @@ export function getSiteAnnouncement(): SiteAnnouncement {
       return DEFAULT_ANNOUNCEMENT;
     }
     const parsed = JSON.parse(raw) as SiteAnnouncement;
-    if (
-      /banker/i.test(parsed.headline || '') ||
-      /banker/i.test(parsed.ctaText || '')
-    ) {
+    if (parsed.id === 'announcement-1') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_ANNOUNCEMENT));
       return DEFAULT_ANNOUNCEMENT;
     }

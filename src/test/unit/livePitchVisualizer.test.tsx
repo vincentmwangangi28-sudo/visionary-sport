@@ -10,6 +10,7 @@ import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandR
 import { computeEnrichedStandings } from '@/pages/Standings';
 import { ELITE_PLAYER_DATABASE } from '@/pages/PlayerSearch';
 import { LIVE_LINEUP_TRANSFER_WIRE } from '@/pages/News';
+import { WIDGET_TYPES, SVG_AUTHORITY_BADGES, TARGET_ANCHOR_HUBS } from '@/pages/Widgets';
 import { FALLBACK_STANDINGS } from '@/data/standingsData';
 
 describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () => {
@@ -179,5 +180,20 @@ describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () 
     expect(LIVE_LINEUP_TRANSFER_WIRE).toHaveLength(4);
     expect(LIVE_LINEUP_TRANSFER_WIRE[0].xgDelta).toContain('xG');
     expect(LIVE_LINEUP_TRANSFER_WIRE[0].matchSlug).toMatch(/^\/predict\//);
+  });
+
+  it('exposes 8 specialized publisher embed widgets, 3 SVG authority badges, and 12 deep-link semantic anchor hubs', () => {
+    expect(WIDGET_TYPES).toHaveLength(8);
+    const ids = WIDGET_TYPES.map((w) => w.id);
+    expect(ids).toContain('player-radar');
+    expect(ids).toContain('xpts-table');
+    expect(ids).toContain('live-pitch');
+
+    expect(SVG_AUTHORITY_BADGES).toHaveLength(3);
+    expect(SVG_AUTHORITY_BADGES[0].fullUrl).toContain('https://predictpro.guru/badges/');
+
+    expect(TARGET_ANCHOR_HUBS).toHaveLength(12);
+    expect(TARGET_ANCHOR_HUBS.map((h) => h.path)).toContain('/accumulator');
+    expect(TARGET_ANCHOR_HUBS.map((h) => h.path)).toContain('/afcon-predictions');
   });
 });

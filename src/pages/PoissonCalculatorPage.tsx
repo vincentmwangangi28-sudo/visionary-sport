@@ -109,36 +109,38 @@ Powered by PredictPro AI Poisson Calculator: https://predictpro.guru/poisson-cal
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-5xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold px-3 py-1">
-            <Calculator className="w-3.5 h-3.5 mr-1" /> QUANTITATIVE MODELING ENGINE
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Poisson Football Goal Calculator
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Simulate 90-minute football matches using independent bivariate Poisson distributions. Calculate exact score matrices, fair decimal odds, Over/Under expectancy, and market value.
-          </p>
-        </div>
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              Quantitative Goal Distribution · Fair Odds &amp; Scoreline Simulator
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Poisson Football Goal Calculator
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mt-1 max-w-3xl">
+              Simulate 90-minute football matches using independent bivariate Poisson distributions. Enter Home and Away Expected Goals (xG) to compute exact score matrices, fair decimal odds, and Over/Under expectancy.
+            </p>
+          </div>
 
-        {/* Presets Strip */}
-        <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-          <span className="text-muted-foreground font-semibold">Match Presets:</span>
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setPreset('Arsenal', 'Chelsea', 1.85, 1.15)}>
-            Arsenal vs Chelsea (1.85 vs 1.15)
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setPreset('Real Madrid', 'Barcelona', 2.30, 2.10)}>
-            El Clasico (2.30 vs 2.10)
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setPreset('Bayern Munich', 'Dortmund', 2.80, 1.40)}>
-            Der Klassiker (2.80 vs 1.40)
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setPreset('Gor Mahia', 'AFC Leopards', 1.25, 0.65)}>
-            Mashemeji Derby (1.25 vs 0.65)
-          </Button>
+          {/* Presets Strip */}
+          <div className="flex flex-wrap items-center gap-2 text-xs pt-3 border-t border-slate-800">
+            <span className="text-slate-400 font-semibold">Match Presets:</span>
+            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Arsenal', 'Chelsea', 1.85, 1.15)}>
+              Arsenal vs Chelsea (1.85 vs 1.15)
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Real Madrid', 'Barcelona', 2.30, 2.10)}>
+              El Clásico (2.30 vs 2.10)
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Bayern Munich', 'Dortmund', 2.80, 1.40)}>
+              Der Klassiker (2.80 vs 1.40)
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Gor Mahia', 'AFC Leopards', 1.25, 0.65)}>
+              Mashemeji Derby (1.25 vs 0.65)
+            </Button>
+          </div>
         </div>
 
         {/* Input Parameters Grid */}

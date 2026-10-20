@@ -4,83 +4,106 @@ import { SEO } from "@/components/SEO";
 import { PredictionsDashboard } from "@/components/PredictionsDashboard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Zap, TrendingUp, Target } from "lucide-react";
 
 const FAQ = [
-  { q: "How accurate are PredictPro's Premier League predictions?", a: "Our AI analyses form, head-to-head records, injuries and historical data to achieve an average accuracy of 74-87% on Premier League matches, depending on the confidence tier." },
-  { q: "Are Premier League predictions free?", a: "Yes — 100% of PredictPro's Premier League predictions, including Correct Score matrices, high-consensus picks, Expected Goals (xG) models, and H2H analysis, are completely free with no subscriptions or paywalls." },
-  { q: "Which Premier League teams are hardest to predict?", a: "Derby matches (Arsenal vs Chelsea, Man City vs Liverpool) and mid-table clashes tend to have lower confidence scores due to tactical unpredictability." },
-  { q: "How often are predictions updated?", a: "Predictions are generated daily at 6AM EAT and updated whenever new team news, injuries or odds changes are detected." },
+  {
+    q: "How are Premier League match probabilities calculated?",
+    a: "Match probabilities combine rolling 10-match Expected Goals (xG) differentials, home/away venue splits, head-to-head histories, and confirmed squad availability across all 20 Premier League clubs.",
+  },
+  {
+    q: "Are Premier League predictions and xG tables free?",
+    a: "Yes — 100% of PredictPro's Premier League match previews, Correct Score matrices, Expected Goals (xG) projections, and H2H comparisons are completely free.",
+  },
+  {
+    q: "Which Premier League fixtures have higher variance?",
+    a: "Local derbies (Arsenal vs Tottenham, Liverpool vs Everton, Manchester Derby) and fixtures immediately following midweek UEFA Champions League travel carry wider scoreline variance.",
+  },
+  {
+    q: "How often are Premier League odds and tips updated?",
+    a: "Matchday probabilities and bookmaker value edges (+EV) are refreshed daily at 06:00 UTC and recalculated whenever line movements or team news occur.",
+  },
 ];
 
 export default function PremierLeaguePredictions() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
         title="Premier League Score Predictor & EPL Predictions Today | PredictPro"
-        description="Free Premier League predictions for today's matches. AI score predictor with confidence scores, H2H stats, and value bets for Arsenal, Man City, and Liverpool."
+        description="Free Premier League predictions for today's matches. Expected goals (xG), H2H stats, and value bets for Arsenal, Man City, Liverpool, and Chelsea."
         canonical="/premier-league-predictions"
-        keywords="barclays premier league score predictor, Premier League predictions today, EPL score predictor, Premier League tips today, Arsenal predictions, Man City tips, Liverpool predictions, Chelsea prediction, Premier League AI tips free"
+        keywords="barclays premier league score predictor, Premier League predictions today, EPL score predictor, Premier League tips today, Arsenal predictions, Man City tips, Liverpool predictions, Chelsea prediction"
         structuredData={{
-          '@type': 'FAQPage',
-          mainEntity: FAQ.map(f => ({
-            '@type': 'Question',
+          "@type": "FAQPage",
+          mainEntity: FAQ.map((f) => ({
+            "@type": "Question",
             name: f.q,
-            acceptedAnswer: { '@type': 'Answer', text: f.a }
-          }))
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
         }}
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
-        {/* Dynamic Hierarchy Breadcrumb Navigation */}
-        <Breadcrumbs className="mb-6" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 space-y-6">
+        <Breadcrumbs />
 
-        {/* Hero */}
-        <div className="text-center mb-10">
-          <Badge className="mb-4 bg-blue-600 text-white">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</Badge>
-          <h1 className="text-4xl font-black mb-3">Premier League Predictions Today</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            AI-powered EPL predictions updated daily. Get confidence scores, H2H history, 
-            form guides and value bets for every Premier League match.
-          </p>
-          <div className="flex gap-2 justify-center mt-4 flex-wrap">
-            {['Arsenal','Chelsea','Man City','Liverpool','Tottenham','Man United'].map(t => (
-              <Badge key={t} variant="outline" className="cursor-pointer hover:bg-primary/10">{t}</Badge>
-            ))}
+        {/* Dark Broadcast Competition Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-1.5 max-w-3xl">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
+              <span>England · Tier 1</span>
+              <span>·</span>
+              <span>38 Matchweeks · 380 Fixtures</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              English Premier League Predictions &amp; xG Previews
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Matchday 1X2 probabilities, Expected Goals (xG) form guides, and bookmaker value edges across all 20 Premier League clubs.
+            </p>
+            <div className="flex flex-wrap gap-1.5 pt-2">
+              {["Arsenal", "Man City", "Liverpool", "Chelsea", "Tottenham", "Aston Villa", "Newcastle", "Man United"].map((club) => (
+                <span
+                  key={club}
+                  className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[11px] font-medium text-slate-200"
+                >
+                  {club}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[{ icon: Target, v: '74-87%', l: 'EPL Accuracy' }, { icon: Zap, v: '380', l: 'Matches/Season' }, { icon: TrendingUp, v: '20', l: 'Teams Covered' }].map(({ icon: Icon, v, l }) => (
-            <Card key={l}><CardContent className="p-4 text-center"><Icon className="h-5 w-5 mx-auto text-primary mb-1" /><p className="font-bold text-xl">{v}</p><p className="text-xs text-muted-foreground">{l}</p></CardContent></Card>
-          ))}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <Link to="/standings?league=39">
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
+                View EPL Table &amp; xPTS
+              </Button>
+            </Link>
+            <Link to="/h2h">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white text-xs"
+              >
+                Club H2H Simulator
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <PredictionsDashboard initialLeague="Premier League" />
 
         {/* FAQ for SEO */}
-        <section className="mt-16">
-          <h2 className="text-2xl font-bold mb-6">Premier League Predictions FAQ</h2>
-          <div className="space-y-4">
+        <section className="pt-6 border-t border-border">
+          <h2 className="text-lg font-bold mb-4">Premier League Analytical FAQ</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {FAQ.map((f, i) => (
-              <Card key={i}><CardContent className="p-5">
-                <h3 className="font-semibold mb-2">{f.q}</h3>
-                <p className="text-sm text-muted-foreground">{f.a}</p>
-              </CardContent></Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Internal links */}
-        <section className="mt-10 p-6 bg-muted/30 rounded-xl">
-          <h2 className="text-xl font-semibold mb-4">More Prediction Markets</h2>
-          <div className="flex flex-wrap gap-2">
-            {[{ to: '/correct-score', label: 'Correct Score' }, { to: '/btts', label: 'BTTS Tips' }, { to: '/value-bets', label: 'Value Bets' }, { to: '/accumulator', label: 'Acca Builder' }, { to: '/best-bets', label: 'Best Bets Today' }].map(l => (
-              <Link key={l.to} to={l.to}><Button variant="outline" size="sm" className="min-h-[44px]">{l.label}</Button></Link>
+              <Card key={i} className="border-border shadow-none">
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-sm mb-1.5">{f.q}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{f.a}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>

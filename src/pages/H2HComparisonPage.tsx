@@ -132,43 +132,39 @@ export default function H2HComparisonPage() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto max-w-7xl px-4 py-24 pb-28 md:pb-16 space-y-8">
-        {/* Header Hero */}
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Interactive Head-to-Head Matchup &amp; Poisson Simulator
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-28 md:pb-16 space-y-6">
+        {/* Dark Broadcast Header Banner */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              Interactive Club Comparison · Bivariate Poisson Matchup Simulator
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Head-to-Head (H2H) &amp; Matchup Simulator
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mt-1">
+              Compare any two clubs side-by-side with attack/defense ratings, Poisson scoreline probability matrices, historical derby records, and value market picks.
+            </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
-                Team H2H &amp; <span className="text-primary">Matchup Simulator</span>
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mt-1">
-                Select any two global football clubs to generate side-by-side tactical metrics, Monte Carlo Poisson scoreline probabilities, historical derby archives, and value betting recommendations.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-xs"
-                onClick={handleShare}
-              >
-                <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
-                Share Analysis
-              </Button>
-              <Button
-                onClick={handleSimulate}
-                disabled={isSimulating}
-                className="gap-2 bg-primary text-primary-foreground font-bold shadow-md shadow-primary/20 text-xs"
-              >
-                <Zap className={`h-4 w-4 ${isSimulating ? 'animate-spin' : ''}`} />
-                {isSimulating ? 'Simulating...' : 'Run Simulation'}
-              </Button>
-            </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
+              onClick={handleShare}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              Share Analysis
+            </Button>
+            <Button
+              onClick={handleSimulate}
+              disabled={isSimulating}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+            >
+              <Zap className={`h-4 w-4 ${isSimulating ? 'animate-spin' : ''}`} />
+              {isSimulating ? 'Simulating...' : 'Run Simulation'}
+            </Button>
           </div>
         </div>
 

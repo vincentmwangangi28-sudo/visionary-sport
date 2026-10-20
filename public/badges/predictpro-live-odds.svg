@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="60" viewBox="0 0 260 60" fill="none">
+  <rect width="260" height="60" rx="10" fill="#0F172A" stroke="#1E293B" stroke-width="1.5"/>
+  <rect x="12" y="14" width="32" height="32" rx="8" fill="#0284C7"/>
+  <circle cx="28" cy="30" r="7" fill="#FFFFFF"/>
+  <text x="54" y="26" fill="#38BDF8" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="800" letter-spacing="0.08em">LIVE 1X2 &amp; POISSON ODDS</text>
+  <text x="54" y="43" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="800">PredictPro Football Data</text>
+</svg>

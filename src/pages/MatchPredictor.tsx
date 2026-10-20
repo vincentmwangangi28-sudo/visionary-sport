@@ -242,52 +242,42 @@ export default function MatchPredictor() {
         }}
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
+      <main className="container mx-auto px-4 py-8 pb-20 md:pb-12 max-w-4xl space-y-6">
         {/* Breadcrumb Visual Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2">
           <a href="/" className="hover:text-primary transition-colors">Home</a>
           <span>/</span>
-          <span className="text-foreground font-medium">AI Pro Tips &amp; Match Predictor</span>
+          <span className="text-foreground font-medium">Match Simulator &amp; Custom xG Forecaster</span>
         </nav>
 
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-3">
-            <Sparkles className="h-3.5 w-3.5" /> AI Pro Tips Today · Updated Daily 06:00 UTC
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black flex items-center justify-center gap-3 mb-2 tracking-tight">
-            <Zap className="h-8 w-8 text-primary" />AI Pro Tips Prediction Today
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+            Custom Matchup Engine · Bivariate Poisson &amp; xG Forecaster
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Custom Match Simulator &amp; Odds Forecaster
           </h1>
-          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-            Simulate any upcoming match worldwide through our Poisson xG model for instant win probabilities, fair odds, correct score projections, and BTTS confidence.
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
+            Simulate any upcoming fixture across 40+ leagues to compute 1X2 win probabilities, fair bookmaker odds, most likely scorelines, and BTTS ratings.
           </p>
-        </div>
 
-        {/* Featured High-Intent Quick Hub */}
-        <div className="mb-6 p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-              <Flame className="h-4 w-4 text-amber-500" /> High-Traffic Prediction Hubs
-            </span>
-            <Badge variant="outline" className="text-[10px] bg-background">Free Daily Access</Badge>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Looking for specialized markets? Explore our algorithmically verified pillars:
-          </p>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <a href="/btts" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
-              ⚽ <strong>BTTS AI prediction today</strong>
+          {/* Clean Quick Market Links inside Header */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-800 text-xs">
+            <span className="text-slate-400 font-semibold mr-1">Market Hubs:</span>
+            <a href="/btts" className="px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:border-emerald-500 hover:text-white transition-colors font-medium">
+              BTTS (Both Teams To Score)
             </a>
-            <a href="/value-bets" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
-              📈 <strong>Daily Value Bets (+EV)</strong>
+            <a href="/value-bets" className="px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:border-emerald-500 hover:text-white transition-colors font-medium">
+              Value Bets (+EV)
             </a>
-            <a href="/best-bets" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
-              ⭐ <strong>Best Banker Bets</strong>
+            <a href="/best-bets" className="px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:border-emerald-500 hover:text-white transition-colors font-medium">
+              Daily Bankers
             </a>
-            <a href="/jackpot-predictions" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
-              🇰🇪 <strong>Jackpot Predictions (SportPesa/Betika)</strong>
+            <a href="/jackpot-predictions" className="px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:border-emerald-500 hover:text-white transition-colors font-medium">
+              Jackpot Tips
             </a>
-            <a href="/us-soccer-predictions" className="px-2.5 py-1.5 bg-background border border-border rounded-lg hover:border-primary/50 hover:text-primary transition-colors font-medium flex items-center gap-1">
-              🇺🇸 <strong>US Soccer &amp; MLS Moneyline</strong>
+            <a href="/us-soccer-predictions" className="px-2.5 py-1 bg-slate-800 border border-slate-700 rounded text-slate-200 hover:border-emerald-500 hover:text-white transition-colors font-medium">
+              MLS &amp; US Soccer
             </a>
           </div>
         </div>

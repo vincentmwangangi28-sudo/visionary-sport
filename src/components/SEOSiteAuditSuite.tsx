@@ -696,6 +696,89 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
       {/* SECTION 2: LINKS, REDIRECTS & OUTREACH PILLARS */}
       {activeSubTab === 'links' && (
         <div className="space-y-6">
+          {/* 2.0: Semrush Backlinks Overview (Oct 20, 2026) Remediation & Disavow Center */}
+          <Card className="border-amber-500/30 bg-amber-500/5">
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Badge className="bg-amber-600 text-white text-[10px] font-bold">
+                  SEMRUSH BACKLINKS OVERVIEW AUDIT (OCT 20, 2026) · REMEDIATION ACTIVE
+                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a href="/disavow-predictpro-guru.txt" download="disavow-predictpro-guru.txt">
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 font-bold">
+                      <FileText className="w-3.5 h-3.5 text-primary" /> Download GSC Disavow (.txt)
+                    </Button>
+                  </a>
+                  <Link to="/widgets">
+                    <Button size="sm" className="h-7 text-xs gap-1.5 font-bold bg-emerald-600 hover:bg-emerald-500 text-white">
+                      <Code2 className="w-3.5 h-3.5" /> 4-Modality Widget &amp; SVG Badge Studio
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <CardTitle className="text-base font-extrabold mt-2">
+                predictpro.guru Root Domain Backlink Profile &amp; Toxic Link Defense
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Directly addresses the Oct 20, 2026 Semrush Backlinks report: disavows the 97% low-AS (0–10) .shop / .online / Moldova scraper clusters while expanding Image Badge, Form, and Iframe embeds with semantic keyword anchors.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-background border border-border/60">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Authority Score</span>
+                  <span className="text-lg font-extrabold font-mono text-foreground">2 / 100</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-0.5">+2 since Jul 2026</span>
+                </div>
+                <div className="p-3 rounded-lg bg-background border border-border/60">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Referring Domains</span>
+                  <span className="text-lg font-extrabold font-mono text-foreground">174</span>
+                  <span className="text-[10px] text-muted-foreground block mt-0.5">169 Referring IPs</span>
+                </div>
+                <div className="p-3 rounded-lg bg-background border border-border/60">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Total Backlinks</span>
+                  <span className="text-lg font-extrabold font-mono text-foreground">215</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-0.5">86% Follow (185) · 14% Nofollow (30)</span>
+                </div>
+                <div className="p-3 rounded-lg bg-background border border-border/60">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Link Modality Target</span>
+                  <span className="text-lg font-extrabold font-mono text-primary">4 Types</span>
+                  <span className="text-[10px] text-muted-foreground block mt-0.5">Text + SVG Image + Frame + Form</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                  <div className="font-bold text-foreground flex items-center justify-between">
+                    <span>1. Toxic TLD &amp; Geo Disavow</span>
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Ready</Badge>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Semrush flagged 97% (169 domains) at AS 0–10, with 28.2% (49) <code className="text-primary">.shop</code>, 10.3% (18) <code className="text-primary">.online</code>, and 92% geo-located in Moldova. Hosted <a href="/disavow-predictpro-guru.txt" target="_blank" rel="noopener noreferrer" className="text-primary underline font-semibold">/disavow-predictpro-guru.txt</a> for Google Search Console upload.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                  <div className="font-bold text-foreground flex items-center justify-between">
+                    <span>2. Image, Frame &amp; Form Links</span>
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Active</Badge>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Semrush Page 3 showed 100% Text links and 0% Image / Frame / Form links. Added 3 embeddable SVG badges (<code className="text-primary">/badges/predictpro-*.svg</code>), interactive Poisson <code className="text-primary">&lt;form&gt;</code> embeds, and <code className="text-primary">&lt;iframe&gt;</code> widgets on <Link to="/widgets" className="text-primary underline font-semibold">/widgets</Link>.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                  <div className="font-bold text-foreground flex items-center justify-between">
+                    <span>3. Deep-Hub Semantic Anchors</span>
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-[10px]">Active</Badge>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Semrush Page 6 reported &ldquo;Anchors: No data found&rdquo;. Configured 12 deep canonical target hubs (<code className="text-primary">/premier-league-predictions</code>, <code className="text-primary">/accumulator</code>, <code className="text-primary">/afcon-predictions</code>, <code className="text-primary">/standings</code>) with descriptive anchor text and image <code className="text-primary">alt</code> attributes.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* 2A: 404 Link Reclamation & Redirects Implemented */}
           <Card className="border-border/60">
             <CardHeader className="pb-3">

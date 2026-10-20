@@ -115,46 +115,52 @@ export default function Daily2OddsPredictions() {
         canonicalPath="/daily-2-odds-predictions"
       />
       <Navbar />
-      <LeagueNavigationStrip />
-      <MarketQuickStrip />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-5xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions', href: '/' },
-            { label: 'Sure 2 Odds, 3 Odds & 5 Odds Daily Tickets' },
+            { label: 'Daily 2.00, 3.00 & 5.00 Odds Slips' },
           ]}
         />
 
-        <section className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-card to-background p-6 sm:p-8">
-          <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/40 mb-3">
-            <Trophy className="w-3.5 h-3.5 mr-1.5" /> Daily Multi-Tier Odds Hub
-          </Badge>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
-            Sure 2 Odds, 3 Odds &amp; 5 Odds Predictions Today
-          </h1>
-          <p className="text-muted-foreground max-w-3xl text-sm sm:text-base leading-relaxed mb-5">
-            Switch between our three mathematical risk tiers: <strong>Sure 2.00 Odds Banker Double</strong> (built for high-stake flat betting), <strong>Sure 3.00 Odds Treble</strong>, and <strong>5.00 Odds Value 4-Fold</strong>.
-          </p>
+        <section className="rounded-xl border border-slate-800 bg-slate-900 text-white p-6 space-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
+              Curated Multi-Bet Slips · Structured Risk Tiers
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Daily 2.00 Odds, 3.00 Odds &amp; 5.00 Odds Tickets
+            </h1>
+            <p className="text-slate-300 max-w-3xl text-xs sm:text-sm leading-relaxed mt-1">
+              Switch between three mathematical risk tiers: <strong>2.00 Odds Banker Double</strong> (built for flat-stake bankroll growth), <strong>3.00 Odds Smart Treble</strong>, and <strong>5.00 Odds Value 4-Fold</strong>.
+            </p>
+          </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-1">
             <Button
+              size="sm"
               variant={tier === '2odds' ? 'default' : 'outline'}
+              className={tier === '2odds' ? 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs' : 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white text-xs'}
               onClick={() => setTier('2odds')}
             >
-              Sure 2.00 Odds Double
+              2.00 Odds Banker Double
             </Button>
             <Button
+              size="sm"
               variant={tier === '3odds' ? 'default' : 'outline'}
+              className={tier === '3odds' ? 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs' : 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white text-xs'}
               onClick={() => setTier('3odds')}
             >
-              Sure 3.00 Odds Treble
+              3.00 Odds Smart Treble
             </Button>
             <Button
+              size="sm"
               variant={tier === '5odds' ? 'default' : 'outline'}
+              className={tier === '5odds' ? 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs' : 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white text-xs'}
               onClick={() => setTier('5odds')}
             >
-              5.00 Odds Smart 4-Fold
+              5.00 Odds Value 4-Fold
             </Button>
           </div>
         </section>

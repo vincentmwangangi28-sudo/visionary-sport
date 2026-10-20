@@ -1,304 +1,71 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import {
-  BookOpen,
-  TrendingUp,
-  ShieldCheck,
-  Target,
-  BarChart3,
-  Globe,
-  HelpCircle,
-  ArrowUpRight,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
-const FEATURED_SNIPPET_FAQS = [
+const EDITORIAL_GUIDES = [
   {
-    question: 'How does PredictPro calculate AI football predictions today?',
-    answer:
-      'PredictPro calculates daily football predictions using a multi-layer ensemble combining bivariate Poisson goal distributions, Dixon-Coles home-advantage adjustments, rolling 10-match Expected Goals (xG / xGA), and real-time bookmaker implied probability divergence across 40+ global leagues.',
-    relatedLink: '/methodology',
-    anchorText: 'Read Our Full Expected Goals (xG) & Poisson Mathematical Methodology',
+    to: '/sure-win-predictions',
+    title: 'High-Probability Match Previews',
+    desc: 'Fixtures featuring strong home or away form, expected goals advantage, and consistent head-to-head records.',
   },
   {
-    question: 'What is a mathematical Value Bet (+EV) in football betting?',
-    answer:
-      'A Value Bet occurs when the true statistical probability of a match outcome calculated by our AI model is strictly higher than the implied probability baked into a bookmaker’s decimal odds. Over 500+ tracked bets, positive Expected Value (+EV) edges consistently beat the Closing Line Value (CLV).',
-    relatedLink: '/value-bets',
-    anchorText: "Explore Today's Positive Expected Value (+EV) Football Bets",
+    to: '/over-under-predictions',
+    title: 'Goals & Expected Goals (xG) Trends',
+    desc: 'Over/Under 2.5 goals analysis based on shot creation volume, box entries, and defensive concession rates.',
   },
   {
-    question: 'Which football markets have the highest AI prediction accuracy?',
-    answer:
-      'Double Chance (1X / X2), Draw No Bet (DNB), and Over 1.5 Match Goals achieve the highest verified strike rates (82%–89% accuracy), while Both Teams to Score (BTTS) and Over 2.5 Goals offer the highest risk-adjusted Return on Investment (ROI) in high-tempo leagues like the Bundesliga and Premier League.',
-    relatedLink: '/best-bets',
-    anchorText: "View Today's Highest-Confidence Banker Football Predictions",
-  },
-  {
-    question: 'How do I build a winning football accumulator (Acca) or 17-game Mega Jackpot slip?',
-    answer:
-      'Optimal accumulator construction limits slips to 3 to 5 uncorrelated legs with individual model confidence above 76% and positive xG differentials. For 17-game Mega Jackpots (SportPesa and Betika), combining 11 high-probability home bankers with 6 strategic Double Chance hedges maximizes payout coverage.',
-    relatedLink: '/jackpot-predictions',
-    anchorText: 'Access 17-Game Mega Jackpot Banker Picks & Double Chance Combinations',
-  },
-];
-
-const MARKET_GAP_HUBS = [
-  {
-    title: 'Today’s Banker & Sure Win Picks',
-    desc: 'High-probability 1X2, Double Chance (1X), and Draw No Bet selections filtered for >=78% model confidence.',
-    to: '/best-bets',
-    anchor: "Today's Best Banker Football Bets",
-    badge: '87% Strike Rate',
-  },
-  {
-    title: 'Both Teams to Score (BTTS) & Over 2.5 Goals',
-    desc: 'Bivariate Poisson goal expectancy matrices targeting high-tempo attacking matchups and defensive xGA regression.',
     to: '/btts',
-    anchor: 'Both Teams to Score (BTTS) & Over 2.5 Predictions',
-    badge: 'Goals Model',
+    title: 'Both Teams to Score (BTTS) Form',
+    desc: 'Clubs with high scoring consistency and open transition profiles across domestic and European leagues.',
   },
   {
-    title: 'Positive Expected Value (+EV) Edge Finder',
-    desc: 'Real-time comparison between fair AI model odds and bookmaker lines to isolate mispriced underdog and favorite markets.',
-    to: '/value-bets',
-    anchor: 'Mathematical Value Bets (+EV) Scanner',
-    badge: '+6.4% Avg Edge',
+    to: '/standings',
+    title: 'League Tables & Form Guide',
+    desc: 'Updated league standings, goal difference, points per game, and recent five-match form trajectories.',
   },
-  {
-    title: 'Exact Correct Score Poisson Matrix',
-    desc: 'Full 0-0 through 4-3 scoreline probability distributions identifying top-3 most likely final scores per fixture.',
-    to: '/correct-score',
-    anchor: 'Exact Correct Score Poisson Predictions',
-    badge: 'High Odds',
-  },
-  {
-    title: 'Dropping Odds & Sharp Money Radar',
-    desc: 'Live syndicate steam tracker detecting rapid bookmaker odds compression and Asian Handicap line movements before kickoff.',
-    to: '/dropping-odds',
-    anchor: 'Live Dropping Odds & Market Steam Radar',
-    badge: 'Live Steam',
-  },
-  {
-    title: 'Smart Multi-Match Accumulator Builder',
-    desc: 'Automated 3-fold, 5-fold, and weekend banker parlay generator with Kelly Criterion stake sizing.',
-    to: '/accumulator',
-    anchor: 'Smart Football Accumulator Slip Builder',
-    badge: 'Acca Engine',
-  },
-];
-
-const LEAGUE_AUTHORITY_LINKS = [
-  { to: '/premier-league-predictions', label: 'English Premier League AI Predictions & xG Tips' },
-  { to: '/champions-league-predictions', label: 'UEFA Champions League Knockout & Phase Predictions' },
-  { to: '/la-liga-predictions', label: 'Spanish La Liga Tactical Match Forecasts' },
-  { to: '/bundesliga-predictions', label: 'German Bundesliga Over 2.5 & BTTS Predictions' },
-  { to: '/serie-a-predictions', label: 'Italian Serie A Defensive xGA & 1X2 Tips' },
-  { to: '/kpl-predictions', label: 'East Africa: Kenya Premier League (FKF) & NBC League Tips' },
-  { to: '/afcon-predictions', label: 'Pan-Africa: AFCON, CAF Champions League, NPFL & PSL Tips' },
-  { to: '/jackpot-predictions', label: 'Continental 17-Game Mega & Midweek Jackpot Predictions' },
-  { to: '/us-soccer-predictions', label: 'MLS & US Soccer Moneyline Betting Picks' },
-  { to: '/world-cup-predictions', label: '2026 FIFA World Cup Qualifiers & Tournament Predictions' },
-  { to: '/screener', label: 'Quantitative Football Match Screener & Filter' },
-  { to: '/tournaments', label: 'Continental Content Syndication & Tournaments Hub' },
 ];
 
 export const SEOAuthorityHub: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isFaqExpanded, setIsFaqExpanded] = useState(false);
-
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: FEATURED_SNIPPET_FAQS.map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.answer,
-      },
-    })),
-  };
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <section
-      aria-labelledby="seo-authority-heading"
-      className="py-6 bg-card/40 border-t border-b border-border/50"
+      aria-label="Competition Guides and Methodology"
+      className="border-t border-border bg-card mt-8"
     >
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
-
-      <div className="container mx-auto px-4 max-w-6xl space-y-6">
-        {/* Collapsible Header Drawer Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/30 border border-border/60">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-              <BookOpen className="h-4 w-4" aria-hidden="true" />
-              <span>Football Intelligence &amp; Search Directory</span>
-            </div>
-            <h2
-              id="seo-authority-heading"
-              className="text-base sm:text-lg font-black tracking-tight text-foreground"
-            >
-              Methodology Guides, Mathematical Hubs &amp; 40+ League FAQs
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-4 py-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              Football Statistical Guides &amp; Competition Directory
             </h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Explore specialized Expected Goals (xG), Poisson goal expectancy models, and verified +EV bet directories.
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Expected goals (xG) methodology, league form tables, and fixture breakdowns across 40+ competitions.
             </p>
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsOpen(!isOpen)}
-            className="self-start sm:self-center shrink-0 gap-2 text-xs font-bold border-border/80 hover:bg-background"
-            aria-expanded={isOpen}
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            aria-expanded={expanded}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors self-start sm:self-auto cursor-pointer"
           >
-            {isOpen ? (
-              <>
-                <ChevronUp className="h-3.5 w-3.5" />
-                <span>Collapse Knowledge Hub</span>
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-3.5 w-3.5" />
-                <span>Expand Hub &amp; FAQs (6 Hubs, 4 FAQs)</span>
-              </>
-            )}
-          </Button>
+            <span>{expanded ? 'Hide Directory' : 'Read More'}</span>
+            {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
         </div>
 
-        {/* Expandable Content Container */}
-        {isOpen && (
-          <div className="space-y-10 pt-2 animate-in fade-in duration-200">
-            {/* Section 1: Specialized Betting Market Hubs */}
-            <div>
-              <div className="max-w-3xl mb-5">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
-                  <Target className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>Quantitative Football Intelligence</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-                  Specialized AI Football Betting Markets &amp; Statistical Hubs
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                  Each prediction hub targets a distinct statistical market—preventing overlapping picks and giving you direct access to verified Poisson scorelines, positive Expected Value (+EV) edges, and league-specific tactical models.
-                </p>
-              </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {MARKET_GAP_HUBS.map((hub) => (
-              <div
-                key={hub.to}
-                className="bg-background rounded-xl p-5 border border-border/70 hover:border-primary/40 transition-all flex flex-col justify-between"
+        {expanded && (
+          <div className="mt-5 pt-5 border-t border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+            {EDITORIAL_GUIDES.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="p-3.5 rounded-lg border border-border bg-background hover:bg-muted/40 transition-colors block space-y-1"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                      {hub.badge}
-                    </span>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                  <h3 className="font-bold text-base text-foreground mb-1.5">{hub.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-4">{hub.desc}</p>
-                </div>
-
-                <Link
-                  to={hub.to}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline mt-auto"
-                >
-                  {hub.anchor}
-                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                </Link>
-              </div>
+                <h3 className="text-xs font-semibold text-foreground">{item.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+              </Link>
             ))}
-          </div>
-        </div>
-
-        {/* Section 2: Direct Answer Hub for AI Overviews & Featured Snippets */}
-        <div className="pt-6 border-t border-border/40">
-          <div className="max-w-3xl mb-6">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-2">
-              <HelpCircle className="h-4 w-4" aria-hidden="true" />
-              <span>Verified Football Prediction FAQ &amp; Methodology</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              How AI Football Predictions &amp; Expected Goals (xG) Models Work
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {(isFaqExpanded ? FEATURED_SNIPPET_FAQS : FEATURED_SNIPPET_FAQS.slice(0, 2)).map((faq) => (
-              <article
-                key={faq.question}
-                className="bg-background rounded-xl p-5 border border-border/60 space-y-2.5"
-              >
-                <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug">
-                  {faq.question}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {faq.answer}
-                </p>
-                <Link
-                  to={faq.relatedLink}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
-                >
-                  {faq.anchorText}
-                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                </Link>
-              </article>
-            ))}
-          </div>
-
-          {/* Expand / Collapse Control Button */}
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsFaqExpanded(!isFaqExpanded)}
-              className="gap-2 text-xs font-medium border-border/80 hover:bg-muted"
-            >
-              {isFaqExpanded ? (
-                <>
-                  <ChevronUp className="h-3.5 w-3.5" />
-                  <span>Collapse Detailed Guides &amp; Directory</span>
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-3.5 w-3.5" />
-                  <span>Expand Complete Methodology FAQs &amp; Directory (2 More)</span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Section 3: Contextual League & Analytical Directory with Descriptive Anchors */}
-        {isFaqExpanded && (
-          <div className="pt-6 border-t border-border/40 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 mb-3">
-              <Globe className="h-4 w-4 text-primary" aria-hidden="true" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                Direct Competition &amp; Analytical Tool Links
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {LEAGUE_AUTHORITY_LINKS.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="text-xs text-muted-foreground hover:text-primary hover:underline font-medium transition-colors flex items-center gap-1.5 py-1"
-                >
-                  › {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
           </div>
         )}
       </div>
