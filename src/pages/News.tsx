@@ -186,19 +186,23 @@ export default function News() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-8 pb-24 md:pb-12 max-w-6xl flex-1 space-y-6">
-        {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/70 pb-4">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-24 md:pb-12 max-w-6xl flex-1 space-y-6">
+        {/* Dark Broadcast Header Bar */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">
-              Global Editorial Desks · Confirmed Lineup xG Impact ·{' '}
-              {lastSync ? `Synced ${timeAgo(lastSync)}` : 'Instant Cache Active'}
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground flex items-center gap-2.5">
-              <Newspaper className="h-7 w-7 text-primary shrink-0" />
-              <span>Football News, Lineup Wire &amp; Tactical Intelligence</span>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Global Editorial Desks · Confirmed Lineup xG Impact
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">
+                {lastSync ? `Synced ${timeAgo(lastSync)}` : 'Instant Cache Active'}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Football News, Lineup Wire &amp; Tactical Intelligence
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-slate-300 mt-1">
               Multi-source breaking football coverage translated directly into Expected Goals (xG) and probability shifts.
             </p>
           </div>
@@ -209,7 +213,7 @@ export default function News() {
               size="sm"
               onClick={handleManualRefresh}
               disabled={loading}
-              className="text-xs font-semibold gap-1.5 h-8 whitespace-nowrap"
+              className="text-xs font-semibold gap-1.5 h-8 whitespace-nowrap bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
               <span>Sync News Feed</span>
@@ -379,8 +383,7 @@ export default function News() {
                   onClick={() => setSelectedCategory(cat)}
                   className="text-xs font-semibold h-8 rounded-lg shrink-0 gap-1 whitespace-nowrap"
                 >
-                  {cat === 'Gemini AI Wire' && <Sparkles className="h-3 w-3" />}
-                  {cat === 'all' ? 'All Topics' : cat}
+                  {cat === 'all' ? 'All Topics' : cat === 'Gemini AI Wire' ? 'Editorial Spotlight' : cat}
                 </Button>
               ))}
             </div>

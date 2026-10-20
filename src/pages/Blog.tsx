@@ -125,39 +125,42 @@ export default function Blog() {
         ]}
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
-        <Breadcrumbs className="mb-4" />
-        <div className="mb-8">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <Breadcrumbs className="mb-1" />
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-black flex items-center gap-3 mb-2 tracking-tight">
-                <BookOpen className="h-8 w-8 text-primary" />
-                <span>Football Betting Guides &amp; Match Previews</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  Editorial &amp; Strategy Library · Quantitative Football Guides
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-400">
+                  {allArticles.length} Published Guides
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                Football Betting Guides &amp; Match Previews
               </h1>
-              <p className="text-muted-foreground text-sm">
-                Explore algorithmic wagering strategies, mathematical bankroll models, league guides, and AI match insights.
+              <p className="text-slate-300 text-xs sm:text-sm mt-1">
+                Explore mathematical wagering strategies, bankroll staking models, league breakdowns, and match previews.
               </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="px-3 py-1 font-mono text-xs bg-primary/5 text-primary border-primary/20">
-                <Sparkles className="h-3 w-3 mr-1 inline" /> {allArticles.length} Strategy Guides
-              </Badge>
             </div>
           </div>
 
           {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-5 no-scrollbar" role="group" aria-label="Filter guides by topic">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-slate-800 no-scrollbar" role="group" aria-label="Filter guides by topic">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
               <Filter className="h-3 w-3" aria-hidden="true" /> Topic:
             </span>
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
               aria-pressed={selectedCategory === "all"}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors shrink-0 font-medium ${
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-colors shrink-0 font-bold ${
                 selectedCategory === "all"
-                  ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
-                  : "bg-muted/40 border-border hover:bg-muted text-muted-foreground"
+                  ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                  : "bg-slate-950 border-slate-800 hover:bg-slate-800 text-slate-300"
               }`}
             >
               All Topics ({allArticles.length})
@@ -170,10 +173,10 @@ export default function Blog() {
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
                   aria-pressed={selectedCategory.toLowerCase() === cat.toLowerCase()}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1 ${
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors shrink-0 font-bold flex items-center gap-1 ${
                     selectedCategory.toLowerCase() === cat.toLowerCase()
-                      ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
-                      : "bg-muted/40 border-border hover:bg-muted text-muted-foreground"
+                      ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                      : "bg-slate-950 border-slate-800 hover:bg-slate-800 text-slate-300"
                   }`}
                 >
                   <span>{cat}</span>

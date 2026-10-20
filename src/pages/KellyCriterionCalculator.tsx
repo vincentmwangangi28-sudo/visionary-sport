@@ -94,18 +94,22 @@ export default function KellyCriterionCalculator() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-4xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        {/* Hero */}
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <Badge className="bg-primary/10 text-primary border-primary/20 font-bold px-3 py-1">
-            <Calculator className="w-3.5 h-3.5 mr-1" /> BANKROLL STAKING & RISK OPTIMIZATION
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+        {/* Dark Broadcast Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              Bankroll Staking &amp; Risk Optimization
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">Full, Half &amp; Quarter Kelly</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Kelly Criterion Calculator
           </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
             Eliminate the risk of ruin. The Kelly Criterion mathematically optimizes bet sizing to maximize the geometric growth rate of your bankroll while preventing over-staking on variance.
           </p>
         </div>

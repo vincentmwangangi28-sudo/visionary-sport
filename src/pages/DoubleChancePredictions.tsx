@@ -44,17 +44,21 @@ export default function DoubleChancePredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-5xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-semibold px-3 py-1">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> 89% WIN PROBABILITY
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              2-Way Outcome Coverage · 1X / X2 / 12
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">89% Non-Losing Rate</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Double Chance Predictions (1X / X2)
           </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
             Eliminate match draw variance. Double Chance wagers cover 2 out of 3 potential 90-minute outcomes, making them the safest foundation for multi-bet accumulators.
           </p>
         </div>

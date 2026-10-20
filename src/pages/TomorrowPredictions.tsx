@@ -125,7 +125,7 @@ export default function TomorrowPredictions() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -133,50 +133,49 @@ export default function TomorrowPredictions() {
           ]}
         />
 
-        <LeagueNavigationStrip />
-
-        {/* Hero Section */}
-        <section className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-background p-6 md:p-8 shadow-sm">
+        {/* Dark Broadcast Header */}
+        <section className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
+            <div className="space-y-2 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-primary text-primary-foreground font-bold px-3 py-1">
-                  <Calendar className="h-3.5 w-3.5 mr-1.5" /> Early Line Intelligence
-                </Badge>
-                <Badge variant="outline" className="border-emerald-500/40 text-emerald-500 font-semibold">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  Early Line Intelligence · Opening Odds Value
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-300">
                   {tomorrowDateStr}
-                </Badge>
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
-                Tomorrow&apos;s AI Football Predictions &amp; Opening Line Picks
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                Tomorrow&apos;s Football Predictions &amp; Opening Line Picks
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Lock in positive Closing Line Value (CLV) 24 hours before kickoff. Our quantitative Bivariate Poisson engine scans tomorrow&apos;s global schedule to isolate mispriced opening odds before market steam compresses bookmaker prices.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:w-72 shrink-0">
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Avg CLV Edge</p>
-                <p className="text-2xl font-black text-emerald-500">+5.8%</p>
-                <p className="text-[11px] text-muted-foreground">vs Kickoff Odds</p>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-center">
+                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Avg CLV Edge</p>
+                <p className="text-2xl font-black text-emerald-400 font-mono">+5.8%</p>
+                <p className="text-[10px] text-slate-400">vs Kickoff Odds</p>
               </div>
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Model Strike Rate</p>
-                <p className="text-2xl font-black text-primary">84.6%</p>
-                <p className="text-[11px] text-muted-foreground">High Consensus</p>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-center">
+                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Hit Rate</p>
+                <p className="text-2xl font-black text-emerald-400 font-mono">84.6%</p>
+                <p className="text-[10px] text-slate-400">High Consensus</p>
               </div>
             </div>
           </div>
 
           {/* Filter Bar */}
-          <div className="mt-6 pt-5 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
+          <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
                 variant={selectedMarket === 'all' ? 'default' : 'outline'}
                 onClick={() => setSelectedMarket('all')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedMarket === 'all' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 All Tomorrow Picks ({tomorrowFixtures.length})
               </Button>
@@ -184,7 +183,7 @@ export default function TomorrowPredictions() {
                 size="sm"
                 variant={selectedMarket === 'banker' ? 'default' : 'outline'}
                 onClick={() => setSelectedMarket('banker')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedMarket === 'banker' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> 1X2 High Consensus
               </Button>
@@ -192,7 +191,7 @@ export default function TomorrowPredictions() {
                 size="sm"
                 variant={selectedMarket === 'goals' ? 'default' : 'outline'}
                 onClick={() => setSelectedMarket('goals')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedMarket === 'goals' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 <Flame className="h-3.5 w-3.5 mr-1.5" /> Over 2.5 Goals
               </Button>
@@ -200,7 +199,7 @@ export default function TomorrowPredictions() {
                 size="sm"
                 variant={selectedMarket === 'btts' ? 'default' : 'outline'}
                 onClick={() => setSelectedMarket('btts')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedMarket === 'btts' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 <Zap className="h-3.5 w-3.5 mr-1.5" /> BTTS (GG)
               </Button>
@@ -208,13 +207,13 @@ export default function TomorrowPredictions() {
 
             <div className="flex items-center gap-2">
               <Link to="/dropping-odds">
-                <Button size="sm" variant="secondary" className="text-xs font-semibold gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5 text-primary" /> Track Steam Moves
+                <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                  <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> Track Steam Moves
                 </Button>
               </Link>
               <Link to="/accumulator">
-                <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5">
-                  <Calculator className="h-3.5 w-3.5" /> Build Tomorrow Acca
+                <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                  <Calculator className="h-3.5 w-3.5 text-emerald-400" /> Build Tomorrow Acca
                 </Button>
               </Link>
             </div>

@@ -86,7 +86,7 @@ export default function ParlayCalculator() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-5xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -94,14 +94,18 @@ export default function ParlayCalculator() {
           ]}
         />
 
-        <div className="space-y-3">
-          <Badge className="bg-primary text-primary-foreground font-bold">
-            <Layers className="h-3.5 w-3.5 mr-1.5" /> Multi-Bet Payout Engine
-          </Badge>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              Multi-Bet Payout &amp; Compounded Odds Engine
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">Up to 15 Selections</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Parlay &amp; Football Accumulator Odds Calculator
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
             Enter your stake and add decimal odds for each selection in your accumulator or parlay slip to calculate exact compounded payouts and true implied win probability.
           </p>
         </div>

@@ -111,7 +111,7 @@ export default function WeekendPredictions() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -119,54 +119,53 @@ export default function WeekendPredictions() {
           ]}
         />
 
-        <LeagueNavigationStrip />
-
-        {/* Hero Banner */}
-        <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-background p-6 md:p-8 shadow-sm">
+        {/* Dark Broadcast Header */}
+        <section className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
+            <div className="space-y-2 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-amber-500 text-amber-950 font-black px-3 py-1">
-                  <Trophy className="h-3.5 w-3.5 mr-1.5" /> Matchday Weekend Hub
-                </Badge>
-                <Badge variant="outline" className="border-primary/40 text-primary font-semibold">
-                  Saturday &amp; Sunday Slate
-                </Badge>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  Matchday Weekend Hub · Saturday &amp; Sunday Slate
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-300">
+                  Top 5 Leagues &amp; 17-Game Pools
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                 Weekend Football Predictions: Saturday &amp; Sunday High-Consensus Forecasts
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Full matchday coverage across Europe&apos;s Top 5 Leagues, EFL Championship, and 17-game Weekend Fixture Pools. Filter by Saturday 15:00 kickoffs or Sunday headline derbies.
               </p>
             </div>
 
             {/* Weekend 5-Fold Summary Box */}
-            <div className="p-4 rounded-xl bg-background/90 border border-amber-500/30 sm:w-80 shrink-0 space-y-3">
+            <div className="p-4 rounded-xl bg-slate-950/90 border border-slate-800 sm:w-80 shrink-0 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5" /> Weekend Top 5 Digest
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  Weekend Top 5 Digest
                 </span>
-                <Badge variant="secondary" className="font-mono font-bold">
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-white font-mono text-xs font-bold">
                   {combinedAccaOdds}x Index
-                </Badge>
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-300">
                 Top 5 highest-confidence Saturday &amp; Sunday consensus picks combined into one matchday digest.
               </p>
-              <Button size="sm" onClick={copyWeekendAcca} className="w-full font-bold text-xs">
+              <Button size="sm" onClick={copyWeekendAcca} className="w-full font-extrabold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950">
                 Copy Weekend 5-Fold Slip
               </Button>
             </div>
           </div>
 
-          <div className="mt-6 pt-5 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
+          <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant={selectedDay === 'all' ? 'default' : 'outline'}
                 onClick={() => setSelectedDay('all')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedDay === 'all' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 Full Weekend ({weekendFixtures.length})
               </Button>
@@ -174,7 +173,7 @@ export default function WeekendPredictions() {
                 size="sm"
                 variant={selectedDay === 'saturday' ? 'default' : 'outline'}
                 onClick={() => setSelectedDay('saturday')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedDay === 'saturday' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 Saturday Slate
               </Button>
@@ -182,7 +181,7 @@ export default function WeekendPredictions() {
                 size="sm"
                 variant={selectedDay === 'sunday' ? 'default' : 'outline'}
                 onClick={() => setSelectedDay('sunday')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedDay === 'sunday' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 Sunday Derbies
               </Button>
@@ -190,8 +189,8 @@ export default function WeekendPredictions() {
 
             <div className="flex items-center gap-2">
               <Link to="/jackpot-predictions">
-                <Button size="sm" variant="secondary" className="text-xs font-semibold gap-1.5">
-                  <Layers className="h-3.5 w-3.5 text-primary" /> 17-Game Mega Jackpot
+                <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                  <Layers className="h-3.5 w-3.5 text-emerald-400" /> 17-Game Mega Jackpot
                 </Button>
               </Link>
             </div>

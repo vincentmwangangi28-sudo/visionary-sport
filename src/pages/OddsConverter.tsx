@@ -85,7 +85,7 @@ export default function OddsConverter() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-5xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -93,14 +93,18 @@ export default function OddsConverter() {
           ]}
         />
 
-        <div className="space-y-3">
-          <Badge className="bg-primary text-primary-foreground font-bold">
-            <ArrowLeftRight className="h-3.5 w-3.5 mr-1.5" /> Universal Odds Utility
-          </Badge>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              Decimal · UK Fractional · US Moneyline · Implied Probability
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">Instant Format Conversion</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Betting Odds Converter &amp; Implied Probability Calculator
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
             Instantly translate European Decimal odds, UK Fractional prices, US Moneyline odds, and true Implied Win Probability (%) to compare value across global sportsbooks.
           </p>
         </div>

@@ -131,44 +131,50 @@ export default function CornersPredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        {/* Hero Banner */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30 font-bold px-3 py-1">
-            <Flag className="w-3.5 h-3.5 mr-1" /> CORNER KICK PROJECTION ENGINE
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Football Corner Predictions Today
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Mathematical projections for Over 8.5, Over 9.5, and Over 10.5 match corners. Filter fixtures by shot volume, attacking width, defensive blocks, and team corner per-90 metrics.
-          </p>
-        </div>
+        {/* Dark Broadcast Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Corner Kick Projection Engine · Wing Width &amp; Shot Volume
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">Over 8.5, 9.5 &amp; 10.5 Corners</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Football Corner Predictions Today
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+              Mathematical projections for Over 8.5, Over 9.5, and Over 10.5 match corners. Filter fixtures by shot volume, attacking width, defensive blocks, and team corner per-90 metrics.
+            </p>
+          </div>
 
-        {/* Market Filter Tabs */}
-        <div className="flex justify-center">
-          <Tabs
-            value={activeMarket}
-            onValueChange={(val) => setActiveMarket(val as CornerMarket)}
-            className="w-full max-w-2xl"
-          >
-            <TabsList className="grid grid-cols-4 w-full h-11 bg-muted/60 p-1">
-              <TabsTrigger value="over85" className="text-xs font-bold">
-                Over 8.5 (82% Strike)
-              </TabsTrigger>
-              <TabsTrigger value="over95" className="text-xs font-bold">
-                Over 9.5 (Balanced)
-              </TabsTrigger>
-              <TabsTrigger value="over105" className="text-xs font-bold">
-                Over 10.5 (Value Odds)
-              </TabsTrigger>
-              <TabsTrigger value="mostCorners" className="text-xs font-bold">
-                Most Corners 1X2
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Market Filter Tabs */}
+          <div className="pt-2 border-t border-slate-800">
+            <Tabs
+              value={activeMarket}
+              onValueChange={(val) => setActiveMarket(val as CornerMarket)}
+              className="w-full max-w-2xl"
+            >
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-10 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <TabsTrigger value="over85" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 8.5 (82% Strike)
+                </TabsTrigger>
+                <TabsTrigger value="over95" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 9.5 (Balanced)
+                </TabsTrigger>
+                <TabsTrigger value="over105" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 10.5 (Value Odds)
+                </TabsTrigger>
+                <TabsTrigger value="mostCorners" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Most Corners 1X2
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {/* Grid of Predictions */}

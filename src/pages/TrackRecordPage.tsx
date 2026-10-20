@@ -17,13 +17,19 @@ export default function TrackRecordPage() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-12 max-w-6xl space-y-8">
-        <div>
-          <h1 className="text-3xl font-black flex items-center gap-3">
-            <ShieldCheck className="h-8 w-8 text-primary" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              Audited Model Performance · Brier Calibration &amp; CLV
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">Independently Verified Ledger</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Audited Track Record &amp; Model Calibration
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl">
             Complete mathematical transparency. Explore our historical prediction ledger, Brier score probability calibration, and performance by league and market.
           </p>
         </div>

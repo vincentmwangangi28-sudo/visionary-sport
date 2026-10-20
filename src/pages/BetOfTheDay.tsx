@@ -85,19 +85,23 @@ export default function BetOfTheDay() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-10">
-        <Breadcrumbs className="mb-4" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-5xl space-y-8">
+        <Breadcrumbs className="mb-1" />
 
-        {/* Hero Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <Badge className="bg-amber-500 text-black font-extrabold px-3 py-1 text-xs">
-            <Trophy className="w-3.5 h-3.5 mr-1.5" /> #1 DAILY CONSENSUS · 86% ACCURACY RATE
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Forecast of the Day: Top AI Consensus Pick
+        {/* Dark Broadcast Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              #1 Daily Consensus Selection · 86.4% Audited Hit Rate
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">Bivariate Poisson + xG</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Forecast of the Day: Top Statistical Consensus Pick
           </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Every morning our machine learning ensemble filters 100+ fixtures through Bivariate Poisson probability matrices and rolling 10-match Expected Goals (xG) models to crown today’s #1 highest-conviction football selection.
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
+            Every morning our statistical model filters 100+ fixtures through Bivariate Poisson probability matrices and rolling 10-match Expected Goals (xG) differentials to isolate today’s #1 highest-conviction football selection.
           </p>
         </div>
 

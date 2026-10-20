@@ -126,44 +126,50 @@ export default function CardsPredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold px-3 py-1">
-            <AlertOctagon className="w-3.5 h-3.5 mr-1" /> REFEREE STRICTNESS & TENSION RADAR
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Football Cards & Bookings Predictions
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Spot high-friction derbies and strict referees. Mathematical forecasts for Over 3.5 & 4.5 yellow cards, 20+ booking points, and red card jeopardy across 40+ top leagues.
-          </p>
-        </div>
+        {/* Dark Broadcast Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Referee Strictness &amp; Derby Tension Radar
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">Yellow &amp; Red Card Projections</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Football Cards &amp; Bookings Predictions
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+              Spot high-friction derbies and strict referees. Mathematical forecasts for Over 3.5 &amp; 4.5 yellow cards, 20+ booking points, and red card jeopardy across 40+ top leagues.
+            </p>
+          </div>
 
-        {/* Filter Bar */}
-        <div className="flex justify-center">
-          <Tabs
-            value={activeMarket}
-            onValueChange={(val) => setActiveMarket(val as CardMarket)}
-            className="w-full max-w-2xl"
-          >
-            <TabsList className="grid grid-cols-4 w-full h-11 bg-muted/60 p-1">
-              <TabsTrigger value="over35" className="text-xs font-bold">
-                Over 3.5 Cards
-              </TabsTrigger>
-              <TabsTrigger value="over45" className="text-xs font-bold">
-                Over 4.5 Cards
-              </TabsTrigger>
-              <TabsTrigger value="derby" className="text-xs font-bold">
-                High-Tension Rivalries
-              </TabsTrigger>
-              <TabsTrigger value="redCard" className="text-xs font-bold">
-                Red Card Alert
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Filter Bar */}
+          <div className="pt-2 border-t border-slate-800">
+            <Tabs
+              value={activeMarket}
+              onValueChange={(val) => setActiveMarket(val as CardMarket)}
+              className="w-full max-w-2xl"
+            >
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-10 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <TabsTrigger value="over35" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 3.5 Cards
+                </TabsTrigger>
+                <TabsTrigger value="over45" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 4.5 Cards
+                </TabsTrigger>
+                <TabsTrigger value="derby" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  High-Tension Rivalries
+                </TabsTrigger>
+                <TabsTrigger value="redCard" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Red Card Alert
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {/* Matches Grid */}
