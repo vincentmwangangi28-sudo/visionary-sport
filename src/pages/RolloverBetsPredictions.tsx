@@ -102,10 +102,8 @@ export default function RolloverBetsPredictions() {
         schema={schemas}
       />
       <Navbar />
-      <LeagueNavigationStrip />
-      <MarketQuickStrip />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions', href: '/' },
@@ -113,36 +111,34 @@ export default function RolloverBetsPredictions() {
           ]}
         />
 
-        <section className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/45 via-card to-background p-6 sm:p-8">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> 7-Day Compounding Challenge
-            </Badge>
-            <Badge variant="outline" className="text-xs border-border/60">
-              90%+ Leg Probability Filter
-            </Badge>
+        <section className="rounded-xl border border-slate-800 bg-slate-900 text-white p-6 space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              7-Day Compounding Challenge · 90%+ Leg Probability Filter
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Daily Rollover Football Predictions (1.50x &amp; 2.00x 7-Day Challenge)
           </h1>
-          <p className="text-muted-foreground max-w-3xl text-sm sm:text-base leading-relaxed mb-5">
-            Instead of chasing risky 50-odds longshots, the <strong>7-Day Rollover Strategy</strong> compounds a single ultra-safe 1.55x daily ticket (built from 2 high-probability Double Chance or Over 1.5 legs). Turning <strong>$20 into $430+ in 7 days</strong> requires patience and zero-ego selection discipline.
+          <p className="text-slate-300 max-w-3xl text-xs sm:text-sm leading-relaxed">
+            Instead of chasing risky 50-odds longshots, the <strong>7-Day Rollover Strategy</strong> compounds a single ultra-safe 1.55x daily ticket (built from 2 high-probability Double Chance or Over 1.5 legs). Turning <strong>$20 into $430+ in 7 days</strong> requires patience and disciplined selection.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5 pt-1">
             <Button
+              size="sm"
               onClick={() => {
                 navigator.clipboard?.writeText(shareText);
                 toast.success('Day 1 Rollover Ticket copied to clipboard!');
               }}
-              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs"
             >
-              <Copy className="w-4 h-4 mr-2" /> Copy Today&apos;s {combinedRolloverOdds}x Rollover Ticket
+              <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy Today&apos;s {combinedRolloverOdds}x Rollover Ticket
             </Button>
-            <Button variant="outline" onClick={shareWhatsApp} className="border-emerald-500/40 text-emerald-300">
-              <Share2 className="w-4 h-4 mr-2" /> Share on WhatsApp
+            <Button size="sm" variant="outline" onClick={shareWhatsApp} className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs font-bold">
+              <Share2 className="w-3.5 h-3.5 mr-1.5" /> Share on WhatsApp
             </Button>
-            <Button variant="outline" onClick={shareTelegram} className="border-sky-500/40 text-sky-300">
-              <Send className="w-4 h-4 mr-2" /> Share on Telegram
+            <Button size="sm" variant="outline" onClick={shareTelegram} className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs font-bold">
+              <Send className="w-3.5 h-3.5 mr-1.5" /> Share on Telegram
             </Button>
           </div>
         </section>

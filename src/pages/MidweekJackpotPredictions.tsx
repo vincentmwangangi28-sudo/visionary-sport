@@ -56,10 +56,8 @@ export default function MidweekJackpotPredictions() {
         schema={schemas}
       />
       <Navbar />
-      <LeagueNavigationStrip />
-      <MarketQuickStrip />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions', href: '/' },
@@ -68,39 +66,43 @@ export default function MidweekJackpotPredictions() {
           ]}
         />
 
-        <section className="rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-950/35 via-card to-background p-6 sm:p-8">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/40">
-              <Trophy className="w-3.5 h-3.5 mr-1.5" /> 13 &amp; 15 Games Midweek Pool
-            </Badge>
-            <Badge variant="outline" className="text-xs border-border/60">
-              6 Core Selections + 7 Strategic Hedges
-            </Badge>
+        <section className="rounded-xl border border-slate-800 bg-slate-900 text-white p-6 space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              13 &amp; 15 Games Midweek Pool · 6 Core Bankers + 7 Strategic Hedges
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
-            Midweek Jackpot Predictions (13-Game &amp; 15-Game AI Combination Model)
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Midweek Jackpot Predictions (13-Game &amp; 15-Game Combination Model)
           </h1>
-          <p className="text-muted-foreground max-w-3xl text-sm sm:text-base leading-relaxed mb-5">
+          <p className="text-slate-300 max-w-3xl text-xs sm:text-sm leading-relaxed">
             Midweek Fixture Pools feature high-parity Championship, Champions League, and Europa League fixtures. Our Monte Carlo pool model locks in
             <strong> 6 high-confidence core selections (81%+ probability)</strong> so you can concentrate your Double Combinations on tight 50/50 draw-prone games.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5 pt-1">
             <Button
+              size="sm"
               onClick={() => setShowDoubles((v) => !v)}
-              className="bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-semibold"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
               {showDoubles ? 'Showing Double Combination Slip' : 'Toggle Double Combination Mode (1X/X2)'}
             </Button>
             <Button
+              size="sm"
               variant="outline"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs font-bold"
               onClick={() => toast.success('All 13 Midweek Jackpot selections copied to clipboard!')}
             >
-              <Copy className="w-4 h-4 mr-2" /> Copy 13-Game Slip
+              <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy 13-Game Slip
             </Button>
-            <Button variant="outline" asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs font-bold"
+              asChild
+            >
               <Link to="/jackpot-predictions">
-                17-Game Weekend Mega Jackpot <ArrowRight className="w-4 h-4 ml-1.5" />
+                17-Game Weekend Mega Jackpot <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Link>
             </Button>
           </div>

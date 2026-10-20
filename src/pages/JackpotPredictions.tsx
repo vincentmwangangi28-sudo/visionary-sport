@@ -439,66 +439,70 @@ export default function JackpotPredictions() {
 
       <main className="flex-1" id="main-content">
         {/* Hero Header */}
-        <section className="relative py-10 md:py-14 border-b border-border/60 bg-gradient-to-b from-amber-500/10 via-primary/5 to-background">
-          <div className="container mx-auto px-4 max-w-6xl space-y-6">
-            {/* Top Badge Strip */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-amber-500 text-black font-black px-3 py-1 text-xs">
-                  <Trophy className="h-3.5 w-3.5 mr-1.5" /> 17 &amp; 15 GAME AI JACKPOT PREDICTOR
-                </Badge>
-                <Badge variant="outline" className="text-xs font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                  <Radio className="h-3 w-3 animate-pulse text-emerald-500" />
-                  Live Official Schedule ({currentPool.length} Fixtures)
-                </Badge>
+        <section className="py-8 border-b border-border/60 bg-background">
+          <div className="max-w-[1440px] mx-auto px-3 sm:px-4 max-w-6xl space-y-6">
+            {/* Dark Broadcast Header Card */}
+            <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
+              {/* Top Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                    Official 17 &amp; 15 Game Jackpot Pools · Poisson Permutation Engine
+                  </span>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-[11px] font-mono text-slate-300 flex items-center gap-1.5">
+                    <Radio className="h-3 w-3 animate-pulse text-emerald-400" />
+                    Live Schedule ({currentPool.length} Fixtures)
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopySlipText}
+                    className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-white hover:bg-slate-800 text-xs"
+                  >
+                    {copiedSlip ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4 text-emerald-400" />}
+                    <span>{copiedSlip ? 'Copied Slip!' : 'Copy Slip (Text / SMS)'}</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShareWhatsApp}
+                    className="min-h-[36px] gap-1.5 font-bold border-emerald-500/40 bg-slate-950 text-emerald-400 hover:bg-emerald-500/10 text-xs"
+                    title="Share 17-match jackpot predictions on WhatsApp"
+                  >
+                    <Share2 className="h-4 w-4 text-emerald-400" />
+                    <span className="hidden sm:inline">WhatsApp</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => loadRealJackpotData(true)}
+                    disabled={refreshing}
+                    className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-white hover:bg-slate-800 text-xs"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin text-emerald-400' : 'text-emerald-400'}`} />
+                    <span>{refreshing ? 'Syncing...' : 'Sync Pools'}</span>
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopySlipText}
-                  className="min-h-[38px] gap-1.5 font-bold border-border bg-card hover:bg-muted text-xs shadow-xs"
-                >
-                  {copiedSlip ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4 text-primary" />}
-                  <span>{copiedSlip ? 'Copied Slip!' : 'Copy Slip (Text / SMS)'}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleShareWhatsApp}
-                  className="min-h-[38px] gap-1.5 font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs shadow-xs"
-                  title="Share 17-match jackpot predictions on WhatsApp"
-                >
-                  <Share2 className="h-4 w-4 text-emerald-500" />
-                  <span className="hidden sm:inline">WhatsApp</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => loadRealJackpotData(true)}
-                  disabled={refreshing}
-                  className="min-h-[38px] gap-1.5 font-bold border-primary/40 hover:bg-primary/10 text-xs shadow-xs"
-                >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin text-primary' : 'text-primary'}`} />
-                  <span>{refreshing ? 'Syncing...' : 'Sync Pools'}</span>
-                </Button>
+              {/* Title & Editorial Hook */}
+              <div className="max-w-4xl space-y-2">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                  SportPesa Mega Jackpot Prediction <span className="text-emerald-400">(17 Games)</span> &amp; Betika Midweek
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Statistical predictions for the official <strong>SportPesa 17-game Mega Jackpot</strong>,{' '}
+                  <strong>SportPesa 13-game Midweek</strong>, and <strong>Betika 15-game Jackpot</strong> pools. Featuring{' '}
+                  <strong>Bivariate Poisson Win Probabilities</strong>, <strong>Expected Goals (xG) Projections</strong>, and an interactive{' '}
+                  <strong>Double Chance Bonus Maximizer</strong>.
+                </p>
               </div>
-            </div>
-
-            {/* Title & Editorial Hook */}
-            <div className="max-w-4xl space-y-2">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground leading-tight">
-                SportPesa Mega Jackpot Prediction <span className="text-primary">(17 Games)</span> &amp; Betika Midweek
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Expert mathematical predictions for the official <strong>SportPesa 17-game Mega Jackpot</strong>,{' '}
-                <strong>SportPesa 13-game Midweek</strong>, and <strong>Betika 15-game Jackpot</strong> pools. Featuring{' '}
-                <strong>Bivariate Poisson Win Probabilities</strong>, <strong>Expected Goals (xG) Projections</strong>, and an interactive{' '}
-                <strong>Double Chance Bonus Maximizer</strong>.
-              </p>
             </div>
 
             {/* Provider Selector Tabs */}

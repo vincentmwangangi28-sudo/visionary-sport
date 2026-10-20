@@ -54,18 +54,22 @@ export default function HalftimeFulltimePredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-5xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 font-semibold px-3 py-1">
-            <Clock className="w-3.5 h-3.5 mr-1" /> HIGH VALUE MULTIPLIERS (2.40 – 6.50)
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              1st &amp; 2nd Half Pacing Model · Sequence Turnarounds
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">2.40 – 6.50 Multipliers</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Half-Time / Full-Time (HT/FT) Predictions
           </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Exploit first-half vs second-half tactical pacing. Our momentum algorithms pinpoint clubs that dominate after the break (Draw/Win) or assert early authority (Lead/Lead).
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
+            Exploit first-half vs second-half tactical pacing. Our momentum models pinpoint clubs that surge after the break (Draw/Win) or assert early authority (Lead/Lead).
           </p>
         </div>
 

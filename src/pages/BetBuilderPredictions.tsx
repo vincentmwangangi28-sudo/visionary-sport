@@ -47,10 +47,8 @@ export default function BetBuilderPredictions() {
         canonical="/bet-builder-predictions"
       />
       <Navbar />
-      <LeagueNavigationStrip />
-      <MarketQuickStrip />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions', href: '/' },
@@ -58,14 +56,14 @@ export default function BetBuilderPredictions() {
           ]}
         />
 
-        <section className="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-950/40 via-card to-background p-6 sm:p-8">
-          <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 mb-3">
-            <Layers className="w-3.5 h-3.5 mr-1.5" /> Positive-Correlation SGP Engine
-          </Badge>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
+        <section className="rounded-xl border border-slate-800 bg-slate-900 text-white p-6 space-y-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block">
+            Positive-Correlation SGP Engine · 4-Leg Match Script Combos
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Bet Builder &amp; Same-Game Parlay (SGP) Predictions Today
           </h1>
-          <p className="text-muted-foreground max-w-3xl text-sm sm:text-base leading-relaxed">
+          <p className="text-slate-300 max-w-3xl text-xs sm:text-sm leading-relaxed">
             Winning <strong>Bet Builders (Same-Game Parlays)</strong> rely on positive statistical correlation: when a dominant attacking team presses high, Match Result (1X), Over 1.5 Goals, Team Shots on Target, and Over 8.5 Corners move together in the same game script.
           </p>
         </section>

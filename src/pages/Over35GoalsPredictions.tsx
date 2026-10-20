@@ -61,7 +61,7 @@ export default function Over35GoalsPredictions() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -69,25 +69,20 @@ export default function Over35GoalsPredictions() {
           ]}
         />
 
-        <LeagueNavigationStrip />
-
-        <section className="rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-card to-background p-6 md:p-8 shadow-sm">
-          <div className="space-y-3 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-rose-600 text-white font-bold px-3 py-1">
-                <Flame className="h-3.5 w-3.5 mr-1.5" /> High-Tempo Goal Fest Radar
-              </Badge>
-              <Badge variant="outline" className="border-amber-500/40 text-amber-500 font-semibold">
-                2.40 – 3.10 Avg Odds
-              </Badge>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
-              Over 3.5 Goals Football Predictions Today (4+ Goals)
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Designed for high-yield single bets and aggressive goal parlays. Our Poisson tail-distribution engine scans the Bundesliga, Dutch Eredivisie, UEFA competitions, and Saudi Pro League for fixtures exceeding <strong>3.35 combined Expected Goals (xG)</strong>.
-            </p>
+        <section className="rounded-xl border border-slate-800 bg-slate-900 text-white p-6 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              High-Tempo Goal Fest Radar · 3.35+ Combined xG
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-[11px] font-mono text-slate-400">2.40 – 3.10 Avg Odds</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Over 3.5 Goals Football Predictions Today (4+ Goals)
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+            Designed for high-yield single bets and aggressive goal parlays. Our Poisson tail-distribution engine scans the Bundesliga, Dutch Eredivisie, UEFA competitions, and Saudi Pro League for fixtures exceeding <strong>3.35 combined Expected Goals (xG)</strong>.
+          </p>
         </section>
 
         <section className="space-y-4">

@@ -109,68 +109,67 @@ export default function Over15GoalsPredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        {/* Hero */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30 font-bold px-3 py-1">
-            <Flame className="w-3.5 h-3.5 mr-1" /> 85%+ HISTORICAL STRIKE RATE
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Over 1.5 Goals Predictions Today
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            The foundation of profitable roll-over and accumulator strategies. Every fixture requires just 2 total goals to settle as a winner, backed by team attacking Expected Goals (xG) and open transition tactics.
-          </p>
-        </div>
-
-        {/* Acca Builder CTA */}
-        <Card className="bg-gradient-to-r from-orange-500/10 via-primary/10 to-orange-500/5 border-orange-500/30 shadow-sm">
-          <CardContent className="p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <Badge variant="outline" className="border-orange-500/40 text-orange-600 dark:text-orange-400 font-bold text-xs">
-                  ACCA ROLL-OVER ANCHOR
-                </Badge>
-                <span className="text-xs text-muted-foreground">Combined Odds ~ 2.40</span>
+        {/* Dark Broadcast Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="space-y-1.5 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  2+ Match Goals Anchor · 85%+ Historical Strike Rate
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-400">1.20 – 1.45 Odds</span>
               </div>
-              <h2 className="text-lg font-black text-foreground">
-                4-Fold Over 1.5 Goals Sure Slip
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Stack our top 4 highest-scoring fixtures into a disciplined low-risk multiplier slip.
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                Over 1.5 Goals Predictions Today
+              </h1>
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                The foundation of profitable roll-over and accumulator strategies. Every fixture requires just 2 total goals to settle as a winner, backed by team attacking Expected Goals (xG) and open transition tactics.
               </p>
             </div>
-            <Button
-              onClick={handleAddAcca}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-5 shadow-sm gap-2"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              Add 4-Leg Over 1.5 Acca
-            </Button>
-          </CardContent>
-        </Card>
 
-        {/* Filter Navigation */}
-        <div className="flex justify-center">
-          <Tabs
-            value={filter}
-            onValueChange={(val) => setFilter(val as Over15Filter)}
-            className="w-full max-w-lg"
-          >
-            <TabsList className="grid grid-cols-3 w-full h-11 bg-muted/60 p-1">
-              <TabsTrigger value="all" className="text-xs font-bold">
-                All Matches ({processedMatches.length})
-              </TabsTrigger>
-              <TabsTrigger value="highStrike" className="text-xs font-bold">
-                88%+ AI Confidence
-              </TabsTrigger>
-              <TabsTrigger value="fhg" className="text-xs font-bold">
-                1st Half Goal Leaders
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+            <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+                  Acca Roll-Over Anchor
+                </span>
+                <span className="text-sm font-extrabold text-white">4-Fold Over 1.5 Slip (~2.40x)</span>
+                <span className="text-[11px] text-slate-400 block">Top 4 highest-scoring fixtures</span>
+              </div>
+              <Button
+                onClick={handleAddAcca}
+                size="sm"
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs gap-1.5 shrink-0"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Add 4-Leg Acca
+              </Button>
+            </div>
+          </div>
+
+          {/* Filter Navigation */}
+          <div className="pt-3 border-t border-slate-800">
+            <Tabs
+              value={filter}
+              onValueChange={(val) => setFilter(val as Over15Filter)}
+              className="w-full max-w-xl"
+            >
+              <TabsList className="grid grid-cols-3 w-full h-10 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <TabsTrigger value="all" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  All Matches ({processedMatches.length})
+                </TabsTrigger>
+                <TabsTrigger value="highStrike" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  88%+ Consensus
+                </TabsTrigger>
+                <TabsTrigger value="fhg" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  1st Half Goal Leaders
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {/* Matches Grid */}
