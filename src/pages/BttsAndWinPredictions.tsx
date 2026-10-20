@@ -64,7 +64,7 @@ export default function BttsAndWinPredictions() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -72,23 +72,22 @@ export default function BttsAndWinPredictions() {
           ]}
         />
 
-        <LeagueNavigationStrip />
-
-        <section className="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-card to-background p-6 md:p-8 shadow-sm">
-          <div className="space-y-3 max-w-3xl">
+        <section className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
+          <div className="space-y-2 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-purple-600 text-white font-bold px-3 py-1">
-                <Zap className="h-3.5 w-3.5 mr-1.5" /> 3.00+ Odds Combo Market
-              </Badge>
-              <Badge variant="outline" className="border-purple-500/40 text-purple-400 font-semibold">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                3.00+ Odds Combo Market · Result + Both Teams To Score
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">
                 2-1 &amp; 3-1 Scoreline Cluster
-              </Badge>
+              </span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Both Teams to Score &amp; Win (BTTS + Win) Predictions Today
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              When an attacking favorite plays a high defensive line that concedes counter-attacking chances, backing <strong>Match Winner &amp; Both Teams to Score (Yes)</strong> multiplies a standard 1.50 home win into a <strong>3.10+ value payout</strong>.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              When an attacking favorite plays a high defensive line that concedes counter-attacking chances, backing <strong className="text-white">Match Winner &amp; Both Teams to Score (Yes)</strong> multiplies a standard 1.50 home win into a <strong className="text-emerald-400">3.10+ value payout</strong>.
             </p>
           </div>
         </section>

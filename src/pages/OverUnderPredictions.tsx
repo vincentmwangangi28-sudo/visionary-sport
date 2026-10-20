@@ -80,43 +80,51 @@ export default function OverUnderPredictions() {
       />
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl space-y-8">
-        <Breadcrumbs className="mb-2" />
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+        <Breadcrumbs className="mb-1" />
 
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold px-3 py-1">
-            <Flame className="w-3.5 h-3.5 mr-1" /> GOAL MARKET RADAR
-          </Badge>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
-            Over / Under 2.5 Goals Predictions
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-            Scan high-scoring fixtures and tight defensive low-blocks ranked by true Bivariate Poisson goal expectancy (xG) across 40+ leagues worldwide.
-          </p>
-        </div>
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  Total Goals Expectancy · Bivariate Poisson Goal Line
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-400">Over/Under 1.5, 2.5 &amp; 3.5</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                Over / Under 2.5 Goals Predictions
+              </h1>
+              <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
+                Scan high-scoring fixtures and tight defensive low-blocks ranked by true Bivariate Poisson goal expectancy (xG) across 40+ leagues worldwide.
+              </p>
+            </div>
+          </div>
 
-        {/* Market Filter Bar */}
-        <div className="flex justify-center">
-          <Tabs
-            value={activeMarket}
-            onValueChange={(val) => setActiveMarket(val as GoalMarket)}
-            className="w-full max-w-2xl"
-          >
-            <TabsList className="grid grid-cols-2 sm:grid-cols-4 h-11 bg-muted/60 p-1 rounded-xl">
-              <TabsTrigger value="over25" className="text-xs font-bold">
-                Over 2.5
-              </TabsTrigger>
-              <TabsTrigger value="under25" className="text-xs font-bold">
-                Under 2.5
-              </TabsTrigger>
-              <TabsTrigger value="over15" className="text-xs font-bold">
-                Over 1.5 (Banker)
-              </TabsTrigger>
-              <TabsTrigger value="over35" className="text-xs font-bold">
-                Over 3.5 (High Odds)
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Market Filter Bar */}
+          <div className="pt-2 border-t border-slate-800">
+            <Tabs
+              value={activeMarket}
+              onValueChange={(val) => setActiveMarket(val as GoalMarket)}
+              className="w-full max-w-2xl"
+            >
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 h-10 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <TabsTrigger value="over25" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 2.5
+                </TabsTrigger>
+                <TabsTrigger value="under25" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Under 2.5
+                </TabsTrigger>
+                <TabsTrigger value="over15" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 1.5 (Banker)
+                </TabsTrigger>
+                <TabsTrigger value="over35" className="text-xs font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 text-slate-300">
+                  Over 3.5 (High Odds)
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {/* Active Market Subheader */}

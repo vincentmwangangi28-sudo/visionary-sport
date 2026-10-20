@@ -167,57 +167,50 @@ export default function BestBets() {
         }}
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-6xl">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
         {/* Visual Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2 mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center text-xs text-muted-foreground gap-2">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
           <span className="text-foreground font-medium">Top Consensus Football Forecasts Today</span>
         </nav>
 
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
-                👑 Free Guru Tips Today (75%–92% AI Strike Rate)
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                High-Consensus Selections · {minConf}%+ Probability Threshold
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
-                ⚡ 1X2 High-Consensus Models
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">
+                1X2 &amp; Double Chance Vectors
               </span>
             </div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-primary" />Free Guru Tips &amp; Top Consensus Football Forecasts Today
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Free Guru Tips &amp; Top Consensus Football Forecasts Today
             </h1>
-            <p className="text-muted-foreground mt-1">1X2 &amp; Double Chance outcome vectors ranked by confidence-weighted probability · {minConf}%+ threshold · Rolling 7-day window</p>
+            <p className="text-slate-300 text-xs sm:text-sm mt-1">
+              1X2 &amp; Double Chance outcome vectors ranked by confidence-weighted probability across a rolling 7-day fixture window.
+            </p>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
-            <Link to="/recommendations">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-1.5 border-primary/30 hover:border-primary/60 text-xs"
-                aria-label="Navigate to AI Curated Match Recommendations Hub"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                <span>Curated AI Match Locks</span>
-              </Button>
-            </Link>
             <Button
               size="sm"
               onClick={handleLoadTopPicks}
               disabled={bets.length === 0}
-              className="gap-1.5 font-bold text-xs"
+              className="gap-1.5 font-extrabold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950"
               aria-label="Load top 3 banker picks into Bet Slip"
             >
               <Zap className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Load Top 3 to Slip</span>
             </Button>
             <WhatsAppShare text={shareText} />
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={fetch_} 
-              disabled={loading} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetch_}
+              disabled={loading}
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
               aria-label="Refresh best bets predictions"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />

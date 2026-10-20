@@ -66,7 +66,7 @@ export default function DrawNoBetPredictions() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -74,36 +74,35 @@ export default function DrawNoBetPredictions() {
           ]}
         />
 
-        <LeagueNavigationStrip />
-
-        <section className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-card to-background p-6 md:p-8 shadow-sm">
+        <section className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
+            <div className="space-y-2 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-emerald-600 text-white font-bold px-3 py-1">
-                  <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Draw-Protected Market
-                </Badge>
-                <Badge variant="outline" className="border-primary/40 text-primary font-semibold">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  Draw-Protected Market · Asian Handicap 0.0
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-400">
                   100% Stake Refund on Draw
-                </Badge>
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                 Draw No Bet (DNB) Football Predictions Today
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Eliminate 90-minute stalemate heartbreak. Draw No Bet (equivalent to Asian Handicap 0.0) refunds your entire stake if the match ends level, offering higher odds than Double Chance (1X) while shielding your bankroll from late equalizers.
               </p>
             </div>
 
             <div className="flex flex-col gap-2 sm:w-64 shrink-0">
               <Link to="/double-chance-predictions">
-                <Button variant="outline" size="sm" className="w-full justify-between text-xs font-semibold">
+                <Button variant="outline" size="sm" className="w-full justify-between text-xs font-semibold bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
                   <span>Compare Double Chance (1X)</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
               <Link to="/blog/draw-no-bet-vs-double-chance-strategy">
-                <Button variant="secondary" size="sm" className="w-full justify-between text-xs font-semibold">
+                <Button size="sm" className="w-full justify-between text-xs font-extrabold bg-emerald-500 hover:bg-emerald-400 text-slate-950">
                   <span>DNB vs 1X Math Guide</span>
                   <Calculator className="h-3.5 w-3.5" />
                 </Button>

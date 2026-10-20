@@ -564,18 +564,21 @@ export default function PlayerSearch() {
         keywords="football player search, fotmob player ratings, sofascore player comparison, player xG per 90 stats, footballer database"
       />
       <Navbar />
-      <main className="container mx-auto px-4 py-8 pb-24 md:pb-12 max-w-6xl flex-1 space-y-6">
-        {/* Header & Action Bar */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/70 pb-5">
+      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-24 md:pb-12 max-w-6xl flex-1 space-y-6">
+        {/* Dark Broadcast Header & Action Bar */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-primary mb-1">
-              Opta / xG Percentile Telemetry · 0.0–10.0 Algorithmic Ratings
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2.5">
-              <Award className="h-7 w-7 text-primary shrink-0" />
-              <span>Player Intelligence, 10.0 Ratings &amp; Radar Comparison</span>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Opta / xG Percentile Telemetry · 0.0–10.0 Season Ratings
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">5-Axis Tactical Radar</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Player Intelligence, 10.0 Ratings &amp; Radar Comparison
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
               Search 500,000+ players worldwide or compare any two footballers across 5-axis Expected Goals (xG) and progression percentiles.
             </p>
           </div>
@@ -583,7 +586,11 @@ export default function PlayerSearch() {
             variant={showCompareDrawer ? 'default' : 'outline'}
             size="sm"
             onClick={() => setShowCompareDrawer(!showCompareDrawer)}
-            className="gap-2 self-start md:self-auto font-bold whitespace-nowrap"
+            className={`gap-2 self-start md:self-auto font-extrabold whitespace-nowrap ${
+              showCompareDrawer
+                ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
+                : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
+            }`}
             data-testid="toggle-player-compare-btn"
           >
             <ArrowLeftRight className="h-4 w-4" />

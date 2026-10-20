@@ -112,7 +112,7 @@ export default function AsianHandicapPredictions() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-6xl space-y-8">
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6">
         <Breadcrumbs
           items={[
             { label: 'Predictions Hub', href: '/' },
@@ -120,49 +120,48 @@ export default function AsianHandicapPredictions() {
           ]}
         />
 
-        <LeagueNavigationStrip />
-
-        {/* Hero */}
-        <section className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-card to-background p-6 md:p-8 shadow-sm">
+        {/* Dark Broadcast Header */}
+        <section className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
+            <div className="space-y-2 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-indigo-600 text-white font-bold px-3 py-1">
-                  <Scale className="h-3.5 w-3.5 mr-1.5" /> Low-Margin Sharp Market
-                </Badge>
-                <Badge variant="outline" className="border-emerald-500/40 text-emerald-500 font-semibold">
-                  1.9% Bookmaker Overround
-                </Badge>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                  Low-Margin Sharp Market · 1.9% Bookmaker Overround
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-mono text-slate-400">
+                  Expected Goal Margin (xGD)
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                 Asian Handicap Predictions Today (-0.5, -1.0 &amp; +0.5 Lines)
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Eliminate the draw and slash bookmaker juice in half. Our Expected Goal Margin (xGD) engine simulates 10,000 goal-difference outcomes to price fair Asian Handicap spreads across 40+ global leagues.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:w-72 shrink-0">
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">AH Cover Rate</p>
-                <p className="text-2xl font-black text-emerald-500">81.4%</p>
-                <p className="text-[11px] text-muted-foreground">Excl. Whole-Line Push</p>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-center">
+                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">AH Cover Rate</p>
+                <p className="text-2xl font-black text-emerald-400 font-mono">81.4%</p>
+                <p className="text-[10px] text-slate-400">Excl. Whole-Line Push</p>
               </div>
-              <div className="p-3.5 rounded-xl bg-background/80 border border-border text-center">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Avg Market ROI</p>
-                <p className="text-2xl font-black text-primary">+9.2%</p>
-                <p className="text-[11px] text-muted-foreground">Pinnacle Closing Line</p>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-center">
+                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Avg Market ROI</p>
+                <p className="text-2xl font-black text-emerald-400 font-mono">+9.2%</p>
+                <p className="text-[10px] text-slate-400">Pinnacle Closing Line</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-5 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
+          <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
                 variant={selectedLine === 'all' ? 'default' : 'outline'}
                 onClick={() => setSelectedLine('all')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedLine === 'all' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 All Handicap Lines ({handicapMatches.length})
               </Button>
@@ -170,7 +169,7 @@ export default function AsianHandicapPredictions() {
                 size="sm"
                 variant={selectedLine === 'minus05' ? 'default' : 'outline'}
                 onClick={() => setSelectedLine('minus05')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedLine === 'minus05' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 -0.5 Favorite Cover
               </Button>
@@ -178,7 +177,7 @@ export default function AsianHandicapPredictions() {
                 size="sm"
                 variant={selectedLine === 'minus10' ? 'default' : 'outline'}
                 onClick={() => setSelectedLine('minus10')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedLine === 'minus10' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 -1.0 / -1.5 Dominant xG
               </Button>
@@ -186,15 +185,15 @@ export default function AsianHandicapPredictions() {
                 size="sm"
                 variant={selectedLine === 'plus05' ? 'default' : 'outline'}
                 onClick={() => setSelectedLine('plus05')}
-                className="text-xs font-bold"
+                className={`text-xs font-bold ${selectedLine === 'plus05' ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'}`}
               >
                 +0.5 Underdog Value
               </Button>
             </div>
 
             <Link to="/blog/asian-handicap-betting-explained">
-              <Button size="sm" variant="secondary" className="text-xs font-semibold gap-1.5">
-                <Info className="h-3.5 w-3.5 text-primary" /> Asian Handicap Chart Guide
+              <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                <Info className="h-3.5 w-3.5 text-emerald-400" /> Asian Handicap Chart Guide
               </Button>
             </Link>
           </div>

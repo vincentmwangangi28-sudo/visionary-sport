@@ -424,38 +424,38 @@ export default function Archive() {
       />
       <Navbar />
 
-      <main id="main-content" className="flex-1 container mx-auto px-4 py-8 max-w-6xl" tabIndex={-1}>
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <main id="main-content" className="flex-1 max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 max-w-6xl space-y-6" tabIndex={-1}>
+        {/* Dark Broadcast Header */}
+        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <Badge variant="outline" className="border-green-500/40 text-green-600 bg-green-500/10 gap-1.5 px-3 py-1 font-bold text-xs">
-                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                100% Immutable Verification Ledger
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                Phase 1 Credibility
-              </Badge>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Audited Results Ledger · Historical Settlement Archive
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[11px] font-mono text-slate-400">
+                Timestamped Opening &amp; Closing Odds
+              </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Prediction Archive & Results Verification
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Prediction Archive &amp; Results Verification
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-slate-300 text-xs sm:text-sm mt-1">
               Every published prediction is logged permanently. Compare historical outcomes, strike rates, and yield transparency.
             </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5 text-xs" aria-label="Export results to CSV">
+            <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-white hover:bg-slate-700" aria-label="Export results to CSV">
               <Download className="h-3.5 w-3.5" aria-hidden="true" />
               Export CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={handleCopySummary} className="gap-1.5 text-xs" aria-label="Copy performance summary">
+            <Button variant="outline" size="sm" onClick={handleCopySummary} className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-white hover:bg-slate-700" aria-label="Copy performance summary">
               <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
               Share Audit
             </Button>
             <Link to="/methodology">
-              <Button size="sm" className="gap-1.5 text-xs" aria-label="View our modeling methodology">
+              <Button size="sm" className="gap-1.5 text-xs font-extrabold bg-emerald-500 hover:bg-emerald-400 text-slate-950" aria-label="View our modeling methodology">
                 <Zap className="h-3.5 w-3.5" aria-hidden="true" />
                 Methodology
               </Button>
