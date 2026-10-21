@@ -380,7 +380,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               type="button"
               onClick={() => setActiveFilter('ALL')}
               data-testid="ribbon-filter-all"
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+              className={`px-2 py-1 min-h-[24px] inline-flex items-center rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 activeFilter === 'ALL'
                   ? 'bg-muted text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -392,7 +392,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               type="button"
               onClick={() => setActiveFilter('LIVE')}
               data-testid="ribbon-filter-live"
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors inline-flex items-center gap-1 cursor-pointer ${
+              className={`px-2 py-1 min-h-[24px] rounded text-[11px] font-medium transition-colors inline-flex items-center gap-1 cursor-pointer ${
                 activeFilter === 'LIVE'
                   ? 'bg-muted text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -409,7 +409,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               type="button"
               onClick={() => setActiveFilter('TV')}
               data-testid="ribbon-filter-tv"
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+              className={`px-2 py-1 min-h-[24px] inline-flex items-center rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 activeFilter === 'TV'
                   ? 'bg-muted text-foreground font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -424,7 +424,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
             {activeFilter === 'LIVE' && liveMatchesCount === 0 && (
               <Link
                 to="/live"
-                className="px-3 py-0.5 text-[11px] text-muted-foreground hover:text-foreground shrink-0 font-medium"
+                className="px-3 py-1 min-h-[24px] inline-flex items-center text-[11px] text-muted-foreground hover:text-foreground shrink-0 font-medium"
               >
                 0 in-play right now · Showing next kickoffs:
               </Link>
@@ -434,7 +434,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                 key={m.id}
                 to={m.status === 'LIVE' ? '/live' : `/predict/${m.slug}`}
                 data-testid={`ribbon-match-card-${m.id}`}
-                className="px-3 py-0.5 hover:bg-muted/40 transition-colors shrink-0 flex items-center gap-2.5 text-xs"
+                className="px-3 py-1 min-h-[24px] hover:bg-muted/40 transition-colors shrink-0 flex items-center gap-2.5 text-xs"
               >
                 <span className="text-[10px] font-medium text-muted-foreground">
                   {m.league}
@@ -477,7 +477,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               type="button"
               onClick={() => toggleDrawer('RATINGS')}
               data-testid="toggle-player-ratings-drawer"
-              className={`transition-colors cursor-pointer whitespace-nowrap ${
+              className={`min-h-[24px] px-1 inline-flex items-center transition-colors cursor-pointer whitespace-nowrap ${
                 activeDrawer === 'RATINGS'
                   ? 'text-foreground font-semibold underline underline-offset-4'
                   : 'text-muted-foreground hover:text-foreground font-medium'
@@ -489,7 +489,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               type="button"
               onClick={() => toggleDrawer('LINEUPS')}
               data-testid="toggle-tactical-pulse-drawer"
-              className={`transition-colors cursor-pointer whitespace-nowrap ${
+              className={`min-h-[24px] px-1 inline-flex items-center transition-colors cursor-pointer whitespace-nowrap ${
                 activeDrawer === 'LINEUPS'
                   ? 'text-foreground font-semibold underline underline-offset-4'
                   : 'text-muted-foreground hover:text-foreground font-medium'
@@ -501,7 +501,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               type="button"
               onClick={() => toggleDrawer('TRIVIA')}
               data-testid="toggle-iq-challenge-drawer"
-              className={`transition-colors cursor-pointer whitespace-nowrap ${
+              className={`min-h-[24px] px-1 inline-flex items-center transition-colors cursor-pointer whitespace-nowrap ${
                 activeDrawer === 'TRIVIA'
                   ? 'text-foreground font-semibold underline underline-offset-4'
                   : 'text-muted-foreground hover:text-foreground font-medium'

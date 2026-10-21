@@ -159,7 +159,6 @@ export default function BTTS() {
             onClick={fetch_} 
             disabled={loading} 
             className="gap-1.5 text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
-            aria-label="Refresh BTTS Prediction Model"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
             <span>Refresh Data</span>
@@ -182,7 +181,6 @@ export default function BTTS() {
             variant={tab === 'btts' ? 'default' : 'outline'} 
             size="sm" 
             onClick={() => setTab('btts')}
-            aria-label="Filter by Both Teams to Score (BTTS)"
             aria-pressed={tab === 'btts'}
           >
             Both Teams to Score (BTTS)
@@ -191,7 +189,6 @@ export default function BTTS() {
             variant={tab === 'over25' ? 'default' : 'outline'} 
             size="sm" 
             onClick={() => setTab('over25')}
-            aria-label="Filter by Over or Under 2.5 Goals"
             aria-pressed={tab === 'over25'}
           >
             Over / Under 2.5 Goals
@@ -266,7 +263,6 @@ export default function BTTS() {
                         variant={isAdded ? "secondary" : "outline"}
                         className={`w-full text-xs h-8 gap-1.5 ${isAdded ? 'text-primary font-bold' : ''}`}
                         onClick={() => handleAddToSlip(p, val, label)}
-                        aria-label={isAdded ? `Match already added to slip: ${p.home_team} vs ${p.away_team}` : `Add ${p.home_team} vs ${p.away_team} ${label} to Bet Slip`}
                       >
                         {isAdded ? (
                           <>

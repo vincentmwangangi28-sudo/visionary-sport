@@ -375,7 +375,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                 className={`font-mono tabular-nums text-[11px] font-bold px-1.5 py-0.5 rounded ${
                   confidence >= 80
                     ? 'bg-emerald-700 text-white'
-                    : 'bg-primary/15 text-primary'
+                    : 'bg-emerald-800 text-white dark:bg-emerald-500/20 dark:text-emerald-300'
                 }`}
               >
                 {confidence}%
@@ -395,7 +395,6 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                     type="button"
                     key={key}
                     onClick={(e) => handleOddsClick(e, label, odds || 2.0)}
-                    aria-label={`Select ${label} (${prob}% model probability)`}
                     className={`h-8 w-[52px] rounded-md text-xs border flex flex-col items-center justify-center transition-colors cursor-pointer ${
                       selected
                         ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
@@ -427,7 +426,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
               title="Open Match Center, Lineups & H2H"
               aria-label={`View match analytics for ${p.home_team} vs ${p.away_team}`}
             >
-              <BarChart2 className="h-4 w-4" />
+              <BarChart2 className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>

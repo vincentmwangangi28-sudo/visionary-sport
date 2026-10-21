@@ -467,15 +467,6 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("date-fns")) {
               return "vendor-date";
             }
-            if (
-              id.includes("recharts") ||
-              id.includes("d3-") ||
-              id.includes("victory-vendor") ||
-              id.includes("react-smooth") ||
-              id.includes("decimal.js-light")
-            ) {
-              return "vendor-charts";
-            }
             return undefined;
           }
         },

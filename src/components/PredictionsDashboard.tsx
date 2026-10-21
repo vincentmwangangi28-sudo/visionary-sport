@@ -442,7 +442,6 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                     setLeague(l.id === 'All' ? undefined : l.id);
                     setPage(1);
                   }}
-                  aria-label={`Filter predictions by ${l.name}`}
                   aria-pressed={isSelected}
                   className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors text-left cursor-pointer ${
                     isSelected
@@ -488,7 +487,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
               <Link
                 key={item.to}
                 to={item.to}
-                className="flex items-center justify-between px-3 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/60 transition-colors font-medium"
+                className="flex items-center justify-between px-3 py-1.5 min-h-[28px] rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/60 transition-colors font-medium"
               >
                 <span className="truncate">{item.label}</span>
               </Link>
@@ -522,7 +521,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                     setDateFilter(d.id);
                     setPage(1);
                   }}
-                  className={`px-3 py-1 rounded-md text-xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1 min-h-[26px] rounded-md text-xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
                     dateFilter === d.id
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground font-medium'
@@ -538,10 +537,10 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
             <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg overflow-x-auto no-scrollbar" role="group" aria-label="Filter predictions">
               {(
                 [
-                  { id: 'all', label: 'All Matches', aria: 'Show all predictions' },
-                  { id: 'recommended', label: 'Top Picks', aria: 'Filter AI recommended predictions' },
-                  { id: 'high_confidence', label: '80%+ Strong', aria: 'Filter predictions with greater than 80% confidence' },
-                  { id: 'value_bets', label: 'Value Odds', aria: 'Filter positive expected value bets' },
+                  { id: 'all', label: 'All Matches' },
+                  { id: 'recommended', label: 'Top Picks' },
+                  { id: 'high_confidence', label: '80%+ Strong' },
+                  { id: 'value_bets', label: 'Value Odds' },
                 ] as const
               ).map((tab) => (
                 <button
@@ -552,8 +551,8 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                     setQuickFilter(tab.id);
                     setPage(1);
                   }}
-                  aria-label={tab.aria}
-                  className={`px-2.5 py-1 text-xs rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  aria-pressed={quickFilter === tab.id}
+                  className={`px-2.5 py-1 min-h-[26px] text-xs rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     quickFilter === tab.id
                       ? 'bg-card text-foreground font-bold shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground font-medium'
@@ -660,11 +659,10 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                 className="h-8 px-2.5 text-xs font-medium gap-1 shrink-0"
                 aria-expanded={showAdvancedFilters}
-                aria-label="Toggle filter options"
                 title="Filter Options"
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="hidden sm:inline">Options</span>
+                <span className="sr-only sm:not-sr-only">Options</span>
               </Button>
 
               <Button
@@ -802,14 +800,14 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                     {group.hubUrl && (
                       <Link
                         to={group.hubUrl}
-                        className="font-semibold text-primary hover:underline hidden md:inline"
+                        className="inline-flex items-center min-h-[24px] px-1 font-semibold text-primary hover:underline hidden md:inline-flex"
                       >
                         Hub
                       </Link>
                     )}
                     <Link
                       to="/standings"
-                      className="font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      className="inline-flex items-center min-h-[24px] px-1 font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       Table →
                     </Link>
@@ -931,7 +929,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
             <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Standings &amp; xPTS
             </h2>
-            <Link to="/standings" className="text-xs font-semibold text-primary hover:underline">
+            <Link to="/standings" className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline">
               Full Table →
             </Link>
           </div>
@@ -949,7 +947,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                 key={tab.id}
                 type="button"
                 onClick={() => setStandingsTab(tab.id)}
-                className={`py-2 text-center border-b-2 transition-colors cursor-pointer ${
+                className={`py-2 min-h-[32px] text-center border-b-2 transition-colors cursor-pointer ${
                   standingsTab === tab.id
                     ? 'border-primary text-primary font-bold bg-card'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -978,7 +976,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                       <span
                         className={`inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold ${
                           row.rank <= 4
-                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                            ? 'bg-emerald-800 text-white dark:bg-emerald-500/20 dark:text-emerald-300'
                             : 'text-muted-foreground'
                         }`}
                       >
@@ -1029,7 +1027,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                   />
                   {activeSpotlight.isLive ? 'In-Play Spotlight' : 'Matchday Spotlight'}
                 </h2>
-                <Link to="/live" className="text-xs font-semibold text-primary hover:underline">
+                <Link to="/live" className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline">
                   Live Center →
                 </Link>
               </div>
@@ -1040,7 +1038,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                     className={`font-mono tabular-nums font-bold ${
                       activeSpotlight.isLive
                         ? 'text-rose-600 dark:text-rose-400'
-                        : 'text-emerald-700 dark:text-emerald-400'
+                        : 'text-emerald-800 dark:text-emerald-300'
                     }`}
                   >
                     {activeSpotlight.statusLabel}
@@ -1091,7 +1089,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
             <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Matchday Ratings (10.0)
             </h2>
-            <Link to="/players" className="text-xs font-semibold text-primary hover:underline">
+            <Link to="/players" className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline">
               All Players →
             </Link>
           </div>

@@ -199,7 +199,6 @@ export default function BestBets() {
               onClick={handleLoadTopPicks}
               disabled={bets.length === 0}
               className="gap-1.5 font-extrabold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950"
-              aria-label="Load top 3 banker picks into Bet Slip"
             >
               <Zap className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Load Top 3 to Slip</span>
@@ -211,7 +210,6 @@ export default function BestBets() {
               onClick={fetch_}
               disabled={loading}
               className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
-              aria-label="Refresh best bets predictions"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span className="sr-only">Refresh bets</span>
@@ -238,7 +236,6 @@ export default function BestBets() {
               variant={minConf === c ? 'default' : 'outline'}
               onClick={() => setMinConf(c)} 
               className="gap-1.5"
-              aria-label={`Filter predictions with ${c}% or higher confidence`}
               aria-pressed={minConf === c}
             >
               <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />

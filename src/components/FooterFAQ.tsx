@@ -46,8 +46,8 @@ export const FooterFAQ: React.FC = () => {
               className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2"
             >
               Frequently Asked Questions &amp; Football Prediction Insights
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                <Sparkles className="w-3 h-3" /> Schema.org FAQPage
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-800 text-white dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+                <Sparkles className="w-3 h-3" aria-hidden="true" /> Schema.org FAQPage
               </span>
             </h2>
             <p className="text-xs text-muted-foreground">
@@ -65,7 +65,7 @@ export const FooterFAQ: React.FC = () => {
                 : FOOTER_FAQS.map((_, i) => i)
             )
           }
-          className="text-xs text-primary hover:underline font-semibold"
+          className="inline-flex items-center min-h-[28px] px-2 py-1 text-xs text-primary hover:underline font-semibold cursor-pointer"
         >
           {openIndices.length === FOOTER_FAQS.length ? 'Collapse All' : 'Expand All'}
         </button>

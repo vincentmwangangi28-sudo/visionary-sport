@@ -247,8 +247,8 @@ export const DroppingOddsRadar: React.FC = () => {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="sm" onClick={loadDroppingOdds} disabled={loading} className="gap-1.5 h-9">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" size="sm" onClick={loadDroppingOdds} disabled={loading} className="gap-1.5 h-9" aria-label="Refresh dropping odds">
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </Button>
         </div>
       </div>

@@ -27,11 +27,13 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
           className
         )}
         title="Search matches, leagues, teams (⌘K)"
-        aria-label="Search matches, leagues, teams, and articles"
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-slate-300" aria-hidden="true" />
-        <span className="hidden sm:inline">Search</span>
-        <kbd className="hidden md:inline-flex h-4 select-none items-center rounded border border-slate-600 bg-slate-900 px-1 font-mono text-[10px] font-medium text-slate-200">
+        <span className="sr-only sm:not-sr-only">Search</span>
+        <kbd
+          aria-hidden="true"
+          className="hidden md:inline-flex h-4 select-none items-center rounded border border-slate-600 bg-slate-900 px-1 font-mono text-[10px] font-medium text-slate-200"
+        >
           ⌘K
         </kbd>
       </button>
@@ -63,11 +65,13 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
           className
         )}
         title="Search (⌘K or /)"
-        aria-label="Search matches, leagues, teams, and articles"
       >
-        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="truncate">Search...</span>
-        <kbd className="hidden sm:inline-flex h-4.5 select-none items-center gap-0.5 rounded border bg-background px-1 font-mono text-[9px] font-medium text-muted-foreground">
+        <kbd
+          aria-hidden="true"
+          className="hidden sm:inline-flex h-4.5 select-none items-center gap-0.5 rounded border bg-background px-1 font-mono text-[9px] font-medium text-muted-foreground"
+        >
           ⌘K
         </kbd>
       </button>

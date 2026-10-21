@@ -220,10 +220,9 @@ export default function Standings() {
               onClick={handleSync}
               disabled={loading || isFetching}
               className="gap-1.5 whitespace-nowrap bg-slate-800 border-slate-700 text-slate-100 hover:bg-slate-700 hover:text-white"
-              aria-label="Sync league standings"
             >
               <RefreshCw className={`h-4 w-4 ${loading || isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
-              <span className="hidden sm:inline">Sync Standings</span>
+              <span className="sr-only sm:not-sr-only">Sync Standings</span>
             </Button>
           </div>
         </div>
@@ -241,7 +240,6 @@ export default function Standings() {
                 className="h-auto p-0 text-xs text-primary font-medium underline self-start sm:self-auto"
                 onClick={handleSync}
                 disabled={loading || isFetching}
-                aria-label="Sync standings data immediately"
               >
                 Sync Now
               </Button>
@@ -260,7 +258,6 @@ export default function Standings() {
                 variant={league.id === lg.id ? 'default' : 'outline'}
                 onClick={() => selectLeague(lg)}
                 className="text-xs gap-1.5 h-8 whitespace-nowrap"
-                aria-label={`View standings for ${lg.name}`}
               >
                 <span aria-hidden="true">{lg.flag}</span>
                 <span>{lg.name}</span>
@@ -298,7 +295,7 @@ export default function Standings() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Crosshair className="h-3 w-3" />
+                <Crosshair className="h-3 w-3" aria-hidden="true" />
                 <span>xG &amp; xPTS Justice Table</span>
               </button>
               <button
@@ -357,7 +354,6 @@ export default function Standings() {
                   size="sm"
                   onClick={() => setShowChart(true)}
                   className="h-7 text-xs gap-1.5 px-2.5"
-                  aria-label="Show form analytics and charts"
                 >
                   <BarChart2 className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>Form Chart</span>
@@ -368,7 +364,6 @@ export default function Standings() {
                   size="sm"
                   onClick={() => setShowChart(false)}
                   className="h-7 text-xs gap-1.5 px-2.5"
-                  aria-label="Show standings table only"
                 >
                   <TableIcon className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>Table Only</span>

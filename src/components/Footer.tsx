@@ -96,7 +96,7 @@ export const Footer = () => {
             <a
               href="mailto:support@predictpro.guru"
               aria-label="Contact PredictPro Support via Email"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1.5 min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <Mail className="h-3.5 w-3.5" aria-hidden="true" />
               <span>support@predictpro.guru</span>
@@ -111,7 +111,7 @@ export const Footer = () => {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="inline-flex items-center min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {l.label}
                 </Link>
@@ -128,16 +128,19 @@ export const Footer = () => {
             <p className="font-semibold text-xs text-foreground">
               Featured Match Previews
             </p>
-            <Link to="/upcoming" className="text-xs text-muted-foreground hover:text-foreground hover:underline">
+            <Link
+              to="/upcoming"
+              className="inline-flex items-center min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+            >
               All Upcoming Fixtures →
             </Link>
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
             {FEATURED_MATCHES.map((m) => (
               <Link
                 key={m.slug}
                 to={`/predict/${m.slug}`}
-                className="text-muted-foreground hover:text-foreground transition-colors hover:underline"
+                className="inline-flex items-center min-h-[24px] py-1 text-muted-foreground hover:text-foreground transition-colors hover:underline"
               >
                 {m.label}
               </Link>
@@ -149,19 +152,19 @@ export const Footer = () => {
           <p>© {new Date().getFullYear()} PredictPro · predictpro.guru · 18+ Please Play Responsibly</p>
 
           <div className="flex items-center gap-3 flex-wrap justify-center">
-            <Link to="/privacy" className="hover:text-foreground transition-colors">
+            <Link to="/privacy" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
-            <span>·</span>
-            <Link to="/terms" className="hover:text-foreground transition-colors">
+            <span aria-hidden="true">·</span>
+            <Link to="/terms" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
               Terms of Service
             </Link>
-            <span>·</span>
-            <Link to="/cookies" className="hover:text-foreground transition-colors">
+            <span aria-hidden="true">·</span>
+            <Link to="/cookies" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
               Cookies
             </Link>
-            <span>·</span>
-            <Link to="/responsible-gaming" className="hover:text-foreground transition-colors">
+            <span aria-hidden="true">·</span>
+            <Link to="/responsible-gaming" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
               Responsible Gaming
             </Link>
           </div>

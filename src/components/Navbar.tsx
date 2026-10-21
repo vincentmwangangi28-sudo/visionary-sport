@@ -204,15 +204,15 @@ export const Navbar = () => {
             <button
               type="button"
               onClick={() => setSlipOpen(true)}
-              aria-label={`Open Match Slip (${selections.length} selections)`}
+              title={`Open Match Slip (${selections.length} selections)`}
               className={`h-8 px-3 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 border transition-colors cursor-pointer ${
                 selections.length > 0
                   ? "bg-amber-400 text-slate-950 border-amber-400 font-bold"
                   : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
               }`}
             >
-              <Ticket className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Slip</span>
+              <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="sr-only sm:not-sr-only">Slip</span>
               <span className="font-mono tabular-nums text-[11px]">({selections.length})</span>
             </button>
 

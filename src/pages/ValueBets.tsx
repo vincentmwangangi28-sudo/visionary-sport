@@ -187,7 +187,6 @@ export default function ValueBets() {
               onClick={handleGeminiScreenTopBet}
               disabled={loadingGemini || bets.length === 0}
               className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
-              aria-label="Screen top value bet edge"
             >
               <TrendingUp className={`h-3.5 w-3.5 text-emerald-400 ${loadingGemini ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span>{loadingGemini ? 'Calculating...' : 'Audit Top +EV Edge'}</span>
@@ -198,7 +197,6 @@ export default function ValueBets() {
               onClick={fetch_} 
               disabled={loading} 
               className="gap-1.5 text-xs font-semibold bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
-              aria-label="Refresh Value Bets data"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span>Refresh</span>
@@ -341,7 +339,6 @@ export default function ValueBets() {
                         variant="secondary" 
                         disabled 
                         className="h-7 text-xs gap-1.5"
-                        aria-label={`Match already added to bet slip: ${bet.home_team} vs ${bet.away_team}`}
                       >
                         <CheckCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                         <span>In Slip</span>
@@ -352,7 +349,6 @@ export default function ValueBets() {
                         variant="outline" 
                         onClick={() => handleAddToSlip(bet)} 
                         className="h-7 text-xs gap-1.5 font-semibold"
-                        aria-label={`Add ${bet.home_team} vs ${bet.away_team} (+EV ${bet.valuePct}%) to Bet Slip`}
                       >
                         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                         <span>Add to Slip</span>

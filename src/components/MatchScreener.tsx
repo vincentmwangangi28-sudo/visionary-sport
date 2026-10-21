@@ -172,8 +172,9 @@ export const MatchScreener: React.FC = () => {
                   onClick={() => setDisplayMode('table')}
                   className="h-7 w-7"
                   title="Table View"
+                  aria-label="Table View"
                 >
-                  <List className="h-3.5 w-3.5" />
+                  <List className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
                 <Button
                   size="icon"
@@ -181,15 +182,16 @@ export const MatchScreener: React.FC = () => {
                   onClick={() => setDisplayMode('grid')}
                   className="h-7 w-7"
                   title="Grid View"
+                  aria-label="Grid View"
                 >
-                  <LayoutGrid className="h-3.5 w-3.5" />
+                  <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="h-8 gap-1.5 text-xs">
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" /> Refresh
               </Button>
               <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filtered.length === 0} className="h-8 gap-1.5 text-xs">
-                <Download className="h-3.5 w-3.5" /> Export CSV
+                <Download className="h-3.5 w-3.5" aria-hidden="true" /> Export CSV
               </Button>
             </div>
           </div>
@@ -207,6 +209,7 @@ export const MatchScreener: React.FC = () => {
                 step={2}
                 onValueChange={(val) => setMinConfidence(val[0])}
                 className="w-full"
+                aria-label="Minimum Probability"
               />
             </div>
 
@@ -224,6 +227,7 @@ export const MatchScreener: React.FC = () => {
                 step={1}
                 onValueChange={(val) => setMinValueEdge(val[0])}
                 className="w-full"
+                aria-label="Minimum Value Edge"
               />
             </div>
 

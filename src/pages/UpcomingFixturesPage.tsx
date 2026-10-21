@@ -317,7 +317,6 @@ export default function UpcomingFixturesPage() {
                 type="button"
                 onClick={() => setSelectedLeague('all')}
                 aria-pressed={selectedLeague === 'all'}
-                aria-label={`Show fixtures from all competitions (${matches.length} matches)`}
                 className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium ${
                   selectedLeague === 'all'
                     ? 'bg-primary text-primary-foreground border-primary font-bold'
@@ -334,7 +333,6 @@ export default function UpcomingFixturesPage() {
                     type="button"
                     onClick={() => setSelectedLeague(lg)}
                     aria-pressed={selectedLeague.toLowerCase() === lg.toLowerCase()}
-                    aria-label={`Filter by ${lg} (${count} matches)`}
                     className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors shrink-0 font-medium flex items-center gap-1 ${
                       selectedLeague.toLowerCase() === lg.toLowerCase()
                         ? 'bg-primary text-primary-foreground border-primary font-bold'

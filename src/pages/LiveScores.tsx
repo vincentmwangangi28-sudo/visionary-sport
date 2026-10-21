@@ -972,8 +972,8 @@ export default function LiveScores() {
                                   className="h-8 text-xs px-2 gap-1 text-primary hover:bg-primary/10"
                                   title="Analyze tactical in-play pressure with Gemini AI"
                                 >
-                                  <Sparkles className="h-3.5 w-3.5" />
-                                  <span className="hidden sm:inline">AI Pulse</span>
+                                  <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <span className="sr-only sm:not-sr-only">AI Pulse</span>
                                 </Button>
 
                                 <Button
@@ -981,11 +981,10 @@ export default function LiveScores() {
                                   variant={isExpanded ? 'secondary' : 'outline'}
                                   onClick={() => setExpandedId(isExpanded ? null : m.id)}
                                   className="h-8 text-xs px-2 gap-1 font-semibold"
-                                  aria-label={isExpanded ? 'Collapse match center' : 'Expand 2D pitch and match stats'}
                                 >
-                                  <Crosshair className="h-3.5 w-3.5 text-emerald-500" />
-                                  <span className="hidden sm:inline">2D Pitch</span>
-                                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                  <Crosshair className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />
+                                  <span className="sr-only sm:not-sr-only">2D Pitch</span>
+                                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />}
                                 </Button>
                               </div>
                             </div>
