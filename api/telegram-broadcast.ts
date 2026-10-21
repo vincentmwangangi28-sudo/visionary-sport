@@ -17,9 +17,19 @@ export default async function handler(request: Request) {
   }
 
   try {
-    let payload: TelegramRequestPayload = { action: 'check_bot' };
+    const url = new URL(request.url);
+    const mode = url.searchParams.get('mode');
+    const queryAction = url.searchParams.get('action') as TelegramRequestPayload['action'] | null;
+
+    let payload: TelegramRequestPayload = {
+      action: queryAction || (mode === 'config' ? 'get_config' : 'check_bot'),
+    };
     if (request.method === 'POST') {
-      payload = (await request.json().catch(() => ({ action: 'check_bot' }))) as TelegramRequestPayload;
+      const body = (await request.json().catch(() => ({}))) as TelegramRequestPayload;
+      payload = {
+        ...body,
+        action: body.action || queryAction || (mode === 'config' ? 'configure_bot' : 'check_bot'),
+      };
     }
 
     const result = await handleTelegramRequest(payload);

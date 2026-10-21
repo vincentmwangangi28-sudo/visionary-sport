@@ -166,7 +166,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           };
         }
         const { handleFootballRequest } = await import('./footballHandler');
-        const upcomingData = await handleFootballRequest({ type: 'upcoming' });
+        const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
+        const scannedList = upcomingData?.fixtures || upcomingData?.matches || [];
         return {
           success: true,
           job: 'value-bets-scanner',
@@ -174,7 +175,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           status: 'scanned_memory_cache',
           executedAt,
           durationMs: Date.now() - start,
-          data: { fixturesScanned: Array.isArray(upcomingData?.matches) ? upcomingData.matches.length : 0 },
+          data: { fixturesScanned: Array.isArray(scannedList) ? scannedList.length : 0 },
         };
       }
 
@@ -212,7 +213,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'daily-predictions':
       case 'daily': {
         const { handleFootballRequest } = await import('./footballHandler');
-        const upcomingData = await handleFootballRequest({ type: 'upcoming' });
+        const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
+        const upcomingList = upcomingData?.fixtures || upcomingData?.matches || [];
         if (IS_CUSTOM_SUPABASE) {
           const res = await fetch(`${SUPABASE_BASE_URL}/functions/v1/cron-daily-predictions`, {
             method: 'POST',
@@ -237,7 +239,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           status: 'synced_memory_cache',
           executedAt,
           durationMs: Date.now() - start,
-          data: { upcomingCount: Array.isArray(upcomingData?.matches) ? upcomingData.matches.length : 0 },
+          data: { upcomingCount: Array.isArray(upcomingList) ? upcomingList.length : 0 },
         };
       }
 

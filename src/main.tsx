@@ -1,29 +1,14 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { prewarmOfflineCaches, triggerMatchDataRevalidation } from "./services/offlineSyncService";
 import { queryClient } from "./lib/queryClient";
 import { logger } from "./lib/logger";
 
 // Initialize centralized unhandled exception & network rejection monitoring
 logger.initGlobalErrorLogging();
 
-/**
- * Enhanced Service Worker Registration with Stale-While-Revalidate (SWR) for Match Data.
- *
- * SWR Mechanics:
- * 1. Instant Cache Response: Serves cached football match snapshots and predictions immediately
- *    from CacheStorage, allowing full offline browsing and zero-latency loading.
- * 2. Background Revalidation: The Service Worker fetches fresh match results/odds in the background.
- * 3. Cache Refresh & Client Broadcast: Updated match data refreshes CacheStorage and sends a
- *    `MATCH_DATA_REVALIDATED` message to active browser clients.
- * 4. Reactive UI Synchronization: React Query automatically invalidates and refreshes active
- *    queries ('predictions', 'live-fixtures', 'upcoming-fixtures') without page reloading.
- * 5. Reconnection & Visibility Sync: Triggers immediate revalidation on network recovery and tab focus.
- */
 if ('serviceWorker' in navigator) {
   let lastRevalidationTime = 0;
-  // Handler for background revalidation broadcasts (debounced to prevent main-thread violations)
   const handleMatchDataRevalidation = (data?: { url?: string; timestamp?: string }) => {
     const now = Date.now();
     if (now - lastRevalidationTime < 30000) return;
@@ -47,14 +32,12 @@ if ('serviceWorker' in navigator) {
     }
   };
 
-  // Listen for Service Worker postMessage notifications
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data?.type === 'MATCH_DATA_REVALIDATED') {
       handleMatchDataRevalidation(event.data);
     }
   });
 
-  // Support BroadcastChannel for multi-tab SWR updates if supported
   if ('BroadcastChannel' in window) {
     try {
       const channel = new BroadcastChannel('predictpro-match-swr');
@@ -68,7 +51,6 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  // Immediately purge any stale pre-v4 caches so old bloated opaque logo caches are evicted
   if ('caches' in window) {
     caches
       .keys()
@@ -85,10 +67,9 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
-      .then((reg) => {
+      .then(async (reg) => {
         reg.update().catch(() => {});
 
-        // Handshake with active worker: configure Stale-While-Revalidate strategy
         const notifySWOfSWR = () => {
           if (reg.active) {
             reg.active.postMessage({
@@ -100,39 +81,35 @@ if ('serviceWorker' in navigator) {
 
         notifySWOfSWR();
 
-        // Pre-warm offline match data and team logos into Service Worker caches
+        const { prewarmOfflineCaches, triggerMatchDataRevalidation } = await import('./services/offlineSyncService');
+
         if (navigator.onLine) {
           prewarmOfflineCaches().catch(() => {});
         }
 
-        // On network reconnect, immediately trigger background revalidation of match data
         window.addEventListener('online', () => {
           triggerMatchDataRevalidation().catch(() => {});
           prewarmOfflineCaches().catch(() => {});
         });
 
-        // When user switches back to the tab, revalidate match data if online
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState === 'visible' && navigator.onLine) {
             triggerMatchDataRevalidation().catch(() => {});
           }
         });
 
-        // Periodic background revalidation check every 5 minutes when active
         setInterval(() => {
           if (navigator.onLine && document.visibilityState === 'visible') {
             triggerMatchDataRevalidation().catch(() => {});
           }
         }, 5 * 60 * 1000);
 
-        // Check for updates every hour (safely handle network interruptions in iframe)
         setInterval(() => {
           reg.update().catch(() => {});
         }, 60 * 60 * 1000);
       })
       .catch((err) => console.warn('SW registration failed:', err));
 
-    // Handle controller transitions when updated service worker activates
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
@@ -141,7 +118,9 @@ if ('serviceWorker' in navigator) {
         });
       }
       if (navigator.onLine) {
-        prewarmOfflineCaches().catch(() => {});
+        import('./services/offlineSyncService')
+          .then(({ prewarmOfflineCaches }) => prewarmOfflineCaches())
+          .catch(() => {});
       }
     });
   });

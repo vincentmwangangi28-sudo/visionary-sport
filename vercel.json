@@ -118,6 +118,14 @@
       "destination": "/api/health"
     },
     {
+      "source": "/api/telegram-config",
+      "destination": "/api/telegram-broadcast?mode=config"
+    },
+    {
+      "source": "/api/highlights",
+      "destination": "/api/football?type=highlights"
+    },
+    {
       "source": "/((?!api/|mcp|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|robots\\.txt|ads\\.txt|app-ads\\.txt|.*\\.xml|.*\\.txt|.*\\.json|.*\\.ico|.*\\.png|.*\\.svg|.*\\.jpg|.*\\.webp).*)",
       "has": [
         {

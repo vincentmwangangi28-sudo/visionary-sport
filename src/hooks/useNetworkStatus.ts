@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  prewarmOfflineCaches, 
-  checkOfflineCachesReady, 
-  getLastSyncTime 
-} from '@/services/offlineSyncService';
 import { toast } from 'sonner';
+
+const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v4';
 
 export interface NetworkStatus {
   isOnline: boolean;
@@ -20,12 +17,22 @@ export function useNetworkStatus(): NetworkStatus {
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
   const [hasCachedData, setHasCachedData] = useState<boolean>(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(getLastSyncTime());
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem(LAST_SYNC_KEY);
+    } catch {
+      return null;
+    }
+  });
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Check cached data status
   useEffect(() => {
-    checkOfflineCachesReady().then(setHasCachedData);
+    import('@/services/offlineSyncService')
+      .then(({ checkOfflineCachesReady }) => checkOfflineCachesReady())
+      .then(setHasCachedData)
+      .catch(() => {});
   }, []);
 
   const syncOfflineData = useCallback(async () => {
@@ -36,6 +43,7 @@ export function useNetworkStatus(): NetworkStatus {
 
     setIsSyncing(true);
     try {
+      const { prewarmOfflineCaches } = await import('@/services/offlineSyncService');
       await prewarmOfflineCaches();
       setHasCachedData(true);
       const now = new Date().toISOString();

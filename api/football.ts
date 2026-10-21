@@ -18,10 +18,33 @@ export default async function handler(request: Request) {
 
   try {
     const url = new URL(request.url);
-    const type = url.searchParams.get('type') || 'upcoming';
-    const league = url.searchParams.get('league') || undefined;
+    const isHighlights = url.pathname.includes('/api/highlights') || url.searchParams.get('type') === 'highlights';
+    let params: {
+      type?: string;
+      league?: string;
+      homeTeam?: string;
+      awayTeam?: string;
+      query?: string;
+      date?: string;
+    } = {
+      type: isHighlights ? 'highlights' : (url.searchParams.get('type') || 'upcoming'),
+      league: url.searchParams.get('league') || url.searchParams.get('leagueCode') || undefined,
+      homeTeam: url.searchParams.get('homeTeam') || url.searchParams.get('home') || undefined,
+      awayTeam: url.searchParams.get('awayTeam') || url.searchParams.get('away') || undefined,
+      query: url.searchParams.get('query') || url.searchParams.get('q') || undefined,
+      date: url.searchParams.get('date') || undefined,
+    };
 
-    const data = await handleFootballRequest({ type, league });
+    if (request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      params = {
+        ...params,
+        ...body,
+        type: isHighlights && !body.type ? 'highlights' : (body.type || params.type),
+      };
+    }
+
+    const data = await handleFootballRequest(params);
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: {

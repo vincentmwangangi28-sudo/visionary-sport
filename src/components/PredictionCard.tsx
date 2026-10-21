@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
-import { SharePrediction } from '@/components/SharePrediction';
 import { TeamLogo } from '@/components/TeamLogo';
-import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { TrendingUp, Check, Coins, Pin, ArrowRight, BarChart2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo, memo, Suspense } from 'react';
@@ -11,9 +9,18 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
 import { hapticService } from '@/services/hapticService';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { MatchAnalyticsModal } from './MatchAnalyticsModal';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+const MatchAnalyticsModal = lazyWithRetry(() =>
+  import('./MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
+);
+const SharePrediction = lazyWithRetry(() =>
+  import('@/components/SharePrediction').then((m) => ({ default: m.SharePrediction }))
+);
+const NotifyMeButton = lazyWithRetry(() =>
+  import('@/components/NotifyMeButton').then((m) => ({ default: m.NotifyMeButton }))
+);
 
 function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string): string {
   const clean = (name: string) =>
@@ -116,6 +123,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     hapticService.selection();
     setUnlockingCoin(true);
     try {
+      const { supabase } = await import('@/integrations/supabase/client');
       const session = (await supabase.auth.getSession()).data.session;
       if (!session) {
         hapticService.warning();
@@ -304,10 +312,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                         key={idx}
                         className={`w-3.5 h-3.5 rounded-[3px] text-[9px] font-mono font-bold flex items-center justify-center text-white ${
                           res === 'W'
-                            ? 'bg-emerald-600'
+                            ? 'bg-emerald-700'
                             : res === 'D'
-                              ? 'bg-slate-400 dark:bg-slate-600'
-                              : 'bg-rose-500'
+                              ? 'bg-slate-600'
+                              : 'bg-rose-600'
                         }`}
                       >
                         {res}
@@ -340,10 +348,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                         key={idx}
                         className={`w-3.5 h-3.5 rounded-[3px] text-[9px] font-mono font-bold flex items-center justify-center text-white ${
                           res === 'W'
-                            ? 'bg-emerald-600'
+                            ? 'bg-emerald-700'
                             : res === 'D'
-                              ? 'bg-slate-400 dark:bg-slate-600'
-                              : 'bg-rose-500'
+                              ? 'bg-slate-600'
+                              : 'bg-rose-600'
                         }`}
                       >
                         {res}
@@ -366,7 +374,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
               <span
                 className={`font-mono tabular-nums text-[11px] font-bold px-1.5 py-0.5 rounded ${
                   confidence >= 80
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-emerald-700 text-white'
                     : 'bg-primary/15 text-primary'
                 }`}
               >
@@ -465,21 +473,23 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
               >
                 <Pin className={`h-3.5 w-3.5 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} />
               </button>
-              <NotifyMeButton
-                match={{
-                  id: p.id,
-                  home_team: p.home_team,
-                  away_team: p.away_team,
-                  league: p.league,
-                  match_date: p.match_date,
-                  prediction: outcome,
-                  confidence,
-                  home_odds: p.home_odds,
-                  draw_odds: p.draw_odds,
-                  away_odds: p.away_odds,
-                }}
-                variant="icon"
-              />
+              <Suspense fallback={null}>
+                <NotifyMeButton
+                  match={{
+                    id: p.id,
+                    home_team: p.home_team,
+                    away_team: p.away_team,
+                    league: p.league,
+                    match_date: p.match_date,
+                    prediction: outcome,
+                    confidence,
+                    home_odds: p.home_odds,
+                    draw_odds: p.draw_odds,
+                    away_odds: p.away_odds,
+                  }}
+                  variant="icon"
+                />
+              </Suspense>
             </div>
           </div>
 
@@ -592,22 +602,26 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
               </Link>
             </div>
 
-            <SharePrediction
-              prediction={{
-                ...p,
-                predicted_outcome: outcome,
-                confidence_score: confidence,
-                status: p.status ?? 'pending',
-                is_premium: p.is_premium,
-                created_at: p.created_at,
-              }}
-            />
+            <Suspense fallback={null}>
+              <SharePrediction
+                prediction={{
+                  ...p,
+                  predicted_outcome: outcome,
+                  confidence_score: confidence,
+                  status: p.status ?? 'pending',
+                  is_premium: p.is_premium,
+                  created_at: p.created_at,
+                }}
+              />
+            </Suspense>
           </div>
         </CardContent>
       </Card>
 
       {showAnalytics && (
-        <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+        <Suspense fallback={null}>
+          <MatchAnalyticsModal prediction={p} open={showAnalytics} onClose={() => setShowAnalytics(false)} />
+        </Suspense>
       )}
     </>
   );

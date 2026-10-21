@@ -321,11 +321,11 @@ Return a JSON array of 5 news items:
     searchEntryPoint: null,
   };
 
-  // Tier 1: Try gemini-3.8-flash with googleSearch tool
+  // Tier 1: Try gemini-2.5-flash with googleSearch tool
   let searchSuccess = false;
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         systemInstruction,
@@ -363,7 +363,7 @@ Return a JSON array of 5 news items:
     searchSuccess = false;
   }
 
-  // Tier 2: If Search Grounding was rate-limited / 429 quota exhausted, use direct gemini-3.8-flash generation
+  // Tier 2: If Search Grounding was rate-limited / 429 quota exhausted, use direct gemini-2.5-flash generation
   if (!searchSuccess) {
     try {
       const config: any = {
@@ -374,7 +374,7 @@ Return a JSON array of 5 news items:
       }
 
       const directResponse = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config,
       });

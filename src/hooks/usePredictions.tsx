@@ -3,8 +3,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
-import { matchesLeagueFilter, fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { supabase } from '@/integrations/supabase/client';
 import { 
   mergeAndPreservePredictions, 
   generateDeterministicPrediction,
@@ -18,6 +16,26 @@ import {
 
 export type { Prediction };
 export { getPrediction, getConfidence };
+
+function matchesLeagueFilter(predLeague: string | undefined, targetLeague: string | undefined): boolean {
+  if (!targetLeague || targetLeague === 'All') return true;
+  if (!predLeague) return false;
+  const pL = predLeague.toLowerCase().trim();
+  const tL = targetLeague.toLowerCase().trim();
+  if (tL === 'kpl' || tL.includes('kenya') || tL.includes('fkf')) {
+    return pL === 'kpl' || pL.includes('kenya') || pL.includes('fkf');
+  }
+  if (tL === 'premier league' || tL === 'epl' || tL === 'english premier league') {
+    return pL === 'premier league' || pL === 'english premier league' || pL === 'epl';
+  }
+  if (tL === 'champions league' || tL === 'ucl' || tL === 'uefa champions league') {
+    return pL === 'champions league' || pL === 'uefa champions league' || pL === 'ucl';
+  }
+  if (tL === 'afcon' || tL === 'caf') {
+    return pL.includes('afcon') || pL.includes('caf') || pL.includes('kenya') || pL.includes('fkf') || pL.includes('psl') || pL.includes('npfl') || pL.includes('egypt');
+  }
+  return pL === tL || pL.includes(tL) || tL.includes(pL);
+}
 
 const PAGE_SIZE = 6;
 const queryKeys = { predictions: { list: (leagueKey: string) => ['predictions', 'list', leagueKey] } };
@@ -62,6 +80,8 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
   return sortMatchesByDatePriority(sanitized);
 }
 
+const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v1';
+
 const INITIAL_PAYLOAD_CACHE = new Map<string, {
   allPredictions: Prediction[];
   total: number;
@@ -73,7 +93,25 @@ function getCachedInitialPredictionsPayload(league?: string) {
   const cached = INITIAL_PAYLOAD_CACHE.get(key);
   if (cached) return cached;
 
-  let seed = getUpdatedDefaultPredictions();
+  let seed: Prediction[] = [];
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(REAL_UPCOMING_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { timestamp: number; fixtures: Prediction[] };
+        if (parsed && Array.isArray(parsed.fixtures) && parsed.fixtures.length > 0 && Date.now() - parsed.timestamp < 6 * 3600_000) {
+          seed = parsed.fixtures;
+        }
+      }
+    } catch {
+      // ignore localStorage read errors
+    }
+  }
+
+  if (seed.length === 0) {
+    seed = getUpdatedDefaultPredictions();
+  }
+
   if (league && league !== 'All') {
     const filtered = seed.filter((p) => matchesLeagueFilter(p.league, league));
     if (filtered.length > 0) seed = filtered;
@@ -175,21 +213,42 @@ export const usePredictions = (
         });
       };
 
-      // 1. Fetch real-time live upcoming fixtures from RapidAPI & ESPN sports feeds
+      // 1a. Fast server-side real upcoming fixtures (/api/football?type=upcoming)
       try {
-        const realtimeFixtures = await fetchRealtimeUpcomingFixtures(league);
-        if (realtimeFixtures && realtimeFixtures.length > 0) {
-          for (const item of realtimeFixtures) {
-            pushIfValidUpcoming(item);
+        const res = await fetch('/api/football?type=upcoming', {
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
+            for (const item of json.fixtures as Prediction[]) {
+              pushIfValidUpcoming(item);
+            }
           }
         }
-      } catch (err) {
-        console.warn('Realtime fixtures fetch warning:', err);
+      } catch {
+        // Fallback to realtimeFootball service below
+      }
+
+      // 1b. Supplement from RapidAPI & ESPN sports feeds if server returned < 12 matches
+      if (combinedPredictions.length < 12) {
+        try {
+          const { fetchRealtimeUpcomingFixtures } = await import('@/services/realtimeFootball');
+          const realtimeFixtures = await fetchRealtimeUpcomingFixtures(league);
+          if (realtimeFixtures && realtimeFixtures.length > 0) {
+            for (const item of realtimeFixtures) {
+              pushIfValidUpcoming(item);
+            }
+          }
+        } catch (err) {
+          console.warn('Realtime fixtures fetch warning:', err);
+        }
       }
 
       // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
       if (combinedPredictions.length < 18) {
         try {
+          const { supabase } = await import('@/integrations/supabase/client');
           const nowIso = new Date().toISOString();
           const twoWeeksIso = new Date(Date.now() + 14 * 86400000).toISOString();
           let q = supabase
@@ -238,11 +297,25 @@ export const usePredictions = (
         sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : combinedPredictions)
       );
 
-      return {
+      const resultPayload = {
         allPredictions: cleanList,
         total: cleanList.length,
         isRealTime: true,
       };
+
+      INITIAL_PAYLOAD_CACHE.set(leagueKey, resultPayload);
+      if ((!league || league === 'All') && cleanList.length > 0 && typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(
+            REAL_UPCOMING_STORAGE_KEY,
+            JSON.stringify({ timestamp: Date.now(), fixtures: cleanList.slice(0, 48) })
+          );
+        } catch {
+          // ignore storage quota errors
+        }
+      }
+
+      return resultPayload;
     },
     staleTime: 60_000,
     refetchOnWindowFocus: false,
@@ -253,21 +326,10 @@ export const usePredictions = (
     if (typeof window !== 'undefined' && (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))) {
       return;
     }
-    let triggered = false;
-    const triggerRefetch = () => {
-      if (triggered) return;
-      triggered = true;
-      cleanup();
+    const timer = setTimeout(() => {
       query.refetch();
-    };
-    const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const;
-    const cleanup = () => {
-      events.forEach((evt) => window.removeEventListener(evt, triggerRefetch));
-    };
-    events.forEach((evt) => window.addEventListener(evt, triggerRefetch, { once: true, passive: true }));
-    const timer = setTimeout(triggerRefetch, 12000);
+    }, 40);
     return () => {
-      cleanup();
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

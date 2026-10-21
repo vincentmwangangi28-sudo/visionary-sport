@@ -2965,7 +2965,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       return;
     }
 
-    // 1. Synchronize Document Title & HTML Document Root Attributes
+    // 1. Synchronize Document Title, Primary Description & Canonical immediately
     if (document.title !== resolved.fullTitle) {
       document.title = resolved.fullTitle;
     }
@@ -2975,105 +2975,120 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       document.documentElement.dir = resolved.detectedLocale.isRTL ? 'rtl' : 'ltr';
     }
 
-    // 2. Synchronize Primary & Google Discover Meta Tags
-    const robotsDirective = resolved.noIndex
-      ? 'noindex,nofollow'
-      : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1';
-
     upsertMetaTag('name', 'description', resolved.description);
-    upsertMetaTag('name', 'keywords', resolved.keywords);
-    upsertMetaTag('name', 'robots', robotsDirective);
-    upsertMetaTag('name', 'googlebot', robotsDirective);
-    upsertMetaTag(
-      'name',
-      'googlebot-news',
-      resolved.noIndex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1'
-    );
-    upsertMetaTag(
-      'http-equiv',
-      'content-language',
-      resolved.detectedLocale.locale || resolved.detectedLocale.lang
-    );
-    upsertMetaTag('name', 'language', resolved.detectedLocale.lang);
-
-    // Inject multi-lingual meta descriptions for search engine crawlers in non-English regions
-    for (const [langCode, localizedDesc] of Object.entries(resolved.localizedDescriptionsByLang)) {
-      if (localizedDesc) {
-        upsertMetaTag('name', `description:${langCode}`, localizedDesc);
-      }
-    }
-
-    // 3. Synchronize Canonical & Dynamic Multi-Region Hreflang Links
     upsertLinkTag('canonical', resolved.canonicalUrl);
 
-    const validHreflangs = new Set<string>();
-    for (const item of resolved.hreflangLinks) {
-      validHreflangs.add(item.hreflang);
-      upsertLinkTag('alternate', item.href, item.hreflang);
-    }
-    pruneAlternateHreflangTags(validHreflangs);
-
-    // 4. Synchronize OpenGraph & Google Discover Article Freshness Tags
-    const imageAlt = resolved.matchSeo
-      ? `${resolved.matchSeo.homeTeam} vs ${resolved.matchSeo.awayTeam} AI Football Prediction, Lineups & xG Stats`
-      : resolved.fullTitle;
-
-    upsertMetaTag('property', 'og:type', resolved.type);
-    upsertMetaTag('property', 'og:url', resolved.canonicalUrl);
-    upsertMetaTag('property', 'og:title', resolved.fullTitle);
-    upsertMetaTag('property', 'og:description', resolved.description);
-    upsertMetaTag('property', 'og:image', resolved.image);
-    upsertMetaTag('property', 'og:image:width', '1200');
-    upsertMetaTag('property', 'og:image:height', '630');
-    upsertMetaTag('property', 'og:image:alt', imageAlt);
-    upsertMetaTag('property', 'og:site_name', SITE_NAME);
-    upsertMetaTag('property', 'og:locale', resolved.detectedLocale.ogLocale);
-
-    const ogAlternateLocales = [
-      'en_US', 'en_GB', 'en_KE', 'en_NG', 'en_ZA', 'en_GH', 'en_IN', 'en_CA', 'en_AU',
-      'es_ES', 'es_MX', 'es_AR', 'pt_BR', 'pt_PT', 'fr_FR', 'fr_CA', 'de_DE', 'sw_KE', 'ar_SA', 'ar_EG'
-    ].filter((loc) => loc !== resolved.detectedLocale.ogLocale);
-
-    upsertMultiMetaTagValues('property', 'og:locale:alternate', ogAlternateLocales);
-
-    if (resolved.matchSeo) {
-      upsertMetaTag('property', 'article:published_time', resolved.matchSeo.publishedTime);
-      upsertMetaTag('property', 'article:modified_time', resolved.matchSeo.modifiedTime);
-      upsertMetaTag('property', 'article:section', resolved.matchSeo.league);
-      upsertMetaTag('property', 'article:author', 'PredictPro Quantitative Football Intelligence');
-    }
-
-    // 5. Synchronize Twitter Card Tags
-    upsertMetaTag('name', 'twitter:card', 'summary_large_image');
-    upsertMetaTag('name', 'twitter:site', '@PredictProAI');
-    upsertMetaTag('name', 'twitter:creator', '@PredictProAI');
-    upsertMetaTag('name', 'twitter:title', resolved.fullTitle);
-    upsertMetaTag('name', 'twitter:description', resolved.description);
-    upsertMetaTag('name', 'twitter:image', resolved.image);
-    upsertMetaTag('name', 'twitter:image:alt', imageAlt);
-
-    // 6. Synchronize JSON-LD Structured Data Script in <head> and remove any duplicate JSON-LD scripts
-    const scriptId = 'predictpro-dynamic-seo-jsonld';
-    const allJsonLdScripts = Array.from(
-      document.head.querySelectorAll('script[type="application/ld+json"]')
-    ) as HTMLScriptElement[];
-    for (const s of allJsonLdScripts) {
-      if (s.id !== scriptId) {
-        s.remove();
+    // Defer secondary head tag mutations (35+ hreflang links, 20 og:locale:alternate tags, JSON-LD serialization)
+    // off the critical hydration frame to eliminate main-thread blocking (TBT / INP).
+    const syncSecondaryHeadTags = () => {
+      if (!isExplicitOverride && activeComponentSEOOverrideCount > 0) {
+        return;
       }
+
+      const robotsDirective = resolved.noIndex
+        ? 'noindex,nofollow'
+        : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1';
+
+      upsertMetaTag('name', 'keywords', resolved.keywords);
+      upsertMetaTag('name', 'robots', robotsDirective);
+      upsertMetaTag('name', 'googlebot', robotsDirective);
+      upsertMetaTag(
+        'name',
+        'googlebot-news',
+        resolved.noIndex ? 'noindex,nofollow' : 'index,follow,max-image-preview:large,max-snippet:-1'
+      );
+      upsertMetaTag(
+        'http-equiv',
+        'content-language',
+        resolved.detectedLocale.locale || resolved.detectedLocale.lang
+      );
+      upsertMetaTag('name', 'language', resolved.detectedLocale.lang);
+
+      for (const [langCode, localizedDesc] of Object.entries(resolved.localizedDescriptionsByLang)) {
+        if (localizedDesc) {
+          upsertMetaTag('name', `description:${langCode}`, localizedDesc);
+        }
+      }
+
+      const validHreflangs = new Set<string>();
+      for (const item of resolved.hreflangLinks) {
+        validHreflangs.add(item.hreflang);
+        upsertLinkTag('alternate', item.href, item.hreflang);
+      }
+      pruneAlternateHreflangTags(validHreflangs);
+
+      const imageAlt = resolved.matchSeo
+        ? `${resolved.matchSeo.homeTeam} vs ${resolved.matchSeo.awayTeam} AI Football Prediction, Lineups & xG Stats`
+        : resolved.fullTitle;
+
+      upsertMetaTag('property', 'og:type', resolved.type);
+      upsertMetaTag('property', 'og:url', resolved.canonicalUrl);
+      upsertMetaTag('property', 'og:title', resolved.fullTitle);
+      upsertMetaTag('property', 'og:description', resolved.description);
+      upsertMetaTag('property', 'og:image', resolved.image);
+      upsertMetaTag('property', 'og:image:width', '1200');
+      upsertMetaTag('property', 'og:image:height', '630');
+      upsertMetaTag('property', 'og:image:alt', imageAlt);
+      upsertMetaTag('property', 'og:site_name', SITE_NAME);
+      upsertMetaTag('property', 'og:locale', resolved.detectedLocale.ogLocale);
+
+      const ogAlternateLocales = [
+        'en_US', 'en_GB', 'en_KE', 'en_NG', 'en_ZA', 'en_GH', 'en_IN', 'en_CA', 'en_AU',
+        'es_ES', 'es_MX', 'es_AR', 'pt_BR', 'pt_PT', 'fr_FR', 'fr_CA', 'de_DE', 'sw_KE', 'ar_SA', 'ar_EG'
+      ].filter((loc) => loc !== resolved.detectedLocale.ogLocale);
+
+      upsertMultiMetaTagValues('property', 'og:locale:alternate', ogAlternateLocales);
+
+      if (resolved.matchSeo) {
+        upsertMetaTag('property', 'article:published_time', resolved.matchSeo.publishedTime);
+        upsertMetaTag('property', 'article:modified_time', resolved.matchSeo.modifiedTime);
+        upsertMetaTag('property', 'article:section', resolved.matchSeo.league);
+        upsertMetaTag('property', 'article:author', 'PredictPro Quantitative Football Intelligence');
+      }
+
+      upsertMetaTag('name', 'twitter:card', 'summary_large_image');
+      upsertMetaTag('name', 'twitter:site', '@PredictProAI');
+      upsertMetaTag('name', 'twitter:creator', '@PredictProAI');
+      upsertMetaTag('name', 'twitter:title', resolved.fullTitle);
+      upsertMetaTag('name', 'twitter:description', resolved.description);
+      upsertMetaTag('name', 'twitter:image', resolved.image);
+      upsertMetaTag('name', 'twitter:image:alt', imageAlt);
+
+      const scriptId = 'predictpro-dynamic-seo-jsonld';
+      const allJsonLdScripts = Array.from(
+        document.head.querySelectorAll('script[type="application/ld+json"]')
+      ) as HTMLScriptElement[];
+      for (const s of allJsonLdScripts) {
+        if (s.id !== scriptId) {
+          s.remove();
+        }
+      }
+
+      let scriptEl = document.getElementById(scriptId) as HTMLScriptElement | null;
+      if (!scriptEl) {
+        scriptEl = document.createElement('script');
+        scriptEl.id = scriptId;
+        scriptEl.type = 'application/ld+json';
+        document.head.appendChild(scriptEl);
+      }
+      const jsonString = JSON.stringify(resolved.structuredData);
+      if (scriptEl.textContent !== jsonString) {
+        scriptEl.textContent = jsonString;
+      }
+    };
+
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (typeof win.requestIdleCallback === 'function') {
+      const idleId = win.requestIdleCallback(syncSecondaryHeadTags, { timeout: 1200 });
+      return () => win.cancelIdleCallback?.(idleId);
     }
 
-    let scriptEl = document.getElementById(scriptId) as HTMLScriptElement | null;
-    if (!scriptEl) {
-      scriptEl = document.createElement('script');
-      scriptEl.id = scriptId;
-      scriptEl.type = 'application/ld+json';
-      document.head.appendChild(scriptEl);
-    }
-    const jsonString = JSON.stringify(resolved.structuredData);
-    if (scriptEl.textContent !== jsonString) {
-      scriptEl.textContent = jsonString;
-    }
+    const timerId = window.setTimeout(syncSecondaryHeadTags, 50);
+    return () => window.clearTimeout(timerId);
   }, [resolved, isExplicitOverride]);
 
   return resolved;

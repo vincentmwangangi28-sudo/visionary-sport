@@ -9,14 +9,12 @@ import { CurrencyProvider } from "@/hooks/useCurrency";
 import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
 import { BetSlipProvider } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
-import { useSEOManager } from "@/hooks/useSEOManager";
 import { useWebMCPTools } from "@/hooks/useWebMCPTools";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
-import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { queryClient } from "@/lib/queryClient";
 import React, { Suspense, memo, useState, useEffect, useCallback, ComponentType, ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -25,9 +23,10 @@ import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 
-import DeferredBackgroundHooks from "@/components/DeferredBackgroundHooks";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-
+const SEORuntime = lazyWithRetry(() => import("@/components/SEORuntime"));
+const DeferredBackgroundHooks = lazyWithRetry(() => import("@/components/DeferredBackgroundHooks"));
+const Sonner = lazyWithRetry(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
+const CookieConsentBanner = lazyWithRetry(() => import("@/components/CookieConsentBanner").then(m => ({ default: m.CookieConsentBanner })));
 const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
 const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
 
@@ -343,35 +342,15 @@ const LocaleDetectionInitializer: React.FC = () => {
   return null;
 };
 
-const SEOManagerInitializer: React.FC = () => {
-  useSEOManager();
-  return null;
-};
+const SEOManagerInitializer: React.FC = () => (
+  <Suspense fallback={null}>
+    <SEORuntime />
+  </Suspense>
+);
 
 const WebMCPInitializer: React.FC = () => {
   useWebMCPTools();
-  return (
-    <form
-      action="/predict"
-      method="get"
-      role="search"
-      aria-label="Quick AI Football Prediction Search"
-      toolname="search_football_predictions"
-      tooldescription="Search daily AI football match predictions, Expected Goals (xG) statistics, and betting tips by club or league"
-      className="sr-only"
-    >
-      <label htmlFor="webmcp-global-search-query">Search Football Team or League Predictions</label>
-      <input
-        id="webmcp-global-search-query"
-        type="search"
-        name="q"
-        required
-        toolparamdescription="Football club name, matchup, or league name to search predictions for"
-        placeholder="Search team or league..."
-      />
-      <button type="submit">Search Predictions</button>
-    </form>
-  );
+  return null;
 };
 
 const DeferredGlobalOverlays = () => {
@@ -422,6 +401,11 @@ const DeferredGlobalOverlays = () => {
           <Sonner />
         </ErrorBoundary>
       </Suspense>
+      <Suspense fallback={null}>
+        <ErrorBoundary fallback={null}>
+          <CookieConsentBanner />
+        </ErrorBoundary>
+      </Suspense>
     </>
   );
 };
@@ -448,7 +432,6 @@ const App = () => (
                       </a>
                       <OfflineBanner />
                       <BreadcrumbLayoutSchema />
-                      <CookieConsentBanner />
                       <Suspense fallback={<RouteLoadingFallback />}>
                         <ErrorBoundary>
                           <Routes>

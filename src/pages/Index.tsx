@@ -1,10 +1,17 @@
+import { Suspense } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { PredictionsDashboard } from '@/components/PredictionsDashboard';
-import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
-import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+const SEOAuthorityHub = lazyWithRetry(() =>
+  import('@/components/SEOAuthorityHub').then((m) => ({ default: m.SEOAuthorityHub }))
+);
+const Footer = lazyWithRetry(() =>
+  import('@/components/Footer').then((m) => ({ default: m.Footer }))
+);
 
 const HOME_JSON_LD = {
   '@context': 'https://schema.org',
@@ -139,8 +146,10 @@ const Index = () => {
         </div>
       </main>
 
-      <SEOAuthorityHub />
-      <Footer />
+      <Suspense fallback={null}>
+        <SEOAuthorityHub />
+        <Footer />
+      </Suspense>
     </div>
   );
 };

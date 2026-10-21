@@ -155,7 +155,10 @@ export default function Standings() {
 
   const { data, isLoading: loading, isFetching, refetch } = useStandings(league.id);
 
-  const rawStandings = data?.standings?.length ? data.standings : (FALLBACK_STANDINGS[league.id] || []);
+  const rawStandings = useMemo(
+    () => (data?.standings?.length ? data.standings : (FALLBACK_STANDINGS[league.id] || [])),
+    [data?.standings, league.id]
+  );
   const isLive = data?.isLive ?? false;
 
   const standings = useMemo(

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface UnifiedSearchTriggerProps {
-  variant?: 'full' | 'compact' | 'icon';
+  variant?: 'full' | 'compact' | 'icon' | 'pill';
   className?: string;
   placeholder?: string;
 }
@@ -16,6 +16,27 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
   placeholder = 'Search matches, leagues, teams, blog...',
 }) => {
   const { openSearch } = useUnifiedSearch();
+
+  if (variant === 'pill') {
+    return (
+      <button
+        type="button"
+        onClick={() => openSearch()}
+        className={cn(
+          'h-8 px-3 rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-100 inline-flex items-center gap-2 transition-colors cursor-pointer shrink-0',
+          className
+        )}
+        title="Search matches, leagues, teams (⌘K)"
+        aria-label="Search matches, leagues, teams, and articles"
+      >
+        <Search className="h-3.5 w-3.5 shrink-0 text-slate-300" aria-hidden="true" />
+        <span className="hidden sm:inline">Search</span>
+        <kbd className="hidden md:inline-flex h-4 select-none items-center rounded border border-slate-600 bg-slate-900 px-1 font-mono text-[10px] font-medium text-slate-200">
+          ⌘K
+        </kbd>
+      </button>
+    );
+  }
 
   if (variant === 'icon') {
     return (

@@ -186,7 +186,7 @@ export default function LiveScores() {
   }, [matches, autoDispatchLiveScoreChanges]);
 
   // Compute live statistics, attack momentum, goal threat index, and match timeline
-  const getMatchStats = (m: ApiFootballLiveFixture) => {
+  const getMatchStats = React.useCallback((m: ApiFootballLiveFixture) => {
     const idStr = String(m?.id ?? 'match-01');
     const homeScore = m.home_score ?? 0;
     const awayScore = m.away_score ?? 0;
@@ -272,7 +272,7 @@ export default function LiveScores() {
       isHighGoalThreat,
       events,
     };
-  };
+  }, [goalThreatOnly]);
 
   // Visual-only score change tracker (zero audio)
   const prevScoresMapRef = React.useRef<Record<string, number>>({});
@@ -366,7 +366,7 @@ export default function LiveScores() {
     }
 
     return sortLiveFixtures(result);
-  }, [matches, selectedLeague, statusTab, pinnedIds, freeStreamOnly, goalThreatOnly, searchQuery, regionId, sortLiveFixtures]);
+  }, [matches, selectedLeague, statusTab, pinnedIds, freeStreamOnly, goalThreatOnly, searchQuery, regionId, sortLiveFixtures, getMatchStats]);
 
   const liveCount = useMemo(
     () => matches.filter((m) => m.status === 'live' || m.status === 'halftime').length,
@@ -402,7 +402,7 @@ export default function LiveScores() {
         const s = getMatchStats(m);
         return s.goalThreatIndex >= 72 || s.homeXG + s.awayXG >= 1.65;
       }).length,
-    [matches]
+    [matches, getMatchStats]
   );
 
   // Group matches by Competition / League (Sofascore & Flashscore standard)

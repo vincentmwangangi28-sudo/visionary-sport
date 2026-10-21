@@ -509,6 +509,21 @@ async function fetchUpcomingFixturesQuery(league?: string, _daysAhead: number = 
 
 // 4. Fetch standings for a specific league from Live Feeds / Sportmonks / API-Football / Cache
 async function fetchStandingsQuery(leagueId: number, season?: number): Promise<{ standings: StandingRow[]; isLive: boolean }> {
+  // 0. Check server-side /api/football?type=standings endpoint first (avoids browser CORS)
+  try {
+    const serverRes = await fetch(`/api/football?type=standings&league=${encodeURIComponent(String(leagueId))}`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (serverRes.ok) {
+      const serverJson = await serverRes.json();
+      if (Array.isArray(serverJson?.standings) && serverJson.standings.length > 0) {
+        return { standings: serverJson.standings as StandingRow[], isLive: true };
+      }
+    }
+  } catch {
+    // Fallback to client-side fetchRealtimeStandingsTable
+  }
+
   // 1. Check live ESPN Standings Feed (Real-Time table with live pts, gd, logos)
   try {
     const liveTable = await fetchRealtimeStandingsTable(leagueId);

@@ -1,9 +1,4 @@
 import React, { useState, memo } from 'react';
-import {
-  getTeamLogoWithLeague,
-  getTeamInitialsAndColor,
-  markLogoUrlFailed,
-} from '@/services/teamLogos';
 
 export interface TeamLogoProps {
   team?: string;
@@ -27,6 +22,44 @@ const SIZE_MAP: Record<string, { container: string; img: string; text: string; d
   xl: { container: 'w-16 h-16 rounded-2xl p-2', img: 'w-11 h-11', text: 'text-base font-black', dim: 44 },
 };
 
+const PALETTE = [
+  '#b91c1c',
+  '#1d4ed8',
+  '#047857',
+  '#6d28d9',
+  '#b45309',
+  '#0f766e',
+  '#be123c',
+  '#1e40af',
+  '#15803d',
+  '#4338ca',
+];
+
+function computeTeamInitialsAndColor(teamName: string): {
+  initials: string;
+  bgColor: string;
+  textColor: string;
+} {
+  const clean = (teamName || 'FC').trim();
+  const words = clean.split(/[\s-]+/).filter(Boolean);
+  let initials = 'FC';
+  if (words.length === 1) {
+    initials = words[0].slice(0, 3).toUpperCase();
+  } else if (words.length >= 2) {
+    const filtered = words.filter(
+      (w) => !['fc', 'cf', 'sc', 'ac', 'afc', 'de', 'real', 'club'].includes(w.toLowerCase())
+    );
+    const target = filtered.length >= 2 ? filtered : words;
+    initials = (target[0][0] + target[1][0]).toUpperCase();
+  }
+  let hash = 0;
+  for (let i = 0; i < clean.length; i++) {
+    hash = (hash * 31 + clean.charCodeAt(i)) | 0;
+  }
+  const bgColor = PALETTE[Math.abs(hash) % PALETTE.length];
+  return { initials, bgColor, textColor: '#ffffff' };
+}
+
 /**
  * Strips `/combiner/i?img=` from ESPN CDN URLs because `a.espncdn.com/robots.txt`
  * disallows `/combiner/`, which causes Googlebot URL Inspection to report "Other error" on images.
@@ -47,21 +80,10 @@ export function sanitizeLogoCdnUrl(rawUrl: string | null | undefined): string | 
   return rawUrl;
 }
 
-function isSearchCrawlerAgent(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  if (navigator.webdriver) return true;
-  const ua = navigator.userAgent || '';
-  return /googlebot|inspectiontool|adsbot|mediapartners|bingbot|yandex|baiduspider|duckduckbot|slurp|applebot|ahrefsbot|semrushbot|headlesschrome|lighthouse|ptst|speed insights|crawler|spider|robot/i.test(
-    ua
-  );
-}
-
 export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   team: rawTeam,
   teamName,
   logoUrl,
-  leagueId,
-  league,
   size = 'md',
   className = '',
   showName = false,
@@ -70,19 +92,15 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   badgeOnly = false,
 }) => {
   const team = rawTeam || teamName || '';
-  const effectiveLeague = leagueId ?? league ?? null;
   const [imageError, setImageError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  const isCrawler = badgeOnly || isSearchCrawlerAgent();
+  // Avoid loading 500x500px uncached third-party ESPN PNGs; only load explicit non-ESPN custom URLs when requested
+  const sanitizedCustom = !badgeOnly && !imageError && logoUrl ? sanitizeLogoCdnUrl(logoUrl) : null;
+  const resolvedUrl =
+    sanitizedCustom && !sanitizedCustom.includes('espncdn.com') ? sanitizedCustom : null;
 
-  // Synchronous resolution path using league context and multi-tier memory cache
-  const rawResolvedUrl =
-    !isCrawler && !imageError && team
-      ? getTeamLogoWithLeague(team, effectiveLeague, logoUrl)
-      : null;
-  const resolvedUrl = sanitizeLogoCdnUrl(rawResolvedUrl);
-  const { initials, bgColor, textColor } = getTeamInitialsAndColor(team);
+  const { initials, bgColor, textColor } = computeTeamInitialsAndColor(team);
 
   const sizeConfig = typeof size === 'number'
     ? {
@@ -93,47 +111,44 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
       }
     : SIZE_MAP[size] || SIZE_MAP.md;
 
-  const logoElement = (
+  const logoElement = resolvedUrl ? (
     <div
       className={`relative inline-flex items-center justify-center flex-shrink-0 select-none overflow-hidden transition-all duration-200 bg-card/90 dark:bg-zinc-900 border border-border/60 dark:border-zinc-800 shadow-2xs ring-1 ring-black/5 dark:ring-white/5 ${
         sizeConfig.container
       } ${className}`}
       title={team}
     >
-      {resolvedUrl ? (
-        <img
-          src={resolvedUrl}
-          alt={alt || `${team} crest`}
-          loading="lazy"
-          decoding="async"
-          width={sizeConfig.dim}
-          height={sizeConfig.dim}
-          referrerPolicy="no-referrer"
-          className={`object-contain transition-opacity duration-200 ${
-            loaded ? 'opacity-100' : 'opacity-80'
-          } ${sizeConfig.img}`}
-          onLoad={() => setLoaded(true)}
-          onError={() => {
-            markLogoUrlFailed(team, resolvedUrl);
-            setImageError(true);
-          }}
-        />
-      ) : (
-        <div
-          className="w-full h-full flex flex-col items-center justify-center font-black tracking-tighter rounded-md shadow-xs relative overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${bgColor} 0%, #111827 120%)`,
-            color: textColor,
-          }}
-        >
-          {/* Subtle shield highlight ring */}
-          <div className="absolute inset-0 bg-white/10 opacity-40 pointer-events-none" />
-          <span className={`${sizeConfig.text} font-mono relative z-10 leading-none drop-shadow-xs`}>
-            {initials}
-          </span>
-        </div>
-      )}
+      <img
+        src={resolvedUrl}
+        alt={alt || `${team} crest`}
+        loading="lazy"
+        decoding="async"
+        width={sizeConfig.dim}
+        height={sizeConfig.dim}
+        referrerPolicy="no-referrer"
+        className={`object-contain transition-opacity duration-200 ${
+          loaded ? 'opacity-100' : 'opacity-80'
+        } ${sizeConfig.img}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          setImageError(true);
+        }}
+      />
     </div>
+  ) : (
+    <span
+      className={`inline-flex items-center justify-center flex-shrink-0 select-none font-black tracking-tighter shadow-2xs border border-black/10 dark:border-white/10 ${
+        sizeConfig.container
+      } ${sizeConfig.text} font-mono leading-none ${className}`}
+      style={{
+        background: `linear-gradient(135deg, ${bgColor} 0%, #111827 120%)`,
+        color: textColor,
+      }}
+      title={team}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
   );
 
   if (!showName) {

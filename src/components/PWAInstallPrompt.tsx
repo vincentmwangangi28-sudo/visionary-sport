@@ -16,7 +16,6 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export const PWAInstallPrompt: React.FC = () => {
   const { 
@@ -66,16 +65,11 @@ export const PWAInstallPrompt: React.FC = () => {
   };
 
   return (
-    <AnimatePresence>
-      <motion.aside
+      <aside
         role="dialog"
         aria-labelledby="pwa-prompt-title"
         aria-describedby="pwa-prompt-desc"
-        initial={{ opacity: 0, y: 50, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 40, scale: 0.95 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="fixed bottom-18 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-50 sm:max-w-md w-auto"
+        className="fixed bottom-18 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-50 sm:max-w-md w-auto animate-fade-in"
       >
         <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-card/95 backdrop-blur-xl p-4 sm:p-5 shadow-2xl ring-1 ring-primary/20">
           {/* Top subtle decorative gradient accent */}
@@ -151,11 +145,8 @@ export const PWAInstallPrompt: React.FC = () => {
 
           {/* iOS Safari Step-by-Step Accordion Guide */}
           {showIOSSteps && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3 p-3 rounded-xl bg-muted/50 border border-border/60 text-xs space-y-2"
+            <div
+              className="mt-3 p-3 rounded-xl bg-muted/50 border border-border/60 text-xs space-y-2 animate-fade-in"
             >
               <div className="font-extrabold text-foreground flex items-center justify-between">
                 <span>iOS Safari Quick Steps</span>
@@ -187,7 +178,7 @@ export const PWAInstallPrompt: React.FC = () => {
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Action Buttons */}
@@ -233,7 +224,6 @@ export const PWAInstallPrompt: React.FC = () => {
             </Button>
           </div>
         </div>
-      </motion.aside>
-    </AnimatePresence>
+      </aside>
   );
 };

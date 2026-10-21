@@ -1,14 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import {
-  isUserAuthorizedAdminSync,
-  isUserAuthorizedAdminAsync,
-  CUSTOM_ADMINS_UPDATED_EVENT,
-} from '@/services/customAdminsService';
 
 export const PRIMARY_ADMIN_NAME = 'Vincent Mwangangi';
 export const PRIMARY_ADMIN_EMAIL = 'vincentmwangangi28@gmail.com';
+const CUSTOM_ADMINS_UPDATED_EVENT = 'predictpro:custom-admins-updated';
 
 /**
  * Validates whether the provided user object or email matches Vincent Mwangangi,
@@ -30,7 +25,7 @@ export function useAdmin() {
   const { user, loading: authLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     if (!user) return false;
-    return isPrimaryAdmin(user) || isUserAuthorizedAdminSync(user);
+    return isPrimaryAdmin(user);
   });
   const [checking, setChecking] = useState(true);
   const [roleSource, setRoleSource] = useState('');
@@ -58,7 +53,7 @@ export function useAdmin() {
       }
     } catch {
       // Fallback to local synchronous check
-      const fallback = isPrimaryAdmin(user) || isUserAuthorizedAdminSync(user);
+      const fallback = isPrimaryAdmin(user);
       setIsAdmin(fallback);
       setRoleSource(fallback ? 'Authorized Administrator (Cached)' : 'Authorization check failed');
     } finally {

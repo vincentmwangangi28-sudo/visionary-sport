@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TeamLogo } from '@/components/TeamLogo';
+import { queryClient } from '@/lib/queryClient';
+import type { Prediction } from '@/types/prediction';
 
 export interface CommandRibbonMatch {
   id: string;
@@ -9,7 +11,7 @@ export interface CommandRibbonMatch {
   homeTeam: string;
   awayTeam: string;
   status: 'LIVE' | 'UPCOMING' | 'FT';
-  minute?: number;
+  minute?: string;
   homeScore?: number;
   awayScore?: number;
   homeXg: number;
@@ -31,151 +33,199 @@ export interface LineupNewsAlert {
   team: string;
   league: string;
   player: string;
-  status: 'CONFIRMED XI' | 'LATE FITNESS TEST' | 'RULED OUT' | 'TACTICAL SHIFT';
+  status: 'CONFIRMED SQUAD' | 'PRE-MATCH BRIEF' | 'TACTICAL MODEL';
   impact: 'HIGH' | 'MEDIUM';
   summary: string;
   updatedAgo: string;
 }
 
-const FEATURED_MATCHDAY_RIBBON: CommandRibbonMatch[] = [
-  {
-    id: 'epl-ars-che',
-    slug: 'arsenal-vs-chelsea',
-    league: 'EPL',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    status: 'LIVE',
-    minute: 68,
-    homeScore: 2,
-    awayScore: 1,
-    homeXg: 1.94,
-    awayXg: 0.88,
-    kickoffTime: '19:00 UTC',
-    tvChannels: ['Sky Sports Main Event', 'Peacock', 'SuperSport EPL', 'Showmax Pro KE'],
-    topPlayer: {
-      name: 'Bukayo Saka',
-      team: 'Arsenal',
-      rating: 8.9,
-      keyStat: '1G · 0.78 xG · 4 Key Passes',
-    },
-    aiPick: 'Arsenal Win & Over 2.5',
-    confidence: 86,
-  },
-  {
-    id: 'epl-liv-mci',
-    slug: 'liverpool-vs-manchester-city',
-    league: 'EPL',
-    homeTeam: 'Liverpool',
-    awayTeam: 'Man City',
-    status: 'LIVE',
-    minute: 54,
-    homeScore: 1,
-    awayScore: 1,
-    homeXg: 1.42,
-    awayXg: 1.38,
-    kickoffTime: '19:30 UTC',
-    tvChannels: ['TNT Sports 1', 'USA Network', 'SuperSport Maximo', 'Canal+ Foot'],
-    topPlayer: {
-      name: 'Mohamed Salah',
-      team: 'Liverpool',
-      rating: 8.6,
-      keyStat: '1G · 5 Progressive Carries',
-    },
-    aiPick: 'Both Teams To Score',
-    confidence: 88,
-  },
-  {
-    id: 'laliga-rma-bar',
-    slug: 'real-madrid-vs-barcelona',
-    league: 'LaLiga',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    status: 'UPCOMING',
-    homeXg: 1.85,
-    awayXg: 1.62,
-    kickoffTime: '20:00 UTC',
-    tvChannels: ['ESPN+', 'Premier Sports 1', 'SuperSport LaLiga', 'DAZN LaLiga'],
-    topPlayer: {
-      name: 'Jude Bellingham',
-      team: 'Real Madrid',
-      rating: 8.5,
-      keyStat: '0.64 xG + xA / 90',
-    },
-    aiPick: 'Over 2.5 Goals',
-    confidence: 84,
-  },
-  {
-    id: 'kpl-gor-afc',
-    slug: 'gor-mahia-vs-afc-leopards',
-    league: 'KPL',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    status: 'UPCOMING',
-    homeXg: 1.56,
-    awayXg: 0.79,
-    kickoffTime: '15:00 EAT',
-    tvChannels: ['Azam Sports 1 HD', 'KBC Channel 1', 'FKF Live Stream'],
-    topPlayer: {
-      name: 'Austin Odhiambo',
-      team: 'Gor Mahia',
-      rating: 8.3,
-      keyStat: '0.58 xG+xA · 3 Key Passes/90',
-    },
-    aiPick: 'Gor Mahia Win (1X2)',
-    confidence: 82,
-  },
-  {
-    id: 'ucl-bay-bvb',
-    slug: 'bayern-munich-vs-borussia-dortmund',
-    league: 'Bundesliga',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Dortmund',
-    status: 'UPCOMING',
-    homeXg: 2.34,
-    awayXg: 1.28,
-    kickoffTime: '17:30 UTC',
-    tvChannels: ['Sky Sport Bundesliga 1', 'ESPN+', 'StarTimes World Football'],
-    topPlayer: {
-      name: 'Harry Kane',
-      team: 'Bayern Munich',
-      rating: 9.1,
-      keyStat: '1.12 xG/90 · 5 Shots On Target',
-    },
-    aiPick: 'Bayern Win & Over 2.5',
-    confidence: 89,
-  },
-];
+function formatSlug(home: string, away: string): string {
+  const clean = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  return `${clean(home)}-vs-${clean(away)}`;
+}
 
-const CONFIRMED_LINEUP_WIRE: LineupNewsAlert[] = [
+function resolveBroadcastChannels(league: string): string[] {
+  const l = league.toLowerCase();
+  if (l.includes('champions league') || l.includes('ucl')) {
+    return ['TNT Sports', 'Paramount+', 'SuperSport Maximo', 'Canal+'];
+  }
+  if (l.includes('europa') || l.includes('conference')) {
+    return ['TNT Sports', 'Paramount+', 'SuperSport Variety', 'Stan Sport'];
+  }
+  if (l.includes('premier league') && !l.includes('kenya')) {
+    return ['Sky Sports EPL', 'Peacock', 'SuperSport EPL', 'Showmax PL'];
+  }
+  if (l.includes('la liga') || l.includes('laliga')) {
+    return ['ESPN+', 'SuperSport LaLiga', 'Premier Sports', 'DAZN'];
+  }
+  if (l.includes('serie a')) {
+    return ['Paramount+', 'TNT Sports', 'SuperSport Football', 'DAZN'];
+  }
+  if (l.includes('bundesliga')) {
+    return ['ESPN+', 'Sky Sport Bundesliga', 'StarTimes World Football'];
+  }
+  if (l.includes('ligue 1')) {
+    return ['beIN SPORTS', 'Ligue 1 Pass', 'SuperSport', 'Canal+'];
+  }
+  if (l.includes('kpl') || l.includes('kenya')) {
+    return ['Azam Sports HD', 'KBC Channel 1', 'FKF Live'];
+  }
+  if (l.includes('caf') || l.includes('afcon')) {
+    return ['SuperSport PSL', 'beIN SPORTS', 'Azam Sports', 'Canal+ Sport'];
+  }
+  return ['Official League Pass', 'SuperSport Football', 'ESPN+'];
+}
+
+function formatKickoffDisplay(dateStr?: string): string {
+  if (!dateStr) return 'Upcoming';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return 'Upcoming';
+
+  const now = new Date();
+  const isToday =
+    d.getUTCFullYear() === now.getUTCFullYear() &&
+    d.getUTCMonth() === now.getUTCMonth() &&
+    d.getUTCDate() === now.getUTCDate();
+
+  const timePart = d.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  if (isToday) {
+    return timePart;
+  }
+
+  const monthDay = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return `${monthDay}, ${timePart}`;
+}
+
+function mapFixtureToRibbonMatch(raw: Record<string, any>, idx: number): CommandRibbonMatch {
+  const homeTeam = String(raw.home_team || raw.homeTeam || 'Home');
+  const awayTeam = String(raw.away_team || raw.awayTeam || 'Away');
+  const league = String(raw.league || 'Football');
+  const rawStatus = String(raw.status || 'upcoming').toLowerCase();
+
+  const isLive = rawStatus === 'live' || rawStatus === 'halftime' || rawStatus === 'in_play';
+  const isFt = rawStatus === 'finished' || rawStatus === 'ft';
+  const status: 'LIVE' | 'UPCOMING' | 'FT' = isLive ? 'LIVE' : isFt ? 'FT' : 'UPCOMING';
+
+  const homeOdds = Number(raw.home_odds) || 2.1;
+  const awayOdds = Number(raw.away_odds) || 3.1;
+  const homeXg = Number(Math.max(0.65, Math.min(2.85, 2.9 / Math.max(1.15, homeOdds))).toFixed(2));
+  const awayXg = Number(Math.max(0.55, Math.min(2.45, 2.7 / Math.max(1.2, awayOdds))).toFixed(2));
+
+  const confidence = Number(raw.confidence || raw.confidence_score) || 76;
+  const aiPick = String(raw.prediction || raw.predicted_outcome || `${homeTeam} or Draw`);
+  const favoredTeam = homeXg >= awayXg ? homeTeam : awayTeam;
+  const rating = Number(Math.min(9.4, Math.max(7.6, 7.2 + (confidence - 60) * 0.05)).toFixed(1));
+
+  const rawMin = String(raw.minute || '').replace(/'/g, '').trim();
+  const minute = isLive ? (rawMin && rawMin !== '0' ? `${rawMin}'` : 'LIVE') : undefined;
+
+  return {
+    id: String(raw.id || raw.match_id || `fixture-${idx}`),
+    slug: formatSlug(homeTeam, awayTeam),
+    league,
+    homeTeam,
+    awayTeam,
+    status,
+    minute,
+    homeScore: isLive || isFt ? Number(raw.home_score ?? 0) : undefined,
+    awayScore: isLive || isFt ? Number(raw.away_score ?? 0) : undefined,
+    homeXg,
+    awayXg,
+    kickoffTime: formatKickoffDisplay(raw.match_date || raw.kickoff),
+    tvChannels: resolveBroadcastChannels(league),
+    topPlayer: {
+      name: `${favoredTeam} Attack Unit`,
+      team: favoredTeam,
+      rating,
+      keyStat: `${Math.max(homeXg, awayXg).toFixed(2)} Projected xG · ${confidence}% Model Conf.`,
+    },
+    aiPick,
+    confidence,
+  };
+}
+
+function buildLineupWireFromMatches(matches: CommandRibbonMatch[]): LineupNewsAlert[] {
+  return matches.slice(0, 3).map((m, idx) => ({
+    id: `lw-${m.id}-${idx}`,
+    team: `${m.homeTeam} vs ${m.awayTeam}`,
+    league: m.league,
+    player: `Model Pick: ${m.aiPick} (${m.confidence}% Confidence)`,
+    status: m.status === 'LIVE' ? 'TACTICAL MODEL' : 'PRE-MATCH BRIEF',
+    impact: m.confidence >= 80 ? 'HIGH' : 'MEDIUM',
+    summary: `Projected Expected Goals (xG): ${m.homeTeam} ${m.homeXg.toFixed(2)} – ${m.awayXg.toFixed(2)} ${m.awayTeam}. Kickoff: ${m.kickoffTime}.`,
+    updatedAgo: m.status === 'LIVE' ? 'Live' : m.kickoffTime,
+  }));
+}
+
+const INITIAL_FALLBACK_MATCHES: CommandRibbonMatch[] = [
   {
-    id: 'lw-1',
-    team: 'Arsenal',
-    league: 'Premier League',
-    player: 'Martin Ødegaard & Bukayo Saka',
-    status: 'CONFIRMED XI',
-    impact: 'HIGH',
-    summary: 'Both start in Arsenal 4-3-3 high-press setup; boosts home attacking xG by +0.34.',
-    updatedAgo: '4m ago',
+    id: 'ucl-avl-vik',
+    slug: 'aston-villa-vs-viking-fk',
+    league: 'Champions League',
+    homeTeam: 'Aston Villa',
+    awayTeam: 'Viking FK',
+    status: 'UPCOMING',
+    homeXg: 1.82,
+    awayXg: 0.94,
+    kickoffTime: formatKickoffDisplay(new Date(Date.now() + 3600 * 1000 * 3).toISOString()),
+    tvChannels: ['TNT Sports', 'Paramount+', 'SuperSport Maximo'],
+    topPlayer: {
+      name: 'Aston Villa Attack Unit',
+      team: 'Aston Villa',
+      rating: 8.4,
+      keyStat: '1.82 Projected xG · 78% Model Conf.',
+    },
+    aiPick: 'Aston Villa Win',
+    confidence: 78,
   },
   {
-    id: 'lw-2',
-    team: 'Real Madrid',
-    league: 'LaLiga',
-    player: 'Kylian Mbappé & Vinícius Jr.',
-    status: 'CONFIRMED XI',
-    impact: 'HIGH',
-    summary: 'Ancelotti deploys dual-split forwards to target high defensive line in transition.',
-    updatedAgo: '11m ago',
+    id: 'uecl-kai-pan',
+    slug: 'kairat-almaty-vs-panathinaikos',
+    league: 'Conference League',
+    homeTeam: 'Kairat Almaty',
+    awayTeam: 'Panathinaikos',
+    status: 'UPCOMING',
+    homeXg: 1.18,
+    awayXg: 1.34,
+    kickoffTime: formatKickoffDisplay(new Date(Date.now() + 3600 * 1000 * 5).toISOString()),
+    tvChannels: ['TNT Sports', 'Paramount+', 'SuperSport Variety'],
+    topPlayer: {
+      name: 'Panathinaikos Attack Unit',
+      team: 'Panathinaikos',
+      rating: 8.1,
+      keyStat: '1.34 Projected xG · 72% Model Conf.',
+    },
+    aiPick: 'Panathinaikos or Draw (X2)',
+    confidence: 72,
   },
   {
-    id: 'lw-3',
-    team: 'Gor Mahia',
-    league: 'FKF Premier League',
-    player: 'Austin Odhiambo',
-    status: 'CONFIRMED XI',
-    impact: 'MEDIUM',
-    summary: 'Cleared to start in central attacking midfield for the Mashemeji Derby clash.',
-    updatedAgo: '18m ago',
+    id: 'uecl-nor-csk',
+    slug: 'fc-nordsjaelland-vs-cska-sofia',
+    league: 'Conference League',
+    homeTeam: 'FC Nordsjælland',
+    awayTeam: 'CSKA Sofia',
+    status: 'UPCOMING',
+    homeXg: 1.64,
+    awayXg: 0.89,
+    kickoffTime: formatKickoffDisplay(new Date(Date.now() + 3600 * 1000 * 7).toISOString()),
+    tvChannels: ['TNT Sports', 'Paramount+', 'SuperSport Variety'],
+    topPlayer: {
+      name: 'FC Nordsjælland Attack Unit',
+      team: 'FC Nordsjælland',
+      rating: 8.3,
+      keyStat: '1.64 Projected xG · 76% Model Conf.',
+    },
+    aiPick: 'FC Nordsjælland Win',
+    confidence: 76,
   },
 ];
 
@@ -183,13 +233,134 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'LIVE' | 'TV'>('ALL');
   const [activeDrawer, setActiveDrawer] = useState<'NONE' | 'RATINGS' | 'LINEUPS' | 'TRIVIA'>('NONE');
   const [triviaSelected, setTriviaSelected] = useState<number | null>(null);
+  const [ribbonMatches, setRibbonMatches] = useState<CommandRibbonMatch[]>(() => {
+    try {
+      const cachedQuery = queryClient.getQueryData<{ allPredictions?: Prediction[] }>(['predictions', 'list', 'all']);
+      if (cachedQuery?.allPredictions && cachedQuery.allPredictions.length > 0) {
+        return cachedQuery.allPredictions.slice(0, 8).map((item, idx) => mapFixtureToRibbonMatch(item as Record<string, any>, idx));
+      }
+      if (typeof window !== 'undefined' && !((import.meta as any).env?.MODE === 'test' || (globalThis as any).__vitest_worker__)) {
+        const storedRibbon = localStorage.getItem('predictpro_ribbon_matches_v1');
+        if (storedRibbon) {
+          const parsed = JSON.parse(storedRibbon) as { timestamp: number; matches: CommandRibbonMatch[] };
+          if (parsed && Array.isArray(parsed.matches) && parsed.matches.length > 0 && Date.now() - parsed.timestamp < 3600_000) {
+            return parsed.matches;
+          }
+        }
+        const storedUpcoming = localStorage.getItem('predictpro_real_upcoming_v1');
+        if (storedUpcoming) {
+          const parsedUp = JSON.parse(storedUpcoming) as { timestamp: number; fixtures: Record<string, any>[] };
+          if (parsedUp && Array.isArray(parsedUp.fixtures) && parsedUp.fixtures.length > 0) {
+            return parsedUp.fixtures.slice(0, 8).map((item, idx) => mapFixtureToRibbonMatch(item, idx));
+          }
+        }
+      }
+    } catch {
+      // ignore cache read errors
+    }
+    return INITIAL_FALLBACK_MATCHES;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof fetch === 'undefined') return;
+    // Skip network polling in unit test environment
+    if ((import.meta as any).env?.MODE === 'test' || (globalThis as any).__vitest_worker__) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncRealMatchdayFixtures = async () => {
+      try {
+        const [liveRes, upcomingRes] = await Promise.allSettled([
+          fetch('/api/football?type=live'),
+          fetch('/api/football?type=upcoming'),
+        ]);
+
+        if (cancelled) return;
+
+        const combined: Record<string, any>[] = [];
+        const seenSlugs = new Set<string>();
+
+        if (liveRes.status === 'fulfilled' && liveRes.value.ok) {
+          const liveData = await liveRes.value.json();
+          const liveList = Array.isArray(liveData?.matches) ? liveData.matches : [];
+          for (const item of liveList) {
+            if (!item?.home_team || !item?.away_team) continue;
+            const slug = formatSlug(item.home_team, item.away_team);
+            if (!seenSlugs.has(slug)) {
+              seenSlugs.add(slug);
+              combined.push(item);
+            }
+          }
+        }
+
+        if (upcomingRes.status === 'fulfilled' && upcomingRes.value.ok) {
+          const upData = await upcomingRes.value.json();
+          const upList = Array.isArray(upData?.fixtures)
+            ? upData.fixtures
+            : Array.isArray(upData?.predictions)
+              ? upData.predictions
+              : [];
+          for (const item of upList) {
+            if (!item?.home_team || !item?.away_team) continue;
+            const slug = formatSlug(item.home_team, item.away_team);
+            if (!seenSlugs.has(slug)) {
+              seenSlugs.add(slug);
+              combined.push(item);
+            }
+          }
+        }
+
+        if (!cancelled && combined.length > 0) {
+          // Prioritize truly live matches first, then soonest upcoming kickoffs
+          combined.sort((a, b) => {
+            const aLive = a.status === 'live' || a.status === 'halftime' ? 0 : 1;
+            const bLive = b.status === 'live' || a.status === 'halftime' ? 0 : 1;
+            if (aLive !== bLive) return aLive - bLive;
+            const aTime = new Date(a.match_date || 0).getTime() || Number.MAX_SAFE_INTEGER;
+            const bTime = new Date(b.match_date || 0).getTime() || Number.MAX_SAFE_INTEGER;
+            return aTime - bTime;
+          });
+
+          const nextMatches = combined.slice(0, 10).map((item, idx) => mapFixtureToRibbonMatch(item, idx));
+          setRibbonMatches(nextMatches);
+          try {
+            localStorage.setItem(
+              'predictpro_ribbon_matches_v1',
+              JSON.stringify({ timestamp: Date.now(), matches: nextMatches })
+            );
+          } catch {
+            // ignore storage errors
+          }
+        }
+      } catch {
+        // Keep existing ribbon matches on transient network error
+      }
+    };
+
+    syncRealMatchdayFixtures();
+    const interval = window.setInterval(syncRealMatchdayFixtures, 30000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const liveMatchesCount = useMemo(
+    () => ribbonMatches.filter((m) => m.status === 'LIVE').length,
+    [ribbonMatches]
+  );
 
   const filteredMatches = useMemo(() => {
     if (activeFilter === 'LIVE') {
-      return FEATURED_MATCHDAY_RIBBON.filter((m) => m.status === 'LIVE');
+      const liveOnly = ribbonMatches.filter((m) => m.status === 'LIVE');
+      return liveOnly.length > 0 ? liveOnly : ribbonMatches.slice(0, 6);
     }
-    return FEATURED_MATCHDAY_RIBBON;
-  }, [activeFilter]);
+    return ribbonMatches;
+  }, [activeFilter, ribbonMatches]);
+
+  const lineupWire = useMemo(() => buildLineupWireFromMatches(ribbonMatches), [ribbonMatches]);
 
   const toggleDrawer = (drawer: 'RATINGS' | 'LINEUPS' | 'TRIVIA') => {
     setActiveDrawer((prev) => (prev === drawer ? 'NONE' : drawer));
@@ -215,7 +386,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Scores
+              Fixtures ({ribbonMatches.length})
             </button>
             <button
               type="button"
@@ -227,8 +398,12 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-              Live
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  liveMatchesCount > 0 ? 'bg-rose-500 animate-pulse' : 'bg-muted-foreground/50'
+                }`}
+              />
+              Live {liveMatchesCount > 0 ? `(${liveMatchesCount})` : ''}
             </button>
             <button
               type="button"
@@ -244,8 +419,16 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
             </button>
           </div>
 
-          {/* Center: Clean Horizontal Scoreboard Strip (ESPN / BBC Sport Style) */}
+          {/* Center: Clean Horizontal Scoreboard Strip (Synced with Live & Upcoming API Feed) */}
           <div className="flex items-center divide-x divide-border overflow-x-auto no-scrollbar flex-1 min-w-0">
+            {activeFilter === 'LIVE' && liveMatchesCount === 0 && (
+              <Link
+                to="/live"
+                className="px-3 py-0.5 text-[11px] text-muted-foreground hover:text-foreground shrink-0 font-medium"
+              >
+                0 in-play right now · Showing next kickoffs:
+              </Link>
+            )}
             {filteredMatches.map((m) => (
               <Link
                 key={m.id}
@@ -260,9 +443,9 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                 <div className="flex items-center gap-1.5">
                   <TeamLogo team={m.homeTeam} size="xs" badgeOnly />
                   <span className="font-medium text-foreground">{m.homeTeam}</span>
-                  {m.status === 'LIVE' ? (
+                  {m.status === 'LIVE' || m.status === 'FT' ? (
                     <span className="font-mono tabular-nums font-bold text-foreground px-1">
-                      {m.homeScore} - {m.awayScore}
+                      {m.homeScore ?? 0} - {m.awayScore ?? 0}
                     </span>
                   ) : (
                     <span className="text-muted-foreground text-[11px]">v</span>
@@ -277,11 +460,11 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                   </span>
                 ) : m.status === 'LIVE' ? (
                   <span className="font-mono tabular-nums text-[10px] font-semibold text-rose-600 dark:text-rose-400">
-                    {m.minute}&apos;
+                    {m.minute}
                   </span>
                 ) : (
                   <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
-                    {m.kickoffTime.replace(' UTC', '')}
+                    {m.kickoffTime}
                   </span>
                 )}
               </Link>
@@ -337,14 +520,14 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-foreground">
-                Matchday Player Ratings &amp; TV Broadcast Channels
+                Matchday Unit Ratings &amp; TV Broadcast Channels
               </p>
               <Link to="/players" className="text-xs font-medium text-foreground hover:underline">
                 Full Player Database →
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-              {FEATURED_MATCHDAY_RIBBON.map((m) => (
+              {ribbonMatches.slice(0, 5).map((m) => (
                 <div
                   key={m.id}
                   className="p-2.5 rounded-md border border-border bg-background flex flex-col justify-between gap-1.5"
@@ -353,10 +536,10 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground truncate">{m.topPlayer.name}</p>
                       <p className="text-[11px] text-muted-foreground truncate">
-                        {m.topPlayer.team} · {m.league}
+                        {m.homeTeam} vs {m.awayTeam} · {m.league}
                       </p>
                     </div>
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono tabular-nums text-xs font-bold shrink-0">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-700 text-white font-mono tabular-nums text-xs font-bold shrink-0">
                       {m.topPlayer.rating.toFixed(1)}
                     </span>
                   </div>
@@ -379,25 +562,25 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-foreground">
-                Confirmed Starting XIs &amp; Team News
+                Pre-Match Tactical Models &amp; Fixture Briefings
               </p>
               <Link to="/news" className="text-xs font-medium text-foreground hover:underline">
                 All Team News →
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-              {CONFIRMED_LINEUP_WIRE.map((item) => (
+              {lineupWire.map((item) => (
                 <div
                   key={item.id}
                   className="p-2.5 rounded-md border border-border bg-background space-y-1"
                 >
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-semibold text-foreground">
-                      {item.team} · {item.status}
+                      {item.league} · {item.status}
                     </span>
                     <span className="font-mono tabular-nums text-muted-foreground">{item.updatedAgo}</span>
                   </div>
-                  <p className="text-xs font-medium text-foreground">{item.player}</p>
+                  <p className="text-xs font-medium text-foreground">{item.team}</p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">{item.summary}</p>
                 </div>
               ))}
@@ -429,7 +612,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                       className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors cursor-pointer ${
                         isChosen
                           ? isCorrect
-                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            ? 'bg-emerald-700 text-white border-emerald-700'
                             : 'bg-rose-600 text-white border-rose-600'
                           : 'bg-background hover:bg-muted text-foreground border-border'
                       }`}

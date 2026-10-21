@@ -1,8 +1,12 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+
+const getSupabase = () => import('@/integrations/supabase/client').then((m) => m.supabase);
+const notifyToast = {
+  success: (msg: string) => import('sonner').then(({ toast }) => toast.success(msg)).catch(() => {}),
+  error: (msg: string) => import('sonner').then(({ toast }) => toast.error(msg)).catch(() => {}),
+};
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +45,7 @@ async function syncOAuthProfile(user: User) {
 
   if (!avatarUrl && !fullName) return;
 
+  const supabase = await getSupabase();
   const { error } = await supabase
     .from('profiles')
     .update({
@@ -69,12 +74,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       initialized = true;
       try {
         if (unsubscribed) return;
-        if (hasStoredAuthSession()) {
-          const { data: { session: activeSession } } = await supabase.auth.getSession();
-          if (unsubscribed) return;
-          setSession(activeSession);
-          setUser(activeSession?.user ?? null);
+        if (!hasStoredAuthSession()) {
+          setLoading(false);
+          return;
         }
+        const supabase = await getSupabase();
+        if (unsubscribed) return;
+        const { data: { session: activeSession } } = await supabase.auth.getSession();
+        if (unsubscribed) return;
+        setSession(activeSession);
+        setUser(activeSession?.user ?? null);
         setLoading(false);
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -114,13 +123,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = useCallback(async (email: string, password: string) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
+    const supabase = await getSupabase();
     const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
     if (error) {
       const msg = error.message || 'Failed to sign in';
       if (msg.toLowerCase().includes('invalid login credentials') && (cleanEmail.includes('gmail.com') || cleanEmail.includes('googlemail.com'))) {
-        toast.error('Invalid credentials. If you created your account with Google, please click "Continue with Google".');
+        notifyToast.error('Invalid credentials. If you created your account with Google, please click "Continue with Google".');
       } else {
-        toast.error(msg);
+        notifyToast.error(msg);
       }
       throw error;
     }
@@ -128,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(data.session);
       setUser(data.session.user);
     }
-    toast.success('Welcome back!');
+    notifyToast.success('Welcome back!');
     navigate('/');
   }, [navigate]);
 
@@ -137,6 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const cleanPassword = password.trim();
     const cleanName = fullName?.trim() || cleanEmail.split('@')[0];
 
+    const supabase = await getSupabase();
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password: cleanPassword,
@@ -151,7 +162,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (error) {
       const msg = error.message || '';
-      // If user already registered, test if password signs in
       if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
         const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
@@ -160,29 +170,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!signInErr && signInData.session) {
           setSession(signInData.session);
           setUser(signInData.session.user);
-          toast.success('Welcome back! Signed you into your account. 🎉');
+          notifyToast.success('Welcome back! Signed you into your account. 🎉');
           navigate('/');
           return;
         }
         const friendlyMsg = cleanEmail.includes('gmail.com')
           ? 'An account with this Gmail already exists. Click "Continue with Google" to sign in.'
           : 'An account with this email already exists. Please sign in or reset your password.';
-        toast.error(friendlyMsg);
+        notifyToast.error(friendlyMsg);
         throw error;
       }
-      toast.error(error.message || 'Failed to sign up');
+      notifyToast.error(error.message || 'Failed to sign up');
       throw error;
     }
 
     if (data.session) {
       setSession(data.session);
       setUser(data.session.user);
-      toast.success('Account created! Welcome to PredictPro 🎉');
+      notifyToast.success('Account created! Welcome to PredictPro 🎉');
       navigate('/');
       return;
     }
 
-    // Try immediate sign-in in case auto-confirmation occurred
     try {
       const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -191,7 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!signInErr && signInData?.session) {
         setSession(signInData.session);
         setUser(signInData.session.user);
-        toast.success('Account created! Welcome to PredictPro 🎉');
+        notifyToast.success('Account created! Welcome to PredictPro 🎉');
         navigate('/');
         return;
       }
@@ -199,10 +208,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // ignore
     }
 
-    toast.success('Account created! Please check your email to verify.');
+    notifyToast.success('Account created! Please check your email to verify.');
   }, [navigate]);
 
   const signInWithGoogle = useCallback(async () => {
+    const supabase = await getSupabase();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -213,13 +223,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
       },
     });
-    if (error) { toast.error(error.message || 'Failed to sign in with Google'); throw error; }
+    if (error) { notifyToast.error(error.message || 'Failed to sign in with Google'); throw error; }
   }, []);
 
   const signOut = useCallback(async () => {
+    const supabase = await getSupabase();
     const { error } = await supabase.auth.signOut();
-    if (error) { toast.error(error.message || 'Failed to sign out'); return; }
-    toast.success('Signed out successfully');
+    if (error) { notifyToast.error(error.message || 'Failed to sign out'); return; }
+    setSession(null);
+    setUser(null);
+    notifyToast.success('Signed out successfully');
     navigate('/auth');
   }, [navigate]);
 
