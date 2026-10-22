@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy, CheckCheck, Share2, Send, ExternalLink, Code2, FileText } from 'lucide-react';
+import { Copy, CheckCheck, Share2, Send, ExternalLink, Code2, FileText, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { hapticService } from '@/services/hapticService';
+import { useBetSlip, encodeSlipToParam } from '@/hooks/useBetSlip';
 
 export interface ViralSlipItem {
   homeTeam?: string;
@@ -78,7 +79,7 @@ function buildDeterministicBookingCode(bookie: string, items: NormalizedSlipItem
 export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
   title: rawTitle,
   slipTitle,
-  items: rawItems,
+  items: rawLegsOrItems,
   legs: rawLegs,
   totalOdds: rawTotalOdds,
   combinedConfidence: rawCombinedConf,
@@ -87,11 +88,12 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
   sharePath,
   defaultBookmaker = 'SportyBet',
 }) => {
+  const { addSelections } = useBetSlip();
   const title = rawTitle || slipTitle || 'AI Multi-Bet Accumulator Slip';
   const canonicalPath = rawCanonicalPath || sharePath || '/accumulator';
   const items = useMemo(
-    () => normalizeSlipItems(rawItems || rawLegs || []),
-    [rawItems, rawLegs]
+    () => normalizeSlipItems(rawLegsOrItems || rawLegs || []),
+    [rawLegsOrItems, rawLegs]
   );
   const totalOdds = useMemo(() => {
     if (typeof rawTotalOdds === 'number' && rawTotalOdds > 0) return rawTotalOdds;
@@ -109,7 +111,15 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
     [selectedBookie, items]
   );
 
-  const shareUrl = `https://predictpro.guru${canonicalPath}`;
+  const shareUrl = useMemo(() => {
+    const encoded = encodeSlipToParam(items);
+    const params = new URLSearchParams();
+    if (encoded) params.set('slip', encoded);
+    params.set('bookie', selectedBookie);
+    params.set('code', bookingCode);
+    const qs = params.toString();
+    return `https://predictpro.guru${canonicalPath}${qs ? `?${qs}` : ''}`;
+  }, [items, canonicalPath, selectedBookie, bookingCode]);
 
   const dynamicOgCardUrl = useMemo(() => {
     const params = new URLSearchParams({
@@ -125,7 +135,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
   }, [items, title, selectedBookie, bookingCode, totalOdds, combinedConfidence]);
 
   const formattedShareText = useMemo(() => {
-    const header = `PredictPro AI — ${items.length}-Leg ${title}`;
+    const header = `⚽ PredictPro AI — ${items.length}-Leg ${title}`;
     const legs = items
       .slice(0, 10)
       .map(
@@ -134,7 +144,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
       )
       .join('\n');
     const moreLine = items.length > 10 ? `\n...and ${items.length - 10} more fixtures` : '';
-    return `${header}\n\n${legs}${moreLine}\n\nCombined Odds: ${totalOdds.toFixed(2)}x · AI Confidence: ${combinedConfidence}%\nBooking Code (${selectedBookie}): ${bookingCode}\n\nVerify live xG & Poisson probabilities: ${shareUrl}`;
+    return `${header}\n\n${legs}${moreLine}\n\n📊 Combined Odds: ${totalOdds.toFixed(2)}x · AI Confidence: ${combinedConfidence}%\n🎟️ Booking Code (${selectedBookie}): ${bookingCode}\n\n👇 Click to auto-load this slip into your Bet Slip:\n${shareUrl}`;
   }, [items, title, totalOdds, combinedConfidence, selectedBookie, bookingCode, shareUrl]);
 
   const handleCopyBookingCode = () => {
@@ -149,8 +159,23 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
     hapticService.success();
     navigator.clipboard.writeText(formattedShareText);
     setCopiedSlipText(true);
-    toast.success('Copied formatted slip with PredictPro link to clipboard');
+    toast.success('Copied formatted slip with auto-load link to clipboard');
     setTimeout(() => setCopiedSlipText(false), 2500);
+  };
+
+  const handleLoadIntoBetSlip = () => {
+    hapticService.boost();
+    addSelections(
+      items.map((item) => ({
+        match: `${item.homeTeam} vs ${item.awayTeam}`,
+        homeTeam: item.homeTeam,
+        awayTeam: item.awayTeam,
+        league: item.league,
+        market: item.market,
+        odds: item.odds,
+        confidence: item.confidence,
+      }))
+    );
   };
 
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(formattedShareText)}`;
@@ -172,7 +197,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
             1-Click Booking Code &amp; Slip Syndication
           </h3>
           <p className="text-xs text-muted-foreground">
-            Select your bookmaker to generate an instant slip code or share formatted picks on WhatsApp &amp; Telegram.
+            Select your bookmaker to generate an instant slip code or share an auto-loading slip link on WhatsApp &amp; Telegram.
           </p>
         </div>
         <div className="text-xs font-mono tabular-nums text-muted-foreground">
@@ -206,7 +231,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
       </div>
 
       {/* Booking Code Row */}
-      <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/70">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/70">
         <div className="min-w-0">
           <div className="text-[11px] text-muted-foreground font-medium">
             {selectedBookie} Instant Booking Code
@@ -215,7 +240,17 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
             {bookingCode}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={handleLoadIntoBetSlip}
+            className="gap-1.5 text-xs font-semibold"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Load to Slip
+          </Button>
           <Button
             type="button"
             size="sm"

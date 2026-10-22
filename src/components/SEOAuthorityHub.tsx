@@ -5,28 +5,47 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 const EDITORIAL_GUIDES = [
   {
     to: '/sure-win-predictions',
-    title: 'High-Probability Match Previews',
-    desc: 'Fixtures featuring strong home or away form, expected goals advantage, and consistent head-to-head records.',
+    title: 'Today Sure Win & Banker Predictions (80%+)',
+    desc: 'High-probability fixtures featuring strong home/away form, Expected Goals (xG) advantage, and SportyBet/Betika booking codes.',
+  },
+  {
+    to: '/jackpot-predictions',
+    title: '17-Game Mega & Midweek Jackpot Analysis',
+    desc: 'Mathematical Poisson combinations, double-chance safety hedges, and fixture-by-fixture breakdowns for major jackpots.',
   },
   {
     to: '/over-under-predictions',
-    title: 'Goals & Expected Goals (xG) Trends',
-    desc: 'Over/Under 2.5 goals analysis based on shot creation volume, box entries, and defensive concession rates.',
+    title: 'Over 2.5 & Over 1.5 Goals xG Trends',
+    desc: 'Goal totals modeled from shot creation volume, penalty-box entries, and defensive concession rates across 40+ leagues.',
   },
   {
     to: '/btts',
-    title: 'Both Teams to Score (BTTS) Form',
-    desc: 'Clubs with high scoring consistency and open transition profiles across domestic and European leagues.',
-  },
-  {
-    to: '/standings',
-    title: 'League Tables & Form Guide',
-    desc: 'Updated league standings, goal difference, points per game, and recent five-match form trajectories.',
+    title: 'Both Teams to Score (BTTS / GG) Form',
+    desc: 'Clubs with high scoring consistency and open transition profiles across European, African, and Americas competitions.',
   },
 ];
 
+const QUICK_SEARCH_CLUSTERS = [
+  { label: 'Today Football Predictions', to: '/today-predictions' },
+  { label: 'Tomorrow Fixtures & Tips', to: '/tomorrow-predictions' },
+  { label: 'Weekend Accumulator Tips', to: '/weekend-predictions' },
+  { label: 'Daily 2.00+ Rollover Odds', to: '/daily-2-odds' },
+  { label: '5.00+ Odds Smart Acca', to: '/5-odds-predictions' },
+  { label: 'Exact Correct Score Tips', to: '/correct-score' },
+  { label: 'Draw No Bet (DNB)', to: '/draw-no-bet-predictions' },
+  { label: 'Double Chance (1X / X2)', to: '/double-chance-predictions' },
+  { label: 'Halftime / Fulltime (HT/FT)', to: '/ht-ft-predictions' },
+  { label: 'Premier League Hub', to: '/premier-league-predictions' },
+  { label: 'UEFA Champions League', to: '/champions-league-predictions' },
+  { label: 'LaLiga Match Previews', to: '/la-liga-predictions' },
+  { label: 'Serie A Tactical xG', to: '/serie-a-predictions' },
+  { label: 'Bundesliga Goals Hub', to: '/bundesliga-predictions' },
+  { label: 'FKF Premier League (Kenya)', to: '/kpl-predictions' },
+  { label: 'Dropping Odds Radar', to: '/dropping-odds' },
+];
+
 export const SEOAuthorityHub: React.FC = () => {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <section
@@ -37,10 +56,10 @@ export const SEOAuthorityHub: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold text-foreground">
-              Football Statistical Guides &amp; Competition Directory
+              Football Statistical Guides, Booking Codes &amp; Competition Directory
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Expected goals (xG) methodology, league form tables, and fixture breakdowns across 40+ competitions.
+              Expected goals (xG) methodology, league form tables, jackpot combinations, and fixture breakdowns across 40+ competitions.
             </p>
           </div>
           <button
@@ -55,20 +74,37 @@ export const SEOAuthorityHub: React.FC = () => {
         </div>
 
         {expanded && (
-          <div className="mt-5 pt-5 border-t border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
-            {EDITORIAL_GUIDES.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="p-3.5 rounded-lg border border-border bg-background hover:bg-muted/40 transition-colors block space-y-1"
-              >
-                <h3 className="text-xs font-semibold text-foreground">{item.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-              </Link>
-            ))}
+          <div className="mt-5 pt-5 border-t border-border space-y-5 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {EDITORIAL_GUIDES.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="p-3.5 rounded-lg border border-border bg-background hover:bg-muted/40 transition-colors block space-y-1"
+                >
+                  <h3 className="text-xs font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </Link>
+              ))}
+            </div>
+
+            <nav aria-label="Popular Football Prediction Markets and Competitions" className="pt-3 border-t border-border/60">
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_SEARCH_CLUSTERS.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className="px-2.5 py-1 rounded-md border border-border bg-background hover:bg-muted/50 hover:text-primary text-xs font-medium text-muted-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
           </div>
         )}
       </div>
     </section>
   );
 };
+

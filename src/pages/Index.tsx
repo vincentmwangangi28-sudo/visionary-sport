@@ -116,6 +116,22 @@ const HOME_JSON_LD = {
             text: 'Coverage includes the English Premier League, UEFA Champions League, LaLiga, Serie A, Bundesliga, Ligue 1, FKF Premier League, MLS, and international tournaments.',
           },
         },
+        {
+          '@type': 'Question',
+          name: 'Can I generate free SportyBet, Betika, SportPesa, and Bet9ja booking codes on PredictPro?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. PredictPro includes a 1-Click Booking Code Exporter and Smart Treble Builder that generates instant multi-bet codes for SportyBet, Betika, SportPesa, Bet9ja, Betway, and 1xBet, with direct WhatsApp and Telegram slip sharing.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How do shared WhatsApp and Telegram bet slip links work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'When you share a PredictPro slip on WhatsApp or Telegram, the link encodes all match selections and odds so friends who click the link automatically load the exact accumulator slip into their Bet Slip.',
+          },
+        },
       ],
     },
   ],
@@ -126,9 +142,9 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="PredictPro — Football Fixtures, Live Scores, xG & Predictions"
-        description="Daily football fixtures, live scores, expected goals (xG) statistics, league standings, and match probabilities across 40+ global competitions."
+        description="Daily football fixtures, live scores, expected goals (xG) statistics, instant SportyBet/Betika/Bet9ja booking codes, and match probabilities across 40+ global competitions."
         canonical="/"
-        keywords="football predictions today, live football scores, premier league fixtures, champions league previews, both teams to score tips, over 2.5 goals, expected goals xG statistics"
+        keywords="football predictions today, sure wins today, sportybet booking codes today, betika jackpot predictions, live football scores, premier league fixtures, champions league previews, both teams to score tips, over 2.5 goals, expected goals xG statistics"
         jsonLd={HOME_JSON_LD}
       />
       <Navbar />

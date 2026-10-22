@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { TeamLogo } from '@/components/TeamLogo';
 import { AdBannerHorizontal } from '@/components/AdBanner';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 import type { Prediction } from '@/types/prediction';
@@ -87,6 +88,21 @@ export default function BTTS() {
     toast.success(`Added ${p.home_team} vs ${p.away_team} (${label}) to Bet Slip!`);
   };
 
+  const topBttsSlipItems = sorted.slice(0, 4).map((p) => {
+    const probs = getProbabilities(p);
+    const val = tab === 'btts' ? probs.btts : probs.over25;
+    const label = tab === 'btts' ? (val >= 50 ? 'BTTS - Yes' : 'BTTS - No') : (val >= 50 ? 'Over 2.5 Goals' : 'Under 2.5 Goals');
+    const odds = tab === 'btts' ? 1.75 : 1.82;
+    return {
+      homeTeam: p.home_team,
+      awayTeam: p.away_team,
+      league: p.league,
+      market: label,
+      odds,
+      confidence: val,
+    };
+  });
+
   const bttsFaqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -121,10 +137,10 @@ export default function BTTS() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="BTTS AI Prediction Today: Both Teams to Score (79% Win Rate)"
-        description="Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson expectancy across 40+ leagues."
+        title="BTTS AI Prediction Today: Both Teams to Score & Booking Codes"
+        description="Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with SportyBet, Betika & 1xBet booking codes."
         canonical="/btts"
-        keywords="btts ai prediction today, btts ai prediction, both teams to score tips, over 2.5 goals predictions, free btts tips today, sure btts picks, ai pro tips today"
+        keywords="btts ai prediction today, btts ai prediction, both teams to score tips, over 2.5 goals predictions, free btts booking codes today, sure btts picks"
         breadcrumbs={[
           { name: 'Home', item: '/' },
           { name: 'BTTS AI Prediction Today', item: '/btts' }
@@ -194,6 +210,14 @@ export default function BTTS() {
             Over / Under 2.5 Goals
           </Button>
         </div>
+
+        {!loading && topBttsSlipItems.length > 0 && (
+          <ViralSlipShareCard
+            title={tab === 'btts' ? '4-Fold Daily BTTS (GG) Syndicate Slip' : '4-Fold Over 2.5 Goals Syndicate Slip'}
+            items={topBttsSlipItems}
+            canonicalPath="/btts"
+          />
+        )}
 
         <AdBannerHorizontal className="mb-6" />
 

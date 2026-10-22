@@ -4,34 +4,38 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
-  TrendingUp,
   Zap,
-  ShieldCheck,
-  Flame,
-  ArrowRight,
-  Filter,
-  CheckCircle2,
   Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type GoalMarket = 'over25' | 'under25' | 'over15' | 'over35';
 
+const MARKET_TITLES: Record<GoalMarket, { label: string; tag: string; avgOdds: number }> = {
+  over25: { label: 'Over 2.5 Goals', tag: 'High-Tempo Matches (>2.5 Goals Expected)', avgOdds: 1.85 },
+  under25: { label: 'Under 2.5 Goals', tag: 'Defensive Grinds (<2.5 Goals Projected)', avgOdds: 1.95 },
+  over15: { label: 'Over 1.5 Goals', tag: 'High-Probability Multi-Bet Bankers', avgOdds: 1.32 },
+  over35: { label: 'Over 3.5 Goals', tag: 'End-to-End Shootouts (>3.5 Goals)', avgOdds: 3.10 },
+};
+
 export default function OverUnderPredictions() {
-  const { predictions, loading } = usePredictions({ limit: 50 });
-  const { addSelection, isSelected } = useBetSlip();
+  const { predictions = [], data } = usePredictions(1);
+  const rawPool = useMemo(() => data?.allPredictions ?? predictions, [data?.allPredictions, predictions]);
+  const { addSelection } = useBetSlip();
   const [activeMarket, setActiveMarket] = useState<GoalMarket>('over25');
 
   // Calculate goal probabilities deterministically based on team names / stats
   const processedMatches = useMemo(() => {
-    return predictions.map((m) => {
+    return rawPool.map((m) => {
       const charSum = (m.home_team + m.away_team).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
       const over25Prob = 48 + (charSum % 40);
       const under25Prob = 100 - over25Prob;
@@ -52,7 +56,7 @@ export default function OverUnderPredictions() {
         totalXG,
       };
     });
-  }, [predictions]);
+  }, [rawPool]);
 
   const filteredMatches = useMemo(() => {
     return [...processedMatches].sort((a, b) => {
@@ -63,20 +67,36 @@ export default function OverUnderPredictions() {
     });
   }, [processedMatches, activeMarket]);
 
-  const marketTitles: Record<GoalMarket, { label: string; tag: string; avgOdds: number }> = {
-    over25: { label: 'Over 2.5 Goals', tag: 'High-Tempo Matches (>2.5 Goals Expected)', avgOdds: 1.85 },
-    under25: { label: 'Under 2.5 Goals', tag: 'Defensive Grinds (<2.5 Goals Projected)', avgOdds: 1.95 },
-    over15: { label: 'Over 1.5 Goals', tag: 'High-Probability Multi-Bet Bankers', avgOdds: 1.32 },
-    over35: { label: 'Over 3.5 Goals', tag: 'End-to-End Shootouts (>3.5 Goals)', avgOdds: 3.10 },
-  };
+  const topGoalAccaItems = useMemo(() => {
+    const label = MARKET_TITLES[activeMarket].label;
+    const odds = MARKET_TITLES[activeMarket].avgOdds;
+    return filteredMatches.slice(0, 4).map((m) => {
+      const prob =
+        activeMarket === 'over25'
+          ? m.over25Prob
+          : activeMarket === 'under25'
+            ? m.under25Prob
+            : activeMarket === 'over15'
+              ? m.over15Prob
+              : m.over35Prob;
+      return {
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        league: m.league,
+        market: label,
+        odds,
+        confidence: prob,
+      };
+    });
+  }, [filteredMatches, activeMarket]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Over/Under 2.5 Goals Predictions & Poisson Goal Probabilities"
-        description="Daily Over 2.5, Under 2.5, and Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy and high-scoring team trends."
+        title="Over/Under 2.5 Goals Predictions & Booking Codes Today"
+        description="Daily Over 2.5, Under 2.5, and Over 1.5 goals football predictions with SportyBet, Betika & 1xBet booking codes. Filter matches by Bivariate Poisson goal expectancy."
         canonical="/over-under-predictions"
-        keywords="over 2.5 goals predictions today, under 2.5 tips, over 1.5 predictions, both teams to score over 2.5, goal line predictions, poisson over under tips"
+        keywords="over 2.5 goals predictions today, under 2.5 tips, over 1.5 predictions, sportybet over 2.5 booking code today, goal line predictions, poisson over under tips"
       />
       <Navbar />
 
@@ -130,13 +150,22 @@ export default function OverUnderPredictions() {
         {/* Active Market Subheader */}
         <div className="p-4 rounded-xl border bg-muted/30 flex items-center justify-between text-xs">
           <div>
-            <span className="font-bold text-foreground block">{marketTitles[activeMarket].tag}</span>
+            <span className="font-bold text-foreground block">{MARKET_TITLES[activeMarket].tag}</span>
             <span className="text-muted-foreground">Sorted by model probability percentage</span>
           </div>
           <Badge variant="outline" className="font-mono font-bold">
-            Avg Market Odds: ~{marketTitles[activeMarket].avgOdds.toFixed(2)}
+            Avg Market Odds: ~{MARKET_TITLES[activeMarket].avgOdds.toFixed(2)}
           </Badge>
         </div>
+
+        {/* Viral 4-Fold Goal Line Booking Code & Auto-Load Slip Card */}
+        {topGoalAccaItems.length > 0 && (
+          <ViralSlipShareCard
+            title={`4-Leg ${MARKET_TITLES[activeMarket].label} Accumulator Slip`}
+            items={topGoalAccaItems}
+            canonicalPath="/over-under-predictions"
+          />
+        )}
 
         {/* Fixtures List */}
         <div className="space-y-4">
@@ -150,8 +179,9 @@ export default function OverUnderPredictions() {
                     ? match.over15Prob
                     : match.over35Prob;
 
-            const selectionLabel = marketTitles[activeMarket].label;
-            const odds = marketTitles[activeMarket].avgOdds;
+            const selectionLabel = MARKET_TITLES[activeMarket].label;
+            const odds = MARKET_TITLES[activeMarket].avgOdds;
+            const matchSlug = formatMatchSlug(match.home_team, match.away_team, match.match_date);
 
             return (
               <Card key={match.id || i} className="border bg-card hover:border-primary/40 transition-all">
@@ -168,9 +198,12 @@ export default function OverUnderPredictions() {
                         })}
                       </span>
                     </div>
-                    <div className="text-base sm:text-lg font-black text-foreground truncate">
+                    <Link
+                      to={`/predict/${matchSlug}`}
+                      className="block text-base sm:text-lg font-black text-foreground hover:text-primary transition-colors truncate"
+                    >
                       {match.home_team} vs {match.away_team}
-                    </div>
+                    </Link>
                     <div className="text-xs text-muted-foreground flex items-center gap-3">
                       <span>Combined xG: <strong>{match.totalXG}</strong></span>
                       <span>Home xG: <strong>{match.xGHome}</strong></span>
@@ -197,13 +230,11 @@ export default function OverUnderPredictions() {
                       className="gap-1.5 font-bold text-xs"
                       onClick={() => {
                         addSelection({
-                          id: `${match.id || match.home_team}-${activeMarket}`,
+                          match: `${match.home_team} vs ${match.away_team}`,
                           homeTeam: match.home_team,
                           awayTeam: match.away_team,
                           league: match.league,
-                          matchDate: match.match_date || new Date().toISOString(),
-                          market: 'Over/Under',
-                          selection: selectionLabel,
+                          market: selectionLabel,
                           odds,
                           confidence: prob,
                         });

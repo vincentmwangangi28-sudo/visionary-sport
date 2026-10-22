@@ -44,7 +44,8 @@ import {
   Target,
   Layers,
   History,
-  Share2
+  Share2,
+  BarChart3
 } from 'lucide-react';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -62,6 +63,7 @@ import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { QuickInsightCard } from '@/components/QuickInsightCard';
 import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { Tv, Play } from 'lucide-react';
 import { toast } from 'sonner';
@@ -755,6 +757,34 @@ export default function MatchPrediction() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* 1-Click Match Booking Code & Viral WhatsApp/Telegram Syndicate Card */}
+            <div className="mt-4">
+              <ViralSlipShareCard
+                title={`${prediction.home_team} vs ${prediction.away_team} Same-Game Slip`}
+                canonicalPath={`/predict/${canonicalMatchSlug}`}
+                items={[
+                  {
+                    homeTeam: prediction.home_team,
+                    awayTeam: prediction.away_team,
+                    league: prediction.league,
+                    market: outcome,
+                    odds: prediction.home_odds ?? 1.95,
+                    confidence,
+                  },
+                  {
+                    homeTeam: prediction.home_team,
+                    awayTeam: prediction.away_team,
+                    league: prediction.league,
+                    market: 'Over 1.5 Goals',
+                    odds: 1.34,
+                    confidence: over15Prob,
+                  },
+                ]}
+                totalOdds={parseFloat((((prediction.home_odds ?? 1.95) * 1.34) * 0.95).toFixed(2))}
+                combinedConfidence={Math.round((confidence + over15Prob) / 2)}
+              />
+            </div>
           </TabsContent>
 
           {/* TAB 2: Asian Handicap, Cards & Corners, and Poisson xG */}

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -29,17 +30,17 @@ import { toast } from 'sonner';
 type BankerCategory = 'all' | 'ultra' | 'solid' | 'acca';
 
 export default function SureWinPredictions() {
-  const { predictions, loading } = usePredictions({ limit: 60 });
+  const { predictions = [], data } = usePredictions(1);
+  const rawPool = useMemo(() => data?.allPredictions ?? predictions, [data?.allPredictions, predictions]);
   const { addSelection, isSelected } = useBetSlip();
   const [activeCategory, setActiveCategory] = useState<BankerCategory>('all');
 
   // Filter and score matches to isolate high-probability banker picks
   const bankerMatches = useMemo(() => {
-    return predictions
+    return rawPool
       .map((m) => {
-        const homeOdds = Number(m.odds?.home || 1.85);
-        const awayOdds = Number(m.odds?.away || 3.4);
-        const drawOdds = Number(m.odds?.draw || 3.3);
+        const homeOdds = Number(m.home_odds || m.odds?.home || 1.85);
+        const awayOdds = Number(m.away_odds || m.odds?.away || 3.4);
 
         const charSum = (m.home_team + m.away_team).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
         // Deterministic calculated AI probability between 76% and 94%
@@ -79,7 +80,7 @@ export default function SureWinPredictions() {
         };
       })
       .sort((a, b) => b.aiWinProb - a.aiWinProb);
-  }, [predictions]);
+  }, [rawPool]);
 
   const filteredMatches = useMemo(() => {
     if (activeCategory === 'ultra') return bankerMatches.filter((m) => m.tier === 'ultra');
@@ -174,6 +175,22 @@ export default function SureWinPredictions() {
             </Button>
           </div>
         </div>
+
+        {/* 1-Click Booking Code & WhatsApp/Telegram Syndicate Card for Top 4 Sure Wins */}
+        {bankerMatches.length > 0 && (
+          <ViralSlipShareCard
+            title="4-Leg Daily Sure Win Banker Slip"
+            canonicalPath="/sure-win-predictions"
+            items={bankerMatches.slice(0, 4).map((m) => ({
+              homeTeam: m.home_team,
+              awayTeam: m.away_team,
+              league: m.league,
+              market: m.recommendedPick,
+              odds: m.pickOdds,
+              confidence: m.aiWinProb,
+            }))}
+          />
+        )}
 
         {/* Filter Navigation */}
         <div className="flex justify-center">
@@ -288,8 +305,14 @@ export default function SureWinPredictions() {
                       )}
                     </Button>
                     <Link to={`/predict/${match.slug || match.id}`}>
-                      <Button size="sm" variant="outline" className="h-9 px-3 text-xs" title="View Full AI Breakdown">
-                        <ArrowRight className="w-3.5 h-3.5" />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 px-3 text-xs"
+                        title="View Full AI Breakdown"
+                        aria-label={`View full breakdown for ${match.home_team} vs ${match.away_team}`}
+                      >
+                        <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                       </Button>
                     </Link>
                   </div>

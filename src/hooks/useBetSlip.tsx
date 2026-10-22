@@ -43,6 +43,7 @@ interface BetSlipContextType {
   boostedReturn: number;
   combinedConfidence: number;
   generateBookingCode: (bookmaker: string) => string;
+  getShareableSlipUrl: (customItems?: BetSelectionInput[], bookmaker?: string, bookingCode?: string) => string;
   triggerHaptic: (pattern?: HapticPattern) => boolean;
   isHapticSupported: boolean;
 }
@@ -50,6 +51,49 @@ interface BetSlipContextType {
 const BetSlipContext = createContext<BetSlipContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'predictpro_betslip_v2';
+
+export function encodeSlipToParam(items: BetSelectionInput[]): string {
+  try {
+    return items
+      .slice(0, 10)
+      .map((s) => {
+        const h = (s.homeTeam || 'Home').replace(/[~|_]/g, ' ').trim();
+        const a = (s.awayTeam || 'Away').replace(/[~|_]/g, ' ').trim();
+        const m = (s.selection || s.market || 'Home Win').replace(/[~|_]/g, ' ').trim();
+        const o = (Number(s.odds) || 1.75).toFixed(2);
+        const c = Math.round(Number(s.confidence) || 78);
+        const l = (s.league || 'Football').replace(/[~|_]/g, ' ').trim();
+        return `${h}~${a}~${m}~${o}~${c}~${l}`;
+      })
+      .join('|');
+  } catch {
+    return '';
+  }
+}
+
+export function decodeSlipFromParam(raw: string): BetSelectionInput[] {
+  try {
+    if (!raw) return [];
+    return raw
+      .split('|')
+      .map((chunk) => {
+        const [homeTeam, awayTeam, market, oddsStr, confStr, league] = chunk.split('~');
+        if (!homeTeam || !awayTeam) return null;
+        return {
+          homeTeam: homeTeam.trim(),
+          awayTeam: awayTeam.trim(),
+          match: `${homeTeam.trim()} vs ${awayTeam.trim()}`,
+          market: (market || 'Home Win').trim(),
+          odds: parseFloat(oddsStr || '1.75') || 1.75,
+          confidence: parseInt(confStr || '78', 10) || 78,
+          league: (league || 'Football').trim(),
+        } as BetSelectionInput;
+      })
+      .filter((x): x is BetSelectionInput => x !== null);
+  } catch {
+    return [];
+  }
+}
 
 function normalizeSelectionInput(sel: BetSelectionInput): BetSelection {
   const homeTeam = sel.homeTeam || 'Home';
@@ -104,6 +148,42 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error(e);
     }
   }, [selections]);
+
+  // Hydrate shared ?slip= deep-links and ?ref= referral invites from WhatsApp/Telegram/Social shares
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const refCode = params.get('ref');
+      if (refCode && refCode.trim()) {
+        const cleanRef = refCode.trim().toUpperCase();
+        localStorage.setItem('predictpro_referred_by', cleanRef);
+        setTimeout(() => {
+          toast.success(`Referral code ${cleanRef} activated! Sign in to claim +50 Free VIP Coins.`);
+        }, 600);
+      }
+
+      const sharedSlipRaw = params.get('slip');
+      const sharedCode = params.get('code');
+      const sharedBookie = params.get('bookie');
+      if (sharedSlipRaw) {
+        const decoded = decodeSlipFromParam(sharedSlipRaw);
+        if (decoded.length > 0) {
+          const normalizedList = decoded.map(normalizeSelectionInput);
+          setSelections(normalizedList);
+          setIsOpen(true);
+          setTimeout(() => {
+            const codeSuffix = sharedCode ? ` (${sharedBookie || 'Code'}: ${sharedCode})` : '';
+            toast.success(
+              `Loaded shared ${normalizedList.length}-leg slip${codeSuffix} into your Bet Slip!`
+            );
+          }, 400);
+        }
+      }
+    } catch {
+      // ignore malformed URL params
+    }
+  }, []);
 
   const addSelection = (rawSel: BetSelectionInput) => {
     const normalized = normalizeSelectionInput(rawSel);
@@ -280,6 +360,21 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return `${bookmaker.toUpperCase().slice(0, 2)}-${code}`;
   };
 
+  const getShareableSlipUrl = (
+    customItems?: BetSelectionInput[],
+    bookmaker?: string,
+    bookingCode?: string
+  ): string => {
+    const targetItems = customItems && customItems.length > 0 ? customItems : selections;
+    const encoded = encodeSlipToParam(targetItems);
+    const params = new URLSearchParams();
+    if (encoded) params.set('slip', encoded);
+    if (bookmaker) params.set('bookie', bookmaker);
+    if (bookingCode) params.set('code', bookingCode);
+    const qs = params.toString();
+    return qs ? `https://predictpro.guru/?${qs}` : 'https://predictpro.guru';
+  };
+
   return (
     <BetSlipContext.Provider
       value={{
@@ -302,6 +397,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
         boostedReturn,
         combinedConfidence,
         generateBookingCode,
+        getShareableSlipUrl,
         triggerHaptic: (pattern?: HapticPattern) => hapticService.trigger(pattern),
         isHapticSupported: hapticService.isSupported(),
       }}
@@ -331,6 +427,7 @@ const defaultFallbackContext: BetSlipContextType = {
   boostedReturn: 0,
   combinedConfidence: 0,
   generateBookingCode: () => '',
+  getShareableSlipUrl: () => 'https://predictpro.guru',
   triggerHaptic: () => false,
   isHapticSupported: false,
 };

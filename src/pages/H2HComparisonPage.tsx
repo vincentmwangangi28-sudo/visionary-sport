@@ -218,6 +218,7 @@ export default function H2HComparisonPage() {
                 <div className="flex-1 min-w-0">
                   <select
                     value={teamAId}
+                    aria-label="Select Home Team"
                     onChange={e => {
                       setTeamAId(e.target.value);
                       setActiveDerbyId('');
@@ -246,8 +247,9 @@ export default function H2HComparisonPage() {
                 className="h-8 w-8 rounded-full border-border hover:bg-primary/10 hover:text-primary hover:border-primary"
                 onClick={handleSwap}
                 title="Swap Home & Away"
+                aria-label="Swap Home and Away teams"
               >
-                <ArrowLeftRight className="h-3.5 w-3.5" />
+                <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
             </div>
 
@@ -271,6 +273,7 @@ export default function H2HComparisonPage() {
                 <div className="flex-1 min-w-0">
                   <select
                     value={teamBId}
+                    aria-label="Select Away Team"
                     onChange={e => {
                       setTeamBId(e.target.value);
                       setActiveDerbyId('');

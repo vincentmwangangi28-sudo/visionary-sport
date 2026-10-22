@@ -338,7 +338,6 @@ export default function AccumulatorBuilder() {
                                     confidence: conf,
                                   });
                                 }}
-                                aria-label={`Select ${label} at ${odds.toFixed(2)} odds for ${pred.home_team} vs ${pred.away_team}`}
                                 className={`h-9 w-16 rounded-md text-xs border flex flex-col items-center justify-center transition-colors cursor-pointer ${
                                   isAdded
                                     ? 'bg-primary text-primary-foreground border-primary font-bold'
@@ -441,7 +440,6 @@ export default function AccumulatorBuilder() {
                                 type="button"
                                 key={c}
                                 onClick={() => setCurrency(c)}
-                                aria-label={`Set currency to ${c}`}
                                 className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
                                   currency === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                                 }`}

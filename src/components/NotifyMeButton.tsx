@@ -102,7 +102,6 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
           type="button"
           onClick={handleClick}
           title={subscribed ? 'Subscribed (Click to customize)' : 'Click to enable match push alerts'}
-          aria-label={subscribed ? `Manage match alerts for ${match.home_team} vs ${match.away_team}` : `Enable match alerts for ${match.home_team} vs ${match.away_team}`}
           className={cn(
             'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all border select-none',
             subscribed
@@ -131,7 +130,6 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
             variant={subscribed ? 'secondary' : 'outline'}
             size="sm"
             onClick={handleClick}
-            aria-label={subscribed ? `Match alerts active for ${match.home_team} vs ${match.away_team}` : `Enable notifications for ${match.home_team} vs ${match.away_team}`}
             className={cn(
               'min-h-[40px] px-3 py-1.5 text-xs font-bold gap-1.5 rounded-lg transition-all',
               subscribed
@@ -173,7 +171,6 @@ export const NotifyMeButton: React.FC<NotifyMeButtonProps> = ({
             variant={subscribed ? 'default' : 'outline'}
             size={size === 'xs' ? 'sm' : size}
             onClick={handleClick}
-            aria-label={subscribed ? `Match alerts active for ${match.home_team} vs ${match.away_team}` : `Enable notifications for ${match.home_team} vs ${match.away_team}`}
             className={cn(
               'font-bold gap-2 transition-all shadow-sm',
               subscribed

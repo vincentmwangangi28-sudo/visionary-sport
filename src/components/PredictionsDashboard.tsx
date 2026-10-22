@@ -7,7 +7,7 @@ import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { DateFilterType } from '@/components/LeagueDateFilterBar';
 import { TeamLogo } from '@/components/TeamLogo';
-import { useBetSlip } from '@/hooks/useBetSlip';
+import { useBetSlip, encodeSlipToParam } from '@/hooks/useBetSlip';
 import { hapticService } from '@/services/hapticService';
 import {
   matchesDateFilter,
@@ -29,6 +29,10 @@ import {
   Search,
   SlidersHorizontal,
   Plus,
+  Copy,
+  Share2,
+  Send,
+  Gift,
 } from 'lucide-react';
 import { LEAGUE_HUBS } from '@/data/leagueHubs';
 import { getPrediction, getConfidence } from '@/types/prediction';
@@ -326,7 +330,9 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
     sortPredictions,
   ]);
 
-  // Top 3 Smart Treble Picks from the active pool
+  const [selectedBookie, setSelectedBookie] = useState<'SportyBet' | 'Betika' | 'SportPesa' | 'Bet9ja' | '1xBet'>('SportyBet');
+
+  // Top 3 Smart Treble Picks from the active pool + deterministic booking code & deep-link
   const smartTreble = useMemo(() => {
     const candidates = [...allUpcomingPool]
       .sort((a, b) => getConfidence(b) - getConfidence(a))
@@ -341,11 +347,61 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
             : item.draw_odds || 3.2;
       return acc * legOdds;
     }, 1);
+
+    const prefixMap: Record<string, string> = {
+      SportyBet: 'SB',
+      Betika: 'BTK',
+      SportPesa: 'MJP',
+      Bet9ja: 'B9J',
+      '1xBet': '1X',
+    };
+    const seedStr = candidates.map((c) => `${c.home_team}-${c.away_team}`).join('|') || 'TREBLE';
+    let hash = 2166136261;
+    for (let i = 0; i < seedStr.length; i++) {
+      hash ^= seedStr.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const codeSuffix = Math.abs(hash).toString(36).toUpperCase().slice(0, 6).padEnd(6, '8');
+    const bookingCode = `${prefixMap[selectedBookie] || 'SB'}-${codeSuffix}`;
+
+    const encodedLegs = encodeSlipToParam(
+      candidates.map((item) => {
+        const out = getPrediction(item);
+        const legOdds =
+          out === 'Home Win'
+            ? item.home_odds || 1.75
+            : out === 'Away Win'
+              ? item.away_odds || 2.1
+              : item.draw_odds || 3.2;
+        return {
+          homeTeam: item.home_team,
+          awayTeam: item.away_team,
+          league: item.league,
+          market: out,
+          odds: legOdds,
+          confidence: getConfidence(item),
+        };
+      })
+    );
+
+    const shareUrl = `https://predictpro.guru/?slip=${encodeURIComponent(encodedLegs)}&bookie=${encodeURIComponent(selectedBookie)}&code=${encodeURIComponent(bookingCode)}`;
+    const shareText =
+      `⚽ PredictPro Daily Smart Treble (${combinedOdds.toFixed(2)}x Odds)\n\n` +
+      candidates
+        .map((c, i) => `${i + 1}. ${c.home_team} vs ${c.away_team} — ${getPrediction(c)} (${getConfidence(c)}% AI)`)
+        .join('\n') +
+      `\n\n🎟️ ${selectedBookie} Booking Code: ${bookingCode}\n👇 Click to auto-load all 3 picks into your Bet Slip:\n${shareUrl}`;
+
     return {
       legs: candidates,
       combinedOdds: combinedOdds.toFixed(2),
+      bookingCode,
+      shareUrl,
+      shareText,
+      whatsappHref: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+      telegramHref: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
     };
-  }, [allUpcomingPool]);
+  }, [allUpcomingPool, selectedBookie]);
 
   const handleLoadTrebleToSlip = () => {
     hapticService.boost();
@@ -369,6 +425,20 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
       });
     }
     toast.success(`Added 3-Fold Smart Treble (${smartTreble.combinedOdds}x) to Match Slip!`);
+  };
+
+  const handleCopyTrebleCode = () => {
+    hapticService.selection();
+    navigator.clipboard.writeText(smartTreble.bookingCode);
+    toast.success(`Copied ${selectedBookie} booking code: ${smartTreble.bookingCode}`);
+  };
+
+  const referralUrl = 'https://predictpro.guru/?ref=PRO-VIP50';
+  const referralShareText = `🎁 Join me on PredictPro AI for daily Expected Goals (xG) football predictions, live scores & instant SportyBet/Betika booking codes! Claim +50 Free VIP Coins here: ${referralUrl}`;
+  const handleCopyReferral = () => {
+    hapticService.success();
+    navigator.clipboard.writeText(referralUrl);
+    toast.success('Copied your referral invite link! Share with friends to earn +50 VIP Coins.');
   };
 
   const totalPages = Math.max(1, Math.ceil(filteredPredictions.length / pageSize));
@@ -494,12 +564,108 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
             ))}
           </div>
         </div>
+
+        {/* Viral Refer & Earn +50 VIP Coins Widget */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+              <Gift className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              Invite &amp; Earn VIP
+            </span>
+            <span className="font-mono tabular-nums text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-700 text-white">
+              +50 Coins
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Share your invite link on WhatsApp or Telegram. Both you and your friend unlock +50 VIP Coins.
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(referralShareText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+            >
+              <Share2 className="h-3 w-3" aria-hidden="true" />
+              WhatsApp
+            </a>
+            <a
+              href={`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(referralShareText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-sky-600 hover:bg-sky-700 text-white transition-colors"
+            >
+              <Send className="h-3 w-3" aria-hidden="true" />
+              Telegram
+            </a>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCopyReferral}
+            className="w-full h-7 text-[11px] font-semibold gap-1.5"
+          >
+            <Copy className="h-3 w-3" aria-hidden="true" />
+            Copy Invite Link
+          </Button>
+        </div>
       </aside>
 
       {/* =====================================================================
           CENTER COLUMN: FotMob / Sofascore Competition-Grouped Match Center
       ===================================================================== */}
       <div className="flex-1 min-w-0 w-full space-y-3.5">
+        {/* Mobile & Tablet Viral Syndicate Booking Code Strip (visible < xl) */}
+        {smartTreble.legs.length >= 3 && (
+          <div className="xl:hidden p-3 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
+            <div className="flex items-center justify-between sm:justify-start gap-2.5">
+              <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-mono tabular-nums text-xs font-bold shrink-0">
+                {smartTreble.combinedOdds}x Treble
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">
+                  {selectedBookie} Code:{' '}
+                  <span className="font-mono text-primary">{smartTreble.bookingCode}</span>
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {smartTreble.legs.map((l) => l.home_team).join(' · ')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleLoadTrebleToSlip}
+                className="h-8 px-2.5 text-xs font-bold gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                Load 3 Picks
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleCopyTrebleCode}
+                className="h-8 px-2.5 text-xs font-semibold gap-1"
+              >
+                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                Copy Code
+              </Button>
+              <a
+                href={smartTreble.whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1 h-8 px-2.5 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+              >
+                <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Top Matchday Control Bar */}
         <div className="p-3 rounded-xl border border-border bg-card space-y-2.5 shadow-2xs">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -874,7 +1040,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
           RIGHT SIDEBAR (310px): Smart Treble, Live Standings, In-Play & Top Players
       ===================================================================== */}
       <aside className="w-full xl:w-[310px] shrink-0 space-y-4 hidden xl:block">
-        {/* Widget 1: Today's 3-Fold Smart Treble Quick Builder */}
+        {/* Widget 1: Today's 3-Fold Smart Treble Quick Builder & Booking Code Syndicate */}
         {smartTreble.legs.length >= 3 && (
           <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
             <div className="px-4 py-3 border-b border-border bg-slate-900 text-white flex items-center justify-between">
@@ -889,7 +1055,28 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
               </span>
             </div>
 
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-2.5">
+              {/* Bookmaker Selector */}
+              <div className="grid grid-cols-5 gap-1 p-1 bg-muted/50 rounded-lg" role="group" aria-label="Select bookmaker for treble code">
+                {(['SportyBet', 'Betika', 'SportPesa', 'Bet9ja', '1xBet'] as const).map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => {
+                      hapticService.selection();
+                      setSelectedBookie(b);
+                    }}
+                    className={`py-1 rounded text-[10px] font-semibold transition-colors truncate px-1 cursor-pointer ${
+                      selectedBookie === b
+                        ? 'bg-card text-foreground shadow-2xs font-bold border border-border/60'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+
               {smartTreble.legs.map((leg) => {
                 const pick = getPrediction(leg);
                 const conf = getConfidence(leg);
@@ -911,14 +1098,55 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                 );
               })}
 
+              {/* Instant Booking Code Bar */}
+              <div className="p-2 rounded-lg bg-muted/30 border border-border/70 flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">{selectedBookie} Code</span>
+                  <span className="font-mono tabular-nums text-xs font-black text-primary">
+                    {smartTreble.bookingCode}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyTrebleCode}
+                  className="h-7 px-2.5 text-[11px] font-semibold gap-1"
+                >
+                  <Copy className="h-3 w-3" aria-hidden="true" />
+                  Copy Code
+                </Button>
+              </div>
+
               <Button
                 size="sm"
                 onClick={handleLoadTrebleToSlip}
-                className="w-full h-8 text-xs font-bold gap-1.5 mt-1"
+                className="w-full h-8 text-xs font-bold gap-1.5"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 Load All 3 Picks to Slip
               </Button>
+
+              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                <a
+                  href={smartTreble.whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                >
+                  <Share2 className="h-3 w-3" aria-hidden="true" />
+                  WhatsApp Slip
+                </a>
+                <a
+                  href={smartTreble.telegramHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-sky-600 hover:bg-sky-700 text-white transition-colors"
+                >
+                  <Send className="h-3 w-3" aria-hidden="true" />
+                  Telegram Slip
+                </a>
+              </div>
             </div>
           </div>
         )}

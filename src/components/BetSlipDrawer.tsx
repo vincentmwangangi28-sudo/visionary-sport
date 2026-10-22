@@ -46,6 +46,7 @@ export const BetSlipDrawer = () => {
     potentialReturn,
     boostedReturn,
     combinedConfidence,
+    getShareableSlipUrl,
     triggerHaptic,
     isHapticSupported,
   } = useBetSlip();
@@ -129,28 +130,43 @@ export const BetSlipDrawer = () => {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const shareableSlipUrl = useMemo(
+    () => getShareableSlipUrl(selections, activeBookmaker?.name, generatedCode || undefined),
+    [getShareableSlipUrl, selections, activeBookmaker?.name, generatedCode]
+  );
+
+  const formattedSlipShareText = useMemo(() => {
+    return (
+      `⚽ PredictPro AI Bet Slip (${selections.length} Picks)\n\n` +
+      selections
+        .map(
+          (s, idx) =>
+            `${idx + 1}. ${s.homeTeam} vs ${s.awayTeam} — ${s.market} @ ${formatOdds(s.odds)} (${s.confidence}% AI)`
+        )
+        .join('\n') +
+      `\n\n📊 Combined Odds: ${formatOdds(totalOdds)}\n` +
+      (bonusMultiplier > 0 ? `🎁 Acca Bonus: +${(bonusMultiplier * 100).toFixed(0)}%\n` : '') +
+      `🎯 Combined Confidence: ${combinedConfidence}%\n` +
+      (generatedCode ? `🎟️ Booking Code (${activeBookmaker.name}): ${generatedCode}\n` : '') +
+      `\n👇 Click to auto-load this slip into your Bet Slip:\n${shareableSlipUrl}`
+    );
+  }, [selections, formatOdds, totalOdds, bonusMultiplier, combinedConfidence, generatedCode, activeBookmaker?.name, shareableSlipUrl]);
+
   const handleShareSlip = async () => {
     triggerHaptic('success');
-    const slipText = `⚽ 𝗣𝗿𝗲𝗱𝗶𝗰𝘁𝗣𝗿𝗼 𝗔𝗜 𝗕𝗲𝘁 𝗦𝗹𝗶𝗽 (${selections.length} Picks)\n\n` +
-      selections.map((s, idx) => `${idx + 1}. ${s.homeTeam} vs ${s.awayTeam}\n   👉 Pick: ${s.market} @ ${formatOdds(s.odds)} (AI: ${s.confidence}%)\n   🏆 ${s.league}`).join('\n\n') +
-      `\n\n📊 𝗧𝗼𝘁𝗮𝗹 𝗢𝗱𝗱𝘀: ${formatOdds(totalOdds)}\n` +
-      (bonusMultiplier > 0 ? `🎁 𝗔𝗰𝗰𝗮 𝗕𝗼𝗻𝘂𝘀: +${(bonusMultiplier * 100).toFixed(0)}%\n` : '') +
-      `🎯 𝗖𝗼𝗺𝗯𝗶𝗻𝗲𝗱 𝗖𝗼𝗻𝗳𝗶𝗱𝗲𝗻𝗰𝗲: ${combinedConfidence}%\n` +
-      (generatedCode ? `🎟️ 𝗕𝗼𝗼𝗸𝗶𝗻𝗴 𝗖𝗼𝗱𝗲 (${activeBookmaker.name}): ${generatedCode}\n` : '') +
-      `\n🔗 Built with PredictPro AI — https://predictpro.guru`;
-
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'PredictPro AI Bet Slip',
-          text: slipText,
+          text: formattedSlipShareText,
+          url: shareableSlipUrl,
         });
       } catch {
         // user cancelled or fallback
       }
     } else {
-      navigator.clipboard.writeText(slipText);
-      toast.success('Bet slip copied to clipboard!');
+      navigator.clipboard.writeText(formattedSlipShareText);
+      toast.success('Copied slip & auto-load link to clipboard!');
     }
   };
 
@@ -363,13 +379,13 @@ export const BetSlipDrawer = () => {
                           variant={selectedBookmakerId === bookie.id ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => handleGenerateCode(bookie.id)}
-                          aria-label={`Generate booking code for ${bookie.name}`}
+                          title={`Generate booking code for ${bookie.name}`}
                           className={`text-[11px] h-6 px-2 gap-1 ${isRegional ? 'border-primary/40 font-semibold' : ''}`}
                         >
-                          <span>{bookie.flag}</span>
+                          <span aria-hidden="true">{bookie.flag}</span>
                           <span>{bookie.name}</span>
                           {isRegional && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block ml-0.5" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block ml-0.5" aria-hidden="true" />
                           )}
                         </Button>
                       );
@@ -380,7 +396,7 @@ export const BetSlipDrawer = () => {
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 flex items-center justify-between gap-2 mt-2 animate-in fade-in">
                       <div>
                         <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
-                          <span>{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
+                          <span aria-hidden="true">{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
                         </p>
                         <p className="font-mono font-bold text-sm tracking-wider text-primary">{generatedCode}</p>
                       </div>
@@ -389,7 +405,7 @@ export const BetSlipDrawer = () => {
                           size="sm"
                           variant="secondary"
                           onClick={() => handleCopyCode(generatedCode)}
-                          aria-label={`Copy ${activeBookmaker.name} slip code: ${generatedCode}`}
+                          title={`Copy ${activeBookmaker.name} slip code: ${generatedCode}`}
                           className="h-8 gap-1 text-xs font-semibold"
                         >
                           {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
@@ -399,9 +415,10 @@ export const BetSlipDrawer = () => {
                           href={activeBookmaker.websiteUrl}
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label={`Open ${activeBookmaker.name} website`}
                           className="inline-flex items-center justify-center rounded-md text-xs font-medium border bg-background hover:bg-muted h-8 px-2"
                         >
-                          <ExternalLink className="h-3.5 w-3.5" />
+                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                         </a>
                       </div>
                     </div>
@@ -450,7 +467,7 @@ export const BetSlipDrawer = () => {
                               setCurrency(c);
                               setGlobalCurrency(c as any);
                             }}
-                            aria-label={`Set currency to ${c}`}
+                            title={`Set currency to ${c}`}
                             className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c || currentConfig.code === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                           >
                             {c}
@@ -492,18 +509,38 @@ export const BetSlipDrawer = () => {
                   )}
                 </div>
 
-                {/* Action Buttons */}
+                {/* Action Buttons: Share / WhatsApp / Telegram / Export */}
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(formattedSlipShareText)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                  >
+                    <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    WhatsApp Slip
+                  </a>
+                  <a
+                    href={`https://t.me/share/url?url=${encodeURIComponent(shareableSlipUrl)}&text=${encodeURIComponent(formattedSlipShareText)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-md text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white transition-colors"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                    Telegram Slip
+                  </a>
+                </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleShareSlip} className="flex-1 gap-2 h-10 font-bold shadow-md">
-                    <Share2 className="h-4 w-4" /> {t('slip.share', 'Share Slip')}
+                  <Button onClick={handleShareSlip} className="flex-1 gap-2 h-9 text-xs font-bold shadow-md">
+                    <Share2 className="h-3.5 w-3.5" /> {t('slip.share', 'Copy Auto-Load Link')}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => handleGenerateCode(selectedBookmakerId)}
-                    className="gap-2 h-10"
+                    className="gap-1.5 h-9 text-xs"
                     title="Export Booking Code"
                   >
-                    <Copy className="h-4 w-4" /> {t('slip.export_code', 'Export')}
+                    <Copy className="h-3.5 w-3.5" /> {t('slip.export_code', 'Code')}
                   </Button>
                 </div>
               </div>
