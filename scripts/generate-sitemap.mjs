@@ -161,6 +161,37 @@ const BLOG_POSTS = [
   { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: How Poisson Matrices Predict Exact Scorelines', priority: 0.80 },
   { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', priority: 0.85 },
   { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', priority: 0.80 },
+  { slug: 'universal-bet-code-converter-sportybet-1xbet-bet9ja', title: 'Universal Bet Code Converter: How to Convert SportyBet, 1xBet, Bet9ja & Betway Slips', priority: 0.90 },
+  { slug: 'bivariate-poisson-dixon-coles-score-matrix-guide', title: 'Bivariate Poisson & Dixon-Coles Score Matrix: How PredictPro Calculates Exact Scorelines', priority: 0.90 },
+  { slug: '2-score-correct-score-dutching-strategy', title: '2-Score Correct Score Dutching Strategy: Mathematical Stake Sizing for High-Odds Value', priority: 0.85 },
+  { slug: 'referee-cards-corners-prop-modeling', title: 'Referee Discipline & Corner Prop Modeling: Predicting Cards and Corners with xG Tempo', priority: 0.85 },
+];
+
+const CLUB_ANALYTICS_SLUGS = [
+  'arsenal',
+  'manchester-city',
+  'liverpool',
+  'chelsea',
+  'manchester-united',
+  'tottenham',
+  'newcastle-united',
+  'aston-villa',
+  'real-madrid',
+  'barcelona',
+  'atletico-madrid',
+  'bayern-munich',
+  'borussia-dortmund',
+  'bayer-leverkusen',
+  'inter-milan',
+  'ac-milan',
+  'juventus',
+  'napoli',
+  'psg',
+  'al-ahly',
+  'mamelodi-sundowns',
+  'gor-mahia',
+  'kaizer-chiefs',
+  'orlando-pirates',
 ];
 
 // Key Featured Match Slugs
@@ -184,7 +215,15 @@ const FEATURED_MATCH_SLUGS = [
   'juventus-vs-napoli',
   'atletico-madrid-vs-sevilla',
   'la-galaxy-vs-lafc',
-  'inter-miami-vs-new-york-red-bulls'
+  'inter-miami-vs-new-york-red-bulls',
+  'celtic-vs-rangers',
+  'boca-juniors-vs-river-plate',
+  'benfica-vs-sporting-cp',
+  'galatasaray-vs-fenerbahce',
+  'ajax-vs-feyenoord',
+  'club-america-vs-chivas',
+  'al-hilal-vs-al-nassr',
+  'flamengo-vs-palmeiras',
 ];
 
 function escapeXml(unsafe) {
@@ -241,6 +280,21 @@ export function buildSitemapXml() {
     title: 'Football Betting Strategy Blog & AI Prediction Guides',
   });
 
+  // Club Expected Goals (xG) & FDR Hubs
+  for (const clubSlug of CLUB_ANALYTICS_SLUGS) {
+    const clubLabel = clubSlug
+      .split('-')
+      .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+      .join(' ');
+    urlEntries.push({
+      loc: `${BASE_URL}/teams/${clubSlug}`,
+      lastmod: TODAY,
+      changefreq: 'daily',
+      priority: '0.85',
+      title: `${clubLabel} xG Stats, Poisson Ratings & Fixture Difficulty (FDR)`,
+    });
+  }
+
   // Match pages (Evergreen canonical slugs so internal links never drift across days)
   for (const slug of FEATURED_MATCH_SLUGS) {
     urlEntries.push({
@@ -252,63 +306,6 @@ export function buildSitemapXml() {
     });
   }
 
-const GLOBAL_HREFLANGS = [
-  'x-default',
-  'en',
-  'en-US',
-  'en-GB',
-  'en-KE',
-  'en-NG',
-  'en-ZA',
-  'en-GH',
-  'en-TZ',
-  'en-UG',
-  'en-ZM',
-  'en-ZW',
-  'en-RW',
-  'en-CM',
-  'en-IN',
-  'en-CA',
-  'en-AU',
-  'en-NZ',
-  'en-PH',
-  'en-SG',
-  'en-MY',
-  'en-IE',
-  'en-AE',
-  'es',
-  'es-ES',
-  'es-MX',
-  'es-AR',
-  'es-CO',
-  'es-CL',
-  'es-US',
-  'fr',
-  'fr-FR',
-  'fr-CA',
-  'fr-SN',
-  'fr-CI',
-  'fr-CD',
-  'fr-CM',
-  'fr-MA',
-  'pt',
-  'pt-BR',
-  'pt-PT',
-  'pt-AO',
-  'pt-MZ',
-  'sw',
-  'sw-KE',
-  'sw-TZ',
-  'de-DE',
-  'it-IT',
-  'nl-NL',
-  'ar',
-  'ar-EG',
-  'ar-SA',
-  'ar-AE',
-  'ar-MA',
-];
-
   const xmlNodes = urlEntries.map(entry => {
     return `  <url>
     <loc>${escapeXml(entry.loc)}</loc>
@@ -317,11 +314,18 @@ const GLOBAL_HREFLANGS = [
     <priority>${entry.priority}</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(entry.loc)}" />
     <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(entry.loc)}" />
+    <image:image>
+      <image:loc>${escapeXml(`${BASE_URL}/og-image.jpg`)}</image:loc>
+      <image:title>${escapeXml(entry.title || 'PredictPro AI Football Analytics')}</image:title>
+      <image:caption>${escapeXml(`${entry.title || 'PredictPro'} — Expected Goals (xG) & Bivariate Poisson Football Analytics`)}</image:caption>
+    </image:image>
   </url>`;
   }).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${xmlNodes}
 </urlset>
 `;
@@ -330,8 +334,10 @@ ${xmlNodes}
 export function buildYandexSitemapXml() {
   const fullXml = buildSitemapXml();
   return fullXml
-    .replace(' xmlns:xhtml="http://www.w3.org/1999/xhtml"', '')
-    .replace(/\n\s*<xhtml:link[^>]*\/>/g, '');
+    .replace(/\s*xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/, '')
+    .replace(/\s*xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/, '')
+    .replace(/\n\s*<xhtml:link[^>]*\/>/g, '')
+    .replace(/\n\s*<image:image>[\s\S]*?<\/image:image>/g, '');
 }
 
 function buildUrlsetFromEntries(entries) {
@@ -350,12 +356,73 @@ ${nodes}
 `;
 }
 
+export function buildDiscoverNewsSitemapXml() {
+  const discoverEntries = [
+    ...BLOG_POSTS.map(post => ({
+      loc: `${BASE_URL}/blog/${post.slug}`,
+      title: post.title,
+      priority: post.priority.toFixed(2),
+      freq: 'daily',
+    })),
+    {
+      loc: `${BASE_URL}/today-predictions`,
+      title: "Today's Football Predictions: Daily AI Match Tips, Expected Goals (xG) & Fair Odds",
+      priority: '0.95',
+      freq: 'hourly',
+    },
+    {
+      loc: `${BASE_URL}/slip-generator`,
+      title: 'Smart Bet Slip Generator & Universal Booking Code Converter (SportyBet, 1xBet, Bet9ja)',
+      priority: '0.95',
+      freq: 'daily',
+    },
+    ...FEATURED_MATCH_SLUGS.slice(0, 12).map(slug => ({
+      loc: `${BASE_URL}/predict/${slug}`,
+      title: `${slug.split('-vs-').map(s => s.replace(/-/g, ' ')).join(' vs ').toUpperCase()} AI Prediction, Expected Goals (xG) & Score Matrix`,
+      priority: '0.85',
+      freq: 'daily',
+    })),
+  ];
+
+  const nodes = discoverEntries.map(entry => `  <url>
+    <loc>${escapeXml(entry.loc)}</loc>
+    <lastmod>${TODAY}</lastmod>
+    <changefreq>${entry.freq}</changefreq>
+    <priority>${entry.priority}</priority>
+    <news:news>
+      <news:publication>
+        <news:name>PredictPro AI Football Analytics</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>${TODAY}T08:00:00Z</news:publication_date>
+      <news:title>${escapeXml(entry.title)}</news:title>
+      <news:keywords>football predictions, Expected Goals xG, Poisson distribution, PredictPro, sports analytics</news:keywords>
+    </news:news>
+    <image:image>
+      <image:loc>${escapeXml(`${BASE_URL}/og-image.jpg`)}</image:loc>
+      <image:title>${escapeXml(entry.title)}</image:title>
+      <image:caption>${escapeXml(`${entry.title} — PredictPro Quantitative Football Analytics`)}</image:caption>
+    </image:image>
+  </url>`).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${nodes}
+</urlset>
+`;
+}
+
 export function buildSitemapIndexXml() {
   const subSitemaps = [
+    `${BASE_URL}/sitemap.xml`,
     `${BASE_URL}/sitemap-core.xml`,
     `${BASE_URL}/sitemap-leagues.xml`,
     `${BASE_URL}/sitemap-matches.xml`,
     `${BASE_URL}/sitemap-blog.xml`,
+    `${BASE_URL}/sitemap-discover-news.xml`,
+    `${BASE_URL}/sitemap-yandex.xml`,
   ];
   const nodes = subSitemaps.map(loc => `  <sitemap>
     <loc>${escapeXml(loc)}</loc>
@@ -371,8 +438,10 @@ ${nodes}
 // Write master sitemaps
 const xml = buildSitemapXml();
 const yandexXml = buildYandexSitemapXml();
+const discoverXml = buildDiscoverNewsSitemapXml();
 fs.writeFileSync(SITEMAP_PATH, xml, 'utf8');
 fs.writeFileSync(YANDEX_SITEMAP_PATH, yandexXml, 'utf8');
+fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-discover-news.xml'), discoverXml, 'utf8');
 
 // Write category sub-sitemaps & sitemap-index.xml
 const coreEntries = CORE_PAGES.map(page => ({
@@ -387,12 +456,20 @@ const leagueEntries = LEAGUE_PAGES.map(page => ({
   changefreq: page.freq,
   priority: page.priority.toFixed(2),
 }));
-const matchEntries = FEATURED_MATCH_SLUGS.map(slug => ({
-  loc: `${BASE_URL}/predict/${slug}`,
-  lastmod: TODAY,
-  changefreq: 'daily',
-  priority: '0.80',
-}));
+const matchEntries = [
+  ...FEATURED_MATCH_SLUGS.map(slug => ({
+    loc: `${BASE_URL}/predict/${slug}`,
+    lastmod: TODAY,
+    changefreq: 'daily',
+    priority: '0.80',
+  })),
+  ...CLUB_ANALYTICS_SLUGS.map(clubSlug => ({
+    loc: `${BASE_URL}/teams/${clubSlug}`,
+    lastmod: TODAY,
+    changefreq: 'daily',
+    priority: '0.85',
+  })),
+];
 const blogEntries = [
   { loc: `${BASE_URL}/blog`, lastmod: TODAY, changefreq: 'daily', priority: '0.85' },
   ...BLOG_POSTS.map(post => ({
@@ -410,7 +487,8 @@ fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-blog.xml'), buildUrlsetF
 fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-index.xml'), buildSitemapIndexXml(), 'utf8');
 
 const urlCount = (xml.match(/<loc>/g) || []).length;
-console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH}, ${YANDEX_SITEMAP_PATH}, and sitemap-index.xml`);
+console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH}, ${YANDEX_SITEMAP_PATH}, sitemap-discover-news.xml, and sitemap-index.xml`);
 console.log(`📅 Generated date: ${TODAY}`);
 console.log(`🌐 Base URL: ${BASE_URL}`);
+
 

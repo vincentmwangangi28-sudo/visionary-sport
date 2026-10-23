@@ -483,6 +483,18 @@ const ROUTE_META = {
     title: 'Personal Football Betting Performance & ROI Tracker | PredictPro',
     description: 'Track your football betting strike rate, unit profit, Return on Investment (ROI), and Closing Line Value (CLV) across global leagues.',
   },
+  '/slip-generator': {
+    title: 'Smart Bet Slip Generator & Booking Code Converter | PredictPro',
+    description: 'Generate custom 2.00 to 50.00+ odds AI football accumulator slips and convert booking codes across SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
+  },
+  '/booking-codes': {
+    title: 'Daily Football Booking Codes: SportyBet, 1xBet, Bet9ja & Betway',
+    description: 'Copy verified daily AI football booking codes for SportyBet, 1xBet, Bet9ja, Betway, and Betika with 1-click slip loading and Poisson probability breakdowns.',
+  },
+  '/code-converter': {
+    title: 'Universal Bet Code Converter: SportyBet, 1xBet, Bet9ja & Betway',
+    description: 'Free universal football bet code converter. Instantly translate accumulator booking codes between SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
+  },
 };
 
 function clampTitle(raw) {
@@ -521,6 +533,20 @@ function deriveMetaForPath(routePath) {
       title: clampTitle(`${humanized} | Strategy Guide`),
       description: clampDescription(
         `Quantitative football strategy guide on ${humanized}. Learn Bivariate Poisson goal modeling, Expected Value (+EV) math, and disciplined Kelly staking.`
+      ),
+    };
+  }
+
+  if (routePath.startsWith('/teams/')) {
+    const slug = routePath.replace('/teams/', '');
+    const clubName = slug
+      .split('-')
+      .map((w) => (/^(fc|sc|ac|as|cf|psg)$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+      .join(' ');
+    return {
+      title: clampTitle(`${clubName} xG Stats, Poisson Ratings & FDR | PredictPro`),
+      description: clampDescription(
+        `${clubName} quantitative football profile: Expected Goals (xG/90), Bivariate Poisson attack & defense ratings, ELO strength, and 5-match FDR schedule.`
       ),
     };
   }

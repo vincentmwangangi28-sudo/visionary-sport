@@ -22,6 +22,34 @@ const TODAY_ISO = new Date().toISOString();
 
 const ARTICLES = [
   {
+    title: 'Universal Bet Code Converter: How to Convert SportyBet, 1xBet, Bet9ja & Betway Slips',
+    slug: 'universal-bet-code-converter-sportybet-1xbet-bet9ja',
+    description: 'Learn how universal bet slip conversion maps fixture IDs, market taxonomies, and Asian Handicap lines across SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
+    date: '2026-10-23T08:00:00Z',
+    category: 'Tools & Accumulators',
+  },
+  {
+    title: 'Bivariate Poisson & Dixon-Coles Score Matrix: How PredictPro Calculates Exact Scorelines',
+    slug: 'bivariate-poisson-dixon-coles-score-matrix-guide',
+    description: 'Deep mathematical breakdown of how Attack Strength (α), Defense Weakness (β), and the Dixon-Coles ρ parameter power 6x6 exact score probability grids.',
+    date: '2026-10-22T10:00:00Z',
+    category: 'Analytics & Math',
+  },
+  {
+    title: '2-Score Correct Score Dutching Strategy: Mathematical Stake Sizing for High-Odds Value',
+    slug: '2-score-correct-score-dutching-strategy',
+    description: 'Replace single-score lottery tickets with equal-profit 2-Score Correct Score Dutching pairs (such as 1-0 & 2-0 or 2-1 & 1-1) derived from Poisson peaks.',
+    date: '2026-10-20T14:00:00Z',
+    category: 'Correct Score',
+  },
+  {
+    title: 'Referee Discipline & Corner Prop Modeling: Predicting Cards and Corners with xG Tempo',
+    slug: 'referee-cards-corners-prop-modeling',
+    description: 'How tactical width, PPDA pressing intensity, and referee fouls-per-tackle ratios create high-edge opportunities in Over 9.5 Corners and Over 3.5 Cards markets.',
+    date: '2026-10-18T11:00:00Z',
+    category: 'Prop Markets',
+  },
+  {
     title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI & Poisson Double Chance Combinations',
     slug: 'sportpesa-mega-jackpot-prediction-17-games',
     description: 'Master 17-game SportPesa and Betika Mega Jackpot prediction mechanics using algorithmic home banker identification and low-risk Double Chance hedging combinations.',
@@ -199,6 +227,22 @@ const MATCH_PREDICTIONS = [
     tip: 'Al Ahly Win (77% Confidence)',
     xG: '1.86 - 0.82',
     analysis: 'Cairo Derby championship pedigree and Al Ahly pressing efficiency project a commanding home performance.',
+  },
+  {
+    match: 'Celtic vs Rangers',
+    slug: 'celtic-vs-rangers',
+    league: 'Scottish Premiership',
+    tip: 'Over 2.5 Goals & BTTS Yes (79% Confidence)',
+    xG: '2.08 - 1.42',
+    analysis: 'Old Firm high-tempo wing play and corner volume create high goal expectancy on both sides.',
+  },
+  {
+    match: 'Boca Juniors vs River Plate',
+    slug: 'boca-juniors-vs-river-plate',
+    league: 'Argentina Primera División',
+    tip: 'Under 2.5 Goals & Over 5.5 Cards (83% Confidence)',
+    xG: '1.05 - 1.12',
+    analysis: 'Superclásico tactical intensity and Dixon-Coles low-score correlation strongly favor a tight, high-card encounter.',
   },
 ];
 
