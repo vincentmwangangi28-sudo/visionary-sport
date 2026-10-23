@@ -2913,7 +2913,8 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
           ],
           contactPoint: {
             '@type': 'ContactPoint',
-            email: 'support@predictpro.guru',
+            telephone: '+254721418238',
+            email: 'vincentmwangangiz@gmail.com',
             contactType: 'customer support',
             areaServed: ['KE', 'NG', 'ZA', 'GH', 'TZ', 'UG', 'ZM', 'ZW', 'RW', 'ET', 'CM', 'CD', 'EG', 'MA', 'SN', 'CI', 'GB', 'US', 'CA', 'IN', 'AU', 'NZ', 'IE', 'AE', 'SA', 'BR', 'MX', 'AR', 'ES', 'DE', 'FR', 'IT'],
             availableLanguage: ['en', 'sw', 'fr', 'ar', 'pt', 'es', 'de'],

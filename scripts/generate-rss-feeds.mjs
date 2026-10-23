@@ -318,7 +318,7 @@ function buildAtomXml() {
   <updated>${TODAY_ISO}</updated>
   <author>
     <name>PredictPro Editorial &amp; Data Science Desk</name>
-    <email>support@predictpro.guru</email>
+    <email>vincentmwangangiz@gmail.com</email>
   </author>
 ${entries}
 </feed>

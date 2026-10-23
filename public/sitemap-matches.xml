@@ -249,6 +249,46 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/liverpool" />
   </url>
   <url>
+    <loc>https://predictpro.guru/teams/chelsea</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/chelsea" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/chelsea" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/manchester-united</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/manchester-united" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/manchester-united" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/tottenham</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/tottenham" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/tottenham" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/newcastle-united</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/newcastle-united" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/newcastle-united" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/aston-villa</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/aston-villa" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/aston-villa" />
+  </url>
+  <url>
     <loc>https://predictpro.guru/teams/real-madrid</loc>
     <lastmod>2026-10-23</lastmod>
     <changefreq>daily</changefreq>
@@ -265,12 +305,36 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/barcelona" />
   </url>
   <url>
+    <loc>https://predictpro.guru/teams/atletico-madrid</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/atletico-madrid" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/atletico-madrid" />
+  </url>
+  <url>
     <loc>https://predictpro.guru/teams/bayern-munich</loc>
     <lastmod>2026-10-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/bayern-munich" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/bayern-munich" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/borussia-dortmund</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/borussia-dortmund" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/borussia-dortmund" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/bayer-leverkusen</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/bayer-leverkusen" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/bayer-leverkusen" />
   </url>
   <url>
     <loc>https://predictpro.guru/teams/inter-milan</loc>
@@ -281,11 +345,75 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/inter-milan" />
   </url>
   <url>
+    <loc>https://predictpro.guru/teams/ac-milan</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/ac-milan" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/ac-milan" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/juventus</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/juventus" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/juventus" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/napoli</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/napoli" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/napoli" />
+  </url>
+  <url>
     <loc>https://predictpro.guru/teams/psg</loc>
     <lastmod>2026-10-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/psg" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/psg" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/al-ahly</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/al-ahly" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/al-ahly" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/mamelodi-sundowns</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/mamelodi-sundowns" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/mamelodi-sundowns" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/gor-mahia</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/gor-mahia" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/gor-mahia" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/kaizer-chiefs</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/kaizer-chiefs" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/kaizer-chiefs" />
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/orlando-pirates</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/orlando-pirates" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/orlando-pirates" />
   </url>
 </urlset>

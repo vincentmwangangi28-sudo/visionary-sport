@@ -113,3 +113,10 @@
   - `https://predictpro.guru/predict/al-hilal-vs-al-nassr` (Riyadh Derby)
   - `https://predictpro.guru/predict/flamengo-vs-palmeiras` (Brasileirão Summit Clash)
 
+## 8. Publisher & Editorial Contact
+
+- **Platform**: PredictPro Quantitative Sports Analytics (`https://predictpro.guru`)
+- **Publisher & Lead Engineer**: Vincent Mwangangi
+- **Direct Email**: `vincentmwangangiz@gmail.com`
+- **Direct Phone / WhatsApp**: `+254721418238`
+- **Contact URL**: `https://predictpro.guru/contact`

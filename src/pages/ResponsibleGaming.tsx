@@ -364,7 +364,7 @@ Descriptions (Max 90 chars each — Informational & 18+ Compliant):
             </Button>
           </Link>
           <p className="text-xs text-muted-foreground">
-            Questions regarding compliance? Contact <a href="mailto:support@predictpro.guru" className="text-primary underline font-semibold">support@predictpro.guru</a>
+            Questions regarding compliance? Contact <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary underline font-semibold">vincentmwangangiz@gmail.com</a> · <a href="tel:+254721418238" className="text-primary underline font-semibold">+254721418238</a>
           </p>
         </div>
       </main>

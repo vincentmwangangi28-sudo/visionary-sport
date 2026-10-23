@@ -76,7 +76,11 @@ export default function Contact() {
                 </div>
                 <div>
                   <strong className="text-foreground block text-xs uppercase tracking-wider mb-0.5">Publisher &amp; Lead Engineer:</strong>
-                  <span>Vincent Mwangangi (<code className="font-mono text-xs">vincentmwangangi28@gmail.com</code>)</span>
+                  <span>Vincent Mwangangi (<a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline font-mono text-xs">vincentmwangangiz@gmail.com</a>)</span>
+                </div>
+                <div>
+                  <strong className="text-foreground block text-xs uppercase tracking-wider mb-0.5">Direct Phone / WhatsApp:</strong>
+                  <a href="tel:+254721418238" className="text-primary hover:underline font-mono text-xs">+254721418238</a>
                 </div>
                 <div>
                   <strong className="text-foreground block text-xs uppercase tracking-wider mb-0.5">Website Domain:</strong>
@@ -92,15 +96,23 @@ export default function Contact() {
             <Card className="border-border/60 bg-card/60 shadow-xs">
               <CardHeader className="p-5 pb-3">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-primary" /> Direct Email Desks
+                  <Mail className="h-5 w-5 text-primary" /> Direct Email &amp; Phone Desks
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5 pt-0 text-sm space-y-3">
                 <div className="flex items-start gap-2.5">
                   <MessageSquare className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-foreground block text-xs">General Support &amp; Feedback:</strong>
-                    <a href="mailto:support@predictpro.guru" className="text-primary hover:underline text-xs font-mono">support@predictpro.guru</a>
+                    <strong className="text-foreground block text-xs">General Support &amp; Editorial Desk:</strong>
+                    <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline text-xs font-mono">vincentmwangangiz@gmail.com</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <PhoneCall className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-foreground block text-xs">Phone &amp; WhatsApp Support Line:</strong>
+                    <a href="tel:+254721418238" className="text-primary hover:underline text-xs font-mono">+254721418238</a>
                   </div>
                 </div>
 
@@ -108,7 +120,7 @@ export default function Contact() {
                   <Shield className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-foreground block text-xs">Privacy &amp; Data Protection:</strong>
-                    <a href="mailto:privacy@predictpro.guru" className="text-primary hover:underline text-xs font-mono">privacy@predictpro.guru</a>
+                    <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline text-xs font-mono">vincentmwangangiz@gmail.com</a>
                   </div>
                 </div>
 

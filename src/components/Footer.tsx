@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { FooterFAQ } from "@/components/FooterFAQ";
 
 const LINKS: Record<string, Array<{ to: string; label: string }>> = {
@@ -112,14 +112,24 @@ export const Footer = () => {
             <p className="text-xs text-muted-foreground leading-relaxed mb-4">
               Football fixtures, live scores, expected goals (xG) statistics, and match previews across 40+ global leagues.
             </p>
-            <a
-              href="mailto:support@predictpro.guru"
-              aria-label="Contact PredictPro Support via Email"
-              className="inline-flex items-center gap-1.5 min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>support@predictpro.guru</span>
-            </a>
+            <div className="flex flex-col gap-1">
+              <a
+                href="mailto:vincentmwangangiz@gmail.com"
+                aria-label="Contact PredictPro Support via Email"
+                className="inline-flex items-center gap-1.5 min-h-[24px] py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors break-all"
+              >
+                <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>vincentmwangangiz@gmail.com</span>
+              </a>
+              <a
+                href="tel:+254721418238"
+                aria-label="Call PredictPro Support Desk"
+                className="inline-flex items-center gap-1.5 min-h-[24px] py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>+254721418238</span>
+              </a>
+            </div>
           </div>
 
           {/* Link groups */}

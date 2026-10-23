@@ -78,7 +78,7 @@ export default function PrivacyPolicy() {
           </h2>
           <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
             <p>
-              The data controller responsible for your personal data is PredictPro Quantitative Football Analytics (&quot;PredictPro&quot;), accessible via <Link to="/" className="text-primary hover:underline">https://predictpro.guru</Link>. If you have any inquiries regarding this policy or data processing practices, you may contact our Privacy Team directly at <a href="mailto:privacy@predictpro.guru" className="text-primary hover:underline font-medium">privacy@predictpro.guru</a> or <a href="mailto:support@predictpro.guru" className="text-primary hover:underline font-medium">support@predictpro.guru</a>.
+              The data controller responsible for your personal data is PredictPro Quantitative Football Analytics (&quot;PredictPro&quot;), accessible via <Link to="/" className="text-primary hover:underline">https://predictpro.guru</Link>. If you have any inquiries regarding this policy or data processing practices, you may contact our Privacy Team directly at <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline font-medium">vincentmwangangiz@gmail.com</a> or by phone at <a href="tel:+254721418238" className="text-primary hover:underline font-medium">+254721418238</a>.
             </p>
             <p>
               This Privacy Policy applies to all users accessing PredictPro across web browsers, progressive web applications (PWA), and mobile interfaces.
@@ -172,7 +172,7 @@ export default function PrivacyPolicy() {
               <li><strong>Right to Data Portability:</strong> You have the right to request transfer of your data to another organization.</li>
             </ul>
             <p>
-              If you submit a data rights request, we have one month to respond to you. Please contact us at <a href="mailto:privacy@predictpro.guru" className="text-primary hover:underline">privacy@predictpro.guru</a>.
+              If you submit a data rights request, we have one month to respond to you. Please contact us at <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline">vincentmwangangiz@gmail.com</a> or call <a href="tel:+254721418238" className="text-primary hover:underline">+254721418238</a>.
             </p>
           </div>
         </section>
@@ -205,7 +205,7 @@ export default function PrivacyPolicy() {
               PredictPro provides quantitative sports statistics, Expected Goals (xG) forecasting, and educational betting odds analytics. Our service is strictly intended for individuals 18 years of age or older (or the applicable legal age of majority in your jurisdiction).
             </p>
             <p>
-              We do not knowingly collect any Personal Identifiable Information from children or minors under the age of 18. If a parent or guardian believes that PredictPro has personal information of a child under 18 in its database, please contact us immediately at <a href="mailto:privacy@predictpro.guru" className="text-primary hover:underline">privacy@predictpro.guru</a> and we will promptly remove such information from our records.
+              We do not knowingly collect any Personal Identifiable Information from children or minors under the age of 18. If a parent or guardian believes that PredictPro has personal information of a child under 18 in its database, please contact us immediately at <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline">vincentmwangangiz@gmail.com</a> and we will promptly remove such information from our records.
             </p>
           </div>
         </section>
@@ -233,8 +233,8 @@ export default function PrivacyPolicy() {
           </p>
           <div className="text-sm space-y-1 pt-2 font-mono text-foreground/90">
             <p>PredictPro Analytics — Privacy &amp; Compliance</p>
-            <p>Email: <a href="mailto:privacy@predictpro.guru" className="text-primary hover:underline">privacy@predictpro.guru</a></p>
-            <p>General Support: <a href="mailto:support@predictpro.guru" className="text-primary hover:underline">support@predictpro.guru</a></p>
+            <p>Email: <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline">vincentmwangangiz@gmail.com</a></p>
+            <p>Phone: <a href="tel:+254721418238" className="text-primary hover:underline">+254721418238</a></p>
             <p>Publisher ID: ca-pub-1375386376692976</p>
             <p>Location: Nairobi, Kenya / Global Digital Operations</p>
           </div>

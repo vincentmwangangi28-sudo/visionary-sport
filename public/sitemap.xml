@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://predictpro.guru/</loc>
     <lastmod>2026-10-23</lastmod>
@@ -7,6 +9,11 @@
     <priority>1.00</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro - AI Football Predictions &amp; Live Match Intelligence</image:title>
+      <image:caption>PredictPro - AI Football Predictions &amp; Live Match Intelligence — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/best-bets</loc>
@@ -15,6 +22,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/best-bets" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/best-bets" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Best AI Football Banker Bets Today - Top Confidence Picks</image:title>
+      <image:caption>Best AI Football Banker Bets Today - Top Confidence Picks — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/upcoming</loc>
@@ -23,6 +35,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/upcoming" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/upcoming" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Upcoming Football Fixtures &amp; Match Predictions</image:title>
+      <image:caption>Upcoming Football Fixtures &amp; Match Predictions — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/predict</loc>
@@ -31,6 +48,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Match Predictor &amp; Custom Football Simulator</image:title>
+      <image:caption>AI Match Predictor &amp; Custom Football Simulator — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/live</loc>
@@ -39,6 +61,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/live" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/live" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Live Football Scores, In-Play AI Odds &amp; Minute Trackers</image:title>
+      <image:caption>Live Football Scores, In-Play AI Odds &amp; Minute Trackers — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/value-bets</loc>
@@ -47,6 +74,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/value-bets" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/value-bets" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Value Bets (+EV) &amp; Expected Value Football Calculator</image:title>
+      <image:caption>Value Bets (+EV) &amp; Expected Value Football Calculator — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/streaks</loc>
@@ -55,6 +87,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/streaks" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/streaks" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Football Streaks &amp; Winning Trends Radar - Over 2.5 &amp; BTTS</image:title>
+      <image:caption>AI Football Streaks &amp; Winning Trends Radar - Over 2.5 &amp; BTTS — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/h2h</loc>
@@ -63,6 +100,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/h2h" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/h2h" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Football Head-to-Head (H2H) Comparison &amp; Poisson Simulator</image:title>
+      <image:caption>AI Football Head-to-Head (H2H) Comparison &amp; Poisson Simulator — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/correct-score</loc>
@@ -71,6 +113,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/correct-score" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/correct-score" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Correct Score Predictions &amp; Scoreline Probabilities</image:title>
+      <image:caption>AI Correct Score Predictions &amp; Scoreline Probabilities — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/btts</loc>
@@ -79,6 +126,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/btts" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/btts" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Both Teams to Score (BTTS) Tips &amp; Goal Market Analysis</image:title>
+      <image:caption>Both Teams to Score (BTTS) Tips &amp; Goal Market Analysis — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/accumulator</loc>
@@ -87,6 +139,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/accumulator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/accumulator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Accumulator Builder &amp; Multibet Slip Optimizer</image:title>
+      <image:caption>AI Accumulator Builder &amp; Multibet Slip Optimizer — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/standings</loc>
@@ -95,6 +152,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/standings" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/standings" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Real-Time Football League Standings &amp; Form Tables</image:title>
+      <image:caption>Real-Time Football League Standings &amp; Form Tables — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/dropping-odds</loc>
@@ -103,6 +165,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/dropping-odds" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/dropping-odds" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Dropping Odds Radar &amp; Bookmaker Volume Tracker</image:title>
+      <image:caption>Dropping Odds Radar &amp; Bookmaker Volume Tracker — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/screener</loc>
@@ -111,6 +178,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/screener" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/screener" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Football Match Screener &amp; Probability Filter</image:title>
+      <image:caption>AI Football Match Screener &amp; Probability Filter — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/recommendations</loc>
@@ -119,6 +191,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/recommendations" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/recommendations" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Personalized AI Match Recommendations</image:title>
+      <image:caption>Personalized AI Match Recommendations — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/tournaments</loc>
@@ -127,6 +204,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/tournaments" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/tournaments" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Global Football Leagues &amp; Tournaments Directory</image:title>
+      <image:caption>Global Football Leagues &amp; Tournaments Directory — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/track-record</loc>
@@ -135,6 +217,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/track-record" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/track-record" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Verified AI Prediction Track Record &amp; Audited ROI</image:title>
+      <image:caption>Verified AI Prediction Track Record &amp; Audited ROI — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/statistics</loc>
@@ -143,6 +230,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/statistics" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/statistics" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Football Statistics, Head-to-Head &amp; xG Matrices</image:title>
+      <image:caption>Football Statistics, Head-to-Head &amp; xG Matrices — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/highlights</loc>
@@ -151,6 +243,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/highlights" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/highlights" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Football Video Highlights &amp; Match Replays</image:title>
+      <image:caption>Football Video Highlights &amp; Match Replays — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/players</loc>
@@ -159,6 +256,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/players" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/players" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Player Profiles, Form Ratings &amp; Goalscorer Stats</image:title>
+      <image:caption>Player Profiles, Form Ratings &amp; Goalscorer Stats — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/teams</loc>
@@ -167,6 +269,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Club Expected Goals (xG) Analytics &amp; Fixture Difficulty Rating (FDR) Hub</image:title>
+      <image:caption>Club Expected Goals (xG) Analytics &amp; Fixture Difficulty Rating (FDR) Hub — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/insights</loc>
@@ -175,6 +282,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/insights" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/insights" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Tactical Match Insights &amp; Statistical Previews</image:title>
+      <image:caption>Tactical Match Insights &amp; Statistical Previews — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/news</loc>
@@ -183,6 +295,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/news" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/news" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Football News, Transfer Intel &amp; Team News</image:title>
+      <image:caption>Football News, Transfer Intel &amp; Team News — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/tipsters</loc>
@@ -191,6 +308,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/tipsters" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/tipsters" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Top AI Tipster Profiles &amp; Verified Win Rates</image:title>
+      <image:caption>Top AI Tipster Profiles &amp; Verified Win Rates — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/bankroll</loc>
@@ -199,6 +321,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/bankroll" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/bankroll" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bankroll Manager &amp; Kelly Criterion Staking Calculator</image:title>
+      <image:caption>Bankroll Manager &amp; Kelly Criterion Staking Calculator — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/sports</loc>
@@ -207,6 +334,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/sports" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/sports" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Multi-Sport AI Predictions (Basketball, Tennis)</image:title>
+      <image:caption>Multi-Sport AI Predictions (Basketball, Tennis) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/methodology</loc>
@@ -215,6 +347,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/methodology" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/methodology" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro AI Modeling Methodology, Poisson &amp; xG</image:title>
+      <image:caption>PredictPro AI Modeling Methodology, Poisson &amp; xG — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/archive</loc>
@@ -223,6 +360,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/archive" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/archive" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Past Match Prediction Archive &amp; Settlement Results</image:title>
+      <image:caption>Past Match Prediction Archive &amp; Settlement Results — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/leaderboard</loc>
@@ -231,6 +373,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/leaderboard" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/leaderboard" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Community Prediction Leaderboard &amp; Tipster Rankings</image:title>
+      <image:caption>Community Prediction Leaderboard &amp; Tipster Rankings — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/about</loc>
@@ -239,6 +386,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/about" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/about" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>About PredictPro - AI Sports Analytics Platform</image:title>
+      <image:caption>About PredictPro - AI Sports Analytics Platform — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/responsible-gaming</loc>
@@ -247,6 +399,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/responsible-gaming" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/responsible-gaming" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Responsible Gaming &amp; 18+ Age Restriction Policy</image:title>
+      <image:caption>Responsible Gaming &amp; 18+ Age Restriction Policy — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/privacy</loc>
@@ -255,6 +412,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/privacy" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/privacy" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Privacy Policy - GDPR &amp; Google AdSense Compliance</image:title>
+      <image:caption>Privacy Policy - GDPR &amp; Google AdSense Compliance — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/terms</loc>
@@ -263,6 +425,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/terms" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/terms" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Terms of Service &amp; User Agreement</image:title>
+      <image:caption>Terms of Service &amp; User Agreement — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/cookies</loc>
@@ -271,6 +438,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/cookies" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/cookies" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Cookie Policy &amp; Advertising Transparency</image:title>
+      <image:caption>Cookie Policy &amp; Advertising Transparency — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/contact</loc>
@@ -279,6 +451,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/contact" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/contact" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Contact Us &amp; Editorial Support Desk</image:title>
+      <image:caption>Contact Us &amp; Editorial Support Desk — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/sitemap</loc>
@@ -287,6 +464,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/sitemap" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/sitemap" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>HTML Predictions Directory &amp; Sitemap</image:title>
+      <image:caption>HTML Predictions Directory &amp; Sitemap — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/seo-indexing</loc>
@@ -295,6 +477,11 @@
     <priority>0.70</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/seo-indexing" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/seo-indexing" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Google Indexing &amp; Search Engine Management Console</image:title>
+      <image:caption>Google Indexing &amp; Search Engine Management Console — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/widgets</loc>
@@ -303,6 +490,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/widgets" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/widgets" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Free Embeddable AI Football Predictions Widgets &amp; Odds Feeds</image:title>
+      <image:caption>Free Embeddable AI Football Predictions Widgets &amp; Odds Feeds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/shop</loc>
@@ -311,6 +503,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/shop" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/shop" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PredictPro VIP Club: Premium AI Football Tips &amp; Banker Passes</image:title>
+      <image:caption>PredictPro VIP Club: Premium AI Football Tips &amp; Banker Passes — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/bet-of-the-day</loc>
@@ -319,6 +516,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/bet-of-the-day" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/bet-of-the-day" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bet of the Day: Daily AI Banker &amp; High-Confidence Lock</image:title>
+      <image:caption>Bet of the Day: Daily AI Banker &amp; High-Confidence Lock — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/over-under-predictions</loc>
@@ -327,6 +529,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/over-under-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/over-under-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Over/Under 2.5 Goals Predictions &amp; Poisson Goal Probabilities</image:title>
+      <image:caption>Over/Under 2.5 Goals Predictions &amp; Poisson Goal Probabilities — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/double-chance-predictions</loc>
@@ -335,6 +542,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/double-chance-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/double-chance-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Double Chance Predictions Today (1X / X2): 89% AI Strike Rate</image:title>
+      <image:caption>Double Chance Predictions Today (1X / X2): 89% AI Strike Rate — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/draw-predictions</loc>
@@ -343,6 +555,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/draw-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/draw-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Draw Predictions Today (X Tips): High-Odds Stalemate Picks</image:title>
+      <image:caption>Draw Predictions Today (X Tips): High-Odds Stalemate Picks — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/halftime-fulltime-predictions</loc>
@@ -351,6 +568,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/halftime-fulltime-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/halftime-fulltime-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>HT/FT Predictions Today: Half-Time/Full-Time (4.50+ Odds)</image:title>
+      <image:caption>HT/FT Predictions Today: Half-Time/Full-Time (4.50+ Odds) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/poisson-calculator</loc>
@@ -359,6 +581,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/poisson-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/poisson-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Poisson Football Calculator &amp; Expected Goals Score Simulator</image:title>
+      <image:caption>Poisson Football Calculator &amp; Expected Goals Score Simulator — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/sure-win-predictions</loc>
@@ -367,6 +594,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/sure-win-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/sure-win-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Sure Win Predictions Today: 88%+ AI Confidence Banker Bets</image:title>
+      <image:caption>Sure Win Predictions Today: 88%+ AI Confidence Banker Bets — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/corners-predictions</loc>
@@ -375,6 +607,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/corners-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/corners-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Corner Predictions Today: Over 8.5, 9.5 &amp; 10.5 Match Corners Stats</image:title>
+      <image:caption>Corner Predictions Today: Over 8.5, 9.5 &amp; 10.5 Match Corners Stats — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/cards-predictions</loc>
@@ -383,6 +620,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/cards-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/cards-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Cards &amp; Bookings Predictions Today: Yellow &amp; Red Card Stats</image:title>
+      <image:caption>Cards &amp; Bookings Predictions Today: Yellow &amp; Red Card Stats — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/over-1-5-goals-predictions</loc>
@@ -391,6 +633,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/over-1-5-goals-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/over-1-5-goals-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips</image:title>
+      <image:caption>Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/value-bet-calculator</loc>
@@ -399,6 +646,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/value-bet-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/value-bet-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Value Bet Calculator (+EV): Sports Betting Expected Value Tool</image:title>
+      <image:caption>Value Bet Calculator (+EV): Sports Betting Expected Value Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/kelly-criterion-calculator</loc>
@@ -407,6 +659,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/kelly-criterion-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/kelly-criterion-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool</image:title>
+      <image:caption>Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/tomorrow-predictions</loc>
@@ -415,6 +672,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/tomorrow-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/tomorrow-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Tomorrow&apos;s Football Predictions: Early AI Betting Tips &amp; xG Odds</image:title>
+      <image:caption>Tomorrow&apos;s Football Predictions: Early AI Betting Tips &amp; xG Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/weekend-predictions</loc>
@@ -423,6 +685,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/weekend-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/weekend-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Weekend Football Predictions: Saturday &amp; Sunday Banker Acca Tips</image:title>
+      <image:caption>Weekend Football Predictions: Saturday &amp; Sunday Banker Acca Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/asian-handicap-predictions</loc>
@@ -431,6 +698,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/asian-handicap-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/asian-handicap-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Asian Handicap Predictions Today: -0.5, -0.75 &amp; -1.5 Football Tips</image:title>
+      <image:caption>Asian Handicap Predictions Today: -0.5, -0.75 &amp; -1.5 Football Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/draw-no-bet-predictions</loc>
@@ -439,6 +711,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/draw-no-bet-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/draw-no-bet-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Draw No Bet Predictions Today (DNB): Safe Football Refund Tips</image:title>
+      <image:caption>Draw No Bet Predictions Today (DNB): Safe Football Refund Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/win-to-nil-predictions</loc>
@@ -447,6 +724,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/win-to-nil-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/win-to-nil-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Win to Nil &amp; Clean Sheet Predictions Today: Defensive xGA Tips</image:title>
+      <image:caption>Win to Nil &amp; Clean Sheet Predictions Today: Defensive xGA Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/arbitrage-calculator</loc>
@@ -455,6 +737,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/arbitrage-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/arbitrage-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Arbitrage Betting Calculator: 2-Way &amp; 3-Way Surebet Staking Tool</image:title>
+      <image:caption>Arbitrage Betting Calculator: 2-Way &amp; 3-Way Surebet Staking Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/odds-converter</loc>
@@ -463,6 +750,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/odds-converter" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/odds-converter" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Betting Odds Converter &amp; Implied Probability Calculator (UK/US/EU)</image:title>
+      <image:caption>Betting Odds Converter &amp; Implied Probability Calculator (UK/US/EU) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/first-half-goals-predictions</loc>
@@ -471,6 +763,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/first-half-goals-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/first-half-goals-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Over 0.5 First Half Goals Predictions Today: 1H Goal AI Tips</image:title>
+      <image:caption>Over 0.5 First Half Goals Predictions Today: 1H Goal AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/over-3-5-goals-predictions</loc>
@@ -479,6 +776,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/over-3-5-goals-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/over-3-5-goals-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Over 3.5 Goals Predictions Today: High-Scoring 4+ Goal AI Tips</image:title>
+      <image:caption>Over 3.5 Goals Predictions Today: High-Scoring 4+ Goal AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/both-teams-to-score-and-win-predictions</loc>
@@ -487,6 +789,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/both-teams-to-score-and-win-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/both-teams-to-score-and-win-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>BTTS &amp; Win Predictions Today: Both Teams to Score + Over 2.5 Tips</image:title>
+      <image:caption>BTTS &amp; Win Predictions Today: Both Teams to Score + Over 2.5 Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/anytime-goalscorer-predictions</loc>
@@ -495,6 +802,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/anytime-goalscorer-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/anytime-goalscorer-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Anytime Goalscorer Predictions Today: Player xG &amp; Shots on Target</image:title>
+      <image:caption>Anytime Goalscorer Predictions Today: Player xG &amp; Shots on Target — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/parlay-calculator</loc>
@@ -503,6 +815,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/parlay-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/parlay-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Parlay &amp; Accumulator Odds Calculator: Multi-Bet Payout Tool</image:title>
+      <image:caption>Parlay &amp; Accumulator Odds Calculator: Multi-Bet Payout Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/system-bet-calculator</loc>
@@ -511,6 +828,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/system-bet-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/system-bet-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>System Bet Calculator: Trixie, Yankee, Patent &amp; Lucky 15 Tool</image:title>
+      <image:caption>System Bet Calculator: Trixie, Yankee, Patent &amp; Lucky 15 Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/hedge-bet-calculator</loc>
@@ -519,6 +841,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/hedge-bet-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/hedge-bet-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool</image:title>
+      <image:caption>Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/margin-calculator</loc>
@@ -527,6 +854,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/margin-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/margin-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bookmaker Margin &amp; No-Vig Fair Odds Calculator (Overround Tool)</image:title>
+      <image:caption>Bookmaker Margin &amp; No-Vig Fair Odds Calculator (Overround Tool) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/under-2-5-goals-predictions</loc>
@@ -535,6 +867,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/under-2-5-goals-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/under-2-5-goals-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Under 2.5 Goals Predictions Today: Low-Scoring AI Tips</image:title>
+      <image:caption>Under 2.5 Goals Predictions Today: Low-Scoring AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/second-half-goals-predictions</loc>
@@ -543,6 +880,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/second-half-goals-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/second-half-goals-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Second Half Goals Predictions Today: 2H Over 1.5 &amp; Late xG Tips</image:title>
+      <image:caption>Second Half Goals Predictions Today: 2H Over 1.5 &amp; Late xG Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/handicap-1x2-predictions</loc>
@@ -551,6 +893,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/handicap-1x2-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/handicap-1x2-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips</image:title>
+      <image:caption>European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/rollover-bets-predictions</loc>
@@ -559,6 +906,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/rollover-bets-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/rollover-bets-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Rollover Bets Predictions Today: 7-Day 1.50 &amp; 2.00 Odds Challenge</image:title>
+      <image:caption>Rollover Bets Predictions Today: 7-Day 1.50 &amp; 2.00 Odds Challenge — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/daily-2-odds-predictions</loc>
@@ -567,6 +919,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/daily-2-odds-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/daily-2-odds-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Sure 2 Odds, 3 Odds &amp; 5 Odds Predictions Today: Daily AI Slips</image:title>
+      <image:caption>Sure 2 Odds, 3 Odds &amp; 5 Odds Predictions Today: Daily AI Slips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/bet-builder-predictions</loc>
@@ -575,6 +932,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/bet-builder-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/bet-builder-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips</image:title>
+      <image:caption>Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/both-halves-predictions</loc>
@@ -583,6 +945,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/both-halves-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/both-halves-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Score in Both Halves &amp; Win Both Halves Predictions Today</image:title>
+      <image:caption>Score in Both Halves &amp; Win Both Halves Predictions Today — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/dutching-calculator</loc>
@@ -591,6 +958,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/dutching-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/dutching-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Dutching Calculator: Equal-Profit Multi-Outcome &amp; Correct Score Tool</image:title>
+      <image:caption>Dutching Calculator: Equal-Profit Multi-Outcome &amp; Correct Score Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/roi-yield-calculator</loc>
@@ -599,6 +971,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/roi-yield-calculator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/roi-yield-calculator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Betting ROI &amp; Yield Calculator: Break-Even Win Rate Tool</image:title>
+      <image:caption>Betting ROI &amp; Yield Calculator: Break-Even Win Rate Tool — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/today-predictions</loc>
@@ -607,6 +984,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/today-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/today-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Today&apos;s Football Predictions: Daily AI Match Tips &amp; Odds</image:title>
+      <image:caption>Today&apos;s Football Predictions: Daily AI Match Tips &amp; Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/2-odds-predictions</loc>
@@ -615,6 +997,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/2-odds-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/2-odds-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips</image:title>
+      <image:caption>Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/5-odds-predictions</loc>
@@ -623,6 +1010,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/5-odds-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/5-odds-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Sure 5 Odds &amp; 10 Odds Predictions Today: Daily Acca Slips</image:title>
+      <image:caption>Sure 5 Odds &amp; 10 Odds Predictions Today: Daily Acca Slips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/slip-generator</loc>
@@ -631,6 +1023,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/slip-generator" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/slip-generator" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AI Slip Generator &amp; Universal Bookmaker Booking Code Converter | PredictPro</image:title>
+      <image:caption>AI Slip Generator &amp; Universal Bookmaker Booking Code Converter | PredictPro — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/booking-codes</loc>
@@ -639,6 +1036,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/booking-codes" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/booking-codes" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Free SportyBet, 1xBet, Bet9ja, SportPesa &amp; Betika Booking Codes Today</image:title>
+      <image:caption>Free SportyBet, 1xBet, Bet9ja, SportPesa &amp; Betika Booking Codes Today — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/code-converter</loc>
@@ -647,6 +1049,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/code-converter" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/code-converter" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Free Bet Code Converter: Convert SportyBet, 1xBet, Bet9ja &amp; Betway Codes</image:title>
+      <image:caption>Free Bet Code Converter: Convert SportyBet, 1xBet, Bet9ja &amp; Betway Codes — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/rewards</loc>
@@ -655,6 +1062,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/rewards" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/rewards" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Daily Rewards, Coin Wheel &amp; Prediction Unlocks | PredictPro</image:title>
+      <image:caption>Daily Rewards, Coin Wheel &amp; Prediction Unlocks | PredictPro — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/performance</loc>
@@ -663,6 +1075,11 @@
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/performance" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/performance" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Personal Football Betting Performance &amp; ROI Tracker | PredictPro</image:title>
+      <image:caption>Personal Football Betting Performance &amp; ROI Tracker | PredictPro — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/premier-league-predictions</loc>
@@ -671,6 +1088,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/premier-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/premier-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Premier League Predictions &amp; AI Betting Tips</image:title>
+      <image:caption>Premier League Predictions &amp; AI Betting Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/fa-cup-predictions</loc>
@@ -679,6 +1101,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/fa-cup-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/fa-cup-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>FA Cup &amp; Carabao Cup Predictions Today: English Knockout AI Tips</image:title>
+      <image:caption>FA Cup &amp; Carabao Cup Predictions Today: English Knockout AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/champions-league-predictions</loc>
@@ -687,6 +1114,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/champions-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/champions-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>UEFA Champions League Predictions &amp; Odds</image:title>
+      <image:caption>UEFA Champions League Predictions &amp; Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/europa-league-predictions</loc>
@@ -695,6 +1127,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/europa-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/europa-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>UEFA Europa League Predictions &amp; Conference League AI Odds</image:title>
+      <image:caption>UEFA Europa League Predictions &amp; Conference League AI Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/conference-league-predictions</loc>
@@ -703,6 +1140,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/conference-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/conference-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>UEFA Conference League Predictions &amp; AI Betting Tips</image:title>
+      <image:caption>UEFA Conference League Predictions &amp; AI Betting Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/la-liga-predictions</loc>
@@ -711,6 +1153,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/la-liga-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/la-liga-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>La Liga AI Predictions &amp; Match Previews</image:title>
+      <image:caption>La Liga AI Predictions &amp; Match Previews — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/bundesliga-predictions</loc>
@@ -719,6 +1166,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/bundesliga-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/bundesliga-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bundesliga Predictions &amp; Form Analysis</image:title>
+      <image:caption>Bundesliga Predictions &amp; Form Analysis — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/serie-a-predictions</loc>
@@ -727,6 +1179,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/serie-a-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/serie-a-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Serie A Predictions &amp; Tactical Insights</image:title>
+      <image:caption>Serie A Predictions &amp; Tactical Insights — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/ligue-1-predictions</loc>
@@ -735,6 +1192,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/ligue-1-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/ligue-1-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>French Ligue 1 AI Predictions: PSG, Marseille &amp; xG Odds</image:title>
+      <image:caption>French Ligue 1 AI Predictions: PSG, Marseille &amp; xG Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/championship-predictions</loc>
@@ -743,6 +1205,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/championship-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/championship-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>English Championship Predictions &amp; AI Betting Tips 2026/27</image:title>
+      <image:caption>English Championship Predictions &amp; AI Betting Tips 2026/27 — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/eredivisie-predictions</loc>
@@ -751,6 +1218,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/eredivisie-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/eredivisie-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord &amp; xG Tips</image:title>
+      <image:caption>Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord &amp; xG Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/primeira-liga-predictions</loc>
@@ -759,6 +1231,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/primeira-liga-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/primeira-liga-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Portuguese Primeira Liga Predictions: Benfica, Sporting CP &amp; Porto</image:title>
+      <image:caption>Portuguese Primeira Liga Predictions: Benfica, Sporting CP &amp; Porto — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/belgian-pro-league-predictions</loc>
@@ -767,6 +1244,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/belgian-pro-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/belgian-pro-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Belgian Pro League Predictions Today: Jupiler League AI Tips</image:title>
+      <image:caption>Belgian Pro League Predictions Today: Jupiler League AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/turkish-super-lig-predictions</loc>
@@ -775,6 +1257,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/turkish-super-lig-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/turkish-super-lig-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Turkish Süper Lig Predictions Today: Galatasaray &amp; Fenerbahçe Tips</image:title>
+      <image:caption>Turkish Süper Lig Predictions Today: Galatasaray &amp; Fenerbahçe Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/greek-super-league-predictions</loc>
@@ -783,6 +1270,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/greek-super-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/greek-super-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Greek Super League Predictions: Olympiacos, PAOK, AEK &amp; Panathinaikos</image:title>
+      <image:caption>Greek Super League Predictions: Olympiacos, PAOK, AEK &amp; Panathinaikos — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/copa-libertadores-predictions</loc>
@@ -791,6 +1283,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/copa-libertadores-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/copa-libertadores-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Copa Libertadores AI Predictions: South American Odds &amp; Tips</image:title>
+      <image:caption>Copa Libertadores AI Predictions: South American Odds &amp; Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/saudi-pro-league-predictions</loc>
@@ -799,6 +1296,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/saudi-pro-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/saudi-pro-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr &amp; SPL Tips</image:title>
+      <image:caption>Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr &amp; SPL Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/j-league-predictions</loc>
@@ -807,6 +1309,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/j-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/j-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Japan J1 League Predictions Today: Early Kickoff xG &amp; Corners Tips</image:title>
+      <image:caption>Japan J1 League Predictions Today: Early Kickoff xG &amp; Corners Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/australian-a-league-predictions</loc>
@@ -815,6 +1322,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/australian-a-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/australian-a-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Australian A-League Predictions Today: Over 2.5 Goals &amp; Corners Tips</image:title>
+      <image:caption>Australian A-League Predictions Today: Over 2.5 Goals &amp; Corners Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/brazilian-serie-a-predictions</loc>
@@ -823,6 +1335,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/brazilian-serie-a-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/brazilian-serie-a-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Brazilian Serie A Predictions Today: Brasileirão AI Tips &amp; Odds</image:title>
+      <image:caption>Brazilian Serie A Predictions Today: Brasileirão AI Tips &amp; Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/argentina-primera-predictions</loc>
@@ -831,6 +1348,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/argentina-primera-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/argentina-primera-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Argentina Primera División Predictions: Liga Profesional AI Tips</image:title>
+      <image:caption>Argentina Primera División Predictions: Liga Profesional AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/liga-mx-predictions</loc>
@@ -839,6 +1361,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/liga-mx-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/liga-mx-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Liga MX Predictions Today: Club América, Monterrey &amp; Mexican Tips</image:title>
+      <image:caption>Liga MX Predictions Today: Club América, Monterrey &amp; Mexican Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/mls-predictions</loc>
@@ -847,6 +1374,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/mls-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/mls-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>MLS Predictions Today: Inter Miami, LAFC &amp; Major League Soccer Tips</image:title>
+      <image:caption>MLS Predictions Today: Inter Miami, LAFC &amp; Major League Soccer Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/scottish-premiership-predictions</loc>
@@ -855,6 +1387,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/scottish-premiership-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/scottish-premiership-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Scottish Premiership Predictions Today: Celtic, Rangers &amp; SPFL Tips</image:title>
+      <image:caption>Scottish Premiership Predictions Today: Celtic, Rangers &amp; SPFL Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/south-africa-psl-predictions</loc>
@@ -863,6 +1400,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/south-africa-psl-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/south-africa-psl-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>South Africa PSL Predictions Today: Betway Premiership AI Tips</image:title>
+      <image:caption>South Africa PSL Predictions Today: Betway Premiership AI Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/nigerian-npfl-predictions</loc>
@@ -871,6 +1413,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/nigerian-npfl-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/nigerian-npfl-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Nigeria NPFL Predictions Today: Enyimba, Remo Stars &amp; Rangers Tips</image:title>
+      <image:caption>Nigeria NPFL Predictions Today: Enyimba, Remo Stars &amp; Rangers Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/egyptian-premier-league-predictions</loc>
@@ -879,6 +1426,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/egyptian-premier-league-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/egyptian-premier-league-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Egyptian Premier League Predictions Today: Al Ahly &amp; Zamalek Tips</image:title>
+      <image:caption>Egyptian Premier League Predictions Today: Al Ahly &amp; Zamalek Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/world-cup-predictions</loc>
@@ -887,6 +1439,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/world-cup-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/world-cup-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>FIFA World Cup 2026 Predictions &amp; Qualifying Tips</image:title>
+      <image:caption>FIFA World Cup 2026 Predictions &amp; Qualifying Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/afcon-predictions</loc>
@@ -895,6 +1452,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/afcon-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/afcon-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AFCON Predictions &amp; African Football Odds</image:title>
+      <image:caption>AFCON Predictions &amp; African Football Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/kpl-predictions</loc>
@@ -903,6 +1465,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/kpl-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/kpl-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>FKF Kenya Premier League Predictions &amp; M-Pesa Tips</image:title>
+      <image:caption>FKF Kenya Premier League Predictions &amp; M-Pesa Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/jackpot-predictions</loc>
@@ -911,6 +1478,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/jackpot-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/jackpot-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>SportPesa Mega Jackpot &amp; Betika Grand AI Predictions (17 Games)</image:title>
+      <image:caption>SportPesa Mega Jackpot &amp; Betika Grand AI Predictions (17 Games) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/midweek-jackpot-predictions</loc>
@@ -919,6 +1491,11 @@
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/midweek-jackpot-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/midweek-jackpot-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Midweek Jackpot Predictions Today: 13 &amp; 15 Games AI Banker Tips</image:title>
+      <image:caption>Midweek Jackpot Predictions Today: 13 &amp; 15 Games AI Banker Tips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/us-soccer-predictions</loc>
@@ -927,6 +1504,11 @@
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/us-soccer-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/us-soccer-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>US Soccer Picks, MLS Moneyline &amp; Champions League Odds</image:title>
+      <image:caption>US Soccer Picks, MLS Moneyline &amp; Champions League Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/how-to-read-football-predictions</loc>
@@ -935,6 +1517,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/how-to-read-football-predictions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/how-to-read-football-predictions" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>How to Read AI Football Predictions Like a Pro</image:title>
+      <image:caption>How to Read AI Football Predictions Like a Pro — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/expected-goals-xg-betting-model-explained</loc>
@@ -943,6 +1530,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/expected-goals-xg-betting-model-explained" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/expected-goals-xg-betting-model-explained" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Expected Goals (xG) &amp; xGA Football Betting Model Explained: How to Beat Bookmaker Lines</image:title>
+      <image:caption>Expected Goals (xG) &amp; xGA Football Betting Model Explained: How to Beat Bookmaker Lines — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/halftime-fulltime-ht-ft-predictions-strategy</loc>
@@ -951,6 +1543,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/halftime-fulltime-ht-ft-predictions-strategy" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/halftime-fulltime-ht-ft-predictions-strategy" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround &amp; Draw-Win Strategy</image:title>
+      <image:caption>Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround &amp; Draw-Win Strategy — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/value-betting-explained</loc>
@@ -959,6 +1556,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/value-betting-explained" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/value-betting-explained" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Value Betting in Football: A Complete Guide to Positive Expected Value</image:title>
+      <image:caption>Value Betting in Football: A Complete Guide to Positive Expected Value — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/asian-handicap-betting-explained</loc>
@@ -967,6 +1569,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/asian-handicap-betting-explained" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/asian-handicap-betting-explained" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Asian Handicap Betting Explained: -0.5, -0.75 &amp; -1.5 Goal Lines</image:title>
+      <image:caption>Asian Handicap Betting Explained: -0.5, -0.75 &amp; -1.5 Goal Lines — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/draw-no-bet-vs-double-chance-strategy</loc>
@@ -975,6 +1582,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/draw-no-bet-vs-double-chance-strategy" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/draw-no-bet-vs-double-chance-strategy" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide</image:title>
+      <image:caption>Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/closing-line-value-clv-dropping-odds</loc>
@@ -983,6 +1595,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/closing-line-value-clv-dropping-odds" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/closing-line-value-clv-dropping-odds" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Closing Line Value (CLV) &amp; Dropping Odds: How to Beat Sharp Steam</image:title>
+      <image:caption>Closing Line Value (CLV) &amp; Dropping Odds: How to Beat Sharp Steam — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/bankroll-management-football</loc>
@@ -991,6 +1608,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/bankroll-management-football" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/bankroll-management-football" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bankroll Management for Football Bettors: Kelly Criterion</image:title>
+      <image:caption>Bankroll Management for Football Bettors: Kelly Criterion — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/premier-league-prediction-guide-2026</loc>
@@ -999,6 +1621,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/premier-league-prediction-guide-2026" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/premier-league-prediction-guide-2026" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Premier League 2026/27 Season Prediction Guide</image:title>
+      <image:caption>Premier League 2026/27 Season Prediction Guide — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/champions-league-group-stage-tips</loc>
@@ -1007,6 +1634,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/champions-league-group-stage-tips" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/champions-league-group-stage-tips" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Champions League 36-Team Swiss Phase: How to Bet Smart Using AI</image:title>
+      <image:caption>Champions League 36-Team Swiss Phase: How to Bet Smart Using AI — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/btts-over-under-strategy</loc>
@@ -1015,6 +1647,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/btts-over-under-strategy" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/btts-over-under-strategy" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>BTTS and Over/Under 2.5: The Stats Behind Goal Markets</image:title>
+      <image:caption>BTTS and Over/Under 2.5: The Stats Behind Goal Markets — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/kpl-betting-guide-kenya</loc>
@@ -1023,6 +1660,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/kpl-betting-guide-kenya" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/kpl-betting-guide-kenya" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Kenya Premier League (FKF) Betting Guide 2026/27 &amp; M-Pesa Payouts</image:title>
+      <image:caption>Kenya Premier League (FKF) Betting Guide 2026/27 &amp; M-Pesa Payouts — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/accumulator-building-strategy</loc>
@@ -1031,6 +1673,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/accumulator-building-strategy" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/accumulator-building-strategy" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>How to Build a Winning Football Accumulator with Low Correlation</image:title>
+      <image:caption>How to Build a Winning Football Accumulator with Low Correlation — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/correct-score-prediction-tips</loc>
@@ -1039,6 +1686,11 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/correct-score-prediction-tips" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/correct-score-prediction-tips" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Correct Score Betting: How Poisson Matrices Predict Exact Scorelines</image:title>
+      <image:caption>Correct Score Betting: How Poisson Matrices Predict Exact Scorelines — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/sportpesa-mega-jackpot-prediction-17-games</loc>
@@ -1047,6 +1699,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/sportpesa-mega-jackpot-prediction-17-games" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/sportpesa-mega-jackpot-prediction-17-games" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI</image:title>
+      <image:caption>SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/us-soccer-betting-guide-mls-odds</loc>
@@ -1055,278 +1712,37 @@
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/us-soccer-betting-guide-mls-odds" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/us-soccer-betting-guide-mls-odds" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/blog</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/arsenal-vs-chelsea</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/arsenal-vs-chelsea" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/arsenal-vs-chelsea" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/liverpool-vs-manchester-city</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/liverpool-vs-manchester-city" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/liverpool-vs-manchester-city" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/real-madrid-vs-barcelona</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/real-madrid-vs-barcelona" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/real-madrid-vs-barcelona" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/inter-milan-vs-ac-milan</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/inter-milan-vs-ac-milan" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/inter-milan-vs-ac-milan" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/manchester-united-vs-tottenham</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/manchester-united-vs-tottenham" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/manchester-united-vs-tottenham" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/psg-vs-marseille</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/psg-vs-marseille" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/psg-vs-marseille" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/gor-mahia-vs-afc-leopards</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/gor-mahia-vs-afc-leopards" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/gor-mahia-vs-afc-leopards" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/simba-sc-vs-young-africans</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/simba-sc-vs-young-africans" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/simba-sc-vs-young-africans" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/enyimba-vs-rangers-international</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/enyimba-vs-rangers-international" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/enyimba-vs-rangers-international" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/al-ahly-vs-zamalek</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/al-ahly-vs-zamalek" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/al-ahly-vs-zamalek" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/juventus-vs-napoli</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/juventus-vs-napoli" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/juventus-vs-napoli" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/atletico-madrid-vs-sevilla</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/atletico-madrid-vs-sevilla" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/atletico-madrid-vs-sevilla" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/la-galaxy-vs-lafc</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/la-galaxy-vs-lafc" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/la-galaxy-vs-lafc" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/inter-miami-vs-new-york-red-bulls</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/inter-miami-vs-new-york-red-bulls" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/inter-miami-vs-new-york-red-bulls" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/al-hilal-vs-al-nassr</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/al-hilal-vs-al-nassr" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/al-hilal-vs-al-nassr" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/celtic-vs-rangers</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/celtic-vs-rangers" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/celtic-vs-rangers" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/predict/galatasaray-vs-fenerbahce</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/galatasaray-vs-fenerbahce" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/galatasaray-vs-fenerbahce" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/arsenal</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/arsenal" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/arsenal" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/manchester-city</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/manchester-city" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/manchester-city" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/liverpool</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/liverpool" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/liverpool" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/real-madrid</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/real-madrid" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/real-madrid" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/barcelona</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/barcelona" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/barcelona" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/bayern-munich</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/bayern-munich" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/bayern-munich" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/inter-milan</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/inter-milan" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/inter-milan" />
-  </url>
-  <url>
-    <loc>https://predictpro.guru/teams/psg</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/psg" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/psg" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>US Soccer &amp; MLS Betting Guide: Moneyline, Spreads &amp; AI Picks</image:title>
+      <image:caption>US Soccer &amp; MLS Betting Guide: Moneyline, Spreads &amp; AI Picks — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja</loc>
     <lastmod>2026-10-23</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Universal Bet Code Converter: How to Convert SportyBet, 1xBet, Bet9ja &amp; Betway Slips</image:title>
+      <image:caption>Universal Bet Code Converter: How to Convert SportyBet, 1xBet, Bet9ja &amp; Betway Slips — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/bivariate-poisson-dixon-coles-score-matrix-guide</loc>
     <lastmod>2026-10-23</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/bivariate-poisson-dixon-coles-score-matrix-guide" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/bivariate-poisson-dixon-coles-score-matrix-guide" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bivariate Poisson &amp; Dixon-Coles Score Matrix: How PredictPro Calculates Exact Scorelines</image:title>
+      <image:caption>Bivariate Poisson &amp; Dixon-Coles Score Matrix: How PredictPro Calculates Exact Scorelines — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/2-score-correct-score-dutching-strategy</loc>
@@ -1335,6 +1751,11 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/2-score-correct-score-dutching-strategy" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/2-score-correct-score-dutching-strategy" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>2-Score Correct Score Dutching Strategy: Mathematical Stake Sizing for High-Odds Value</image:title>
+      <image:caption>2-Score Correct Score Dutching Strategy: Mathematical Stake Sizing for High-Odds Value — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://predictpro.guru/blog/referee-cards-corners-prop-modeling</loc>
@@ -1343,6 +1764,699 @@
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog/referee-cards-corners-prop-modeling" />
     <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog/referee-cards-corners-prop-modeling" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Referee Discipline &amp; Corner Prop Modeling: Predicting Cards and Corners with xG Tempo</image:title>
+      <image:caption>Referee Discipline &amp; Corner Prop Modeling: Predicting Cards and Corners with xG Tempo — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/blog</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/blog" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/blog" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Football Betting Strategy Blog &amp; AI Prediction Guides</image:title>
+      <image:caption>Football Betting Strategy Blog &amp; AI Prediction Guides — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/arsenal</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/arsenal" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/arsenal" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Arsenal xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Arsenal xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/manchester-city</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/manchester-city" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/manchester-city" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Manchester City xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Manchester City xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/liverpool</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/liverpool" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/liverpool" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Liverpool xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Liverpool xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/chelsea</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/chelsea" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/chelsea" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Chelsea xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Chelsea xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/manchester-united</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/manchester-united" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/manchester-united" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Manchester United xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Manchester United xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/tottenham</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/tottenham" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/tottenham" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Tottenham xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Tottenham xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/newcastle-united</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/newcastle-united" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/newcastle-united" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Newcastle United xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Newcastle United xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/aston-villa</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/aston-villa" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/aston-villa" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Aston Villa xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Aston Villa xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/real-madrid</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/real-madrid" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/real-madrid" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Real Madrid xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Real Madrid xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/barcelona</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/barcelona" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/barcelona" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Barcelona xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Barcelona xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/atletico-madrid</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/atletico-madrid" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/atletico-madrid" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Atletico Madrid xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Atletico Madrid xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/bayern-munich</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/bayern-munich" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/bayern-munich" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bayern Munich xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Bayern Munich xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/borussia-dortmund</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/borussia-dortmund" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/borussia-dortmund" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Borussia Dortmund xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Borussia Dortmund xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/bayer-leverkusen</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/bayer-leverkusen" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/bayer-leverkusen" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Bayer Leverkusen xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Bayer Leverkusen xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/inter-milan</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/inter-milan" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/inter-milan" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Inter Milan xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Inter Milan xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/ac-milan</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/ac-milan" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/ac-milan" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Ac Milan xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Ac Milan xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/juventus</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/juventus" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/juventus" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Juventus xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Juventus xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/napoli</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/napoli" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/napoli" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Napoli xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Napoli xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/psg</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/psg" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/psg" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Psg xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Psg xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/al-ahly</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/al-ahly" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/al-ahly" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Al Ahly xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Al Ahly xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/mamelodi-sundowns</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/mamelodi-sundowns" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/mamelodi-sundowns" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Mamelodi Sundowns xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Mamelodi Sundowns xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/gor-mahia</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/gor-mahia" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/gor-mahia" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Gor Mahia xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Gor Mahia xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/kaizer-chiefs</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/kaizer-chiefs" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/kaizer-chiefs" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Kaizer Chiefs xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Kaizer Chiefs xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/teams/orlando-pirates</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/teams/orlando-pirates" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/teams/orlando-pirates" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>Orlando Pirates xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR)</image:title>
+      <image:caption>Orlando Pirates xG Stats, Poisson Ratings &amp; Fixture Difficulty (FDR) — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/arsenal-vs-chelsea</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/arsenal-vs-chelsea" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/arsenal-vs-chelsea" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>ARSENAL VS CHELSEA AI Prediction &amp; Match Odds</image:title>
+      <image:caption>ARSENAL VS CHELSEA AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/liverpool-vs-manchester-city</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/liverpool-vs-manchester-city" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/liverpool-vs-manchester-city" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>LIVERPOOL VS MANCHESTER CITY AI Prediction &amp; Match Odds</image:title>
+      <image:caption>LIVERPOOL VS MANCHESTER CITY AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/real-madrid-vs-barcelona</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/real-madrid-vs-barcelona" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/real-madrid-vs-barcelona" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>REAL MADRID VS BARCELONA AI Prediction &amp; Match Odds</image:title>
+      <image:caption>REAL MADRID VS BARCELONA AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/bayern-munich-vs-borussia-dortmund" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>BAYERN MUNICH VS BORUSSIA DORTMUND AI Prediction &amp; Match Odds</image:title>
+      <image:caption>BAYERN MUNICH VS BORUSSIA DORTMUND AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/inter-milan-vs-ac-milan</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/inter-milan-vs-ac-milan" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/inter-milan-vs-ac-milan" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>INTER MILAN VS AC MILAN AI Prediction &amp; Match Odds</image:title>
+      <image:caption>INTER MILAN VS AC MILAN AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/manchester-united-vs-tottenham</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/manchester-united-vs-tottenham" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/manchester-united-vs-tottenham" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>MANCHESTER UNITED VS TOTTENHAM AI Prediction &amp; Match Odds</image:title>
+      <image:caption>MANCHESTER UNITED VS TOTTENHAM AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/psg-vs-marseille</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/psg-vs-marseille" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/psg-vs-marseille" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>PSG VS MARSEILLE AI Prediction &amp; Match Odds</image:title>
+      <image:caption>PSG VS MARSEILLE AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/gor-mahia-vs-afc-leopards</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/gor-mahia-vs-afc-leopards" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/gor-mahia-vs-afc-leopards" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>GOR MAHIA VS AFC LEOPARDS AI Prediction &amp; Match Odds</image:title>
+      <image:caption>GOR MAHIA VS AFC LEOPARDS AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/simba-sc-vs-young-africans</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/simba-sc-vs-young-africans" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/simba-sc-vs-young-africans" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>SIMBA SC VS YOUNG AFRICANS AI Prediction &amp; Match Odds</image:title>
+      <image:caption>SIMBA SC VS YOUNG AFRICANS AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>KAIZER CHIEFS VS ORLANDO PIRATES AI Prediction &amp; Match Odds</image:title>
+      <image:caption>KAIZER CHIEFS VS ORLANDO PIRATES AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/mamelodi-sundowns-vs-orlando-pirates" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>MAMELODI SUNDOWNS VS ORLANDO PIRATES AI Prediction &amp; Match Odds</image:title>
+      <image:caption>MAMELODI SUNDOWNS VS ORLANDO PIRATES AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/enyimba-vs-rangers-international</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/enyimba-vs-rangers-international" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/enyimba-vs-rangers-international" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>ENYIMBA VS RANGERS INTERNATIONAL AI Prediction &amp; Match Odds</image:title>
+      <image:caption>ENYIMBA VS RANGERS INTERNATIONAL AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/hearts-of-oak-vs-asante-kotoko" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>HEARTS OF OAK VS ASANTE KOTOKO AI Prediction &amp; Match Odds</image:title>
+      <image:caption>HEARTS OF OAK VS ASANTE KOTOKO AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/al-ahly-vs-zamalek</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/al-ahly-vs-zamalek" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/al-ahly-vs-zamalek" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AL AHLY VS ZAMALEK AI Prediction &amp; Match Odds</image:title>
+      <image:caption>AL AHLY VS ZAMALEK AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>WYDAD AC VS RAJA CASABLANCA AI Prediction &amp; Match Odds</image:title>
+      <image:caption>WYDAD AC VS RAJA CASABLANCA AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>TP MAZEMBE VS AS VITA CLUB AI Prediction &amp; Match Odds</image:title>
+      <image:caption>TP MAZEMBE VS AS VITA CLUB AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/juventus-vs-napoli</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/juventus-vs-napoli" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/juventus-vs-napoli" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>JUVENTUS VS NAPOLI AI Prediction &amp; Match Odds</image:title>
+      <image:caption>JUVENTUS VS NAPOLI AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/atletico-madrid-vs-sevilla</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/atletico-madrid-vs-sevilla" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/atletico-madrid-vs-sevilla" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>ATLETICO MADRID VS SEVILLA AI Prediction &amp; Match Odds</image:title>
+      <image:caption>ATLETICO MADRID VS SEVILLA AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/la-galaxy-vs-lafc</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/la-galaxy-vs-lafc" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/la-galaxy-vs-lafc" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>LA GALAXY VS LAFC AI Prediction &amp; Match Odds</image:title>
+      <image:caption>LA GALAXY VS LAFC AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/inter-miami-vs-new-york-red-bulls</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/inter-miami-vs-new-york-red-bulls" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/inter-miami-vs-new-york-red-bulls" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>INTER MIAMI VS NEW YORK RED BULLS AI Prediction &amp; Match Odds</image:title>
+      <image:caption>INTER MIAMI VS NEW YORK RED BULLS AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/celtic-vs-rangers</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/celtic-vs-rangers" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/celtic-vs-rangers" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>CELTIC VS RANGERS AI Prediction &amp; Match Odds</image:title>
+      <image:caption>CELTIC VS RANGERS AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/boca-juniors-vs-river-plate</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/boca-juniors-vs-river-plate" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/boca-juniors-vs-river-plate" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>BOCA JUNIORS VS RIVER PLATE AI Prediction &amp; Match Odds</image:title>
+      <image:caption>BOCA JUNIORS VS RIVER PLATE AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/benfica-vs-sporting-cp</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/benfica-vs-sporting-cp" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/benfica-vs-sporting-cp" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>BENFICA VS SPORTING CP AI Prediction &amp; Match Odds</image:title>
+      <image:caption>BENFICA VS SPORTING CP AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/galatasaray-vs-fenerbahce</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/galatasaray-vs-fenerbahce" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/galatasaray-vs-fenerbahce" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>GALATASARAY VS FENERBAHCE AI Prediction &amp; Match Odds</image:title>
+      <image:caption>GALATASARAY VS FENERBAHCE AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/ajax-vs-feyenoord</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/ajax-vs-feyenoord" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/ajax-vs-feyenoord" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AJAX VS FEYENOORD AI Prediction &amp; Match Odds</image:title>
+      <image:caption>AJAX VS FEYENOORD AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/club-america-vs-chivas</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/club-america-vs-chivas" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/club-america-vs-chivas" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>CLUB AMERICA VS CHIVAS AI Prediction &amp; Match Odds</image:title>
+      <image:caption>CLUB AMERICA VS CHIVAS AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/al-hilal-vs-al-nassr</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/al-hilal-vs-al-nassr" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/al-hilal-vs-al-nassr" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>AL HILAL VS AL NASSR AI Prediction &amp; Match Odds</image:title>
+      <image:caption>AL HILAL VS AL NASSR AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://predictpro.guru/predict/flamengo-vs-palmeiras</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://predictpro.guru/predict/flamengo-vs-palmeiras" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://predictpro.guru/predict/flamengo-vs-palmeiras" />
+    <image:image>
+      <image:loc>https://predictpro.guru/og-image.jpg</image:loc>
+      <image:title>FLAMENGO VS PALMEIRAS AI Prediction &amp; Match Odds</image:title>
+      <image:caption>FLAMENGO VS PALMEIRAS AI Prediction &amp; Match Odds — Expected Goals (xG) &amp; Bivariate Poisson Football Analytics</image:caption>
+    </image:image>
   </url>
 </urlset>
-

@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { Brain, Globe, Shield, TrendingUp, Users, Zap, Mail, Twitter, CheckCircle2, FileText, Scale } from "lucide-react";
+import { Brain, Globe, Shield, TrendingUp, Users, Zap, Mail, Phone, Twitter, CheckCircle2, FileText, Scale } from "lucide-react";
 
 const TEAM = [
   { name: "Quantitative AI Engine", role: "Google Gemini + Bivariate Poisson", desc: "Powers all match simulations, Dixon-Coles low-score adjustments, and natural-language tactical breakdowns." },
@@ -141,8 +141,11 @@ export default function About() {
           <h2 className="text-2xl font-bold mb-2">Contact Our Editorial &amp; Engineering Desk</h2>
           <p className="text-muted-foreground mb-6">Questions, data inquiries, or feedback — reach out to our team directly.</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <a href="mailto:support@predictpro.guru">
-              <Button variant="outline" className="gap-2"><Mail className="h-4 w-4" />support@predictpro.guru</Button>
+            <a href="mailto:vincentmwangangiz@gmail.com">
+              <Button variant="outline" className="gap-2"><Mail className="h-4 w-4" />vincentmwangangiz@gmail.com</Button>
+            </a>
+            <a href="tel:+254721418238">
+              <Button variant="outline" className="gap-2"><Phone className="h-4 w-4" />+254721418238</Button>
             </a>
             <Link to="/contact">
               <Button variant="outline" className="gap-2">Contact Form &amp; Office Details</Button>

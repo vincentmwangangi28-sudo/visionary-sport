@@ -5,8 +5,9 @@
     "version": "2.4.0",
     "description": "Enterprise AI football prediction engine delivering daily 1X2 probabilities, Bivariate Poisson exact scorelines, Expected Goals (xG), +EV value bets, and 17-game Mega Jackpot permutations across 40+ global leagues.",
     "contact": {
-      "name": "PredictPro.guru API Support",
-      "url": "https://predictpro.guru/about"
+      "name": "PredictPro.guru API & Editorial Support (Vincent Mwangangi)",
+      "email": "vincentmwangangiz@gmail.com",
+      "url": "https://predictpro.guru/contact"
     }
   },
   "x-service-info": {

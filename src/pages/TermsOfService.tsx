@@ -171,7 +171,8 @@ export default function TermsOfService() {
           </p>
           <div className="text-sm space-y-1 pt-2 font-mono text-foreground/90">
             <p>PredictPro Analytics Legal Office</p>
-            <p>Email: <a href="mailto:support@predictpro.guru" className="text-primary hover:underline">support@predictpro.guru</a></p>
+            <p>Email: <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline">vincentmwangangiz@gmail.com</a></p>
+            <p>Phone: <a href="tel:+254721418238" className="text-primary hover:underline">+254721418238</a></p>
             <p>Website: https://predictpro.guru</p>
           </div>
         </section>

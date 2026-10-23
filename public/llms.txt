@@ -48,4 +48,9 @@ PredictPro combines historical head-to-head (H2H) records, rolling 10-match Expe
 - [RSS 2.0 & Atom 1.0 Syndication Feeds](https://predictpro.guru/rss.xml): Also available at `/feed.xml` (Atom 1.0) and `/feed-predictions.xml` (Daily Match Predictions RSS).
 - [Dynamic 1200×630 OpenGraph Card Generator](https://predictpro.guru/api/og): Edge-rendered SVG social cards for matches and multibet slips (`max-image-preview:large`).
 
+## Publisher & Direct Contact
 
+- **Publisher & Lead Engineer**: Vincent Mwangangi
+- **Email**: `vincentmwangangiz@gmail.com` (`mailto:vincentmwangangiz@gmail.com`)
+- **Phone / WhatsApp**: `+254721418238` (`tel:+254721418238`)
+- **Contact Desk**: [https://predictpro.guru/contact](https://predictpro.guru/contact)

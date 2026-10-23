@@ -160,7 +160,7 @@ export default function CookiePolicy() {
             <Mail className="h-5 w-5 text-primary" /> Questions About Cookies?
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            If you have any questions regarding our use of cookies or tracking technologies, please contact our Privacy Office at <a href="mailto:privacy@predictpro.guru" className="text-primary hover:underline font-medium">privacy@predictpro.guru</a> or review our full <Link to="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>.
+            If you have any questions regarding our use of cookies or tracking technologies, please contact our Privacy Office at <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline font-medium">vincentmwangangiz@gmail.com</a> or call <a href="tel:+254721418238" className="text-primary hover:underline font-medium">+254721418238</a>, or review our full <Link to="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>.
           </p>
         </section>
       </main>
