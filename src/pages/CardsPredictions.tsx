@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import {
   AlertOctagon,
   ShieldAlert,
@@ -171,6 +172,9 @@ export default function CardsPredictions() {
             </Tabs>
           </div>
         </div>
+
+        {/* Interactive Referee Discipline & Corner Set-Piece Prop Hub */}
+        <RefereeSetPieceMatrix />
 
         {/* Matches Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

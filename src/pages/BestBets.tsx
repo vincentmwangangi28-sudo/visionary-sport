@@ -9,9 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Zap, RefreshCw, TrendingUp, Trophy, Sparkles } from 'lucide-react';
+import { Zap, RefreshCw, TrendingUp, Ticket } from 'lucide-react';
 import { AdBannerHorizontal } from '@/components/AdBanner';
 import { WhatsAppShare } from '@/components/WhatsAppShare';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import type { Prediction } from '@/types/prediction';
 import { getPrediction, getConfidence } from '@/types/prediction';
@@ -203,6 +204,16 @@ export default function BestBets() {
               <Zap className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Load Top 3 to Slip</span>
             </Button>
+            <Link to="/slip-generator">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
+              >
+                <Ticket className="h-3.5 w-3.5 text-amber-400" />
+                <span>Code Converter</span>
+              </Button>
+            </Link>
             <WhatsAppShare text={shareText} />
             <Button
               variant="outline"
@@ -216,6 +227,21 @@ export default function BestBets() {
             </Button>
           </div>
         </div>
+
+        {!loading && bets.length >= 3 && (
+          <ViralSlipShareCard
+            title="Top 3 High-Consensus AI Banker Treble"
+            items={bets.slice(0, 3).map((b) => ({
+              homeTeam: b.home_team,
+              awayTeam: b.away_team,
+              league: b.league,
+              market: getPrediction(b),
+              odds: b.home_odds || 1.85,
+              confidence: getConfidence(b) || 78,
+            }))}
+            canonicalPath="/best-bets"
+          />
+        )}
 
         {/* High-Equity Contextual Internal Linking Ribbon with Descriptive Anchors */}
         <div className="mb-6 p-3.5 rounded-xl bg-muted/40 border text-xs flex flex-wrap items-center justify-between gap-3">

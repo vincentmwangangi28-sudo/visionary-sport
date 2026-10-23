@@ -42,6 +42,8 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/accumulator", label: "Accumulator Builder" },
   ],
   "Tools & Calculators": [
+    { to: "/slip-generator", label: "AI Slip & Code Converter" },
+    { to: "/poisson-calculator", label: "Poisson 6x6 Score Matrix" },
     { to: "/screener", label: "Match Screener" },
     { to: "/dropping-odds", label: "Odds Movement" },
     { to: "/streaks", label: "Form & Streaks" },
@@ -49,7 +51,6 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/kelly-criterion-calculator", label: "Staking Calculator" },
     { to: "/parlay-calculator", label: "Accumulator Calculator" },
     { to: "/odds-converter", label: "Odds Converter" },
-    { to: "/poisson-calculator", label: "Poisson Calculator" },
     { to: "/track-record", label: "Historical Performance" },
   ],
   Guides: [
@@ -148,10 +149,42 @@ export const Footer = () => {
           </div>
         </div>
 
+        {/* AdSense & Publisher Policy Compliance Disclosure */}
+        <div className="border-t border-border pt-5 pb-5">
+          <div className="p-3.5 rounded-xl bg-muted/40 border border-border/70 text-[11px] text-muted-foreground leading-relaxed space-y-1">
+            <p className="font-bold text-foreground">
+              Independent Sports Statistics &amp; Editorial Publishing Disclosure (18+)
+            </p>
+            <p>
+              <strong>PredictPro (predictpro.guru)</strong> is an independent quantitative football statistics, Expected Goals (xG) telemetry, and mathematical match modeling publication. PredictPro is <strong>not</strong> a bookmaker, sportsbook, or gambling operator, and does not accept or facilitate real-money wagers of any kind. All statistical probabilities, Bivariate Poisson scoreline distributions, and tactical match previews are published strictly for informational, journalistic, and analytical purposes. Please consult our{' '}
+              <Link to="/methodology" className="text-primary underline hover:text-primary/80 font-medium">
+                Statistical Methodology
+              </Link>
+              ,{' '}
+              <Link to="/about" className="text-primary underline hover:text-primary/80 font-medium">
+                Editorial Team &amp; About Us
+              </Link>
+              , and{' '}
+              <Link to="/responsible-gaming" className="text-primary underline hover:text-primary/80 font-medium">
+                18+ Responsible Gaming Policy
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+
         <div className="border-t border-border pt-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} PredictPro · predictpro.guru · 18+ Please Play Responsibly</p>
+          <p>© {new Date().getFullYear()} PredictPro Sports Analytics · predictpro.guru · Informational Only (18+)</p>
 
           <div className="flex items-center gap-3 flex-wrap justify-center">
+            <Link to="/about" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
+              About Us
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link to="/contact" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
+              Contact
+            </Link>
+            <span aria-hidden="true">·</span>
             <Link to="/privacy" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
@@ -161,7 +194,7 @@ export const Footer = () => {
             </Link>
             <span aria-hidden="true">·</span>
             <Link to="/cookies" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">
-              Cookies
+              Cookie Policy
             </Link>
             <span aria-hidden="true">·</span>
             <Link to="/responsible-gaming" className="inline-flex items-center min-h-[24px] py-1 hover:text-foreground transition-colors">

@@ -1,9 +1,27 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Copy, CheckCheck, Share2, Send, ExternalLink, Code2, FileText, Plus } from 'lucide-react';
+import {
+  Copy,
+  CheckCheck,
+  Share2,
+  Send,
+  ExternalLink,
+  Code2,
+  FileText,
+  Plus,
+  Download,
+  ArrowLeftRight,
+  Hash,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { hapticService } from '@/services/hapticService';
 import { useBetSlip, encodeSlipToParam } from '@/hooks/useBetSlip';
+import {
+  generateMatchGameId,
+  translateMarketForBookmaker,
+  downloadSlipAsPngImage,
+} from '@/services/bookmakerBookingCodes';
 
 export interface ViralSlipItem {
   homeTeam?: string;
@@ -105,6 +123,9 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedSlipText, setCopiedSlipText] = useState(false);
   const [showCardPreview, setShowCardPreview] = useState(false);
+  const [showGameIds, setShowGameIds] = useState(true);
+
+  const bookieId = selectedBookie.toLowerCase();
 
   const bookingCode = useMemo(
     () => buildDeterministicBookingCode(selectedBookie, items),
@@ -138,14 +159,15 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
     const header = `⚽ PredictPro AI — ${items.length}-Leg ${title}`;
     const legs = items
       .slice(0, 10)
-      .map(
-        (item, idx) =>
-          `${idx + 1}. ${item.homeTeam} vs ${item.awayTeam} — ${item.market} @ ${item.odds.toFixed(2)} (${item.confidence}% AI)`
-      )
+      .map((item, idx) => {
+        const gameId = generateMatchGameId(`${item.homeTeam} vs ${item.awayTeam}`, item.league);
+        const translated = translateMarketForBookmaker(item.market, bookieId);
+        return `${idx + 1}. [#${gameId}] ${item.homeTeam} vs ${item.awayTeam} — ${translated} @ ${item.odds.toFixed(2)} (${item.confidence}% AI)`;
+      })
       .join('\n');
     const moreLine = items.length > 10 ? `\n...and ${items.length - 10} more fixtures` : '';
     return `${header}\n\n${legs}${moreLine}\n\n📊 Combined Odds: ${totalOdds.toFixed(2)}x · AI Confidence: ${combinedConfidence}%\n🎟️ Booking Code (${selectedBookie}): ${bookingCode}\n\n👇 Click to auto-load this slip into your Bet Slip:\n${shareUrl}`;
-  }, [items, title, totalOdds, combinedConfidence, selectedBookie, bookingCode, shareUrl]);
+  }, [items, title, totalOdds, combinedConfidence, selectedBookie, bookingCode, shareUrl, bookieId]);
 
   const handleCopyBookingCode = () => {
     hapticService.selection();
@@ -159,8 +181,34 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
     hapticService.success();
     navigator.clipboard.writeText(formattedShareText);
     setCopiedSlipText(true);
-    toast.success('Copied formatted slip with auto-load link to clipboard');
+    toast.success('Copied formatted slip with 4-digit Game IDs to clipboard');
     setTimeout(() => setCopiedSlipText(false), 2500);
+  };
+
+  const handleDownloadPngCard = async () => {
+    hapticService.success();
+    try {
+      await downloadSlipAsPngImage({
+        title: `${items.length}-Leg ${title}`,
+        bookmakerName: selectedBookie,
+        bookingCode,
+        totalOdds,
+        stake: 10,
+        potentialReturn: totalOdds * 10,
+        currencySymbol: '$',
+        legs: items.map((item) => ({
+          gameId: generateMatchGameId(`${item.homeTeam} vs ${item.awayTeam}`, item.league),
+          match: `${item.homeTeam} vs ${item.awayTeam}`,
+          league: item.league,
+          market: translateMarketForBookmaker(item.market, bookieId),
+          odds: item.odds,
+          confidence: item.confidence,
+        })),
+      });
+      toast.success(`Saved ${bookingCode} 2x High-DPI slip card image!`);
+    } catch {
+      toast.error('Unable to export PNG card');
+    }
   };
 
   const handleLoadIntoBetSlip = () => {
@@ -197,7 +245,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
             1-Click Booking Code &amp; Slip Syndication
           </h3>
           <p className="text-xs text-muted-foreground">
-            Select your bookmaker to generate an instant slip code or share an auto-loading slip link on WhatsApp &amp; Telegram.
+            Select your bookmaker for instant slip codes, 4-digit Coupon Game IDs, 2x PNG export, or cross-bookie code conversion.
           </p>
         </div>
         <div className="text-xs font-mono tabular-nums text-muted-foreground">
@@ -219,7 +267,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
               hapticService.selection();
               setSelectedBookie(bookie);
             }}
-            className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+            className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
               selectedBookie === bookie
                 ? 'bg-background text-foreground shadow-xs border border-border/80'
                 : 'text-muted-foreground hover:text-foreground'
@@ -264,6 +312,16 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
           <Button
             type="button"
             size="sm"
+            variant="outline"
+            onClick={handleDownloadPngCard}
+            className="gap-1.5 text-xs font-semibold"
+          >
+            <Download className="h-3.5 w-3.5 text-emerald-500" />
+            Save Slip PNG
+          </Button>
+          <Button
+            type="button"
+            size="sm"
             variant="default"
             onClick={handleCopyFullSlip}
             className="gap-1.5 text-xs font-semibold"
@@ -272,6 +330,56 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
             {copiedSlipText ? 'Slip Copied' : 'Copy Full Slip'}
           </Button>
         </div>
+      </div>
+
+      {/* 4-Digit Coupon Game IDs & Bookmaker Market Terminology Checklist */}
+      <div className="rounded-lg border border-border/70 bg-muted/20 overflow-hidden">
+        <div className="px-3 py-2 flex items-center justify-between border-b border-border/50 text-xs">
+          <button
+            type="button"
+            onClick={() => setShowGameIds((prev) => !prev)}
+            className="inline-flex items-center gap-1.5 font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+          >
+            <Hash className="h-3.5 w-3.5 text-primary" />
+            <span>{selectedBookie} 4-Digit Coupon Game IDs &amp; Market Equivalents</span>
+          </button>
+          <Link
+            to={`/slip-generator?code=${encodeURIComponent(bookingCode)}&bookie=${encodeURIComponent(bookieId)}`}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+          >
+            <ArrowLeftRight className="h-3 w-3" />
+            Convert Code
+          </Link>
+        </div>
+        {showGameIds && (
+          <div className="divide-y divide-border/40 text-xs">
+            {items.slice(0, 8).map((item, idx) => {
+              const gameId = generateMatchGameId(`${item.homeTeam} vs ${item.awayTeam}`, item.league);
+              const translatedMarket = translateMarketForBookmaker(item.market, bookieId);
+              return (
+                <div
+                  key={`${item.homeTeam}-${item.awayTeam}-${idx}`}
+                  className="px-3 py-2 flex items-center justify-between gap-2"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="px-1.5 py-0.5 rounded bg-background border border-border font-mono tabular-nums text-[11px] font-bold text-primary shrink-0">
+                      #{gameId}
+                    </span>
+                    <span className="font-medium text-foreground truncate">
+                      {item.homeTeam} vs {item.awayTeam}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 font-mono tabular-nums">
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                      {translatedMarket}
+                    </span>
+                    <span className="text-muted-foreground font-bold">@{item.odds.toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Direct Social Share Links (Anchor tags to avoid window.open in iframe) */}
@@ -306,7 +414,7 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
         <button
           type="button"
           onClick={() => setShowCardPreview(!showCardPreview)}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-border bg-background hover:bg-muted text-foreground transition-colors"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-border bg-background hover:bg-muted text-foreground transition-colors cursor-pointer"
         >
           <Code2 className="h-3.5 w-3.5 text-primary" />
           {showCardPreview ? 'Hide OG Card' : 'Preview OG Card'}
@@ -341,3 +449,4 @@ export const ViralSlipShareCard: React.FC<ViralSlipShareCardProps> = ({
     </section>
   );
 };
+

@@ -181,6 +181,30 @@ const JOB_DEFINITIONS: ScheduledJobConfig[] = [
     enabled: true,
   },
   {
+    id: 'booking-codes',
+    name: 'Bookmaker Booking Codes & Slip Sync',
+    category: 'Predictions',
+    intervalMs: 2 * 60 * 60 * 1000, // 2 hours
+    scheduleDisplay: '0 */2 * * * (Every 2 Hours)',
+    enabled: true,
+  },
+  {
+    id: 'live-momentum',
+    name: "In-Play Momentum & 70'-89' Late-Goal Scanner",
+    category: 'Predictions',
+    intervalMs: 10 * 60 * 1000, // 10 mins
+    scheduleDisplay: '*/10 * * * * (Every 10 Mins)',
+    enabled: true,
+  },
+  {
+    id: 'referee-props',
+    name: 'Referee Assignments, Corners & Cards Prop Matrix',
+    category: 'Predictions',
+    intervalMs: 6 * 60 * 60 * 1000, // 6 hours
+    scheduleDisplay: '0 */6 * * * (Every 6 Hours)',
+    enabled: true,
+  },
+  {
     id: 'keepalive',
     name: '24/7 Site Activity & Supabase Anti-Idle Sentinel',
     category: 'System',

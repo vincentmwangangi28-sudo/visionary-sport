@@ -471,8 +471,22 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
             ))}
           </div>
 
-          {/* Right: Quiet Text Toggles for Matchday Drawers */}
+          {/* Right: Quiet Text Toggles for Matchday Drawers & Pro Tools */}
           <div className="hidden md:flex items-center gap-3 shrink-0 border-l border-border pl-3 text-[11px]">
+            <Link
+              to="/slip-generator"
+              data-testid="ribbon-link-slip-generator"
+              className="min-h-[24px] px-1.5 inline-flex items-center rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 font-semibold transition-colors whitespace-nowrap"
+            >
+              Booking Codes
+            </Link>
+            <Link
+              to="/poisson-calculator"
+              data-testid="ribbon-link-poisson-matrix"
+              className="min-h-[24px] px-1 inline-flex items-center text-muted-foreground hover:text-foreground font-medium transition-colors whitespace-nowrap"
+            >
+              6×6 Score Matrix
+            </Link>
             <button
               type="button"
               onClick={() => toggleDrawer('RATINGS')}

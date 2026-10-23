@@ -134,4 +134,5 @@ Sitemap: https://predictpro.guru/sitemap-core.xml
 Sitemap: https://predictpro.guru/sitemap-leagues.xml
 Sitemap: https://predictpro.guru/sitemap-matches.xml
 Sitemap: https://predictpro.guru/sitemap-blog.xml
+Sitemap: https://predictpro.guru/sitemap-discover-news.xml
 Sitemap: https://predictpro.guru/sitemap-yandex.xml

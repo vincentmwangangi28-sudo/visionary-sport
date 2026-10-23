@@ -1,5 +1,4 @@
 import React, { lazy, ComponentType } from 'react';
-import { logger } from './logger';
 
 /**
  * Safely extracts a valid React component from a module object, handling:
@@ -100,44 +99,75 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         try {
           const raw = await factory();
           const Component = resolveComponent<T>(raw);
+          safeSessionStorage.removeItem('chunk_load_retried');
           return { default: Component };
         } catch (error: any) {
           attempts++;
           if (attempts < maxAttempts) {
-            // Incremental backoff delay before retry
-            await new Promise((resolve) => setTimeout(resolve, 600 * attempts));
+            await new Promise((resolve) => setTimeout(resolve, 500 * attempts));
             continue;
           }
 
-          console.warn('[lazyWithRetry] Dynamic chunk import failed after retries:', error);
-          try {
-            logger.error(error, {
-              errorType: 'chunk_load_error',
-              severity: 'error',
-              metadata: {
-                attemptCount: attempts,
-                route: typeof window !== 'undefined' ? window.location.pathname : undefined,
-              },
-            });
-          } catch {
-            // Guard logger
-          }
+          console.warn('[lazyWithRetry] Dynamic chunk import delayed after retries:', error?.message || error);
 
-          const pageHasBeenForceRefreshed =
-            safeSessionStorage.getItem('chunk_load_retried') === 'true';
+          // Return a self-healing React component instead of rejecting React.lazy,
+          // preventing Uncaught TypeError: Failed to fetch dynamically imported module
+          const SelfHealingChunkFallback: React.FC<any> = (props) => {
+            const [ResolvedComp, setResolvedComp] = React.useState<ComponentType<any> | null>(null);
+            const [retryTrigger, setRetryTrigger] = React.useState(0);
 
-          if (!pageHasBeenForceRefreshed && typeof window !== 'undefined') {
-            safeSessionStorage.setItem('chunk_load_retried', 'true');
-            try {
-              window.location.reload();
-              return new Promise(() => {}); // prevent further error propagation while page reloads
-            } catch {
-              // Ignore reload failure in restrictive environments
+            React.useEffect(() => {
+              let cancelled = false;
+              const timer = setTimeout(async () => {
+                try {
+                  const mod = await factory();
+                  if (!cancelled) {
+                    const Comp = resolveComponent<T>(mod);
+                    setResolvedComp(() => Comp);
+                  }
+                } catch {
+                  // Will allow manual or next online retry
+                }
+              }, 1200);
+
+              const handleOnline = () => setRetryTrigger((c) => c + 1);
+              window.addEventListener('online', handleOnline);
+              return () => {
+                cancelled = true;
+                clearTimeout(timer);
+                window.removeEventListener('online', handleOnline);
+              };
+            }, [retryTrigger]);
+
+            if (ResolvedComp) {
+              return React.createElement(ResolvedComp, props);
             }
-          }
 
-          safeSessionStorage.removeItem('chunk_load_retried');
-          throw error;
+            return React.createElement(
+              'div',
+              {
+                className:
+                  'min-h-[40vh] flex flex-col items-center justify-center p-6 text-center space-y-3',
+              },
+              React.createElement(
+                'p',
+                { className: 'text-sm font-semibold text-foreground' },
+                'Reconnecting to live match module...'
+              ),
+              React.createElement(
+                'button',
+                {
+                  type: 'button',
+                  onClick: () => setRetryTrigger((c) => c + 1),
+                  className:
+                    'px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity',
+                },
+                'Retry Now'
+              )
+            );
+          };
+
+          return { default: SelfHealingChunkFallback as unknown as T };
         }
       }
 

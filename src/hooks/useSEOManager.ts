@@ -995,6 +995,30 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
       'club xg stats, fixture difficulty rating fdr, football team poisson ratings, club elo ratings, expected goals per 90',
     canonicalPath: '/teams',
   },
+  '/slip-generator': {
+    title: 'Smart Bet Slip Generator & Booking Code Converter | PredictPro',
+    description:
+      'Generate custom 2.00 to 50.00+ odds AI football accumulator slips and convert booking codes across SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
+    keywords:
+      'smart bet slip generator, sportybet code converter, 1xbet booking code today, bet9ja booking code converter, ai football slip builder',
+    canonicalPath: '/slip-generator',
+  },
+  '/booking-codes': {
+    title: 'Daily Football Booking Codes: SportyBet, 1xBet, Bet9ja & Betway',
+    description:
+      'Copy verified daily AI football booking codes for SportyBet, 1xBet, Bet9ja, Betway, and Betika with 1-click slip loading and Poisson probability breakdowns.',
+    keywords:
+      'football booking codes today, sportybet booking code today, 1xbet coupon code today, bet9ja booking code today, free sure booking codes',
+    canonicalPath: '/booking-codes',
+  },
+  '/code-converter': {
+    title: 'Universal Bet Code Converter: SportyBet, 1xBet, Bet9ja & Betway',
+    description:
+      'Free universal football bet code converter. Instantly translate accumulator booking codes between SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
+    keywords:
+      'bet code converter, convert sportybet to 1xbet, convert bet9ja to sportybet, universal booking code converter, football slip converter',
+    canonicalPath: '/code-converter',
+  },
   '/auth': {
     title: 'Sign In or Create Account — PredictPro AI Football Hub',
     description:
@@ -1122,8 +1146,8 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
     return ROUTE_SEO_REGISTRY[cleanPath];
   }
 
-  // Dynamic Match Prediction Route: /predict/:matchSlug or /match/:matchSlug
-  const matchRoute = cleanPath.match(/^\/(?:predict|match)\/([^/]+)$/i);
+  // Dynamic Match Prediction Route: /predict/:matchSlug, /match/:matchSlug, or /matches/:matchSlug
+  const matchRoute = cleanPath.match(/^\/(?:predict|matches?)\/([^/]+)$/i);
   if (matchRoute) {
     const slug = matchRoute[1];
     const withoutDate = slug.replace(/-\d{4}-\d{2}-\d{2}$/, '');

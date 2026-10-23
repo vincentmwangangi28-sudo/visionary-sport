@@ -1,5 +1,4 @@
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
-import { LEAGUES_LIST } from '@/services/realtimeFootball';
 
 export interface SitemapEntry {
   url: string;
@@ -7,30 +6,62 @@ export interface SitemapEntry {
   lastModified: string;
   changeFrequency: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
   priority: number;
-  category: 'core' | 'league' | 'feature' | 'match' | 'blog' | 'info';
+  category: 'core' | 'league' | 'feature' | 'match' | 'blog' | 'team' | 'info';
   title: string;
+  imageUrl?: string;
 }
 
 export const BASE_URL = 'https://predictpro.guru';
 
-// Blog strategy articles
+// Blog strategy articles (all 20 guides with fresh 2026-10-23 timestamps for Google Discover)
 export const BLOG_POSTS_METADATA = [
-  { slug: 'how-to-read-football-predictions', title: 'How to Read AI Football Predictions Like a Pro', date: '2026-09-30' },
-  { slug: 'expected-goals-xg-betting-model-explained', title: 'Expected Goals (xG) & xGA Football Betting Model Explained: How to Beat Bookmaker Lines', date: '2026-09-30' },
-  { slug: 'halftime-fulltime-ht-ft-predictions-strategy', title: 'Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround & Draw-Win Strategy', date: '2026-09-30' },
-  { slug: 'value-betting-explained', title: 'Value Betting in Football: A Complete +EV Guide', date: '2026-09-30' },
-  { slug: 'asian-handicap-betting-explained', title: 'Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines', date: '2026-09-30' },
-  { slug: 'draw-no-bet-vs-double-chance-strategy', title: 'Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide', date: '2026-09-30' },
-  { slug: 'closing-line-value-clv-dropping-odds', title: 'Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam', date: '2026-09-30' },
-  { slug: 'bankroll-management-football', title: 'Bankroll Management & Kelly Criterion for Football Bettors', date: '2026-09-30' },
-  { slug: 'premier-league-prediction-guide-2026', title: 'Premier League 2026/27 AI Prediction & xG Guide', date: '2026-09-30' },
-  { slug: 'champions-league-group-stage-tips', title: 'Champions League 36-Team Swiss Phase: How to Bet Smart', date: '2026-09-30' },
-  { slug: 'btts-over-under-strategy', title: 'BTTS and Over/Under 2.5: The Poisson Stats Behind Goal Markets', date: '2026-09-30' },
-  { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League (FKF) Betting Guide 2026/27', date: '2026-09-30' },
-  { slug: 'accumulator-building-strategy', title: 'How to Build a Winning Football Accumulator: The 5-Fold Formula', date: '2026-09-30' },
-  { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: How Poisson Matrices Predict Exact Scorelines', date: '2026-09-30' },
-  { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', date: '2026-09-30' },
-  { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', date: '2026-09-30' },
+  { slug: 'universal-bet-code-converter-sportybet-1xbet-bet9ja', title: 'Universal Football Booking Code Converter: Translate SportyBet, 1xBet, Bet9ja & Betway Slips', date: '2026-10-23' },
+  { slug: 'bivariate-poisson-dixon-coles-score-matrix-guide', title: 'Bivariate Poisson & Dixon-Coles 6×6 Score Matrix: Calculating True Football Probabilities', date: '2026-10-23' },
+  { slug: '2-score-correct-score-dutching-strategy', title: '2-Score Correct Score Dutching Strategy: Equal-Profit Staking for Football Scorelines', date: '2026-10-23' },
+  { slug: 'referee-cards-corners-prop-modeling', title: 'Referee Card Strictness & Wing Attack Width: Quantitative Modeling for Corners & Bookings', date: '2026-10-23' },
+  { slug: 'how-to-read-football-predictions', title: 'How to Read AI Football Predictions Like a Pro', date: '2026-10-23' },
+  { slug: 'expected-goals-xg-betting-model-explained', title: 'Expected Goals (xG) & xGA Football Betting Model Explained: How to Beat Bookmaker Lines', date: '2026-10-23' },
+  { slug: 'halftime-fulltime-ht-ft-predictions-strategy', title: 'Half-Time / Full-Time (HT/FT) Football Predictions: Mathematical Turnaround & Draw-Win Strategy', date: '2026-10-23' },
+  { slug: 'value-betting-explained', title: 'Value Betting in Football: A Complete +EV Guide', date: '2026-10-23' },
+  { slug: 'asian-handicap-betting-explained', title: 'Asian Handicap Betting Explained: -0.5, -0.75 & -1.5 Goal Lines', date: '2026-10-23' },
+  { slug: 'draw-no-bet-vs-double-chance-strategy', title: 'Draw No Bet (DNB) vs Double Chance (1X/X2): Mathematical ROI Guide', date: '2026-10-23' },
+  { slug: 'closing-line-value-clv-dropping-odds', title: 'Closing Line Value (CLV) & Dropping Odds: How to Beat Sharp Steam', date: '2026-10-23' },
+  { slug: 'bankroll-management-football', title: 'Bankroll Management & Kelly Criterion for Football Bettors', date: '2026-10-23' },
+  { slug: 'premier-league-prediction-guide-2026', title: 'Premier League 2026/27 AI Prediction & xG Guide', date: '2026-10-23' },
+  { slug: 'champions-league-group-stage-tips', title: 'Champions League 36-Team Swiss Phase: How to Bet Smart', date: '2026-10-23' },
+  { slug: 'btts-over-under-strategy', title: 'BTTS and Over/Under 2.5: The Poisson Stats Behind Goal Markets', date: '2026-10-23' },
+  { slug: 'kpl-betting-guide-kenya', title: 'Kenya Premier League (FKF) Betting Guide 2026/27', date: '2026-10-23' },
+  { slug: 'accumulator-building-strategy', title: 'How to Build a Winning Football Accumulator: The 5-Fold Formula', date: '2026-10-23' },
+  { slug: 'correct-score-prediction-tips', title: 'Correct Score Betting: How Poisson Matrices Predict Exact Scorelines', date: '2026-10-23' },
+  { slug: 'sportpesa-mega-jackpot-prediction-17-games', title: 'SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI', date: '2026-10-23' },
+  { slug: 'us-soccer-betting-guide-mls-odds', title: 'US Soccer & MLS Betting Guide: Moneyline, Spreads & AI Picks', date: '2026-10-23' },
+];
+
+export const CLUB_ANALYTICS_HUBS = [
+  { slug: 'arsenal', name: 'Arsenal', league: 'Premier League' },
+  { slug: 'manchester-city', name: 'Manchester City', league: 'Premier League' },
+  { slug: 'liverpool', name: 'Liverpool', league: 'Premier League' },
+  { slug: 'chelsea', name: 'Chelsea', league: 'Premier League' },
+  { slug: 'manchester-united', name: 'Manchester United', league: 'Premier League' },
+  { slug: 'real-madrid', name: 'Real Madrid', league: 'La Liga' },
+  { slug: 'barcelona', name: 'Barcelona', league: 'La Liga' },
+  { slug: 'atletico-madrid', name: 'Atletico Madrid', league: 'La Liga' },
+  { slug: 'bayern-munich', name: 'Bayern Munich', league: 'Bundesliga' },
+  { slug: 'borussia-dortmund', name: 'Borussia Dortmund', league: 'Bundesliga' },
+  { slug: 'inter-milan', name: 'Inter Milan', league: 'Serie A' },
+  { slug: 'ac-milan', name: 'AC Milan', league: 'Serie A' },
+  { slug: 'juventus', name: 'Juventus', league: 'Serie A' },
+  { slug: 'napoli', name: 'Napoli', league: 'Serie A' },
+  { slug: 'psg', name: 'Paris Saint-Germain (PSG)', league: 'Ligue 1' },
+  { slug: 'al-hilal', name: 'Al-Hilal', league: 'Saudi Pro League' },
+  { slug: 'al-nassr', name: 'Al-Nassr', league: 'Saudi Pro League' },
+  { slug: 'inter-miami', name: 'Inter Miami CF', league: 'Major League Soccer' },
+  { slug: 'al-ahly', name: 'Al Ahly SC', league: 'CAF Champions League' },
+  { slug: 'mamelodi-sundowns', name: 'Mamelodi Sundowns', league: 'South Africa PSL' },
+  { slug: 'gor-mahia', name: 'Gor Mahia FC', league: 'Kenya Premier League' },
+  { slug: 'simba-sc', name: 'Simba SC', league: 'Tanzania NBC Premier League' },
+  { slug: 'kaizer-chiefs', name: 'Kaizer Chiefs', league: 'South Africa PSL' },
+  { slug: 'enyimba', name: 'Enyimba FC', league: 'Nigeria NPFL' },
 ];
 
 /**
@@ -53,47 +84,48 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     url: `${baseUrl}/`,
     path: '/',
     lastModified: today,
-    changeFrequency: 'daily',
+    changeFrequency: 'always',
     priority: 1.0,
     category: 'core',
-    title: 'PredictPro - AI Football Predictions & Live Match Intelligence',
+    title: 'PredictPro - AI Football Predictions, Expected Goals (xG) & Live Match Intelligence',
+    imageUrl: `${baseUrl}/og-image.jpg`,
   });
 
   // 2. League Prediction Hubs
   const leagueHubs: Array<{ path: string; title: string; priority: number }> = [
-    { path: '/premier-league-predictions', title: 'Premier League Predictions & AI Betting Tips', priority: 0.95 },
-    { path: '/champions-league-predictions', title: 'UEFA Champions League Predictions & Odds', priority: 0.95 },
-    { path: '/europa-league-predictions', title: 'UEFA Europa League Predictions & Conference League AI Odds', priority: 0.95 },
-    { path: '/conference-league-predictions', title: 'UEFA Conference League Predictions & AI Betting Tips', priority: 0.95 },
-    { path: '/la-liga-predictions', title: 'La Liga AI Predictions & Match Previews', priority: 0.95 },
-    { path: '/bundesliga-predictions', title: 'Bundesliga Predictions & Form Analysis', priority: 0.95 },
-    { path: '/serie-a-predictions', title: 'Serie A Predictions & Tactical Insights', priority: 0.95 },
+    { path: '/premier-league-predictions', title: 'Premier League Predictions & AI Expected Goals (xG) Forecasts', priority: 0.95 },
+    { path: '/champions-league-predictions', title: 'UEFA Champions League Predictions & 36-Team Swiss Phase Odds', priority: 0.95 },
+    { path: '/europa-league-predictions', title: 'UEFA Europa League Predictions & Knockout AI Odds', priority: 0.95 },
+    { path: '/conference-league-predictions', title: 'UEFA Conference League Predictions & Match Previews', priority: 0.95 },
+    { path: '/la-liga-predictions', title: 'La Liga AI Predictions, xG Tables & Match Previews', priority: 0.95 },
+    { path: '/bundesliga-predictions', title: 'Bundesliga Predictions, Over 2.5 Goals & Form Analysis', priority: 0.95 },
+    { path: '/serie-a-predictions', title: 'Serie A Predictions, Defensive xGA & Tactical Insights', priority: 0.95 },
     { path: '/ligue-1-predictions', title: 'French Ligue 1 AI Predictions: PSG, Marseille & xG Odds', priority: 0.95 },
-    { path: '/championship-predictions', title: 'English Championship Predictions & AI Betting Tips 2026/27', priority: 0.95 },
-    { path: '/eredivisie-predictions', title: 'Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG Tips', priority: 0.95 },
+    { path: '/championship-predictions', title: 'English Championship Predictions & 46-Round xG Forecasts', priority: 0.95 },
+    { path: '/eredivisie-predictions', title: 'Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG', priority: 0.95 },
     { path: '/primeira-liga-predictions', title: 'Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto', priority: 0.95 },
-    { path: '/copa-libertadores-predictions', title: 'Copa Libertadores AI Predictions: South American Odds & Tips', priority: 0.95 },
-    { path: '/saudi-pro-league-predictions', title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips', priority: 0.95 },
-    { path: '/brazilian-serie-a-predictions', title: 'Brazilian Serie A Predictions Today: Brasileirão AI Tips & Odds', priority: 0.95 },
-    { path: '/scottish-premiership-predictions', title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips', priority: 0.95 },
-    { path: '/fa-cup-predictions', title: 'FA Cup & Carabao Cup Predictions Today: English Knockout AI Tips', priority: 0.95 },
-    { path: '/turkish-super-lig-predictions', title: 'Turkish Süper Lig Predictions Today: Galatasaray & Fenerbahçe Tips', priority: 0.95 },
-    { path: '/belgian-pro-league-predictions', title: 'Belgian Pro League Predictions Today: Jupiler League AI Tips', priority: 0.90 },
-    { path: '/argentina-primera-predictions', title: 'Argentina Primera División Predictions: Liga Profesional AI Tips', priority: 0.90 },
+    { path: '/copa-libertadores-predictions', title: 'Copa Libertadores AI Predictions: South American Altitude & xG', priority: 0.95 },
+    { path: '/saudi-pro-league-predictions', title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL xG', priority: 0.95 },
+    { path: '/brazilian-serie-a-predictions', title: 'Brazilian Serie A Predictions Today: Brasileirão AI Forecasts', priority: 0.95 },
+    { path: '/scottish-premiership-predictions', title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL', priority: 0.95 },
+    { path: '/fa-cup-predictions', title: 'FA Cup & Carabao Cup Predictions Today: English Knockout Ties', priority: 0.95 },
+    { path: '/turkish-super-lig-predictions', title: 'Turkish Süper Lig Predictions Today: Galatasaray & Fenerbahçe', priority: 0.95 },
+    { path: '/belgian-pro-league-predictions', title: 'Belgian Pro League Predictions Today: Jupiler League AI Models', priority: 0.90 },
+    { path: '/argentina-primera-predictions', title: 'Argentina Primera División Predictions: Liga Profesional xG', priority: 0.90 },
     { path: '/greek-super-league-predictions', title: 'Greek Super League Predictions: Olympiacos, PAOK, AEK & Panathinaikos', priority: 0.90 },
-    { path: '/liga-mx-predictions', title: 'Liga MX Predictions Today: Club América, Monterrey & Mexican Tips', priority: 0.95 },
-    { path: '/mls-predictions', title: 'MLS Predictions Today: Inter Miami, LAFC & Major League Soccer Tips', priority: 0.95 },
-    { path: '/south-africa-psl-predictions', title: 'South Africa PSL Predictions Today: Betway Premiership AI Tips', priority: 0.95 },
-    { path: '/nigerian-npfl-predictions', title: 'Nigeria NPFL Predictions Today: Enyimba, Remo Stars & Rangers Tips', priority: 0.95 },
-    { path: '/egyptian-premier-league-predictions', title: 'Egyptian Premier League Predictions Today: Al Ahly & Zamalek Tips', priority: 0.95 },
-    { path: '/j-league-predictions', title: 'Japan J1 League Predictions Today: Early Kickoff xG & Corners Tips', priority: 0.90 },
-    { path: '/australian-a-league-predictions', title: 'Australian A-League Predictions Today: Over 2.5 Goals & Corners Tips', priority: 0.90 },
-    { path: '/world-cup-predictions', title: 'FIFA World Cup 2026 Predictions & Qualifying Tips', priority: 0.90 },
-    { path: '/afcon-predictions', title: 'AFCON Predictions & African Football Odds', priority: 0.90 },
-    { path: '/kpl-predictions', title: 'FKF Kenya Premier League Predictions & M-Pesa Tips', priority: 0.90 },
-    { path: '/jackpot-predictions', title: 'SportPesa Mega Jackpot & Betika Grand AI Predictions (17 Games)', priority: 0.95 },
-    { path: '/midweek-jackpot-predictions', title: 'Midweek Jackpot Predictions Today: 13 & 15 Games AI Banker Tips', priority: 0.95 },
-    { path: '/us-soccer-predictions', title: 'US Soccer Picks, MLS Moneyline & Champions League Odds', priority: 0.90 },
+    { path: '/liga-mx-predictions', title: 'Liga MX Predictions Today: Club América, Monterrey & Clausura/Apertura', priority: 0.95 },
+    { path: '/mls-predictions', title: 'MLS Predictions Today: Inter Miami, LAFC & Major League Soccer xG', priority: 0.95 },
+    { path: '/south-africa-psl-predictions', title: 'South Africa PSL Predictions Today: Betway Premiership AI Stats', priority: 0.95 },
+    { path: '/nigerian-npfl-predictions', title: 'Nigeria NPFL Predictions Today: Enyimba, Remo Stars & Rangers', priority: 0.95 },
+    { path: '/egyptian-premier-league-predictions', title: 'Egyptian Premier League Predictions Today: Al Ahly & Zamalek', priority: 0.95 },
+    { path: '/j-league-predictions', title: 'Japan J1 League Predictions Today: Early Kickoff xG & Corners', priority: 0.90 },
+    { path: '/australian-a-league-predictions', title: 'Australian A-League Predictions Today: Over 2.5 Goals & Corners', priority: 0.90 },
+    { path: '/world-cup-predictions', title: 'FIFA World Cup 2026 Predictions & Continental Qualifying Models', priority: 0.90 },
+    { path: '/afcon-predictions', title: 'AFCON Predictions & CAF Champions League Football Analytics', priority: 0.90 },
+    { path: '/kpl-predictions', title: 'FKF Kenya Premier League Predictions & East African Football Hub', priority: 0.90 },
+    { path: '/jackpot-predictions', title: '17-Game Mega Jackpot & Grand Jackpot AI Probability Combinations', priority: 0.95 },
+    { path: '/midweek-jackpot-predictions', title: 'Midweek Jackpot Predictions Today: 13 & 15 Game Statistical Splits', priority: 0.95 },
+    { path: '/us-soccer-predictions', title: 'US Soccer Picks, MLS Moneyline & Concacaf Champions Cup Odds', priority: 0.90 },
   ];
 
   for (const hub of leagueHubs) {
@@ -105,90 +137,94 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
       priority: hub.priority,
       category: 'league',
       title: hub.title,
+      imageUrl: `${baseUrl}/og-image.jpg`,
     });
   }
 
-  // 3. Feature Tools & Betting Markets
+  // 3. Feature Tools & Quantitative Markets
   const featurePages: Array<{ path: string; title: string; priority: number; changeFreq: SitemapEntry['changeFrequency'] }> = [
+    { path: '/slip-generator', title: 'Universal Bookmaker Booking Code Converter & Slip Generator (SportyBet, 1xBet, Bet9ja, Betway)', priority: 0.95, changeFreq: 'daily' },
+    { path: '/booking-codes', title: 'Daily Football Booking Codes & Multi-Bookmaker Coupon Converter', priority: 0.95, changeFreq: 'daily' },
+    { path: '/code-converter', title: 'Free Bet Code Converter: Convert SportyBet, 1xBet, Bet9ja & Betway Codes', priority: 0.95, changeFreq: 'daily' },
     { path: '/teams', title: 'Club Expected Goals (xG) Analytics & Fixture Difficulty Rating (FDR) Hub', priority: 0.95, changeFreq: 'daily' },
-    { path: '/today-predictions', title: "Today's Football Predictions: Daily AI Match Tips & Odds", priority: 0.95, changeFreq: 'daily' },
-    { path: '/sure-win-predictions', title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets', priority: 0.95, changeFreq: 'daily' },
-    { path: '/rollover-bets-predictions', title: 'Rollover Bets Predictions Today: 7-Day 1.50 & 2.00 Odds Challenge', priority: 0.95, changeFreq: 'daily' },
-    { path: '/daily-2-odds-predictions', title: 'Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips', priority: 0.95, changeFreq: 'daily' },
-    { path: '/2-odds-predictions', title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/5-odds-predictions', title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/bet-builder-predictions', title: 'Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/tomorrow-predictions', title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds", priority: 0.95, changeFreq: 'daily' },
-    { path: '/weekend-predictions', title: 'Weekend Football Predictions: Saturday & Sunday Banker Acca Tips', priority: 0.95, changeFreq: 'daily' },
-    { path: '/first-half-goals-predictions', title: 'Over 0.5 First Half Goals Predictions Today: 1H Goal AI Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/second-half-goals-predictions', title: 'Second Half Goals Predictions Today: 2H Over 1.5 & Late xG Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/both-halves-predictions', title: 'Score in Both Halves & Win Both Halves Predictions Today', priority: 0.90, changeFreq: 'daily' },
-    { path: '/under-2-5-goals-predictions', title: 'Under 2.5 Goals Predictions Today: Low-Scoring AI Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/over-3-5-goals-predictions', title: 'Over 3.5 Goals Predictions Today: High-Scoring 4+ Goal AI Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/both-teams-to-score-and-win-predictions', title: 'BTTS & Win Predictions Today: Both Teams to Score + Over 2.5 Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/anytime-goalscorer-predictions', title: 'Anytime Goalscorer Predictions Today: Player xG & Shots on Target', priority: 0.90, changeFreq: 'daily' },
-    { path: '/asian-handicap-predictions', title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/handicap-1x2-predictions', title: 'European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/draw-no-bet-predictions', title: 'Draw No Bet Predictions Today (DNB): Safe Football Refund Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/win-to-nil-predictions', title: 'Win to Nil & Clean Sheet Predictions Today: Defensive xGA Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/best-bets', title: 'Best AI Football Bets Today - Top Confidence Picks', priority: 0.95, changeFreq: 'daily' },
-    { path: '/bet-of-the-day', title: 'Bet of the Day: Daily AI Banker & High-Confidence Lock', priority: 0.95, changeFreq: 'daily' },
-    { path: '/corners-predictions', title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Match Corners Stats', priority: 0.90, changeFreq: 'daily' },
-    { path: '/cards-predictions', title: 'Cards & Bookings Predictions Today: Yellow & Red Card Stats', priority: 0.90, changeFreq: 'daily' },
-    { path: '/over-1-5-goals-predictions', title: 'Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips', priority: 0.90, changeFreq: 'daily' },
-    { path: '/over-under-predictions', title: 'Over/Under 2.5 Goals Predictions & Poisson Goal Probabilities', priority: 0.90, changeFreq: 'daily' },
-    { path: '/double-chance-predictions', title: 'Double Chance Predictions Today (1X / X2): 89% AI Strike Rate', priority: 0.90, changeFreq: 'daily' },
-    { path: '/draw-predictions', title: 'Draw Predictions Today (X Tips): High-Odds Stalemate Picks', priority: 0.90, changeFreq: 'daily' },
-    { path: '/halftime-fulltime-predictions', title: 'HT/FT Predictions Today: Half-Time/Full-Time (4.50+ Odds)', priority: 0.90, changeFreq: 'daily' },
-    { path: '/value-bet-calculator', title: 'Value Bet Calculator (+EV): Sports Betting Expected Value Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/kelly-criterion-calculator', title: 'Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/parlay-calculator', title: 'Parlay & Accumulator Odds Calculator: Multi-Bet Payout Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/system-bet-calculator', title: 'System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/dutching-calculator', title: 'Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/hedge-bet-calculator', title: 'Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/roi-yield-calculator', title: 'Betting ROI & Yield Calculator: Break-Even Win Rate Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/arbitrage-calculator', title: 'Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/margin-calculator', title: 'Bookmaker Margin & No-Vig Fair Odds Calculator (Overround Tool)', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/odds-converter', title: 'Betting Odds Converter & Implied Probability Calculator (UK/US/EU)', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/poisson-calculator', title: 'Poisson Football Calculator & Expected Goals Score Simulator', priority: 0.90, changeFreq: 'weekly' },
-    { path: '/predict', title: 'AI Match Predictor & Custom Football Simulator', priority: 0.90, changeFreq: 'daily' },
-    { path: '/upcoming', title: 'Upcoming Football Fixtures & Match Predictions', priority: 0.90, changeFreq: 'daily' },
-    { path: '/live', title: 'Live Football Scores, In-Play AI Odds & Minute Trackers', priority: 0.90, changeFreq: 'hourly' },
-    { path: '/value-bets', title: 'Value Bets & Expected Value (EV) Football Calculator', priority: 0.85, changeFreq: 'daily' },
-    { path: '/streaks', title: 'AI Football Streaks & Winning Trends Radar - Over 2.5 & BTTS', priority: 0.85, changeFreq: 'daily' },
-    { path: '/h2h', title: 'AI Football Head-to-Head (H2H) Comparison & Poisson Simulator', priority: 0.85, changeFreq: 'daily' },
-    { path: '/standings', title: 'Real-Time Football League Standings & Form Tables', priority: 0.90, changeFreq: 'daily' },
-    { path: '/correct-score', title: 'AI Correct Score Predictions & Exact Scoreline Probabilities', priority: 0.85, changeFreq: 'daily' },
-    { path: '/btts', title: 'Both Teams to Score (BTTS) & Goal Market Tips', priority: 0.85, changeFreq: 'daily' },
-    { path: '/accumulator', title: 'AI Accumulator Builder & Multibet Optimizer', priority: 0.85, changeFreq: 'daily' },
-    { path: '/widgets', title: 'Embeddable AI Football Predictions Widget & Free Odds Feed', priority: 0.85, changeFreq: 'weekly' },
-    { path: '/shop', title: 'PredictPro VIP Club: Premium AI Football Tips & Banker Passes', priority: 0.90, changeFreq: 'daily' },
-    { path: '/statistics', title: 'Football Statistics, Head-to-Head & Team Metrics', priority: 0.80, changeFreq: 'weekly' },
-    { path: '/highlights', title: 'Match Video Highlights & Goal Clips', priority: 0.80, changeFreq: 'daily' },
-    { path: '/players', title: 'Player Search, Form Stats & Goalscorer Trends', priority: 0.80, changeFreq: 'weekly' },
-    { path: '/insights', title: 'Deep Match Insights & Tactical Previews', priority: 0.80, changeFreq: 'daily' },
-    { path: '/news', title: 'Latest Football News, Transfers & Breaking Updates', priority: 0.80, changeFreq: 'daily' },
-    { path: '/tipsters', title: 'Top AI Tipster Profiles & Verified Track Records', priority: 0.75, changeFreq: 'weekly' },
-    { path: '/bankroll', title: 'Bankroll Manager & Kelly Criterion Staking Calculator', priority: 0.75, changeFreq: 'weekly' },
-    { path: '/leaderboard', title: 'PredictPro Global Leaderboard & Tipster Rankings', priority: 0.75, changeFreq: 'daily' },
-    { path: '/sports', title: 'Multi-Sports Predictions: Basketball, Tennis, NFL & Rugby', priority: 0.75, changeFreq: 'weekly' },
-    { path: '/archive', title: 'Past Match Prediction Archive & Result Verification', priority: 0.70, changeFreq: 'weekly' },
-    { path: '/methodology', title: 'AI Prediction Methodology, Expected Goals & Data Science', priority: 0.75, changeFreq: 'monthly' },
-    { path: '/about', title: 'About PredictPro - AI Football Intelligence Platform', priority: 0.70, changeFreq: 'monthly' },
-    { path: '/blog', title: 'PredictPro Football Betting Strategy Blog & Analysis', priority: 0.85, changeFreq: 'daily' },
-    { path: '/recommendations', title: 'Curated AI Football Picks & Top Value Match Locks', priority: 0.90, changeFreq: 'daily' },
-    { path: '/tournaments', title: 'Global Football Tournaments, Cups & International Leagues', priority: 0.85, changeFreq: 'daily' },
-    { path: '/dropping-odds', title: 'Dropping Odds Radar & Market Steam Move Tracker', priority: 0.85, changeFreq: 'hourly' },
-    { path: '/screener', title: 'Match Screener & Multi-Filter Football Stats Scanner', priority: 0.85, changeFreq: 'daily' },
-    { path: '/track-record', title: 'Verified AI Prediction Track Record & Strike Rate History', priority: 0.85, changeFreq: 'daily' },
-    { path: '/responsible-gaming', title: 'Responsible Gaming & 18+ Minor Protection Policy', priority: 0.75, changeFreq: 'monthly' },
-    { path: '/privacy', title: 'Privacy Policy - GDPR & Google AdSense Compliance', priority: 0.70, changeFreq: 'monthly' },
-    { path: '/terms', title: 'Terms of Service & User Agreement', priority: 0.70, changeFreq: 'monthly' },
-    { path: '/cookies', title: 'Cookie Policy & Advertising Transparency', priority: 0.70, changeFreq: 'monthly' },
-    { path: '/contact', title: 'Contact Us & Publisher Support Desk', priority: 0.70, changeFreq: 'monthly' },
-    { path: '/sitemap', title: 'PredictPro HTML Sitemap & Indexed Directory', priority: 0.65, changeFreq: 'daily' },
-    { path: '/performance', title: 'AI Model Performance, ROI Analytics & League Accuracy', priority: 0.85, changeFreq: 'daily' },
-    { path: '/rewards', title: 'PredictPro Rewards, Prediction Challenges & VIP Points', priority: 0.80, changeFreq: 'weekly' },
+    { path: '/today-predictions', title: "Today's Football Predictions: Daily AI Match Forecasts & xG Odds", priority: 0.95, changeFreq: 'hourly' },
+    { path: '/sure-win-predictions', title: 'High-Consensus Football Match Forecasts: 88%+ AI Confidence Picks', priority: 0.95, changeFreq: 'daily' },
+    { path: '/rollover-bets-predictions', title: 'Rollover Progression Tracker: 7-Day 1.50 & 2.00 Odds Statistical Matrix', priority: 0.95, changeFreq: 'daily' },
+    { path: '/daily-2-odds-predictions', title: 'Daily 2.00, 3.00 & 5.00 Combined Odds Statistical Slips', priority: 0.95, changeFreq: 'daily' },
+    { path: '/2-odds-predictions', title: 'Daily 2.00+ Combined Odds Low-Variance Double Selections', priority: 0.90, changeFreq: 'daily' },
+    { path: '/5-odds-predictions', title: 'Daily 5.00 & 10.00 Combined Odds Multi-Match Accumulator Slips', priority: 0.90, changeFreq: 'daily' },
+    { path: '/bet-builder-predictions', title: 'Same-Game Parlay (SGP) & Bet Builder Correlated Match Models', priority: 0.90, changeFreq: 'daily' },
+    { path: '/tomorrow-predictions', title: "Tomorrow's Football Predictions: Early Opening Line & xG Forecasts", priority: 0.95, changeFreq: 'daily' },
+    { path: '/weekend-predictions', title: 'Weekend Football Predictions: Saturday & Sunday European & Global Slate', priority: 0.95, changeFreq: 'daily' },
+    { path: '/first-half-goals-predictions', title: 'Over 0.5 First Half Goals (1H xG) Statistical Predictions Today', priority: 0.90, changeFreq: 'daily' },
+    { path: '/second-half-goals-predictions', title: 'Second Half Goals Predictions Today: 2H Over 1.5 & Late Momentum', priority: 0.90, changeFreq: 'daily' },
+    { path: '/both-halves-predictions', title: 'Score in Both Halves & Win Both Halves Probability Models Today', priority: 0.90, changeFreq: 'daily' },
+    { path: '/under-2-5-goals-predictions', title: 'Under 2.5 Goals Predictions Today: Low-Scoring Defensive xGA Models', priority: 0.90, changeFreq: 'daily' },
+    { path: '/over-3-5-goals-predictions', title: 'Over 3.5 Goals Predictions Today: High-Event 4+ Goal Poisson Picks', priority: 0.90, changeFreq: 'daily' },
+    { path: '/both-teams-to-score-and-win-predictions', title: 'BTTS & Win Predictions Today: Correlated Match Winner + Goal Markets', priority: 0.90, changeFreq: 'daily' },
+    { path: '/anytime-goalscorer-predictions', title: 'Anytime Goalscorer Predictions Today: Player xG/90 & Shots on Target', priority: 0.90, changeFreq: 'daily' },
+    { path: '/asian-handicap-predictions', title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Goal Line Models', priority: 0.90, changeFreq: 'daily' },
+    { path: '/handicap-1x2-predictions', title: 'European Handicap (-1) Predictions Today: 3-Way Goal Margin Stats', priority: 0.90, changeFreq: 'daily' },
+    { path: '/draw-no-bet-predictions', title: 'Draw No Bet Predictions Today (DNB): Draw-Refund Probability Models', priority: 0.90, changeFreq: 'daily' },
+    { path: '/win-to-nil-predictions', title: 'Win to Nil & Clean Sheet Predictions Today: Defensive Suppression xGA', priority: 0.90, changeFreq: 'daily' },
+    { path: '/best-bets', title: 'Best AI Football Forecasts Today - Top Statistical Consensus Picks', priority: 0.95, changeFreq: 'hourly' },
+    { path: '/bet-of-the-day', title: 'Match of the Day: Highest Daily AI Confidence & xG Edge', priority: 0.95, changeFreq: 'daily' },
+    { path: '/corners-predictions', title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Wing Attack Width Stats', priority: 0.90, changeFreq: 'daily' },
+    { path: '/cards-predictions', title: 'Cards & Bookings Predictions Today: Referee Strictness & Foul Telemetry', priority: 0.90, changeFreq: 'daily' },
+    { path: '/over-1-5-goals-predictions', title: 'Over 1.5 Goals Predictions Today: 85%+ Poisson Probability Multi-Legs', priority: 0.90, changeFreq: 'daily' },
+    { path: '/over-under-predictions', title: 'Over/Under 2.5 Goals Predictions & Bivariate Poisson Goal Distributions', priority: 0.90, changeFreq: 'daily' },
+    { path: '/double-chance-predictions', title: 'Double Chance Predictions Today (1X / X2): High-Stability Coverage', priority: 0.90, changeFreq: 'daily' },
+    { path: '/draw-predictions', title: 'Draw Predictions Today (X Forecasts): Dixon-Coles Stalemate Detector', priority: 0.90, changeFreq: 'daily' },
+    { path: '/halftime-fulltime-predictions', title: 'HT/FT Predictions Today: Half-Time / Full-Time Turnaround & 1/1 Models', priority: 0.90, changeFreq: 'daily' },
+    { path: '/value-bet-calculator', title: 'Value Bet Calculator (+EV): Sports Probability Expected Value Tool', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/kelly-criterion-calculator', title: 'Kelly Criterion Calculator: Fractional Bankroll Staking Optimizer', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/parlay-calculator', title: 'Parlay & Accumulator Odds Calculator: Multi-Leg Compounding Tool', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/system-bet-calculator', title: 'System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Combinatorics', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/dutching-calculator', title: 'Dutching Calculator: Equal-Profit Multi-Outcome & 2-Score Cover Tool', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/hedge-bet-calculator', title: 'Hedge Calculator: Lock In Guaranteed Return vs Cash-Out Value', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/roi-yield-calculator', title: 'ROI & Yield Calculator: Break-Even Win Rate & CLV Tracker', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/arbitrage-calculator', title: 'Arbitrage Calculator: 2-Way & 3-Way Cross-Market Implied Margin Tool', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/margin-calculator', title: 'Bookmaker Margin & No-Vig Fair Odds Calculator (Overround Stripper)', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/odds-converter', title: 'Odds Converter & Implied Probability Calculator (Decimal, UK, US)', priority: 0.90, changeFreq: 'weekly' },
+    { path: '/poisson-calculator', title: '6×6 Bivariate Poisson & Dixon-Coles Score Matrix Simulator', priority: 0.95, changeFreq: 'daily' },
+    { path: '/predict', title: 'Interactive AI Match Predictor & Custom Club-vs-Club Simulator', priority: 0.95, changeFreq: 'daily' },
+    { path: '/upcoming', title: 'Upcoming Football Fixtures, Kickoff Times & Early xG Projections', priority: 0.95, changeFreq: 'hourly' },
+    { path: '/live', title: 'Live Football Scores, In-Play Momentum & Real-Time Match Tracker', priority: 0.95, changeFreq: 'always' },
+    { path: '/value-bets', title: 'Positive Expected Value (+EV) Scanner & Fair Odds Discrepancy Hub', priority: 0.90, changeFreq: 'hourly' },
+    { path: '/streaks', title: 'Team Winning Streaks, Unbeaten Runs & Over 2.5 / BTTS Trends Radar', priority: 0.85, changeFreq: 'daily' },
+    { path: '/h2h', title: 'Head-to-Head (H2H) Club Comparison & Historical Dominance Simulator', priority: 0.85, changeFreq: 'daily' },
+    { path: '/standings', title: 'Live Football League Standings, Form Tables & Expected Points (xPTS)', priority: 0.90, changeFreq: 'daily' },
+    { path: '/correct-score', title: 'Exact Correct Score Matrix & 2-Score Dutching Cover Predictions', priority: 0.90, changeFreq: 'daily' },
+    { path: '/btts', title: 'Both Teams to Score (BTTS) & Goal Expectancy Correlation Hub', priority: 0.90, changeFreq: 'daily' },
+    { path: '/accumulator', title: 'Smart Accumulator Builder & 2× High-DPI PNG Coupon Exporter', priority: 0.90, changeFreq: 'daily' },
+    { path: '/widgets', title: 'Embeddable Football Analytics Widgets & Live Match Center Feeds', priority: 0.85, changeFreq: 'weekly' },
+    { path: '/shop', title: 'PredictPro Open-Access Member Features & Analytics Suite', priority: 0.85, changeFreq: 'weekly' },
+    { path: '/statistics', title: 'Global Football Statistics, League Goals per Match & xG Benchmarks', priority: 0.85, changeFreq: 'daily' },
+    { path: '/highlights', title: 'Official Football Match Video Highlights & Regional TV Broadcast Guide', priority: 0.85, changeFreq: 'daily' },
+    { path: '/players', title: 'Player xG/90, 10.0 Form Ratings & 5-Axis Tactical Radar Comparison', priority: 0.85, changeFreq: 'daily' },
+    { path: '/insights', title: 'Deep Tactical Match Insights & Quantitative Previews', priority: 0.85, changeFreq: 'daily' },
+    { path: '/news', title: 'Breaking Football Injury News, Confirmed Lineups & xG Impact Wire', priority: 0.90, changeFreq: 'hourly' },
+    { path: '/tipsters', title: 'Verified Community Analysts & Historical ROI Leaderboard', priority: 0.80, changeFreq: 'daily' },
+    { path: '/bankroll', title: 'Bankroll Portfolio Tracker & Fractional Kelly Staking Simulator', priority: 0.80, changeFreq: 'weekly' },
+    { path: '/leaderboard', title: 'Global Community Prediction Accuracy Leaderboard', priority: 0.80, changeFreq: 'daily' },
+    { path: '/sports', title: 'Multi-Sport Quantitative Models: Basketball, Tennis, NFL & Rugby', priority: 0.75, changeFreq: 'weekly' },
+    { path: '/archive', title: 'Permanent Settled Match Prediction Archive & Verified Results Audit', priority: 0.85, changeFreq: 'daily' },
+    { path: '/methodology', title: 'PredictPro Bivariate Poisson, Dixon-Coles & Expected Goals Methodology', priority: 0.85, changeFreq: 'monthly' },
+    { path: '/about', title: 'About PredictPro - Independent Quantitative Sports Analytics Publication', priority: 0.80, changeFreq: 'monthly' },
+    { path: '/blog', title: 'Quantitative Football Strategy Blog, xG Guides & Tactical Analysis', priority: 0.90, changeFreq: 'daily' },
+    { path: '/recommendations', title: 'Curated High-Consensus Daily Football Match Recommendations', priority: 0.90, changeFreq: 'daily' },
+    { path: '/tournaments', title: 'Global Football Tournaments, Continental Cups & International Slates', priority: 0.85, changeFreq: 'daily' },
+    { path: '/dropping-odds', title: 'Dropping Odds Steam Scanner & Implied Probability Surge Tracker', priority: 0.90, changeFreq: 'hourly' },
+    { path: '/screener', title: 'Multi-Filter Quantitative Football Match Screener (xG, EV, Streaks)', priority: 0.85, changeFreq: 'daily' },
+    { path: '/track-record', title: 'Audited AI Model Track Record, Closing Line Value (CLV) & ROI', priority: 0.85, changeFreq: 'daily' },
+    { path: '/responsible-gaming', title: 'Responsible Gaming, 18+ Minor Protection & Informational Disclaimer', priority: 0.75, changeFreq: 'monthly' },
+    { path: '/privacy', title: 'Privacy Policy - GDPR, CCPA & Google AdSense Publisher Compliance', priority: 0.75, changeFreq: 'monthly' },
+    { path: '/terms', title: 'Terms of Service & Informational Publishing Agreement', priority: 0.75, changeFreq: 'monthly' },
+    { path: '/cookies', title: 'Cookie Policy, Google Consent Mode v2 & Ad Personalization Controls', priority: 0.75, changeFreq: 'monthly' },
+    { path: '/contact', title: 'Contact Our Editorial & Quantitative Engineering Support Desk', priority: 0.75, changeFreq: 'monthly' },
+    { path: '/sitemap', title: 'PredictPro HTML Sitemap, Google Discover Feeds & XML Route Directory', priority: 0.75, changeFreq: 'daily' },
+    { path: '/performance', title: 'Real-Time AI Model Accuracy, League Strike Rates & Yield Telemetry', priority: 0.85, changeFreq: 'daily' },
+    { path: '/rewards', title: 'Community Prediction Challenges, Badges & Free Member Milestones', priority: 0.80, changeFreq: 'weekly' },
   ];
 
   for (const page of featurePages) {
@@ -200,10 +236,25 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
       priority: page.priority,
       category: 'feature',
       title: page.title,
+      imageUrl: `${baseUrl}/og-image.jpg`,
     });
   }
 
-  // 4. Dynamic Match Prediction Routes
+  // 4. Club Expected Goals (xG) & Fixture Difficulty Rating (FDR) Hubs (/teams/:teamSlug)
+  for (const club of CLUB_ANALYTICS_HUBS) {
+    entries.push({
+      url: `${baseUrl}/teams/${club.slug}`,
+      path: `/teams/${club.slug}`,
+      lastModified: today,
+      changeFrequency: 'daily',
+      priority: 0.85,
+      category: 'team',
+      title: `${club.name} xG Stats, Form, Fixture Difficulty (FDR) & AI Predictions (${club.league})`,
+      imageUrl: `${baseUrl}/og-image.jpg`,
+    });
+  }
+
+  // 5. Dynamic Match Prediction Routes
   const seenMatches = new Set<string>();
   for (const pred of getUpdatedDefaultPredictions()) {
     const slug = formatMatchSlug(pred.home_team, pred.away_team, pred.match_date);
@@ -215,14 +266,15 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
         path: `/predict/${slug}`,
         lastModified: matchDateStr,
         changeFrequency: 'daily',
-        priority: 0.80,
+        priority: 0.85,
         category: 'match',
-        title: `${pred.home_team} vs ${pred.away_team} Prediction, AI Odds & Lineups (${pred.league})`,
+        title: `${pred.home_team} vs ${pred.away_team} Prediction, 6×6 Poisson Matrix & xG Odds (${pred.league})`,
+        imageUrl: `${baseUrl}/api/og?home=${encodeURIComponent(pred.home_team)}&away=${encodeURIComponent(pred.away_team)}`,
       });
     }
   }
 
-  // Add additional popular top matchups across all parts of the continent for comprehensive crawler coverage
+  // Add flagship global derbies & continental clashes for maximum search & Google Discover reach
   const featuredClubs = [
     { home: 'Arsenal', away: 'Chelsea', league: 'Premier League' },
     { home: 'Liverpool', away: 'Manchester City', league: 'Premier League' },
@@ -244,6 +296,14 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
     { home: 'Atletico Madrid', away: 'Sevilla', league: 'La Liga' },
     { home: 'LA Galaxy', away: 'LAFC', league: 'Major League Soccer' },
     { home: 'Inter Miami', away: 'New York Red Bulls', league: 'Major League Soccer' },
+    { home: 'Al-Hilal', away: 'Al-Nassr', league: 'Saudi Pro League' },
+    { home: 'Celtic', away: 'Rangers', league: 'Scottish Premiership' },
+    { home: 'Galatasaray', away: 'Fenerbahce', league: 'Turkish Super Lig' },
+    { home: 'Benfica', away: 'Sporting CP', league: 'Primeira Liga' },
+    { home: 'Ajax', away: 'Feyenoord', league: 'Eredivisie' },
+    { home: 'Flamengo', away: 'Palmeiras', league: 'Brazilian Serie A' },
+    { home: 'Boca Juniors', away: 'River Plate', league: 'Argentina Primera Division' },
+    { home: 'Club America', away: 'Guadalajara', league: 'Liga MX' },
   ];
 
   for (const fixture of featuredClubs) {
@@ -255,23 +315,25 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
         path: `/predict/${slug}`,
         lastModified: today,
         changeFrequency: 'daily',
-        priority: 0.80,
+        priority: 0.85,
         category: 'match',
-        title: `${fixture.home} vs ${fixture.away} Prediction & Head-to-Head (${fixture.league})`,
+        title: `${fixture.home} vs ${fixture.away} Prediction, xG & Head-to-Head (${fixture.league})`,
+        imageUrl: `${baseUrl}/og-image.jpg`,
       });
     }
   }
 
-  // 5. Blog Articles
+  // 6. Blog Strategy Articles
   for (const post of BLOG_POSTS_METADATA) {
     entries.push({
       url: `${baseUrl}/blog/${post.slug}`,
       path: `/blog/${post.slug}`,
       lastModified: post.date,
-      changeFrequency: 'monthly',
-      priority: 0.75,
+      changeFrequency: 'weekly',
+      priority: 0.85,
       category: 'blog',
       title: post.title,
+      imageUrl: `${baseUrl}/og-image.jpg`,
     });
   }
 
@@ -336,10 +398,14 @@ export const GLOBAL_HREFLANGS = [
 ];
 
 /**
- * Generate XML string complying with the official Sitemaps XML protocol (Yandex, Google, Bing compliant)
+ * Generate XML string complying with the official Sitemaps XML + Google Image Sitemap protocol
+ * for Google Search, Google Discover (max-image-preview:large), Bing, and Yandex.
  */
-export function generateSitemapXml(baseUrl: string = BASE_URL): string {
-  const entries = getAllSitemapEntries(baseUrl);
+export function generateSitemapXml(baseUrl: string = BASE_URL, filterCategory?: SitemapEntry['category']): string {
+  const allEntries = getAllSitemapEntries(baseUrl);
+  const entries = filterCategory
+    ? allEntries.filter((e) => e.category === filterCategory)
+    : allEntries;
 
   const xmlUrls = entries
     .map((entry) => {
@@ -347,19 +413,61 @@ export function generateSitemapXml(baseUrl: string = BASE_URL): string {
         return `    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(entry.url)}" />`;
       }).join('\n');
 
+      const imageBlock = entry.imageUrl
+        ? `\n    <image:image>\n      <image:loc>${escapeXml(entry.imageUrl)}</image:loc>\n      <image:title>${escapeXml(entry.title)}</image:title>\n    </image:image>`
+        : '';
+
       return `  <url>
     <loc>${escapeXml(entry.url)}</loc>
     <lastmod>${entry.lastModified}</lastmod>
     <changefreq>${entry.changeFrequency}</changefreq>
-    <priority>${entry.priority.toFixed(2)}</priority>
+    <priority>${entry.priority.toFixed(2)}</priority>${imageBlock}
 ${links}
   </url>`;
     })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${xmlUrls}
+</urlset>`;
+}
+
+/**
+ * Generates a dedicated Google Discover & Google News Sitemap XML for rapid content feed ingestion
+ */
+export function generateGoogleDiscoverNewsSitemapXml(baseUrl: string = BASE_URL): string {
+  const todayIso = new Date().toISOString();
+  const entries = getAllSitemapEntries(baseUrl).filter(
+    (e) => e.category === 'blog' || e.category === 'match' || e.category === 'league' || e.priority >= 0.9
+  );
+
+  const items = entries
+    .map(
+      (entry) => `  <url>
+    <loc>${escapeXml(entry.url)}</loc>
+    <lastmod>${entry.lastModified}</lastmod>
+    <changefreq>${entry.changeFrequency}</changefreq>
+    <priority>${entry.priority.toFixed(2)}</priority>
+    <news:news>
+      <news:publication>
+        <news:name>PredictPro Quantitative Football Analytics</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>${todayIso}</news:publication_date>
+      <news:title>${escapeXml(entry.title)}</news:title>
+    </news:news>
+    <image:image>
+      <image:loc>${escapeXml(entry.imageUrl || `${baseUrl}/og-image.jpg`)}</image:loc>
+      <image:title>${escapeXml(entry.title)}</image:title>
+    </image:image>
+  </url>`
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${items}
 </urlset>`;
 }
 
@@ -369,6 +477,7 @@ ${xmlUrls}
 export function generateSitemapIndexXml(baseUrl: string = BASE_URL): string {
   const today = new Date().toISOString().split('T')[0];
   const subSitemaps = [
+    'sitemap.xml',
     'sitemap-core.xml',
     'sitemap-leagues.xml',
     'sitemap-matches.xml',
@@ -402,16 +511,33 @@ function escapeXml(unsafe: string): string {
 /**
  * Helper to trigger client-side download of the sitemap.xml file
  */
-export function downloadSitemapXml(baseUrl: string = BASE_URL) {
+export function downloadSitemapXml(baseUrl: string = BASE_URL, filename: string = 'sitemap.xml') {
   const xml = generateSitemapXml(baseUrl);
   const blob = new Blob([xml], { type: 'application/xml' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'sitemap.xml';
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Helper to trigger client-side download of the Google Discover & News Sitemap XML
+ */
+export function downloadDiscoverSitemapXml(baseUrl: string = BASE_URL) {
+  const xml = generateGoogleDiscoverNewsSitemapXml(baseUrl);
+  const blob = new Blob([xml], { type: 'application/xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sitemap-discover-news.xml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 

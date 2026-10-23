@@ -33,9 +33,17 @@ import {
   Share2,
   Send,
   Gift,
+  Sparkles,
+  X,
 } from 'lucide-react';
 import { LEAGUE_HUBS } from '@/data/leagueHubs';
 import { getPrediction, getConfidence } from '@/types/prediction';
+import {
+  generateMatchGameId,
+  translateMarketForBookmaker,
+} from '@/services/bookmakerBookingCodes';
+import { useAuth } from '@/hooks/useAuth';
+import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
 
 interface PredictionsDashboardProps {
   initialLeague?: string;
@@ -98,6 +106,8 @@ function getLeagueCountry(leagueName: string): string {
 }
 
 export const PredictionsDashboard = ({ initialLeague, defaultLeague }: PredictionsDashboardProps = {}) => {
+  const { user } = useAuth();
+  const [guestBannerDismissed, setGuestBannerDismissed] = useState(false);
   const resolvedInitialLeague = initialLeague ?? defaultLeague;
   const [page, setPage] = useState(1);
   const [league, setLeague] = useState<string | undefined>(resolvedInitialLeague);
@@ -616,6 +626,50 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
           CENTER COLUMN: FotMob / Sofascore Competition-Grouped Match Center
       ===================================================================== */}
       <div className="flex-1 min-w-0 w-full space-y-3.5">
+        {/* Polite Guest Welcome & Free Account Invitation Banner */}
+        {!user && !guestBannerDismissed && (
+          <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="h-9 w-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Gift className="h-4.5 w-4.5 text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-extrabold text-white">
+                    Welcome to PredictPro! Create a free account in 15 seconds
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                    +50 Free VIP Coins
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                  Save your daily Bet Slips across devices, convert SportyBet/1xBet/Bet9ja booking codes, and track your favourite leagues.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <Button
+                type="button"
+                size="sm"
+                onClick={triggerGuestAccountInvite}
+                className="h-8 px-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 gap-1.5 cursor-pointer"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Create Free Account</span>
+              </Button>
+              <button
+                type="button"
+                onClick={() => setGuestBannerDismissed(true)}
+                aria-label="Dismiss welcome banner"
+                className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Mobile & Tablet Viral Syndicate Booking Code Strip (visible < xl) */}
         {smartTreble.legs.length >= 3 && (
           <div className="xl:hidden p-3 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
@@ -1080,16 +1134,23 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
               {smartTreble.legs.map((leg) => {
                 const pick = getPrediction(leg);
                 const conf = getConfidence(leg);
+                const gameId = generateMatchGameId(`${leg.home_team} vs ${leg.away_team}`, leg.league);
+                const translatedPick = translateMarketForBookmaker(pick, selectedBookie.toLowerCase());
                 return (
                   <div
                     key={leg.id}
                     className="p-2 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between gap-2 text-xs"
                   >
                     <div className="min-w-0">
-                      <p className="font-semibold text-foreground truncate">
-                        {leg.home_team} v {leg.away_team}
-                      </p>
-                      <p className="text-[11px] text-primary font-medium">{pick}</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-1 py-0.5 rounded bg-background border border-border font-mono tabular-nums text-[10px] font-bold text-primary shrink-0">
+                          #{gameId}
+                        </span>
+                        <p className="font-semibold text-foreground truncate">
+                          {leg.home_team} v {leg.away_team}
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-primary font-medium mt-0.5">{translatedPick}</p>
                     </div>
                     <span className="font-mono tabular-nums text-[11px] font-bold text-foreground shrink-0">
                       {conf}%
@@ -1106,16 +1167,24 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
                     {smartTreble.bookingCode}
                   </span>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopyTrebleCode}
-                  className="h-7 px-2.5 text-[11px] font-semibold gap-1"
-                >
-                  <Copy className="h-3 w-3" aria-hidden="true" />
-                  Copy Code
-                </Button>
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    to={`/slip-generator?code=${encodeURIComponent(smartTreble.bookingCode)}&bookie=${encodeURIComponent(selectedBookie.toLowerCase())}`}
+                    className="h-7 px-2 inline-flex items-center rounded border border-border bg-background hover:bg-muted text-[11px] font-semibold text-foreground transition-colors"
+                  >
+                    Convert
+                  </Link>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyTrebleCode}
+                    className="h-7 px-2.5 text-[11px] font-semibold gap-1"
+                  >
+                    <Copy className="h-3 w-3" aria-hidden="true" />
+                    Copy
+                  </Button>
+                </div>
               </div>
 
               <Button

@@ -34,6 +34,7 @@ import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { TeamLogo } from '@/components/TeamLogo';
 import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
+import { LiveMomentumRadar } from '@/components/LiveMomentumRadar';
 import { LivePitchVisualizer } from '@/components/LivePitchVisualizer';
 import { LiveStreamHubModal, WatchableMatchInput } from '@/components/LiveStreamHubModal';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
@@ -522,6 +523,9 @@ export default function LiveScores() {
             </Button>
           </div>
         </div>
+
+        {/* SofaScore-Style Attacking Momentum & 70'-89' Late-Goal Scanner */}
+        <LiveMomentumRadar />
 
         {/* Pinned Multi-Match Watchlist Strip */}
         {pinnedMatchesList.length > 0 && (

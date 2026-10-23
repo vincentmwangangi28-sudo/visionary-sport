@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -7,16 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/TeamLogo';
+import { useAuth } from '@/hooks/useAuth';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { AccaFixtureListSkeleton } from '@/components/PredictionCardSkeleton';
-import { Trash2, Plus, Share2, Copy, CheckCheck, Flame } from 'lucide-react';
+import { Trash2, Plus, Share2, Copy, CheckCheck, Flame, Download, Sparkles, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { curateAccaWithGemini } from '@/services/geminiTasksService';
 import { hapticService } from '@/services/hapticService';
 import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
+import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
+import {
+  generateMatchGameId,
+  translateMarketForBookmaker,
+  downloadSlipAsPngImage,
+  generateRegionalBookingCode,
+} from '@/services/bookmakerBookingCodes';
 
 export default function AccumulatorBuilder() {
+  const { user } = useAuth();
   const { predictions, isLoading } = usePredictions(1);
   const {
     selections,
@@ -160,7 +170,11 @@ export default function AccumulatorBuilder() {
       `\n\n*Total Odds:* ${totalOdds.toFixed(2)}\n*Combined Confidence:* ${combinedConfidence}%\n` +
       (generatedCode ? `*Booking Code (${selectedBookmaker}):* ${generatedCode}\n` : '') +
       `\nhttps://predictpro.guru/accumulator`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    const link = document.createElement('a');
+    link.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
   };
 
   const accaFaqSchema = {
@@ -381,29 +395,42 @@ export default function AccumulatorBuilder() {
                 ) : (
                   <>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {selections.map((s) => (
-                        <div
-                          key={s.id}
-                          className="flex items-start justify-between gap-2 p-2.5 bg-muted/40 border border-border/60 rounded-lg text-xs"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-foreground truncate">
-                              {s.homeTeam} vs {s.awayTeam}
-                            </p>
-                            <p className="text-muted-foreground mt-0.5">
-                              {s.market} @ <span className="font-mono font-bold text-primary">{s.odds.toFixed(2)}</span>
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeSelection(s.id)}
-                            aria-label={`Remove ${s.homeTeam} vs ${s.awayTeam} selection from slip`}
-                            className="text-muted-foreground hover:text-destructive mt-0.5 shrink-0"
+                      {selections.map((s) => {
+                        const gameId = generateMatchGameId(s.homeTeam, s.awayTeam, selectedBookmaker.toLowerCase());
+                        const translatedMarket = translateMarketForBookmaker(
+                          s.market,
+                          selectedBookmaker.toLowerCase()
+                        );
+                        return (
+                          <div
+                            key={s.id}
+                            className="flex items-start justify-between gap-2 p-2.5 bg-muted/40 border border-border/60 rounded-lg text-xs"
                           >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-background border border-border text-primary shrink-0">
+                                  #{gameId}
+                                </span>
+                                <p className="font-semibold text-foreground truncate">
+                                  {s.homeTeam} vs {s.awayTeam}
+                                </p>
+                              </div>
+                              <p className="text-muted-foreground mt-0.5">
+                                {translatedMarket} @{' '}
+                                <span className="font-mono font-bold text-primary">{s.odds.toFixed(2)}</span>
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeSelection(s.id)}
+                              aria-label={`Remove ${s.homeTeam} vs ${s.awayTeam} selection from slip`}
+                              className="text-muted-foreground hover:text-destructive mt-0.5 shrink-0"
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {bonusMultiplier > 0 && (
@@ -474,11 +501,22 @@ export default function AccumulatorBuilder() {
 
                       {/* Booking Code Exporter */}
                       <div className="pt-2 border-t border-border space-y-2">
-                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                          Generate Sportsbook Code
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Generate Sportsbook Code
+                          </p>
+                          <Link
+                            to={`/slip-generator?code=${encodeURIComponent(
+                              generatedCode || generateRegionalBookingCode(selectedBookmaker.toLowerCase(), selections)
+                            )}&bookie=${encodeURIComponent(selectedBookmaker.toLowerCase())}`}
+                            className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+                          >
+                            <ArrowLeftRight className="h-3 w-3" />
+                            <span>Code Converter</span>
+                          </Link>
+                        </div>
                         <div className="grid grid-cols-3 gap-1.5">
-                          {['SportyBet', '1xBet', 'Betway'].map((b) => (
+                          {['SportyBet', '1xBet', 'Bet9ja', 'SportPesa', 'Betika', 'Betway'].map((b) => (
                             <Button
                               key={b}
                               size="sm"
@@ -506,14 +544,62 @@ export default function AccumulatorBuilder() {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button onClick={shareWhatsApp} size="sm" className="gap-1.5 text-xs font-bold">
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <Button onClick={shareWhatsApp} size="sm" className="gap-1 text-xs font-bold">
                           <Share2 className="h-3.5 w-3.5" /> WhatsApp
                         </Button>
-                        <Button variant="outline" size="sm" onClick={shareAcca} className="gap-1.5 text-xs font-medium">
-                          <Copy className="h-3.5 w-3.5" /> Copy Slip
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            hapticService.success();
+                            downloadSlipAsPngImage({
+                              title: `${selections.length}-Fold Accumulator`,
+                              bookieId: selectedBookmaker.toLowerCase(),
+                              bookingCode:
+                                generatedCode ||
+                                generateRegionalBookingCode(selectedBookmaker.toLowerCase(), selections),
+                              selections: selections.map((s) => ({
+                                homeTeam: s.homeTeam,
+                                awayTeam: s.awayTeam,
+                                league: s.league || 'Football',
+                                market: s.market,
+                                odds: s.odds,
+                                confidence: s.confidence,
+                              })),
+                              totalOdds,
+                              stake,
+                              currency,
+                              potentialReturn: bonusMultiplier > 0 ? boostedReturn : potentialReturn,
+                            });
+                            toast.success('Downloaded 2x High-DPI Accumulator PNG Card!');
+                          }}
+                          className="gap-1 text-xs font-semibold"
+                        >
+                          <Download className="h-3.5 w-3.5" /> Save PNG
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={shareAcca} className="gap-1 text-xs font-medium">
+                          <Copy className="h-3.5 w-3.5" /> Copy
                         </Button>
                       </div>
+
+                      {!user && (
+                        <button
+                          type="button"
+                          onClick={triggerGuestAccountInvite}
+                          className="w-full p-2.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors flex items-center justify-between gap-2 text-left cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Sparkles className="h-4 w-4 text-emerald-500 shrink-0" />
+                            <span className="text-xs font-bold text-foreground truncate">
+                              Save Accumulator to Free Account
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 shrink-0">
+                            +50 Coins
+                          </span>
+                        </button>
+                      )}
 
                       <Button
                         variant="ghost"

@@ -25,6 +25,9 @@ on:
           - cleanup
           - crawl
           - sitemap
+          - booking-codes
+          - live-momentum
+          - referee-props
 
 jobs:
   run-cron-tasks:

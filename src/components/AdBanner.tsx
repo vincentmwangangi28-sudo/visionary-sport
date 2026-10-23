@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
-import { getAdSenseConfig, subscribeAdSenseConfig, AdSenseConfig } from '@/services/adsenseService';
+import {
+  getAdSenseConfig,
+  subscribeAdSenseConfig,
+  isValidLiveAdSlot,
+  AdSenseConfig,
+} from '@/services/adsenseService';
 
 declare global {
   interface Window {
@@ -18,12 +23,11 @@ interface AdBannerProps {
 }
 
 /**
- * Universal Google AdSense Banner Component
- * - Automatically hides for VIP / active paid subscribers.
- * - Safely initializes window.adsbygoogle in client-side React SPA lifecycle.
- * - Supports responsive breakpoints and prevents duplicate script execution or push errors.
- * - Features test fallback simulation in test/staging modes.
- */
+  * Universal Google AdSense Banner Component
+  * - Automatically hides for VIP / active paid subscribers.
+  * - Never renders empty "Advertisement" labels or fake slot IDs during AdSense account review.
+  * - Safely initializes window.adsbygoogle only when a verified live slot ID is configured.
+  */
 export const AdBanner: React.FC<AdBannerProps> = ({
   slot,
   format = 'auto',
@@ -34,67 +38,76 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 }) => {
   const { isPremium } = useSubscription();
   const [adConfig, setAdConfig] = useState<AdSenseConfig>(getAdSenseConfig);
-  const [adLoaded, setAdLoaded] = useState(false);
-  const [adError, setAdError] = useState(false);
+  const [adFilled, setAdFilled] = useState(false);
+  const [adUnfilled, setAdUnfilled] = useState(false);
   const adRef = useRef<HTMLModElement | null>(null);
   const pushedRef = useRef(false);
 
-  // Keep ad configuration reactive to live toggles
   useEffect(() => {
     const unsub = subscribeAdSenseConfig((next) => setAdConfig(next));
     return unsub;
   }, []);
 
-  // AdSense display is controlled globally via adConfig.enabled
-  const isVipUser = false;
+  const activeSlot =
+    slot ||
+    (format === 'rectangle'
+      ? adConfig.slots.rectangle
+      : format === 'horizontal'
+      ? adConfig.slots.horizontal
+      : format === 'fluid'
+      ? adConfig.slots.feed
+      : adConfig.slots.horizontal);
 
-  const activeSlot = slot || (
-    format === 'rectangle' ? adConfig.slots.rectangle :
-    format === 'horizontal' ? adConfig.slots.horizontal :
-    format === 'fluid' ? adConfig.slots.feed :
-    adConfig.slots.horizontal
-  );
+  const hasValidSlot = isValidLiveAdSlot(activeSlot);
 
   useEffect(() => {
-    // If VIP or AdSense disabled globally, do not inject
-    if (isVipUser || !adConfig.enabled) {
+    if (isPremium || !adConfig.enabled || adConfig.testMode || !hasValidSlot) {
       return;
     }
 
     if (pushedRef.current) return;
 
-    try {
-      if (typeof window !== 'undefined') {
-        window.adsbygoogle = window.adsbygoogle || [];
-        // Delay slightly to ensure element is attached to DOM
-        const timer = setTimeout(() => {
-          try {
-            if (adRef.current && adRef.current.innerHTML.trim() === '') {
-              window.adsbygoogle?.push({});
-              pushedRef.current = true;
-              setAdLoaded(true);
-            }
-          } catch (e) {
-            console.warn('[AdSense] Push notice:', e);
-            setAdError(true);
-          }
-        }, 150);
-
-        return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      try {
+        if (typeof window !== 'undefined' && adRef.current && adRef.current.innerHTML.trim() === '') {
+          window.adsbygoogle = window.adsbygoogle || [];
+          window.adsbygoogle.push({});
+          pushedRef.current = true;
+        }
+      } catch {
+        setAdUnfilled(true);
       }
-    } catch {
-      setAdError(true);
-    }
-  }, [isVipUser, adConfig.enabled, activeSlot]);
+    }, 200);
 
-  if (isVipUser || !adConfig.enabled) {
+    return () => clearTimeout(timer);
+  }, [isPremium, adConfig.enabled, adConfig.testMode, hasValidSlot]);
+
+  useEffect(() => {
+    const el = adRef.current;
+    if (!el || !hasValidSlot) return;
+
+    const observer = new MutationObserver(() => {
+      const status = el.getAttribute('data-ad-status');
+      if (status === 'filled') {
+        setAdFilled(true);
+        setAdUnfilled(false);
+      } else if (status === 'unfilled') {
+        setAdUnfilled(true);
+        setAdFilled(false);
+      }
+    });
+
+    observer.observe(el, { attributes: true, attributeFilter: ['data-ad-status'] });
+    return () => observer.disconnect();
+  }, [hasValidSlot]);
+
+  if (isPremium || !adConfig.enabled) {
     return null;
   }
 
-  // If in test mode, display clean high-contrast preview slot
   if (adConfig.testMode) {
     return (
-      <div 
+      <div
         className={`w-full border border-dashed border-primary/40 bg-muted/20 rounded-xl p-3 my-4 flex flex-col items-center justify-center text-center select-none ${className}`}
         style={style}
       >
@@ -102,26 +115,41 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           Advertisement • Google AdSense Preview
         </span>
         <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-          <span>Pub: <strong className="font-mono text-foreground">{adConfig.publisherId}</strong></span>
+          <span>
+            Pub: <strong className="font-mono text-foreground">{adConfig.publisherId}</strong>
+          </span>
           <span>•</span>
-          <span>Slot: <strong className="font-mono text-foreground">{activeSlot}</strong></span>
+          <span>
+            Slot: <strong className="font-mono text-foreground">{activeSlot || 'Auto Ads'}</strong>
+          </span>
           <span>•</span>
-          <span>Format: <strong className="font-mono text-foreground">{format}</strong></span>
+          <span>
+            Format: <strong className="font-mono text-foreground">{format}</strong>
+          </span>
         </div>
       </div>
     );
   }
 
+  // Rely on Google AdSense Auto Ads (loaded in index.html <head>) when no manual slot ID is set or if unfilled
+  if (!hasValidSlot || adUnfilled) {
+    return null;
+  }
+
   return (
-    <div 
-      className={`ad-container w-full overflow-hidden flex flex-col items-center justify-center my-3 transition-all ${className}`}
+    <div
+      className={`ad-container w-full overflow-hidden flex flex-col items-center justify-center transition-all ${
+        adFilled ? 'my-3' : 'my-0'
+      } ${className}`}
       style={style}
     >
-      <div className="w-full text-right mb-1">
-        <span className="text-[9px] uppercase tracking-wider text-muted-foreground/60 font-semibold pr-1">
-          Advertisement
-        </span>
-      </div>
+      {adFilled && (
+        <div className="w-full text-right mb-1">
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground/60 font-semibold pr-1">
+            Advertisement
+          </span>
+        </div>
+      )}
 
       <ins
         ref={adRef}
@@ -129,7 +157,6 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         style={{
           display: 'block',
           textAlign: 'center',
-          minHeight: format === 'rectangle' ? '250px' : '90px',
           width: '100%',
           ...style,
         }}
@@ -139,8 +166,6 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         data-full-width-responsive={responsive ? 'true' : 'false'}
         {...(layoutKey ? { 'data-ad-layout-key': layoutKey } : {})}
       />
-
-      {adError && null}
     </div>
   );
 };

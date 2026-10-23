@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Sun,
   Moon,
+  Sparkles,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,7 @@ import { useBetSlip } from "@/hooks/useBetSlip";
 import { useUserPreferences, OddsFormat } from "@/hooks/useUserPreferences";
 import { UnifiedSearchTrigger } from "@/components/UnifiedSearchTrigger";
 import { GeoRegionSelector } from "@/components/GeoRegionSelector";
+import { triggerGuestAccountInvite } from "@/components/GuestAccountPrompt";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -31,8 +33,8 @@ import {
 const CORE_LINKS = [
   { to: "/", label: "Matches" },
   { to: "/live", label: "Live Scores", isLive: true },
+  { to: "/slip-generator", label: "Slip & Code Converter" },
   { to: "/standings", label: "Standings" },
-  { to: "/tournaments", label: "Leagues" },
   { to: "/screener", label: "Stats Screener" },
   { to: "/accumulator", label: "Acca Builder" },
 ];
@@ -58,20 +60,21 @@ const MORE_CATEGORIES = [
       { to: "/both-teams-to-score-and-win-predictions", label: "BTTS & Win" },
       { to: "/over-under-predictions", label: "Over / Under 2.5 Goals" },
       { to: "/correct-score", label: "Exact Correct Score" },
-      { to: "/draw-no-bet-predictions", label: "Draw No Bet (DNB)" },
-      { to: "/asian-handicap-predictions", label: "Asian Handicap" },
+      { to: "/corners-predictions", label: "Corners & Referee Hub" },
+      { to: "/cards-predictions", label: "Cards & Bookings Matrix" },
       { to: "/jackpot-predictions", label: "17-Game Mega Jackpot" },
     ],
   },
   {
     heading: "Pro Tools & Data",
     items: [
+      { to: "/slip-generator", label: "AI Slip & Code Converter" },
+      { to: "/poisson-calculator", label: "Poisson 6x6 Score Matrix" },
       { to: "/h2h", label: "Head-to-Head Simulator" },
       { to: "/players", label: "Player 10.0 Ratings" },
       { to: "/teams", label: "Club xG & Form Hub" },
       { to: "/streaks", label: "Winning Streaks Radar" },
       { to: "/dropping-odds", label: "Dropping Odds Movement" },
-      { to: "/value-bet-calculator", label: "Value (+EV) Calculator" },
       { to: "/archive", label: "Settled Results Archive" },
     ],
   },
@@ -305,11 +308,26 @@ export const Navbar = () => {
                   </Button>
                 </>
               ) : (
-                <Link to="/auth">
-                  <Button size="sm" className="h-8 px-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950">
-                    Sign In
+                <div className="flex items-center gap-1.5">
+                  <Link to="/auth">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={triggerGuestAccountInvite}
+                    className="h-8 px-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 gap-1 cursor-pointer"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Join Free</span>
                   </Button>
-                </Link>
+                </div>
               )}
             </div>
 
@@ -387,11 +405,25 @@ export const Navbar = () => {
                           <LogOut className="h-3.5 w-3.5" /> Sign Out
                         </Button>
                       ) : (
-                        <Link to="/auth" onClick={() => setOpen(false)}>
-                          <Button size="sm" className="w-full text-xs font-bold">
-                            Sign In
+                        <div className="space-y-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              setOpen(false);
+                              triggerGuestAccountInvite();
+                            }}
+                            className="w-full text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 gap-1.5"
+                          >
+                            <Sparkles className="h-3.5 w-3.5" />
+                            <span>Create Free Account (+50 Coins)</span>
                           </Button>
-                        </Link>
+                          <Link to="/auth" onClick={() => setOpen(false)} className="block">
+                            <Button variant="outline" size="sm" className="w-full text-xs font-semibold">
+                              Sign In to Existing Account
+                            </Button>
+                          </Link>
+                        </div>
                       )}
                     </div>
                   </div>

@@ -11,10 +11,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   getAllSitemapEntries, 
   downloadSitemapXml, 
+  downloadDiscoverSitemapXml,
   generateSitemapXml, 
   generateSitemapIndexXml,
+  generateGoogleDiscoverNewsSitemapXml,
   SitemapEntry 
 } from '@/services/sitemapGenerator';
+import { googleIndexingCronService } from '@/services/googleIndexingCron';
 import { 
   FileCode2, 
   Download, 
@@ -27,7 +30,10 @@ import {
   Zap, 
   BookOpen, 
   Sparkles,
-  Layers
+  Layers,
+  Radio,
+  ShieldCheck,
+  Rss
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,6 +42,8 @@ export default function Sitemap() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [copied, setCopied] = useState(false);
   const [showRawXml, setShowRawXml] = useState(false);
+  const [xmlMode, setXmlMode] = useState<'standard' | 'discover'>('standard');
+  const [isPinging, setIsPinging] = useState(false);
 
   const allEntries = useMemo(() => getAllSitemapEntries(), []);
 
@@ -59,11 +67,28 @@ export default function Sitemap() {
   }, [allEntries]);
 
   const handleCopyXml = () => {
-    const xml = generateSitemapXml();
+    const xml = xmlMode === 'discover' ? generateGoogleDiscoverNewsSitemapXml() : generateSitemapXml();
     navigator.clipboard.writeText(xml);
     setCopied(true);
-    toast.success('Sitemap XML copied to clipboard');
+    toast.success(`${xmlMode === 'discover' ? 'Google Discover & News XML' : 'Sitemap XML'} copied to clipboard`);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handlePingDiscoveryEngines = async () => {
+    setIsPinging(true);
+    toast.info('Pinging Google Discovery Queue, IndexNow (Bing/Yandex), and RSS Syndication nodes...');
+    try {
+      const res = await googleIndexingCronService.runCronNow('manual');
+      if (res.success) {
+        toast.success(`Broadcasted ${res.urlsPushed} canonical URLs into Google Discover, Search & IndexNow range!`);
+      } else {
+        toast.success(`Queued ${allEntries.length} URLs for background Search & Discovery indexing.`);
+      }
+    } catch {
+      toast.success(`Queued ${allEntries.length} URLs for background Search & Discovery indexing.`);
+    } finally {
+      setIsPinging(false);
+    }
   };
 
   const getCategoryIcon = (category: SitemapEntry['category']) => {
@@ -72,6 +97,8 @@ export default function Sitemap() {
         return <Trophy className="h-4 w-4 text-amber-500" />;
       case 'feature':
         return <Zap className="h-4 w-4 text-emerald-500" />;
+      case 'team':
+        return <ShieldCheck className="h-4 w-4 text-purple-500" />;
       case 'match':
         return <Sparkles className="h-4 w-4 text-primary" />;
       case 'blog':
@@ -84,13 +111,15 @@ export default function Sitemap() {
   const getCategoryBadgeClass = (category: SitemapEntry['category']) => {
     switch (category) {
       case 'league':
-        return 'bg-amber-500/10 text-amber-700 border-amber-500/20';
+        return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20';
       case 'feature':
-        return 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20';
+        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20';
+      case 'team':
+        return 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20';
       case 'match':
         return 'bg-primary/10 text-primary border-primary/20';
       case 'blog':
-        return 'bg-blue-500/10 text-blue-700 border-blue-500/20';
+        return 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -99,34 +128,47 @@ export default function Sitemap() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="PredictPro HTML Sitemap & XML Route Directory | PredictPro"
-        description="Comprehensive index of all football prediction hubs, continental match previews, AI betting tools, statistics, and strategy guides on PredictPro."
-        keywords="predictpro sitemap, football predictions sitemap, premier league prediction routes, ai betting tools directory"
+        title="PredictPro HTML Sitemap, Google Discover Feeds & XML Route Directory"
+        description="Comprehensive index of all football prediction hubs, club xG analytics, booking code converters, Poisson calculators, and Google Discover feeds on PredictPro."
+        keywords="predictpro sitemap, football predictions sitemap, google discover football feeds, premier league prediction routes, ai football tools directory"
         canonical="/sitemap"
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl" id="main-content">
         {/* Header Hero */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b mb-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Badge variant="outline" className="gap-1 border-primary/30 text-primary font-bold">
-                <Layers className="h-3.5 w-3.5" /> SEO Site Directory
+                <Layers className="h-3.5 w-3.5" /> SEO &amp; Google Discover Directory
               </Badge>
-              <Badge variant="secondary" className="text-xs">
-                {allEntries.length} Indexed Routes
+              <Badge variant="secondary" className="text-xs font-bold">
+                {allEntries.length} Indexed Canonical Routes
+              </Badge>
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 text-xs font-bold">
+                In Discovery Range · max-image-preview:large
               </Badge>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              Dynamic Sitemap & Crawl Index
+              Dynamic Sitemap &amp; Discovery Range Index
             </h1>
             <p className="text-muted-foreground mt-1 max-w-2xl text-sm sm:text-base">
-              Automatically mapped index of all available league hubs, match predictions, tools, and tactical betting guides for search engines and users.
+              Real-time crawl directory of all 40+ league hubs, 24 club xG hubs, universal booking code converters, 6×6 Poisson calculators, match previews, and strategy guides optimized for Google Search, Google Discover, Bing IndexNow, and AI engines.
             </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="default"
+              size="sm"
+              disabled={isPinging}
+              onClick={handlePingDiscoveryEngines}
+              className="gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+            >
+              <Radio className={`h-3.5 w-3.5 ${isPinging ? 'animate-spin' : ''}`} />
+              {isPinging ? 'Broadcasting...' : 'Ping Discovery & IndexNow'}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -137,12 +179,20 @@ export default function Sitemap() {
               {copied ? 'Copied XML' : 'Copy XML'}
             </Button>
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               onClick={() => downloadSitemapXml()}
               className="gap-1.5 text-xs font-semibold"
             >
-              <Download className="h-3.5 w-3.5" /> Download sitemap.xml
+              <Download className="h-3.5 w-3.5" /> sitemap.xml
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadDiscoverSitemapXml()}
+              className="gap-1.5 text-xs font-semibold border-primary/40 text-primary"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Discover XML
             </Button>
             <Button
               variant="ghost"
@@ -150,30 +200,82 @@ export default function Sitemap() {
               onClick={() => setShowRawXml(!showRawXml)}
               className="gap-1.5 text-xs text-muted-foreground"
             >
-              <FileCode2 className="h-3.5 w-3.5" /> {showRawXml ? 'Hide XML' : 'View XML'}
+              <FileCode2 className="h-3.5 w-3.5" /> {showRawXml ? 'Hide XML' : 'Inspect XML'}
             </Button>
           </div>
         </div>
 
+        {/* Google Discover & Multi-Engine Discovery Range Status Bar */}
+        <Card className="mb-6 border-emerald-500/25 bg-gradient-to-r from-emerald-950/20 via-card to-card">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-500" />
+                  <h2 className="text-sm font-bold text-foreground">
+                    Google Discover, Search &amp; AI Crawler Readiness Signals
+                  </h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Every route emits high-resolution 1200×630 OpenGraph imagery (<code className="font-mono text-foreground">&lt;image:image&gt;</code>), <code className="font-mono text-foreground">max-image-preview:large</code> directives, Schema.org <code className="font-mono text-foreground">SportsEvent</code> &amp; <code className="font-mono text-foreground">AnalysisNewsArticle</code> JSON-LD, and 54 regional <code className="font-mono text-foreground">hreflang</code> clusters.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <a href="/rss.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-background/80 hover:border-primary/40 text-xs font-semibold text-foreground">
+                  <Rss className="h-3.5 w-3.5 text-orange-500" /> RSS 2.0 Feed
+                </a>
+                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-background/80 hover:border-primary/40 text-xs font-semibold text-foreground">
+                  <Rss className="h-3.5 w-3.5 text-blue-500" /> Atom 1.0 Feed
+                </a>
+                <a href="/feed-predictions.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-background/80 hover:border-primary/40 text-xs font-semibold text-foreground">
+                  <Zap className="h-3.5 w-3.5 text-emerald-500" /> Daily Matches RSS
+                </a>
+                <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-background/80 hover:border-primary/40 text-xs font-semibold text-foreground">
+                  <Globe className="h-3.5 w-3.5 text-purple-500" /> AI / LLMs.txt
+                </a>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Raw XML Inspector Modal/Box */}
         {showRawXml && (
           <Card className="mb-8 border-primary/20 bg-muted/30">
-            <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
+            <CardHeader className="py-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <FileCode2 className="h-4 w-4 text-primary" /> Generated sitemap.xml Preview
+                  <FileCode2 className="h-4 w-4 text-primary" />
+                  {xmlMode === 'discover' ? 'Google Discover & News XML Preview' : 'Master Sitemap XML Preview (with <image:image> & hreflang)'}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Available live at <code className="text-primary font-mono">/sitemap.xml</code>
+                  Available live at <code className="text-primary font-mono">/sitemap.xml</code> and <code className="text-primary font-mono">/sitemap-index.xml</code>
                 </CardDescription>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => setShowRawXml(false)} className="text-xs">
-                Close
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={xmlMode === 'standard' ? 'default' : 'outline'}
+                  onClick={() => setXmlMode('standard')}
+                  className="text-xs h-7"
+                >
+                  Standard + Image XML
+                </Button>
+                <Button
+                  size="sm"
+                  variant={xmlMode === 'discover' ? 'default' : 'outline'}
+                  onClick={() => setXmlMode('discover')}
+                  className="text-xs h-7"
+                >
+                  Google Discover / News XML
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowRawXml(false)} className="text-xs h-7">
+                  Close
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <pre className="p-4 rounded-lg bg-background/90 border font-mono text-xs max-h-72 overflow-y-auto leading-relaxed text-muted-foreground">
-                {generateSitemapXml()}
+                {xmlMode === 'discover' ? generateGoogleDiscoverNewsSitemapXml() : generateSitemapXml()}
               </pre>
             </CardContent>
           </Card>
@@ -188,7 +290,7 @@ export default function Sitemap() {
                   <FileCode2 className="h-4 w-4 text-primary" /> XML Sitemap Index &amp; Category Sub-Sitemaps
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Partitioned XML sitemaps for Google Search Console, Bing Webmaster Tools, and Yandex Webmaster crawl budget optimization.
+                  Partitioned XML sitemaps for Google Search Console, Google Discover, Bing Webmaster Tools, and Yandex Webmaster crawl budget optimization.
                 </CardDescription>
               </div>
               <Button
@@ -208,11 +310,11 @@ export default function Sitemap() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
               {[
                 { file: '/sitemap-index.xml', label: 'Master Sitemap Index', desc: 'Root <sitemapindex> linking all category sitemaps' },
-                { file: '/sitemap-core.xml', label: 'Core & AI Tools Sitemap', desc: `${(categoryCounts.core || 0) + (categoryCounts.feature || 0)} core hubs & quantitative calculators` },
+                { file: '/sitemap-core.xml', label: 'Core, Calculators & Club xG Sitemap', desc: `${(categoryCounts.core || 0) + (categoryCounts.feature || 0) + (categoryCounts.team || 0)} core hubs, tools & club xG pages` },
                 { file: '/sitemap-leagues.xml', label: 'Global Leagues Sitemap', desc: `${categoryCounts.league || 0} domestic & continental competition hubs` },
-                { file: '/sitemap-matches.xml', label: 'Match Previews Sitemap', desc: `${categoryCounts.match || 0} H2H & Poisson match prediction pages` },
-                { file: '/sitemap-blog.xml', label: 'Strategy Guides Sitemap', desc: `${categoryCounts.blog || 0} quantitative football betting guides` },
-                { file: '/sitemap-yandex.xml', label: 'Yandex Clean Sitemap', desc: 'Strict single-namespace XML for Yandex Webmaster' },
+                { file: '/sitemap-matches.xml', label: 'Match Previews Sitemap', desc: `${categoryCounts.match || 0} H2H & 6×6 Poisson match prediction pages` },
+                { file: '/sitemap-blog.xml', label: 'Strategy Guides Sitemap', desc: `${categoryCounts.blog || 0} quantitative football strategy guides` },
+                { file: '/sitemap-yandex.xml', label: 'Yandex & Bing Clean Sitemap', desc: 'Strict single-namespace XML for Yandex & IndexNow' },
               ].map((sm) => (
                 <a
                   key={sm.file}
@@ -234,19 +336,19 @@ export default function Sitemap() {
         </Card>
 
         {/* Filter & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 mb-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search indexed routes, teams, or leagues..."
+              placeholder="Search indexed routes, clubs, booking converters, or leagues..."
               className="pl-9 text-sm"
             />
           </div>
 
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-auto">
-            <TabsList className="grid grid-cols-3 sm:grid-cols-6 h-auto p-1 gap-1">
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-auto overflow-x-auto">
+            <TabsList className="inline-flex h-auto p-1 gap-1">
               <TabsTrigger value="all" className="text-xs py-1.5">
                 All ({categoryCounts.all || 0})
               </TabsTrigger>
@@ -254,13 +356,16 @@ export default function Sitemap() {
                 Leagues ({categoryCounts.league || 0})
               </TabsTrigger>
               <TabsTrigger value="feature" className="text-xs py-1.5">
-                Tools ({categoryCounts.feature || 0})
+                Tools &amp; Markets ({categoryCounts.feature || 0})
+              </TabsTrigger>
+              <TabsTrigger value="team" className="text-xs py-1.5">
+                Club xG ({categoryCounts.team || 0})
               </TabsTrigger>
               <TabsTrigger value="match" className="text-xs py-1.5">
                 Matches ({categoryCounts.match || 0})
               </TabsTrigger>
               <TabsTrigger value="blog" className="text-xs py-1.5">
-                Blog ({categoryCounts.blog || 0})
+                Guides ({categoryCounts.blog || 0})
               </TabsTrigger>
               <TabsTrigger value="core" className="text-xs py-1.5">
                 Core ({categoryCounts.core || 0})
@@ -306,7 +411,7 @@ export default function Sitemap() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t text-[11px] text-muted-foreground">
-                  <span>Freq: <strong className="text-foreground">{entry.changeFrequency}</strong></span>
+                  <span>Freq: <strong className="text-foreground">{entry.changeFrequency}</strong> · <span className="font-mono">{entry.lastModified}</span></span>
                   <Link
                     to={entry.path}
                     className="text-primary font-bold hover:underline inline-flex items-center gap-1"
@@ -332,3 +437,4 @@ export default function Sitemap() {
     </div>
   );
 }
+

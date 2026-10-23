@@ -11,15 +11,55 @@ export interface BlogPostItem {
 }
 
 export const STRATEGY_POSTS: BlogPostItem[] = [
+  {
+    slug: "universal-bet-code-converter-sportybet-1xbet-bet9ja",
+    title: "Universal Football Booking Code Converter: Translate SportyBet, 1xBet, Bet9ja & Betway Slips",
+    excerpt: "Learn how cross-bookmaker market taxonomy mapping converts accumulator booking codes across SportyBet, 1xBet, Bet9ja, Betway, SportPesa, and Betika without losing +EV edge.",
+    category: "Strategy",
+    readTime: "7 min",
+    date: "2026-10-23",
+    lastUpdated: "2026-10-23",
+    featured: true,
+    keywords: "bet code converter, sportybet code converter, 1xbet to sportybet converter, bet9ja booking code, universal slip generator"
+  },
+  {
+    slug: "bivariate-poisson-dixon-coles-score-matrix-guide",
+    title: "Bivariate Poisson & Dixon-Coles 6×6 Score Matrix: Calculating True Football Probabilities",
+    excerpt: "Step-by-step mathematical guide to how a 6×6 Bivariate Poisson matrix with Dixon-Coles low-score correlation adjustments prices 1X2, Over/Under 2.5, BTTS, and Exact Score markets.",
+    category: "Strategy",
+    readTime: "9 min",
+    date: "2026-10-23",
+    lastUpdated: "2026-10-23",
+    keywords: "bivariate poisson football model, dixon coles adjustment explained, 6x6 score matrix, expected goals probability calculator"
+  },
+  {
+    slug: "2-score-correct-score-dutching-strategy",
+    title: "2-Score Correct Score Dutching Strategy: Equal-Profit Staking for Football Scorelines",
+    excerpt: "How combining a primary Poisson scoreline (e.g. 2-1) with a secondary cover scoreline (e.g. 2-0 or 1-1) using Dutching math doubles hit rate while preserving 3.80+ effective odds.",
+    category: "Markets",
+    readTime: "6 min",
+    date: "2026-10-22",
+    lastUpdated: "2026-10-23",
+    keywords: "correct score dutching strategy, 2 score cover betting, equal profit dutching calculator, poisson exact score tips"
+  },
+  {
+    slug: "referee-cards-corners-prop-modeling",
+    title: "Referee Card Strictness & Wing Attack Width: Quantitative Modeling for Corners & Bookings",
+    excerpt: "Why derivative prop markets (Over 9.5 Corners and Over 3.5 Bookings) carry softer bookmaker margins than 1X2 lines—and how referee fouls-per-tackle ratios expose +EV edges.",
+    category: "Markets",
+    readTime: "7 min",
+    date: "2026-10-21",
+    lastUpdated: "2026-10-23",
+    keywords: "referee card stats football, corner predictions model, over 9.5 corners strategy, bookings predictions yellow cards"
+  },
   { 
     slug: "how-to-read-football-predictions", 
     title: "How to Read AI Football Predictions Like a Pro", 
     excerpt: "Understanding confidence scores, probability percentages and odds — what they mean and how to use them in your betting strategy.", 
     category: "Strategy", 
     readTime: "5 min", 
-    date: "2026-09-25",
-    lastUpdated: "2026-09-30",
-    featured: true,
+    date: "2026-10-15",
+    lastUpdated: "2026-10-23",
     keywords: "confidence score, probability, odds calculation, value betting, ai football predictions"
   },
   {
@@ -28,8 +68,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "How quantitative syndicates use Expected Goals (xG), Post-Shot xG (PSxG), and Expected Points (xPTS) regression to identify mispriced football teams before the market adjusts.",
     category: "Strategy",
     readTime: "8 min",
-    date: "2026-09-30",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-14",
+    lastUpdated: "2026-10-23",
     keywords: "expected goals xg explained, xg football betting model, xga stats, expected points xpts, understat xg strategy"
   },
   {
@@ -38,8 +78,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Unlock higher decimal odds with Half-Time / Full-Time (HT/FT) wagering. Learn why Draw/Home (X/1) and Home/Home (1/1) splits outperform standard 1X2 bets in specific tactical matchups.",
     category: "Markets",
     readTime: "7 min",
-    date: "2026-09-29",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-12",
+    lastUpdated: "2026-10-23",
     keywords: "ht ft predictions today, halftime fulltime betting strategy, draw home x/1 tips, ht ft turnaround football"
   },
   { 
@@ -48,8 +88,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "What is value betting, how to calculate expected value (EV) and why a 60% confidence prediction at 2.0 odds is better than 80% at 1.3.", 
     category: "Strategy", 
     readTime: "8 min", 
-    date: "2026-09-24",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-10",
+    lastUpdated: "2026-10-23",
     keywords: "expected value, EV, edge, bookmaker margins, bankroll, value bets"
   },
   {
@@ -58,8 +98,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Eliminate the draw and unlock lower bookmaker margins. Learn how quarter-goal (-0.25, -0.75) and half-goal Asian Handicap lines work with AI xG projections.",
     category: "Markets",
     readTime: "7 min",
-    date: "2026-09-23",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-08",
+    lastUpdated: "2026-10-23",
     keywords: "asian handicap explained, -0.5 handicap, -0.75 asian handicap, quarter goal lines, football handicap tips"
   },
   {
@@ -68,8 +108,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "When should you back Draw No Bet for stake protection versus Double Chance for accumulator safety? Full implied probability and yield breakdown.",
     category: "Strategy",
     readTime: "6 min",
-    date: "2026-09-22",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-06",
+    lastUpdated: "2026-10-23",
     keywords: "draw no bet explained, double chance 1x x2, dnb vs double chance, safe football betting markets"
   },
   {
@@ -78,8 +118,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Why beating the closing odds is the #1 predictor of long-term sports betting profit, and how to track syndicate steam moves before kickoff.",
     category: "Markets",
     readTime: "8 min",
-    date: "2026-09-21",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-04",
+    lastUpdated: "2026-10-23",
     keywords: "closing line value clv, dropping odds strategy, sharp money football, steam moves betting"
   },
   { 
@@ -88,8 +128,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "The Kelly Criterion, flat staking and why most bettors go broke. Learn to protect your capital while maximising long-term returns.", 
     category: "Finance", 
     readTime: "6 min", 
-    date: "2026-09-20",
-    lastUpdated: "2026-09-30",
+    date: "2026-10-02",
+    lastUpdated: "2026-10-23",
     keywords: "kelly criterion, bankroll, staking, risk management, units"
   },
   { 
@@ -98,8 +138,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Which teams are most predictable this season? Home advantage stats, H2H trends and the league's statistical patterns our AI exploits.", 
     category: "Premier League", 
     readTime: "10 min", 
-    date: "2026-09-19",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-29",
+    lastUpdated: "2026-10-23",
     keywords: "premier league, arsenal, manchester city, liverpool, chelsea, epl xG"
   },
   { 
@@ -108,8 +148,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "League phase football is different — motivation, rotation and goal differential incentives. Our AI approach to UCL predictions explained.", 
     category: "Champions League", 
     readTime: "7 min", 
-    date: "2026-09-18",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-27",
+    lastUpdated: "2026-10-23",
     keywords: "champions league, ucl, league phase, real madrid, bayern munich"
   },
   { 
@@ -118,8 +158,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Why Both Teams to Score is one of the most predictable markets. The teams, leagues and match types where BTTS hits most reliably.", 
     category: "Markets", 
     readTime: "6 min", 
-    date: "2026-09-17",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-25",
+    lastUpdated: "2026-10-23",
     keywords: "btts, both teams to score, over 2.5 goals, under 2.5, goal markets"
   },
   { 
@@ -128,8 +168,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Everything you need to know about betting on KPL — Gor Mahia, AFC Leopards, Tusker, Kenya Police FC and how to use M-Pesa for predictions.", 
     category: "KPL", 
     readTime: "5 min", 
-    date: "2026-09-16",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-23",
+    lastUpdated: "2026-10-23",
     keywords: "kpl, kenya premier league, gor mahia, afc leopards, m-pesa, tusker"
   },
   { 
@@ -138,8 +178,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Why most accas lose and how to use AI confidence scores to select the right legs. The 5-fold strategy that actually works.", 
     category: "Strategy", 
     readTime: "7 min", 
-    date: "2026-09-15",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-21",
+    lastUpdated: "2026-10-23",
     keywords: "accumulator, acca, parlay, multibet, 5-fold, odds boost"
   },
   { 
@@ -148,8 +188,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Correct score is the hardest market to beat. Here's how our AI approaches it and when correct score bets offer mathematical value.", 
     category: "Markets", 
     readTime: "6 min", 
-    date: "2026-09-14",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-19",
+    lastUpdated: "2026-10-23",
     keywords: "correct score, exact score, scoreline, probability matrix"
   },
   {
@@ -158,8 +198,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "The ultimate mathematical guide to tackling the 17-game SportPesa Mega Jackpot and Betika Midweek. Banker selection criteria, double chance hedging math, and bonus targets.",
     category: "Jackpots",
     readTime: "8 min",
-    date: "2026-09-13",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-17",
+    lastUpdated: "2026-10-23",
     keywords: "sportpesa mega jackpot prediction 17 games, betika midweek jackpot, mozzart grand jackpot, jackpot bonus tips, double chance combinations"
   },
   {
@@ -168,8 +208,8 @@ export const STRATEGY_POSTS: BlogPostItem[] = [
     excerpt: "Master Major League Soccer, Concacaf Champions Cup, and US Open Cup betting with American odds (+/-), travel fatigue modeling, and altitude differentials.",
     category: "US Soccer",
     readTime: "7 min",
-    date: "2026-09-12",
-    lastUpdated: "2026-09-30",
+    date: "2026-09-15",
+    lastUpdated: "2026-10-23",
     keywords: "mls predictions, us soccer betting picks, american odds moneyline, spread betting mls, inter miami la galaxy odds"
   },
 ];

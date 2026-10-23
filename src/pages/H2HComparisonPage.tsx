@@ -9,6 +9,7 @@ import { TEAMS_DATABASE, DERBY_PRESETS, simulateH2HMatch } from '@/data/h2hTeams
 import { TeamProfile, DerbyPreset } from '@/types/h2h';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import { hapticService } from '@/services/hapticService';
 import { toast } from 'sonner';
 import {
@@ -530,6 +531,14 @@ export default function H2HComparisonPage() {
             </div>
           </div>
         </Card>
+
+        {/* Referee Discipline & Corner Tempo Matrix for Selected H2H Matchup */}
+        <RefereeSetPieceMatrix
+          homeTeam={teamA.name}
+          awayTeam={teamB.name}
+          league={teamA.league}
+          allowFixtureSwitch={false}
+        />
 
         {/* Historical H2H Meetings */}
         {activeDerby && activeDerby.pastMeetings.length > 0 && (

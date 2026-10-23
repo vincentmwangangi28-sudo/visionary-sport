@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,8 +9,9 @@ import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { generateMatchGameId } from '@/services/bookmakerBookingCodes';
 import { hapticService } from '@/services/hapticService';
-import { TrendingDown, Zap, ArrowDownRight, Activity, RefreshCw, Tv } from 'lucide-react';
+import { TrendingDown, Zap, ArrowDownRight, Activity, RefreshCw, Tv, Ticket, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface BookmakerLineQuote {
@@ -28,6 +30,8 @@ export interface DroppingOddsItem {
   openingOdds: number;
   currentOdds: number;
   dropPercentage: number;
+  impliedProbDelta: number;
+  gameId: string;
   signalType: 'Smart Money' | 'Steam Move' | 'Injury News' | 'High Volume';
   volumeIndex: number; // 0-100
   aiModelSupport: boolean;
@@ -44,7 +48,7 @@ export const DroppingOddsRadar: React.FC = () => {
   const [filterThreshold, setFilterThreshold] = useState<string>('12');
   const [selectedSignal, setSelectedSignal] = useState<string>('all');
   const [activeStreamMatch, setActiveStreamMatch] = useState<DroppingOddsItem | null>(null);
-  const { addSelection } = useBetSlip();
+  const { addSelection, addSelections, setIsOpen } = useBetSlip();
 
   const loadDroppingOdds = async () => {
     setLoading(true);
@@ -70,6 +74,8 @@ export const DroppingOddsRadar: React.FC = () => {
         const openingOdds = Number((baseOdds * (1 + dropPercent / 100)).toFixed(2));
         const currentOdds = Number(baseOdds.toFixed(2));
         const diff = openingOdds - currentOdds;
+        const impliedProbDelta = Number(((100 / currentOdds) - (100 / openingOdds)).toFixed(1));
+        const gameId = generateMatchGameId(f.home_team, f.away_team, 'sportybet');
 
         const intradayHistory = [
           openingOdds,
@@ -112,6 +118,8 @@ export const DroppingOddsRadar: React.FC = () => {
           openingOdds,
           currentOdds,
           dropPercentage: dropPercent,
+          impliedProbDelta,
+          gameId,
           signalType,
           volumeIndex: 65 + (hash % 33),
           aiModelSupport: hash % 2 === 0,
@@ -157,6 +165,26 @@ export const DroppingOddsRadar: React.FC = () => {
     toast.success(
       `Added ${item.homeTeam} vs ${item.awayTeam} (${item.market} @ ${targetOdds.toFixed(2)}${bookieLabel ? ` via ${bookieLabel}` : ''}) to slip!`
     );
+  };
+
+  const handleLoadTopSteamAcca = () => {
+    hapticService.success();
+    const top3 = filteredItems.slice(0, 3);
+    if (top3.length === 0) return;
+    addSelections(
+      top3.map((item) => ({
+        match: `${item.homeTeam} vs ${item.awayTeam}`,
+        homeTeam: item.homeTeam,
+        awayTeam: item.awayTeam,
+        league: item.league,
+        matchDate: item.matchDate,
+        market: item.market,
+        odds: item.bookmakerQuotes.find((q) => q.isBestStale)?.odds || item.currentOdds,
+        confidence: item.aiModelSupport ? 82 : 74,
+      }))
+    );
+    setIsOpen(true);
+    toast.success(`Loaded Top ${top3.length} Sharp Steam Moves into Bet Slip with Booking Codes!`);
   };
 
   const renderSparkline = (points: number[]) => {
@@ -247,6 +275,17 @@ export const DroppingOddsRadar: React.FC = () => {
             </SelectContent>
           </Select>
 
+          {filteredItems.length >= 2 && (
+            <Button
+              size="sm"
+              onClick={handleLoadTopSteamAcca}
+              className="gap-1.5 h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+            >
+              <Ticket className="h-3.5 w-3.5" />
+              <span>3-Leg Steam Acca</span>
+            </Button>
+          )}
+
           <Button variant="outline" size="sm" onClick={loadDroppingOdds} disabled={loading} className="gap-1.5 h-9" aria-label="Refresh dropping odds">
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </Button>
@@ -276,13 +315,21 @@ export const DroppingOddsRadar: React.FC = () => {
               <Card key={item.id} className="border-border/70 hover:border-primary/50 transition-all shadow-sm">
                 <CardContent className="p-5 space-y-3.5">
                   {/* Header */}
-                  <div className="flex items-center justify-between text-xs border-b border-border/40 pb-2">
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                      {item.league} · <span className="text-foreground">{item.signalType}</span>
-                    </span>
-                    <div className="flex items-center gap-2 font-mono">
+                  <div className="flex items-center justify-between text-xs border-b border-border/40 pb-2 gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                        #{item.gameId}
+                      </span>
+                      <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground font-semibold truncate">
+                        {item.league} · <span className="text-foreground">{item.signalType}</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono shrink-0">
                       <span className="text-rose-500 font-black flex items-center text-xs">
                         <ArrowDownRight className="h-3.5 w-3.5 mr-0.5" /> -{item.dropPercentage}%
+                      </span>
+                      <span className="text-amber-500 font-bold text-[11px]" title="Implied Probability Surge">
+                        +{item.impliedProbDelta}% Prob
                       </span>
                       <span className="text-emerald-500 font-bold text-[11px]">
                         +{item.clvEdgePercent}% CLV
@@ -351,11 +398,21 @@ export const DroppingOddsRadar: React.FC = () => {
 
                   {/* Actions, Broadcast & Volume */}
                   <div className="flex items-center justify-between pt-1 gap-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                    <div className="flex items-center gap-2.5 text-xs text-muted-foreground min-w-0">
                       <span className="flex items-center gap-1 font-mono text-[11px]">
                         <Activity className="h-3.5 w-3.5 text-primary shrink-0" />
                         Vol: <strong>{item.volumeIndex}%</strong>
                       </span>
+                      <Link
+                        to={`/poisson-calculator?home=${encodeURIComponent(item.homeTeam)}&away=${encodeURIComponent(
+                          item.awayTeam
+                        )}&league=${encodeURIComponent(item.league)}`}
+                        className="text-[11px] font-mono text-emerald-500 hover:underline flex items-center gap-1 shrink-0"
+                        title="Simulate 6x6 Poisson Matrix"
+                      >
+                        <Calculator className="h-3 w-3" />
+                        <span>Matrix</span>
+                      </Link>
                       <button
                         type="button"
                         onClick={() => setActiveStreamMatch(item)}

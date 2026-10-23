@@ -101,6 +101,9 @@ const CORE_PAGES = [
   { path: '/today-predictions', priority: 0.95, freq: 'daily', title: "Today's Football Predictions: Daily AI Match Tips & Odds" },
   { path: '/2-odds-predictions', priority: 0.90, freq: 'daily', title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips' },
   { path: '/5-odds-predictions', priority: 0.90, freq: 'daily', title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips' },
+  { path: '/slip-generator', priority: 0.95, freq: 'daily', title: 'AI Slip Generator & Universal Bookmaker Booking Code Converter | PredictPro' },
+  { path: '/booking-codes', priority: 0.95, freq: 'daily', title: 'Free SportyBet, 1xBet, Bet9ja, SportPesa & Betika Booking Codes Today' },
+  { path: '/code-converter', priority: 0.90, freq: 'daily', title: 'Free Bet Code Converter: Convert SportyBet, 1xBet, Bet9ja & Betway Codes' },
   { path: '/rewards', priority: 0.75, freq: 'daily', title: 'Daily Rewards, Coin Wheel & Prediction Unlocks | PredictPro' },
   { path: '/performance', priority: 0.75, freq: 'weekly', title: 'Personal Football Betting Performance & ROI Tracker | PredictPro' },
 ];

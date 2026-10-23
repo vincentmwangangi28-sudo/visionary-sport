@@ -20,15 +20,30 @@ const ADSENSE_CHANGE_EVENT = 'predictpro:adsense-config-changed';
 
 export const DEFAULT_ADSENSE_PUB_ID = 'ca-pub-1375386376692976';
 
+const LEGACY_PLACEHOLDER_SLOTS = new Set([
+  '9842105432',
+  '8743209123',
+  '6543210987',
+  '5432109876',
+  '',
+]);
+
+export function isValidLiveAdSlot(slot?: string): boolean {
+  if (!slot) return false;
+  const trimmed = slot.trim();
+  if (LEGACY_PLACEHOLDER_SLOTS.has(trimmed)) return false;
+  return /^\d{8,12}$/.test(trimmed);
+}
+
 export const DEFAULT_ADSENSE_CONFIG: AdSenseConfig = {
   publisherId: DEFAULT_ADSENSE_PUB_ID,
   enabled: true,
   testMode: false,
   slots: {
-    horizontal: '9842105432', // Default responsive horizontal banner slot
-    rectangle: '8743209123',  // In-content / sidebar medium rectangle
-    feed: '6543210987',       // In-feed responsive card
-    sticky: '5432109876',     // Sticky bottom / anchor banner
+    horizontal: '',
+    rectangle: '',
+    feed: '',
+    sticky: '',
   },
 };
 

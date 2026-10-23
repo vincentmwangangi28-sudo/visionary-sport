@@ -5,13 +5,49 @@
     <link>https://predictpro.guru/blog</link>
     <description>Daily verified AI football betting tips, Expected Goals (xG) statistics, Poisson score matrices, and quantitative sports analytics.</description>
     <language>en</language>
-    <lastBuildDate>Wed, 21 Oct 2026 19:14:07 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 23 Oct 2026 06:00:00 GMT</lastBuildDate>
     <atom:link href="https://predictpro.guru/rss.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://predictpro.guru/icon-512.png</url>
       <title>PredictPro</title>
       <link>https://predictpro.guru</link>
     </image>
+    <item>
+      <title>Universal Football Booking Code Converter: Translate SportyBet, 1xBet, Bet9ja &amp; Betway Slips</title>
+      <link>https://predictpro.guru/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja</link>
+      <guid isPermaLink="true">https://predictpro.guru/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja</guid>
+      <pubDate>Fri, 23 Oct 2026 06:00:00 GMT</pubDate>
+      <category>Strategy</category>
+      <description>Learn how cross-bookmaker market taxonomy mapping converts accumulator booking codes across SportyBet, 1xBet, Bet9ja, Betway, SportPesa, and Betika.</description>
+      <source url="https://predictpro.guru/rss.xml">PredictPro AI Football Predictions</source>
+    </item>
+    <item>
+      <title>Bivariate Poisson &amp; Dixon-Coles 6×6 Score Matrix: Calculating True Football Probabilities</title>
+      <link>https://predictpro.guru/blog/bivariate-poisson-dixon-coles-score-matrix-guide</link>
+      <guid isPermaLink="true">https://predictpro.guru/blog/bivariate-poisson-dixon-coles-score-matrix-guide</guid>
+      <pubDate>Fri, 23 Oct 2026 05:00:00 GMT</pubDate>
+      <category>Analytics</category>
+      <description>Step-by-step mathematical guide to how a 6×6 Bivariate Poisson matrix with Dixon-Coles low-score correlation adjustments prices 1X2, Over/Under 2.5, BTTS, and Exact Score markets.</description>
+      <source url="https://predictpro.guru/rss.xml">PredictPro AI Football Predictions</source>
+    </item>
+    <item>
+      <title>2-Score Correct Score Dutching Strategy: Equal-Profit Staking for Football Scorelines</title>
+      <link>https://predictpro.guru/blog/2-score-correct-score-dutching-strategy</link>
+      <guid isPermaLink="true">https://predictpro.guru/blog/2-score-correct-score-dutching-strategy</guid>
+      <pubDate>Thu, 22 Oct 2026 14:00:00 GMT</pubDate>
+      <category>Markets</category>
+      <description>How combining a primary Poisson scoreline (e.g. 2-1) with a secondary cover scoreline (e.g. 2-0 or 1-1) using Dutching math doubles hit rate while preserving 3.80+ effective odds.</description>
+      <source url="https://predictpro.guru/rss.xml">PredictPro AI Football Predictions</source>
+    </item>
+    <item>
+      <title>Referee Card Strictness &amp; Wing Attack Width: Quantitative Modeling for Corners &amp; Bookings</title>
+      <link>https://predictpro.guru/blog/referee-cards-corners-prop-modeling</link>
+      <guid isPermaLink="true">https://predictpro.guru/blog/referee-cards-corners-prop-modeling</guid>
+      <pubDate>Wed, 21 Oct 2026 12:00:00 GMT</pubDate>
+      <category>Markets</category>
+      <description>Why derivative prop markets (Over 9.5 Corners and Over 3.5 Bookings) carry softer bookmaker margins than 1X2 lines—and how referee fouls-per-tackle ratios expose +EV edges.</description>
+      <source url="https://predictpro.guru/rss.xml">PredictPro AI Football Predictions</source>
+    </item>
     <item>
       <title>SportPesa Mega Jackpot Prediction: How to Win 17 Games Using AI &amp; Poisson Double Chance Combinations</title>
       <link>https://predictpro.guru/blog/sportpesa-mega-jackpot-prediction-17-games</link>

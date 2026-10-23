@@ -386,9 +386,15 @@ export const logger = {
       // Ignore storage quota issues
     }
 
-    // Output to developer console
+    // Output to developer console (use warn for transient chunk/network/boundary events to avoid false-positive fatal error overlays)
+    const isTransientType =
+      type === 'chunk_load_error' ||
+      type === 'network_error' ||
+      message.includes('dynamically imported module') ||
+      message.includes('Failed to fetch');
+
     const consoleMethod =
-      params.severity === 'warn'
+      params.severity === 'warn' || isTransientType
         ? console.warn
         : params.severity === 'info'
           ? console.info
@@ -396,7 +402,7 @@ export const logger = {
 
     consoleMethod(
       `%c[PredictPro Logger][${type.toUpperCase()}]`,
-      'color: #f43f5e; font-weight: bold;',
+      'color: #f59e0b; font-weight: bold;',
       message,
       {
         stack: params.error.stack,
@@ -452,7 +458,7 @@ export const logger = {
           stack: event.error?.stack,
         },
         type: isChunkFailure ? 'chunk_load_error' : 'uncaught_exception',
-        severity: 'error',
+        severity: isChunkFailure ? 'warn' : 'error',
         metadata: {
           filename: event.filename,
           lineno: event.lineno,

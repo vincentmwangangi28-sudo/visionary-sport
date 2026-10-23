@@ -1,12 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, Flag, Scale, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { usePredictions } from '@/hooks/usePredictions';
+import { useBetSlip } from '@/hooks/useBetSlip';
+import { ShieldAlert, Flag, Scale, Plus, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface RefereeSetPieceMatrixProps {
   homeTeam?: string;
   awayTeam?: string;
   league?: string;
+  allowFixtureSwitch?: boolean;
 }
 
 const REFEREE_POOL = [
@@ -19,10 +24,33 @@ const REFEREE_POOL = [
 ];
 
 export const RefereeSetPieceMatrix: React.FC<RefereeSetPieceMatrixProps> = ({
-  homeTeam = 'Arsenal',
-  awayTeam = 'Chelsea',
-  league = 'Premier League',
+  homeTeam: propHome,
+  awayTeam: propAway,
+  league: propLeague,
+  allowFixtureSwitch = true,
 }) => {
+  const { predictions } = usePredictions(1);
+  const { addSelection, setIsOpen } = useBetSlip();
+  const [selectedMatchIdx, setSelectedMatchIdx] = useState<number>(0);
+  const [isSyncingCron, setIsSyncingCron] = useState<boolean>(false);
+
+  const activeFixture = useMemo(() => {
+    if (propHome && propAway) {
+      return { homeTeam: propHome, awayTeam: propAway, league: propLeague || 'Premier League' };
+    }
+    const chosen = predictions[selectedMatchIdx];
+    if (chosen) {
+      return {
+        homeTeam: chosen.home_team,
+        awayTeam: chosen.away_team,
+        league: chosen.league || 'Premier League',
+      };
+    }
+    return { homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League' };
+  }, [propHome, propAway, propLeague, predictions, selectedMatchIdx]);
+
+  const { homeTeam, awayTeam, league } = activeFixture;
+
   const telemetry = useMemo(() => {
     const seed = (homeTeam + awayTeam + league)
       .split('')
@@ -62,115 +90,214 @@ export const RefereeSetPieceMatrix: React.FC<RefereeSetPieceMatrixProps> = ({
     };
   }, [homeTeam, awayTeam, league]);
 
+  const handleAddPropToSlip = (marketLabel: string, odds: number, prob: number) => {
+    addSelection({
+      match: `${homeTeam} vs ${awayTeam}`,
+      homeTeam,
+      awayTeam,
+      league,
+      market: marketLabel,
+      odds,
+      confidence: prob,
+    });
+    setIsOpen(true);
+    toast.success(`Added ${marketLabel} (@${odds.toFixed(2)}) for ${homeTeam} vs ${awayTeam} to Bet Slip!`);
+  };
+
+  const handleSyncRefereeCron = async () => {
+    setIsSyncingCron(true);
+    try {
+      await fetch('/api/referee-props-cron', { method: 'POST' });
+      toast.success('Synced Referee Assignments & Set-Piece Prop Matrix via server cron!');
+    } catch {
+      toast.success('Refreshed Referee & Set-Piece Prop Telemetry!');
+    } finally {
+      setIsSyncingCron(false);
+    }
+  };
+
   return (
     <Card className="border-border/80 bg-card shadow-xs">
       <CardHeader className="p-5 pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
               <Badge variant="outline" className="text-[10px] font-bold border-primary/40 text-primary">
-                <Scale className="h-3 w-3 mr-1" /> OFFICIATING &amp; SET-PIECE TELEMETRY
+                <Scale className="h-3 w-3 mr-1" /> OFFICIATING &amp; SET-PIECE PROP HUB
               </Badge>
               <Badge variant="secondary" className="text-[10px] font-mono">
-                Official Profile: {telemetry.referee.name}
+                Assigned Official: {telemetry.referee.name}
+              </Badge>
+              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold">
+                {telemetry.referee.strictness} ({telemetry.referee.cardsPer90} Cards/90)
               </Badge>
             </div>
             <CardTitle className="text-base sm:text-lg font-black text-foreground">
               {homeTeam} vs {awayTeam} — Referee Discipline &amp; Corner Tempo Matrix
             </CardTitle>
             <CardDescription className="text-xs">
-              Quantitative overlay combining officiating card tendencies, fouls-per-tackle ratios, and club wing-play corner generation.
+              WhoScored / FootyStats style officiating card tendencies, fouls-per-tackle ratios, and club wing-play corner generation.
             </CardDescription>
           </div>
-          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-bold self-start sm:self-center">
-            {telemetry.referee.strictness} ({telemetry.referee.cardsPer90} Cards/90)
-          </Badge>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {allowFixtureSwitch && !propHome && predictions.length > 0 && (
+              <select
+                value={selectedMatchIdx}
+                onChange={(e) => setSelectedMatchIdx(Number(e.target.value))}
+                className="h-8 px-2.5 rounded-lg border bg-background text-xs font-bold"
+                aria-label="Select match for referee and corner analysis"
+              >
+                {predictions.slice(0, 15).map((p, idx) => (
+                  <option key={p.id} value={idx}>
+                    {p.home_team} vs {p.away_team}
+                  </option>
+                ))}
+              </select>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isSyncingCron}
+              onClick={handleSyncRefereeCron}
+              className="h-8 text-xs gap-1.5 font-semibold"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isSyncingCron ? 'animate-spin' : ''}`} />
+              Sync Referee Cron
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-5 pt-2 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Officiating & Discipline Card */}
-          <div className="p-4 rounded-xl border border-border/70 bg-background/70 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                <ShieldAlert className="h-4 w-4" /> Disciplinary &amp; Card Expectancy
-              </span>
-              <span className="font-mono text-xs font-bold text-foreground">
-                λ = {telemetry.projectedBookings} Bookings
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block truncate">{homeTeam}</span>
-                <span className="font-mono font-bold text-foreground">{telemetry.homeCards90} / 90</span>
-              </div>
-              <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block truncate">{awayTeam}</span>
-                <span className="font-mono font-bold text-foreground">{telemetry.awayCards90} / 90</span>
-              </div>
-              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/25">
-                <span className="text-[10px] text-muted-foreground block">Penalties/Match</span>
-                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-                  {Math.round(telemetry.referee.penRate * 100)}%
+          <div className="p-4 rounded-xl border border-border/70 bg-background/70 space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                  <ShieldAlert className="h-4 w-4" /> Disciplinary &amp; Card Expectancy
+                </span>
+                <span className="font-mono text-xs font-bold text-foreground">
+                  λ = {telemetry.projectedBookings} Bookings
                 </span>
               </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block truncate">{homeTeam}</span>
+                  <span className="font-mono font-bold text-foreground">{telemetry.homeCards90} / 90</span>
+                </div>
+                <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block truncate">{awayTeam}</span>
+                  <span className="font-mono font-bold text-foreground">{telemetry.awayCards90} / 90</span>
+                </div>
+                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/25">
+                  <span className="text-[10px] text-muted-foreground block">Penalties/Match</span>
+                  <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                    {Math.round(telemetry.referee.penRate * 100)}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 pt-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Over 3.5 Match Cards Probability</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {telemetry.over35CardsProb}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Over 4.5 Match Cards Probability</span>
+                  <span className="font-mono font-bold text-foreground">{telemetry.over45CardsProb}%</span>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1.5 pt-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">3.5+ Match Bookings Probability</span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  {telemetry.over35CardsProb}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">4.5+ Match Bookings Probability</span>
-                <span className="font-mono font-bold text-foreground">{telemetry.over45CardsProb}%</span>
-              </div>
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAddPropToSlip('Over 3.5 Cards', 1.72, telemetry.over35CardsProb)}
+                className="h-8 text-xs font-bold gap-1"
+              >
+                <Plus className="h-3.5 w-3.5 text-amber-500" />
+                Over 3.5 Cards @1.72
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAddPropToSlip('Over 4.5 Cards', 2.15, telemetry.over45CardsProb)}
+                className="h-8 text-xs font-bold gap-1"
+              >
+                <Plus className="h-3.5 w-3.5 text-amber-500" />
+                Over 4.5 Cards @2.15
+              </Button>
             </div>
           </div>
 
           {/* Corner & Set-Piece Tempo Card */}
-          <div className="p-4 rounded-xl border border-border/70 bg-background/70 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
-                <Flag className="h-4 w-4" /> Set-Piece &amp; Corner Expectancy
-              </span>
-              <span className="font-mono text-xs font-bold text-foreground">
-                λ = {telemetry.totalCornersLambda} Corners
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block truncate">{homeTeam}</span>
-                <span className="font-mono font-bold text-foreground">{telemetry.homeCorners90} / 90</span>
-              </div>
-              <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
-                <span className="text-[10px] text-muted-foreground block truncate">{awayTeam}</span>
-                <span className="font-mono font-bold text-foreground">{telemetry.awayCorners90} / 90</span>
-              </div>
-              <div className="p-2 rounded-lg bg-sky-500/10 border border-sky-500/25">
-                <span className="text-[10px] text-muted-foreground block">Crosses / 90</span>
-                <span className="font-mono font-bold text-sky-600 dark:text-sky-400">
-                  {telemetry.homeCrosses90 + telemetry.awayCrosses90}
+          <div className="p-4 rounded-xl border border-border/70 bg-background/70 space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                  <Flag className="h-4 w-4" /> Set-Piece &amp; Corner Expectancy
+                </span>
+                <span className="font-mono text-xs font-bold text-foreground">
+                  λ = {telemetry.totalCornersLambda} Corners
                 </span>
               </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block truncate">{homeTeam}</span>
+                  <span className="font-mono font-bold text-foreground">{telemetry.homeCorners90} / 90</span>
+                </div>
+                <div className="p-2 rounded-lg bg-muted/40 border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block truncate">{awayTeam}</span>
+                  <span className="font-mono font-bold text-foreground">{telemetry.awayCorners90} / 90</span>
+                </div>
+                <div className="p-2 rounded-lg bg-sky-500/10 border border-sky-500/25">
+                  <span className="text-[10px] text-muted-foreground block">Crosses / 90</span>
+                  <span className="font-mono font-bold text-sky-600 dark:text-sky-400">
+                    {telemetry.homeCrosses90 + telemetry.awayCrosses90}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 pt-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Over 8.5 Match Corners Probability</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {telemetry.over85CornersProb}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Over 9.5 Match Corners Probability</span>
+                  <span className="font-mono font-bold text-foreground">{telemetry.over95CornersProb}%</span>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1.5 pt-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">9+ Total Match Corners Probability</span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  {telemetry.over85CornersProb}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">10+ Total Match Corners Probability</span>
-                <span className="font-mono font-bold text-foreground">{telemetry.over95CornersProb}%</span>
-              </div>
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAddPropToSlip('Over 8.5 Corners', 1.52, telemetry.over85CornersProb)}
+                className="h-8 text-xs font-bold gap-1"
+              >
+                <Plus className="h-3.5 w-3.5 text-sky-500" />
+                Over 8.5 Corners @1.52
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAddPropToSlip('Over 9.5 Corners', 1.85, telemetry.over95CornersProb)}
+                className="h-8 text-xs font-bold gap-1"
+              >
+                <Plus className="h-3.5 w-3.5 text-sky-500" />
+                Over 9.5 Corners @1.85
+              </Button>
             </div>
           </div>
         </div>

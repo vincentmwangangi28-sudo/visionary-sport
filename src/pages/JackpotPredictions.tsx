@@ -49,7 +49,13 @@ import {
   Zap,
   Timer,
   ChevronRight,
+  Download,
+  Ticket,
 } from 'lucide-react';
+import {
+  downloadSlipAsPngImage,
+  generateRegionalBookingCode,
+} from '@/services/bookmakerBookingCodes';
 import {
   settleJackpotPool,
   getHistoricalJackpotEditions,
@@ -266,7 +272,56 @@ export default function JackpotPredictions() {
       picksList.join('\n') +
       `\n\n🎯 AI Banker Locks: ${bankerCount} | ⚖️ Draw Alerts: ${drawAlertCount}\n` +
       `📊 View full mathematical xG & Poisson breakdown: https://predictpro.guru/jackpot-predictions`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+    const link = document.createElement('a');
+    link.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
+  };
+
+  const handleDownloadJackpotPng = () => {
+    hapticService.success();
+    const mappedBookie = provider === 'betika' || provider === 'betika_grand' ? 'betika' : 'sportpesa';
+    const slipSelections = currentPool.slice(0, 10).map((g) => {
+      const pick = activePicks[g.fixtureId] || g.recommendedPick;
+      const marketLabel =
+        pick === '1'
+          ? 'Home Win'
+          : pick === 'X'
+          ? 'Draw'
+          : pick === '2'
+          ? 'Away Win'
+          : `Double Chance ${pick}`;
+      const odds =
+        pick === '1'
+          ? g.homeOdds
+          : pick === 'X'
+          ? g.drawOdds
+          : pick === '2'
+          ? g.awayOdds
+          : Number((Math.min(g.homeOdds, g.awayOdds) * 0.62).toFixed(2));
+      return {
+        homeTeam: g.homeTeam,
+        awayTeam: g.awayTeam,
+        league: g.league,
+        market: `#${g.id} ${marketLabel}`,
+        odds: Math.max(1.18, odds),
+        confidence: Math.max(g.homeProb, g.drawProb, g.awayProb),
+      };
+    });
+    const bookingCode = generateRegionalBookingCode(mappedBookie, slipSelections);
+    const totalOdds = slipSelections.reduce((acc, s) => acc * s.odds, 1);
+    downloadSlipAsPngImage({
+      title: `${currentMeta.name} (${currentPool.length} Games)`,
+      bookieId: mappedBookie,
+      bookingCode,
+      selections: slipSelections,
+      totalOdds,
+    });
+    toast({
+      title: '🖼️ Jackpot PNG Card Downloaded',
+      description: `Saved 2x High-DPI ${currentMeta.shortName} slip card (${bookingCode}) for WhatsApp & Telegram sharing.`,
+    });
   };
 
   const filteredGames = useMemo(() => {
@@ -456,7 +511,7 @@ export default function JackpotPredictions() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -466,6 +521,29 @@ export default function JackpotPredictions() {
                     {copiedSlip ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4 text-emerald-400" />}
                     <span>{copiedSlip ? 'Copied Slip!' : 'Copy Slip (Text / SMS)'}</span>
                   </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadJackpotPng}
+                    className="min-h-[36px] gap-1.5 font-bold border-emerald-500/40 bg-slate-950 text-emerald-400 hover:bg-emerald-500/10 text-xs"
+                    title="Download 2x High-DPI Jackpot Slip PNG Card"
+                  >
+                    <Download className="h-4 w-4 text-emerald-400" />
+                    <span>Save Slip PNG</span>
+                  </Button>
+
+                  <Link to="/slip-generator">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-slate-200 hover:bg-slate-800 text-xs"
+                      title="Convert Jackpot Booking Code to SportyBet, 1xBet, or Bet9ja"
+                    >
+                      <Ticket className="h-4 w-4 text-amber-400" />
+                      <span className="hidden sm:inline">Code Converter</span>
+                    </Button>
+                  </Link>
 
                   <Button
                     variant="outline"

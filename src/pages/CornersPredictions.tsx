@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import {
   CornerDownRight,
   Plus,
@@ -176,6 +177,9 @@ export default function CornersPredictions() {
             </Tabs>
           </div>
         </div>
+
+        {/* Interactive Referee Discipline & Corner Set-Piece Prop Hub */}
+        <RefereeSetPieceMatrix />
 
         {/* Grid of Predictions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

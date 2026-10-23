@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
             <div className="space-y-2">
               <h3 className="font-semibold text-foreground">B. Information You Provide Voluntarily</h3>
               <p>
-                When you create an account, subscribe to premium features, or submit feedback, you may provide your email address, username, regional preference, and notification preferences. If you complete a payment via Stripe or Lipana M-Pesa, transaction identifiers are securely processed by authorized payment providers under PCI-DSS standards; PredictPro does not store complete payment card credentials on our servers.
+                When you create a free member account, save favorite leagues, or submit feedback through our contact desk, you may provide your email address, display name, regional timezone preference, and notification settings. PredictPro is a 100% free open-access sports statistics publication and never requests or stores credit card, banking, or financial payment credentials.
               </p>
             </div>
           </div>

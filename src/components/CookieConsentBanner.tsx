@@ -5,6 +5,19 @@ import { Button } from '@/components/ui/button';
 
 const CONSENT_STORAGE_KEY = 'predictpro_cookie_consent';
 
+function updateGoogleConsentMode(granted: boolean) {
+  if (typeof window === 'undefined') return;
+  const w = window as Window & { gtag?: (...args: unknown[]) => void };
+  if (typeof w.gtag === 'function') {
+    w.gtag('consent', 'update', {
+      ad_storage: granted ? 'granted' : 'denied',
+      ad_user_data: granted ? 'granted' : 'denied',
+      ad_personalization: granted ? 'granted' : 'denied',
+      analytics_storage: 'granted',
+    });
+  }
+}
+
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
 
@@ -14,26 +27,34 @@ export function CookieConsentBanner() {
         return;
       }
       const consent = localStorage.getItem(CONSENT_STORAGE_KEY);
-      if (!consent) {
-        let timer: ReturnType<typeof setTimeout> | null = null;
-        const onScroll = () => {
-          window.removeEventListener('scroll', onScroll);
-          timer = setTimeout(() => {
-            setVisible(true);
-          }, 12000);
-        };
-        window.addEventListener('scroll', onScroll, { passive: true, once: true });
-        return () => {
-          window.removeEventListener('scroll', onScroll);
-          if (timer) clearTimeout(timer);
-        };
+      if (consent) {
+        try {
+          const parsed = JSON.parse(consent);
+          if (parsed?.type === 'all') {
+            updateGoogleConsentMode(true);
+          }
+        } catch {}
+        return;
       }
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      const onScroll = () => {
+        window.removeEventListener('scroll', onScroll);
+        timer = setTimeout(() => {
+          setVisible(true);
+        }, 6000);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true, once: true });
+      return () => {
+        window.removeEventListener('scroll', onScroll);
+        if (timer) clearTimeout(timer);
+      };
     } catch {}
   }, []);
 
   const handleAcceptAll = () => {
     try {
       localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify({ type: 'all', timestamp: new Date().toISOString() }));
+      updateGoogleConsentMode(true);
     } catch {}
     setVisible(false);
   };
@@ -41,6 +62,7 @@ export function CookieConsentBanner() {
   const handleEssentialOnly = () => {
     try {
       localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify({ type: 'essential', timestamp: new Date().toISOString() }));
+      updateGoogleConsentMode(false);
     } catch {}
     setVisible(false);
   };

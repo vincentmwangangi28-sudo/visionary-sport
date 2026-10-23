@@ -23,12 +23,13 @@ import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 
-const SEORuntime = lazyWithRetry(() => import("@/components/SEORuntime"));
-const DeferredBackgroundHooks = lazyWithRetry(() => import("@/components/DeferredBackgroundHooks"));
-const Sonner = lazyWithRetry(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
-const CookieConsentBanner = lazyWithRetry(() => import("@/components/CookieConsentBanner").then(m => ({ default: m.CookieConsentBanner })));
-const UnifiedSearchModal = lazyWithRetry(() => import("@/components/UnifiedSearchModal").then(m => ({ default: m.UnifiedSearchModal })));
-const BetSlipDrawer = lazyWithRetry(() => import("@/components/BetSlipDrawer").then(m => ({ default: m.BetSlipDrawer })));
+import SEORuntime from "@/components/SEORuntime";
+import DeferredBackgroundHooks from "@/components/DeferredBackgroundHooks";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { UnifiedSearchModal } from "@/components/UnifiedSearchModal";
+import { BetSlipDrawer } from "@/components/BetSlipDrawer";
+import { GuestAccountPrompt } from "@/components/GuestAccountPrompt";
 
 import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -152,6 +153,7 @@ const TodayPredictions           = lazyWithRetry(() => import("./pages/TodayPred
 const TwoOddsPredictions         = lazyWithRetry(() => import("./pages/TwoOddsPredictions"));
 const FiveOddsPredictions        = lazyWithRetry(() => import("./pages/FiveOddsPredictions"));
 const TeamAnalyticsHub           = lazyWithRetry(() => import("./pages/TeamAnalyticsHub"));
+const SlipGeneratorPage          = lazyWithRetry(() => import("./pages/SlipGeneratorPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -377,35 +379,30 @@ const DeferredGlobalOverlays = () => {
     };
   }, []);
 
-  if (!ready) return null;
-
   return (
     <>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <DeferredBackgroundHooks />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <UnifiedSearchModal />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <BetSlipDrawer />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <Sonner />
-        </ErrorBoundary>
-      </Suspense>
-      <Suspense fallback={null}>
-        <ErrorBoundary fallback={null}>
-          <CookieConsentBanner />
-        </ErrorBoundary>
-      </Suspense>
+      <ErrorBoundary fallback={null}>
+        <UnifiedSearchModal />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <BetSlipDrawer />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <GuestAccountPrompt />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <Sonner />
+      </ErrorBoundary>
+      {ready && (
+        <>
+          <ErrorBoundary fallback={null}>
+            <DeferredBackgroundHooks />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={null}>
+            <CookieConsentBanner />
+          </ErrorBoundary>
+        </>
+      )}
     </>
   );
 };
@@ -462,6 +459,7 @@ const App = () => (
                             <Route path="/predict"       element={<RouteBoundary component={MatchPredictor} />} />
                             <Route path="/predict/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
                             <Route path="/match/:matchSlug" element={<Navigate to="/predict/:matchSlug" replace />} />
+                            <Route path="/matches/:matchSlug" element={<Navigate to="/predict/:matchSlug" replace />} />
                             <Route path="/best-bets"     element={<RouteBoundary component={BestBets} />} />
                             <Route path="/upcoming"      element={<RouteBoundary component={UpcomingFixturesPage} />} />
                             <Route path="/upcoming-fixtures" element={<Navigate to="/upcoming" replace />} />
@@ -569,6 +567,12 @@ const App = () => (
                             <Route path="/today-predictions"            element={<RouteBoundary component={TodayPredictions} />} />
                             <Route path="/2-odds-predictions"           element={<RouteBoundary component={TwoOddsPredictions} />} />
                             <Route path="/5-odds-predictions"           element={<RouteBoundary component={FiveOddsPredictions} />} />
+                            <Route path="/slip-generator"               element={<RouteBoundary component={SlipGeneratorPage} />} />
+                            <Route path="/booking-codes"                element={<RouteBoundary component={SlipGeneratorPage} />} />
+                            <Route path="/code-converter"               element={<RouteBoundary component={SlipGeneratorPage} />} />
+                            <Route path="/sportybet-code-converter"     element={<Navigate to="/slip-generator" replace />} />
+                            <Route path="/1xbet-code-converter"         element={<Navigate to="/slip-generator" replace />} />
+                            <Route path="/bet9ja-code-converter"        element={<Navigate to="/slip-generator" replace />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}

@@ -29,19 +29,23 @@ PredictPro combines historical head-to-head (H2H) records, rolling 10-match Expe
 
 ## Interactive Analytics & Strategy Guides
 
+- [Universal Bookmaker Booking Code Converter](https://predictpro.guru/slip-generator): Translate accumulator booking codes across SportyBet, 1xBet, Bet9ja, Betway, SportPesa, and Betika with 2× High-DPI PNG slip export.
+- [6×6 Bivariate Poisson & Dixon-Coles Score Matrix](https://predictpro.guru/poisson-calculator): Interactive 36-cell exact scoreline probability matrix and fair odds simulator.
+- [Club Expected Goals (xG) & FDR Analytics Hub](https://predictpro.guru/teams): Club-specific rolling xG, defensive xGA, and 5-match Fixture Difficulty Ratings (`/teams/arsenal`, `/teams/real-madrid`, `/teams/manchester-city`, etc.).
 - [Interactive AI Match Predictor](https://predictpro.guru/predict): Custom club-vs-club Poisson and xG match simulator.
 - [Head-to-Head (H2H) Team Comparison](https://predictpro.guru/h2h): Side-by-side statistical comparison and historical H2H records.
 - [Team Winning Streaks Radar](https://predictpro.guru/streaks): Consecutive wins, unbeaten runs, and Over 2.5 / BTTS team streaks.
 - [Live Football Scores & In-Play Odds](https://predictpro.guru/live): Real-time match trackers, live scores, and in-play momentum.
-- [League Standings & Form Tables](https://predictpro.guru/standings): Current league tables, points, and goal differentials.
-- [Quantitative Methodology](https://predictpro.guru/methodology): Documentation of PredictPro's bivariate Poisson, xG, and ensemble AI architecture.
-- [Football Betting Strategy Blog](https://predictpro.guru/blog): Educational guides on Value Betting (+EV), Asian Handicap lines, Draw No Bet vs Double Chance, and Kelly Criterion bankroll management.
-- [HTML Sitemap Directory](https://predictpro.guru/sitemap): Complete index of all 149 canonical pages, leagues, tools, and match predictions.
+- [League Standings & Form Tables](https://predictpro.guru/standings): Current league tables, points, and Expected Points (xPTS) Justice Tables.
+- [Quantitative Methodology](https://predictpro.guru/methodology): Documentation of PredictPro's bivariate Poisson, Dixon-Coles, xG, and ensemble AI architecture.
+- [Football Strategy & Quantitative Blog](https://predictpro.guru/blog): 20+ educational guides on Universal Booking Code Conversion, 6×6 Poisson Matrices, 2-Score Dutching, Referee Prop Modeling, and Kelly Criterion bankroll management.
+- [HTML Sitemap & Google Discover Directory](https://predictpro.guru/sitemap): Complete index of 185+ canonical pages, leagues, club xG hubs, tools, and match predictions.
 
 ## Machine-Readable Sitemaps, Feeds & Social Card API
 
-- [Master Sitemap Index](https://predictpro.guru/sitemap-index.xml): Partitioned XML sitemaps (`/sitemap-core.xml`, `/sitemap-leagues.xml`, `/sitemap-matches.xml`, `/sitemap-blog.xml`, `/sitemap-yandex.xml`).
-- [Primary XML Sitemap](https://predictpro.guru/sitemap.xml): Unified 149-URL canonical sitemap with 24 regional hreflang annotations.
+- [Master Sitemap Index](https://predictpro.guru/sitemap-index.xml): Partitioned XML sitemaps (`/sitemap.xml`, `/sitemap-core.xml`, `/sitemap-leagues.xml`, `/sitemap-matches.xml`, `/sitemap-blog.xml`, `/sitemap-yandex.xml`).
+- [Primary XML Sitemap](https://predictpro.guru/sitemap.xml): Unified canonical sitemap with `<image:image>` Google Discover tags and 54 regional hreflang annotations.
 - [RSS 2.0 & Atom 1.0 Syndication Feeds](https://predictpro.guru/rss.xml): Also available at `/feed.xml` (Atom 1.0) and `/feed-predictions.xml` (Daily Match Predictions RSS).
-- [Dynamic 1200×630 OpenGraph Card Generator](https://predictpro.guru/api/og): Edge-rendered SVG social cards for matches and multibet slips.
+- [Dynamic 1200×630 OpenGraph Card Generator](https://predictpro.guru/api/og): Edge-rendered SVG social cards for matches and multibet slips (`max-image-preview:large`).
+
 

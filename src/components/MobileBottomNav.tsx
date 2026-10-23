@@ -6,14 +6,18 @@ import {
   Menu,
   Trophy,
   Calendar,
+  Sparkles,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UnifiedSearchTrigger } from '@/components/UnifiedSearchTrigger';
+import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
 
 export const MobileBottomNav = () => {
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const { selections, setIsOpen: setSlipOpen } = useBetSlip();
   const { isAdmin } = useAdmin();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -124,6 +128,30 @@ export const MobileBottomNav = () => {
             </SheetHeader>
 
             <div className="py-4 space-y-4">
+              {!user && (
+                <div className="p-3 rounded-xl border border-emerald-500/35 bg-slate-950 text-white flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-extrabold text-white">
+                      Free Member Account (+50 Coins)
+                    </p>
+                    <p className="text-[11px] text-slate-300 truncate">
+                      Save Bet Slips &amp; convert booking codes
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSheetOpen(false);
+                      triggerGuestAccountInvite();
+                    }}
+                    className="h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold inline-flex items-center gap-1 shrink-0 cursor-pointer"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Join Free</span>
+                  </button>
+                </div>
+              )}
+
               <div>
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Competitions</p>
                 <div className="grid grid-cols-2 gap-1.5 text-xs">
@@ -148,15 +176,17 @@ export const MobileBottomNav = () => {
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-muted-foreground mb-2">Markets &amp; Stats</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Markets &amp; Pro Tools</p>
                 <div className="grid grid-cols-2 gap-1.5 text-xs">
                   {[
+                    { to: '/slip-generator', label: 'AI Slip & Code Converter' },
+                    { to: '/poisson-calculator', label: 'Poisson Score Matrix' },
+                    { to: '/h2h', label: 'H2H Matchup Simulator' },
+                    { to: '/corners-predictions', label: 'Corners & Referee Hub' },
+                    { to: '/cards-predictions', label: 'Cards & Bookings Hub' },
                     { to: '/sure-win-predictions', label: 'High Probability' },
                     { to: '/over-under-predictions', label: 'Over / Under 2.5' },
-                    { to: '/btts', label: 'Both Teams to Score' },
-                    { to: '/correct-score', label: 'Correct Score' },
                     { to: '/screener', label: 'Match Screener' },
-                    { to: '/archive', label: 'Results Archive' },
                   ].map((item) => (
                     <Link
                       key={item.to}

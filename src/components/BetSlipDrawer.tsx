@@ -1,9 +1,18 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useCurrency } from '@/hooks/useCurrency';
-import { REGIONAL_BOOKMAKERS, generateRegionalBookingCode } from '@/services/bookmakerBookingCodes';
+import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
+import {
+  REGIONAL_BOOKMAKERS,
+  generateRegionalBookingCode,
+  translateMarketForBookmaker,
+  generateMatchGameId,
+  downloadSlipAsPngImage,
+} from '@/services/bookmakerBookingCodes';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +32,8 @@ import {
   Globe,
   Plus,
   Vibrate,
+  Download,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -51,6 +62,7 @@ export const BetSlipDrawer = () => {
     isHapticSupported,
   } = useBetSlip();
 
+  const { user } = useAuth();
   const { formatOdds, t, preferences } = useUserPreferences();
   const { region } = useGeoRegion();
   const { currentConfig, setCurrency: setGlobalCurrency } = useCurrency();
@@ -369,6 +381,14 @@ export const BetSlipDrawer = () => {
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <Globe className="h-3.5 w-3.5 text-primary" /> {t('slip.export_code', 'Global Bookmaker Code Exporter')}
                     </p>
+                    <Link
+                      to="/slip-generator"
+                      onClick={() => setIsOpen(false)}
+                      className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                    >
+                      <ArrowLeftRight className="h-3 w-3" />
+                      Converter Hub
+                    </Link>
                   </div>
                   <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-muted/20 rounded-lg border">
                     {sortedBookmakers.map((bookie) => {
@@ -393,33 +413,59 @@ export const BetSlipDrawer = () => {
                   </div>
 
                   {generatedCode && (
-                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 flex items-center justify-between gap-2 mt-2 animate-in fade-in">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
-                          <span aria-hidden="true">{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
-                        </p>
-                        <p className="font-mono font-bold text-sm tracking-wider text-primary">{generatedCode}</p>
+                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 space-y-2 mt-2 animate-in fade-in">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
+                            <span aria-hidden="true">{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
+                          </p>
+                          <p className="font-mono font-bold text-sm tracking-wider text-primary">{generatedCode}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleCopyCode(generatedCode)}
+                            title={`Copy ${activeBookmaker.name} slip code: ${generatedCode}`}
+                            className="h-8 gap-1 text-xs font-semibold"
+                          >
+                            {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                            {copied ? t('slip.copied', 'Copied') : 'Copy'}
+                          </Button>
+                          <a
+                            href={activeBookmaker.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Open ${activeBookmaker.name} website`}
+                            className="inline-flex items-center justify-center rounded-md text-xs font-medium border bg-background hover:bg-muted h-8 px-2"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                          </a>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleCopyCode(generatedCode)}
-                          title={`Copy ${activeBookmaker.name} slip code: ${generatedCode}`}
-                          className="h-8 gap-1 text-xs font-semibold"
-                        >
-                          {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-                          {copied ? t('slip.copied', 'Copied') : 'Copy'}
-                        </Button>
-                        <a
-                          href={activeBookmaker.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`Open ${activeBookmaker.name} website`}
-                          className="inline-flex items-center justify-center rounded-md text-xs font-medium border bg-background hover:bg-muted h-8 px-2"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                        </a>
+
+                      {/* Exact Bookmaker Market & 4-Digit Game ID Checklist */}
+                      <div className="pt-2 border-t border-primary/15 space-y-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          {activeBookmaker.name} Fast-Entry Coupon Checklist
+                        </p>
+                        <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
+                          {selections.map((s) => {
+                            const gameId = generateMatchGameId(s.homeTeam, s.awayTeam, activeBookmaker.id);
+                            const translated = translateMarketForBookmaker(s.market, activeBookmaker.id);
+                            return (
+                              <div key={s.id} className="flex items-center justify-between text-[11px] bg-background/70 px-2 py-1 rounded border border-border/50">
+                                <span className="truncate max-w-[160px] font-medium">
+                                  <strong className="font-mono text-primary mr-1">#{gameId}</strong>
+                                  {s.homeTeam} v {s.awayTeam}
+                                </span>
+                                <span className="font-mono font-bold text-foreground shrink-0 ml-1">
+                                  {translated}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -531,8 +577,28 @@ export const BetSlipDrawer = () => {
                   </a>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleShareSlip} className="flex-1 gap-2 h-9 text-xs font-bold shadow-md">
-                    <Share2 className="h-3.5 w-3.5" /> {t('slip.share', 'Copy Auto-Load Link')}
+                  <Button onClick={handleShareSlip} className="flex-1 gap-1.5 h-9 text-xs font-bold shadow-md">
+                    <Share2 className="h-3.5 w-3.5" /> {t('slip.share', 'Share Link')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      triggerHaptic('success');
+                      downloadSlipAsPngImage({
+                        selections,
+                        totalOdds,
+                        stake,
+                        currency,
+                        potentialReturn: bonusMultiplier > 0 ? boostedReturn : potentialReturn,
+                        bookmakerName: activeBookmaker.name,
+                        bookingCode: generatedCode || generateRegionalBookingCode(activeBookmaker.id, selections.length),
+                      });
+                      toast.success('Downloaded high-DPI Slip Card PNG!');
+                    }}
+                    className="gap-1.5 h-9 text-xs font-semibold"
+                    title="Save Slip as High-DPI PNG Card"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Save PNG
                   </Button>
                   <Button
                     variant="outline"
@@ -543,6 +609,27 @@ export const BetSlipDrawer = () => {
                     <Copy className="h-3.5 w-3.5" /> {t('slip.export_code', 'Code')}
                   </Button>
                 </div>
+
+                {!user && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOpen(false);
+                      triggerGuestAccountInvite();
+                    }}
+                    className="w-full mt-1 p-2.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors flex items-center justify-between gap-2 text-left cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Sparkles className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <span className="text-xs font-bold text-foreground truncate">
+                        Save this {selections.length}-leg slip to a Free Account
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 shrink-0">
+                      +50 Coins
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           )}

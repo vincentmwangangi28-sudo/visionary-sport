@@ -24,7 +24,22 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[PredictPro ErrorBoundary caught an unhandled exception]:', error, info);
+    // If fallback is explicitly null, this is a silent non-critical boundary
+    if (this.props.fallback === null) {
+      return;
+    }
+    const isChunkOrNetwork =
+      error.name === 'ChunkLoadError' ||
+      error.message?.includes('dynamically imported module') ||
+      error.message?.includes('Failed to fetch') ||
+      error.message?.includes('Loading chunk');
+
+    if (isChunkOrNetwork) {
+      console.warn('[PredictPro ErrorBoundary caught a transient module load interruption]:', error.message);
+      return;
+    }
+
+    console.warn('[PredictPro ErrorBoundary caught an exception]:', error, info);
     try {
       logger.logErrorBoundary(error, info, {
         compact: this.props.compact,
@@ -84,7 +99,7 @@ export class ErrorBoundary extends Component<Props, State> {
       if (typeof this.props.fallback === 'function') {
         return this.props.fallback(error, this.resetError);
       }
-      if (this.props.fallback) {
+      if (this.props.fallback !== undefined) {
         return this.props.fallback;
       }
 
