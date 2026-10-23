@@ -44,9 +44,51 @@
 - **Kenyan Premier League (KPL) & East Africa Hub**: `https://predictpro.guru/kpl-predictions`
 - **US Soccer & MLS Hub**: `https://predictpro.guru/us-soccer-predictions`
 - **FIFA World Cup 2026 Hub**: `https://predictpro.guru/world-cup-predictions`
+- **Smart Bet Slip Generator & Booking Code Hub**: `https://predictpro.guru/slip-generator`
+- **Daily Football Booking Codes (SportyBet, 1xBet, Bet9ja, Betway, Betika)**: `https://predictpro.guru/booking-codes`
+- **Universal Bet Code Converter**: `https://predictpro.guru/code-converter`
+- **Club Expected Goals (xG) & Fixture Difficulty Rating (FDR) Hub**: `https://predictpro.guru/teams`
 - **Methodology & Model Documentation**: `https://predictpro.guru/methodology`
+- **Interactive Sitemap & Discovery Hub**: `https://predictpro.guru/sitemap`
 
-## 4. Continental Syndication & Regional Hubs (54 CAF Nations + Global)
+## 4. Machine-Readable XML Sitemaps & Syndication Feeds (Google Discover & News Ready)
+
+- **Master Sitemap Index**: `https://predictpro.guru/sitemap-index.xml`
+- **Primary Sitemap (with `<image:image>` & hreflang)**: `https://predictpro.guru/sitemap.xml`
+- **Google Discover & News Sitemap (`<news:news>` + `<image:image>`)**: `https://predictpro.guru/sitemap-discover-news.xml`
+- **Core Platform Sitemap**: `https://predictpro.guru/sitemap-core.xml`
+- **Leagues & Tournaments Sitemap**: `https://predictpro.guru/sitemap-leagues.xml`
+- **Matches & Club xG Hubs Sitemap**: `https://predictpro.guru/sitemap-matches.xml`
+- **Editorial Blog Sitemap**: `https://predictpro.guru/sitemap-blog.xml`
+- **RSS 2.0 Editorial & Discovery Feed**: `https://predictpro.guru/rss.xml`
+- **Atom 1.0 Syndication Feed**: `https://predictpro.guru/feed.xml`
+- **Daily Match Predictions RSS Feed**: `https://predictpro.guru/feed-predictions.xml`
+
+## 5. Club Expected Goals (xG) & FDR Hubs (`/teams/:teamSlug`)
+
+- `https://predictpro.guru/teams/arsenal` (Arsenal xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/manchester-city` (Manchester City xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/liverpool` (Liverpool xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/chelsea` (Chelsea xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/real-madrid` (Real Madrid xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/barcelona` (Barcelona xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/bayern-munich` (Bayern Munich xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/inter-milan` (Inter Milan xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/psg` (Paris Saint-Germain xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/al-ahly` (Al Ahly xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/mamelodi-sundowns` (Mamelodi Sundowns xG, Poisson Attack/Defense & 5-Match FDR)
+- `https://predictpro.guru/teams/gor-mahia` (Gor Mahia xG, Poisson Attack/Defense & 5-Match FDR)
+
+## 6. Featured Quantitative Strategy Guides (`/blog/:slug`)
+
+- `https://predictpro.guru/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja` (Universal Bet Code Converter & Multi-Bookmaker Market Mapping)
+- `https://predictpro.guru/blog/bivariate-poisson-dixon-coles-score-matrix-guide` (Bivariate Poisson & Dixon-Coles 6×6 Exact Score Matrix Engineering)
+- `https://predictpro.guru/blog/2-score-correct-score-dutching-strategy` (2-Score Correct Score Dutching Strategy & Equal-Profit Stake Sizing)
+- `https://predictpro.guru/blog/referee-cards-corners-prop-modeling` (Referee Discipline & Corner Prop Modeling via xG Tempo)
+- `https://predictpro.guru/blog/expected-goals-xg-betting-model-explained` (Expected Goals xG Betting Model Explained)
+- `https://predictpro.guru/blog/closing-line-value-clv-dropping-odds` (Closing Line Value CLV & Dropping Odds Steam)
+
+## 7. Continental Syndication & Regional Hubs (54 CAF Nations + Global)
 
 - **All-Africa Continental (CAF)**: AFCON, CAF Champions League, CAF Confederation Cup (`x-default`, `en`)
 - **East Africa (CECAFA)**: Kenya FKF Premier League, Tanzania NBC Premier League, Uganda, Rwanda, Ethiopia (`en-KE`, `sw-KE`, `en-TZ`, `sw-TZ`, `en-UG`, `en-RW`)
@@ -54,7 +96,7 @@
 - **Southern Africa (COSAFA)**: South Africa Betway Premiership (PSL), Zambia Super League, Zimbabwe, Botswana (`en-ZA`, `en-ZM`, `en-ZW`)
 - **Central Africa (UNIFFAC)**: DR Congo Linafoot, Angola Girabola, Congo, Gabon (`fr-CD`, `fr-CM`, `pt-AO`)
 - **North Africa & MENA (UNAF)**: Egyptian Premier League, Morocco Botola Pro, Tunisia Ligue 1, Algeria (`ar-EG`, `fr-MA`, `fr-TN`, `fr-DZ`)
-- **Flagship Continental Derby Previews**:
+- **Flagship Continental & Global Derby Previews**:
   - `https://predictpro.guru/predict/gor-mahia-vs-afc-leopards` (Kenya Mashemeji Derby)
   - `https://predictpro.guru/predict/simba-sc-vs-young-africans` (Tanzania Kariakoo Derby)
   - `https://predictpro.guru/predict/kaizer-chiefs-vs-orlando-pirates` (South Africa Soweto Derby)
@@ -64,3 +106,10 @@
   - `https://predictpro.guru/predict/al-ahly-vs-zamalek` (Cairo & CAF Super Derby)
   - `https://predictpro.guru/predict/wydad-ac-vs-raja-casablanca` (Casablanca Derby)
   - `https://predictpro.guru/predict/tp-mazembe-vs-as-vita-club` (DR Congo Linafoot Classico)
+  - `https://predictpro.guru/predict/celtic-vs-rangers` (Scottish Old Firm Derby)
+  - `https://predictpro.guru/predict/boca-juniors-vs-river-plate` (Argentine Superclásico)
+  - `https://predictpro.guru/predict/benfica-vs-sporting-cp` (Lisbon Derby)
+  - `https://predictpro.guru/predict/galatasaray-vs-fenerbahce` (Turkish Intercontinental Derby)
+  - `https://predictpro.guru/predict/al-hilal-vs-al-nassr` (Riyadh Derby)
+  - `https://predictpro.guru/predict/flamengo-vs-palmeiras` (Brasileirão Summit Clash)
+

@@ -21,6 +21,7 @@ import {
 } from '@/services/viralKeywordIntelligence';
 import { 
   downloadSitemapXml, 
+  downloadDiscoverSitemapXml,
   generateSitemapXml, 
   getAllSitemapEntries,
   BASE_URL 
@@ -212,6 +213,30 @@ export default function SEOIndexingPage() {
       status: '200 OK · Self-Canonical',
     },
     {
+      path: '/slip-generator',
+      url: 'https://predictpro.guru/slip-generator',
+      title: 'Smart Bet Slip Generator & Booking Code Converter | PredictPro',
+      staticTargets: 'dist/slip-generator.html + dist/slip-generator/index.html',
+      aiCitationSchema: 'SoftwareApplication + Universal Bookmaker Code Mapper',
+      status: '200 OK · Self-Canonical',
+    },
+    {
+      path: '/booking-codes',
+      url: 'https://predictpro.guru/booking-codes',
+      title: 'Daily Football Booking Codes: SportyBet, 1xBet, Bet9ja & Betway',
+      staticTargets: 'dist/booking-codes.html + dist/booking-codes/index.html',
+      aiCitationSchema: 'Dataset + Curated Daily Multi-Bookmaker Tickets',
+      status: '200 OK · Self-Canonical',
+    },
+    {
+      path: '/teams',
+      url: 'https://predictpro.guru/teams',
+      title: 'Club Expected Goals (xG) Analytics & FDR Hub | PredictPro',
+      staticTargets: 'dist/teams.html + dist/teams/index.html',
+      aiCitationSchema: 'Dataset + 24 Club Poisson Attack/Defense & 5-Match FDR',
+      status: '200 OK · Self-Canonical',
+    },
+    {
       path: '/about',
       url: 'https://predictpro.guru/about',
       title: 'About PredictPro Quantitative Sports Analytics',
@@ -335,6 +360,14 @@ export default function SEOIndexingPage() {
               className="gap-1.5 text-xs font-semibold"
             >
               <Download className="h-3.5 w-3.5" /> Download Sitemap
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadDiscoverSitemapXml()}
+              className="gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Discover XML
             </Button>
           </div>
         </div>

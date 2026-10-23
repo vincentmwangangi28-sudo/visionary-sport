@@ -43,26 +43,28 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
   ],
   "Tools & Calculators": [
     { to: "/slip-generator", label: "AI Slip & Code Converter" },
+    { to: "/booking-codes", label: "Daily Booking Codes" },
+    { to: "/code-converter", label: "Universal Code Converter" },
     { to: "/poisson-calculator", label: "Poisson 6x6 Score Matrix" },
     { to: "/screener", label: "Match Screener" },
     { to: "/dropping-odds", label: "Odds Movement" },
     { to: "/streaks", label: "Form & Streaks" },
     { to: "/value-bet-calculator", label: "Value Calculator" },
     { to: "/kelly-criterion-calculator", label: "Staking Calculator" },
-    { to: "/parlay-calculator", label: "Accumulator Calculator" },
-    { to: "/odds-converter", label: "Odds Converter" },
+    { to: "/dutching-calculator", label: "Dutching Calculator" },
     { to: "/track-record", label: "Historical Performance" },
   ],
   Guides: [
     { to: "/blog", label: "Editorial Articles" },
+    { to: "/blog/bivariate-poisson-dixon-coles-score-matrix-guide", label: "Poisson & Dixon-Coles Guide" },
+    { to: "/blog/universal-bet-code-converter-sportybet-1xbet-bet9ja", label: "Bet Code Converter Guide" },
+    { to: "/blog/2-score-correct-score-dutching-strategy", label: "2-Score Dutching Strategy" },
+    { to: "/blog/referee-cards-corners-prop-modeling", label: "Cards & Corners Modeling" },
     { to: "/blog/expected-goals-xg-betting-model-explained", label: "Understanding Expected Goals (xG)" },
-    { to: "/blog/value-betting-explained", label: "Implied Probability Explained" },
-    { to: "/blog/asian-handicap-betting-explained", label: "Asian Handicap Guide" },
-    { to: "/blog/btts-over-under-strategy", label: "Goals Markets Guide" },
     { to: "/methodology", label: "Statistical Methodology" },
     { to: "/about", label: "About PredictPro" },
     { to: "/contact", label: "Contact Support" },
-    { to: "/sitemap", label: "Sitemap" },
+    { to: "/sitemap", label: "Sitemap & Feeds" },
   ],
 };
 
@@ -72,11 +74,27 @@ const FEATURED_MATCHES = [
   { slug: 'real-madrid-vs-barcelona', label: 'Real Madrid vs Barcelona' },
   { slug: 'bayern-munich-vs-borussia-dortmund', label: 'Bayern vs Dortmund' },
   { slug: 'inter-milan-vs-ac-milan', label: 'Inter vs AC Milan' },
-  { slug: 'manchester-united-vs-tottenham', label: 'Man United vs Tottenham' },
-  { slug: 'psg-vs-marseille', label: 'PSG vs Marseille' },
+  { slug: 'celtic-vs-rangers', label: 'Celtic vs Rangers' },
+  { slug: 'boca-juniors-vs-river-plate', label: 'Boca Juniors vs River Plate' },
+  { slug: 'al-ahly-vs-zamalek', label: 'Al Ahly vs Zamalek' },
+  { slug: 'kaizer-chiefs-vs-orlando-pirates', label: 'Kaizer Chiefs vs Pirates' },
   { slug: 'gor-mahia-vs-afc-leopards', label: 'Gor Mahia vs AFC Leopards' },
-  { slug: 'juventus-vs-napoli', label: 'Juventus vs Napoli' },
-  { slug: 'atletico-madrid-vs-sevilla', label: 'Atletico vs Sevilla' },
+  { slug: 'al-hilal-vs-al-nassr', label: 'Al-Hilal vs Al-Nassr' },
+  { slug: 'flamengo-vs-palmeiras', label: 'Flamengo vs Palmeiras' },
+];
+
+const FEATURED_CLUB_HUBS = [
+  { slug: 'arsenal', label: 'Arsenal xG & FDR' },
+  { slug: 'manchester-city', label: 'Man City xG & FDR' },
+  { slug: 'liverpool', label: 'Liverpool xG & FDR' },
+  { slug: 'real-madrid', label: 'Real Madrid xG & FDR' },
+  { slug: 'barcelona', label: 'Barcelona xG & FDR' },
+  { slug: 'bayern-munich', label: 'Bayern Munich xG & FDR' },
+  { slug: 'inter-milan', label: 'Inter Milan xG & FDR' },
+  { slug: 'psg', label: 'PSG xG & FDR' },
+  { slug: 'al-ahly', label: 'Al Ahly xG & FDR' },
+  { slug: 'mamelodi-sundowns', label: 'Sundowns xG & FDR' },
+  { slug: 'gor-mahia', label: 'Gor Mahia xG & FDR' },
 ];
 
 export const Footer = () => {
@@ -123,29 +141,56 @@ export const Footer = () => {
 
         <FooterFAQ />
 
-        {/* Featured Match Links */}
-        <div className="border-t border-border pt-5 pb-5">
-          <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
-            <p className="font-semibold text-xs text-foreground">
-              Featured Match Previews
-            </p>
-            <Link
-              to="/upcoming"
-              className="inline-flex items-center min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
-            >
-              All Upcoming Fixtures →
-            </Link>
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-            {FEATURED_MATCHES.map((m) => (
+        {/* Featured Match Links & Club xG Hubs */}
+        <div className="border-t border-border pt-5 pb-5 space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <p className="font-semibold text-xs text-foreground">
+                Featured Match Previews &amp; Global Derbies
+              </p>
               <Link
-                key={m.slug}
-                to={`/predict/${m.slug}`}
-                className="inline-flex items-center min-h-[24px] py-1 text-muted-foreground hover:text-foreground transition-colors hover:underline"
+                to="/upcoming"
+                className="inline-flex items-center min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
               >
-                {m.label}
+                All Upcoming Fixtures →
               </Link>
-            ))}
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+              {FEATURED_MATCHES.map((m) => (
+                <Link
+                  key={m.slug}
+                  to={`/predict/${m.slug}`}
+                  className="inline-flex items-center min-h-[24px] py-0.5 text-muted-foreground hover:text-foreground transition-colors hover:underline"
+                >
+                  {m.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <p className="font-semibold text-xs text-foreground">
+                Club Expected Goals (xG) &amp; Fixture Difficulty (FDR) Hubs
+              </p>
+              <Link
+                to="/teams"
+                className="inline-flex items-center min-h-[24px] py-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+              >
+                All 24 Club Analytics Hubs →
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+              {FEATURED_CLUB_HUBS.map((c) => (
+                <Link
+                  key={c.slug}
+                  to={`/teams/${c.slug}`}
+                  className="inline-flex items-center min-h-[24px] py-0.5 text-muted-foreground hover:text-foreground transition-colors hover:underline"
+                >
+                  {c.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 

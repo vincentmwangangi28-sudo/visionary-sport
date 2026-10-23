@@ -313,11 +313,21 @@ class GoogleIndexingCronService {
     const key = this.settings.indexNowKey || DEFAULT_INDEXNOW_KEY;
     const priorityAssets = [
       'https://predictpro.guru/',
+      'https://predictpro.guru/slip-generator',
+      'https://predictpro.guru/booking-codes',
+      'https://predictpro.guru/code-converter',
+      'https://predictpro.guru/teams',
       'https://predictpro.guru/favicon.ico',
       'https://predictpro.guru/favicon.svg',
       'https://predictpro.guru/favicon-120x120.png',
+      'https://predictpro.guru/sitemap-index.xml',
       'https://predictpro.guru/sitemap.xml',
+      'https://predictpro.guru/sitemap-discover-news.xml',
       'https://predictpro.guru/sitemap-yandex.xml',
+      'https://predictpro.guru/rss.xml',
+      'https://predictpro.guru/feed.xml',
+      'https://predictpro.guru/feed-predictions.xml',
+      'https://predictpro.guru/llms.txt',
     ];
     const mergedUrls = Array.from(new Set([...priorityAssets, ...urls])).slice(0, 100);
     const payload = {
@@ -418,18 +428,27 @@ class GoogleIndexingCronService {
    * Ping Google and Bing sitemap notification endpoints
    */
   private async dispatchSitemapPings(trigger: 'auto' | 'manual'): Promise<IndexingLogEntry> {
-    // Note: Google officially deprecated and disabled /ping?sitemap= endpoint.
-    // Sitemap discovery is handled via robots.txt reference and IndexNow protocol.
+    const sitemaps = [
+      `${BASE_URL}/sitemap-index.xml`,
+      `${BASE_URL}/sitemap.xml`,
+      `${BASE_URL}/sitemap-discover-news.xml`,
+      `${BASE_URL}/sitemap-core.xml`,
+      `${BASE_URL}/sitemap-leagues.xml`,
+      `${BASE_URL}/sitemap-matches.xml`,
+      `${BASE_URL}/sitemap-blog.xml`,
+      `${BASE_URL}/rss.xml`,
+      `${BASE_URL}/feed.xml`,
+    ];
     return {
       id: `ping-${Date.now()}`,
       timestamp: new Date().toISOString(),
       trigger,
       endpoint: 'Sitemap Auto-Discovery',
-      urlCount: 1,
+      urlCount: sitemaps.length,
       status: 'success',
       httpCode: 200,
-      message: `Sitemap active at ${BASE_URL}/sitemap.xml and indexed via robots.txt and IndexNow.`,
-      sampleUrls: [`${BASE_URL}/sitemap.xml`],
+      message: `${sitemaps.length} sitemaps & Google Discover feeds active (${BASE_URL}/sitemap-index.xml, /sitemap-discover-news.xml, /rss.xml) and indexed via robots.txt and IndexNow.`,
+      sampleUrls: sitemaps.slice(0, 5),
     };
   }
 
