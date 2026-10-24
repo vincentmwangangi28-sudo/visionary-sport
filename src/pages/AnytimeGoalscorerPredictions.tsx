@@ -7,6 +7,7 @@ import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target, Flame, Award } from 'lucide-react';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 
 const ELITE_STRIKERS_PROPS = [
   {
@@ -186,16 +187,24 @@ export default function AnytimeGoalscorerPredictions() {
                   </Badge>
                 </CardHeader>
                 <CardContent className="p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-base text-foreground">{item.player}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.team} · <strong className="text-foreground">{item.xgPer90} xG/90</strong> · {item.shotsOnTargetPer90} SoT/90
-                      </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <PlayerAvatar
+                        name={item.player}
+                        team={item.team}
+                        size="md"
+                        showClubBadge
+                      />
+                      <div className="min-w-0">
+                        <p className="font-bold text-base text-foreground truncate">{item.player}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {item.team} · <strong className="text-foreground">{item.xgPer90} xG/90</strong> · {item.shotsOnTargetPer90} SoT/90
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <span className="text-[11px] text-muted-foreground block">Anytime / 1st Scorer</span>
-                      <span className="font-black text-sm text-primary">
+                      <span className="font-black text-sm text-primary font-mono tabular-nums">
                         @{item.anytimeOdds} / @{item.firstScorerOdds}
                       </span>
                     </div>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import {
   Search,
   User,
@@ -39,6 +40,7 @@ export interface PlayerProfile {
   team: string;
   league: string;
   photo?: string;
+  jerseyNumber?: number;
   rating: number;
   goals: number;
   assists: number;
@@ -61,6 +63,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 26,
     team: 'Manchester City',
     league: 'Premier League',
+    photo: 'https://media.api-sports.io/football/players/1100.png',
+    jerseyNumber: 9,
     rating: 9.1,
     goals: 27,
     assists: 5,
@@ -86,6 +90,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 27,
     team: 'Real Madrid',
     league: 'La Liga',
+    photo: 'https://media.api-sports.io/football/players/278.png',
+    jerseyNumber: 9,
     rating: 9.0,
     goals: 25,
     assists: 8,
@@ -111,6 +117,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 34,
     team: 'Liverpool',
     league: 'Premier League',
+    photo: 'https://media.api-sports.io/football/players/306.png',
+    jerseyNumber: 11,
     rating: 8.9,
     goals: 21,
     assists: 13,
@@ -129,7 +137,7 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     },
   },
   {
-    id: 153,
+    id: 1460,
     name: 'Bukayo Saka',
     nationality: 'England',
     position: 'Attacker',
@@ -137,6 +145,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 24,
     team: 'Arsenal',
     league: 'Premier League',
+    photo: 'https://media.api-sports.io/football/players/1460.png',
+    jerseyNumber: 7,
     rating: 8.8,
     goals: 16,
     assists: 14,
@@ -162,6 +172,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 32,
     team: 'Bayern Munich',
     league: 'Bundesliga',
+    photo: 'https://media.api-sports.io/football/players/184.png',
+    jerseyNumber: 9,
     rating: 9.2,
     goals: 29,
     assists: 9,
@@ -179,7 +191,7 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     },
   },
   {
-    id: 129288,
+    id: 129718,
     name: 'Jude Bellingham',
     nationality: 'England',
     position: 'Midfielder',
@@ -187,6 +199,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 23,
     team: 'Real Madrid',
     league: 'La Liga',
+    photo: 'https://media.api-sports.io/football/players/129718.png',
+    jerseyNumber: 5,
     rating: 8.7,
     goals: 14,
     assists: 11,
@@ -204,7 +218,7 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     },
   },
   {
-    id: 361730,
+    id: 386828,
     name: 'Lamine Yamal',
     nationality: 'Spain',
     position: 'Attacker',
@@ -212,6 +226,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 19,
     team: 'Barcelona',
     league: 'La Liga',
+    photo: 'https://media.api-sports.io/football/players/386828.png',
+    jerseyNumber: 19,
     rating: 8.7,
     goals: 11,
     assists: 15,
@@ -229,7 +245,7 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     },
   },
   {
-    id: 1604,
+    id: 44,
     name: 'Rodri',
     nationality: 'Spain',
     position: 'Midfielder',
@@ -237,6 +253,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 30,
     team: 'Manchester City',
     league: 'Premier League',
+    photo: 'https://media.api-sports.io/football/players/44.png',
+    jerseyNumber: 16,
     rating: 8.8,
     goals: 7,
     assists: 9,
@@ -254,7 +272,61 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     },
   },
   {
-    id: 2935,
+    id: 152982,
+    name: 'Cole Palmer',
+    nationality: 'England',
+    position: 'Midfielder',
+    roleTag: 'Half-Space Playmaker (#10)',
+    age: 24,
+    team: 'Chelsea',
+    league: 'Premier League',
+    photo: 'https://media.api-sports.io/football/players/152982.png',
+    jerseyNumber: 20,
+    rating: 8.7,
+    goals: 18,
+    assists: 12,
+    xgPer90: 0.62,
+    xaPer90: 0.49,
+    shotConversionPct: 22.8,
+    progressiveCarriesPer90: 5.3,
+    last5Ratings: [8.9, 8.5, 8.8, 8.7, 8.6],
+    radar: {
+      finishingXg: 91,
+      creativityXa: 96,
+      progression: 90,
+      pressingDefense: 67,
+      duelsAerial: 74,
+    },
+  },
+  {
+    id: 762,
+    name: 'Vinícius Júnior',
+    nationality: 'Brazil',
+    position: 'Attacker',
+    roleTag: 'Touchline Dribbler (LW)',
+    age: 26,
+    team: 'Real Madrid',
+    league: 'La Liga',
+    photo: 'https://media.api-sports.io/football/players/762.png',
+    jerseyNumber: 7,
+    rating: 8.9,
+    goals: 19,
+    assists: 11,
+    xgPer90: 0.69,
+    xaPer90: 0.47,
+    shotConversionPct: 23.1,
+    progressiveCarriesPer90: 7.8,
+    last5Ratings: [9.1, 8.7, 8.9, 9.0, 8.8],
+    radar: {
+      finishingXg: 92,
+      creativityXa: 94,
+      progression: 99,
+      pressingDefense: 64,
+      duelsAerial: 70,
+    },
+  },
+  {
+    id: 2780,
     name: 'Victor Osimhen',
     nationality: 'Nigeria',
     position: 'Attacker',
@@ -262,6 +334,8 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 27,
     team: 'Galatasaray',
     league: 'Süper Lig / Europa',
+    photo: 'https://media.api-sports.io/football/players/2780.png',
+    jerseyNumber: 45,
     rating: 8.6,
     goals: 20,
     assists: 5,
@@ -280,6 +354,34 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     },
   },
   {
+    id: 18766,
+    name: 'Ademola Lookman',
+    nationality: 'Nigeria',
+    position: 'Attacker',
+    roleTag: 'Second Striker / Inside Forward',
+    age: 28,
+    team: 'Atalanta',
+    league: 'Serie A',
+    photo: 'https://media.api-sports.io/football/players/18766.png',
+    jerseyNumber: 11,
+    rating: 8.6,
+    goals: 15,
+    assists: 10,
+    xgPer90: 0.59,
+    xaPer90: 0.42,
+    shotConversionPct: 23.6,
+    progressiveCarriesPer90: 5.9,
+    last5Ratings: [8.8, 8.5, 8.6, 8.4, 8.7],
+    isCafStar: true,
+    radar: {
+      finishingXg: 90,
+      creativityXa: 91,
+      progression: 92,
+      pressingDefense: 78,
+      duelsAerial: 75,
+    },
+  },
+  {
     id: 9012,
     name: 'Austin Odhiambo',
     nationality: 'Kenya',
@@ -288,6 +390,7 @@ export const ELITE_PLAYER_DATABASE: PlayerProfile[] = [
     age: 25,
     team: 'Gor Mahia',
     league: 'FKF Premier League',
+    jerseyNumber: 10,
     rating: 8.4,
     goals: 12,
     assists: 11,
@@ -629,15 +732,29 @@ export default function PlayerSearch() {
                     primary={comparedPlayers[0]}
                     secondary={comparedPlayers[1] || null}
                   />
-                  <div className="flex items-center gap-4 text-xs font-bold mt-1">
-                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500 inline-block" />
-                      {comparedPlayers[0].name}
+                  <div className="flex items-center gap-4 text-xs font-bold mt-2">
+                    <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                      <PlayerAvatar
+                        playerId={comparedPlayers[0].id}
+                        name={comparedPlayers[0].name}
+                        team={comparedPlayers[0].team}
+                        photoUrl={comparedPlayers[0].photo}
+                        size="xs"
+                        showClubBadge={false}
+                      />
+                      <span>{comparedPlayers[0].name}</span>
                     </span>
                     {comparedPlayers[1] && (
-                      <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400">
-                        <span className="w-2.5 h-2.5 rounded-xs bg-sky-500 inline-block" />
-                        {comparedPlayers[1].name}
+                      <span className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
+                        <PlayerAvatar
+                          playerId={comparedPlayers[1].id}
+                          name={comparedPlayers[1].name}
+                          team={comparedPlayers[1].team}
+                          photoUrl={comparedPlayers[1].photo}
+                          size="xs"
+                          showClubBadge={false}
+                        />
+                        <span>{comparedPlayers[1].name}</span>
                       </span>
                     )}
                   </div>
@@ -650,11 +767,29 @@ export default function PlayerSearch() {
                       <tr className="border-b border-border/70 text-muted-foreground">
                         <th className="text-left py-2 font-semibold">Metric (Season / Per 90)</th>
                         <th className="text-right py-2 font-extrabold text-emerald-600 dark:text-emerald-400">
-                          {comparedPlayers[0].name}
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <PlayerAvatar
+                              playerId={comparedPlayers[0].id}
+                              name={comparedPlayers[0].name}
+                              team={comparedPlayers[0].team}
+                              photoUrl={comparedPlayers[0].photo}
+                              size="sm"
+                            />
+                            <span>{comparedPlayers[0].name}</span>
+                          </div>
                         </th>
                         {comparedPlayers[1] && (
                           <th className="text-right py-2 font-extrabold text-sky-600 dark:text-sky-400">
-                            {comparedPlayers[1].name}
+                            <div className="inline-flex items-center justify-end gap-2">
+                              <PlayerAvatar
+                                playerId={comparedPlayers[1].id}
+                                name={comparedPlayers[1].name}
+                                team={comparedPlayers[1].team}
+                                photoUrl={comparedPlayers[1].photo}
+                                size="sm"
+                              />
+                              <span>{comparedPlayers[1].name}</span>
+                            </div>
                           </th>
                         )}
                       </tr>
@@ -782,9 +917,10 @@ export default function PlayerSearch() {
               type="button"
               onClick={() => search(p)}
               aria-label={`Search player: ${p}`}
-              className="px-2.5 py-1 bg-muted/60 hover:bg-muted rounded-md text-xs font-medium border border-border/60 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted/60 hover:bg-muted rounded-md text-xs font-medium border border-border/60 transition-colors"
             >
-              {p}
+              <PlayerAvatar name={p} size="xs" showClubBadge={false} />
+              <span>{p}</span>
             </button>
           ))}
           {searched && (
@@ -852,10 +988,18 @@ export default function PlayerSearch() {
                   data-testid={`player-card-${p.id}`}
                 >
                   <CardContent className="p-4 space-y-3.5">
-                    {/* Top Row: Club Badge, Name, Unboxed Metadata, and 10.0 Rating Box */}
+                    {/* Top Row: Player Headshot + Club Crest, Name, Unboxed Metadata, and 10.0 Rating Box */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <TeamLogo team={p.team} size="md" />
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <PlayerAvatar
+                          playerId={p.id}
+                          name={p.name}
+                          team={p.team}
+                          photoUrl={p.photo}
+                          jerseyNumber={p.jerseyNumber}
+                          size="lg"
+                          showClubBadge
+                        />
                         <div className="min-w-0">
                           <h2 className="font-extrabold text-base text-foreground truncate">{p.name}</h2>
                           <p className="text-xs text-muted-foreground truncate">

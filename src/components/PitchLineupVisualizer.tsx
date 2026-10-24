@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, AlertCircle, Award, Activity, User, Info } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 
 interface Player {
   number: number;
@@ -227,19 +228,25 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
       {selectedPlayer && (
         <Card className="border-primary/30 bg-primary/5 animate-in fade-in slide-in-from-top-2 duration-200">
           <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-base">
-                {selectedPlayer.number}
-              </div>
+            <div className="flex items-center gap-3.5">
+              <PlayerAvatar
+                name={selectedPlayer.name}
+                team={homeTeam}
+                jerseyNumber={selectedPlayer.number}
+                rating={selectedPlayer.rating}
+                size="md"
+                showClubBadge={false}
+                showRatingBadge
+              />
               <div>
                 <div className="flex items-center gap-2">
                   <p className="font-bold text-sm">{selectedPlayer.name}</p>
-                  <Badge variant="outline" className="text-xs font-semibold">{selectedPlayer.pos}</Badge>
+                  <Badge variant="outline" className="text-xs font-semibold">#{selectedPlayer.number} · {selectedPlayer.pos}</Badge>
                   {selectedPlayer.isCaptain && <Badge className="bg-amber-500 text-slate-950 text-[10px] font-bold">Captain</Badge>}
                   {selectedPlayer.isKeyPlayer && <Badge className="bg-red-700 text-white text-[10px] font-bold">Key Threat</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  AI Form Rating: <strong className="text-primary">{selectedPlayer.rating}/10</strong> · {selectedPlayer.goals ? `${selectedPlayer.goals} goals this season` : 'Core tactical starter'}
+                  AI Form Rating: <strong className="text-primary font-mono">{selectedPlayer.rating.toFixed(1)}/10</strong> · {selectedPlayer.goals ? `${selectedPlayer.goals} goals this season` : 'Core tactical starter'}
                 </p>
               </div>
             </div>
