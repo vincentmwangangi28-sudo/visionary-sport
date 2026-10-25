@@ -176,13 +176,30 @@ function calculateBonusTier(
   return { bonusWon: null, estimatedPayout: null };
 }
 
+function normalizeClubForJackpot(name: string): string {
+  return (name || '')
+    .toLowerCase()
+    .replace(/\b(fc|cf|sc|ac|afc|ud|cd|fk|if|bk)\b/g, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
 /**
- * Settles an active pool of jackpot games against real / deterministic match scores.
+ * Settles an active pool of jackpot games against real ESPN live/finished match scores first,
+ * falling back to deterministic elapsed-time scores when not in the 48h feed.
  */
 export function settleJackpotPool(
   provider: JackpotProviderId,
   games: JackpotGame[],
-  userPicks: Record<string, JackpotPickOption> = {}
+  userPicks: Record<string, JackpotPickOption> = {},
+  realFeedMatches: Array<{
+    home_team: string;
+    away_team: string;
+    status?: string;
+    minute?: string;
+    home_score?: number | null;
+    away_score?: number | null;
+  }> = []
 ): {
   matches: JackpotMatchResult[];
   summary: JackpotSettlementSummary;
@@ -195,7 +212,47 @@ export function settleJackpotPool(
   let wonDoubleCount = 0;
 
   const matches: JackpotMatchResult[] = games.map((g) => {
-    const res = deriveDeterministicResult(g, nowMs);
+    const hNorm = normalizeClubForJackpot(g.homeTeam);
+    const aNorm = normalizeClubForJackpot(g.awayTeam);
+
+    const matchedReal = realFeedMatches.find((m) => {
+      const mh = normalizeClubForJackpot(m.home_team);
+      const ma = normalizeClubForJackpot(m.away_team);
+      return (
+        (mh === hNorm && ma === aNorm) ||
+        ((mh.includes(hNorm) || hNorm.includes(mh)) &&
+          (ma.includes(aNorm) || aNorm.includes(ma)))
+      );
+    });
+
+    let res: {
+      status: 'upcoming' | 'live' | 'finished';
+      minute?: string;
+      homeScore: number | null;
+      awayScore: number | null;
+      actualOutcome: '1' | 'X' | '2' | null;
+    };
+
+    if (
+      matchedReal &&
+      (matchedReal.status === 'live' || matchedReal.status === 'finished') &&
+      typeof matchedReal.home_score === 'number' &&
+      typeof matchedReal.away_score === 'number'
+    ) {
+      const hS = matchedReal.home_score;
+      const aS = matchedReal.away_score;
+      const outcome: '1' | 'X' | '2' = hS > aS ? '1' : hS === aS ? 'X' : '2';
+      res = {
+        status: matchedReal.status === 'finished' ? 'finished' : 'live',
+        minute: matchedReal.status === 'finished' ? 'FT' : matchedReal.minute || 'LIVE',
+        homeScore: hS,
+        awayScore: aS,
+        actualOutcome: outcome,
+      };
+    } else {
+      res = deriveDeterministicResult(g, nowMs);
+    }
+
     const userPick = userPicks[g.fixtureId] || g.recommendedPick;
 
     let isWon: boolean | null = null;

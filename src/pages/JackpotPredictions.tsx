@@ -114,6 +114,7 @@ export default function JackpotPredictions() {
   const [selectedHistoryEditionId, setSelectedHistoryEditionId] = useState<string | null>(null);
   const [copiedSlip, setCopiedSlip] = useState(false);
   const [calculatorDoubles, setCalculatorDoubles] = useState<number>(3);
+  const [realFeedMatches, setRealFeedMatches] = useState<any[]>([]);
 
   const loadRealJackpotData = useCallback(
     async (isManual = false) => {
@@ -121,10 +122,22 @@ export default function JackpotPredictions() {
       else setLoading(true);
 
       try {
-        const result = await fetchLiveJackpotPools(basePredictions, isManual);
+        const [result, liveRes, resultsRes] = await Promise.all([
+          fetchLiveJackpotPools(basePredictions, isManual),
+          fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        ]);
         setPools(result.pools);
         setLastSyncedAt(result.lastSyncedAt);
         setSourcesUsed(result.sourcesUsed);
+
+        const combinedFeed = [
+          ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
+          ...(Array.isArray(resultsRes?.predictions) ? resultsRes.predictions : []),
+        ];
+        if (combinedFeed.length > 0) {
+          setRealFeedMatches(combinedFeed);
+        }
 
         if (isManual) {
           toast({
@@ -421,8 +434,8 @@ export default function JackpotPredictions() {
   };
 
   const { matches: settledMatches, summary: settlementSummary } = useMemo(() => {
-    return settleJackpotPool(provider, currentPool, activePicks);
-  }, [provider, currentPool, activePicks]);
+    return settleJackpotPool(provider, currentPool, activePicks, realFeedMatches);
+  }, [provider, currentPool, activePicks, realFeedMatches]);
 
   const historicalEditions = useMemo(() => {
     return getHistoricalJackpotEditions(provider);
@@ -943,6 +956,7 @@ export default function JackpotPredictions() {
                       {filteredGames.map((g) => {
                         const userPick = activePicks[g.fixtureId] || g.recommendedPick;
                         const inBetSlip = slipItems.some((item) => item.matchId === g.fixtureId);
+                        const settledLeg = settledMatches.find((m) => m.fixtureId === g.fixtureId);
 
                         return (
                           <tr key={g.fixtureId} className="hover:bg-muted/20 transition-colors">
@@ -957,7 +971,13 @@ export default function JackpotPredictions() {
                                 <div className="flex items-center gap-1.5 font-bold text-foreground text-xs sm:text-sm">
                                   <TeamLogo team={g.homeTeam} logoUrl={g.homeLogo} size="xs" />
                                   <span className="truncate">{g.homeTeam}</span>
-                                  <span className="text-muted-foreground font-semibold px-0.5">vs</span>
+                                  {settledLeg && (settledLeg.status === 'live' || settledLeg.status === 'finished') && settledLeg.homeScore !== null && settledLeg.awayScore !== null ? (
+                                    <span className="px-1.5 py-0.5 rounded bg-slate-900 text-emerald-400 font-mono tabular-nums text-[11px] font-black">
+                                      {settledLeg.homeScore}-{settledLeg.awayScore}
+                                    </span>
+                                  ) : (
+                                    <span className="text-muted-foreground font-semibold px-0.5">vs</span>
+                                  )}
                                   <TeamLogo team={g.awayTeam} logoUrl={g.awayLogo} size="xs" />
                                   <span className="truncate">{g.awayTeam}</span>
                                 </div>
@@ -970,6 +990,22 @@ export default function JackpotPredictions() {
                                   <span className="font-medium">{g.league}</span>
                                   <span>·</span>
                                   <span>{g.kickoff}</span>
+                                  {settledLeg?.status === 'live' && (
+                                    <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 text-[9px] py-0 px-1 font-mono font-bold animate-pulse">
+                                      LIVE {settledLeg.minute || ''}
+                                    </Badge>
+                                  )}
+                                  {settledLeg?.status === 'finished' && (
+                                    <Badge
+                                      className={`text-[9px] py-0 px-1 font-mono font-bold ${
+                                        settledLeg.isWon || settledLeg.doubleChanceWon
+                                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                                          : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30'
+                                      }`}
+                                    >
+                                      FT · {settledLeg.isWon || settledLeg.doubleChanceWon ? 'LEG WON' : 'MISSED'}
+                                    </Badge>
+                                  )}
                                   {g.isBanker && (
                                     <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-[9px] py-0 px-1 font-bold">
                                       BANKER

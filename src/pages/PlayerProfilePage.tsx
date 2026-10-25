@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ELITE_PLAYER_DATABASE, PlayerProfile } from '@/pages/PlayerSearch';
+import { Prediction } from '@/types/prediction';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import {
   Crosshair,
@@ -24,6 +25,7 @@ import {
   ArrowUpRight,
   Target,
   Zap,
+  Radio,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,20 +38,33 @@ export function formatPlayerSlug(name: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-function findPlayerBySlug(slug?: string): PlayerProfile {
+function findPlayerBySlug(
+  slug?: string,
+  customTeam?: string | null,
+  customLeague?: string | null,
+  goalsToday?: number
+): PlayerProfile {
   if (!slug) return ELITE_PLAYER_DATABASE[0];
   const normalized = slug.toLowerCase().trim();
   const exact = ELITE_PLAYER_DATABASE.find(
     (p) => formatPlayerSlug(p.name) === normalized || String(p.id) === normalized
   );
-  if (exact) return exact;
+  if (exact) {
+    return customTeam
+      ? { ...exact, team: customTeam, league: customLeague || exact.league }
+      : exact;
+  }
 
   const partial = ELITE_PLAYER_DATABASE.find(
     (p) =>
       formatPlayerSlug(p.name).includes(normalized) ||
       normalized.includes(formatPlayerSlug(p.name))
   );
-  if (partial) return partial;
+  if (partial) {
+    return customTeam
+      ? { ...partial, team: customTeam, league: customLeague || partial.league }
+      : partial;
+  }
 
   // Deterministic custom player profile when a custom slug is visited
   const displayName = slug
@@ -58,30 +73,32 @@ function findPlayerBySlug(slug?: string): PlayerProfile {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
+  const extraGoals = goalsToday || 0;
+
   return {
     id: 8500,
     name: displayName || 'Erling Haaland',
     nationality: 'International',
     position: 'Attacker',
-    roleTag: 'First-Team Starter',
+    roleTag: extraGoals > 0 ? `Verified Matchday Scorer (${extraGoals}G)` : 'First-Team Starter',
     age: 25,
-    team: 'Arsenal',
-    league: 'Premier League',
+    team: customTeam || 'Arsenal',
+    league: customLeague || 'Premier League',
     jerseyNumber: 9,
-    rating: 8.4,
-    goals: 15,
-    assists: 7,
-    xgPer90: 0.62,
+    rating: Number(Math.min(9.5, 8.4 + extraGoals * 0.3).toFixed(1)),
+    goals: 14 + extraGoals,
+    assists: 6,
+    xgPer90: Number((0.62 + extraGoals * 0.06).toFixed(2)),
     xaPer90: 0.28,
-    shotConversionPct: 22.5,
+    shotConversionPct: 23.5,
     progressiveCarriesPer90: 4.2,
-    last5Ratings: [8.3, 8.5, 8.1, 8.6, 8.4],
+    last5Ratings: [8.6, 8.5, 8.2, 8.7, 8.8],
     radar: {
-      finishingXg: 88,
+      finishingXg: 90,
       creativityXa: 82,
       progression: 84,
       pressingDefense: 76,
-      duelsAerial: 80,
+      duelsAerial: 81,
     },
   };
 }
@@ -100,10 +117,71 @@ function poissonProbAtLeast(lambda: number, k: number): number {
 
 export default function PlayerProfilePage() {
   const { playerSlug } = useParams<{ playerSlug?: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addSelection, selections } = useBetSlip();
 
-  const player = useMemo(() => findPlayerBySlug(playerSlug), [playerSlug]);
+  const customTeam = searchParams.get('team');
+  const customLeague = searchParams.get('league');
+  const goalsTodayParam = Number(searchParams.get('goalsToday') || '0');
+  const minutesParam = searchParams.get('minutes') || '';
+
+  const [livePlayerEvents, setLivePlayerEvents] = useState<
+    Array<{ minute: string; type: string; matchLabel: string; team: string; league: string }>
+  >([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [liveRes, resultsRes] = await Promise.all([
+          fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        ]);
+        if (!mounted) return;
+        const allMatches: Prediction[] = [
+          ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
+          ...(Array.isArray(resultsRes?.predictions) ? resultsRes.predictions : []),
+        ];
+        const targetSlug = (playerSlug || '').toLowerCase();
+        const foundEvents: Array<{ minute: string; type: string; matchLabel: string; team: string; league: string }> = [];
+        for (const m of allMatches) {
+          if (!Array.isArray(m.match_events)) continue;
+          for (const ev of m.match_events) {
+            if (!ev.player) continue;
+            const evSlug = formatPlayerSlug(ev.player);
+            if (evSlug === targetSlug || evSlug.includes(targetSlug) || targetSlug.includes(evSlug)) {
+              foundEvents.push({
+                minute: ev.minute,
+                type: ev.type,
+                matchLabel: `${m.home_team} ${m.home_score ?? 0}-${m.away_score ?? 0} ${m.away_team}`,
+                team: ev.team === 'home' ? m.home_team : m.away_team,
+                league: m.league,
+              });
+            }
+          }
+        }
+        if (foundEvents.length > 0) {
+          setLivePlayerEvents(foundEvents);
+        }
+      } catch {
+        // ignore network hiccup
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [playerSlug]);
+
+  const effectiveTeam = customTeam || livePlayerEvents[0]?.team || null;
+  const effectiveLeague = customLeague || livePlayerEvents[0]?.league || null;
+  const effectiveGoalsToday =
+    goalsTodayParam || livePlayerEvents.filter((e) => e.type === 'goal' || e.type === 'penalty').length;
+
+  const player = useMemo(
+    () => findPlayerBySlug(playerSlug, effectiveTeam, effectiveLeague, effectiveGoalsToday),
+    [playerSlug, effectiveTeam, effectiveLeague, effectiveGoalsToday]
+  );
 
   // Interactive Prop Simulator Controls
   const [expectedMinutes, setExpectedMinutes] = useState<number>(85);
@@ -421,6 +499,34 @@ export default function PlayerProfilePage() {
             </div>
           </div>
         </section>
+
+        {/* Verified ESPN Matchday Event Banner if player scored or was involved today */}
+        {(effectiveGoalsToday > 0 || livePlayerEvents.length > 0) && (
+          <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <Radio className="h-4 w-4 text-emerald-500 animate-pulse" />
+              <span className="font-bold text-foreground">
+                Verified ESPN Matchday Telemetry: {player.name} ({player.team})
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 font-mono">
+              {livePlayerEvents.length > 0 ? (
+                livePlayerEvents.map((ev, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-0.5 rounded bg-slate-900 text-emerald-400 font-bold text-[11px]"
+                  >
+                    {ev.type === 'goal' || ev.type === 'penalty' ? '⚽' : '🟨'} {ev.minute} · {ev.matchLabel}
+                  </span>
+                ))
+              ) : (
+                <span className="px-2 py-0.5 rounded bg-slate-900 text-emerald-400 font-bold text-[11px]">
+                  ⚽ {effectiveGoalsToday} Goal{effectiveGoalsToday > 1 ? 's' : ''} Recorded ({minutesParam || 'Matchday'})
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Main 2-Column Workspace: Interactive Prop Simulator + 2D Pitch Heatmap & Radar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

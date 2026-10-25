@@ -38,10 +38,16 @@ import {
   XCircle,
   Clock,
   RotateCcw,
+  Radio,
 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import {
+  gradeSelectionAgainstFeed,
+  fetchOfficialFinishedResults,
+} from '@/services/autoSettlementService';
+import { Prediction } from '@/types/prediction';
 import { toast } from 'sonner';
 
 interface SavedBetSlipRecord {
@@ -88,6 +94,7 @@ export const BetSlipDrawer = () => {
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'saved'>('active');
+  const [liveAndFinishedFeed, setLiveAndFinishedFeed] = useState<Prediction[]>([]);
 
   const [savedSlips, setSavedSlips] = useState<SavedBetSlipRecord[]>(() => {
     try {
@@ -109,6 +116,68 @@ export const BetSlipDrawer = () => {
       // ignore storage errors
     }
   }, [savedSlips]);
+
+  // Sync live & finished ESPN scores to grade active selections and saved slips
+  useEffect(() => {
+    let mounted = true;
+    const syncFeed = async () => {
+      try {
+        const [liveRes, finishedList] = await Promise.all([
+          fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetchOfficialFinishedResults().catch(() => [] as Prediction[]),
+        ]);
+        if (!mounted) return;
+        const liveMatches: Prediction[] = Array.isArray(liveRes?.predictions) ? liveRes.predictions : [];
+        const combined = [...liveMatches, ...finishedList];
+        if (combined.length > 0) {
+          setLiveAndFinishedFeed(combined);
+        }
+      } catch {
+        // ignore network hiccup
+      }
+    };
+
+    syncFeed();
+    if (!isOpen) return () => { mounted = false; };
+    const timer = setInterval(syncFeed, 30000);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [isOpen]);
+
+  // Auto-settle any PENDING saved slip when its legs have finished in the ESPN feed
+  useEffect(() => {
+    if (liveAndFinishedFeed.length === 0 || savedSlips.length === 0) return;
+    let changed = false;
+    const nextSlips = savedSlips.map((slip) => {
+      if (slip.status !== 'PENDING' || slip.selections.length === 0) return slip;
+      const gradedLegs = slip.selections.map((leg) =>
+        gradeSelectionAgainstFeed(
+          { homeTeam: leg.homeTeam, awayTeam: leg.awayTeam, market: leg.market },
+          liveAndFinishedFeed
+        )
+      );
+      const anyLost = gradedLegs.some((g) => g.status === 'FINISHED' && g.outcome === 'LOST');
+      const allWon =
+        gradedLegs.length > 0 &&
+        gradedLegs.every((g) => g.status === 'FINISHED' && g.outcome === 'WON');
+
+      if (anyLost) {
+        changed = true;
+        return { ...slip, status: 'LOST' as const };
+      }
+      if (allWon) {
+        changed = true;
+        return { ...slip, status: 'WON' as const };
+      }
+      return slip;
+    });
+
+    if (changed) {
+      setSavedSlips(nextSlips);
+    }
+  }, [liveAndFinishedFeed, savedSlips]);
 
   // Dynamically prioritize bookmakers matching the user's active geographic region
   const sortedBookmakers = useMemo(() => {
@@ -459,17 +528,50 @@ export const BetSlipDrawer = () => {
                         </button>
                       </div>
 
-                      <div className="space-y-1 bg-muted/40 p-2 rounded-lg border border-border/60">
-                        {slip.selections.map((leg, i) => (
-                          <div key={i} className="flex items-center justify-between text-[11px]">
-                            <span className="truncate max-w-[190px]">
-                              {i + 1}. {leg.homeTeam} v {leg.awayTeam}
-                            </span>
-                            <span className="font-mono font-semibold text-foreground">
-                              {leg.market} @ {leg.odds.toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="space-y-1.5 bg-muted/40 p-2 rounded-lg border border-border/60">
+                        {slip.selections.map((leg, i) => {
+                          const legGrade = gradeSelectionAgainstFeed(
+                            { homeTeam: leg.homeTeam, awayTeam: leg.awayTeam, market: leg.market },
+                            liveAndFinishedFeed
+                          );
+                          return (
+                            <div key={i} className="flex items-center justify-between gap-2 text-[11px]">
+                              <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                                <span className="truncate">
+                                  {i + 1}. {leg.homeTeam} v {leg.awayTeam}
+                                </span>
+                                {(legGrade.status === 'LIVE' || legGrade.status === 'FINISHED') &&
+                                  legGrade.homeScore !== null &&
+                                  legGrade.awayScore !== null && (
+                                    <span className="px-1 py-0.5 rounded bg-slate-900 text-emerald-400 font-mono tabular-nums text-[10px] font-bold shrink-0">
+                                      {legGrade.homeScore}-{legGrade.awayScore}
+                                    </span>
+                                  )}
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="font-mono font-semibold text-foreground">
+                                  {leg.market} @ {leg.odds.toFixed(2)}
+                                </span>
+                                {legGrade.status === 'FINISHED' && legGrade.outcome !== 'PENDING' && (
+                                  <span
+                                    className={`px-1 py-0.5 rounded font-mono text-[9px] font-black ${
+                                      legGrade.outcome === 'WON'
+                                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                        : 'bg-rose-500/20 text-rose-600 dark:text-rose-400'
+                                    }`}
+                                  >
+                                    {legGrade.outcome}
+                                  </span>
+                                )}
+                                {legGrade.status === 'LIVE' && (
+                                  <span className="px-1 py-0.5 rounded bg-rose-500/20 text-rose-600 dark:text-rose-400 font-mono text-[9px] font-black animate-pulse">
+                                    {legGrade.minute || 'LIVE'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] pt-1">
@@ -551,53 +653,84 @@ export const BetSlipDrawer = () => {
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Selections List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {selections.map((s, idx) => (
-                  <div
-                    key={s.id}
-                    className="p-3 bg-muted/40 hover:bg-muted/60 transition-colors rounded-xl border relative group"
-                  >
-                    <div className="flex items-start justify-between gap-2 pr-6">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded">
-                            #{idx + 1}
-                          </span>
-                          <span className="text-xs text-muted-foreground truncate max-w-[170px]">{s.league}</span>
+                {selections.map((s, idx) => {
+                  const legGrade = gradeSelectionAgainstFeed(
+                    { homeTeam: s.homeTeam, awayTeam: s.awayTeam, market: s.market },
+                    liveAndFinishedFeed
+                  );
+                  return (
+                    <div
+                      key={s.id}
+                      className="p-3 bg-muted/40 hover:bg-muted/60 transition-colors rounded-xl border relative group"
+                    >
+                      <div className="flex items-start justify-between gap-2 pr-6">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center flex-wrap gap-1.5 mb-1">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded">
+                              #{idx + 1}
+                            </span>
+                            <span className="text-xs text-muted-foreground truncate max-w-[140px]">{s.league}</span>
+                            {legGrade.status === 'LIVE' && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-black animate-pulse">
+                                <Radio className="h-2.5 w-2.5" />
+                                {legGrade.minute || 'LIVE'}
+                              </span>
+                            )}
+                            {legGrade.status === 'FINISHED' && legGrade.outcome !== 'PENDING' && (
+                              <span
+                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-mono text-[10px] font-black ${
+                                  legGrade.outcome === 'WON'
+                                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                                    : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                                }`}
+                              >
+                                FT · {legGrade.outcome}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-sm font-bold leading-snug">
+                            <TeamLogo team={s.homeTeam} size="xs" />
+                            <span className="truncate">{s.homeTeam}</span>
+                            {(legGrade.status === 'LIVE' || legGrade.status === 'FINISHED') &&
+                            legGrade.homeScore !== null &&
+                            legGrade.awayScore !== null ? (
+                              <span className="px-1.5 py-0.5 rounded bg-slate-900 text-emerald-400 font-mono tabular-nums text-xs font-black shrink-0">
+                                {legGrade.homeScore}-{legGrade.awayScore}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground text-xs font-normal">v</span>
+                            )}
+                            <TeamLogo team={s.awayTeam} size="xs" />
+                            <span className="truncate">{s.awayTeam}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 text-sm font-bold leading-snug">
-                          <TeamLogo team={s.homeTeam} size="xs" />
-                          <span className="truncate">{s.homeTeam}</span>
-                          <span className="text-muted-foreground text-xs font-normal">v</span>
-                          <TeamLogo team={s.awayTeam} size="xs" />
-                          <span className="truncate">{s.awayTeam}</span>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSelection(s.id)}
+                          className="absolute top-2.5 right-2.5 p-1 text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-colors"
+                          title="Remove selection"
+                          aria-label={`Remove ${s.homeTeam} vs ${s.awayTeam} (${s.market}) from bet slip`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeSelection(s.id)}
-                        className="absolute top-2.5 right-2.5 p-1 text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-colors"
-                        title="Remove selection"
-                        aria-label={`Remove ${s.homeTeam} vs ${s.awayTeam} (${s.market}) from bet slip`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
-                    </div>
 
-                    <div className="mt-2 pt-2 border-t flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-background font-semibold text-primary">
-                          {s.market}
-                        </Badge>
-                        {s.confidence ? (
-                          <ConfidenceMeter confidence={s.confidence} variant="compact" />
-                        ) : null}
-                      </div>
-                      <div className="font-black text-sm text-foreground">
-                        @ {formatOdds(s.odds)}
+                      <div className="mt-2 pt-2 border-t flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="bg-background font-semibold text-primary">
+                            {s.market}
+                          </Badge>
+                          {s.confidence ? (
+                            <ConfidenceMeter confidence={s.confidence} variant="compact" />
+                          ) : null}
+                        </div>
+                        <div className="font-mono tabular-nums font-black text-sm text-foreground">
+                          @ {formatOdds(s.odds)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Multi-Leg Bonus Notification */}
                 {bonusMultiplier > 0 && (
