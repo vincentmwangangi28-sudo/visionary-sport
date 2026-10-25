@@ -1,157 +1,100 @@
 import React, { useState } from 'react';
+import { Smartphone, Download, Share, X, CheckCircle2 } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
-import { Button } from '@/components/ui/button';
-import { Download, Smartphone, Share, PlusSquare, Check, WifiOff, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
-interface Props {
-  variant?: 'default' | 'outline' | 'ghost' | 'secondary';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
-  showOfflineIndicator?: boolean;
-}
+export const PWAInstallButton: React.FC = () => {
+  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
+  const [showModal, setShowModal] = useState(false);
 
-export const PWAInstallButton: React.FC<Props> = ({
-  variant = 'outline',
-  size = 'sm',
-  className = '',
-  showOfflineIndicator = true,
-}) => {
-  const { isInstallable, isInstalled, isIOS, isOnline, install } = usePWAInstall();
-  const [showIOSGuide, setShowIOSGuide] = useState(false);
-
-  // If already installed in standalone mode, only show offline status if needed
   if (isInstalled) {
-    if (!isOnline && showOfflineIndicator) {
-      return (
-        <Badge variant="destructive" className="gap-1 text-xs font-semibold py-1">
-          <WifiOff className="h-3 w-3" />
-          Offline Mode
-        </Badge>
-      );
-    }
     return null;
   }
 
+  const handleInstallClick = async () => {
+    if (isInstallable) {
+      const accepted = await install();
+      if (accepted) {
+        toast.success('PredictPro installed to your device!');
+      }
+      return;
+    }
+    setShowModal(true);
+  };
+
   return (
     <>
-      {/* Offline Status Badge */}
-      {!isOnline && showOfflineIndicator && (
-        <Badge variant="destructive" className="gap-1 text-xs font-semibold py-1 mr-1">
-          <WifiOff className="h-3 w-3" />
-          Offline
-        </Badge>
-      )}
+      <button
+        type="button"
+        onClick={handleInstallClick}
+        title="Install PredictPro Mobile & Desktop App"
+        className="hidden sm:inline-flex h-8 px-2.5 rounded-md text-xs font-semibold items-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer"
+      >
+        <Smartphone className="h-3.5 w-3.5" />
+        <span className="hidden xl:inline">{isInstallable ? 'Install App' : 'Get App'}</span>
+      </button>
 
-      {/* Chromium / Android / Desktop direct install button */}
-      {isInstallable && (
-        <Button
-          variant={variant}
-          size={size}
-          onClick={install}
-          className={`gap-1.5 font-bold text-xs shadow-sm hover:border-primary/60 ${className}`}
-          id="pwa-install-button"
-        >
-          <Download className="h-3.5 w-3.5 text-primary" />
-          <span>Install App</span>
-        </Button>
-      )}
-
-      {/* iOS Safari Guide Button (since iOS does not trigger beforeinstallprompt) */}
-      {isIOS && !isInstallable && (
-        <Button
-          variant={variant}
-          size={size}
-          onClick={() => setShowIOSGuide(true)}
-          className={`gap-1.5 font-bold text-xs ${className}`}
-          id="pwa-ios-install-button"
-        >
-          <Smartphone className="h-3.5 w-3.5 text-primary" />
-          <span>Install App</span>
-        </Button>
-      )}
-
-      {/* Fallback button if neither prompt fired yet, to guide user */}
-      {!isInstallable && !isIOS && (
-        <Button
-          variant={variant}
-          size={size}
-          onClick={() => setShowIOSGuide(true)}
-          className={`gap-1.5 font-bold text-xs ${className}`}
-          id="pwa-guide-install-button"
-          title="Install PredictPro on your device"
-        >
-          <Download className="h-3.5 w-3.5 text-primary" />
-          <span>Install App</span>
-        </Button>
-      )}
-
-      {/* iOS & Manual Installation Modal Guide (mounted only when clicked) */}
-      {showIOSGuide && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="pwa-install-dialog-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs"
-          onClick={() => setShowIOSGuide(false)}
-        >
-          <div
-            className="w-full max-w-sm sm:max-w-md rounded-2xl border bg-background p-6 shadow-xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setShowIOSGuide(false)}
-              aria-label="Close installation guide"
-              className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="mb-3">
-              <h2 id="pwa-install-dialog-title" className="flex items-center gap-2 text-base font-black text-foreground">
-                <Smartphone className="h-5 w-5 text-primary" />
-                Install PredictPro App
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Install PredictPro for instantaneous match updates, offline tips access, and full-screen experience.
-              </p>
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-xl border border-slate-800 bg-[#0B101B] p-6 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="h-9 w-9 rounded-lg bg-emerald-500 text-slate-950 font-black text-sm flex items-center justify-center">
+                  PP
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-white">Install PredictPro App</h3>
+                  <p className="text-xs text-slate-400">Fast Standalone Mobile &amp; Desktop Experience</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="space-y-3 pt-2">
-              <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0 mt-0.5">
-                  <Share className="h-4 w-4" />
+            <div className="mt-4 space-y-4 text-xs text-slate-300">
+              {isIOS ? (
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3.5 space-y-2">
+                  <div className="font-bold text-emerald-300 flex items-center gap-1.5">
+                    <Share className="w-4 h-4" /> Install on iPhone / iPad (Safari)
+                  </div>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-200">
+                    <li>Tap the <strong>Share</strong> icon at the bottom of Safari.</li>
+                    <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                    <li>Tap <strong>Add</strong> in the top-right corner to launch full-screen.</li>
+                  </ol>
                 </div>
-                <div className="text-xs space-y-0.5">
-                  <p className="font-bold text-foreground">Step 1: Tap Share</p>
-                  <p className="text-muted-foreground">
-                    Tap the <span className="font-semibold text-foreground">Share</span> button in your browser toolbar (bottom on iOS Safari, top right on Chrome).
+              ) : (
+                <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-3.5 space-y-2">
+                  <div className="font-bold text-white flex items-center gap-1.5">
+                    <Download className="w-4 h-4 text-emerald-400" /> Instant Install (Android / Desktop)
+                  </div>
+                  <p className="text-slate-400 leading-relaxed">
+                    Open your browser menu (<strong>⋮</strong> in Chrome or Edge) and select <strong>Install App</strong> or <strong>Add to Home Screen</strong> to launch PredictPro in standalone full-screen mode.
                   </p>
                 </div>
-              </div>
+              )}
 
-              <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0 mt-0.5">
-                  <PlusSquare className="h-4 w-4" />
-                </div>
-                <div className="text-xs space-y-0.5">
-                  <p className="font-bold text-foreground">Step 2: Add to Home Screen</p>
-                  <p className="text-muted-foreground">
-                    Scroll down the share sheet and tap <span className="font-semibold text-foreground">"Add to Home Screen"</span>.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 bg-muted/40 border rounded-xl flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
-                  <Check className="h-4 w-4" />
-                </div>
-                <div className="text-xs space-y-0.5">
-                  <p className="font-bold text-foreground">Step 3: Instant Fast Access</p>
-                  <p className="text-muted-foreground">
-                    Launch directly from your home screen with saved odds, cached offline fixtures, and zero browser chrome.
-                  </p>
-                </div>
+              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3.5 space-y-2">
+                <div className="font-bold text-white">App Features Included</div>
+                <ul className="space-y-1.5 text-slate-400">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Offline access to cached daily match predictions &amp; xG tables</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Zero browser address bar with native 60fps navigation</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>1-tap access to Live Scores, 17-Game Jackpot &amp; Slip Converter</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>

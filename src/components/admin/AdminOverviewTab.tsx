@@ -217,6 +217,15 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
                 <div className="text-xs text-muted-foreground">Jump directly to admin operations modules</div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('app-stores')} className="text-xs h-8 font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
+                  App Stores (.AAB / .IPA) &amp; OTA &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('jackpot-codes')} className="text-xs h-8 font-bold text-amber-800 dark:text-amber-300 border-amber-500/40 bg-amber-500/10">
+                  Jackpot &amp; Booking Codes &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('editorial-overrides')} className="text-xs h-8 font-bold text-sky-800 dark:text-sky-300 border-sky-500/40 bg-sky-500/10">
+                  MOTD &amp; Editorial Overrides &rarr;
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('crons')} className="text-xs h-8 font-semibold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
                   <HeartPulse className="h-3 w-3 mr-1 text-emerald-500" />
                   24/7 Keepalive &amp; Crons &rarr;
@@ -244,6 +253,9 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('diagnostics')} className="text-xs h-8 font-medium text-emerald-800 dark:text-emerald-300 border-emerald-500/30">
                   Diagnostics &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('seo')} className="text-xs h-8 font-medium text-sky-800 dark:text-sky-300 border-sky-500/30">
+                  SEO &amp; Prerender &rarr;
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('trends')} className="text-xs h-8">
                   Trends & DAU &rarr;

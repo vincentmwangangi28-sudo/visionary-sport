@@ -11,12 +11,14 @@ import { Link } from 'react-router-dom';
 import { 
   DollarSign, Sparkles, LayoutDashboard, Clock, ShieldCheck, 
   ShieldAlert, Zap, Users, AlertTriangle, LogIn, BarChart3, CheckCircle2, LogOut, Lock,
-  Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key, Radio, Globe, Database, ExternalLink
+  Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key, Radio, Globe, Database, ExternalLink,
+  Smartphone, Trophy, Flame
 } from 'lucide-react';
 import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomationHub';
 import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
+import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
 import { SEO } from '@/components/SEO';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminOverviewTab } from '@/components/admin/AdminOverviewTab';
@@ -35,6 +37,9 @@ import { AdminUserRolesManager } from '@/components/admin/AdminUserRolesManager'
 import { AdminExternalApisTab } from '@/components/admin/AdminExternalApisTab';
 import { AdminDatabaseTab } from '@/components/admin/AdminDatabaseTab';
 import { AdminGoogleIndexingSuite } from '@/components/admin/AdminGoogleIndexingSuite';
+import { AdminAppStoreStudioTab } from '@/components/admin/AdminAppStoreStudioTab';
+import { AdminJackpotAndCodesManagerTab } from '@/components/admin/AdminJackpotAndCodesManagerTab';
+import { AdminLiveMatchOverrideTab } from '@/components/admin/AdminLiveMatchOverrideTab';
 
 interface DailyStat {
   date: string;
@@ -297,6 +302,21 @@ export default function AdminDashboard() {
                 <span>Overview</span>
               </TabsTrigger>
 
+              <TabsTrigger value="app-stores" className="gap-2 text-xs">
+                <Smartphone className="h-3.5 w-3.5 text-emerald-500" />
+                <span>App Stores &amp; APK</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="jackpot-codes" className="gap-2 text-xs">
+                <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                <span>Jackpot &amp; Booking Codes</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="editorial-overrides" className="gap-2 text-xs">
+                <Flame className="h-3.5 w-3.5 text-orange-500" />
+                <span>MOTD &amp; Overrides</span>
+              </TabsTrigger>
+
               <TabsTrigger value="external-apis" className="gap-2 text-xs">
                 <Radio className="h-3.5 w-3.5 text-emerald-500" />
                 <span>External APIs &amp; Latency</span>
@@ -392,6 +412,21 @@ export default function AdminDashboard() {
               fetching={fetching} 
               onNavigateTab={setActiveTab} 
             />
+          </TabsContent>
+
+          {/* App Store Publishing & Native Packaging Studio Tab */}
+          <TabsContent value="app-stores" className="space-y-6">
+            <AdminAppStoreStudioTab />
+          </TabsContent>
+
+          {/* Jackpot Banker Curator & Verified Booking Codes Tab */}
+          <TabsContent value="jackpot-codes" className="space-y-6">
+            <AdminJackpotAndCodesManagerTab />
+          </TabsContent>
+
+          {/* Live Match Editorial Overrides & MOTD Pinning Tab */}
+          <TabsContent value="editorial-overrides" className="space-y-6">
+            <AdminLiveMatchOverrideTab />
           </TabsContent>
 
           {/* External APIs & Latency Monitor Tab */}
@@ -490,6 +525,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
+            <LiveServerSeoInspector />
             <AdminGoogleIndexingSuite />
             <GoogleSearchConsoleHub />
             <SEOSiteAuditSuite />

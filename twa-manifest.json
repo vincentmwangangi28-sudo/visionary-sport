@@ -1,0 +1,65 @@
+{
+  "packageId": "guru.predictpro.twa",
+  "host": "predictpro.guru",
+  "name": "PredictPro",
+  "launcherName": "PredictPro",
+  "display": "standalone",
+  "themeColor": "#10B981",
+  "themeColorDark": "#060A12",
+  "navigationColor": "#060A12",
+  "navigationColorDark": "#060A12",
+  "navigationDividerColor": "#1E293B",
+  "navigationDividerColorDark": "#1E293B",
+  "backgroundColor": "#060A12",
+  "enableNotifications": true,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://predictpro.guru/icon-512.png",
+  "maskableIconUrl": "https://predictpro.guru/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "predictpro-upload-key"
+  },
+  "appVersionName": "2.6.0",
+  "appVersionCode": 26,
+  "shortcuts": [
+    {
+      "name": "Match Predictions",
+      "shortName": "Predictions",
+      "url": "https://predictpro.guru/predict",
+      "chosenIconUrl": "https://predictpro.guru/icon-192.png"
+    },
+    {
+      "name": "Live Scores",
+      "shortName": "Live",
+      "url": "https://predictpro.guru/live",
+      "chosenIconUrl": "https://predictpro.guru/icon-192.png"
+    },
+    {
+      "name": "Jackpot Generator",
+      "shortName": "Jackpots",
+      "url": "https://predictpro.guru/jackpot-generator",
+      "chosenIconUrl": "https://predictpro.guru/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://predictpro.guru/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://predictpro.guru/",
+  "minSdkVersion": 21,
+  "orientation": "portrait"
+}

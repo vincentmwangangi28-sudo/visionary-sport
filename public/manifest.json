@@ -1,30 +1,130 @@
 {
   "id": "/",
-  "name": "PredictPro — AI Football Predictions",
+  "name": "PredictPro — AI Football Predictions & Expected Goals (xG)",
   "short_name": "PredictPro",
-  "description": "AI-powered football predictions for 40+ leagues. Free daily tips with confidence scores, H2H stats and value bets.",
-  "start_url": "/",
+  "description": "Quantitative AI football predictions, Expected Goals (xG) analytics, 6x6 Bivariate Poisson score matrices, 17-game Mega Jackpot generator, and universal booking code converter across 40+ global leagues.",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0f0a1e",
-  "theme_color": "#6d28d9",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#060A12",
+  "theme_color": "#10B981",
   "orientation": "portrait-primary",
   "lang": "en",
-  "categories": ["sports", "news"],
+  "dir": "ltr",
+  "categories": ["sports", "news", "utilities"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=guru.predictpro.twa",
+      "id": "guru.predictpro.twa"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/predictpro-football-xg/id6738291045"
+    },
+    {
+      "platform": "webapp",
+      "url": "https://predictpro.guru/manifest.json"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "handle_links": "preferred",
+  "edge_side_panel": {
+    "preferred_width": 420
+  },
   "screenshots": [
-    { "src": "/og-image.jpg", "type": "image/jpeg", "sizes": "1200x630", "form_factor": "wide" }
+    {
+      "src": "/og-image.jpg",
+      "type": "image/jpeg",
+      "sizes": "1200x630",
+      "form_factor": "wide",
+      "label": "PredictPro Quantitative Football Match Intelligence & 6x6 Poisson Score Matrix"
+    },
+    {
+      "src": "/og-image.jpg",
+      "type": "image/jpeg",
+      "sizes": "1200x630",
+      "form_factor": "narrow",
+      "label": "Live Expected Goals (xG), 17-Game Jackpot Generator & Universal Booking Code Converter"
+    }
   ],
   "icons": [
-    { "src": "/favicon-16x16.png", "type": "image/png", "sizes": "16x16" },
-    { "src": "/favicon-32x32.png", "type": "image/png", "sizes": "32x32" },
-    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
-    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
-    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
-    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+    {
+      "src": "/favicon-16x16.png",
+      "type": "image/png",
+      "sizes": "16x16",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Best Bets Today", "url": "/best-bets", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Match Predictor", "url": "/predict",   "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Live Scores",     "url": "/live",       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Match Predictions Today",
+      "short_name": "Predictions",
+      "description": "Daily AI football match predictions and xG probabilities",
+      "url": "/predict",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Live Scores & xG",
+      "short_name": "Live Scores",
+      "description": "Real-time football scores and in-play momentum radar",
+      "url": "/live",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "17-Game Jackpot Generator",
+      "short_name": "Jackpots",
+      "description": "SportPesa & Betika 17-game Mega Jackpot combination matrix",
+      "url": "/jackpot-generator",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Booking Code Converter",
+      "short_name": "Bet Codes",
+      "description": "Convert SportyBet, 1xBet, Bet9ja, Betika & SportPesa codes",
+      "url": "/slip-generator",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

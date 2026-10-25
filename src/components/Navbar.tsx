@@ -19,6 +19,7 @@ import { useBetSlip } from "@/hooks/useBetSlip";
 import { useUserPreferences, OddsFormat } from "@/hooks/useUserPreferences";
 import { UnifiedSearchTrigger } from "@/components/UnifiedSearchTrigger";
 import { GeoRegionSelector } from "@/components/GeoRegionSelector";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { triggerGuestAccountInvite } from "@/components/GuestAccountPrompt";
 import { toast } from "sonner";
 import {
@@ -202,6 +203,8 @@ export const Navbar = () => {
             <Suspense fallback={null}>
               <UnifiedSearchTrigger variant="pill" />
             </Suspense>
+
+            <PWAInstallButton />
 
             {/* Match Slip Trigger */}
             <button

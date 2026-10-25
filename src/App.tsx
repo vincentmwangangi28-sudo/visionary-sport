@@ -603,6 +603,10 @@ const App = () => (
                             <Route path="/injury-lineup-impact"         element={<RouteBoundary component={InjuryLineupImpactPage} />} />
                             <Route path="/stadium-altitude-weather"     element={<RouteBoundary component={StadiumAltitudeWeatherPage} />} />
                             <Route path="/tactical-mismatch-matrix"     element={<RouteBoundary component={TacticalMismatchMatrixPage} />} />
+                            <Route path="/app-store-publish"            element={<Navigate to="/admin" replace />} />
+                            <Route path="/mobile-app"                   element={<Navigate to="/admin" replace />} />
+                            <Route path="/download-app"                 element={<Navigate to="/admin" replace />} />
+                            <Route path="/apk"                          element={<Navigate to="/admin" replace />} />
                             <Route path="/public-betting-splits"        element={<Navigate to="/sharp-money-splits" replace />} />
                             <Route path="/reverse-line-movement"        element={<Navigate to="/sharp-money-splits" replace />} />
                             <Route path="/lineup-injuries"              element={<Navigate to="/injury-lineup-impact" replace />} />

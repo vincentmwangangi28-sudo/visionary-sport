@@ -26,6 +26,10 @@ import {
   downloadSlipAsPngImage,
 } from '@/services/bookmakerBookingCodes';
 import {
+  DEFAULT_BOOKING_CODES,
+  type CuratedBookingCode,
+} from '@/components/admin/AdminJackpotAndCodesManagerTab';
+import {
   Sparkles,
   Shuffle,
   Lock,
@@ -96,6 +100,14 @@ export default function SlipGeneratorPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [syncingCronCodes, setSyncingCronCodes] = useState<boolean>(false);
   const [lastCronSync, setLastCronSync] = useState<string>(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [adminVerifiedCodes] = useState<CuratedBookingCode[]>(() => {
+    try {
+      const saved = localStorage.getItem('predictpro_admin_booking_codes');
+      return saved ? JSON.parse(saved) : DEFAULT_BOOKING_CODES;
+    } catch {
+      return DEFAULT_BOOKING_CODES;
+    }
+  });
 
   useEffect(() => {
     const paramCode = searchParams.get('code');
@@ -411,6 +423,63 @@ export default function SlipGeneratorPage() {
         </div>
 
         <LiveParlaySettlementBar />
+
+        {/* Live Admin-Verified Daily Booking Codes Strip */}
+        {adminVerifiedCodes.length > 0 && (
+          <Card className="border-emerald-500/30 bg-emerald-500/5">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-500 text-slate-950 font-black text-[10px] uppercase">
+                    <ShieldCheck className="h-3 w-3 mr-1" /> Official Verified Daily Codes
+                  </Badge>
+                  <span className="text-xs font-semibold text-foreground">
+                    1-Tap Copy or Load into Universal Code Converter
+                  </span>
+                </div>
+                <span className="text-[11px] text-muted-foreground font-mono">
+                  Updated {lastCronSync}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {adminVerifiedCodes.slice(0, 4).map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border bg-card/90 p-2.5 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold uppercase text-emerald-500">
+                          {item.bookmaker}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          · {item.totalOdds} Odds
+                        </span>
+                      </div>
+                      <div className="font-mono font-black text-sm tracking-wider truncate">
+                        {item.code}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground truncate">
+                        {item.tier} ({item.legs} Legs)
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setInputBookingCode(item.code);
+                        handleCopyCode(item.code, `${item.bookmaker} (${item.tier})`);
+                      }}
+                      className="h-8 px-2.5 text-xs gap-1 shrink-0"
+                    >
+                      <Copy className="w-3 h-3" /> Copy
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs defaultValue="generator" className="space-y-6">
           <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full h-auto sm:h-11 bg-muted/60 p-1 rounded-xl border">
