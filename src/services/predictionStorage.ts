@@ -1,8 +1,9 @@
 import { Prediction } from '@/types/prediction';
 import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
 
-const STORAGE_KEY = 'predictpro_saved_predictions_v8_real';
+const STORAGE_KEY = 'predictpro_saved_predictions_v9_espn_live';
 const LEGACY_STORAGE_KEYS = [
+  'predictpro_saved_predictions_v8_real',
   'predictpro_saved_predictions_v7_authentic',
   'predictpro_saved_predictions_v6_live',
   'predictpro_saved_predictions_v5_live',
@@ -524,7 +525,8 @@ export function savePrediction(pred: Prediction, overwrite = false): Prediction 
   const key = getCanonicalMatchKey(pred.home_team, pred.away_team, pred.match_date);
 
   const existing = store[key];
-  if (existing && !overwrite) {
+  const isLiveEspn = Boolean(pred.is_realtime || String(pred.id || '').startsWith('espn-real-'));
+  if (existing && !overwrite && !isLiveEspn) {
     // Preserve the original canonical prediction while merging updated live score/status
     const merged: Prediction = {
       ...pred,

@@ -198,8 +198,9 @@ function cronTasksPlugin(): Plugin {
             const parsedUrl = new URL(req.url || "", "http://localhost");
             const type = parsedUrl.searchParams.get("type") || "upcoming";
             const league = parsedUrl.searchParams.get("league") || undefined;
+            const eventId = parsedUrl.searchParams.get("eventId") || undefined;
             const { handleFootballRequest } = await import("./src/server/footballHandler.ts");
-            const data = await handleFootballRequest({ type, league });
+            const data = await handleFootballRequest({ type, league, eventId });
             res.setHeader("Content-Type", "application/json; charset=utf-8");
             res.setHeader("Access-Control-Allow-Origin", "*");
             res.statusCode = 200;

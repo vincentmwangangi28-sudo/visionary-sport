@@ -81,7 +81,7 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
   return sortMatchesByDatePriority(sanitized);
 }
 
-const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v3';
+const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v5_espn_live';
 
 const INITIAL_PAYLOAD_CACHE = new Map<string, {
   allPredictions: Prediction[];
@@ -92,13 +92,15 @@ const INITIAL_PAYLOAD_CACHE = new Map<string, {
 function getCachedInitialPredictionsPayload(league?: string) {
   const key = league?.toLowerCase() ?? 'all';
   const cached = INITIAL_PAYLOAD_CACHE.get(key);
-  if (cached && cached.allPredictions.some((p) => matchesDateFilter(p.match_date, 'today'))) {
+  if (cached && cached.allPredictions.length > 0) {
     return cached;
   }
 
   let seed: Prediction[] = [];
   if (typeof window !== 'undefined') {
     try {
+      localStorage.removeItem('predictpro_real_upcoming_v1');
+      localStorage.removeItem('predictpro_real_upcoming_v3');
       const raw = localStorage.getItem(REAL_UPCOMING_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { timestamp: number; fixtures: Prediction[] };
@@ -106,14 +108,9 @@ function getCachedInitialPredictionsPayload(league?: string) {
           parsed &&
           Array.isArray(parsed.fixtures) &&
           parsed.fixtures.length > 0 &&
-          Date.now() - parsed.timestamp < 2 * 3600_000
+          Date.now() - parsed.timestamp < 30 * 60_000
         ) {
-          const validTodayCount = parsed.fixtures.filter(
-            (p) => !isPlayedOrPastMatch(p) && matchesDateFilter(p.match_date, 'today')
-          ).length;
-          if (validTodayCount >= 10) {
-            seed = parsed.fixtures;
-          }
+          seed = parsed.fixtures;
         }
       }
     } catch {
@@ -121,12 +118,8 @@ function getCachedInitialPredictionsPayload(league?: string) {
     }
   }
 
-  const dailyDefaults = getUpdatedDefaultPredictions();
   if (seed.length === 0) {
-    seed = dailyDefaults;
-  } else {
-    // Supplement with daily defaults so Today and Tomorrow are always fully populated
-    seed = [...seed, ...dailyDefaults];
+    return undefined;
   }
 
   if (league && league !== 'All') {
@@ -134,6 +127,9 @@ function getCachedInitialPredictionsPayload(league?: string) {
     if (filtered.length > 0) seed = filtered;
   }
   const cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
+  if (cleanList.length === 0) {
+    return undefined;
+  }
   const payload = {
     allPredictions: cleanList,
     total: cleanList.length,
@@ -212,7 +208,7 @@ export const usePredictions = (
   const query = useQuery({
     queryKey: queryKeys.predictions.list(leagueKey),
     initialData: initialDataPayload,
-    initialDataUpdatedAt: Date.now(),
+    initialDataUpdatedAt: 0,
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -233,7 +229,11 @@ export const usePredictions = (
 
       // 1a. Fast server-side real upcoming fixtures (/api/football?type=upcoming)
       try {
-        const res = await fetch('/api/football?type=upcoming', {
+        const url =
+          league && league !== 'All'
+            ? `/api/football?type=upcoming&league=${encodeURIComponent(league)}`
+            : '/api/football?type=upcoming';
+        const res = await fetch(url, {
           headers: { Accept: 'application/json' },
         });
         if (res.ok) {
@@ -248,7 +248,7 @@ export const usePredictions = (
         // Fallback to realtimeFootball service below
       }
 
-      // 1b. Supplement from RapidAPI & ESPN sports feeds if server returned < 12 matches
+      // 1b. Supplement from client-side ESPN & RapidAPI sports feeds if server returned < 12 matches
       if (combinedPredictions.length < 12) {
         try {
           const { fetchRealtimeUpcomingFixtures } = await import('@/services/realtimeFootball');
@@ -264,7 +264,7 @@ export const usePredictions = (
       }
 
       // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
-      if (combinedPredictions.length < 18) {
+      if (combinedPredictions.length < 12) {
         try {
           const { supabase } = await import('@/integrations/supabase/client');
           const nowIso = new Date().toISOString();
@@ -293,17 +293,8 @@ export const usePredictions = (
         }
       }
 
-      // 3. Always ensure Today, Tomorrow, and selected leagues have a full slate of daily matches
-      const todayMatchesCount = combinedPredictions.filter((p) => matchesDateFilter(p.match_date, 'today')).length;
-      const tomorrowMatchesCount = combinedPredictions.filter((p) => matchesDateFilter(p.match_date, 'tomorrow')).length;
-      const minTodayRequired = league && league !== 'All' ? 3 : 16;
-      const minTomorrowRequired = league && league !== 'All' ? 2 : 10;
-
-      if (
-        combinedPredictions.length < 28 ||
-        todayMatchesCount < minTodayRequired ||
-        tomorrowMatchesCount < minTomorrowRequired
-      ) {
+      // 3. Only use fallback predictions if live feeds are completely unreachable (0 matches)
+      if (combinedPredictions.length === 0) {
         let updatedDefaultList = getUpdatedDefaultPredictions();
         if (league && league !== 'All') {
           const leagueFiltered = updatedDefaultList.filter((p) => matchesLeagueFilter(p.league, league));

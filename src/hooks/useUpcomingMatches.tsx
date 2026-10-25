@@ -74,6 +74,8 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
     match_id: p.match_id || `match-${home.slice(0, 3).toLowerCase()}-${away.slice(0, 3).toLowerCase()}`,
     home_team: home,
     away_team: away,
+    home_logo: p.home_logo ?? saved?.home_logo ?? null,
+    away_logo: p.away_logo ?? saved?.away_logo ?? null,
     league,
     match_date: matchDateIso,
     prediction: outcome,
@@ -84,6 +86,18 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
     home_odds: homeOdds,
     draw_odds: drawOdds,
     away_odds: awayOdds,
+    home_win_probability: p.home_win_probability ?? saved?.home_win_probability,
+    draw_probability: p.draw_probability ?? saved?.draw_probability,
+    away_win_probability: p.away_win_probability ?? saved?.away_win_probability,
+    home_form: p.home_form ?? saved?.home_form,
+    away_form: p.away_form ?? saved?.away_form,
+    home_record: p.home_record ?? saved?.home_record,
+    away_record: p.away_record ?? saved?.away_record,
+    venue: p.venue ?? saved?.venue,
+    over_under_line: p.over_under_line ?? saved?.over_under_line,
+    sportsbook_line: p.sportsbook_line ?? saved?.sportsbook_line,
+    match_events: p.match_events ?? saved?.match_events,
+    match_stats: p.match_stats ?? saved?.match_stats,
     analysis: p.analysis || saved?.analysis || det.analysis,
     reasoning: p.reasoning || saved?.reasoning || det.reasoning,
     status: 'pending',
@@ -95,49 +109,64 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
 
 export const useUpcomingMatches = () => {
   const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
-    const saved = getSavedPredictionsList();
-    const dailyDefaults = getUpdatedDefaultPredictions();
-    const sourcePool = saved.length >= 6 ? [...saved, ...dailyDefaults] : dailyDefaults;
-    const mapped = sourcePool
+    const saved = getSavedPredictionsList().filter((p) => p.is_realtime || String(p.id).startsWith('espn-real-'));
+    if (saved.length === 0) return [];
+    const mapped = saved
       .map((p) => toUpcomingMatch(p, true))
       .filter((m): m is UpcomingMatch => m !== null);
     return deduplicateUpcomingMatches(mapped);
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isRealTime, setIsRealTime] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Query real-time upcoming verified matches across international leagues
-      const realtimePicks = await fetchRealtimeUpcomingFixtures();
-      
-      const realMatches: UpcomingMatch[] = realtimePicks
-        .map((p) => toUpcomingMatch(p, true))
-        .filter((m): m is UpcomingMatch => m !== null);
+      const combined: UpcomingMatch[] = [];
 
-      const combined: UpcomingMatch[] = [...realMatches];
+      // 1. Primary: Server-side ESPN real-time upcoming fixtures with live DraftKings odds & team form
+      try {
+        const res = await fetch('/api/football?type=upcoming', {
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
+            for (const f of json.fixtures as Prediction[]) {
+              const m = toUpcomingMatch(f, true);
+              if (m) combined.push(m);
+            }
+          }
+        }
+      } catch {
+        // Fallback to client-side realtimeFootball below
+      }
 
-      // 2. Always supplement with updated daily fixtures whenever Today or Tomorrow has fewer than 12 matches
-      const todayCount = combined.filter((m) => matchesDateFilter(m.match_date, 'today')).length;
-      const tomorrowCount = combined.filter((m) => matchesDateFilter(m.match_date, 'tomorrow')).length;
-      if (combined.length < 24 || todayCount < 14 || tomorrowCount < 10) {
+      // 2. Secondary: Client-side ESPN/RapidAPI feed if server returned < 12 fixtures
+      if (combined.length < 12) {
+        const realtimePicks = await fetchRealtimeUpcomingFixtures();
+        for (const p of realtimePicks) {
+          const m = toUpcomingMatch(p, true);
+          if (m) combined.push(m);
+        }
+      }
+
+      // 3. Only fall back to default fixtures if all live APIs are completely unreachable (0 matches)
+      if (combined.length === 0) {
         const updatedDefaults = getUpdatedDefaultPredictions()
-          .map((p) => toUpcomingMatch(p, true))
+          .map((p) => toUpcomingMatch(p, false))
           .filter((m): m is UpcomingMatch => m !== null);
         combined.push(...updatedDefaults);
       }
 
-      // 3. Deduplicate, ignore any played/past matches, and sort strictly by Date Priority
       const sanitized = deduplicateUpcomingMatches(combined);
       setMatches(sanitized);
       setIsRealTime(true);
     } catch (e) {
       console.warn('useUpcomingMatches refresh fallback:', e instanceof Error ? e.message : 'fetch failed');
       const saved = getSavedPredictionsList();
-      const dailyDefaults = getUpdatedDefaultPredictions();
-      const sourcePool = saved.length > 0 ? [...saved, ...dailyDefaults] : dailyDefaults;
+      const sourcePool = saved.length > 0 ? saved : getUpdatedDefaultPredictions();
       const offlineList = sourcePool
         .map((p) => toUpcomingMatch(p, false))
         .filter((m): m is UpcomingMatch => m !== null);

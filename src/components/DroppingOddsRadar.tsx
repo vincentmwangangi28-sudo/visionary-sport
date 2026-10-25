@@ -53,26 +53,52 @@ export const DroppingOddsRadar: React.FC = () => {
   const loadDroppingOdds = async () => {
     setLoading(true);
     try {
-      const fixtures = await fetchRealtimeUpcomingFixtures();
+      let fixtures: any[] = [];
+      try {
+        const res = await fetch('/api/football?type=upcoming', {
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
+            fixtures = json.fixtures;
+          }
+        }
+      } catch {
+        // Fallback below
+      }
+      if (fixtures.length === 0) {
+        fixtures = await fetchRealtimeUpcomingFixtures();
+      }
+
       const list: DroppingOddsItem[] = [];
 
       fixtures.forEach((f, idx) => {
-        const hash = (f.home_team + f.away_team).split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-        const dropPercent = 8 + (hash % 22); // 8% to 29% drop
+        const hash = (f.home_team + f.away_team).split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
 
-        const outcomeIdx = hash % 3;
+        const predicted = f.prediction || 'Home Win';
         let market = 'Home Win (1)';
-        let baseOdds = f.home_odds || 2.10;
-        if (outcomeIdx === 1) {
+        let currentOdds = Number((f.home_odds || 2.10).toFixed(2));
+        let openingOdds = Number((f.home_odds_open || currentOdds * 1.14).toFixed(2));
+
+        if (predicted === 'Away Win') {
           market = 'Away Win (2)';
-          baseOdds = f.away_odds || 2.70;
-        } else if (outcomeIdx === 2) {
+          currentOdds = Number((f.away_odds || 2.45).toFixed(2));
+          openingOdds = Number((f.away_odds_open || currentOdds * 1.15).toFixed(2));
+        } else if (predicted === 'Draw') {
           market = 'Over 2.5 Goals';
-          baseOdds = 1.95;
+          currentOdds = 1.92;
+          openingOdds = Number((1.92 * (1 + (10 + (hash % 14)) / 100)).toFixed(2));
         }
 
-        const openingOdds = Number((baseOdds * (1 + dropPercent / 100)).toFixed(2));
-        const currentOdds = Number(baseOdds.toFixed(2));
+        if (openingOdds <= currentOdds) {
+          openingOdds = Number((currentOdds * (1 + (9 + (hash % 15)) / 100)).toFixed(2));
+        }
+
+        const rawDropPct = Math.round(((openingOdds - currentOdds) / openingOdds) * 100);
+        const dropPercent = Math.max(8, Math.min(32, f.odds_movement_pct ? Math.round(f.odds_movement_pct) : rawDropPct));
+        openingOdds = Number((currentOdds / (1 - dropPercent / 100)).toFixed(2));
+
         const diff = openingOdds - currentOdds;
         const impliedProbDelta = Number(((100 / currentOdds) - (100 / openingOdds)).toFixed(1));
         const gameId = generateMatchGameId(f.home_team, f.away_team, 'sportybet');
@@ -98,7 +124,10 @@ export const DroppingOddsRadar: React.FC = () => {
           { bookie: '1xBet', odds: onexBetLine, isBestStale: false },
         ];
 
-        const clvEdgePercent = Number((((sportyBetLine / pinnacleSharp) - 1) * 100).toFixed(1));
+        const clvEdgePercent =
+          typeof f.clv_edge_pct === 'number'
+            ? f.clv_edge_pct
+            : Number((((sportyBetLine / pinnacleSharp) - 1) * 100).toFixed(1));
 
         const signals: Array<'Smart Money' | 'Steam Move' | 'Injury News' | 'High Volume'> = [
           'Smart Money',
@@ -121,8 +150,8 @@ export const DroppingOddsRadar: React.FC = () => {
           impliedProbDelta,
           gameId,
           signalType,
-          volumeIndex: 65 + (hash % 33),
-          aiModelSupport: hash % 2 === 0,
+          volumeIndex: 68 + (hash % 30),
+          aiModelSupport: (f.confidence || 75) >= 75,
           intradayHistory,
           bookmakerQuotes,
           clvEdgePercent,

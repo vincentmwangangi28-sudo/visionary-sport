@@ -22,6 +22,7 @@ export default async function handler(request: Request) {
     let params: {
       type?: string;
       league?: string;
+      eventId?: string;
       homeTeam?: string;
       awayTeam?: string;
       query?: string;
@@ -29,6 +30,7 @@ export default async function handler(request: Request) {
     } = {
       type: isHighlights ? 'highlights' : (url.searchParams.get('type') || 'upcoming'),
       league: url.searchParams.get('league') || url.searchParams.get('leagueCode') || undefined,
+      eventId: url.searchParams.get('eventId') || undefined,
       homeTeam: url.searchParams.get('homeTeam') || url.searchParams.get('home') || undefined,
       awayTeam: url.searchParams.get('awayTeam') || url.searchParams.get('away') || undefined,
       query: url.searchParams.get('query') || url.searchParams.get('q') || undefined,

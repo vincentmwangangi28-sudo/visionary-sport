@@ -31,7 +31,17 @@ function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string
   return `${clean(homeTeam)}-vs-${clean(awayTeam)}`;
 }
 
-function getTeamFormSequence(teamName: string, winProb: number): Array<'W' | 'D' | 'L'> {
+function getTeamFormSequence(teamName: string, winProb: number, realFormStr?: string): Array<'W' | 'D' | 'L'> {
+  if (realFormStr) {
+    const parsed = realFormStr
+      .toUpperCase()
+      .split('')
+      .filter((ch): ch is 'W' | 'D' | 'L' => ch === 'W' || ch === 'D' || ch === 'L')
+      .slice(-5);
+    if (parsed.length > 0) {
+      return parsed;
+    }
+  }
   const seed = teamName.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const results: Array<'W' | 'D' | 'L'> = [];
   for (let i = 0; i < 5; i++) {
@@ -110,13 +120,14 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
   }, [p, outcome, confidence]);
 
   const teamStats = useMemo(() => {
-    const seed = (p.home_team.charCodeAt(0) + p.away_team.charCodeAt(0)) % 10;
-    const homeXg = Number((0.9 + (winProbabilities.home / 100) * 1.6 + seed * 0.03).toFixed(2));
-    const awayXg = Number((0.7 + (winProbabilities.away / 100) * 1.5 + (9 - seed) * 0.02).toFixed(2));
-    const homeForm = getTeamFormSequence(p.home_team, winProbabilities.home);
-    const awayForm = getTeamFormSequence(p.away_team, winProbabilities.away);
+    const totalExpectedGoals = p.over_under_line ? Number(p.over_under_line) + 0.15 : 2.65;
+    const homeShare = winProbabilities.home / Math.max(1, winProbabilities.home + winProbabilities.away);
+    const homeXg = Number(Math.max(0.55, totalExpectedGoals * homeShare).toFixed(2));
+    const awayXg = Number(Math.max(0.45, totalExpectedGoals * (1 - homeShare)).toFixed(2));
+    const homeForm = getTeamFormSequence(p.home_team, winProbabilities.home, p.home_form);
+    const awayForm = getTeamFormSequence(p.away_team, winProbabilities.away, p.away_form);
     return { homeXg, awayXg, homeForm, awayForm };
-  }, [p.home_team, p.away_team, winProbabilities.home, winProbabilities.away]);
+  }, [p.home_team, p.away_team, p.home_form, p.away_form, p.over_under_line, winProbabilities.home, winProbabilities.away]);
 
   const handleCoinUnlock = async (e: React.MouseEvent) => {
     e.stopPropagation();

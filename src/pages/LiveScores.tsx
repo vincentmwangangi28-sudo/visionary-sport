@@ -28,6 +28,8 @@ import {
   BarChart3,
   Tv,
   Play,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
@@ -37,6 +39,9 @@ import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
 import { LiveMomentumRadar } from '@/components/LiveMomentumRadar';
 import { LivePitchVisualizer } from '@/components/LivePitchVisualizer';
 import { LiveStreamHubModal, WatchableMatchInput } from '@/components/LiveStreamHubModal';
+import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
+import { LiveParlaySettlementBar } from '@/components/LiveParlaySettlementBar';
+import { playLiveEventChime } from '@/services/autoSettlementService';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -63,6 +68,7 @@ export default function LiveScores() {
     }
   });
   const [recentGoalIds, setRecentGoalIds] = useState<Record<string, number>>({});
+  const [audioChimeEnabled, setAudioChimeEnabled] = useState<boolean>(true);
 
   const { regionId, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
   const { formatKickoff } = useUserPreferences();
@@ -186,39 +192,99 @@ export default function LiveScores() {
     }
   }, [matches, autoDispatchLiveScoreChanges]);
 
-  // Compute live statistics, attack momentum, goal threat index, and match timeline
+  // Compute live statistics, attack momentum, goal threat index, and real-time match timeline from ESPN feed
   const getMatchStats = React.useCallback((m: ApiFootballLiveFixture) => {
     const idStr = String(m?.id ?? 'match-01');
     const homeScore = m.home_score ?? 0;
     const awayScore = m.away_score ?? 0;
-    const basePossession = homeScore > awayScore ? 56 : homeScore < awayScore ? 44 : 51;
-    const homePossession = Math.min(68, Math.max(32, basePossession + ((idStr.charCodeAt(0) || 5) % 9) - 4));
-    const awayPossession = 100 - homePossession;
+    const realStats = m.match_stats;
 
-    const homeShots = Math.max(homeScore * 3, ((idStr.charCodeAt(1) || 7) % 8) + 4);
-    const awayShots = Math.max(awayScore * 3, ((idStr.charCodeAt(2) || 3) % 7) + 3);
+    const basePossession = homeScore > awayScore ? 55 : homeScore < awayScore ? 45 : 50;
+    const homePossession =
+      realStats?.homePossession != null
+        ? Math.round(realStats.homePossession)
+        : Math.min(68, Math.max(32, basePossession + ((idStr.charCodeAt(0) || 5) % 9) - 4));
+    const awayPossession =
+      realStats?.awayPossession != null ? Math.round(realStats.awayPossession) : 100 - homePossession;
 
-    const homeXG = Number(((homeShots * 0.12) + (homeScore * 0.45)).toFixed(2));
-    const awayXG = Number(((awayShots * 0.11) + (awayScore * 0.45)).toFixed(2));
+    const homeShots =
+      realStats?.homeShots != null
+        ? realStats.homeShots
+        : m.status === 'upcoming'
+        ? 0
+        : Math.max(homeScore * 3, ((idStr.charCodeAt(1) || 7) % 8) + 4);
+    const awayShots =
+      realStats?.awayShots != null
+        ? realStats.awayShots
+        : m.status === 'upcoming'
+        ? 0
+        : Math.max(awayScore * 3, ((idStr.charCodeAt(2) || 3) % 7) + 3);
 
-    const homeProb = m.confidence ? Math.min(85, Math.max(40, m.confidence)) : 52;
-    const drawProb = 26;
-    const awayProb = Math.max(10, 100 - homeProb - drawProb);
+    const homeOnTarget =
+      realStats?.homeOnTarget != null
+        ? realStats.homeOnTarget
+        : m.status === 'upcoming'
+        ? 0
+        : Math.max(homeScore, Math.floor(homeShots * 0.45));
+    const awayOnTarget =
+      realStats?.awayOnTarget != null
+        ? realStats.awayOnTarget
+        : m.status === 'upcoming'
+        ? 0
+        : Math.max(awayScore, Math.floor(awayShots * 0.42));
 
-    // Attack momentum (Sofascore pressure graph)
-    const homeMomentum = homePossession > 50 ? Math.min(78, homePossession + 6) : Math.max(22, homePossession - 6);
+    const homeCorners =
+      realStats?.homeCorners != null
+        ? realStats.homeCorners
+        : m.status === 'upcoming'
+        ? 0
+        : ((idStr.charCodeAt(0) || 4) % 6) + 2;
+    const awayCorners =
+      realStats?.awayCorners != null
+        ? realStats.awayCorners
+        : m.status === 'upcoming'
+        ? 0
+        : ((idStr.charCodeAt(1) || 3) % 5) + 1;
+
+    const homeXG = Number(((homeShots * 0.11) + (homeOnTarget * 0.16) + (homeScore * 0.32)).toFixed(2));
+    const awayXG = Number(((awayShots * 0.11) + (awayOnTarget * 0.16) + (awayScore * 0.32)).toFixed(2));
+
+    // Calculate probabilities from real sportsbook odds when available
+    let homeProb = 45;
+    let drawProb = 27;
+    let awayProb = 28;
+    if (m.home_odds && m.draw_odds && m.away_odds && m.home_odds > 1 && m.away_odds > 1) {
+      const invH = 1 / m.home_odds;
+      const invD = 1 / m.draw_odds;
+      const invA = 1 / m.away_odds;
+      const sumInv = invH + invD + invA;
+      homeProb = Math.round((invH / sumInv) * 100);
+      drawProb = Math.round((invD / sumInv) * 100);
+      awayProb = Math.max(5, 100 - homeProb - drawProb);
+    } else if (m.confidence) {
+      homeProb = Math.min(85, Math.max(40, m.confidence));
+      drawProb = 26;
+      awayProb = Math.max(10, 100 - homeProb - drawProb);
+    }
+
+    const homeMomentum = homePossession > 50 ? Math.min(78, homePossession + 5) : Math.max(22, homePossession - 5);
     const awayMomentum = 100 - homeMomentum;
     const momentumLabel =
-      homeMomentum >= 65
+      homeMomentum >= 62
         ? `${m.home_team || 'Home'} High Box Pressure`
-        : awayMomentum >= 65
-        ? `${m.away_team || 'Away'} Dangerous Counter Pressure`
-        : 'High-Tempo End-to-End Transition';
+        : awayMomentum >= 62
+        ? `${m.away_team || 'Away'} Counter-Attacking Pressure`
+        : 'Balanced Midfield Transition';
 
-    const homeDangerous = Math.floor(homeShots * 3.8);
-    const awayDangerous = Math.floor(awayShots * 3.5);
+    const homeDangerous =
+      realStats?.homeShotAssists != null
+        ? realStats.homeShotAssists + homeShots * 2
+        : Math.floor(homeShots * 3.2);
+    const awayDangerous =
+      realStats?.awayShotAssists != null
+        ? realStats.awayShotAssists + awayShots * 2
+        : Math.floor(awayShots * 3.0);
 
-    // Goal Threat Index (0-99%): detects xG deficit + high dangerous attacks
     const totalXG = homeXG + awayXG;
     const totalGoals = homeScore + awayScore;
     const xgSurplus = Math.max(0, totalXG - totalGoals * 0.85);
@@ -228,37 +294,26 @@ export default function LiveScores() {
       (m.status === 'live' || m.status === 'halftime' || goalThreatOnly) &&
       (goalThreatIndex >= 72 || totalXG >= 1.65);
 
-    // Match timeline events
-    const events: Array<{ minute: string; type: 'goal' | 'card'; team: 'home' | 'away'; text: string }> = [];
-    if (homeScore > 0) {
-      events.push({ minute: "19'", type: 'goal', team: 'home', text: `⚽ Goal! ${m.home_team || 'Home'}` });
-      if (homeScore > 1) {
-        events.push({ minute: "64'", type: 'goal', team: 'home', text: `⚽ Goal! ${m.home_team || 'Home'}` });
-      }
-    }
-    if (awayScore > 0) {
-      events.push({ minute: "38'", type: 'goal', team: 'away', text: `⚽ Goal! ${m.away_team || 'Away'}` });
-      if (awayScore > 1) {
-        events.push({ minute: "77'", type: 'goal', team: 'away', text: `⚽ Goal! ${m.away_team || 'Away'}` });
-      }
-    }
-    const seed = idStr.charCodeAt(0) || 4;
-    if (seed % 3 === 0) {
-      events.push({ minute: "31'", type: 'card', team: 'away', text: '🟨 Yellow Card' });
-    }
-    if (seed % 4 === 0) {
-      events.push({ minute: "53'", type: 'card', team: 'home', text: '🟨 Tactical Foul' });
-    }
+    // Use 100% real match events from ESPN competition.details (goals, scorers, yellow/red cards, clock minutes)
+    const events: Array<{ minute: string; type: string; team: 'home' | 'away'; text: string }> =
+      Array.isArray(m.match_events) && m.match_events.length > 0
+        ? m.match_events.map((ev) => ({
+            minute: ev.minute,
+            type: ev.type,
+            team: ev.team,
+            text: ev.text,
+          }))
+        : [];
 
     return {
       homePossession,
       awayPossession,
       homeShots,
       awayShots,
-      homeOnTarget: Math.max(homeScore, Math.floor(homeShots * 0.45)),
-      awayOnTarget: Math.max(awayScore, Math.floor(awayShots * 0.42)),
-      homeCorners: ((idStr.charCodeAt(0) || 4) % 6) + 2,
-      awayCorners: ((idStr.charCodeAt(1) || 3) % 5) + 1,
+      homeOnTarget,
+      awayOnTarget,
+      homeCorners,
+      awayCorners,
       homeXG,
       awayXG,
       homeProb,
@@ -275,27 +330,52 @@ export default function LiveScores() {
     };
   }, [goalThreatOnly]);
 
-  // Visual-only score change tracker (zero audio)
+  // Real-Time Goal & Red Card Audio/Toast Alert Engine
   const prevScoresMapRef = React.useRef<Record<string, number>>({});
+  const prevRedCardsMapRef = React.useRef<Record<string, number>>({});
   useEffect(() => {
     if (matches && matches.length > 0) {
       const newlyScored: Record<string, number> = {};
       let scoredMatchLabel = '';
+      let redCardLabel = '';
+
       for (const m of matches) {
         const sum = (m.home_score || 0) + (m.away_score || 0);
         const prev = prevScoresMapRef.current[m.id];
         if (prev !== undefined && sum > prev) {
           newlyScored[m.id] = Date.now();
-          scoredMatchLabel = `${m.home_team} ${m.home_score ?? 0} - ${m.away_score ?? 0} ${m.away_team}`;
+          const latestGoalEv = (m.match_events || []).filter((e) => e.type === 'goal' || e.type === 'penalty' || e.type === 'own_goal').slice(-1)[0];
+          scoredMatchLabel = latestGoalEv
+            ? `${m.home_team} ${m.home_score ?? 0} - ${m.away_score ?? 0} ${m.away_team} (${latestGoalEv.minute} ${latestGoalEv.player || ''})`
+            : `${m.home_team} ${m.home_score ?? 0} - ${m.away_score ?? 0} ${m.away_team}`;
         }
         prevScoresMapRef.current[m.id] = sum;
+
+        const redCount = (m.match_events || []).filter((e) => e.type === 'red_card').length;
+        const prevRed = prevRedCardsMapRef.current[m.id];
+        if (prevRed !== undefined && redCount > prevRed) {
+          const latestRedEv = (m.match_events || []).filter((e) => e.type === 'red_card').slice(-1)[0];
+          redCardLabel = `${m.home_team} vs ${m.away_team} (${latestRedEv?.minute || ''} ${latestRedEv?.player || 'Red Card'})`;
+        }
+        prevRedCardsMapRef.current[m.id] = redCount;
       }
+
       if (Object.keys(newlyScored).length > 0) {
         setRecentGoalIds((prev) => ({ ...prev, ...newlyScored }));
-        toast.success(`⚽ GOAL UPDATE: ${scoredMatchLabel}`);
+        if (audioChimeEnabled) {
+          playLiveEventChime('goal');
+        }
+        toast.success(`⚽ GOAL ALERT: ${scoredMatchLabel}`);
+      }
+
+      if (redCardLabel) {
+        if (audioChimeEnabled) {
+          playLiveEventChime('red_card');
+        }
+        toast.error(`🟥 RED CARD ALERT: ${redCardLabel}`);
       }
     }
-  }, [matches]);
+  }, [matches, audioChimeEnabled]);
 
   // Filter matches based on league, status tab, goal threat radar, free stream filter, and search query
   const filteredMatches = useMemo(() => {
@@ -512,6 +592,25 @@ export default function LiveScores() {
             </div>
 
             <Button
+              variant={audioChimeEnabled ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => {
+                const next = !audioChimeEnabled;
+                setAudioChimeEnabled(next);
+                if (next) playLiveEventChime('goal');
+              }}
+              className="text-xs min-h-[38px] gap-1.5 font-semibold"
+              title="Toggle live goal & red card audio chime"
+            >
+              {audioChimeEnabled ? (
+                <Volume2 className="h-3.5 w-3.5 text-emerald-500" />
+              ) : (
+                <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+              <span>{audioChimeEnabled ? 'Goal Audio: ON' : 'Goal Audio: Muted'}</span>
+            </Button>
+
+            <Button
               variant="outline"
               size="sm"
               onClick={() => refresh()}
@@ -523,6 +622,9 @@ export default function LiveScores() {
             </Button>
           </div>
         </div>
+
+        {/* Interactive Multi-Match Parlay & Slip Auto-Settlement Tracker */}
+        <LiveParlaySettlementBar matches={matches} />
 
         {/* SofaScore-Style Attacking Momentum & 70'-89' Late-Goal Scanner */}
         <LiveMomentumRadar />
@@ -911,6 +1013,26 @@ export default function LiveScores() {
                                     </span>
                                   </div>
                                 </div>
+
+                                {/* Real-Time Match Events Inline Ticker (Goals, Scorers, Cards from ESPN) */}
+                                {stats.events.length > 0 && (
+                                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                                    {stats.events.slice(0, 4).map((ev, evIdx) => (
+                                      <span
+                                        key={evIdx}
+                                        className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-muted/70 text-muted-foreground border border-border/60 font-medium"
+                                      >
+                                        <strong className="font-mono text-foreground">{ev.minute}</strong>
+                                        <span className="truncate max-w-[160px]">{ev.text}</span>
+                                      </span>
+                                    ))}
+                                    {stats.events.length > 4 && (
+                                      <span className="text-[10px] text-primary font-semibold">
+                                        +{stats.events.length - 4} more events
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -1110,6 +1232,26 @@ export default function LiveScores() {
                                   </div>
                                 </div>
                               )}
+
+                              {/* Deep ESPN Match Summary: Starting XIs, Formations, Live Commentary, H2H & Auto-Settlement */}
+                              <MatchDeepSummaryPanel
+                                matchId={String(m.id)}
+                                homeTeam={m.home_team}
+                                awayTeam={m.away_team}
+                                league={m.league}
+                                status={m.status}
+                                homeScore={m.home_score}
+                                awayScore={m.away_score}
+                                prediction={m.prediction}
+                                homeOdds={m.home_odds}
+                                drawOdds={m.draw_odds}
+                                awayOdds={m.away_odds}
+                                homeOddsOpen={m.home_odds_open}
+                                drawOddsOpen={m.draw_odds_open}
+                                awayOddsOpen={m.away_odds_open}
+                                clvEdgePct={m.clv_edge_pct}
+                                venue={m.venue}
+                              />
 
                               {/* Footer Action Links */}
                               <div className="flex items-center justify-between pt-1">

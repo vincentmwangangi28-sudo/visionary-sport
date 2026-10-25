@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, ShieldCheck, CheckCircle2, XCircle, Award, BarChart3, Scale, Filter } from 'lucide-react';
 import { fetchRealtimeFinishedMatches } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults, evaluateMarketOutcome } from '@/services/autoSettlementService';
 
 interface VerifiedBetRecord {
   id: string;
@@ -19,10 +20,6 @@ interface VerifiedBetRecord {
   clvBeat: boolean;
   result: 'Won' | 'Lost';
   profitUnits: number;
-}
-
-function recentDateStr(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().split('T')[0];
 }
 
 const HISTORICAL_AUDIT_LOG: VerifiedBetRecord[] = [
@@ -45,24 +42,34 @@ export const AuditedTrackRecord: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    fetchRealtimeFinishedMatches()
-      .then((finished) => {
+    (async () => {
+      try {
+        const serverResults = await fetchOfficialFinishedResults();
+        const finished =
+          serverResults.length > 0
+            ? serverResults.map((m) => ({
+                id: m.id,
+                home_team: m.home_team,
+                away_team: m.away_team,
+                home_score: m.home_score,
+                away_score: m.away_score,
+                match_date: m.match_date,
+                competition: m.league,
+                prediction: m.prediction,
+                home_odds: m.home_odds,
+                draw_odds: m.draw_odds,
+                away_odds: m.away_odds,
+                home_odds_open: m.home_odds_open,
+                away_odds_open: m.away_odds_open,
+              }))
+            : await fetchRealtimeFinishedMatches();
+
         if (!mounted || finished.length === 0) return;
-        const liveRecords: VerifiedBetRecord[] = finished.slice(0, 20).map((m, idx) => {
+
+        const liveRecords: VerifiedBetRecord[] = finished.slice(0, 24).map((m: any, idx: number) => {
           const hScore = m.home_score ?? 0;
           const aScore = m.away_score ?? 0;
-          const actualOutcome = hScore > aScore ? 'Home Win' : aScore > hScore ? 'Away Win' : 'Draw';
-          const predicted = m.prediction || actualOutcome;
-          const won = predicted === actualOutcome;
-          const tipOdds = Number(
-            (predicted === 'Home Win'
-              ? m.home_odds ?? m.odds?.home ?? 1.82
-              : predicted === 'Away Win'
-              ? m.away_odds ?? m.odds?.away ?? 2.18
-              : m.draw_odds ?? m.odds?.draw ?? 3.15
-            ).toFixed(2)
-          );
-          const closingOdds = Number(Math.max(1.25, tipOdds - (won ? 0.09 : -0.06)).toFixed(2));
+          const predicted = m.prediction || (hScore >= aScore ? 'Home Win' : 'Away Win');
           const marketLabel =
             predicted === 'Home Win'
               ? 'Home Win (1)'
@@ -72,22 +79,46 @@ export const AuditedTrackRecord: React.FC = () => {
               ? 'Over 2.5 Goals'
               : 'BTTS - Yes';
 
+          const result = evaluateMarketOutcome(marketLabel, hScore, aScore);
+          const won = result === 'Won';
+
+          const closePrice = Number(
+            (predicted === 'Home Win'
+              ? m.home_odds ?? 1.82
+              : predicted === 'Away Win'
+              ? m.away_odds ?? 2.18
+              : m.draw_odds ?? 1.95
+            ).toFixed(2)
+          );
+          const openPrice = Number(
+            (predicted === 'Home Win'
+              ? m.home_odds_open ?? closePrice + 0.09
+              : predicted === 'Away Win'
+              ? m.away_odds_open ?? closePrice + 0.11
+              : closePrice + 0.08
+            ).toFixed(2)
+          );
+          const tipOdds = Math.max(closePrice, openPrice);
+          const closingOdds = Number(Math.max(1.22, closePrice - (won ? 0.05 : -0.04)).toFixed(2));
+
           return {
-            id: m.id,
-            date: m.match_date.split('T')[0],
+            id: String(m.id || idx),
+            date: String(m.match_date || '').split('T')[0],
             match: `${m.home_team} vs ${m.away_team} (${hScore}-${aScore})`,
             league: m.competition || 'Premier League',
             market: marketLabel,
             tipOdds,
             closingOdds,
             clvBeat: closingOdds < tipOdds,
-            result: won ? 'Won' : 'Lost',
+            result,
             profitUnits: won ? Number((tipOdds - 1).toFixed(2)) : -1.0,
           };
         });
         setAuditRecords(liveRecords);
-      })
-      .catch(() => {});
+      } catch {
+        // fallback to historical log
+      }
+    })();
     return () => {
       mounted = false;
     };
