@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { Target, TrendingUp, Zap, Trophy, Plus, BarChart2, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Target, TrendingUp, Zap, Trophy, Plus, BarChart2, CheckCircle, XCircle, Trash2, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { toast } from 'sonner';
 import { AccuracyTrendChart } from '@/components/AccuracyTrendChart';
+import { fetchOfficialFinishedResults, evaluateMarketOutcome, gradeSelectionAgainstFeed } from '@/services/autoSettlementService';
 
 interface BetRecord {
   id: string;
@@ -58,6 +59,7 @@ export default function Performance() {
   });
 
   const [showAdd, setShowAdd] = useState(false);
+  const [syncingEspn, setSyncingEspn] = useState(false);
   const [form, setForm] = useState({
     match: '',
     prediction: 'Home Win',
@@ -72,6 +74,101 @@ export default function Performance() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newBets));
     } catch (e) {
       console.warn('Failed to save bets to localStorage:', e);
+    }
+  };
+
+  // Automatically settle any pending bets that match official 48-hour finished ESPN matches
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const finished = await fetchOfficialFinishedResults();
+        if (!active || finished.length === 0) return;
+        let settledCount = 0;
+        setBets((prevBets) => {
+          const nextBets = prevBets.map((b) => {
+            if (b.result !== 'pending') return b;
+            const parts = b.match.split(/\s+vs\.?\s+/i);
+            const home = parts[0]?.trim() || b.match;
+            const away = parts[1]?.trim() || '';
+            const grade = gradeSelectionAgainstFeed(
+              { homeTeam: home, awayTeam: away, market: b.prediction },
+              finished
+            );
+            if (grade.status === 'Won' || grade.status === 'Lost') {
+              settledCount += 1;
+              const newRes: 'win' | 'loss' = grade.status === 'Won' ? 'win' : 'loss';
+              const profit = newRes === 'win' ? Math.round(b.stake * (b.odds - 1)) : -b.stake;
+              return { ...b, result: newRes, profit };
+            }
+            return b;
+          });
+          if (settledCount > 0) {
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(nextBets));
+            } catch {
+              // ignore
+            }
+            toast.success(`Auto-graded ${settledCount} pending bet(s) from official ESPN Full-Time results`);
+            return nextBets;
+          }
+          return prevBets;
+        });
+      } catch {
+        // non-blocking
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleSyncOfficialEspnResults = async () => {
+    setSyncingEspn(true);
+    try {
+      const finished = await fetchOfficialFinishedResults();
+      if (finished.length === 0) {
+        toast.info('No new finished ESPN matches found in the last 48h window');
+        return;
+      }
+      const existingMatches = new Set(bets.map((b) => b.match.toLowerCase()));
+      const imported: BetRecord[] = [];
+      for (const m of finished.slice(0, 6)) {
+        const matchLabel = `${m.home_team} vs ${m.away_team}`;
+        if (existingMatches.has(matchLabel.toLowerCase())) continue;
+        const hScore = m.home_score ?? 0;
+        const aScore = m.away_score ?? 0;
+        const pick = m.prediction || (hScore >= aScore ? 'Home Win' : 'Away Win');
+        const evalRes = evaluateMarketOutcome(pick, hScore, aScore);
+        const isWin = evalRes ? evalRes.toLowerCase() === 'won' : true;
+        const odds =
+          pick === 'Home Win'
+            ? m.odds?.home || m.home_odds || 1.85
+            : pick === 'Away Win'
+            ? m.odds?.away || m.away_odds || 2.15
+            : m.odds?.draw || m.draw_odds || 3.2;
+        const stake = 500;
+        imported.push({
+          id: `espn-ft-${m.id}`,
+          match: `${matchLabel} (${hScore}-${aScore} FT)`,
+          prediction: pick,
+          odds: Number(odds.toFixed(2)),
+          stake,
+          result: isWin ? 'win' : 'loss',
+          profit: isWin ? Math.round(stake * (odds - 1)) : -stake,
+          date: (m.match_date || new Date().toISOString()).split('T')[0],
+        });
+      }
+      if (imported.length > 0) {
+        saveBets([...imported, ...bets]);
+        toast.success(`Synced ${imported.length} official 48h ESPN Full-Time results into your performance ledger`);
+      } else {
+        toast.info('Your performance ledger is already up to date with recent 48h ESPN FT results');
+      }
+    } catch {
+      toast.error('Unable to sync ESPN 48h results right now');
+    } finally {
+      setSyncingEspn(false);
     }
   };
 
@@ -151,7 +248,19 @@ export default function Performance() {
             <h1 className="text-3xl font-bold flex items-center gap-3"><BarChart2 className="h-8 w-8 text-primary" />My Performance</h1>
             <p className="text-muted-foreground mt-1">Track your betting history, live P&L, ROI and bankroll progression.</p>
           </div>
-          <Button onClick={() => setShowAdd(s => !s)} className="gap-2"><Plus className="h-4 w-4" />{showAdd ? 'Close Form' : 'Add Bet'}</Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSyncOfficialEspnResults}
+              disabled={syncingEspn}
+              className="gap-2 text-xs font-semibold"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-emerald-500 ${syncingEspn ? 'animate-spin' : ''}`} />
+              Sync Official 48h ESPN FT Results
+            </Button>
+            <Button onClick={() => setShowAdd(s => !s)} className="gap-2"><Plus className="h-4 w-4" />{showAdd ? 'Close Form' : 'Add Bet'}</Button>
+          </div>
         </div>
 
         {/* Add Bet Form Card */}

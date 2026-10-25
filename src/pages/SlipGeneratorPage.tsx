@@ -16,6 +16,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { LiveParlaySettlementBar } from '@/components/LiveParlaySettlementBar';
 import {
   REGIONAL_BOOKMAKERS,
   generateRegionalBookingCode,
@@ -408,6 +409,8 @@ export default function SlipGeneratorPage() {
             </Button>
           </div>
         </div>
+
+        <LiveParlaySettlementBar />
 
         <Tabs defaultValue="generator" className="space-y-6">
           <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full h-auto sm:h-11 bg-muted/60 p-1 rounded-xl border">

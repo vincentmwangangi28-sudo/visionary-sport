@@ -1,16 +1,79 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { ApiFootballLiveFixture } from '@/hooks/useFootballData';
-import { gradeSelectionAgainstFeed } from '@/services/autoSettlementService';
+import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults, gradeSelectionAgainstFeed } from '@/services/autoSettlementService';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle, Clock, Ticket, Sparkles } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Ticket, Sparkles, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface LiveParlaySettlementBarProps {
-  matches: ApiFootballLiveFixture[];
+  matches?: ApiFootballLiveFixture[];
 }
 
 export const LiveParlaySettlementBar: React.FC<LiveParlaySettlementBarProps> = ({ matches }) => {
-  const { selections, addSelections, setIsOpen, totalOdds } = useBetSlip();
+  const { selections, addSelections, removeSelection, setIsOpen, totalOdds } = useBetSlip();
+  const [autoFeed, setAutoFeed] = useState<
+    Array<{
+      home_team: string;
+      away_team: string;
+      league?: string;
+      match_date?: string;
+      status: string;
+      minute?: string | number | null;
+      home_score: number | null;
+      away_score: number | null;
+      prediction?: string;
+      confidence?: number;
+      home_odds?: number;
+      draw_odds?: number;
+      away_odds?: number;
+      clv_edge_pct?: number;
+    }>
+  >([]);
+
+  useEffect(() => {
+    if (matches && matches.length > 0) return;
+    let active = true;
+    const loadFeed = async () => {
+      try {
+        const [liveList, finishedList] = await Promise.all([
+          fetchRealtimeLiveMatches(),
+          fetchOfficialFinishedResults(),
+        ]);
+        if (!active) return;
+        const combined = [
+          ...liveList.map((m) => ({
+            home_team: m.home_team,
+            away_team: m.away_team,
+            league: m.competition,
+            match_date: m.match_date,
+            status: m.status,
+            minute: m.minute,
+            home_score: m.home_score,
+            away_score: m.away_score,
+            prediction: m.prediction,
+            confidence: m.confidence,
+            home_odds: m.home_odds,
+            draw_odds: m.draw_odds,
+            away_odds: m.away_odds,
+          })),
+          ...finishedList,
+        ];
+        setAutoFeed(combined);
+      } catch {
+        // ignore
+      }
+    };
+    loadFeed();
+    const timer = setInterval(loadFeed, 45000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [matches]);
+
+  const effectiveMatches = matches && matches.length > 0 ? matches : autoFeed;
 
   const gradedLegs = useMemo(() => {
     return selections.map((sel) => {
@@ -21,21 +84,36 @@ export const LiveParlaySettlementBar: React.FC<LiveParlaySettlementBarProps> = (
           market: sel.market,
           odds: sel.odds,
         },
-        matches
+        effectiveMatches
       );
       return {
         ...sel,
         graded,
       };
     });
-  }, [selections, matches]);
+  }, [selections, effectiveMatches]);
 
   const wonCount = gradedLegs.filter((l) => l.graded.status === 'Won').length;
   const lostCount = gradedLegs.filter((l) => l.graded.status === 'Lost').length;
   const liveCount = gradedLegs.filter((l) => l.graded.status === 'Live').length;
+  const settledOrLostLegs = gradedLegs.filter(
+    (l) => l.graded.status === 'Lost' || l.graded.status === 'Won'
+  );
+
+  const handlePruneSettledOrLosing = () => {
+    const toRemove = gradedLegs.filter(
+      (l) => l.graded.status === 'Lost' || l.graded.status === 'Won'
+    );
+    if (toRemove.length === 0) {
+      toast.info('No settled or losing legs to prune right now.');
+      return;
+    }
+    toRemove.forEach((l) => removeSelection(l.id));
+    toast.success(`Pruned ${toRemove.length} settled/losing leg(s) from your active slip!`);
+  };
 
   const handleAutoBuildLiveSlip = () => {
-    const candidates = matches
+    const candidates = effectiveMatches
       .filter((m) => m.status === 'live' || m.status === 'halftime' || m.status === 'upcoming')
       .slice(0, 3);
     if (candidates.length === 0) return;
@@ -53,8 +131,8 @@ export const LiveParlaySettlementBar: React.FC<LiveParlaySettlementBarProps> = (
           match: `${m.home_team} vs ${m.away_team}`,
           homeTeam: m.home_team,
           awayTeam: m.away_team,
-          league: m.league,
-          matchDate: m.match_date,
+          league: m.league || 'Football',
+          matchDate: m.match_date || new Date().toISOString(),
           market: pick,
           odds,
           confidence: m.confidence || 78,
@@ -78,7 +156,7 @@ export const LiveParlaySettlementBar: React.FC<LiveParlaySettlementBarProps> = (
         <Button
           size="sm"
           onClick={handleAutoBuildLiveSlip}
-          disabled={matches.length === 0}
+          disabled={effectiveMatches.length === 0}
           className="text-xs font-semibold gap-1.5 whitespace-nowrap shrink-0"
         >
           <Sparkles className="h-3.5 w-3.5" />
@@ -100,14 +178,27 @@ export const LiveParlaySettlementBar: React.FC<LiveParlaySettlementBarProps> = (
             · {wonCount} Won · {liveCount} In-Play · {lostCount} Lost
           </span>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setIsOpen(true)}
-          className="text-xs h-8 font-semibold whitespace-nowrap shrink-0"
-        >
-          Open Full Slip
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {settledOrLostLegs.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handlePruneSettledOrLosing}
+              className="text-xs h-8 font-semibold gap-1 text-rose-500 border-rose-500/30 hover:bg-rose-500/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Prune Settled / Losing ({settledOrLostLegs.length})
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsOpen(true)}
+            className="text-xs h-8 font-semibold whitespace-nowrap"
+          >
+            Open Full Slip
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">

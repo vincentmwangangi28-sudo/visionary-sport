@@ -8,6 +8,7 @@ import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { MarketQuickStrip } from '@/components/MarketQuickStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { TeamLogo } from '@/components/TeamLogo';
+import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,12 +22,14 @@ import {
   ShieldAlert,
   TrendingUp,
   Zap,
+  Users,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
 interface InPlayAlertMatch {
   id: string;
+  espnEventId?: string;
   homeTeam: string;
   awayTeam: string;
   league: string;
@@ -210,18 +213,24 @@ export const InPlayPredictionsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [tickCount, setTickCount] = useState(0);
   const [liveApiMatches, setLiveApiMatches] = useState<InPlayAlertMatch[]>([]);
+  const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
 
-  // Fetch real-time match events & telemetry from /api/football?type=live
+  // Fetch real-time match events & telemetry from /api/football?type=live & upcoming
   useEffect(() => {
     let cancelled = false;
     const syncRealInPlay = async () => {
       try {
-        const res = await fetch('/api/football?type=live', {
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) return;
-        const json = await res.json();
-        const rawList = (json?.matches as Array<Record<string, any>>) || [];
+        const [liveRes, upRes] = await Promise.all([
+          fetch('/api/football?type=live', { headers: { Accept: 'application/json' } })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null),
+          fetch('/api/football?type=upcoming', { headers: { Accept: 'application/json' } })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null),
+        ]);
+        const liveArr = (liveRes?.predictions || liveRes?.matches || []) as Array<Record<string, any>>;
+        const upArr = (upRes?.predictions || upRes?.matches || []) as Array<Record<string, any>>;
+        const rawList = [...liveArr, ...upArr.slice(0, 10)];
         if (cancelled || rawList.length === 0) return;
 
         // Prioritize live, halftime, and matches with real match_events or stats
@@ -236,6 +245,9 @@ export const InPlayPredictionsPage: React.FC = () => {
         });
 
         const mapped: InPlayAlertMatch[] = prioritized.slice(0, 14).map((m, idx) => {
+          const rawIdStr = String(m.id || m.match_id || '');
+          const eventIdMatch = rawIdStr.match(/(\d{6,})/);
+          const espnEventId = eventIdMatch ? eventIdMatch[1] : undefined;
           const homeTeam = String(m.home_team || 'Home');
           const awayTeam = String(m.away_team || 'Away');
           const league = String(m.league || 'International');
@@ -311,6 +323,7 @@ export const InPlayPredictionsPage: React.FC = () => {
 
           return {
             id: String(m.id || `live-${idx}`),
+            espnEventId,
             homeTeam,
             awayTeam,
             league,
@@ -648,15 +661,41 @@ export const InPlayPredictionsPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <Button
-                      size="sm"
-                      onClick={() => handleAddLivePick(match)}
-                      className="gap-1.5 text-xs font-bold shrink-0"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Add @ {match.liveOdds.toFixed(2)}
-                    </Button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {match.espnEventId && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setExpandedSummaryId(
+                              expandedSummaryId === match.id ? null : match.id
+                            )
+                          }
+                          className="gap-1 text-xs h-8 px-2.5"
+                        >
+                          <Users className="h-3.5 w-3.5" />
+                          {expandedSummaryId === match.id ? 'Hide XIs' : 'Lineups'}
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        onClick={() => handleAddLivePick(match)}
+                        className="gap-1.5 text-xs font-bold h-8 shrink-0"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add @ {match.liveOdds.toFixed(2)}
+                      </Button>
+                    </div>
                   </div>
+
+                  {match.espnEventId && expandedSummaryId === match.id && (
+                    <MatchDeepSummaryPanel
+                      eventId={match.espnEventId}
+                      homeTeam={match.homeTeam}
+                      awayTeam={match.awayTeam}
+                      onClose={() => setExpandedSummaryId(null)}
+                    />
+                  )}
                 </CardContent>
               </Card>
             );

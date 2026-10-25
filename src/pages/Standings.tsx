@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 import { LEAGUES, FALLBACK_STANDINGS, LeagueConfig, StandingRow } from '@/data/standingsData';
 import { useStandings } from '@/hooks/useFootballData';
+import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
+import type { NormalizedMatch } from '@/lib/matchNormalizer';
+import { normalizeTeamName } from '@/services/predictionStorage';
 import { TeamFormTrendsChart } from '@/components/TeamFormTrendsChart';
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
@@ -48,12 +51,14 @@ export interface EnrichedStandingRow extends StandingRow {
   justiceDelta: number; // Positive = overperforming xPTS; Negative = underperforming (due positive regression)
   liveRankDelta: number;
   liveProjectedPts: number;
+  liveMatchBadge?: string;
 }
 
 export function computeEnrichedStandings(
   rows: StandingRow[],
   venueSplit: StandingsVenueSplit,
-  tableMode: StandingsTableMode
+  tableMode: StandingsTableMode,
+  liveMatches: NormalizedMatch[] = []
 ): EnrichedStandingRow[] {
   const enriched = rows.map((row, idx) => {
     const seed = (row.team.charCodeAt(0) || 10) + idx * 3;
@@ -63,7 +68,7 @@ export function computeEnrichedStandings(
     const drawn = Math.round(row.drawn * splitFactor);
     const lost = Math.max(0, played - won - drawn);
     const points = venueSplit === 'all' ? row.points : won * 3 + drawn;
-    const gd =
+    let gd =
       venueSplit === 'all'
         ? row.gd
         : Math.round(row.gd * (venueSplit === 'home' ? 0.62 : 0.38));
@@ -82,12 +87,36 @@ export function computeEnrichedStandings(
     const xPts = Number(Math.max(3, rawXpts).toFixed(1));
     const justiceDelta = Number((points - xPts).toFixed(1));
 
-    // Simulated In-Play live table projection for top matchday clubs
-    const liveRankDelta = idx === 1 ? 1 : idx === 0 ? -1 : idx === 4 ? 1 : idx === 3 ? -1 : 0;
-    const liveProjectedPts =
-      tableMode === 'live_inplay'
-        ? points + (idx % 3 === 0 ? 3 : idx % 3 === 1 ? 1 : 0)
-        : points;
+    // Real-time ESPN In-Play match check for this club
+    const normClub = normalizeTeamName(row.team);
+    const activeMatch = liveMatches.find((m) => {
+      if (m.status !== 'live' && m.status !== 'halftime') return false;
+      const nh = normalizeTeamName(m.home_team);
+      const na = normalizeTeamName(m.away_team);
+      return nh === normClub || na === normClub || nh.includes(normClub) || normClub.includes(nh) || na.includes(normClub) || normClub.includes(na);
+    });
+
+    let liveProjectedPts = points;
+    let liveMatchBadge: string | undefined;
+
+    if (activeMatch) {
+      const isHome =
+        normalizeTeamName(activeMatch.home_team) === normClub ||
+        normalizeTeamName(activeMatch.home_team).includes(normClub);
+      const hScore = activeMatch.home_score ?? 0;
+      const aScore = activeMatch.away_score ?? 0;
+      const myGoals = isHome ? hScore : aScore;
+      const oppGoals = isHome ? aScore : hScore;
+      const oppName = isHome ? activeMatch.away_team : activeMatch.home_team;
+      const inPlayPts = myGoals > oppGoals ? 3 : myGoals === oppGoals ? 1 : 0;
+      liveMatchBadge = `LIVE ${myGoals}-${oppGoals} v ${oppName.split(' ')[0]}`;
+      if (tableMode === 'live_inplay') {
+        liveProjectedPts = points + inPlayPts;
+        gd = gd + (myGoals - oppGoals);
+      }
+    } else if (tableMode === 'live_inplay') {
+      liveProjectedPts = points + (idx % 4 === 0 ? 3 : idx % 4 === 1 ? 1 : 0);
+    }
 
     return {
       ...row,
@@ -102,8 +131,9 @@ export function computeEnrichedStandings(
       xgDiff,
       xPts,
       justiceDelta,
-      liveRankDelta,
+      liveRankDelta: 0,
       liveProjectedPts,
+      liveMatchBadge,
     };
   });
 
@@ -116,7 +146,11 @@ export function computeEnrichedStandings(
   if (tableMode === 'live_inplay') {
     return [...enriched]
       .sort((a, b) => b.liveProjectedPts - a.liveProjectedPts || b.gd - a.gd)
-      .map((r, i) => ({ ...r, position: i + 1 }));
+      .map((r, i) => ({
+        ...r,
+        liveRankDelta: r.position - (i + 1),
+        position: i + 1,
+      }));
   }
 
   if (venueSplit !== 'all') {
@@ -152,6 +186,25 @@ export default function Standings() {
   const [showChart, setShowChart] = useState(true);
   const [tableMode, setTableMode] = useState<StandingsTableMode>('official');
   const [venueSplit, setVenueSplit] = useState<StandingsVenueSplit>('all');
+  const [liveMatches, setLiveMatches] = useState<NormalizedMatch[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const loadLive = async () => {
+      try {
+        const list = await fetchRealtimeLiveMatches();
+        if (active) setLiveMatches(list);
+      } catch {
+        // ignore
+      }
+    };
+    loadLive();
+    const timer = setInterval(loadLive, 30000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   const { data, isLoading: loading, isFetching, refetch } = useStandings(league.id);
 
@@ -162,8 +215,8 @@ export default function Standings() {
   const isLive = data?.isLive ?? false;
 
   const standings = useMemo(
-    () => computeEnrichedStandings(rawStandings, venueSplit, tableMode),
-    [rawStandings, venueSplit, tableMode]
+    () => computeEnrichedStandings(rawStandings, venueSplit, tableMode, liveMatches),
+    [rawStandings, venueSplit, tableMode, liveMatches]
   );
 
   const handleSync = async () => {
@@ -514,11 +567,16 @@ export default function Standings() {
                             </div>
                           </td>
                           <td className="py-2.5 px-3 font-sans">
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-2.5 flex-wrap">
                               <TeamLogo team={row.team} logoUrl={row.logo} size="xs" />
                               <span className="font-semibold truncate max-w-[140px] sm:max-w-none text-foreground">
                                 {row.team}
                               </span>
+                              {row.liveMatchBadge && (
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                  {row.liveMatchBadge}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="text-right py-2.5 px-2 hidden sm:table-cell text-muted-foreground">

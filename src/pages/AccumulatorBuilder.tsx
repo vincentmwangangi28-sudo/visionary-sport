@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -12,6 +12,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { AccaFixtureListSkeleton } from '@/components/PredictionCardSkeleton';
+import { LiveParlaySettlementBar } from '@/components/LiveParlaySettlementBar';
+import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults, gradeSelectionAgainstFeed } from '@/services/autoSettlementService';
 import { Trash2, Plus, Share2, Copy, CheckCheck, Flame, Download, Sparkles, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { curateAccaWithGemini } from '@/services/geminiTasksService';
@@ -50,6 +53,76 @@ export default function AccumulatorBuilder() {
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [optimizingSlip, setOptimizingSlip] = useState(false);
+  const [settlementFeed, setSettlementFeed] = useState<
+    Array<{
+      home_team: string;
+      away_team: string;
+      status: string;
+      minute?: string | number | null;
+      home_score: number | null;
+      away_score: number | null;
+      home_odds?: number;
+      draw_odds?: number;
+      away_odds?: number;
+      clv_edge_pct?: number;
+    }>
+  >([]);
+
+  useEffect(() => {
+    let active = true;
+    const syncFeed = async () => {
+      try {
+        const [liveList, finishedList] = await Promise.all([
+          fetchRealtimeLiveMatches(),
+          fetchOfficialFinishedResults(),
+        ]);
+        if (!active) return;
+        setSettlementFeed([
+          ...liveList.map((m) => ({
+            home_team: m.home_team,
+            away_team: m.away_team,
+            status: m.status,
+            minute: m.minute,
+            home_score: m.home_score,
+            away_score: m.away_score,
+            home_odds: m.home_odds,
+            draw_odds: m.draw_odds,
+            away_odds: m.away_odds,
+          })),
+          ...finishedList,
+        ]);
+      } catch {
+        // ignore
+      }
+    };
+    syncFeed();
+    const timer = setInterval(syncFeed, 45000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, []);
+
+  const settledOrLostIds = useMemo(() => {
+    return selections
+      .filter((s) => {
+        const g = gradeSelectionAgainstFeed(
+          { homeTeam: s.homeTeam, awayTeam: s.awayTeam, market: s.market, odds: s.odds },
+          settlementFeed
+        );
+        return g.status === 'Lost' || g.status === 'Won';
+      })
+      .map((s) => s.id);
+  }, [selections, settlementFeed]);
+
+  const handlePruneSettledLegs = () => {
+    if (settledOrLostIds.length === 0) {
+      toast.info('All active legs are still pending or in-play.');
+      return;
+    }
+    settledOrLostIds.forEach((id) => removeSelection(id));
+    toast.success(`Pruned ${settledOrLostIds.length} settled/losing leg(s) from your accumulator!`);
+  };
 
   const handleAutoCurateAcca = async () => {
     if (predictions.length === 0) {
@@ -272,6 +345,8 @@ export default function AccumulatorBuilder() {
           </div>
         </div>
 
+        <LiveParlaySettlementBar />
+
         <div className="grid lg:grid-cols-3 gap-6 items-start">
           {/* Left 2 Columns: Fixtures Table */}
           <div className="lg:col-span-2 space-y-3">
@@ -401,19 +476,37 @@ export default function AccumulatorBuilder() {
                           s.market,
                           selectedBookmaker.toLowerCase()
                         );
+                        const legStatus = gradeSelectionAgainstFeed(
+                          { homeTeam: s.homeTeam, awayTeam: s.awayTeam, market: s.market, odds: s.odds },
+                          settlementFeed
+                        );
                         return (
                           <div
                             key={s.id}
                             className="flex items-start justify-between gap-2 p-2.5 bg-muted/40 border border-border/60 rounded-lg text-xs"
                           >
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-background border border-border text-primary shrink-0">
                                   #{gameId}
                                 </span>
                                 <p className="font-semibold text-foreground truncate">
                                   {s.homeTeam} vs {s.awayTeam}
                                 </p>
+                                {legStatus.status !== 'Pending' && (
+                                  <span
+                                    className={`font-mono text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                      legStatus.status === 'Won'
+                                        ? 'bg-emerald-500/15 text-emerald-500'
+                                        : legStatus.status === 'Lost'
+                                        ? 'bg-rose-500/15 text-rose-500'
+                                        : 'bg-amber-500/15 text-amber-500'
+                                    }`}
+                                  >
+                                    {legStatus.status.toUpperCase()}{' '}
+                                    {legStatus.actualScore ? `(${legStatus.actualScore})` : ''}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-muted-foreground mt-0.5">
                                 {translatedMarket} @{' '}
@@ -432,6 +525,18 @@ export default function AccumulatorBuilder() {
                         );
                       })}
                     </div>
+
+                    {settledOrLostIds.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePruneSettledLegs}
+                        className="w-full h-8 text-xs font-semibold gap-1.5 text-rose-500 border-rose-500/30 hover:bg-rose-500/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Prune Settled / Losing Legs ({settledOrLostIds.length})
+                      </Button>
+                    )}
 
                     {bonusMultiplier > 0 && (
                       <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 flex items-center gap-2 text-xs">

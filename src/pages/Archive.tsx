@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchRealtimeFinishedMatches } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults, evaluateMarketOutcome } from '@/services/autoSettlementService';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -249,16 +250,21 @@ export default function Archive() {
       try {
         const collected: ArchivedPrediction[] = [];
 
-        // Fetch real finished matches from ESPN live scoreboards
+        // Fetch official 48-hour finished results from /api/football?type=results and realtime scoreboard
         try {
-          const realFinished = await fetchRealtimeFinishedMatches();
-          if (realFinished.length > 0) {
-            for (const m of realFinished) {
+          const [official48h, realFinished] = await Promise.all([
+            fetchOfficialFinishedResults().catch(() => []),
+            fetchRealtimeFinishedMatches().catch(() => []),
+          ]);
+          const combinedFinished = [...official48h, ...realFinished];
+          if (combinedFinished.length > 0) {
+            for (const m of combinedFinished) {
               const hScore = m.home_score ?? 0;
               const aScore = m.away_score ?? 0;
               const actualOutcome = hScore > aScore ? 'Home Win' : aScore > hScore ? 'Away Win' : 'Draw';
               const predicted = m.prediction || actualOutcome;
-              const isWon = predicted === actualOutcome;
+              const evalOutcome = evaluateMarketOutcome(predicted, hScore, aScore, m.home_team, m.away_team);
+              const isWon = evalOutcome ? evalOutcome === 'won' : predicted === actualOutcome;
               const oddsVal =
                 predicted === 'Home Win'
                   ? m.home_odds ?? m.odds?.home ?? 1.85
@@ -267,7 +273,7 @@ export default function Archive() {
                   : m.draw_odds ?? m.odds?.draw ?? 3.20;
 
               collected.push({
-                id: m.id,
+                id: String(m.id),
                 match: `${m.home_team} vs ${m.away_team}`,
                 home_team: m.home_team,
                 away_team: m.away_team,

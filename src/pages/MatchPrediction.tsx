@@ -64,8 +64,10 @@ import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { QuickInsightCard } from '@/components/QuickInsightCard';
 import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
 import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
+import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
+import { evaluateMarketOutcome } from '@/services/autoSettlementService';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
-import { Tv, Play } from 'lucide-react';
+import { Tv, Play, Radio, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
@@ -149,30 +151,43 @@ export default function MatchPrediction() {
     setLoading(true);
     setErrorMessage(null);
 
-    const saved = getSavedPrediction(home, away, date);
-    if (saved) {
-      setPrediction(saved);
-      setIsFallback(false);
-      setLoading(false);
-      return;
-    }
-
     try {
+      // 1. Check live, upcoming, and official 48h finished ESPN feeds first for real eventId, score, and telemetry
       try {
-        const liveFixtures = await fetchRealtimeUpcomingFixtures();
-        const found = liveFixtures.find(p =>
-          (p.home_team.toLowerCase().includes(home.toLowerCase()) || home.toLowerCase().includes(p.home_team.toLowerCase())) &&
-          (p.away_team.toLowerCase().includes(away.toLowerCase()) || away.toLowerCase().includes(p.away_team.toLowerCase()))
+        const [liveRes, upFixtures, finRes] = await Promise.all([
+          fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetchRealtimeUpcomingFixtures().catch(() => [] as Prediction[]),
+          fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        ]);
+        const combinedPool: Prediction[] = [
+          ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
+          ...upFixtures,
+          ...(Array.isArray(finRes?.predictions) ? finRes.predictions : []),
+        ];
+        const hLower = home.toLowerCase();
+        const aLower = away.toLowerCase();
+        const foundReal = combinedPool.find(
+          (p) =>
+            (p.home_team.toLowerCase().includes(hLower) || hLower.includes(p.home_team.toLowerCase())) &&
+            (p.away_team.toLowerCase().includes(aLower) || aLower.includes(p.away_team.toLowerCase()))
         );
-        if (found) {
-          const savedPred = savePrediction(found);
+        if (foundReal) {
+          const savedPred = savePrediction(foundReal);
           setPrediction(savedPred);
           setIsFallback(false);
           setLoading(false);
           return;
         }
       } catch (err) {
-        console.warn('Realtime fixture lookup warning in match detail:', err);
+        console.warn('Realtime ESPN lookup warning in match detail:', err);
+      }
+
+      const saved = getSavedPrediction(home, away, date);
+      if (saved) {
+        setPrediction(saved);
+        setIsFallback(false);
+        setLoading(false);
+        return;
       }
 
       const localMatch = DEFAULT_PREDICTIONS.find(p =>
@@ -321,11 +336,32 @@ export default function MatchPrediction() {
   const canonicalMatchSlug = (matchSlug || '').replace(/-\d{4}-\d{2}-\d{2}$/, '');
   const homeXgVal = (1.55 + (hash % 7) * 0.12).toFixed(2);
   const awayXgVal = (0.92 + (hash % 5) * 0.11).toFixed(2);
-  const settledHomeGoals = Math.max(1, Math.round(parseFloat(homeXgVal)));
-  const settledAwayGoals = Math.max(0, Math.round(parseFloat(awayXgVal)) - (confidence >= 72 ? 1 : 0));
+  const settledHomeGoals =
+    typeof prediction.home_score === 'number'
+      ? prediction.home_score
+      : Math.max(1, Math.round(parseFloat(homeXgVal)));
+  const settledAwayGoals =
+    typeof prediction.away_score === 'number'
+      ? prediction.away_score
+      : Math.max(0, Math.round(parseFloat(awayXgVal)) - (confidence >= 72 ? 1 : 0));
   const closingOdds = Math.max(1.28, Number(((prediction.home_odds ?? 1.95) - 0.14).toFixed(2)));
   const clvEdgePct = (((prediction.home_odds ?? 1.95) / closingOdds - 1) * 100).toFixed(1);
   const dynamicOgImageUrl = `https://predictpro.guru/api/og?home=${encodeURIComponent(prediction.home_team)}&away=${encodeURIComponent(prediction.away_team)}&league=${encodeURIComponent(prediction.league)}&tip=${encodeURIComponent(outcome)}&conf=${confidence}&xg=${encodeURIComponent(`${homeXgVal} - ${awayXgVal}`)}&score=${settledHomeGoals}-${settledAwayGoals}`;
+
+  const espnEventIdMatch = String(prediction.id || prediction.match_id || '').match(/(\d{6,})/);
+  const espnEventId = espnEventIdMatch ? espnEventIdMatch[1] : null;
+  const isRealLive = prediction.status === 'live';
+  const isRealFinished = prediction.status === 'finished';
+  const ftSettlement =
+    isRealFinished && typeof prediction.home_score === 'number' && typeof prediction.away_score === 'number'
+      ? evaluateMarketOutcome(
+          outcome,
+          prediction.home_score,
+          prediction.away_score,
+          prediction.home_team,
+          prediction.away_team
+        )
+      : null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
@@ -364,18 +400,52 @@ export default function MatchPrediction() {
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
               <TeamLogo
                 team={prediction.home_team}
+                logoUrl={prediction.home_logo}
                 leagueId={prediction.league}
                 league={prediction.league}
                 size="lg"
                 className="mb-2 shadow-xs"
               />
               <h2 className="text-base sm:text-2xl font-extrabold text-white truncate w-full">{prediction.home_team}</h2>
-              <span className="text-xs text-slate-400 font-mono mt-0.5">{homeXgVal} xG</span>
+              <span className="text-xs text-slate-400 font-mono mt-0.5">
+                {prediction.home_record ? `${prediction.home_record} · ` : ''}{homeXgVal} xG
+              </span>
             </div>
 
             <div className="flex flex-col items-center justify-center flex-shrink-0 px-2">
               <Badge className="text-xs font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 mb-2">{prediction.league}</Badge>
-              <span className="px-3 py-1 bg-slate-800 rounded-md text-xs font-mono font-bold text-slate-200 border border-slate-700">VS</span>
+              {(isRealLive || isRealFinished) &&
+              typeof prediction.home_score === 'number' &&
+              typeof prediction.away_score === 'number' ? (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="px-4 py-1.5 bg-slate-950 rounded-xl text-xl sm:text-2xl font-mono tabular-nums font-black text-emerald-400 border border-emerald-500/40">
+                    {prediction.home_score} - {prediction.away_score}
+                  </span>
+                  {isRealLive && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-rose-400 animate-pulse">
+                      <Radio className="h-3 w-3" /> {prediction.minute || 'LIVE'}
+                    </span>
+                  )}
+                  {isRealFinished && (
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-black ${
+                        ftSettlement === 'WON'
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                      }`}
+                    >
+                      {ftSettlement === 'WON' ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      FT · PICK {ftSettlement || 'SETTLED'}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="px-3 py-1 bg-slate-800 rounded-md text-xs font-mono font-bold text-slate-200 border border-slate-700">VS</span>
+              )}
               <span className="text-[11px] text-slate-300 mt-2 flex items-center gap-1 font-mono tabular-nums">
                 <Calendar className="h-3 w-3" />
                 {formatKickoff(prediction.match_date, { includeTimezone: true })}
@@ -385,13 +455,16 @@ export default function MatchPrediction() {
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
               <TeamLogo
                 team={prediction.away_team}
+                logoUrl={prediction.away_logo}
                 leagueId={prediction.league}
                 league={prediction.league}
                 size="lg"
                 className="mb-2 shadow-xs"
               />
               <h2 className="text-base sm:text-2xl font-extrabold text-white truncate w-full">{prediction.away_team}</h2>
-              <span className="text-xs text-slate-400 font-mono mt-0.5">{awayXgVal} xG</span>
+              <span className="text-xs text-slate-400 font-mono mt-0.5">
+                {prediction.away_record ? `${prediction.away_record} · ` : ''}{awayXgVal} xG
+              </span>
             </div>
           </div>
 
@@ -457,6 +530,17 @@ export default function MatchPrediction() {
             matchDate={prediction.match_date}
           />
         </div>
+
+        {/* Deep ESPN Match Summary Drawer when real ESPN eventId is present */}
+        {espnEventId && (
+          <div className="mb-6">
+            <MatchDeepSummaryPanel
+              eventId={espnEventId}
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+            />
+          </div>
+        )}
 
         {/* Feature Tabs: Overview, Markets, H2H, Lineups, Tactics/xG, Multi-Bookmaker Odds */}
         <Tabs defaultValue="overview" className="space-y-6">
@@ -817,6 +901,13 @@ export default function MatchPrediction() {
 
           {/* TAB 4: Pitch Lineups & Formations */}
           <TabsContent value="lineups" className="space-y-6">
+            {espnEventId && (
+              <MatchDeepSummaryPanel
+                eventId={espnEventId}
+                homeTeam={prediction.home_team}
+                awayTeam={prediction.away_team}
+              />
+            )}
             <TeamNewsInjuryUpdates singleMatch={prediction} />
             <PitchLineupVisualizer homeTeam={prediction.home_team} awayTeam={prediction.away_team} league={prediction.league} />
           </TabsContent>
