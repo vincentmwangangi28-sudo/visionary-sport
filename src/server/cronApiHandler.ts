@@ -53,10 +53,16 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'indexing': {
         const baseUrl = process.env.SITE_URL || 'https://predictpro.guru';
         const indexNowKey = process.env.INDEXNOW_KEY || 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
-        const urls = [
+        const { resolveLiveMatchSlugs } = await import('./seoPrerenderService.ts');
+        const liveMatches = await resolveLiveMatchSlugs(baseUrl);
+
+        const coreHubs = [
           baseUrl + '/',
           baseUrl + '/predict',
           baseUrl + '/live',
+          baseUrl + '/jackpot-generator',
+          baseUrl + '/jackpot-predictions',
+          baseUrl + '/midweek-jackpot-predictions',
           baseUrl + '/best-bets',
           baseUrl + '/value-bets',
           baseUrl + '/standings',
@@ -65,8 +71,32 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           baseUrl + '/poisson-calculator',
           baseUrl + '/corners-predictions',
           baseUrl + '/cards-predictions',
+          baseUrl + '/set-piece-specialists',
           baseUrl + '/h2h',
+          baseUrl + '/teams',
+          baseUrl + '/track-record',
+          baseUrl + '/premier-league-predictions',
+          baseUrl + '/champions-league-predictions',
+          baseUrl + '/la-liga-predictions',
+          baseUrl + '/bundesliga-predictions',
+          baseUrl + '/serie-a-predictions',
+          baseUrl + '/caf-champions-league-predictions',
+          baseUrl + '/kpl-predictions',
+          baseUrl + '/south-africa-psl-predictions',
+          baseUrl + '/nigerian-npfl-predictions',
+          baseUrl + '/tanzania-premier-league-predictions',
         ];
+
+        const liveMatchUrls = liveMatches.map((m) => m.url);
+        const clubSlugSet = new Set<string>();
+        for (const m of liveMatches) {
+          if (m.homeTeamSlug) clubSlugSet.add(`${baseUrl}/teams/${m.homeTeamSlug}`);
+          if (m.awayTeamSlug) clubSlugSet.add(`${baseUrl}/teams/${m.awayTeamSlug}`);
+        }
+        const clubHubUrls = Array.from(clubSlugSet).slice(0, 40);
+
+        const urls = Array.from(new Set([...coreHubs, ...liveMatchUrls, ...clubHubUrls]));
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 12000);
         let indexNowStatus = 'skipped';
@@ -102,7 +132,13 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           status: `indexnow_${indexNowStatus}_ping_${pingStatus}`,
           executedAt,
           durationMs: Date.now() - start,
-          data: { urlsSubmitted: urls.length },
+          data: {
+            urlsSubmitted: urls.length,
+            coreHubsCount: coreHubs.length,
+            liveMatchSlugsCount: liveMatchUrls.length,
+            clubHubsCount: clubHubUrls.length,
+            sampleLiveMatchUrls: liveMatchUrls.slice(0, 12),
+          },
         };
       }
 

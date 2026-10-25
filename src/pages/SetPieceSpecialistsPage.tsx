@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -12,19 +12,22 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Award,
   Calculator,
   Crosshair,
-  Flag,
-  Flame,
   Plus,
-  ShieldCheck,
   Target,
-  Trophy,
-  Zap,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { Prediction } from '@/types/prediction';
 import { toast } from 'sonner';
+
+function normSetPieceClub(name: string): string {
+  return (name || '')
+    .toLowerCase()
+    .replace(/\b(fc|cf|sc|ac|afc|club)\b/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
 
 interface ClubSetPieceIntel {
   clubId: string;
@@ -475,15 +478,58 @@ export const SetPieceSpecialistsPage: React.FC = () => {
   const [regionFilter, setRegionFilter] = useState<'ALL' | 'European Elite' | 'African & CAF Giants'>('ALL');
   const [selectedClubId, setSelectedClubId] = useState<string>('arsenal');
   const [opponentFoulRate, setOpponentFoulRate] = useState<number>(14); // fouls per match
+  const [upcomingEspn, setUpcomingEspn] = useState<Prediction[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await fetchRealtimeUpcomingFixtures();
+        if (mounted && list.length > 0) {
+          setUpcomingEspn(list);
+        }
+      } catch {
+        // fallback to baseline upcomingFixture
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const enrichedClubs = useMemo(() => {
+    return SET_PIECE_DATABASE.map((club) => {
+      const normClub = normSetPieceClub(club.clubName);
+      const matched = upcomingEspn.find(
+        (m) =>
+          normSetPieceClub(m.home_team).includes(normClub) ||
+          normSetPieceClub(m.away_team).includes(normClub) ||
+          normClub.includes(normSetPieceClub(m.home_team)) ||
+          normClub.includes(normSetPieceClub(m.away_team))
+      );
+      if (!matched) return club;
+      const isHome =
+        normSetPieceClub(matched.home_team).includes(normClub) ||
+        normClub.includes(normSetPieceClub(matched.home_team));
+      const opponent = isHome ? matched.away_team : matched.home_team;
+      return {
+        ...club,
+        upcomingFixture: {
+          opponent,
+          matchLabel: `${matched.home_team} vs ${matched.away_team}`,
+        },
+      };
+    });
+  }, [upcomingEspn]);
 
   const filteredClubs = useMemo(() => {
-    if (regionFilter === 'ALL') return SET_PIECE_DATABASE;
-    return SET_PIECE_DATABASE.filter((c) => c.region === regionFilter);
-  }, [regionFilter]);
+    if (regionFilter === 'ALL') return enrichedClubs;
+    return enrichedClubs.filter((c) => c.region === regionFilter);
+  }, [regionFilter, enrichedClubs]);
 
   const simulatorClub = useMemo(
-    () => SET_PIECE_DATABASE.find((c) => c.clubId === selectedClubId) || SET_PIECE_DATABASE[0],
-    [selectedClubId]
+    () => enrichedClubs.find((c) => c.clubId === selectedClubId) || enrichedClubs[0],
+    [selectedClubId, enrichedClubs]
   );
 
   // Dead-Ball & Penalty Goal Impact Simulator Calculation

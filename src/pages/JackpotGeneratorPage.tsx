@@ -541,6 +541,31 @@ export const JackpotGeneratorPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={useLiveEspnSlate ? 'default' : 'outline'}
+                onClick={() => {
+                  const next = !useLiveEspnSlate;
+                  setUseLiveEspnSlate(next);
+                  toast.success(
+                    next
+                      ? 'Switched to Live ESPN Matchweek Slate!'
+                      : `Switched to Official ${activeProvider.name} Pool!`
+                  );
+                }}
+                className="gap-1.5 text-xs font-bold"
+              >
+                <Radio className={`h-3.5 w-3.5 ${useLiveEspnSlate ? 'animate-pulse' : 'text-emerald-500'}`} />
+                {useLiveEspnSlate ? 'Viewing Live ESPN Slate' : 'Sync Live ESPN 17-Game Slate'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => loadEspnJackpotTelemetry(true)}
+                disabled={syncingEspn}
+                className="gap-1.5 text-xs font-bold"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${syncingEspn ? 'animate-spin' : ''}`} />
+                Grade Live Scores
+              </Button>
               <Button onClick={handleLoadTopBankersToSlip} className="gap-1.5 text-xs font-bold">
                 <Plus className="h-3.5 w-3.5" />
                 Load 6 Jackpot Bankers to Acca Slip
@@ -549,6 +574,31 @@ export const JackpotGeneratorPage: React.FC = () => {
                 <Copy className="h-3.5 w-3.5" />
                 Copy All {generatedLines.length} Lines
               </Button>
+            </div>
+          </div>
+
+          {/* Live ESPN Bonus Tier Grader Strip */}
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Radio className="h-4 w-4 text-emerald-500 animate-pulse shrink-0" />
+              <div>
+                <span className="font-bold text-foreground">
+                  Live ESPN Jackpot Bonus Tier Grader ({activeProvider.name})
+                </span>
+                <p className="text-[11px] text-muted-foreground">
+                  {bonusGraderStats.gradedCount > 0
+                    ? `${bonusGraderStats.coveredHits}/${bonusGraderStats.gradedCount} Settled/In-Play Fixtures Covered by Your Matrix · ${bonusGraderStats.pendingCount} Upcoming`
+                    : `All ${activeFixtures.length} Pool Fixtures Monitored Against Live ESPN Scoreboards`}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+              <span className="px-2.5 py-1 rounded-md bg-background border border-border font-bold text-foreground">
+                Covered Hits: {bonusGraderStats.coveredHits}/{bonusGraderStats.gradedCount || 0}
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-emerald-600 text-white font-bold">
+                Projected Finish: {bonusGraderStats.projectedTotalHits}/{activeProvider.totalGames} Correct (Bonus Zone)
+              </span>
             </div>
           </div>
 
@@ -700,7 +750,7 @@ export const JackpotGeneratorPage: React.FC = () => {
                   <th className="py-2.5 px-3 font-semibold">Fixture &amp; Tactical Note</th>
                   <th className="py-2.5 px-3 font-semibold">AI Risk Classification</th>
                   <th className="py-2.5 px-3 font-semibold text-center">Select Outcomes (1 / X / 2)</th>
-                  <th className="py-2.5 px-3 font-semibold text-right">Active Pick</th>
+                  <th className="py-2.5 px-3 font-semibold text-right">Active Pick &amp; Live Grade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -708,6 +758,7 @@ export const JackpotGeneratorPage: React.FC = () => {
                   const selected = picksMap[fixture.gameNo] || [fixture.aiBanker];
                   const isHedged = selected.length > 1;
                   const activePickCode = selected.slice().sort().join('');
+                  const isCoveredHit = fixture.actualOutcome ? selected.includes(fixture.actualOutcome) : null;
 
                   return (
                     <tr
@@ -718,10 +769,22 @@ export const JackpotGeneratorPage: React.FC = () => {
                         {fixture.gameNo}
                       </td>
                       <td className="py-3 px-3">
-                        <div className="flex items-center gap-2 font-bold text-sm text-foreground">
+                        <div className="flex items-center gap-2 font-bold text-sm text-foreground flex-wrap">
                           <TeamLogo team={fixture.homeTeam} size="xs" />
                           <span>{fixture.homeTeam}</span>
-                          <span className="text-muted-foreground font-normal text-xs">vs</span>
+                          {fixture.liveStatus && typeof fixture.homeScore === 'number' ? (
+                            <span
+                              className={`px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${
+                                fixture.liveStatus === 'LIVE'
+                                  ? 'bg-rose-500/20 text-rose-500 border border-rose-500/30 animate-pulse'
+                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                              }`}
+                            >
+                              {fixture.liveStatus} {fixture.homeScore}-{fixture.awayScore}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground font-normal text-xs">vs</span>
+                          )}
                           <TeamLogo team={fixture.awayTeam} size="xs" />
                           <span>{fixture.awayTeam}</span>
                         </div>
@@ -781,14 +844,33 @@ export const JackpotGeneratorPage: React.FC = () => {
                           })}
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-right">
+                      <td className="py-3 px-3 text-right space-y-1">
                         <span
-                          className={`font-mono font-black text-xs ${
+                          className={`font-mono font-black text-xs block ${
                             isHedged ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
                           }`}
                         >
                           {isHedged ? `HEDGE (${activePickCode})` : `BANKER (${activePickCode})`}
                         </span>
+                        {isCoveredHit !== null && (
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              isCoveredHit
+                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-rose-500/15 text-rose-500'
+                            }`}
+                          >
+                            {isCoveredHit ? (
+                              <>
+                                <CheckCircle2 className="h-3 w-3" /> HIT ({fixture.actualOutcome})
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="h-3 w-3" /> MISS ({fixture.actualOutcome})
+                              </>
+                            )}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

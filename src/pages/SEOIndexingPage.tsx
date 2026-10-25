@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
+import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
 import { 
   googleIndexingCronService, 
   CronInterval, 
@@ -453,6 +454,9 @@ export default function SEOIndexingPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Live Server Prerender, Dynamic /api/og Card & Live ESPN Match Sitemap Inspector */}
+        <LiveServerSeoInspector />
 
         {/* Semrush Domain Overview & AI Search Citation Readiness Panel */}
         <Card className="border-emerald-500/30 bg-card mb-8 overflow-hidden">

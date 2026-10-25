@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -11,21 +11,27 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Activity,
   Award,
-  BarChart3,
   Calendar,
-  ChevronRight,
   Clock,
   Plus,
   Search,
   Sliders,
-  Target,
 } from 'lucide-react';
 import { ELITE_PLAYER_DATABASE } from '@/pages/PlayerSearch';
 import { formatPlayerSlug } from '@/pages/PlayerProfilePage';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults, OfficialFinishedMatch } from '@/services/autoSettlementService';
+import { Prediction } from '@/types/prediction';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
+
+function normalizeClubName(name: string): string {
+  return (name || '')
+    .toLowerCase()
+    .replace(/\b(fc|cf|sc|ac|afc|club)\b/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
 
 export interface ClubAnalyticsProfile {
   slug: string;
@@ -395,14 +401,87 @@ export default function TeamAnalyticsHub() {
   const { teamSlug } = useParams<{ teamSlug?: string }>();
   const { addSelection } = useBetSlip();
   const [searchQuery, setSearchQuery] = useState('');
+  const [liveUpcomingFixtures, setLiveUpcomingFixtures] = useState<Prediction[]>([]);
+  const [liveFinishedMatches, setLiveFinishedMatches] = useState<OfficialFinishedMatch[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [upcoming, finished] = await Promise.all([
+          fetchRealtimeUpcomingFixtures(),
+          fetchOfficialFinishedResults(),
+        ]);
+        if (!mounted) return;
+        setLiveUpcomingFixtures(upcoming);
+        setLiveFinishedMatches(finished);
+      } catch {
+        // fallback to baseline club profile
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const activeClub = useMemo(() => {
-    if (!teamSlug) return FEATURED_CLUB_PROFILES[0];
-    const found = FEATURED_CLUB_PROFILES.find(
-      (c) => c.slug.toLowerCase() === teamSlug.toLowerCase()
-    );
-    return found || buildFallbackClubProfile(teamSlug);
-  }, [teamSlug]);
+    const baseClub = !teamSlug
+      ? FEATURED_CLUB_PROFILES[0]
+      : FEATURED_CLUB_PROFILES.find((c) => c.slug.toLowerCase() === teamSlug.toLowerCase()) ||
+        buildFallbackClubProfile(teamSlug);
+
+    const normClub = normalizeClubName(baseClub.name);
+
+    // Enrich upcoming 5-match FDR schedule with any live ESPN upcoming fixtures for this club
+    const clubUpcoming = liveUpcomingFixtures
+      .filter(
+        (m) =>
+          normalizeClubName(m.home_team).includes(normClub) ||
+          normalizeClubName(m.away_team).includes(normClub) ||
+          normClub.includes(normalizeClubName(m.home_team)) ||
+          normClub.includes(normalizeClubName(m.away_team))
+      )
+      .map((m) => {
+        const isHome =
+          normalizeClubName(m.home_team).includes(normClub) ||
+          normClub.includes(normalizeClubName(m.home_team));
+        const opponent = isHome ? m.away_team : m.home_team;
+        const winOdds = isHome ? m.home_odds || 1.85 : m.away_odds || 2.35;
+        const winProb = Math.min(82, Math.max(24, Math.round(94 / winOdds)));
+        const fdr: 1 | 2 | 3 | 4 | 5 =
+          winProb >= 70 ? 2 : winProb >= 55 ? 3 : winProb >= 40 ? 4 : 5;
+        return {
+          opponent,
+          venue: (isHome ? 'H' : 'A') as 'H' | 'A',
+          fdr,
+          matchSlug: m.slug || `${baseClub.slug}-vs-${opponent.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+          projectedXg: isHome
+            ? `${baseClub.xgFor90.toFixed(2)} - 0.94`
+            : `1.12 - ${baseClub.xgFor90.toFixed(2)}`,
+          winProb,
+        };
+      });
+
+    // Enrich recent form with any 48h finished ESPN results for this club
+    const clubFinishedForm = liveFinishedMatches
+      .filter(
+        (m) =>
+          normalizeClubName(m.home_team).includes(normClub) ||
+          normalizeClubName(m.away_team).includes(normClub)
+      )
+      .map((m): 'W' | 'D' | 'L' => {
+        const isHome = normalizeClubName(m.home_team).includes(normClub);
+        const goalsFor = isHome ? m.home_score : m.away_score;
+        const goalsAgainst = isHome ? m.away_score : m.home_score;
+        return goalsFor > goalsAgainst ? 'W' : goalsFor < goalsAgainst ? 'L' : 'D';
+      });
+
+    return {
+      ...baseClub,
+      recentForm: [...clubFinishedForm, ...baseClub.recentForm].slice(0, 5),
+      upcomingFixtures: [...clubUpcoming, ...baseClub.upcomingFixtures].slice(0, 5),
+    };
+  }, [teamSlug, liveUpcomingFixtures, liveFinishedMatches]);
 
   const filteredClubs = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

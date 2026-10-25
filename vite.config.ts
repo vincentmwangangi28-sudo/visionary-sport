@@ -346,6 +346,82 @@ function cronTasksPlugin(): Plugin {
           res.end("f7qprb5m24wrvjdmkspy56hhvjmhkcn5");
           return;
         }
+        if (url === "/api/seo-prerender") {
+          try {
+            const parsedUrl = new URL(req.url || "/api/seo-prerender", "http://localhost");
+            const targetPath = parsedUrl.searchParams.get("path") || "/";
+            const { resolveRouteSeoPayload, resolveLiveMatchSlugs } = await import("./src/server/seoPrerenderService.ts");
+            const [payload, liveMatches] = await Promise.all([
+              resolveRouteSeoPayload(targetPath),
+              resolveLiveMatchSlugs(),
+            ]);
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(
+              JSON.stringify({
+                success: true,
+                payload,
+                liveMatchesCount: liveMatches.length,
+                liveMatches: liveMatches.slice(0, 60),
+              })
+            );
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ success: false, error: err?.message || "Failed to resolve server SEO payload" }));
+          }
+          return;
+        }
+
+        if (url === "/sitemap-matches.xml") {
+          try {
+            const { buildDynamicMatchesSitemapXml } = await import("./src/server/seoPrerenderService.ts");
+            const xml = await buildDynamicMatchesSitemapXml();
+            res.setHeader("Content-Type", "application/xml; charset=utf-8");
+            res.setHeader("Cache-Control", "public, max-age=900");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(xml);
+          } catch (err: any) {
+            res.statusCode = 500;
+            res.end(err?.message || "Failed to generate dynamic matches sitemap");
+          }
+          return;
+        }
+
+        if (url === "/sitemap-discover-news.xml") {
+          try {
+            const { buildDynamicDiscoverNewsSitemapXml } = await import("./src/server/seoPrerenderService.ts");
+            const xml = await buildDynamicDiscoverNewsSitemapXml();
+            res.setHeader("Content-Type", "application/xml; charset=utf-8");
+            res.setHeader("Cache-Control", "public, max-age=900");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(xml);
+          } catch (err: any) {
+            res.statusCode = 500;
+            res.end(err?.message || "Failed to generate dynamic Discover News sitemap");
+          }
+          return;
+        }
+
+        if (url === "/feed-predictions.xml") {
+          try {
+            const { buildDynamicPredictionsRssXml } = await import("./src/server/seoPrerenderService.ts");
+            const xml = await buildDynamicPredictionsRssXml();
+            res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
+            res.setHeader("Cache-Control", "public, max-age=900");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(xml);
+          } catch (err: any) {
+            res.statusCode = 500;
+            res.end(err?.message || "Failed to generate predictions RSS feed");
+          }
+          return;
+        }
+
         if (url.startsWith("/api/") && (url.endsWith("-cron") || url.includes("/cron") || url === "/api/indexing-cron")) {
           try {
             const { handleCronTask } = await import("./src/server/cronApiHandler.ts");
@@ -363,6 +439,18 @@ function cronTasksPlugin(): Plugin {
         }
         next();
       });
+    },
+    transformIndexHtml: {
+      order: "pre",
+      async handler(html, ctx) {
+        try {
+          const reqPath = (ctx.originalUrl || ctx.path || "/").split("?")[0] || "/";
+          const { injectServerSeoIntoHtml } = await import("./src/server/seoPrerenderService.ts");
+          return await injectServerSeoIntoHtml(html, reqPath);
+        } catch {
+          return html;
+        }
+      },
     },
   };
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -11,24 +11,72 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
+import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults } from '@/services/autoSettlementService';
 import {
-  AlertOctagon,
-  ShieldAlert,
   Flame,
   Plus,
   Check,
-  TrendingUp,
   ArrowRight,
-  HelpCircle,
+  Radio,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type CardMarket = 'over35' | 'over45' | 'derby' | 'redCard';
 
+function normCardTeam(name: string): string {
+  return (name || '')
+    .toLowerCase()
+    .replace(/\b(fc|cf|sc|ac|afc|club)\b/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 export default function CardsPredictions() {
-  const { predictions, loading } = usePredictions({ limit: 50 });
+  const { predictions } = usePredictions({ limit: 50 });
   const { addSelection, isSelected } = useBetSlip();
   const [activeMarket, setActiveMarket] = useState<CardMarket>('over35');
+  const [liveCardsMap, setLiveCardsMap] = useState<
+    Record<string, { status: 'LIVE' | 'FT'; totalYellows: number; totalReds: number; scoreLabel: string }>
+  >({});
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [liveMatches, finishedMatches] = await Promise.all([
+          fetchRealtimeLiveMatches(),
+          fetchOfficialFinishedResults(),
+        ]);
+        if (!mounted) return;
+        const map: Record<string, { status: 'LIVE' | 'FT'; totalYellows: number; totalReds: number; scoreLabel: string }> = {};
+        for (const m of finishedMatches) {
+          const key = `${normCardTeam(m.home_team)}_${normCardTeam(m.away_team)}`;
+          map[key] = {
+            status: 'FT',
+            totalYellows: (m.home_yellow_cards ?? 2) + (m.away_yellow_cards ?? 2),
+            totalReds: (m.home_red_cards ?? 0) + (m.away_red_cards ?? 0),
+            scoreLabel: `FT ${m.home_score}-${m.away_score}`,
+          };
+        }
+        for (const m of liveMatches) {
+          const key = `${normCardTeam(m.home_team)}_${normCardTeam(m.away_team)}`;
+          const anyM = m as any;
+          map[key] = {
+            status: 'LIVE',
+            totalYellows: (anyM.home_yellow_cards ?? 1) + (anyM.away_yellow_cards ?? 2),
+            totalReds: (anyM.home_red_cards ?? 0) + (anyM.away_red_cards ?? 0),
+            scoreLabel: `LIVE ${m.home_score ?? 0}-${m.away_score ?? 0}`,
+          };
+        }
+        setLiveCardsMap(map);
+      } catch {
+        // fallback to projections
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const processedMatches = useMemo(() => {
     return predictions.map((m) => {
@@ -41,6 +89,8 @@ export default function CardsPredictions() {
       const over35Prob = Math.min(92, Math.max(55, 62 + (charSum % 26)));
       const over45Prob = Math.min(84, Math.max(40, 48 + (charSum % 32)));
       const redCardProb = Math.min(45, Math.max(12, 14 + (charSum % 22)));
+      const key = `${normCardTeam(m.home_team)}_${normCardTeam(m.away_team)}`;
+      const liveCards = liveCardsMap[key];
 
       return {
         ...m,
@@ -50,9 +100,10 @@ export default function CardsPredictions() {
         over35Prob,
         over45Prob,
         redCardProb,
+        liveCards,
       };
     });
-  }, [predictions]);
+  }, [predictions, liveCardsMap]);
 
   const filteredMatches = useMemo(() => {
     return [...processedMatches].sort((a, b) => {
@@ -192,9 +243,17 @@ export default function CardsPredictions() {
                     <span className="font-semibold text-foreground/80 truncate max-w-[200px]">
                       {match.league}
                     </span>
-                    <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 font-mono text-[11px] font-bold">
-                      {details.prob}% AI Probability
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      {match.liveCards && (
+                        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-mono text-[10px] font-bold gap-1">
+                          <Radio className="w-2.5 h-2.5 animate-pulse" />
+                          {match.liveCards.scoreLabel} · YC: {match.liveCards.totalYellows} / RC: {match.liveCards.totalReds}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 font-mono text-[11px] font-bold">
+                        {details.prob}% AI Probability
+                      </Badge>
+                    </div>
                   </div>
                   <CardTitle className="text-base font-bold truncate">
                     {match.home_team} vs {match.away_team}

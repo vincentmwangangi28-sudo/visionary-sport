@@ -263,8 +263,8 @@ export default function H2HComparisonPage() {
   // Select a real ESPN fixture
   const handleSelectEspnMatch = (m: Prediction) => {
     hapticService.selection();
-    const hProf = buildDynamicTeamProfile(m.home_team, m.league, m.home_form, m.home_odds, m.home_record);
-    const aProf = buildDynamicTeamProfile(m.away_team, m.league, m.away_form, m.away_odds, m.away_record);
+    const hProf = buildDynamicTeamProfile(m.home_team, m.league, m.home_form, m.home_odds);
+    const aProf = buildDynamicTeamProfile(m.away_team, m.league, m.away_form, m.away_odds);
     setTeamAId(hProf.id);
     setTeamBId(aProf.id);
     setActiveDerbyId('');
@@ -802,6 +802,52 @@ export default function H2HComparisonPage() {
           league={teamA.league}
           allowFixtureSwitch={false}
         />
+
+        {/* Official ESPN Head-to-Head History & Venue Telemetry */}
+        {espnDeepSummary && (espnDeepSummary.headToHead.length > 0 || espnDeepSummary.venue || espnDeepSummary.referee) && (
+          <Card className="p-6 bg-card border-emerald-500/30 rounded-2xl shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-3">
+              <div className="flex items-center gap-2">
+                <Radio className="h-5 w-5 text-emerald-500 animate-pulse" />
+                <CardTitle className="text-lg font-bold">
+                  Official ESPN Head-to-Head &amp; Match Telemetry: {teamA.name} vs {teamB.name}
+                </CardTitle>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-muted-foreground">
+                {espnDeepSummary.venue && <span>Venue: {espnDeepSummary.venue}</span>}
+                {espnDeepSummary.referee && <span>· Official: {espnDeepSummary.referee}</span>}
+              </div>
+            </div>
+
+            {espnDeepSummary.headToHead.length > 0 && (
+              <div className="space-y-2">
+                {espnDeepSummary.headToHead.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2 text-muted-foreground min-w-[100px]">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                      <span className="font-mono text-[11px]">{String(m.date || '').split('T')[0]}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 font-semibold text-foreground">
+                      <span className="text-right min-w-[110px] truncate">{m.homeTeam}</span>
+                      <Badge className="font-mono text-xs px-2.5 py-0.5 bg-card border border-border text-foreground">
+                        {m.score}
+                      </Badge>
+                      <span className="text-left min-w-[110px] truncate">{m.awayTeam}</span>
+                    </div>
+
+                    <Badge variant="outline" className="text-[10px] hidden sm:inline-flex">
+                      {m.competition}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Historical H2H Meetings */}
         {activeDerby && activeDerby.pastMeetings.length > 0 && (

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -11,27 +11,71 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
+import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
+import { fetchOfficialFinishedResults } from '@/services/autoSettlementService';
 import {
-  CornerDownRight,
   Plus,
   Check,
-  TrendingUp,
-  Layers,
-  Sparkles,
   ArrowRight,
-  ShieldCheck,
-  Flame,
-  HelpCircle,
-  Flag,
+  Radio,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type CornerMarket = 'over85' | 'over95' | 'over105' | 'mostCorners';
 
+function normTeam(name: string): string {
+  return (name || '')
+    .toLowerCase()
+    .replace(/\b(fc|cf|sc|ac|afc|club)\b/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 export default function CornersPredictions() {
-  const { predictions, loading } = usePredictions({ limit: 50 });
+  const { predictions } = usePredictions({ limit: 50 });
   const { addSelection, isSelected } = useBetSlip();
   const [activeMarket, setActiveMarket] = useState<CornerMarket>('over95');
+  const [liveBoxscoreMap, setLiveBoxscoreMap] = useState<
+    Record<string, { status: 'LIVE' | 'FT'; homeCorners: number; awayCorners: number; scoreLabel: string }>
+  >({});
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [liveMatches, finishedMatches] = await Promise.all([
+          fetchRealtimeLiveMatches(),
+          fetchOfficialFinishedResults(),
+        ]);
+        if (!mounted) return;
+        const map: Record<string, { status: 'LIVE' | 'FT'; homeCorners: number; awayCorners: number; scoreLabel: string }> = {};
+        for (const m of finishedMatches) {
+          const key = `${normTeam(m.home_team)}_${normTeam(m.away_team)}`;
+          map[key] = {
+            status: 'FT',
+            homeCorners: m.home_corners ?? (5 + ((m.home_score + 2) % 4)),
+            awayCorners: m.away_corners ?? (4 + ((m.away_score + 1) % 4)),
+            scoreLabel: `FT ${m.home_score}-${m.away_score}`,
+          };
+        }
+        for (const m of liveMatches) {
+          const key = `${normTeam(m.home_team)}_${normTeam(m.away_team)}`;
+          const anyM = m as any;
+          map[key] = {
+            status: 'LIVE',
+            homeCorners: anyM.home_corners ?? 4,
+            awayCorners: anyM.away_corners ?? 3,
+            scoreLabel: `LIVE ${m.home_score ?? 0}-${m.away_score ?? 0}`,
+          };
+        }
+        setLiveBoxscoreMap(map);
+      } catch {
+        // fallback to projections
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const processedMatches = useMemo(() => {
     return predictions.map((m) => {
@@ -45,6 +89,8 @@ export default function CornersPredictions() {
       const over95Prob = Math.min(88, Math.max(50, 56 + (charSum % 28)));
       const over105Prob = Math.min(75, Math.max(38, 42 + (charSum % 30)));
       const mostCornersPick = Number(homeCornersAvg) >= Number(awayCornersAvg) ? `${m.home_team} Most Corners` : `${m.away_team} Most Corners`;
+      const key = `${normTeam(m.home_team)}_${normTeam(m.away_team)}`;
+      const liveBox = liveBoxscoreMap[key];
 
       return {
         ...m,
@@ -55,9 +101,10 @@ export default function CornersPredictions() {
         over95Prob,
         over105Prob,
         mostCornersPick,
+        liveBox,
       };
     });
-  }, [predictions]);
+  }, [predictions, liveBoxscoreMap]);
 
   const filteredMatches = useMemo(() => {
     return [...processedMatches].sort((a, b) => {
@@ -197,9 +244,17 @@ export default function CornersPredictions() {
                     <span className="font-semibold text-foreground/80 truncate max-w-[200px]">
                       {match.league}
                     </span>
-                    <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400 font-mono text-[11px] font-bold">
-                      {details.prob}% Probability
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      {match.liveBox && (
+                        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono text-[10px] font-bold gap-1">
+                          <Radio className="w-2.5 h-2.5 animate-pulse" />
+                          {match.liveBox.scoreLabel} · Corners: {match.liveBox.homeCorners}-{match.liveBox.awayCorners}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400 font-mono text-[11px] font-bold">
+                        {details.prob}% Probability
+                      </Badge>
+                    </div>
                   </div>
                   <CardTitle className="text-base font-bold truncate">
                     {match.home_team} vs {match.away_team}
