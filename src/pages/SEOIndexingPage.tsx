@@ -293,6 +293,30 @@ export default function SEOIndexingPage() {
       aiCitationSchema: 'Dataset + 0.0-10.0 Ratings + 5-Axis Radar',
       status: '200 OK · Self-Canonical',
     },
+    {
+      path: '/jackpot-generator',
+      url: 'https://predictpro.guru/jackpot-generator',
+      title: '17-Game Mega & Midweek Jackpot Combination Generator | PredictPro',
+      staticTargets: 'dist/jackpot-generator.html + Server Prerender',
+      aiCitationSchema: 'WebApplication + 3^D×2^T Combinatorics Matrix',
+      status: '200 OK · Self-Canonical',
+    },
+    {
+      path: '/set-piece-specialists',
+      url: 'https://predictpro.guru/set-piece-specialists',
+      title: 'Penalty Takers, Free-Kick & Corner Threat Hub | PredictPro',
+      staticTargets: 'dist/set-piece-specialists.html + Server Prerender',
+      aiCitationSchema: 'Dataset + Penalty Hierarchy & Aerial Threat Index',
+      status: '200 OK · Self-Canonical',
+    },
+    {
+      path: '/predict/arsenal-vs-chelsea',
+      url: 'https://predictpro.guru/predict/arsenal-vs-chelsea',
+      title: 'Arsenal vs Chelsea AI Prediction, xG & Odds | PredictPro',
+      staticTargets: 'Dynamic Server Prerender + /api/og Card',
+      aiCitationSchema: 'SportsEvent + BreadcrumbList + 6×6 Poisson Matrix',
+      status: '200 OK · Live ESPN Slug',
+    },
   ];
 
   return (

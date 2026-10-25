@@ -341,25 +341,28 @@ class GoogleIndexingCronService {
     let message = `IndexNow batch accepted for ${urls.length} URLs across Bing & search partner indexes`;
     let status: 'success' | 'warning' = 'success';
 
+    let sampleUrlsToLog = urls.slice(0, 5);
+    let finalUrlCount = urls.length;
+
     try {
-      // In web browser environment, route through server-side /api/indexing-cron proxy if running on a backend server
-      const isLocalOrBackend =
-        typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname.includes('run.app'));
+      const srvRes = await fetch('/api/indexing-cron?task=indexing', {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      }).catch(() => null);
 
-      if (isLocalOrBackend) {
-        const srvRes = await fetch('/api/indexing-cron', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
-          body: JSON.stringify({ urls: urls.slice(0, 50) }),
-        }).catch(() => null);
-
-        if (srvRes && srvRes.ok && (srvRes.headers.get('content-type') || '').includes('application/json')) {
+      if (srvRes && srvRes.ok && (srvRes.headers.get('content-type') || '').includes('application/json')) {
+        const srvJson = await srvRes.json().catch(() => null);
+        const srvData = srvJson?.data;
+        if (srvData) {
           httpCode = 200;
-          message = `IndexNow batch submitted via backend proxy for ${urls.length} football prediction URLs.`;
+          finalUrlCount = srvData.urlsSubmitted || urls.length;
+          if (Array.isArray(srvData.sampleLiveMatchUrls) && srvData.sampleLiveMatchUrls.length > 0) {
+            sampleUrlsToLog = srvData.sampleLiveMatchUrls.slice(0, 6);
+          }
+          message = `IndexNow batch dispatched: ${finalUrlCount} total URLs (${srvData.liveMatchSlugsCount || 0} live ESPN match slugs + ${srvData.clubHubsCount || 0} club xG hubs + ${srvData.coreHubsCount || 0} core hubs).`;
         } else {
           httpCode = 200;
-          message = `IndexNow batch prepared and recorded for ${urls.length} URLs across search partner indexes.`;
+          message = `IndexNow batch submitted via backend proxy for ${urls.length} football prediction URLs.`;
         }
       } else {
         httpCode = 200;
@@ -376,11 +379,11 @@ class GoogleIndexingCronService {
       timestamp: new Date().toISOString(),
       trigger,
       endpoint: 'IndexNow',
-      urlCount: urls.length,
+      urlCount: finalUrlCount,
       status,
       httpCode,
       message,
-      sampleUrls: urls.slice(0, 5),
+      sampleUrls: sampleUrlsToLog,
     };
   }
 

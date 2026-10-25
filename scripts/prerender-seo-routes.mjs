@@ -207,6 +207,14 @@ const ROUTE_META = {
     title: '17-Game SportPesa Mega Jackpot & Betika AI Predictions',
     description: 'Mathematical 17-game SportPesa Mega Jackpot and Betika Grand Jackpot predictions. Get AI banker selections and optimal Double Chance hedging combinations.',
   },
+  '/jackpot-generator': {
+    title: '17-Game Mega & Midweek Jackpot Combination Generator | PredictPro',
+    description: 'Generate optimal 17-game SportPesa Mega Jackpot and 13/15-game Betika & Mozzart jackpot combinations using Bivariate Poisson entropy and Banker locks.',
+  },
+  '/set-piece-specialists': {
+    title: 'Penalty Takers, Free-Kick & Corner Threat Hub | PredictPro',
+    description: 'Quantitative set-piece specialists hub tracking designated 1st/2nd penalty takers, direct free-kick xG conversion rates, and aerial corner threat leaders.',
+  },
   '/us-soccer-predictions': {
     title: 'MLS & US Soccer AI Predictions: Moneyline & Spreads',
     description: 'Major League Soccer (MLS), Concacaf Champions Cup, and US Open Cup AI predictions with American moneyline odds, goal spreads, and travel fatigue models.',
