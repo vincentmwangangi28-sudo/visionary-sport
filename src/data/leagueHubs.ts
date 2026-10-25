@@ -30,7 +30,13 @@ export const LEAGUE_HUBS: LeagueHubItem[] = [
   { to: '/south-africa-psl-predictions', name: 'South Africa PSL', flag: '🇿🇦', shortName: 'SA PSL' },
   { to: '/nigerian-npfl-predictions', name: 'Nigeria NPFL', flag: '🇳🇬', shortName: 'Nigeria NPFL' },
   { to: '/egyptian-premier-league-predictions', name: 'Egypt Premier League', flag: '🇪🇬', shortName: 'Egypt EPL' },
+  { to: '/tanzania-premier-league-predictions', name: 'Tanzania NBC League', flag: '🇹🇿', shortName: 'Tanzania' },
+  { to: '/ghana-premier-league-predictions', name: 'Ghana Premier League', flag: '🇬🇭', shortName: 'Ghana GPL' },
+  { to: '/morocco-botola-pro-predictions', name: 'Morocco Botola Pro', flag: '🇲🇦', shortName: 'Botola Pro' },
+  { to: '/uganda-premier-league-predictions', name: 'Uganda Premier League', flag: '🇺🇬', shortName: 'Uganda UPL' },
+  { to: '/caf-champions-league-predictions', name: 'CAF Champions League', flag: '🌍', shortName: 'CAF CL' },
   { to: '/j-league-predictions', name: 'Japan J1 League', flag: '🇯🇵', shortName: 'J1 League' },
+  { to: '/k-league-predictions', name: 'Korea K League 1', flag: '🇰🇷', shortName: 'K League 1' },
   { to: '/australian-a-league-predictions', name: 'Australia A-League', flag: '🇦🇺', shortName: 'A-League' },
   { to: '/fa-cup-predictions', name: 'FA Cup & EFL Cup', flag: '🏆', shortName: 'FA Cup' },
   { to: '/kpl-predictions', name: 'Kenya Premier League', flag: '🇰🇪', shortName: 'KPL' },
@@ -40,5 +46,6 @@ export const LEAGUE_HUBS: LeagueHubItem[] = [
   { to: '/world-cup-predictions', name: 'FIFA World Cup', flag: '🌍', shortName: 'World Cup' },
   { to: '/afcon-predictions', name: 'AFCON', flag: '🌍', shortName: 'AFCON' },
 ];
+
 
 

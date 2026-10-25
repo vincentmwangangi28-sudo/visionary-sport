@@ -93,10 +93,13 @@ function generateTeamTactics(teamName: string, isHome: boolean): TeamTactics {
 
 export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam, league }) => {
   const [activeView, setActiveView] = useState<'both' | 'home' | 'away'>('both');
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [selectedState, setSelectedState] = useState<{ player: Player; team: string } | null>(null);
 
   const homeTactics = generateTeamTactics(homeTeam, true);
   const awayTactics = generateTeamTactics(awayTeam, false);
+
+  const selectedPlayer = selectedState?.player || null;
+  const selectedTeam = selectedState?.team || homeTeam;
 
   return (
     <div className="space-y-4">
@@ -106,10 +109,10 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
           <Shield className="h-5 w-5 text-primary" />
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-base">Tactical Lineups & Formations</h3>
-              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-semibold">
-                ● Confirmed Official 1h Prior
-              </Badge>
+              <h3 className="font-bold text-base">Tactical Lineups &amp; Player Ratings</h3>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                · Confirmed XI &amp; Form Ratings
+              </span>
             </div>
             <p className="text-xs text-muted-foreground">
               {homeTeam} ({homeTactics.formation}) vs {awayTeam} ({awayTactics.formation})
@@ -127,7 +130,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
       </div>
 
       {/* 2D Realistic Soccer Pitch */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-[16/11] max-h-[560px] rounded-2xl overflow-hidden shadow-xl border-4 border-emerald-800/80 bg-emerald-900 select-none">
+      <div className="relative w-full aspect-[4/5] sm:aspect-[16/11] max-h-[580px] rounded-2xl overflow-hidden shadow-xl border-4 border-emerald-800/80 bg-emerald-900 select-none">
         {/* Grass Pattern Stripes */}
         <div className="absolute inset-0 opacity-25 pointer-events-none bg-[repeating-linear-gradient(to_bottom,#065f46_0px,#065f46_40px,#047857_40px,#047857_80px)]" />
 
@@ -155,26 +158,37 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
               <button
                 type="button"
                 key={`away-${player.number}`}
-                onClick={() => setSelectedPlayer(player)}
+                onClick={() => setSelectedState({ player, team: awayTeam })}
                 aria-label={`View player profile for ${player.name}, #${player.number} (${player.pos})`}
                 style={{
                   left: `${player.gridPos.x}%`,
                   top: `${activeView === 'away' ? player.gridPos.y * 1.8 : player.gridPos.y}%`,
                   transform: 'translate(-50%, -50%)',
                 }}
-                className="absolute flex flex-col items-center group cursor-pointer transition-all hover:scale-125 z-10"
+                className="absolute flex flex-col items-center group cursor-pointer transition-transform hover:scale-110 z-10"
               >
-                <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-sky-600 to-blue-500 text-white font-black text-xs shadow-md border-2 border-white">
-                  {player.number}
+                <div className="relative">
+                  <PlayerAvatar
+                    name={player.name}
+                    team={awayTeam}
+                    jerseyNumber={player.number}
+                    rating={player.rating}
+                    size="sm"
+                    showClubBadge={false}
+                    className="ring-2 ring-sky-400 rounded-full shadow-md"
+                  />
+                  <span className="absolute -top-1 -left-1.5 px-1 py-0.2 bg-sky-600 text-white rounded text-[9px] font-mono font-black leading-tight shadow-xs border border-white/60">
+                    {player.rating.toFixed(1)}
+                  </span>
                   {player.isCaptain && (
                     <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-900 rounded-full text-[9px] flex items-center justify-center font-bold">C</span>
                   )}
                   {player.isKeyPlayer && (
-                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-700 text-white rounded-full text-[8px] flex items-center justify-center font-bold">★</span>
+                    <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-red-600 text-white rounded-full text-[8px] flex items-center justify-center font-bold">★</span>
                   )}
                 </div>
-                <span className="mt-0.5 px-1.5 py-0.5 bg-black/75 backdrop-blur-sm text-[10px] sm:text-xs font-semibold text-white rounded shadow truncate max-w-[70px]">
-                  {player.name}
+                <span className="mt-0.5 px-1.5 py-0.5 bg-black/80 backdrop-blur-xs text-[10px] sm:text-[11px] font-semibold text-white rounded shadow truncate max-w-[78px]">
+                  #{player.number} {player.name}
                 </span>
               </button>
             ))}
@@ -188,26 +202,37 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
               <button
                 type="button"
                 key={`home-${player.number}`}
-                onClick={() => setSelectedPlayer(player)}
+                onClick={() => setSelectedState({ player, team: homeTeam })}
                 aria-label={`View player profile for ${player.name}, #${player.number} (${player.pos})`}
                 style={{
                   left: `${player.gridPos.x}%`,
                   top: `${activeView === 'home' ? (player.gridPos.y - 50) * 1.8 + 10 : player.gridPos.y}%`,
                   transform: 'translate(-50%, -50%)',
                 }}
-                className="absolute flex flex-col items-center group cursor-pointer transition-all hover:scale-125 z-10"
+                className="absolute flex flex-col items-center group cursor-pointer transition-transform hover:scale-110 z-10"
               >
-                <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-rose-600 to-red-500 text-white font-black text-xs shadow-md border-2 border-white">
-                  {player.number}
+                <div className="relative">
+                  <PlayerAvatar
+                    name={player.name}
+                    team={homeTeam}
+                    jerseyNumber={player.number}
+                    rating={player.rating}
+                    size="sm"
+                    showClubBadge={false}
+                    className="ring-2 ring-rose-400 rounded-full shadow-md"
+                  />
+                  <span className="absolute -top-1 -left-1.5 px-1 py-0.2 bg-emerald-600 text-white rounded text-[9px] font-mono font-black leading-tight shadow-xs border border-white/60">
+                    {player.rating.toFixed(1)}
+                  </span>
                   {player.isCaptain && (
                     <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-900 rounded-full text-[9px] flex items-center justify-center font-bold">C</span>
                   )}
                   {player.isKeyPlayer && (
-                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-amber-400 text-slate-900 rounded-full text-[8px] flex items-center justify-center font-bold">★</span>
+                    <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-900 rounded-full text-[8px] flex items-center justify-center font-bold">★</span>
                   )}
                 </div>
-                <span className="mt-0.5 px-1.5 py-0.5 bg-black/75 backdrop-blur-sm text-[10px] sm:text-xs font-semibold text-white rounded shadow truncate max-w-[70px]">
-                  {player.name}
+                <span className="mt-0.5 px-1.5 py-0.5 bg-black/80 backdrop-blur-xs text-[10px] sm:text-[11px] font-semibold text-white rounded shadow truncate max-w-[78px]">
+                  #{player.number} {player.name}
                 </span>
               </button>
             ))}
@@ -215,12 +240,12 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
         )}
 
         {/* Legend / Overlay info */}
-        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none bg-black/50 backdrop-blur-md rounded-lg px-3 py-1.5 text-white/90 text-[11px]">
+        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none bg-black/55 backdrop-blur-md rounded-lg px-3 py-1.5 text-white/90 text-[11px]">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> {homeTeam}</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" /> {awayTeam}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block" /> {homeTeam}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block" /> {awayTeam}</span>
           </div>
-          <span className="text-white/70 italic hidden sm:inline">Tap any player node for tactical profile</span>
+          <span className="text-white/70 italic hidden sm:inline">Tap any player portrait for tactical rating profile</span>
         </div>
       </div>
 
@@ -231,28 +256,30 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
             <div className="flex items-center gap-3.5">
               <PlayerAvatar
                 name={selectedPlayer.name}
-                team={homeTeam}
+                team={selectedTeam}
                 jerseyNumber={selectedPlayer.number}
                 rating={selectedPlayer.rating}
                 size="md"
-                showClubBadge={false}
+                showClubBadge
                 showRatingBadge
               />
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-bold text-sm">{selectedPlayer.name}</p>
-                  <Badge variant="outline" className="text-xs font-semibold">#{selectedPlayer.number} · {selectedPlayer.pos}</Badge>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    #{selectedPlayer.number} · {selectedPlayer.pos} · {selectedTeam}
+                  </span>
                   {selectedPlayer.isCaptain && <Badge className="bg-amber-500 text-slate-950 text-[10px] font-bold">Captain</Badge>}
                   {selectedPlayer.isKeyPlayer && <Badge className="bg-red-700 text-white text-[10px] font-bold">Key Threat</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  AI Form Rating: <strong className="text-primary font-mono">{selectedPlayer.rating.toFixed(1)}/10</strong> · {selectedPlayer.goals ? `${selectedPlayer.goals} goals this season` : 'Core tactical starter'}
+                  AI Form Rating: <strong className="text-primary font-mono">{selectedPlayer.rating.toFixed(1)}/10</strong> · {selectedPlayer.goals ? `${selectedPlayer.goals} goals this season` : selectedPlayer.assists ? `${selectedPlayer.assists} assists this season` : 'Core tactical starter'}
                 </p>
               </div>
             </div>
             <button 
               type="button" 
-              onClick={() => setSelectedPlayer(null)} 
+              onClick={() => setSelectedState(null)} 
               aria-label="Close player profile" 
               className="text-xs text-muted-foreground hover:text-foreground font-semibold px-2 py-1"
             >
@@ -262,8 +289,79 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
         </Card>
       )}
 
+      {/* Starting XI Player Ratings Breakdown with Player Portraits */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+        {[
+          { side: 'home' as const, teamName: homeTeam, tactics: homeTactics },
+          { side: 'away' as const, teamName: awayTeam, tactics: awayTactics },
+        ].map(({ side, teamName, tactics }) => (
+          <Card key={side} className="border-border/60 bg-card/80">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between border-b pb-2.5">
+                <div className="flex items-center gap-2">
+                  <TeamLogo team={teamName} league={league} size="sm" />
+                  <div>
+                    <h4 className="font-bold text-xs text-foreground">{teamName} Starting XI Ratings</h4>
+                    <p className="text-[11px] text-muted-foreground">
+                      {tactics.formation} · Avg XI Rating:{' '}
+                      <span className="font-mono font-bold text-foreground">
+                        {(
+                          tactics.players.reduce((sum, p) => sum + p.rating, 0) /
+                          tactics.players.length
+                        ).toFixed(2)}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[11px] text-muted-foreground font-mono">Rating</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {tactics.players.map((p) => {
+                  const isHighRated = p.rating >= 8.2;
+                  return (
+                    <button
+                      key={`${side}-xi-${p.number}`}
+                      type="button"
+                      onClick={() => setSelectedState({ player: p, team: teamName })}
+                      className="flex items-center justify-between p-2 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <PlayerAvatar
+                          name={p.name}
+                          team={teamName}
+                          jerseyNumber={p.number}
+                          rating={p.rating}
+                          size="sm"
+                          showClubBadge={false}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-foreground truncate">{p.name}</p>
+                          <p className="text-[10px] text-muted-foreground font-mono">
+                            #{p.number} · {p.pos}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md font-mono tabular-nums text-xs font-black shrink-0 ${
+                          isHighRated
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        {p.rating.toFixed(1)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {/* Missing & Injured Players Matrix */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
         <Card className="border-border/60 bg-card/60">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between border-b pb-2">
@@ -278,6 +376,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
                 {homeTactics.missing.map((m, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
+                      <PlayerAvatar name={m.name} team={homeTeam} size="xs" showClubBadge={false} />
                       <AlertCircle className={`h-3.5 w-3.5 ${m.impact === 'High' ? 'text-red-500' : 'text-amber-500'}`} />
                       <span className="font-medium">{m.name}</span>
                       <span className="text-muted-foreground text-[10px]">({m.pos})</span>
@@ -311,6 +410,7 @@ export const PitchLineupVisualizer: React.FC<PitchProps> = ({ homeTeam, awayTeam
                 {awayTactics.missing.map((m, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
+                      <PlayerAvatar name={m.name} team={awayTeam} size="xs" showClubBadge={false} />
                       <AlertCircle className={`h-3.5 w-3.5 ${m.impact === 'High' ? 'text-red-500' : 'text-amber-500'}`} />
                       <span className="font-medium">{m.name}</span>
                       <span className="text-muted-foreground text-[10px]">({m.pos})</span>

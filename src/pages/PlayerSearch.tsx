@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -1001,7 +1002,17 @@ export default function PlayerSearch() {
                           showClubBadge
                         />
                         <div className="min-w-0">
-                          <h2 className="font-extrabold text-base text-foreground truncate">{p.name}</h2>
+                          <Link
+                            to={`/players/${p.name
+                              .normalize('NFD')
+                              .replace(/[\u0300-\u036f]/g, '')
+                              .toLowerCase()
+                              .replace(/[^a-z0-9]+/g, '-')
+                              .replace(/(^-|-$)/g, '')}`}
+                            className="font-extrabold text-base text-foreground hover:text-primary transition-colors truncate block"
+                          >
+                            {p.name}
+                          </Link>
                           <p className="text-xs text-muted-foreground truncate">
                             {p.team} · {p.league} · {p.nationality} · Age {p.age}
                           </p>
@@ -1100,18 +1111,31 @@ export default function PlayerSearch() {
                         ))}
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => toggleComparePlayer(p.id)}
-                        className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors flex items-center gap-1 ${
-                          isSelectedForCompare
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-background hover:bg-muted text-foreground border-border/80'
-                        }`}
-                      >
-                        <ArrowLeftRight className="h-3 w-3" />
-                        <span>{isSelectedForCompare ? 'In Radar' : 'Compare'}</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <Link
+                          to={`/players/${p.name
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/(^-|-$)/g, '')}`}
+                          className="px-2.5 py-1 rounded-md text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                        >
+                          Prop Simulator →
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => toggleComparePlayer(p.id)}
+                          className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors flex items-center gap-1 ${
+                            isSelectedForCompare
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-background hover:bg-muted text-foreground border-border/80'
+                          }`}
+                        >
+                          <ArrowLeftRight className="h-3 w-3" />
+                          <span>{isSelectedForCompare ? 'In Radar' : 'Compare'}</span>
+                        </button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -4,6 +4,7 @@ import { Prediction } from '@/types/prediction';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { hapticService } from '@/services/hapticService';
 import {
@@ -530,22 +531,30 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
                           aria-controls={panelId}
                           className="w-full min-h-[44px] py-2 px-2 -mx-2 rounded-lg text-left flex items-center justify-between gap-2 hover:bg-muted/40 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                            <span className="text-sm font-semibold text-foreground">
-                              {item.player}
-                            </span>
-                            <span aria-hidden="true" className="text-muted-foreground">·</span>
-                            <span className="text-xs font-mono text-muted-foreground">
-                              {item.position}
-                            </span>
-                            <span aria-hidden="true" className="text-muted-foreground">·</span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.roleImportance}
-                            </span>
-                            <span aria-hidden="true" className="text-muted-foreground">·</span>
-                            <span className="text-xs font-mono tabular-nums text-foreground/90 font-medium">
-                              {item.xgImpact}
-                            </span>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <PlayerAvatar
+                              name={item.player}
+                              team={column.teamName}
+                              size="sm"
+                              showClubBadge={false}
+                            />
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                              <span className="text-sm font-semibold text-foreground">
+                                {item.player}
+                              </span>
+                              <span aria-hidden="true" className="text-muted-foreground">·</span>
+                              <span className="text-xs font-mono text-muted-foreground">
+                                {item.position}
+                              </span>
+                              <span aria-hidden="true" className="text-muted-foreground">·</span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.roleImportance}
+                              </span>
+                              <span aria-hidden="true" className="text-muted-foreground">·</span>
+                              <span className="text-xs font-mono tabular-nums text-foreground/90 font-medium">
+                                {item.xgImpact}
+                              </span>
+                            </div>
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0">

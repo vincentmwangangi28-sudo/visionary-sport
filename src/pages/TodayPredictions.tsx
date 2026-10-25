@@ -95,7 +95,7 @@ export default function TodayPredictions() {
         </div>
 
         {/* Main Predictions Feed */}
-        <PredictionsDashboard />
+        <PredictionsDashboard initialDateFilter="today" />
 
         {/* SEO Strategy Guide */}
         <section className="bg-card border rounded-2xl p-6 md:p-8 space-y-4">

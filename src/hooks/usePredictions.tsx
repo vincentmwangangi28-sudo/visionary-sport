@@ -12,6 +12,7 @@ import {
   isPlayedOrPastMatch,
   filterOutPlayedMatches,
   sortMatchesByDatePriority,
+  matchesDateFilter,
 } from '@/lib/dateFilterUtils';
 
 export type { Prediction };
@@ -80,7 +81,7 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
   return sortMatchesByDatePriority(sanitized);
 }
 
-const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v1';
+const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v3';
 
 const INITIAL_PAYLOAD_CACHE = new Map<string, {
   allPredictions: Prediction[];
@@ -91,7 +92,9 @@ const INITIAL_PAYLOAD_CACHE = new Map<string, {
 function getCachedInitialPredictionsPayload(league?: string) {
   const key = league?.toLowerCase() ?? 'all';
   const cached = INITIAL_PAYLOAD_CACHE.get(key);
-  if (cached) return cached;
+  if (cached && cached.allPredictions.some((p) => matchesDateFilter(p.match_date, 'today'))) {
+    return cached;
+  }
 
   let seed: Prediction[] = [];
   if (typeof window !== 'undefined') {
@@ -99,8 +102,18 @@ function getCachedInitialPredictionsPayload(league?: string) {
       const raw = localStorage.getItem(REAL_UPCOMING_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { timestamp: number; fixtures: Prediction[] };
-        if (parsed && Array.isArray(parsed.fixtures) && parsed.fixtures.length > 0 && Date.now() - parsed.timestamp < 6 * 3600_000) {
-          seed = parsed.fixtures;
+        if (
+          parsed &&
+          Array.isArray(parsed.fixtures) &&
+          parsed.fixtures.length > 0 &&
+          Date.now() - parsed.timestamp < 2 * 3600_000
+        ) {
+          const validTodayCount = parsed.fixtures.filter(
+            (p) => !isPlayedOrPastMatch(p) && matchesDateFilter(p.match_date, 'today')
+          ).length;
+          if (validTodayCount >= 10) {
+            seed = parsed.fixtures;
+          }
         }
       }
     } catch {
@@ -108,8 +121,12 @@ function getCachedInitialPredictionsPayload(league?: string) {
     }
   }
 
+  const dailyDefaults = getUpdatedDefaultPredictions();
   if (seed.length === 0) {
-    seed = getUpdatedDefaultPredictions();
+    seed = dailyDefaults;
+  } else {
+    // Supplement with daily defaults so Today and Tomorrow are always fully populated
+    seed = [...seed, ...dailyDefaults];
   }
 
   if (league && league !== 'All') {
@@ -204,7 +221,8 @@ export const usePredictions = (
         if (!item || !item.home_team || !item.away_team) return;
         if (isPlayedOrPastMatch(item)) return;
         if (league && league !== 'All' && !matchesLeagueFilter(item.league, league)) return;
-        const pairKey = `${item.home_team.trim().toLowerCase()}-${item.away_team.trim().toLowerCase()}`;
+        const datePart = item.match_date ? String(item.match_date).slice(0, 10) : 'nodate';
+        const pairKey = `${item.home_team.trim().toLowerCase()}-${item.away_team.trim().toLowerCase()}-${datePart}`;
         if (seenMatchupKeys.has(pairKey)) return;
         seenMatchupKeys.add(pairKey);
         combinedPredictions.push({
@@ -275,11 +293,20 @@ export const usePredictions = (
         }
       }
 
-      // 3. Only supplement verified fallback fixtures if live feeds returned zero matches
-      if (combinedPredictions.length === 0) {
+      // 3. Always ensure Today, Tomorrow, and selected leagues have a full slate of daily matches
+      const todayMatchesCount = combinedPredictions.filter((p) => matchesDateFilter(p.match_date, 'today')).length;
+      const tomorrowMatchesCount = combinedPredictions.filter((p) => matchesDateFilter(p.match_date, 'tomorrow')).length;
+      const minTodayRequired = league && league !== 'All' ? 3 : 16;
+      const minTomorrowRequired = league && league !== 'All' ? 2 : 10;
+
+      if (
+        combinedPredictions.length < 28 ||
+        todayMatchesCount < minTodayRequired ||
+        tomorrowMatchesCount < minTomorrowRequired
+      ) {
         let updatedDefaultList = getUpdatedDefaultPredictions();
         if (league && league !== 'All') {
-          const leagueFiltered = updatedDefaultList.filter(p => matchesLeagueFilter(p.league, league));
+          const leagueFiltered = updatedDefaultList.filter((p) => matchesLeagueFilter(p.league, league));
           if (leagueFiltered.length > 0) {
             updatedDefaultList = leagueFiltered;
           }

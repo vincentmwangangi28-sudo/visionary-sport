@@ -123,10 +123,19 @@ export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promis
 
   const activeLeagues = leaguesToFetch.length > 0 ? leaguesToFetch : SERVER_LEAGUES;
 
+  const formatEspnDate = (ms: number) => {
+    const d = new Date(ms);
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}${m}${day}`;
+  };
+  const dateRangeParam = `${formatEspnDate(now)}-${formatEspnDate(now + 4 * 86_400_000)}`;
+
   await Promise.all(
     activeLeagues.map(async (league) => {
       try {
-        const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard`;
+        const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${dateRangeParam}`;
         const res = await fetch(url, { headers: CHROME_HEADERS });
         if (!res.ok) return;
 

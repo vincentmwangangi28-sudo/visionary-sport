@@ -48,6 +48,7 @@ import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
 interface PredictionsDashboardProps {
   initialLeague?: string;
   defaultLeague?: string;
+  initialDateFilter?: DateFilterType;
 }
 
 type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 'today';
@@ -105,7 +106,7 @@ function getLeagueCountry(leagueName: string): string {
   return 'International';
 }
 
-export const PredictionsDashboard = ({ initialLeague, defaultLeague }: PredictionsDashboardProps = {}) => {
+export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDateFilter = 'all' }: PredictionsDashboardProps = {}) => {
   const { user } = useAuth();
   const [guestBannerDismissed, setGuestBannerDismissed] = useState(false);
   const resolvedInitialLeague = initialLeague ?? defaultLeague;
@@ -219,7 +220,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague }: Predictio
     };
   }, []);
 
-  const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilterType>(initialDateFilter);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [enableRegionalSort, setEnableRegionalSort] = useState(true);

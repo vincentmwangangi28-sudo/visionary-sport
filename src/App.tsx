@@ -154,6 +154,22 @@ const TwoOddsPredictions         = lazyWithRetry(() => import("./pages/TwoOddsPr
 const FiveOddsPredictions        = lazyWithRetry(() => import("./pages/FiveOddsPredictions"));
 const TeamAnalyticsHub           = lazyWithRetry(() => import("./pages/TeamAnalyticsHub"));
 const SlipGeneratorPage          = lazyWithRetry(() => import("./pages/SlipGeneratorPage"));
+const PlayerProfilePage          = lazyWithRetry(() => import("./pages/PlayerProfilePage"));
+const TanzaniaLigaPredictions    = lazyWithRetry(() => import("./pages/TanzaniaLigaPredictions"));
+const GhanaPremierLeaguePredictions = lazyWithRetry(() => import("./pages/GhanaPremierLeaguePredictions"));
+const MoroccoBotolaPredictions   = lazyWithRetry(() => import("./pages/MoroccoBotolaPredictions"));
+const CafChampionsLeaguePredictions = lazyWithRetry(() => import("./pages/CafChampionsLeaguePredictions"));
+const UgandaPremierLeaguePredictions = lazyWithRetry(() => import("./pages/UgandaPremierLeaguePredictions"));
+const KoreanKLeaguePredictions   = lazyWithRetry(() => import("./pages/KoreanKLeaguePredictions"));
+const BookingCodeConverterPage   = lazyWithRetry(() => import("./pages/BookingCodeConverterPage"));
+const RefereeStatsPredictions    = lazyWithRetry(() => import("./pages/RefereeStatsPredictions"));
+const JackpotGeneratorPage       = lazyWithRetry(() => import("./pages/JackpotGeneratorPage"));
+const InPlayPredictionsPage      = lazyWithRetry(() => import("./pages/InPlayPredictionsPage"));
+const SetPieceSpecialistsPage    = lazyWithRetry(() => import("./pages/SetPieceSpecialistsPage"));
+const SharpMoneySplitsPage       = lazyWithRetry(() => import("./pages/SharpMoneySplitsPage"));
+const InjuryLineupImpactPage     = lazyWithRetry(() => import("./pages/InjuryLineupImpactPage"));
+const StadiumAltitudeWeatherPage = lazyWithRetry(() => import("./pages/StadiumAltitudeWeatherPage"));
+const TacticalMismatchMatrixPage = lazyWithRetry(() => import("./pages/TacticalMismatchMatrixPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -570,9 +586,38 @@ const App = () => (
                             <Route path="/slip-generator"               element={<RouteBoundary component={SlipGeneratorPage} />} />
                             <Route path="/booking-codes"                element={<RouteBoundary component={SlipGeneratorPage} />} />
                             <Route path="/code-converter"               element={<RouteBoundary component={SlipGeneratorPage} />} />
-                            <Route path="/sportybet-code-converter"     element={<Navigate to="/slip-generator" replace />} />
-                            <Route path="/1xbet-code-converter"         element={<Navigate to="/slip-generator" replace />} />
-                            <Route path="/bet9ja-code-converter"        element={<Navigate to="/slip-generator" replace />} />
+                            <Route path="/players/:playerSlug"          element={<RouteBoundary component={PlayerProfilePage} />} />
+                            <Route path="/player-props"                 element={<RouteBoundary component={PlayerProfilePage} />} />
+                            <Route path="/tanzania-premier-league-predictions" element={<RouteBoundary component={TanzaniaLigaPredictions} />} />
+                            <Route path="/ghana-premier-league-predictions" element={<RouteBoundary component={GhanaPremierLeaguePredictions} />} />
+                            <Route path="/morocco-botola-pro-predictions" element={<RouteBoundary component={MoroccoBotolaPredictions} />} />
+                            <Route path="/caf-champions-league-predictions" element={<RouteBoundary component={CafChampionsLeaguePredictions} />} />
+                            <Route path="/uganda-premier-league-predictions" element={<RouteBoundary component={UgandaPremierLeaguePredictions} />} />
+                            <Route path="/k-league-predictions"         element={<RouteBoundary component={KoreanKLeaguePredictions} />} />
+                            <Route path="/booking-code-converter"       element={<RouteBoundary component={BookingCodeConverterPage} />} />
+                            <Route path="/referee-stats-predictions"    element={<RouteBoundary component={RefereeStatsPredictions} />} />
+                            <Route path="/jackpot-generator"            element={<RouteBoundary component={JackpotGeneratorPage} />} />
+                            <Route path="/in-play-predictions"          element={<RouteBoundary component={InPlayPredictionsPage} />} />
+                            <Route path="/set-piece-specialists"        element={<RouteBoundary component={SetPieceSpecialistsPage} />} />
+                            <Route path="/sharp-money-splits"           element={<RouteBoundary component={SharpMoneySplitsPage} />} />
+                            <Route path="/injury-lineup-impact"         element={<RouteBoundary component={InjuryLineupImpactPage} />} />
+                            <Route path="/stadium-altitude-weather"     element={<RouteBoundary component={StadiumAltitudeWeatherPage} />} />
+                            <Route path="/tactical-mismatch-matrix"     element={<RouteBoundary component={TacticalMismatchMatrixPage} />} />
+                            <Route path="/public-betting-splits"        element={<Navigate to="/sharp-money-splits" replace />} />
+                            <Route path="/reverse-line-movement"        element={<Navigate to="/sharp-money-splits" replace />} />
+                            <Route path="/lineup-injuries"              element={<Navigate to="/injury-lineup-impact" replace />} />
+                            <Route path="/penalty-takers"               element={<Navigate to="/set-piece-specialists" replace />} />
+                            <Route path="/live-predictions"             element={<Navigate to="/in-play-predictions" replace />} />
+                            <Route path="/mega-jackpot-generator"       element={<Navigate to="/jackpot-generator" replace />} />
+                            <Route path="/referee-card-stats"           element={<Navigate to="/referee-stats-predictions" replace />} />
+                            <Route path="/convert-bet-code"             element={<Navigate to="/booking-code-converter" replace />} />
+                            <Route path="/ligi-kuu-bara-predictions"    element={<Navigate to="/tanzania-premier-league-predictions" replace />} />
+                            <Route path="/gpl-predictions"              element={<Navigate to="/ghana-premier-league-predictions" replace />} />
+                            <Route path="/botola-pro-predictions"       element={<Navigate to="/morocco-botola-pro-predictions" replace />} />
+                            <Route path="/upl-predictions"              element={<Navigate to="/uganda-premier-league-predictions" replace />} />
+                            <Route path="/sportybet-code-converter"     element={<Navigate to="/booking-code-converter" replace />} />
+                            <Route path="/1xbet-code-converter"         element={<Navigate to="/booking-code-converter" replace />} />
+                            <Route path="/bet9ja-code-converter"        element={<Navigate to="/booking-code-converter" replace />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}

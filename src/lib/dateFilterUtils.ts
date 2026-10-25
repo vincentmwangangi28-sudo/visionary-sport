@@ -73,9 +73,23 @@ export function isPlayedOrPastMatch(item: {
     return true;
   }
 
-  // 4. Check kickoff timestamp: if kickoff is in the past (<= now), it has already started or been played
-  const kickoffMs = new Date(item.match_date).getTime();
-  if (isNaN(kickoffMs) || kickoffMs <= Date.now()) {
+  // 4. Check kickoff timestamp: if kickoff is in the past beyond grace window, it has already started or been played
+  const kickoffDate = new Date(item.match_date);
+  const kickoffMs = kickoffDate.getTime();
+  if (isNaN(kickoffMs)) {
+    return true;
+  }
+
+  const now = new Date();
+  const isPendingStatus = !item.status || String(item.status).trim().toLowerCase() === 'pending';
+  const isSameLocalDay =
+    kickoffDate.getFullYear() === now.getFullYear() &&
+    kickoffDate.getMonth() === now.getMonth() &&
+    kickoffDate.getDate() === now.getDate();
+
+  // For pending matches on today's calendar date, allow a 45-minute grace buffer so freshly loaded daily slates stay stable
+  const cutoffMs = isPendingStatus && isSameLocalDay ? now.getTime() - 45 * 60 * 1000 : now.getTime();
+  if (kickoffMs <= cutoffMs) {
     return true;
   }
 
@@ -215,14 +229,15 @@ export function matchesDateFilter(matchDate: string | Date, filter: DateFilterTy
   if (isNaN(d.getTime())) return false;
 
   const now = new Date();
-  // Strictly ignore matches that have already started or been played
-  if (d.getTime() <= now.getTime()) return false;
-
-  if (filter === 'all') return true;
-
-  // "Today": from now to end of today (23:59:59)
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  const isSameLocalDay = d >= todayStart && d <= todayEnd;
+
+  // Allow a 45-minute grace buffer for matches on today's local date
+  const cutoffMs = isSameLocalDay ? now.getTime() - 45 * 60 * 1000 : now.getTime();
+  if (d.getTime() <= cutoffMs) return false;
+
+  if (filter === 'all') return true;
 
   // "Tomorrow": start of tomorrow to end of tomorrow
   const tomorrowStart = new Date(todayStart);
@@ -231,7 +246,7 @@ export function matchesDateFilter(matchDate: string | Date, filter: DateFilterTy
   tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
 
   if (filter === 'today') {
-    return d >= now && d <= todayEnd;
+    return isSameLocalDay;
   }
 
   if (filter === 'tomorrow') {

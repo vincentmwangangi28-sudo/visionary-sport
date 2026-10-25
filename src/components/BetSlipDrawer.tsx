@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useBetSlip } from '@/hooks/useBetSlip';
+import { useBetSlip, BetSelection } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -13,7 +13,7 @@ import {
   generateMatchGameId,
   downloadSlipAsPngImage,
 } from '@/services/bookmakerBookingCodes';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -22,11 +22,9 @@ import {
   Trash2,
   Share2,
   Copy,
-  TrendingUp,
   Sparkles,
   ExternalLink,
   ChevronRight,
-  Calculator,
   Flame,
   CheckCheck,
   Globe,
@@ -34,11 +32,32 @@ import {
   Vibrate,
   Download,
   ArrowLeftRight,
+  BookmarkCheck,
+  History,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  RotateCcw,
 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { toast } from 'sonner';
+
+interface SavedBetSlipRecord {
+  id: string;
+  createdAt: string;
+  bookmakerName: string;
+  bookingCode: string;
+  currency: string;
+  stake: number;
+  totalOdds: number;
+  potentialReturn: number;
+  status: 'PENDING' | 'WON' | 'LOST';
+  selections: BetSelection[];
+}
+
+const SAVED_SLIPS_STORAGE_KEY = 'predictpro_saved_bet_slips_v1';
 
 export const BetSlipDrawer = () => {
   const {
@@ -59,7 +78,6 @@ export const BetSlipDrawer = () => {
     combinedConfidence,
     getShareableSlipUrl,
     triggerHaptic,
-    isHapticSupported,
   } = useBetSlip();
 
   const { user } = useAuth();
@@ -69,6 +87,28 @@ export const BetSlipDrawer = () => {
   const [selectedBookmakerId, setSelectedBookmakerId] = useState(preferences.defaultBookmaker || 'sportpesa');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'saved'>('active');
+
+  const [savedSlips, setSavedSlips] = useState<SavedBetSlipRecord[]>(() => {
+    try {
+      const raw = localStorage.getItem(SAVED_SLIPS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SAVED_SLIPS_STORAGE_KEY, JSON.stringify(savedSlips));
+    } catch {
+      // ignore storage errors
+    }
+  }, [savedSlips]);
 
   // Dynamically prioritize bookmakers matching the user's active geographic region
   const sortedBookmakers = useMemo(() => {
@@ -142,6 +182,78 @@ export const BetSlipDrawer = () => {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const handleSaveCurrentSlip = () => {
+    if (selections.length === 0) return;
+    triggerHaptic('betConfirmation');
+    const code = generatedCode || generateRegionalBookingCode(activeBookmaker.id, selections.length);
+    setGeneratedCode(code);
+    const finalReturn = bonusMultiplier > 0 ? boostedReturn : potentialReturn;
+    const newRecord: SavedBetSlipRecord = {
+      id: `slip-${Date.now()}`,
+      createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      bookmakerName: activeBookmaker.name,
+      bookingCode: code,
+      currency,
+      stake: stake || 100,
+      totalOdds,
+      potentialReturn: finalReturn,
+      status: 'PENDING',
+      selections: [...selections],
+    };
+    setSavedSlips((prev) => [newRecord, ...prev.slice(0, 29)]);
+    setActiveTab('saved');
+    toast.success(`Saved ${selections.length}-leg slip (${code}) to Personal ROI Tracker!`);
+  };
+
+  const handleUpdateSavedStatus = (id: string, status: SavedBetSlipRecord['status']) => {
+    triggerHaptic('selection');
+    setSavedSlips((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
+    toast.success(`Marked slip as ${status}!`);
+  };
+
+  const handleDeleteSavedSlip = (id: string) => {
+    setSavedSlips((prev) => prev.filter((s) => s.id !== id));
+    toast.info('Removed saved slip from tracker.');
+  };
+
+  const handleReloadSavedSlip = (slip: SavedBetSlipRecord) => {
+    clearSlip();
+    slip.selections.forEach((sel) => {
+      addSelection({
+        matchId: sel.matchId,
+        match: sel.match,
+        homeTeam: sel.homeTeam,
+        awayTeam: sel.awayTeam,
+        league: sel.league,
+        matchDate: sel.matchDate,
+        market: sel.market,
+        odds: sel.odds,
+        confidence: sel.confidence,
+      });
+    });
+    setActiveTab('active');
+    toast.success(`Reloaded ${slip.selections.length} selections (${slip.bookingCode}) into active slip!`);
+  };
+
+  // Personal ROI Statistics across settled saved slips
+  const roiStats = useMemo(() => {
+    const settled = savedSlips.filter((s) => s.status === 'WON' || s.status === 'LOST');
+    const won = settled.filter((s) => s.status === 'WON');
+    const totalStaked = settled.reduce((acc, s) => acc + s.stake, 0);
+    const totalReturned = won.reduce((acc, s) => acc + s.potentialReturn, 0);
+    const netProfit = totalReturned - totalStaked;
+    const winRate = settled.length > 0 ? Math.round((won.length / settled.length) * 100) : 0;
+    const roiPct = totalStaked > 0 ? Math.round((netProfit / totalStaked) * 100) : 0;
+    return {
+      settledCount: settled.length,
+      wonCount: won.length,
+      totalStaked,
+      netProfit,
+      winRate,
+      roiPct,
+    };
+  }, [savedSlips]);
+
   const shareableSlipUrl = useMemo(
     () => getShareableSlipUrl(selections, activeBookmaker?.name, generatedCode || undefined),
     [getShareableSlipUrl, selections, activeBookmaker?.name, generatedCode]
@@ -185,7 +297,7 @@ export const BetSlipDrawer = () => {
   return (
     <>
       {/* Floating Trigger Button if selections exist and sheet is closed */}
-      {selections.length > 0 && !isOpen && (
+      {(selections.length > 0 || savedSlips.length > 0) && !isOpen && (
         <div className="fixed bottom-20 md:bottom-6 right-4 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Button
             onClick={() => {
@@ -198,12 +310,16 @@ export const BetSlipDrawer = () => {
             <div className="relative">
               <Ticket className="h-5 w-5 group-hover:rotate-12 transition-transform" aria-hidden="true" />
               <span className="absolute -top-2 -right-2 h-5 w-5 bg-amber-500 text-slate-950 font-black text-xs rounded-full flex items-center justify-center border-2 border-primary" aria-hidden="true">
-                {selections.length}
+                {selections.length || savedSlips.length}
               </span>
             </div>
             <div className="text-left hidden sm:block">
-              <p className="text-xs font-bold leading-tight">Acca Bet Slip</p>
-              <p className="text-xs opacity-90 font-medium">Odds: {totalOdds.toFixed(2)}</p>
+              <p className="text-xs font-bold leading-tight">
+                {selections.length > 0 ? 'Acca Bet Slip' : 'Saved Slips Tracker'}
+              </p>
+              <p className="text-xs opacity-90 font-medium">
+                {selections.length > 0 ? `Odds: ${totalOdds.toFixed(2)}` : `${savedSlips.length} Tracked`}
+              </p>
             </div>
             <ChevronRight className="h-4 w-4 ml-1 opacity-70 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
           </Button>
@@ -213,14 +329,11 @@ export const BetSlipDrawer = () => {
       {/* Bet Slip Sheet */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col h-full overflow-hidden">
-          <SheetHeader className="p-4 border-b bg-card">
+          <SheetHeader className="p-4 pb-3 border-b bg-card space-y-2.5">
             <div className="flex items-center justify-between">
               <SheetTitle className="flex items-center gap-2 text-lg">
                 <Ticket className="h-5 w-5 text-primary" />
-                <span>Accumulator Bet Slip</span>
-                <Badge variant="secondary" className="font-bold">
-                  {selections.length} {selections.length === 1 ? 'Pick' : 'Picks'}
-                </Badge>
+                <span>Smart Bet Slip &amp; ROI</span>
               </SheetTitle>
               <div className="flex items-center gap-1.5">
                 <button
@@ -235,7 +348,7 @@ export const BetSlipDrawer = () => {
                 >
                   <Vibrate className="h-4 w-4" />
                 </button>
-                {selections.length > 0 && (
+                {activeTab === 'active' && selections.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -247,9 +360,181 @@ export const BetSlipDrawer = () => {
                 )}
               </div>
             </div>
+
+            {/* 2-Tab Switcher: Active Slip vs Saved Slips ROI Tracker */}
+            <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg">
+              <button
+                type="button"
+                onClick={() => setActiveTab('active')}
+                className={`py-1.5 px-3 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'active'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Ticket className="h-3.5 w-3.5" />
+                <span>Active Slip ({selections.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('saved')}
+                className={`py-1.5 px-3 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'saved'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <History className="h-3.5 w-3.5" />
+                <span>My Saved Slips ({savedSlips.length})</span>
+              </button>
+            </div>
           </SheetHeader>
 
-          {selections.length === 0 ? (
+          {activeTab === 'saved' ? (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Personal ROI Summary Header */}
+              <div className="p-3.5 border-b bg-muted/30 grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <span className="text-[10px] text-muted-foreground block">Settled Win Rate</span>
+                  <span className="font-black text-sm text-foreground">
+                    {roiStats.winRate}% ({roiStats.wonCount}/{roiStats.settledCount})
+                  </span>
+                </div>
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <span className="text-[10px] text-muted-foreground block">Net Profit</span>
+                  <span
+                    className={`font-black text-sm ${
+                      roiStats.netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
+                    }`}
+                  >
+                    {roiStats.netProfit >= 0 ? '+' : ''}
+                    {roiStats.netProfit.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="p-2 rounded-lg bg-background border border-border">
+                  <span className="text-[10px] text-muted-foreground block">Personal ROI</span>
+                  <span
+                    className={`font-black text-sm ${
+                      roiStats.roiPct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
+                    }`}
+                  >
+                    {roiStats.roiPct >= 0 ? '+' : ''}
+                    {roiStats.roiPct}%
+                  </span>
+                </div>
+              </div>
+
+              {savedSlips.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
+                  <BookmarkCheck className="h-10 w-10 opacity-40 mb-3" />
+                  <h3 className="font-bold text-foreground text-sm mb-1">No Saved Slips Yet</h3>
+                  <p className="text-xs max-w-xs mb-4">
+                    Build a slip in the Active Slip tab and click &ldquo;Save &amp; Track Slip&rdquo; to track your personal Win Rate and ROI.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('active')} className="text-xs">
+                    Go to Active Slip
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {savedSlips.map((slip) => (
+                    <div
+                      key={slip.id}
+                      className="p-3 rounded-xl border border-border bg-card space-y-2.5 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-mono font-bold text-primary">{slip.bookingCode}</span>
+                          <span className="text-muted-foreground ml-1.5">
+                            · {slip.bookmakerName} · {slip.createdAt}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSavedSlip(slip.id)}
+                          className="text-muted-foreground hover:text-destructive p-1"
+                          title="Delete saved slip"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-1 bg-muted/40 p-2 rounded-lg border border-border/60">
+                        {slip.selections.map((leg, i) => (
+                          <div key={i} className="flex items-center justify-between text-[11px]">
+                            <span className="truncate max-w-[190px]">
+                              {i + 1}. {leg.homeTeam} v {leg.awayTeam}
+                            </span>
+                            <span className="font-mono font-semibold text-foreground">
+                              {leg.market} @ {leg.odds.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] pt-1">
+                        <span>
+                          Stake: <strong>{slip.currency} {slip.stake.toLocaleString()}</strong> · Odds:{' '}
+                          <strong>{slip.totalOdds.toFixed(2)}</strong>
+                        </span>
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                          Return: {slip.currency} {slip.potentialReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                        </span>
+                      </div>
+
+                      {/* Settlement Status Buttons + Reload */}
+                      <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border">
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateSavedStatus(slip.id, 'WON')}
+                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                              slip.status === 'WON'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-muted text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <CheckCircle2 className="h-3 w-3" /> Won
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateSavedStatus(slip.id, 'LOST')}
+                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                              slip.status === 'LOST'
+                                ? 'bg-destructive text-destructive-foreground'
+                                : 'bg-muted text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <XCircle className="h-3 w-3" /> Lost
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateSavedStatus(slip.id, 'PENDING')}
+                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                              slip.status === 'PENDING'
+                                ? 'bg-amber-500 text-slate-950'
+                                : 'bg-muted text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Clock className="h-3 w-3" /> Pending
+                          </button>
+                        </div>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleReloadSavedSlip(slip)}
+                          className="h-7 px-2 text-[11px] gap-1"
+                        >
+                          <RotateCcw className="h-3 w-3" /> Reload
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : selections.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
               <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center mb-4">
                 <Ticket className="h-8 w-8 opacity-40" />
@@ -382,7 +667,7 @@ export const BetSlipDrawer = () => {
                       <Globe className="h-3.5 w-3.5 text-primary" /> {t('slip.export_code', 'Global Bookmaker Code Exporter')}
                     </p>
                     <Link
-                      to="/slip-generator"
+                      to="/booking-code-converter"
                       onClick={() => setIsOpen(false)}
                       className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
                     >
@@ -555,6 +840,17 @@ export const BetSlipDrawer = () => {
                   )}
                 </div>
 
+                {/* Save & Track Slip Button */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSaveCurrentSlip}
+                  className="w-full h-9 text-xs font-bold gap-1.5 border border-primary/30"
+                >
+                  <BookmarkCheck className="h-4 w-4 text-primary" />
+                  Save &amp; Track Slip in Personal ROI Tracker
+                </Button>
+
                 {/* Action Buttons: Share / WhatsApp / Telegram / Export */}
                 <div className="grid grid-cols-2 gap-2">
                   <a
@@ -622,7 +918,7 @@ export const BetSlipDrawer = () => {
                     <div className="flex items-center gap-2 min-w-0">
                       <Sparkles className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span className="text-xs font-bold text-foreground truncate">
-                        Save this {selections.length}-leg slip to a Free Account
+                        Sync saved slips across devices with a Free Account
                       </span>
                     </div>
                     <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 shrink-0">

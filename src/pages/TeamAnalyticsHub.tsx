@@ -5,21 +5,27 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Activity,
+  Award,
   BarChart3,
   Calendar,
   ChevronRight,
-  Globe,
+  Clock,
+  Plus,
   Search,
-  Shield,
+  Sliders,
   Target,
-  TrendingUp,
 } from 'lucide-react';
+import { ELITE_PLAYER_DATABASE } from '@/pages/PlayerSearch';
+import { formatPlayerSlug } from '@/pages/PlayerProfilePage';
+import { useBetSlip } from '@/hooks/useBetSlip';
+import { toast } from 'sonner';
 
 export interface ClubAnalyticsProfile {
   slug: string;
@@ -277,6 +283,75 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
       { opponent: 'Stellenbosch FC', venue: 'H', fdr: 2, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '2.08 - 0.66', winProb: 74 },
     ],
   },
+  {
+    slug: 'young-africans',
+    name: 'Young Africans',
+    league: 'Tanzania Ligi Kuu Bara',
+    country: 'Tanzania',
+    elo: 1742,
+    xgFor90: 1.98,
+    xgAgainst90: 0.62,
+    poissonAttack: 1.39,
+    poissonDefense: 0.54,
+    cleanSheetPct: 59,
+    bttsPct: 41,
+    over25Pct: 55,
+    ppda: 8.7,
+    recentForm: ['W', 'W', 'W', 'W', 'D'],
+    upcomingFixtures: [
+      { opponent: 'Simba SC', venue: 'H', fdr: 4, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.78 - 0.84', winProb: 64 },
+      { opponent: 'Azam FC', venue: 'A', fdr: 3, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.56 - 0.88', winProb: 58 },
+      { opponent: 'Al Ahly', venue: 'H', fdr: 5, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.32 - 1.38', winProb: 42 },
+      { opponent: 'Coastal Union', venue: 'H', fdr: 2, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '2.18 - 0.54', winProb: 78 },
+      { opponent: 'Singida Black Stars', venue: 'A', fdr: 3, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.64 - 0.78', winProb: 62 },
+    ],
+  },
+  {
+    slug: 'simba-sc',
+    name: 'Simba SC',
+    league: 'Tanzania Ligi Kuu Bara',
+    country: 'Tanzania',
+    elo: 1726,
+    xgFor90: 1.88,
+    xgAgainst90: 0.69,
+    poissonAttack: 1.35,
+    poissonDefense: 0.59,
+    cleanSheetPct: 54,
+    bttsPct: 45,
+    over25Pct: 53,
+    ppda: 8.9,
+    recentForm: ['W', 'D', 'W', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Young Africans', venue: 'A', fdr: 5, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '0.84 - 1.78', winProb: 32 },
+      { opponent: 'Azam FC', venue: 'H', fdr: 3, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.74 - 0.82', winProb: 63 },
+      { opponent: 'Namungo FC', venue: 'H', fdr: 2, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '2.06 - 0.58', winProb: 75 },
+      { opponent: 'Raja Casablanca', venue: 'H', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.42 - 1.18', winProb: 48 },
+      { opponent: 'KMC FC', venue: 'A', fdr: 2, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.82 - 0.68', winProb: 69 },
+    ],
+  },
+  {
+    slug: 'raja-casablanca',
+    name: 'Raja Casablanca',
+    league: 'Morocco Botola Pro',
+    country: 'Morocco',
+    elo: 1794,
+    xgFor90: 1.94,
+    xgAgainst90: 0.65,
+    poissonAttack: 1.38,
+    poissonDefense: 0.56,
+    cleanSheetPct: 57,
+    bttsPct: 43,
+    over25Pct: 52,
+    ppda: 8.5,
+    recentForm: ['W', 'W', 'D', 'W', 'W'],
+    upcomingFixtures: [
+      { opponent: 'Wydad AC', venue: 'H', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.76 - 0.82', winProb: 64 },
+      { opponent: 'AS FAR Rabat', venue: 'A', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.38 - 1.14', winProb: 47 },
+      { opponent: 'RS Berkane', venue: 'H', fdr: 3, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.68 - 0.78', winProb: 61 },
+      { opponent: 'Al Ahly', venue: 'A', fdr: 5, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.08 - 1.44', winProb: 36 },
+      { opponent: 'FUS Rabat', venue: 'H', fdr: 2, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.96 - 0.62', winProb: 73 },
+    ],
+  },
 ];
 
 function buildFallbackClubProfile(slug: string): ClubAnalyticsProfile {
@@ -318,6 +393,7 @@ function getFdrBadgeClass(fdr: number): string {
 
 export default function TeamAnalyticsHub() {
   const { teamSlug } = useParams<{ teamSlug?: string }>();
+  const { addSelection } = useBetSlip();
   const [searchQuery, setSearchQuery] = useState('');
 
   const activeClub = useMemo(() => {
@@ -338,6 +414,79 @@ export default function TeamAnalyticsHub() {
         c.country.toLowerCase().includes(q)
     );
   }, [searchQuery]);
+
+  // Match club players from ELITE_PLAYER_DATABASE or generate deterministic squad leaders
+  const clubKeyPlayers = useMemo(() => {
+    const exactMatches = ELITE_PLAYER_DATABASE.filter(
+      (p) => p.team.toLowerCase() === activeClub.name.toLowerCase()
+    );
+    if (exactMatches.length >= 2) return exactMatches;
+
+    const fallbackSquad = [
+      {
+        id: `${activeClub.slug}-9`,
+        name:
+          activeClub.slug === 'gor-mahia'
+            ? 'Austin Odhiambo'
+            : activeClub.slug === 'young-africans'
+            ? 'Stephane Aziz Ki'
+            : activeClub.slug === 'simba-sc'
+            ? 'Leonel Ateba'
+            : activeClub.slug === 'al-ahly'
+            ? 'Wessam Abou Ali'
+            : activeClub.slug === 'mamelodi-sundowns'
+            ? 'Lucas Ribeiro Costa'
+            : `${activeClub.name} #9 Striker`,
+        team: activeClub.name,
+        league: activeClub.league,
+        position: 'FWD' as const,
+        roleTag: 'Primary Target Striker & PK Taker',
+        rating: 8.4,
+        goals: 16,
+        assists: 6,
+        xgPer90: Number((activeClub.xgFor90 * 0.42).toFixed(2)),
+        xaPer90: 0.24,
+      },
+      {
+        id: `${activeClub.slug}-10`,
+        name:
+          activeClub.slug === 'gor-mahia'
+            ? 'Benson Omala'
+            : activeClub.slug === 'young-africans'
+            ? 'Prince Dube'
+            : activeClub.slug === 'simba-sc'
+            ? 'Jean Charles Ahoua'
+            : activeClub.slug === 'al-ahly'
+            ? 'Emam Ashour'
+            : activeClub.slug === 'mamelodi-sundowns'
+            ? 'Themba Zwane'
+            : `${activeClub.name} #10 Playmaker`,
+        team: activeClub.name,
+        league: activeClub.league,
+        position: 'MID' as const,
+        roleTag: 'Creative Playmaker (Zone 14)',
+        rating: 8.1,
+        goals: 9,
+        assists: 11,
+        xgPer90: Number((activeClub.xgFor90 * 0.26).toFixed(2)),
+        xaPer90: 0.38,
+      },
+    ];
+    return [...exactMatches, ...fallbackSquad].slice(0, 3);
+  }, [activeClub]);
+
+  // 15-Minute Goal Timing Distribution
+  const goalTimingIntervals = useMemo(() => {
+    const seed = activeClub.elo % 17;
+    return [
+      { period: "0'–15'", pct: 12 + (seed % 4), label: 'Fast Start' },
+      { period: "16'–30'", pct: 15 + ((seed + 2) % 4), label: 'Build-up' },
+      { period: "31'–45+'", pct: 18 + ((seed + 1) % 5), label: '1H Surge' },
+      { period: "46'–60'", pct: 16 + ((seed + 3) % 4), label: 'Tactical Shift' },
+      { period: "61'–75'", pct: 17 + ((seed + 2) % 5), label: 'Sub Impact' },
+      { period: "76'–90+'", pct: 22 - (seed % 4), label: 'Late Pressure' },
+    ];
+  }, [activeClub]);
 
   const canonicalPath = teamSlug ? `/teams/${activeClub.slug}` : '/teams';
   const pageTitle = teamSlug
@@ -393,7 +542,7 @@ export default function TeamAnalyticsHub() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter clubs (Arsenal, Al Ahly...)"
+                placeholder="Filter clubs (Arsenal, Al Ahly, Simba...)"
                 className="pl-9 text-xs h-9 bg-slate-950 border-slate-800 text-white placeholder:text-slate-400"
               />
             </div>
@@ -497,7 +646,7 @@ export default function TeamAnalyticsHub() {
           </Card>
         </div>
 
-        {/* 5-Match Fixture Difficulty Rating (FDR) Calendar */}
+        {/* 5-Match Fixture Difficulty Rating (FDR) Calendar with 1-Click Add to Bet Slip */}
         <Card className="border-border/80 bg-card">
           <CardHeader className="p-5 pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -531,42 +680,169 @@ export default function TeamAnalyticsHub() {
 
           <CardContent className="p-5 pt-2">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {activeClub.upcomingFixtures.map((fix, i) => (
-                <Link
-                  key={i}
-                  to={`/predict/${fix.matchSlug}`}
-                  className="p-3.5 rounded-xl border border-border/70 bg-background/70 hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-2">
-                      <Badge variant="outline" className="text-[10px] font-mono">
-                        GW+{i + 1} ({fix.venue})
-                      </Badge>
-                      <Badge variant="outline" className={`text-[10px] font-bold ${getFdrBadgeClass(fix.fdr)}`}>
-                        FDR {fix.fdr}/5
-                      </Badge>
+              {activeClub.upcomingFixtures.map((fix, i) => {
+                const fairOdds = Number(Math.max(1.25, 0.94 / (fix.winProb / 100)).toFixed(2));
+                const homeTeam = fix.venue === 'H' ? activeClub.name : fix.opponent;
+                const awayTeam = fix.venue === 'H' ? fix.opponent : activeClub.name;
+                return (
+                  <div
+                    key={i}
+                    className="p-3.5 rounded-xl border border-border/70 bg-background/70 hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-2">
+                        <Badge variant="outline" className="text-[10px] font-mono">
+                          GW+{i + 1} ({fix.venue})
+                        </Badge>
+                        <Badge variant="outline" className={`text-[10px] font-bold ${getFdrBadgeClass(fix.fdr)}`}>
+                          FDR {fix.fdr}/5
+                        </Badge>
+                      </div>
+                      <Link
+                        to={`/predict/${fix.matchSlug}`}
+                        className="font-black text-sm text-foreground hover:text-primary transition-colors block"
+                      >
+                        vs {fix.opponent}
+                      </Link>
+                      <p className="text-[11px] text-muted-foreground font-mono mt-1">
+                        Proj xG: {fix.projectedXg}
+                      </p>
                     </div>
-                    <p className="font-black text-sm text-foreground group-hover:text-primary transition-colors">
-                      vs {fix.opponent}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground font-mono mt-1">
-                      Proj xG: {fix.projectedXg}
-                    </p>
-                  </div>
 
-                  <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Win Prob:</span>
-                    <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
-                      {fix.winProb}% <ChevronRight className="h-3.5 w-3.5" />
-                    </span>
+                    <div className="pt-2 border-t border-border/50 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Win Prob:</span>
+                        <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
+                          {fix.winProb}% (@{fairOdds})
+                        </span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          addSelection({
+                            matchId: `club-fdr-${activeClub.slug}-${i}`,
+                            match: `${homeTeam} vs ${awayTeam}`,
+                            homeTeam,
+                            awayTeam,
+                            league: activeClub.league,
+                            matchDate: new Date().toISOString(),
+                            market: `${activeClub.name} to Win / 1X`,
+                            odds: fairOdds,
+                            confidence: fix.winProb,
+                          });
+                          toast.success(`Added ${activeClub.name} vs ${fix.opponent} (@${fairOdds}) to Bet Slip`);
+                        }}
+                        className="w-full h-7 text-[11px] font-bold gap-1"
+                      >
+                        <Plus className="h-3 w-3" /> Add Pick (@{fairOdds})
+                      </Button>
+                    </div>
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
+
+        {/* Key Squad Stars & 15-Min Goal Timing Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Squad Stars with Portraits & Prop Simulator Links */}
+          <Card className="lg:col-span-7 border-border/80 bg-card">
+            <CardHeader className="p-5 pb-3 border-b border-border/60 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-black flex items-center gap-2">
+                  <Award className="h-4 w-4 text-primary" />
+                  {activeClub.name} — Key xG Contributors &amp; Player Ratings
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Click any squad star to launch their Poisson Goalscorer &amp; Shots on Target Prop Simulator.
+                </CardDescription>
+              </div>
+              <Link to="/players" className="text-xs font-bold text-primary hover:underline">
+                All Players →
+              </Link>
+            </CardHeader>
+            <CardContent className="p-5 space-y-3">
+              {clubKeyPlayers.map((player) => {
+                const slug = formatPlayerSlug(player.name);
+                return (
+                  <div
+                    key={player.id}
+                    className="p-3.5 rounded-xl border border-border/70 bg-background/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <PlayerAvatar
+                        name={player.name}
+                        team={activeClub.name}
+                        rating={player.rating}
+                        size="md"
+                        showClubBadge
+                        showRatingBadge
+                      />
+                      <div className="min-w-0">
+                        <Link
+                          to={`/players/${slug}`}
+                          className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
+                        >
+                          {player.name}
+                        </Link>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {player.position} · {player.roleTag}
+                        </p>
+                        <p className="text-[11px] font-mono text-emerald-500 mt-0.5">
+                          {player.goals}G / {player.assists}A · {player.xgPer90} xG/90 · +{player.xaPer90} xA/90
+                        </p>
+                      </div>
+                    </div>
+
+                    <Link to={`/players/${slug}`} className="shrink-0">
+                      <Button size="sm" variant="outline" className="h-8 text-xs font-bold gap-1.5">
+                        <Sliders className="h-3.5 w-3.5 text-primary" />
+                        Prop Simulator →
+                      </Button>
+                    </Link>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* 15-Minute Goal Timing Distribution */}
+          <Card className="lg:col-span-5 border-border/80 bg-card">
+            <CardHeader className="p-5 pb-3 border-b border-border/60">
+              <CardTitle className="text-base font-black flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                15-Minute Goal Scoring Timing Profile
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Identifies prime First-Half Over 0.5 and Late Goal (76&apos;–90+&apos;) in-play betting windows for {activeClub.name}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-5 space-y-3">
+              {goalTimingIntervals.map((item) => (
+                <div key={item.period} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-mono font-bold text-foreground">
+                      {item.period}{' '}
+                      <span className="font-normal text-muted-foreground">({item.label})</span>
+                    </span>
+                    <span className="font-mono font-bold text-emerald-500">{item.pct}% of Goals</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-all"
+                      style={{ width: `${Math.min(100, item.pct * 3.5)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </main>
       <Footer />
     </div>
   );
 }
+

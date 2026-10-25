@@ -1,6 +1,86 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { Crosshair, TrendingUp, Shield, Activity, CheckCircle2, Clock, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { Crosshair, TrendingUp, Shield, Activity, CheckCircle2, Clock, ArrowUpRight, ArrowDownRight, Minus, Flame } from 'lucide-react';
+
+function getClubLiveStars(clubName: string, isHome: boolean): Array<{ playerName: string; role: string; number: number }> {
+  const lower = clubName.toLowerCase();
+  if (lower.includes('arsenal')) {
+    return [
+      { playerName: 'Bukayo Saka', role: 'RW', number: 7 },
+      { playerName: 'Martin Odegaard', role: 'CAM', number: 8 },
+      { playerName: 'Declan Rice', role: 'CDM', number: 41 },
+    ];
+  }
+  if (lower.includes('manchester city') || lower.includes('man city')) {
+    return [
+      { playerName: 'Erling Haaland', role: 'ST', number: 9 },
+      { playerName: 'Phil Foden', role: 'CAM', number: 47 },
+      { playerName: 'Rodri', role: 'CDM', number: 16 },
+    ];
+  }
+  if (lower.includes('liverpool')) {
+    return [
+      { playerName: 'Mohamed Salah', role: 'RW', number: 11 },
+      { playerName: 'Alexis Mac Allister', role: 'CM', number: 10 },
+      { playerName: 'Virgil van Dijk', role: 'CB', number: 4 },
+    ];
+  }
+  if (lower.includes('real madrid')) {
+    return [
+      { playerName: 'Kylian Mbappé', role: 'ST', number: 9 },
+      { playerName: 'Jude Bellingham', role: 'CAM', number: 5 },
+      { playerName: 'Federico Valverde', role: 'CM', number: 8 },
+    ];
+  }
+  if (lower.includes('barcelona')) {
+    return [
+      { playerName: 'Lamine Yamal', role: 'RW', number: 19 },
+      { playerName: 'Robert Lewandowski', role: 'ST', number: 9 },
+      { playerName: 'Pedri', role: 'CM', number: 8 },
+    ];
+  }
+  if (lower.includes('bayern')) {
+    return [
+      { playerName: 'Harry Kane', role: 'ST', number: 9 },
+      { playerName: 'Jamal Musiala', role: 'CAM', number: 42 },
+      { playerName: 'Joshua Kimmich', role: 'CDM', number: 6 },
+    ];
+  }
+  if (lower.includes('chelsea')) {
+    return [
+      { playerName: 'Cole Palmer', role: 'CAM', number: 20 },
+      { playerName: 'Nicolas Jackson', role: 'ST', number: 15 },
+      { playerName: 'Moises Caicedo', role: 'CDM', number: 25 },
+    ];
+  }
+  if (lower.includes('inter')) {
+    return [
+      { playerName: 'Lautaro Martínez', role: 'ST', number: 10 },
+      { playerName: 'Nicolo Barella', role: 'CM', number: 23 },
+      { playerName: 'Alessandro Bastoni', role: 'CB', number: 95 },
+    ];
+  }
+  if (lower.includes('gor mahia')) {
+    return [
+      { playerName: 'Austin Odhiambo', role: 'CAM', number: 10 },
+      { playerName: 'Benson Omala', role: 'ST', number: 9 },
+      { playerName: 'Alpha Onyango', role: 'CM', number: 8 },
+    ];
+  }
+  return isHome
+    ? [
+        { playerName: 'Bukayo Saka', role: 'RW', number: 7 },
+        { playerName: 'Martin Odegaard', role: 'CAM', number: 10 },
+        { playerName: 'Declan Rice', role: 'CDM', number: 6 },
+      ]
+    : [
+        { playerName: 'Mohamed Salah', role: 'RW', number: 11 },
+        { playerName: 'Alexis Mac Allister', role: 'CM', number: 8 },
+        { playerName: 'Virgil van Dijk', role: 'CB', number: 4 },
+      ];
+}
 
 export interface ShotEventPoint {
   id: string;
@@ -230,18 +310,57 @@ export function computeTacticalPitchData(props: LivePitchVisualizerProps) {
   const homeMvpRating = Number(Math.min(9.6, 7.2 + props.homeScore * 0.65 + props.homeXG * 0.35).toFixed(1));
   const awayMvpRating = Number(Math.min(9.5, 7.0 + props.awayScore * 0.65 + props.awayXG * 0.35).toFixed(1));
 
+  const homeStars = getClubLiveStars(safeHome, true);
+  const awayStars = getClubLiveStars(safeAway, false);
+
   const playerRatings = {
     homeFormation: seed % 2 === 0 ? '4-3-3 High Press' : '4-2-3-1 Vertical',
     awayFormation: seed % 2 === 0 ? '4-2-3-1 Midblock' : '3-4-2-1 Transition',
     homePlayers: [
-      { name: `${safeHome.split(' ')[0]} #9 (ST)`, rating: homeMvpRating, metric: `${(props.homeXG * 0.52).toFixed(2)} xG · ${Math.max(1, props.homeScore)} G` },
-      { name: `${safeHome.split(' ')[0]} #10 (CAM)`, rating: Number(Math.max(6.8, homeMvpRating - 0.4).toFixed(1)), metric: '3 Key Passes · 91% Pass' },
-      { name: `${safeHome.split(' ')[0]} #6 (CDM)`, rating: Number(Math.max(6.7, homeMvpRating - 0.6).toFixed(1)), metric: '8 Duels Won · 4 Recoveries' },
+      {
+        playerName: homeStars[0].playerName,
+        number: homeStars[0].number,
+        name: `${homeStars[0].playerName} (${homeStars[0].role})`,
+        rating: homeMvpRating,
+        metric: `${(props.homeXG * 0.52).toFixed(2)} xG · ${Math.max(1, props.homeScore)} G · 4 Box Touches`,
+      },
+      {
+        playerName: homeStars[1].playerName,
+        number: homeStars[1].number,
+        name: `${homeStars[1].playerName} (${homeStars[1].role})`,
+        rating: Number(Math.max(6.8, homeMvpRating - 0.4).toFixed(1)),
+        metric: '3 Key Passes · 91% Pass Accuracy',
+      },
+      {
+        playerName: homeStars[2].playerName,
+        number: homeStars[2].number,
+        name: `${homeStars[2].playerName} (${homeStars[2].role})`,
+        rating: Number(Math.max(6.7, homeMvpRating - 0.6).toFixed(1)),
+        metric: '8 Duels Won · 4 Ball Recoveries',
+      },
     ],
     awayPlayers: [
-      { name: `${safeAway.split(' ')[0]} #7 (RW)`, rating: awayMvpRating, metric: `${(props.awayXG * 0.48).toFixed(2)} xG · ${Math.max(0, props.awayScore)} G` },
-      { name: `${safeAway.split(' ')[0]} #8 (CM)`, rating: Number(Math.max(6.7, awayMvpRating - 0.4).toFixed(1)), metric: '5 Progressive Carries' },
-      { name: `${safeAway.split(' ')[0]} #4 (CB)`, rating: Number(Math.max(6.6, awayMvpRating - 0.6).toFixed(1)), metric: '6 Clearances · 3 Blocks' },
+      {
+        playerName: awayStars[0].playerName,
+        number: awayStars[0].number,
+        name: `${awayStars[0].playerName} (${awayStars[0].role})`,
+        rating: awayMvpRating,
+        metric: `${(props.awayXG * 0.48).toFixed(2)} xG · ${Math.max(0, props.awayScore)} G · 3 SoT`,
+      },
+      {
+        playerName: awayStars[1].playerName,
+        number: awayStars[1].number,
+        name: `${awayStars[1].playerName} (${awayStars[1].role})`,
+        rating: Number(Math.max(6.7, awayMvpRating - 0.4).toFixed(1)),
+        metric: '5 Progressive Carries · 2 Chances',
+      },
+      {
+        playerName: awayStars[2].playerName,
+        number: awayStars[2].number,
+        name: `${awayStars[2].playerName} (${awayStars[2].role})`,
+        rating: Number(Math.max(6.6, awayMvpRating - 0.6).toFixed(1)),
+        metric: '6 Clearances · 3 Shot Blocks',
+      },
     ],
   };
 
@@ -263,27 +382,39 @@ export function computeTacticalPitchData(props: LivePitchVisualizerProps) {
 
 export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) => {
   const [selectedShot, setSelectedShot] = useState<ShotEventPoint | null>(null);
+  const [pitchMode, setPitchMode] = useState<'shots' | 'heatmap'>('shots');
   const data = computeTacticalPitchData(props);
 
   return (
     <div className="space-y-3" data-testid="live-pitch-visualizer">
-      {/* 1. 2D SVG Tactical Pitch & Shot Map */}
+      {/* 1. 2D SVG Tactical Pitch, Shot Map & Touch Heatmap */}
       <div className="p-3 rounded-xl bg-card border border-border/80 space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-[11px] font-bold flex items-center gap-1.5 text-foreground">
             <Crosshair className="h-3.5 w-3.5 text-emerald-500" />
-            2D Tactical Pitch Control &amp; Live xG Shot Map
+            2D Tactical Pitch Control, Shot Map &amp; Touch Heatmap
           </span>
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block ring-2 ring-white/50" /> Goal
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> On Target
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-slate-400/70 inline-block" /> Blocked/Wide
-            </span>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg border border-border/70 p-0.5 bg-muted/40">
+              <button
+                type="button"
+                onClick={() => setPitchMode('shots')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer ${
+                  pitchMode === 'shots' ? 'bg-background text-foreground shadow-2xs' : 'text-muted-foreground'
+                }`}
+              >
+                xG Shot Map
+              </button>
+              <button
+                type="button"
+                onClick={() => setPitchMode('heatmap')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors inline-flex items-center gap-1 cursor-pointer ${
+                  pitchMode === 'heatmap' ? 'bg-background text-orange-500 shadow-2xs' : 'text-muted-foreground'
+                }`}
+              >
+                <Flame className="h-2.5 w-2.5" /> Touch Heatmap
+              </button>
+            </div>
           </div>
         </div>
 
@@ -293,8 +424,21 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
             viewBox="0 0 100 56"
             className="w-full h-36 sm:h-44 block select-none"
             role="img"
-            aria-label={`2D Shot Map and Field Tilt for ${props.homeTeam} vs ${props.awayTeam}`}
+            aria-label={`2D Shot Map, Heatmap and Field Tilt for ${props.homeTeam} vs ${props.awayTeam}`}
           >
+            <defs>
+              <radialGradient id="liveHomeHeat" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#ef4444" stopOpacity="0.82" />
+                <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              </radialGradient>
+              <radialGradient id="liveAwayHeat" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.82" />
+                <stop offset="50%" stopColor="#0284c7" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#0f172a" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+
             {/* Pitch Turf Stripes */}
             {[0, 20, 40, 60, 80].map((stripeX) => (
               <rect
@@ -306,6 +450,22 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
                 fill="rgba(255,255,255,0.025)"
               />
             ))}
+
+            {/* Dynamic Heatmap Overlay when pitchMode === 'heatmap' */}
+            {pitchMode === 'heatmap' && (
+              <g>
+                {/* Home Attacking Heat Zones (Right Side) */}
+                <ellipse cx="82" cy="28" rx={12 + (data.zones.homeThird / 6)} ry="16" fill="url(#liveHomeHeat)" />
+                <ellipse cx="68" cy="18" rx="14" ry="11" fill="url(#liveHomeHeat)" />
+                <ellipse cx="66" cy="38" rx="13" ry="11" fill="url(#liveHomeHeat)" />
+                {/* Midfield Contested Heat Zone */}
+                <ellipse cx="50" cy="28" rx="14" ry="18" fill="url(#liveHomeHeat)" opacity="0.55" />
+                {/* Away Attacking Heat Zones (Left Side) */}
+                <ellipse cx="18" cy="28" rx={11 + (data.zones.awayThird / 6)} ry="15" fill="url(#liveAwayHeat)" />
+                <ellipse cx="32" cy="22" rx="12" ry="11" fill="url(#liveAwayHeat)" />
+                <ellipse cx="34" cy="36" rx="12" ry="11" fill="url(#liveAwayHeat)" />
+              </g>
+            )}
 
             {/* Outer Boundary Lines */}
             <rect x="2" y="2" width="96" height="52" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.5" />
@@ -550,48 +710,86 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
         </div>
       </div>
 
-      {/* 3. SofaScore / FotMob 0.0-10.0 Live Player Ratings & Tactical Formations */}
-      <div className="p-3 rounded-xl bg-card border border-border/80 space-y-2">
+      {/* 3. SofaScore / FotMob 0.0-10.0 Live Player Ratings with Player Portraits */}
+      <div className="p-3 rounded-xl bg-card border border-border/80 space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
           <span className="font-bold text-foreground">
-            Top Match Player Ratings (0.0–10.0 Algorithmic Index)
+            Live Match Player Ratings &amp; Portraits (0.0–10.0 Algorithmic Index)
           </span>
           <span className="text-[10px] font-mono text-muted-foreground">
             Formations: {props.homeTeam} ({data.playerRatings.homeFormation}) vs {props.awayTeam} ({data.playerRatings.awayFormation})
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div className="space-y-1">
-            {data.playerRatings.homePlayers.map((hp, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-muted/25 border border-border/50 text-[11px]"
-              >
-                <div className="min-w-0">
-                  <span className="font-bold text-foreground block truncate">{hp.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{hp.metric}</span>
-                </div>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono text-[10px] font-black shrink-0">
-                  {hp.rating.toFixed(1)}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-1.5">
+            {data.playerRatings.homePlayers.map((hp, i) => {
+              const pSlug = hp.playerName
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+              return (
+                <Link
+                  key={i}
+                  to={`/players/${pSlug}`}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-muted/25 hover:bg-muted/50 border border-border/50 text-[11px] transition-colors"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <PlayerAvatar
+                      name={hp.playerName}
+                      team={props.homeTeam}
+                      jerseyNumber={hp.number}
+                      rating={hp.rating}
+                      size="sm"
+                      showClubBadge={false}
+                    />
+                    <div className="min-w-0">
+                      <span className="font-bold text-foreground block truncate">{hp.name}</span>
+                      <span className="text-[10px] text-muted-foreground block truncate">{hp.metric}</span>
+                    </div>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono text-[10px] font-black shrink-0">
+                    {hp.rating.toFixed(1)}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
-          <div className="space-y-1">
-            {data.playerRatings.awayPlayers.map((ap, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-muted/25 border border-border/50 text-[11px]"
-              >
-                <div className="min-w-0">
-                  <span className="font-bold text-foreground block truncate">{ap.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{ap.metric}</span>
-                </div>
-                <span className="px-1.5 py-0.5 rounded bg-sky-600 text-white font-mono text-[10px] font-black shrink-0">
-                  {ap.rating.toFixed(1)}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-1.5">
+            {data.playerRatings.awayPlayers.map((ap, i) => {
+              const pSlug = ap.playerName
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+              return (
+                <Link
+                  key={i}
+                  to={`/players/${pSlug}`}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-muted/25 hover:bg-muted/50 border border-border/50 text-[11px] transition-colors"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <PlayerAvatar
+                      name={ap.playerName}
+                      team={props.awayTeam}
+                      jerseyNumber={ap.number}
+                      rating={ap.rating}
+                      size="sm"
+                      showClubBadge={false}
+                    />
+                    <div className="min-w-0">
+                      <span className="font-bold text-foreground block truncate">{ap.name}</span>
+                      <span className="text-[10px] text-muted-foreground block truncate">{ap.metric}</span>
+                    </div>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-sky-600 text-white font-mono text-[10px] font-black shrink-0">
+                    {ap.rating.toFixed(1)}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
