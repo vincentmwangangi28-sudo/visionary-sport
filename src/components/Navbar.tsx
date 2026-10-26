@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useBetSlip } from "@/hooks/useBetSlip";
 import { useUserPreferences, OddsFormat } from "@/hooks/useUserPreferences";
+import { useAppLocale, SupportedLocale } from "@/services/i18nLocalizationService";
 import { UnifiedSearchTrigger } from "@/components/UnifiedSearchTrigger";
 import { GeoRegionSelector } from "@/components/GeoRegionSelector";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
@@ -34,6 +35,7 @@ import {
 const CORE_LINKS = [
   { to: "/", label: "Matches" },
   { to: "/live", label: "Live Scores", isLive: true },
+  { to: "/live-multiview", label: "Multi-View TV", isLive: true },
   { to: "/slip-generator", label: "Slip & Code Converter" },
   { to: "/standings", label: "Standings" },
   { to: "/screener", label: "Stats Screener" },
@@ -69,6 +71,12 @@ const MORE_CATEGORIES = [
   {
     heading: "Pro Tools & Data",
     items: [
+      { to: "/live-multiview", label: "4-Match Multi-View TV & Sandbox" },
+      { to: "/pitch-telemetry", label: "2D Shot Map, Momentum & XIs" },
+      { to: "/xpts-standings", label: "xPTS Justice Standings" },
+      { to: "/bracket-simulator", label: "Knockout Bracket Simulator" },
+      { to: "/closing-line-value", label: "Closing Line Value (CLV) Scanner" },
+      { to: "/sgp-builder", label: "Correlated SGP Copula Builder" },
       { to: "/slip-generator", label: "AI Slip & Code Converter" },
       { to: "/poisson-calculator", label: "Poisson 6x6 Score Matrix" },
       { to: "/h2h", label: "Head-to-Head Simulator" },
@@ -86,9 +94,20 @@ export const Navbar = () => {
   const { isAdmin } = useAdmin();
   const { selections, setIsOpen: setSlipOpen } = useBetSlip();
   const { preferences, setOddsFormat } = useUserPreferences();
+  const { locale, changeLocale, t, locales } = useAppLocale();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+
+  const localizedCoreLinks = [
+    { to: "/", label: t.navMatches },
+    { to: "/live", label: t.navLiveScores, isLive: true },
+    { to: "/live-multiview", label: t.navMultiView, isLive: true },
+    { to: "/slip-generator", label: t.navSlipConverter },
+    { to: "/standings", label: t.navStandings },
+    { to: "/screener", label: t.navScreener },
+    { to: "/accumulator", label: t.navAccaBuilder },
+  ];
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof document !== "undefined") {
@@ -138,7 +157,7 @@ export const Navbar = () => {
             aria-label="Primary Navigation"
             className="hidden lg:flex items-center gap-1 flex-1"
           >
-            {CORE_LINKS.map(({ to, label, isLive }) => {
+            {localizedCoreLinks.map(({ to, label, isLive }) => {
               const active = isActive(to);
               return (
                 <Link
@@ -168,7 +187,7 @@ export const Navbar = () => {
                   type="button"
                   className="px-3 py-1.5 rounded-md text-[13px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors inline-flex items-center gap-1 whitespace-nowrap cursor-pointer"
                 >
-                  <span>More</span>
+                  <span>{t.navMore}</span>
                   <ChevronDown className="h-3.5 w-3.5 opacity-70" />
                 </button>
               </DropdownMenuTrigger>
@@ -275,6 +294,31 @@ export const Navbar = () => {
                         }`}
                       >
                         {fmt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-medium text-muted-foreground block">
+                    Language (EN / SW / FR / PT / AR)
+                  </span>
+                  <div className="grid grid-cols-5 gap-1 bg-muted p-1 rounded-md">
+                    {locales.map((loc) => (
+                      <button
+                        key={loc.code}
+                        type="button"
+                        onClick={() => {
+                          changeLocale(loc.code as SupportedLocale);
+                          toast.success(`Language: ${loc.nativeLabel}`);
+                        }}
+                        className={`py-1 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer ${
+                          locale === loc.code
+                            ? "bg-primary text-primary-foreground font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {loc.label}
                       </button>
                     ))}
                   </div>

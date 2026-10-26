@@ -242,14 +242,21 @@ export default function GlobalTournaments() {
             </p>
           </div>
 
-          <div className="relative w-full md:w-72 shrink-0">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search league, country, or club..."
-              className="pl-9 h-9 text-xs bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
-            />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+            <Link to="/bracket-simulator">
+              <Button size="sm" className="h-9 text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 w-full sm:w-auto">
+                🏆 Knockout Bracket Simulator &rarr;
+              </Button>
+            </Link>
+            <div className="relative w-full md:w-64">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search league, country, or club..."
+                className="pl-9 h-9 text-xs bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+              />
+            </div>
           </div>
         </div>
 

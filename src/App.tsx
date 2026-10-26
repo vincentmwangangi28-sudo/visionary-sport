@@ -170,6 +170,12 @@ const SharpMoneySplitsPage       = lazyWithRetry(() => import("./pages/SharpMone
 const InjuryLineupImpactPage     = lazyWithRetry(() => import("./pages/InjuryLineupImpactPage"));
 const StadiumAltitudeWeatherPage = lazyWithRetry(() => import("./pages/StadiumAltitudeWeatherPage"));
 const TacticalMismatchMatrixPage = lazyWithRetry(() => import("./pages/TacticalMismatchMatrixPage"));
+const LiveMultiViewPage          = lazyWithRetry(() => import("./pages/LiveMultiViewPage"));
+const ClosingLineValuePage       = lazyWithRetry(() => import("./pages/ClosingLineValuePage"));
+const SgpCopulaBuilderPage       = lazyWithRetry(() => import("./pages/SgpCopulaBuilderPage"));
+const PitchTelemetryPage         = lazyWithRetry(() => import("./pages/PitchTelemetryPage"));
+const XptsJusticeStandingsPage   = lazyWithRetry(() => import("./pages/XptsJusticeStandingsPage"));
+const BracketSimulatorPage       = lazyWithRetry(() => import("./pages/BracketSimulatorPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -474,8 +480,8 @@ const App = () => (
                             <Route path="/bankroll"      element={<RouteBoundary component={BankrollManager} />} />
                             <Route path="/predict"       element={<RouteBoundary component={MatchPredictor} />} />
                             <Route path="/predict/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
-                            <Route path="/match/:matchSlug" element={<Navigate to="/predict/:matchSlug" replace />} />
-                            <Route path="/matches/:matchSlug" element={<Navigate to="/predict/:matchSlug" replace />} />
+                            <Route path="/match/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
+                            <Route path="/matches/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
                             <Route path="/best-bets"     element={<RouteBoundary component={BestBets} />} />
                             <Route path="/upcoming"      element={<RouteBoundary component={UpcomingFixturesPage} />} />
                             <Route path="/upcoming-fixtures" element={<Navigate to="/upcoming" replace />} />
@@ -598,6 +604,18 @@ const App = () => (
                             <Route path="/referee-stats-predictions"    element={<RouteBoundary component={RefereeStatsPredictions} />} />
                             <Route path="/jackpot-generator"            element={<RouteBoundary component={JackpotGeneratorPage} />} />
                             <Route path="/in-play-predictions"          element={<RouteBoundary component={InPlayPredictionsPage} />} />
+                            <Route path="/live-multiview"               element={<RouteBoundary component={LiveMultiViewPage} />} />
+                            <Route path="/multiview"                    element={<Navigate to="/live-multiview" replace />} />
+                            <Route path="/closing-line-value"           element={<RouteBoundary component={ClosingLineValuePage} />} />
+                            <Route path="/clv"                          element={<Navigate to="/closing-line-value" replace />} />
+                            <Route path="/sgp-builder"                  element={<RouteBoundary component={SgpCopulaBuilderPage} />} />
+                            <Route path="/copula-builder"               element={<Navigate to="/sgp-builder" replace />} />
+                            <Route path="/pitch-telemetry"              element={<RouteBoundary component={PitchTelemetryPage} />} />
+                            <Route path="/shot-map"                     element={<Navigate to="/pitch-telemetry" replace />} />
+                            <Route path="/xpts-standings"               element={<RouteBoundary component={XptsJusticeStandingsPage} />} />
+                            <Route path="/justice-table"                element={<Navigate to="/xpts-standings" replace />} />
+                            <Route path="/bracket-simulator"            element={<RouteBoundary component={BracketSimulatorPage} />} />
+                            <Route path="/knockout-bracket"             element={<Navigate to="/bracket-simulator" replace />} />
                             <Route path="/set-piece-specialists"        element={<RouteBoundary component={SetPieceSpecialistsPage} />} />
                             <Route path="/sharp-money-splits"           element={<RouteBoundary component={SharpMoneySplitsPage} />} />
                             <Route path="/injury-lineup-impact"         element={<RouteBoundary component={InjuryLineupImpactPage} />} />
@@ -787,9 +805,12 @@ const App = () => (
                             <Route path="/accumulators"                 element={<Navigate to="/accumulator" replace />} />
                             <Route path="/both-teams-to-score"          element={<Navigate to="/btts" replace />} />
                             <Route path="/over-2-5-goals"               element={<Navigate to="/btts" replace />} />
+                            <Route path="/over-2-5-goals-predictions"   element={<Navigate to="/over-under-predictions" replace />} />
                             <Route path="/over-under-2-5"               element={<Navigate to="/btts" replace />} />
                             <Route path="/correct-scores"               element={<Navigate to="/correct-score" replace />} />
                             <Route path="/ht-ft"                        element={<Navigate to="/halftime-fulltime-predictions" replace />} />
+                            <Route path="/ht-ft-predictions"            element={<Navigate to="/halftime-fulltime-predictions" replace />} />
+                            <Route path="/daily-2-odds"                 element={<Navigate to="/daily-2-odds-predictions" replace />} />
                             <Route path="/table"                        element={<Navigate to="/standings" replace />} />
                             <Route path="/tables"                       element={<Navigate to="/standings" replace />} />
                             <Route path="/odds"                         element={<Navigate to="/dropping-odds" replace />} />

@@ -60,16 +60,20 @@ describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () 
   });
 
   it('renders 2D SVG pitch, 15-minute phase chart, 10.0 player ratings, and interactive shot tooltip on click', () => {
-    render(<LivePitchVisualizer {...sampleProps} />);
+    render(
+      <MemoryRouter>
+        <LivePitchVisualizer {...sampleProps} />
+      </MemoryRouter>
+    );
 
     expect(screen.getByTestId('live-pitch-visualizer')).toBeInTheDocument();
     expect(screen.getByText(/2D Tactical Pitch Control/i)).toBeInTheDocument();
     expect(screen.getByText(/15-Min Phase Dominance/i)).toBeInTheDocument();
     expect(screen.getByText(/Pre-Match Model vs. Live Reality/i)).toBeInTheDocument();
     expect(screen.getByText(/Projected Live Standings Impact/i)).toBeInTheDocument();
-    expect(screen.getByText(/Top Match Player Ratings/i)).toBeInTheDocument();
+    expect(screen.getByText(/Live Match Player Ratings/i)).toBeInTheDocument();
 
-    const svg = screen.getByRole('img', { name: /2D Shot Map and Field Tilt for Arsenal vs Chelsea/i });
+    const svg = screen.getByRole('img', { name: /2D Shot Map, Heatmap and Field Tilt for Arsenal vs Chelsea/i });
     const circles = svg.querySelectorAll('g.cursor-pointer');
     expect(circles.length).toBeGreaterThan(0);
 
@@ -110,24 +114,26 @@ describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () 
 
   it('renders LiveStreamHubModal with 2D Live Cast and TV & Streams tabs', () => {
     render(
-      <LiveStreamHubModal
-        match={{
-          id: 'm-101',
-          homeTeam: 'Gor Mahia',
-          awayTeam: 'AFC Leopards',
-          league: 'FKF Premier League',
-          homeScore: 1,
-          awayScore: 0,
-          minute: "67'",
-          status: 'live',
-          homeXG: 1.45,
-          awayXG: 0.62,
-          homePossession: 56,
-          awayPossession: 44,
-        }}
-        regionId="east_africa"
-        onClose={() => {}}
-      />
+      <MemoryRouter>
+        <LiveStreamHubModal
+          match={{
+            id: 'm-101',
+            homeTeam: 'Gor Mahia',
+            awayTeam: 'AFC Leopards',
+            league: 'FKF Premier League',
+            homeScore: 1,
+            awayScore: 0,
+            minute: "67'",
+            status: 'live',
+            homeXG: 1.45,
+            awayXG: 0.62,
+            homePossession: 56,
+            awayPossession: 44,
+          }}
+          regionId="east_africa"
+          onClose={() => {}}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByTestId('live-stream-hub-modal')).toBeInTheDocument();

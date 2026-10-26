@@ -23,8 +23,21 @@ import {
   Sparkles,
   Trophy,
   Zap,
+  ThumbsUp,
+  ExternalLink,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import {
+  getCommunitySharedSlips,
+  upvoteCommunitySlip,
+  publishCommunitySlip,
+  recordAffiliatePartnerClick,
+  type CommunitySharedSlip,
+} from '@/services/adminOverrideSyncService';
+import {
+  downloadSocialCardPng,
+  logSlipToBankrollLedger,
+} from '@/services/socialCardPngGenerator';
 import { toast } from 'sonner';
 
 interface BookmakerConfig {
@@ -307,6 +320,11 @@ export default function BookingCodeConverterPage() {
   const [customCodeInput, setCustomCodeInput] = useState<string>('SB-8942K');
   const [stakeAmount, setStakeAmount] = useState<string>('1000');
   const [currency, setCurrency] = useState<string>('KES');
+  const [communitySlips, setCommunitySlips] = useState<CommunitySharedSlip[]>(() =>
+    getCommunitySharedSlips()
+  );
+  const [shareAuthor, setShareAuthor] = useState<string>('');
+  const [shareTitle, setShareTitle] = useState<string>('');
 
   const activePreset = useMemo(
     () => VERIFIED_PRESET_SLIPS.find((p) => p.id === selectedPresetId) || VERIFIED_PRESET_SLIPS[0],
@@ -372,6 +390,10 @@ export default function BookingCodeConverterPage() {
   };
 
   const handleLoadAllToBetSlip = () => {
+    addSelectionsToSlipHelper();
+  };
+
+  const addSelectionsToSlipHelper = () => {
     activePreset.legs.forEach((leg) => {
       addSelection({
         matchId: `conv-${leg.id}`,
@@ -386,6 +408,42 @@ export default function BookingCodeConverterPage() {
       });
     });
     toast.success(`Added all ${activePreset.legs.length} legs to your PredictPro Bet Slip!`);
+  };
+
+  const handleDownloadConvertedSlipStoryPng = () => {
+    downloadSocialCardPng(
+      {
+        template: 'daily-codes',
+        format: 'story-9-16',
+        headline: `${targetBookie.name.toUpperCase()} VERIFIED SLIP`,
+        subtitle: activePreset.label,
+        bookmaker: targetBookie.name,
+        bookingCode: convertedCode,
+        promoCode: 'PREDICTPRO',
+        totalOdds: baseCombinedOdds.toFixed(2),
+        winRateBadge: 'AI VERIFIED COUPON',
+        rows: activePreset.legs.map((l) => ({
+          label: `${l.homeTeam} vs ${l.awayTeam}`,
+          sublabel: `${l.league}  ·  ${l.market}`,
+          badgeText: `@${l.baseOdds.toFixed(2)}`,
+          status: 'code',
+        })),
+      },
+      `predictpro-${targetBookie.id}-${convertedCode}`
+    );
+    toast.success(`Downloaded 2× Retina 9:16 Story PNG for ${convertedCode}!`);
+  };
+
+  const handleLogToBankroll = () => {
+    logSlipToBankrollLedger({
+      slipTitle: `${activePreset.label} (${targetBookie.name})`,
+      bookmaker: targetBookie.name,
+      bookingCode: convertedCode,
+      odds: baseCombinedOdds,
+      stake: Math.max(10, parseFloat(stakeAmount) || 1000),
+      currency,
+    });
+    toast.success(`Logged ${convertedCode} (${baseCombinedOdds.toFixed(2)}x) to your Bankroll Portfolio (/bankroll)!`);
   };
 
   const handleShareWhatsApp = () => {
@@ -645,9 +703,23 @@ export default function BookingCodeConverterPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 <Button onClick={handleLoadAllToBetSlip} className="flex-1 font-bold text-xs gap-1.5">
                   <Plus className="h-4 w-4" /> Load All {activePreset.legs.length} Legs to Slip
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadConvertedSlipStoryPng}
+                  className="font-bold text-xs gap-1.5"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> 9:16 Story PNG
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleLogToBankroll}
+                  className="font-bold text-xs gap-1.5"
+                >
+                  <Trophy className="h-3.5 w-3.5 text-amber-500" /> Log to Bankroll
                 </Button>
                 <Button
                   variant="outline"
@@ -803,22 +875,146 @@ export default function BookingCodeConverterPage() {
                       {row.totalPayout.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          navigator.clipboard?.writeText(row.bookieCode);
-                          toast.success(`Copied ${row.name} code: ${row.bookieCode}`);
-                        }}
-                        className="h-7 text-xs font-bold"
-                      >
-                        <Copy className="h-3 w-3 mr-1" /> Copy
-                      </Button>
+                      <div className="inline-flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(row.bookieCode);
+                            toast.success(`Copied ${row.name} code: ${row.bookieCode}`);
+                          }}
+                          className="h-7 text-xs font-bold"
+                        >
+                          <Copy className="h-3 w-3 mr-1" /> Copy
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const partner = recordAffiliatePartnerClick(row.id);
+                            navigator.clipboard?.writeText(row.bookieCode);
+                            toast.success(
+                              `Copied ${row.bookieCode} & Promo ${partner?.promoCode || 'PREDICTPRO'} for ${row.name}`
+                            );
+                          }}
+                          className="h-7 text-xs font-bold gap-1"
+                        >
+                          Claim Bonus <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </CardContent>
+        </Card>
+
+        {/* Community Shared Slips & Tipster Competition Feed */}
+        <Card className="border-border/80 bg-card">
+          <CardHeader className="p-5 pb-3 border-b border-border/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-emerald-500" />
+                  Community Tipster Shared Slips &amp; 1-Tap Clone Feed
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Clone top-upvoted community booking codes directly into the Universal Converter or publish your own slip to the leaderboard.
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  placeholder="Your Name / Handle"
+                  value={shareAuthor}
+                  onChange={(e) => setShareAuthor(e.target.value)}
+                  className="h-8 text-xs w-36"
+                />
+                <Input
+                  placeholder="Slip Title (optional)"
+                  value={shareTitle}
+                  onChange={(e) => setShareTitle(e.target.value)}
+                  className="h-8 text-xs w-44"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const updated = publishCommunitySlip({
+                      author: shareAuthor || 'Community Analyst',
+                      title: shareTitle || `${targetBookie.name} ${baseCombinedOdds.toFixed(2)}x Slip`,
+                      bookmaker: targetBookie.name,
+                      bookingCode: convertedCode,
+                      totalOdds: Number(baseCombinedOdds.toFixed(2)),
+                      legsCount: activePreset.legs.length,
+                      legsSummary: activePreset.legs.map(
+                        (l) => `${l.homeTeam} vs ${l.awayTeam} — ${l.market}`
+                      ),
+                    });
+                    setCommunitySlips(updated);
+                    setShareTitle('');
+                    toast.success(`Published slip ${convertedCode} to the Community Tipster Feed!`);
+                  }}
+                  className="h-8 text-xs font-bold gap-1"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Share Current Slip ({convertedCode})
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {communitySlips.map((slip) => (
+              <div key={slip.id} className="rounded-xl border bg-muted/20 p-4 flex flex-col justify-between gap-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">{slip.author}</span>
+                    <span className="font-mono tabular-nums text-emerald-500 font-bold">
+                      {slip.authorWinRate}% Win Rate
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold">{slip.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    <span>{slip.bookmaker}</span>
+                    <span aria-hidden="true"> · </span>
+                    <span className="font-mono font-bold text-foreground">{slip.bookingCode}</span>
+                    <span aria-hidden="true"> · </span>
+                    <span className="font-mono font-semibold text-emerald-500">
+                      {slip.totalOdds.toFixed(2)}x Odds
+                    </span>
+                  </div>
+                  <ul className="space-y-1 text-[11px] text-muted-foreground border-t pt-2">
+                    {slip.legsSummary.slice(0, 3).map((leg, i) => (
+                      <li key={i} className="truncate">
+                        • {leg}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setCommunitySlips(upvoteCommunitySlip(slip.id));
+                      toast.success(`Upvoted ${slip.author}'s slip!`);
+                    }}
+                    className="h-7 text-xs gap-1 font-mono tabular-nums"
+                  >
+                    <ThumbsUp className="h-3 w-3 text-emerald-500" /> {slip.upvotes}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setCustomCodeInput(slip.bookingCode);
+                      navigator.clipboard?.writeText(slip.bookingCode);
+                      toast.success(`Cloned ${slip.bookingCode} into converter & copied!`);
+                    }}
+                    className="h-7 text-xs font-bold gap-1"
+                  >
+                    <Copy className="h-3 w-3" /> Clone Code
+                  </Button>
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
 

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Flame, Star, Search, RefreshCw, CheckCircle2, Edit3, Sparkles } from 'lucide-react';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { broadcastAdminSync } from '@/services/adminOverrideSyncService';
 import { toast } from 'sonner';
 
 interface EditorialOverride {
@@ -38,10 +39,11 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
     setOverrides(next);
     try {
       localStorage.setItem('predictpro_admin_editorial_overrides', JSON.stringify(next));
+      broadcastAdminSync('editorial_overrides');
     } catch {
       // ignore
     }
-    toast.success('Editorial match override saved');
+    toast.success('Editorial match override saved & synced to public pages');
   };
 
   const handleSetMotd = (matchId: string, label: string) => {
@@ -52,6 +54,7 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
     next[matchId] = { ...(overrides[matchId] || { matchId }), isMotd: true };
     setOverrides(next);
     localStorage.setItem('predictpro_admin_editorial_overrides', JSON.stringify(next));
+    broadcastAdminSync('editorial_overrides');
     toast.success(`Pinned "${label}" as Official Match of the Day (MOTD)`);
   };
 

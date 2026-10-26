@@ -14,6 +14,10 @@ import {
   sortMatchesByDatePriority,
   matchesDateFilter,
 } from '@/lib/dateFilterUtils';
+import {
+  applyAdminEditorialOverridesToPredictions,
+  ADMIN_SYNC_EVENT,
+} from '@/services/adminOverrideSyncService';
 
 export type { Prediction };
 export { getPrediction, getConfidence };
@@ -385,10 +389,24 @@ export const usePredictions = (
     return created;
   };
 
-  // All predictions are 100% free and unlocked across the entire platform
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onAdminSync = () => {
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+    };
+    window.addEventListener(ADMIN_SYNC_EVENT, onAdminSync);
+    window.addEventListener('storage', onAdminSync);
+    return () => {
+      window.removeEventListener(ADMIN_SYNC_EVENT, onAdminSync);
+      window.removeEventListener('storage', onAdminSync);
+    };
+  }, [queryClient]);
+
+  // All predictions are 100% free and unlocked across the entire platform, enriched with Admin Editorial Overrides & MOTD pin
   const gatedAll = useMemo(() => {
     const rawAll = query.data?.allPredictions ?? [];
-    return rawAll.map((rawItem) => enrichPredictionAliases(rawItem));
+    const enriched = rawAll.map((rawItem) => enrichPredictionAliases(rawItem));
+    return applyAdminEditorialOverridesToPredictions(enriched);
   }, [query.data?.allPredictions]);
 
   const gatedPage = useMemo(() => {

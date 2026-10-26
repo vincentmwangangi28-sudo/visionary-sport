@@ -27,8 +27,17 @@ import {
   Flame,
   ShieldCheck,
   Zap,
-  RotateCcw
+  RotateCcw,
+  Star
 } from 'lucide-react';
+import {
+  getVerifiedWinProofs,
+  getUserWatchlist,
+  toggleWatchlistFixture,
+  downloadSocialCardPng,
+  type VerifiedWinProof,
+  type WatchlistFixtureItem,
+} from '@/services/socialCardPngGenerator';
 
 export interface ArchivedPrediction {
   id: string;
@@ -243,6 +252,8 @@ export default function Archive() {
   const [marketFilter, setMarketFilter] = useState('all');
   const [resultFilter, setResultFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+  const [verifiedProofs] = useState<VerifiedWinProof[]>(() => getVerifiedWinProofs());
+  const [watchlist, setWatchlist] = useState<WatchlistFixtureItem[]>(() => getUserWatchlist());
 
   useEffect(() => {
     (async () => {
@@ -505,6 +516,128 @@ export default function Archive() {
               <div className="text-2xl sm:text-3xl font-black text-foreground mt-1">
                 {stats.avgOdds}
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Admin-Certified Winning Slip Proof Cards & Personal Watchlist */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
+          <Card className="lg:col-span-8 border-emerald-500/30 bg-emerald-500/5">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                    Certified Multi-Leg Winning Slips &amp; 9:16 Proof Cards
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Official settled accumulator coupons audited against ESPN full-time scores.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {verifiedProofs.slice(0, 2).map((proof) => (
+                <div key={proof.id} className="rounded-xl border bg-card p-3.5 flex flex-col justify-between gap-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-emerald-500">{proof.date}</span>
+                      <span className="font-mono font-bold tabular-nums text-foreground">
+                        {proof.bookmaker} · {proof.bookingCode}
+                      </span>
+                    </div>
+                    <div className="text-sm font-bold">{proof.title}</div>
+                    <ul className="space-y-1 text-[11px] text-muted-foreground border-t pt-2">
+                      {proof.legs.map((leg, i) => (
+                        <li key={i} className="flex justify-between gap-2">
+                          <span className="truncate">✓ {leg.match} ({leg.market})</span>
+                          <span className="font-mono font-semibold text-emerald-500 shrink-0">{leg.finalScore}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <span className="font-mono text-xs font-bold text-emerald-500 tabular-nums">
+                      WON {proof.totalOdds.toFixed(2)}x (+{proof.profitUnits.toFixed(2)}u)
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        downloadSocialCardPng(
+                          {
+                            template: 'verified-win',
+                            format: 'story-9-16',
+                            headline: 'BOOM! VERIFIED WINNING SLIP',
+                            subtitle: proof.title,
+                            bookmaker: proof.bookmaker,
+                            bookingCode: proof.bookingCode,
+                            promoCode: 'PREDICTPRO',
+                            totalOdds: proof.totalOdds.toFixed(2),
+                            winRateBadge: 'VERIFIED WINNER ✓',
+                            rows: proof.legs.map((l) => ({
+                              label: l.match,
+                              sublabel: `${l.market}  ·  FT: ${l.finalScore}`,
+                              badgeText: `WON @${l.odds.toFixed(2)} ✓`,
+                              status: 'won',
+                            })),
+                          },
+                          `predictpro-win-proof-${proof.bookingCode}`
+                        );
+                      }}
+                      className="h-7 text-xs gap-1"
+                    >
+                      <Download className="h-3 w-3" /> 9:16 Proof PNG
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-4 border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Star className="h-4 w-4 text-amber-500" />
+                My Starred Watchlist ({watchlist.length})
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Saved fixtures &amp; clubs for fast settlement tracking.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
+              {watchlist.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-4 text-center">
+                  No starred fixtures yet.
+                </p>
+              ) : (
+                watchlist.slice(0, 3).map((item) => (
+                  <div
+                    key={item.matchId}
+                    className="rounded-lg border bg-muted/20 p-2.5 flex items-center justify-between gap-2 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-bold truncate">
+                        {item.homeTeam} vs {item.awayTeam}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {item.league} · {item.pick} ({item.confidence}%)
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const res = toggleWatchlistFixture(item);
+                        setWatchlist(res.list);
+                      }}
+                      className="h-7 px-2 text-amber-500 shrink-0"
+                    >
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                    </Button>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

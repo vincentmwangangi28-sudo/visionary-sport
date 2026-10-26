@@ -6,8 +6,8 @@ import { Zap, Radio, TrendingUp, Sparkles, BarChart3, ExternalLink, Crosshair, T
 export default function EmbedWidget() {
   const { type } = useParams<{ type: string }>();
   const [searchParams] = useSearchParams();
-  const theme = searchParams.get('theme') || 'dark';
-  const isDark = theme !== 'light';
+  const theme = (searchParams.get('theme') || 'dark').toLowerCase();
+  const isDark = !theme.includes('light');
 
   const widgetData = {
     banker: {
@@ -23,6 +23,48 @@ export default function EmbedWidget() {
       score: '2-0',
       extraLabel: 'Broadcast',
       extraValue: 'Sky Sports / Showmax PL',
+    },
+    'motd-xg': {
+      title: 'Match of the Day xG & Score Matrix',
+      badge: '10,000-Run Poisson',
+      icon: <Zap className="h-4 w-4 text-emerald-400" />,
+      match: 'Arsenal vs Chelsea',
+      league: 'Premier League · Match of the Day',
+      pick: 'Arsenal Win & Over 1.5 Goals',
+      odds: '1.88',
+      confidence: '87% Model Lock',
+      xg: '2.14 vs 0.98 xG',
+      score: '2-0 (18.4%) · 2-1 (14.2%)',
+      extraLabel: 'Fair Line',
+      extraValue: '1.68 (+10.6% EV)',
+    },
+    'booking-codes': {
+      title: 'Multi-Bookie Booking Code Strip',
+      badge: 'Verified VIP Slip',
+      icon: <Sparkles className="h-4 w-4 text-amber-400" />,
+      match: '4-Fold European +EV Sharp Acca',
+      league: 'SportyBet · 1xBet · Betika · Betway',
+      pick: 'SB-8942K · 1X-9921P · BTK-7721M',
+      odds: '5.14',
+      confidence: '84% Combined Hit Rate',
+      xg: '+6.1% Net EV Edge',
+      score: '4 Verified Legs',
+      extraLabel: '1-Click Load',
+      extraValue: 'Ready to Convert',
+    },
+    'daily-bankers': {
+      title: 'Top 5 Daily Bankers Ticker',
+      badge: '85%+ Consensus',
+      icon: <Trophy className="h-4 w-4 text-emerald-400" />,
+      match: 'Arsenal · Real Madrid · Bayern · Inter · PSG',
+      league: 'Top 5 European & African Slate',
+      pick: 'Daily 2.04x Rollover Lock + 3 Bankers',
+      odds: '2.04',
+      confidence: '88% Strike Rate',
+      xg: '+1.12 Avg xG Diff',
+      score: '5/5 Green Streak',
+      extraLabel: 'Audit Status',
+      extraValue: 'SHA-256 Verified',
     },
     'live-scores': {
       title: 'In-Play Match Tracker',

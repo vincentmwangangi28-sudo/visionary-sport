@@ -14,6 +14,11 @@ import { BankrollPortfolioTracker } from '@/components/BankrollPortfolioTracker'
 import { BankrollDrawdownSimulator } from '@/components/BankrollDrawdownSimulator';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import {
+  getBankrollSyncedSlips,
+  gradeBankrollSyncedSlip,
+  type BankrollSyncedSlip,
+} from '@/services/socialCardPngGenerator';
 import { Wallet, TrendingUp, Shield, Calculator, AlertTriangle, CheckCircle, ExternalLink, BarChart2, Activity } from 'lucide-react';
 
 export default function BankrollManager() {
@@ -24,6 +29,9 @@ export default function BankrollManager() {
   const [stakePercent, setStakePercent] = useState([3]);
   const [odds, setOdds] = useState('2.00');
   const [confidence, setConfidence] = useState([65]);
+  const [syncedSlips, setSyncedSlips] = useState<BankrollSyncedSlip[]>(() =>
+    getBankrollSyncedSlips()
+  );
 
   const numBankroll = parseFloat(bankroll) || 0;
   const numOdds = parseFloat(odds) || 1.01;
@@ -105,6 +113,52 @@ export default function BankrollManager() {
           </TabsList>
 
           <TabsContent value="portfolio" className="space-y-6">
+            <Card className="border-border/70">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center justify-between">
+                  <span>Synced Booking Code &amp; Accumulator Slips ({syncedSlips.length})</span>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    Synced from /booking-code-converter
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2.5">
+                {syncedSlips.map((slip) => (
+                  <div
+                    key={slip.id}
+                    className="rounded-xl border bg-muted/20 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="font-bold text-sm">{slip.slipTitle}</div>
+                      <div className="text-muted-foreground font-mono">
+                        {slip.date} · {slip.bookmaker} ({slip.bookingCode}) · {slip.odds.toFixed(2)}x Odds · Stake: {slip.currency} {slip.stake.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-mono font-bold tabular-nums text-emerald-500 mr-1">
+                        Return: {slip.currency} {slip.potentialReturn.toLocaleString()}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant={slip.status === 'won' ? 'default' : 'outline'}
+                        onClick={() => setSyncedSlips(gradeBankrollSyncedSlip(slip.id, 'won'))}
+                        className="h-7 text-xs px-2.5"
+                      >
+                        Won ✓
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={slip.status === 'lost' ? 'destructive' : 'outline'}
+                        onClick={() => setSyncedSlips(gradeBankrollSyncedSlip(slip.id, 'lost'))}
+                        className="h-7 text-xs px-2.5"
+                      >
+                        Lost ✕
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
             <BankrollPortfolioTracker />
           </TabsContent>
 

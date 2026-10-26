@@ -40,7 +40,8 @@ import {
   AlertTriangle,
   UserPlus,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Database,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -226,6 +226,21 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('editorial-overrides')} className="text-xs h-8 font-bold text-sky-800 dark:text-sky-300 border-sky-500/40 bg-sky-500/10">
                   MOTD &amp; Editorial Overrides &rarr;
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('affiliates')} className="text-xs h-8 font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
+                  Affiliate Links &amp; CPA &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('social-studio')} className="text-xs h-8 font-bold text-sky-800 dark:text-sky-300 border-sky-500/40 bg-sky-500/10">
+                  Social PNG &amp; Win Proofs &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('telegram-webhooks')} className="text-xs h-8 font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
+                  Telegram &amp; Webhook Auto-Poster &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('partner-widgets')} className="text-xs h-8 font-bold text-sky-800 dark:text-sky-300 border-sky-500/40 bg-sky-500/10">
+                  Partner SEO Widgets &rarr;
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('clv-localization')} className="text-xs h-8 font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
+                  CLV &amp; 5-Lang Broadcasts &rarr;
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('crons')} className="text-xs h-8 font-semibold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
                   <HeartPulse className="h-3 w-3 mr-1 text-emerald-500" />
                   24/7 Keepalive &amp; Crons &rarr;

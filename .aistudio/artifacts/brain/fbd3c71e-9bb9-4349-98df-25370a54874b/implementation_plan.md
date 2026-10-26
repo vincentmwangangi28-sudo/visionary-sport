@@ -1,89 +1,59 @@
-# PredictPro — Phase 6: Server-Side SEO, Live Match Sitemaps & Autonomous Search Indexing Plan
+# PredictPro (`predictpro.guru`) — Phase 10 Overall Project Master Plan (100% Free-Access Quantitative Suite)
 
-## 1. Context & Objective
-While PredictPro currently manages client-side `<head>` tags and Schema.org structured data after React mounts, non-JavaScript search crawlers and social link previewers (WhatsApp, Telegram, X/Twitter, Facebook, Discord, and rapid news indexers) inspect the raw initial HTML response. Furthermore, our XML sitemaps and automated IndexNow dispatcher currently push a static list of hubs rather than dynamically harvesting every live and upcoming ESPN match fixture across our 20+ global and African leagues.
+## 1. Executive Summary & Architectural Scope
+Per your direction, **PredictPro remains 100% free-to-access with zero payment walls, checkout gates, or paid subscriptions**. Phase 10 elevates the overall project with four institutional-grade quantitative, product, and international growth pillars:
 
-Phase 6 upgrades PredictPro into a **server-prerendered, self-indexing sports intelligence publisher** where every route—including dynamic match predictions (`/predict/{home-vs-away}`), club analytics hubs (`/teams/{slug}`), player xG profiles (`/players/{slug}`), and regional jackpot calculators—delivers complete server-injected `<head>` metadata, dynamic `/api/og` social cards, live XML sitemaps, and automated IndexNow search engine dispatches.
-
----
-
-## 2. Visual Direction & Architectural Blueprint
-Our SEO Command Center (`/seo-indexing`) and social share cards follow the **Dark Sports Analytics Broadcast Studio** aesthetic (`#060A12` obsidian canvas, `#10B981` emerald telemetry accents, `Space Grotesk` headings, and `JetBrains Mono` structured data inspectors).
-
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                   INCOMING CRAWLER / SOCIAL BOT REQUEST                    │
-│     (Googlebot, Bingbot, IndexNow, WhatsApp, Telegram, X Card Validator)   │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│            1. SERVER-SIDE HTML <HEAD> & JSON-LD PRERENDER ENGINE           │
-│  • Intercepts route requests (/predict/:slug, /teams/:slug, /jackpot, etc) │
-│  • Resolves live ESPN fixture or hub metadata on the server                │
-│  • Injects route-specific <title>, <meta description>, canonical URL,      │
-│    dynamic /api/og social card URL, and Schema.org SportsEvent JSON-LD     │
-└─────────────────┬───────────────────────────────────────┬──────────────────┘
-                  │                                       │
-                  ▼                                       ▼
-┌─────────────────────────────────────┐ ┌────────────────────────────────────┐
-│  2. DYNAMIC XML SITEMAPS & FEEDS    │ │ 3. AUTONOMOUS INDEXNOW DISPATCHER  │
-│  • /sitemap-matches.xml (Live ESPN) │ │ • Harvests 60–120+ live/upcoming   │
-│  • /sitemap-discover-news.xml       │ │   ESPN match & team slugs per run  │
-│  • /feed-predictions.xml (RSS/Atom) │ │ • Pushes batch to api.indexnow.org │
-│  • Regional hreflang & news tags    │ │ • Exposes live telemetry to UI     │
-└─────────────────┬───────────────────┘ └─────────────────┬──────────────────┘
-                  │                                       │
-                  └───────────────────┬───────────────────┘
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│              4. INTERACTIVE SEO COMMAND CENTER (/seo-indexing)             │
-│  • Live Server Prerender & Schema.org JSON-LD Inspector                    │
-│  • Dynamic Social Share Card (/api/og) Visual Preview Studio               │
-│  • Live ESPN Match Slug Sitemap & IndexNow Queue Monitor                   │
-└────────────────────────────────────────────────────────────────────────────┘
-```
+1. **Closing Line Value (CLV) & Sharp Steam Scanner (`/closing-line-value`)**: Tracks **Opening Bookmaker Odds vs. Current Sharp/Pinnacle Lines**, calculates **CLV Edge %**, detects **Syndicate Steam Moves** ($\ge 8\%$ rapid implied probability shift), and audits PredictPro's historical **CLV Beat Rate %** across Europe, Africa (CAF/FKF/NPFL/PSL), and the Americas.
+2. **Correlated Same-Game Parlay (SGP) Gaussian Copula Builder (`/sgp-builder`)**: An interactive multi-leg Same-Game Parlay laboratory that calculates the **pairwise correlation coefficient ($\rho \in [-0.65, +0.72]$)** between Match Winner, Over/Under Goals, BTTS, Corners, Cards, and Goalscorer legs—revealing hidden **Correlated True Odds vs. Bookmaker SGP Pricing**.
+3. **5-Language & Regional Localization Engine (`EN`, `Swahili`, `Français`, `Português`, `العربية`)**: Instant language selector in the top navigation & display preferences that translates core navigation, football betting market terminology, and regional broadcast snippets across East/West Africa, Francophone/North Africa, Europe, and Latin America.
+4. **Admin CLV Seeder & Multilingual 5-Language Broadcast Studio (`/admin`)**: A new turnkey Admin tab allowing you to pin custom Sharp Steam/CLV alerts and generate **1-Click Ready-to-Paste Telegram/WhatsApp broadcasts in English, Swahili, French, Portuguese, and Arabic**.
 
 ---
 
-## 3. Core Functional Workstreams
+## 2. Core Functional Pillars & Technical Specifications
 
-### Workstream 1: Server-Side Dynamic `<head>`, OpenGraph & Schema.org JSON-LD Prerender Engine
-- **Route-Aware HTML Interceptor**:
-  - Upgrade the server HTML pipeline so requests to any application route receive immediate, server-injected `<title>`, `<meta name="description">`, `<link rel="canonical">`, `og:*`, and `twitter:*` tags before the browser or crawler executes a single line of JavaScript.
-- **Dynamic Match & Club Resolution**:
-  - When a request arrives for `/predict/{slug}` (e.g., `/predict/arsenal-vs-real-madrid`) or `/teams/{slug}`, parse the slug against the live ESPN fixture cache (or deterministic club metadata) to populate exact team names, league context, kickoff date, 1X2 model edge, and dynamic `/api/og?title=...&home=...&away=...` social card URLs.
-- **Server-Injected Structured Data (`application/ld+json`)**:
-  - Inject valid Schema.org `SportsEvent` (with `homeTeam`, `awayTeam`, `startDate`, `location`, and `eventStatus`), `WebApplication`, `Organization`, `BreadcrumbList`, and `FAQPage` JSON-LD blocks directly into the initial HTML payload.
-- **Global, African & European High-Intent Keyword Matrix**:
-  - Enrich route metadata with high-converting regional and analytical search terms (`AI football predictions today`, `Expected Goals xG calculator`, `SportPesa & Betika 17-game Mega Jackpot mathematical tips`, `Premier League`, `UEFA Champions League`, `CAF Champions League`, `FKF Premier League`, `South African PSL`, `NPFL`).
+### Pillar 1: Closing Line Value (CLV) & Sharp Steam Scanner (`/closing-line-value`)
+- **Files**: `src/services/clvAndCopulaService.ts` & `src/pages/ClosingLineValuePage.tsx`
+- **Capabilities**:
+  - **Opening vs. Current vs. Fair Poisson Line Matrix**: Displays `Opening Odds`, `Current Market Odds`, `Sharp Pinnacle Line`, `Implied Shift %`, and `CLV Edge %` in `tabular-nums`.
+  - **Steam Move & Reverse Line Movement (RLM) Filters**: Filter by `All Sharp Moves`, `Syndicate Steam (>10% Drop)`, `Late Money Alerts`, and `African & CAF Leagues`.
+  - **Interactive CLV Calculator**: Users can enter the odds they locked in vs. the closing odds (and bookmaker margin) to calculate exact **No-Vig Closing Line Value %** and long-term expected ROI.
+  - **1-Tap Slip & Bankroll Integration**: Add any positive-CLV play to the Bet Slip or sync directly to the Bankroll Portfolio.
 
-### Workstream 2: Live ESPN Match XML Sitemaps & Google Discover / RSS Feeds
-- **Dynamic Server XML Endpoints**:
-  - Serve live, dynamically generated XML endpoints directly from the server middleware so search engines always crawl the latest match fixtures without requiring a static rebuild:
-    - `/sitemap-matches.xml`: Dynamically lists all active and upcoming ESPN match prediction URLs (`/predict/{home-vs-away}`) and participating club hubs (`/teams/{slug}`) with `<lastmod>`, `<changefreq>hourly</changefreq>`, and `<priority>0.9</priority>`.
-    - `/sitemap-discover-news.xml`: Google News & Google Discover compliant XML sitemap featuring `<news:news>`, `<news:publication_date>`, and `<image:image>` tags pointing to each match's dynamic `/api/og` graphic.
-    - `/feed-predictions.xml`: Real-time RSS 2.0 / Atom syndication feed of today's top AI match predictions and value edges for news aggregators.
-- **Build-Time Sitemap Generator Synchronization**:
-  - Update the build-time sitemap generation script so static deployments also bundle live ESPN fixtures alongside all 90+ evergreen hub routes.
+### Pillar 2: Correlated Same-Game Parlay (SGP) Gaussian Copula Builder (`/sgp-builder`)
+- **Files**: `src/pages/SgpCopulaBuilderPage.tsx` (wired into `/sgp-builder` and linked from `/bet-builder-predictions` and `Navbar.tsx`)
+- **Capabilities**:
+  - **Fixture Selector + 6-Market Leg Matrix**: Choose a fixture and toggle up to 5 legs from:
+    - *1X2 / Double Chance*
+    - *Total Match Goals (Over/Under 1.5, 2.5, 3.5)*
+    - *Both Teams to Score (Yes/No)*
+    - *Match Corners (Over 8.5, 9.5, 10.5)*
+    - *Referee Booking Points / Cards (Over 3.5, 4.5 Cards)*
+    - *Star Player 1+ Shot on Target / Anytime Goalscorer*
+  - **Gaussian Copula Pairwise Correlation Matrix ($\rho$)**:
+    - Explicitly models positive correlations (e.g., *Favorite Win + Over 2.5 Goals* $\rho = +0.44$; *Underdog Double Chance + Over 4.5 Cards* $\rho = +0.38$; *High Pressing Favorite + Over 9.5 Corners* $\rho = +0.41$) and negative correlations (e.g., *Under 2.5 Goals + BTTS Yes* $\rho = -0.52$).
+    - Compares **Uncorrelated Multiplied Odds** vs. **Copula-Adjusted True Fair Odds** vs. **Bookmaker Quoted SGP Odds**, highlighting the exact **Correlation Value Boost %**.
+  - **1-Click Load SGP into Bet Slip / Copy SGP Tactical Brief**.
 
-### Workstream 3: Automated IndexNow & Search Engine Crawl Dispatcher for Live ESPN Slugs
-- **Live Fixture Harvesting in Cron Pipeline**:
-  - Upgrade the `/api/indexing-cron` (`google-crawl` / `indexing`) handler from a static 12-URL list to dynamically query active and upcoming ESPN fixtures across all supported leagues.
-  - Construct canonical URLs for every live/upcoming match (`/predict/{home-vs-away}`), active team hub (`/teams/{team-slug}`), and high-priority jackpot/market pages, submitting the complete batch (60–150+ URLs) to IndexNow (`api.indexnow.org`) and search engine sitemap ping endpoints.
-- **Detailed Execution Telemetry**:
-  - Return structured payload metrics from `/api/indexing-cron` including total URLs submitted, breakdown of static hubs vs. live ESPN match slugs, HTTP status codes from IndexNow, and a sample list of newly indexed match URLs.
+### Pillar 3: 5-Language & Regional Localization Engine (`EN / SW / FR / PT / AR`)
+- **Files**: `src/services/i18nLocalizationService.ts` & `src/components/Navbar.tsx`
+- **Capabilities**:
+  - Supports **English (`EN`)**, **Kiswahili (`SW`)**, **Français (`FR`)**, **Português (`PT`)**, and **العربية (`AR`)** persisted in `localStorage` and broadcast across components via custom event.
+  - **Localized Market Dictionary & UI Bar**: Translates core navigation labels, market names (*Home Win / Ushindi wa Nyumbani / Victoire Domicile / Vitória Casa / فوز المضيف*, *Over 2.5 Goals / Zaidi ya Magoli 2.5 / Plus de 2,5 Buts*, *BTTS*, *Jackpot*), and provides a quick language switcher inside `Navbar.tsx`.
 
-### Workstream 4: Interactive SEO Command Center Upgrade (`/seo-indexing`)
-- **Public & Admin Accessibility**:
-  - Make the SEO Command Center accessible with an interactive **Live Server Prerender & Schema.org Inspector** where users can select any live ESPN fixture or hub route and inspect the exact server-rendered `<head>` tags, JSON-LD `SportsEvent` schema, and live `/api/og` OpenGraph social card preview.
-- **Live ESPN Match Sitemap & IndexNow Queue Monitor**:
-  - Display real-time counts and searchable tables of the live ESPN `/predict/{slug}` and `/teams/{slug}` URLs currently active in `/sitemap-matches.xml` and queued for IndexNow dispatch, complete with one-click **"Ping IndexNow with Live ESPN Slugs"** and **"Inspect Live `/sitemap-matches.xml`"** actions.
+### Pillar 4: Admin CLV & Multilingual Broadcast Studio (`/admin`)
+- **File**: `src/components/admin/AdminClvAndLocalizationTab.tsx` (wired into `/admin` under **CLV & 5-Lang Studio**)
+- **Capabilities**:
+  - **Custom Sharp Steam & CLV Alert Pinning**: Pin or edit custom Opening-to-Current odds drops that immediately sync to `/closing-line-value`.
+  - **1-Click 5-Language Telegram/WhatsApp Broadcast Generator**: Automatically translates today's Top Bankers, SportyBet/1xBet/Bet9ja Booking Codes, and 17-Game Jackpot brief into **English, Kiswahili, French, Portuguese, and Arabic** with 1-click Copy buttons for international channels.
 
 ---
 
-## 4. Verification & Acceptance Criteria
-- **Zero-JS Crawler Verification**: Fetching `/predict/arsenal-vs-chelsea`, `/jackpot-generator`, or `/teams/arsenal` returns server-injected `<title>`, `<meta property="og:image" content=".../api/og?...">`, and `<script type="application/ld+json">` with `SportsEvent` schema in the raw HTML response.
-- **Live XML Sitemap & RSS Verification**: Requesting `/sitemap-matches.xml`, `/sitemap-discover-news.xml`, and `/feed-predictions.xml` returns valid XML populated with current ESPN fixtures.
-- **IndexNow Live Batch Dispatch**: Triggering `/api/indexing-cron?task=indexing` dynamically harvests and submits all current ESPN match prediction URLs alongside core hubs and returns the live count to the UI.
-- **Clean Build & Lint**: Full TypeScript compilation and linter checks pass with zero errors.
+## 3. File-by-File Execution Checklist
+1. `src/services/i18nLocalizationService.ts` — Create the 5-language (`EN`, `SW`, `FR`, `PT`, `AR`) dictionary, reactive state hook/listener, and multilingual broadcast formatter.
+2. `src/services/clvAndCopulaService.ts` — Create the Closing Line Value (CLV) no-vig calculator, Sharp Steam feed state, and Gaussian Copula SGP correlation matrix engine.
+3. `src/pages/ClosingLineValuePage.tsx` — Create the `/closing-line-value` Sharp Steam & CLV Beat Rate page with interactive No-Vig CLV calculator and 1-tap slip actions.
+4. `src/pages/SgpCopulaBuilderPage.tsx` — Create the `/sgp-builder` Correlated Same-Game Parlay (SGP) Gaussian Copula Laboratory.
+5. `src/components/admin/AdminClvAndLocalizationTab.tsx` — Create the Admin CLV Alert Manager & 5-Language Telegram/WhatsApp Copy-Paste Broadcast Studio.
+6. `src/components/Navbar.tsx`, `src/pages/AdminDashboard.tsx`, `src/components/admin/AdminOverviewTab.tsx`, and `src/App.tsx` — Wire the 5-Language switcher, new public routes (`/closing-line-value`, `/sgp-builder`), and new Admin tab.
+7. Run `lint_applet` and `compile_applet` to verify zero errors.

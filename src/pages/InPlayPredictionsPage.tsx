@@ -9,6 +9,7 @@ import { MarketQuickStrip } from '@/components/MarketQuickStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { TeamLogo } from '@/components/TeamLogo';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
+import { MatchTacticalSimulatorModal } from '@/components/MatchTacticalSimulatorModal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +21,9 @@ import {
   RefreshCw,
   Share2,
   ShieldAlert,
+  Sliders,
   TrendingUp,
+  Tv,
   Zap,
   Users,
 } from 'lucide-react';
@@ -214,6 +217,42 @@ export const InPlayPredictionsPage: React.FC = () => {
   const [tickCount, setTickCount] = useState(0);
   const [liveApiMatches, setLiveApiMatches] = useState<InPlayAlertMatch[]>([]);
   const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
+  const [simulatorMatch, setSimulatorMatch] = useState<InPlayAlertMatch | null>(null);
+  const [pushAlertsEnabled, setPushAlertsEnabled] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('predictpro_inplay_push_alerts') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleTogglePushAlerts = async () => {
+    const next = !pushAlertsEnabled;
+    if (next && typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm === 'granted') {
+          new Notification('PredictPro Live In-Play Radar Active', {
+            body: 'You will receive instant alerts for Unconverted xG Surges (>1.20 xG) and Late 75+ Goal Threats.',
+            icon: '/icons/icon-192x192.png',
+          });
+        }
+      } catch {
+        // ignore browser notification block inside iframe
+      }
+    }
+    setPushAlertsEnabled(next);
+    try {
+      localStorage.setItem('predictpro_inplay_push_alerts', String(next));
+    } catch {
+      // ignore
+    }
+    toast.success(
+      next
+        ? 'Live Goal & xG Surge Push Alerts Enabled!'
+        : 'Live In-Play Push Alerts Paused'
+    );
+  };
 
   // Fetch real-time match events & telemetry from /api/football?type=live & upcoming
   useEffect(() => {
@@ -455,6 +494,20 @@ export const InPlayPredictionsPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <Link to="/live-multiview">
+                <Button variant="outline" className="gap-1.5 text-xs font-bold border-emerald-500/40 text-emerald-600 dark:text-emerald-400">
+                  <Tv className="h-3.5 w-3.5" />
+                  4-Match Multi-View TV
+                </Button>
+              </Link>
+              <Button
+                variant={pushAlertsEnabled ? 'default' : 'outline'}
+                onClick={handleTogglePushAlerts}
+                className="gap-1.5 text-xs font-bold"
+              >
+                <Radio className={`h-3.5 w-3.5 ${pushAlertsEnabled ? 'animate-pulse' : 'text-emerald-500'}`} />
+                {pushAlertsEnabled ? 'Push Goal Alerts: ON' : 'Enable Push Goal Alerts'}
+              </Button>
               <Button onClick={handleLoadTop3InPlayAcca} className="gap-1.5 text-xs font-bold">
                 <Zap className="h-3.5 w-3.5" />
                 Load 3-Leg Live Momentum Acca
@@ -662,6 +715,15 @@ export const InPlayPredictionsPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSimulatorMatch(match)}
+                        className="gap-1 text-xs h-8 px-2.5 border-primary/40 text-primary hover:bg-primary/10"
+                      >
+                        <Sliders className="h-3.5 w-3.5" />
+                        What-If Sim
+                      </Button>
                       {match.espnEventId && (
                         <Button
                           size="sm"
@@ -704,6 +766,25 @@ export const InPlayPredictionsPage: React.FC = () => {
 
         <SEOAuthorityHub />
       </main>
+
+      {simulatorMatch && (
+        <MatchTacticalSimulatorModal
+          open={Boolean(simulatorMatch)}
+          onOpenChange={(open) => {
+            if (!open) setSimulatorMatch(null);
+          }}
+          homeTeam={simulatorMatch.homeTeam}
+          awayTeam={simulatorMatch.awayTeam}
+          league={simulatorMatch.league}
+          baseHomeXg={simulatorMatch.liveXgHome}
+          baseAwayXg={simulatorMatch.liveXgAway}
+          currentHomeScore={simulatorMatch.homeScore}
+          currentAwayScore={simulatorMatch.awayScore}
+          minuteElapsed={
+            typeof simulatorMatch.minute === 'number' ? simulatorMatch.minute : 45
+          }
+        />
+      )}
 
       <Footer />
     </div>

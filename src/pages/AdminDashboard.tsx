@@ -12,7 +12,7 @@ import {
   DollarSign, Sparkles, LayoutDashboard, Clock, ShieldCheck, 
   ShieldAlert, Zap, Users, AlertTriangle, LogIn, BarChart3, CheckCircle2, LogOut, Lock,
   Megaphone, Ticket, CheckCheck, Settings2, FileText, Activity, Key, Radio, Globe, Database, ExternalLink,
-  Smartphone, Trophy, Flame
+  Smartphone, Trophy, Flame, Image as ImageIcon, Send, Code2, Languages
 } from 'lucide-react';
 import { GeminiTelegramAutomationHub } from '@/components/GeminiTelegramAutomationHub';
 import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
@@ -40,6 +40,11 @@ import { AdminGoogleIndexingSuite } from '@/components/admin/AdminGoogleIndexing
 import { AdminAppStoreStudioTab } from '@/components/admin/AdminAppStoreStudioTab';
 import { AdminJackpotAndCodesManagerTab } from '@/components/admin/AdminJackpotAndCodesManagerTab';
 import { AdminLiveMatchOverrideTab } from '@/components/admin/AdminLiveMatchOverrideTab';
+import { AdminAffiliateManagerTab } from '@/components/admin/AdminAffiliateManagerTab';
+import { AdminSocialProofStudioTab } from '@/components/admin/AdminSocialProofStudioTab';
+import { AdminTelegramWebhookTab } from '@/components/admin/AdminTelegramWebhookTab';
+import { AdminPartnerWidgetStudioTab } from '@/components/admin/AdminPartnerWidgetStudioTab';
+import { AdminClvAndLocalizationTab } from '@/components/admin/AdminClvAndLocalizationTab';
 
 interface DailyStat {
   date: string;
@@ -317,6 +322,31 @@ export default function AdminDashboard() {
                 <span>MOTD &amp; Overrides</span>
               </TabsTrigger>
 
+              <TabsTrigger value="affiliates" className="gap-2 text-xs">
+                <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Affiliate Links &amp; CPA</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="social-studio" className="gap-2 text-xs">
+                <ImageIcon className="h-3.5 w-3.5 text-sky-500" />
+                <span>Social PNG &amp; Proof Studio</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="telegram-webhooks" className="gap-2 text-xs">
+                <Send className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Auto-Poster &amp; Webhooks</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="partner-widgets" className="gap-2 text-xs">
+                <Code2 className="h-3.5 w-3.5 text-sky-500" />
+                <span>Partner SEO Widgets</span>
+              </TabsTrigger>
+
+              <TabsTrigger value="clv-localization" className="gap-2 text-xs">
+                <Languages className="h-3.5 w-3.5 text-emerald-500" />
+                <span>CLV &amp; 5-Lang Studio</span>
+              </TabsTrigger>
+
               <TabsTrigger value="external-apis" className="gap-2 text-xs">
                 <Radio className="h-3.5 w-3.5 text-emerald-500" />
                 <span>External APIs &amp; Latency</span>
@@ -427,6 +457,31 @@ export default function AdminDashboard() {
           {/* Live Match Editorial Overrides & MOTD Pinning Tab */}
           <TabsContent value="editorial-overrides" className="space-y-6">
             <AdminLiveMatchOverrideTab />
+          </TabsContent>
+
+          {/* Geo-Targeted Affiliate Partner Links & CPA Conversions Tab */}
+          <TabsContent value="affiliates" className="space-y-6">
+            <AdminAffiliateManagerTab />
+          </TabsContent>
+
+          {/* 2x Retina Social Story & Square PNG Proof Studio Tab */}
+          <TabsContent value="social-studio" className="space-y-6">
+            <AdminSocialProofStudioTab />
+          </TabsContent>
+
+          {/* Telegram Bot API & WhatsApp/Discord Webhook Auto-Poster Studio Tab */}
+          <TabsContent value="telegram-webhooks" className="space-y-6">
+            <AdminTelegramWebhookTab />
+          </TabsContent>
+
+          {/* Embeddable Partner Widgets & SEO Backlink Generator Tab */}
+          <TabsContent value="partner-widgets" className="space-y-6">
+            <AdminPartnerWidgetStudioTab />
+          </TabsContent>
+
+          {/* 5-Language Broadcasts & CLV Steam Seeder Tab */}
+          <TabsContent value="clv-localization" className="space-y-6">
+            <AdminClvAndLocalizationTab />
           </TabsContent>
 
           {/* External APIs & Latency Monitor Tab */}

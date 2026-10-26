@@ -239,6 +239,63 @@ export default function H2HComparisonPage() {
     );
   }, [espnFixtures, teamA.name, teamB.name]);
 
+  const [espnDeepSummary, setEspnDeepSummary] = useState<{
+    headToHead: Array<{
+      date: string;
+      homeTeam: string;
+      awayTeam: string;
+      score: string;
+      competition: string;
+    }>;
+    venue?: string;
+    referee?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!matchedEspnFixture) {
+      setEspnDeepSummary(null);
+      return;
+    }
+
+    const eventId = String(matchedEspnFixture.id || '').replace(/^espn-/, '');
+    if (!eventId || !/^\d+$/.test(eventId)) {
+      setEspnDeepSummary({
+        headToHead: [],
+        venue: matchedEspnFixture.venue || `${teamA.name} Stadium`,
+        referee: 'Official Match Referee',
+      });
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/football?type=summary&eventId=${encodeURIComponent(eventId)}`
+        );
+        if (!res.ok || !active) return;
+        const data = await res.json();
+        if (!active) return;
+        setEspnDeepSummary({
+          headToHead: Array.isArray(data?.headToHead) ? data.headToHead : [],
+          venue: data?.venue || matchedEspnFixture.venue,
+          referee: data?.referee,
+        });
+      } catch {
+        if (active) {
+          setEspnDeepSummary({
+            headToHead: [],
+            venue: matchedEspnFixture.venue,
+          });
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [matchedEspnFixture, teamA.name]);
+
   // Run Poisson distribution match simulation
   const simulation = useMemo(() => {
     return simulateH2HMatch(teamA, teamB);
