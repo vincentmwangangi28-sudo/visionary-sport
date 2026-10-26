@@ -45,6 +45,7 @@ import { AdminSocialProofStudioTab } from '@/components/admin/AdminSocialProofSt
 import { AdminTelegramWebhookTab } from '@/components/admin/AdminTelegramWebhookTab';
 import { AdminPartnerWidgetStudioTab } from '@/components/admin/AdminPartnerWidgetStudioTab';
 import { AdminClvAndLocalizationTab } from '@/components/admin/AdminClvAndLocalizationTab';
+import { AdminSocialStoryStudioTab } from '@/components/admin/AdminSocialStoryStudioTab';
 
 interface DailyStat {
   date: string;
@@ -347,6 +348,11 @@ export default function AdminDashboard() {
                 <span>CLV &amp; 5-Lang Studio</span>
               </TabsTrigger>
 
+              <TabsTrigger value="inplay-social" className="gap-2 text-xs">
+                <Activity className="h-3.5 w-3.5 text-rose-500" />
+                <span>In-Play &amp; 9:16 Studio</span>
+              </TabsTrigger>
+
               <TabsTrigger value="external-apis" className="gap-2 text-xs">
                 <Radio className="h-3.5 w-3.5 text-emerald-500" />
                 <span>External APIs &amp; Latency</span>
@@ -482,6 +488,11 @@ export default function AdminDashboard() {
           {/* 5-Language Broadcasts & CLV Steam Seeder Tab */}
           <TabsContent value="clv-localization" className="space-y-6">
             <AdminClvAndLocalizationTab />
+          </TabsContent>
+
+          {/* In-Play Momentum & 9:16 Social Story Studio Tab */}
+          <TabsContent value="inplay-social" className="space-y-6">
+            <AdminSocialStoryStudioTab />
           </TabsContent>
 
           {/* External APIs & Latency Monitor Tab */}

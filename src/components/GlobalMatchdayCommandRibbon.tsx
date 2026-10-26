@@ -481,11 +481,25 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
               Booking Codes
             </Link>
             <Link
+              to="/closing-line-value"
+              data-testid="ribbon-link-clv-scanner"
+              className="min-h-[24px] px-1 inline-flex items-center text-muted-foreground hover:text-foreground font-medium transition-colors whitespace-nowrap"
+            >
+              CLV Scanner
+            </Link>
+            <Link
+              to="/sgp-builder"
+              data-testid="ribbon-link-sgp-builder"
+              className="min-h-[24px] px-1 inline-flex items-center text-muted-foreground hover:text-foreground font-medium transition-colors whitespace-nowrap"
+            >
+              SGP Copula
+            </Link>
+            <Link
               to="/poisson-calculator"
               data-testid="ribbon-link-poisson-matrix"
               className="min-h-[24px] px-1 inline-flex items-center text-muted-foreground hover:text-foreground font-medium transition-colors whitespace-nowrap"
             >
-              6×6 Score Matrix
+              6×6 Matrix
             </Link>
             <button
               type="button"

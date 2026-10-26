@@ -6,6 +6,10 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
   Matches: [
     { to: "/", label: "Today's Fixtures & Previews" },
     { to: "/live", label: "Live Scores & In-Play Stats" },
+    { to: "/live-multiview", label: "4-Match Multi-View TV" },
+    { to: "/pitch-telemetry", label: "2D Pitch Shot Map & XIs" },
+    { to: "/xpts-standings", label: "xPTS Justice Standings" },
+    { to: "/bracket-simulator", label: "Knockout Bracket Simulator" },
     { to: "/tomorrow-predictions", label: "Tomorrow's Fixtures" },
     { to: "/weekend-predictions", label: "Weekend Match Schedule" },
     { to: "/archive", label: "Results Archive" },
@@ -42,6 +46,12 @@ const LINKS: Record<string, Array<{ to: string; label: string }>> = {
     { to: "/accumulator", label: "Accumulator Builder" },
   ],
   "Tools & Calculators": [
+    { to: "/in-play-edge", label: "In-Play Live Edge & 75'+ Radar" },
+    { to: "/social-card-studio", label: "9:16 Story & Social Studio" },
+    { to: "/tournament-simulator", label: "Group & Tournament Simulator" },
+    { to: "/bet-tracker", label: "Auto-Settled ROI Bet Tracker" },
+    { to: "/closing-line-value", label: "Closing Line Value (CLV) Scanner" },
+    { to: "/sgp-builder", label: "Correlated SGP Copula Builder" },
     { to: "/slip-generator", label: "AI Slip & Code Converter" },
     { to: "/booking-codes", label: "Daily Booking Codes" },
     { to: "/code-converter", label: "Universal Code Converter" },

@@ -48,6 +48,7 @@ import {
   fetchOfficialFinishedResults,
 } from '@/services/autoSettlementService';
 import { Prediction } from '@/types/prediction';
+import { addTrackedBetEntry } from '@/services/phase11AnalyticsService';
 import { toast } from 'sonner';
 
 interface SavedBetSlipRecord {
@@ -270,6 +271,21 @@ export const BetSlipDrawer = () => {
       selections: [...selections],
     };
     setSavedSlips((prev) => [newRecord, ...prev.slice(0, 29)]);
+    selections.forEach((sel) => {
+      addTrackedBetEntry({
+        fixture: `${sel.homeTeam} vs ${sel.awayTeam}`,
+        homeTeam: sel.homeTeam,
+        awayTeam: sel.awayTeam,
+        league: sel.league || 'Football',
+        market: sel.market,
+        odds: sel.odds,
+        stake: Math.max(5, Math.round((stake || 100) / selections.length)),
+        bookmaker: activeBookmaker.name,
+        status: 'PENDING',
+        clvEdgePct: 7.5,
+        notes: `Saved from Bet Slip (${code})`,
+      });
+    });
     setActiveTab('saved');
     toast.success(`Saved ${selections.length}-leg slip (${code}) to Personal ROI Tracker!`);
   };
@@ -974,15 +990,24 @@ export const BetSlipDrawer = () => {
                 </div>
 
                 {/* Save & Track Slip Button */}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleSaveCurrentSlip}
-                  className="w-full h-9 text-xs font-bold gap-1.5 border border-primary/30"
-                >
-                  <BookmarkCheck className="h-4 w-4 text-primary" />
-                  Save &amp; Track Slip in Personal ROI Tracker
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleSaveCurrentSlip}
+                    className="h-9 text-xs font-bold gap-1.5 border border-primary/30"
+                  >
+                    <BookmarkCheck className="h-4 w-4 text-primary" />
+                    Save to ROI Tracker
+                  </Button>
+                  <Link
+                    to="/bet-tracker"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex items-center justify-center h-9 px-3 rounded-md border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground transition-colors"
+                  >
+                    Open Full ROI Ledger →
+                  </Link>
+                </div>
 
                 {/* Action Buttons: Share / WhatsApp / Telegram / Export */}
                 <div className="grid grid-cols-2 gap-2">

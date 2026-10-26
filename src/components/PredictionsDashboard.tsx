@@ -44,6 +44,7 @@ import {
 } from '@/services/bookmakerBookingCodes';
 import { useAuth } from '@/hooks/useAuth';
 import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
+import { getClvSteamSignals } from '@/services/clvAndCopulaService';
 
 interface PredictionsDashboardProps {
   initialLeague?: string;
@@ -1438,6 +1439,62 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
                 </span>
               </Link>
             ))}
+          </div>
+        </div>
+
+        {/* Widget 5: Sharp Steam & CLV Radar + SGP Copula Lab */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Sharp Steam &amp; CLV Radar
+            </h2>
+            <Link
+              to="/closing-line-value"
+              className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline"
+            >
+              CLV Scanner →
+            </Link>
+          </div>
+          <div className="divide-y divide-border/50">
+            {getClvSteamSignals()
+              .slice(0, 3)
+              .map((move) => (
+                <Link
+                  key={move.id}
+                  to="/closing-line-value"
+                  className="px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-foreground truncate">
+                      {move.homeTeam} vs {move.awayTeam}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {move.market} ·{' '}
+                      <span className="font-mono tabular-nums">
+                        {move.openingOdds.toFixed(2)} → {move.currentBookieOdds.toFixed(2)}
+                      </span>
+                    </p>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono tabular-nums text-[11px] font-bold shrink-0">
+                    +{move.clvBeatPct.toFixed(1)}% CLV
+                  </span>
+                </Link>
+              ))}
+          </div>
+          <div className="p-3 bg-muted/20 border-t border-border/60 grid grid-cols-2 gap-2">
+            <Link
+              to="/closing-line-value"
+              className="py-1.5 px-2.5 rounded-md border border-border bg-background hover:bg-muted text-[11px] font-semibold text-center text-foreground transition-colors"
+            >
+              No-Vig CLV Calc
+            </Link>
+            <Link
+              to="/sgp-builder"
+              className="py-1.5 px-2.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 text-[11px] font-bold text-center transition-opacity"
+            >
+              SGP Copula Builder
+            </Link>
           </div>
         </div>
       </aside>

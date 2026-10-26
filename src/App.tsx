@@ -176,6 +176,10 @@ const SgpCopulaBuilderPage       = lazyWithRetry(() => import("./pages/SgpCopula
 const PitchTelemetryPage         = lazyWithRetry(() => import("./pages/PitchTelemetryPage"));
 const XptsJusticeStandingsPage   = lazyWithRetry(() => import("./pages/XptsJusticeStandingsPage"));
 const BracketSimulatorPage       = lazyWithRetry(() => import("./pages/BracketSimulatorPage"));
+const InPlayEdgeRadarPage        = lazyWithRetry(() => import("./pages/InPlayEdgeRadarPage"));
+const SocialCardStudioPage       = lazyWithRetry(() => import("./pages/SocialCardStudioPage"));
+const TournamentGroupSimulatorPage = lazyWithRetry(() => import("./pages/TournamentGroupSimulatorPage"));
+const PersonalBetTrackerPage     = lazyWithRetry(() => import("./pages/PersonalBetTrackerPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -616,6 +620,14 @@ const App = () => (
                             <Route path="/justice-table"                element={<Navigate to="/xpts-standings" replace />} />
                             <Route path="/bracket-simulator"            element={<RouteBoundary component={BracketSimulatorPage} />} />
                             <Route path="/knockout-bracket"             element={<Navigate to="/bracket-simulator" replace />} />
+                            <Route path="/in-play-edge"                 element={<RouteBoundary component={InPlayEdgeRadarPage} />} />
+                            <Route path="/late-goal-radar"              element={<Navigate to="/in-play-edge" replace />} />
+                            <Route path="/social-card-studio"           element={<RouteBoundary component={SocialCardStudioPage} />} />
+                            <Route path="/social-studio"                element={<Navigate to="/social-card-studio" replace />} />
+                            <Route path="/tournament-simulator"         element={<RouteBoundary component={TournamentGroupSimulatorPage} />} />
+                            <Route path="/group-simulator"              element={<Navigate to="/tournament-simulator" replace />} />
+                            <Route path="/bet-tracker"                  element={<RouteBoundary component={PersonalBetTrackerPage} />} />
+                            <Route path="/roi-ledger"                   element={<Navigate to="/bet-tracker" replace />} />
                             <Route path="/set-piece-specialists"        element={<RouteBoundary component={SetPieceSpecialistsPage} />} />
                             <Route path="/sharp-money-splits"           element={<RouteBoundary component={SharpMoneySplitsPage} />} />
                             <Route path="/injury-lineup-impact"         element={<RouteBoundary component={InjuryLineupImpactPage} />} />

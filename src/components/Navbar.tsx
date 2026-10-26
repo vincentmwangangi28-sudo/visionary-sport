@@ -32,16 +32,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const CORE_LINKS = [
-  { to: "/", label: "Matches" },
-  { to: "/live", label: "Live Scores", isLive: true },
-  { to: "/live-multiview", label: "Multi-View TV", isLive: true },
-  { to: "/slip-generator", label: "Slip & Code Converter" },
-  { to: "/standings", label: "Standings" },
-  { to: "/screener", label: "Stats Screener" },
-  { to: "/accumulator", label: "Acca Builder" },
-];
-
 const MORE_CATEGORIES = [
   {
     heading: "Top Competitions",
@@ -71,6 +61,10 @@ const MORE_CATEGORIES = [
   {
     heading: "Pro Tools & Data",
     items: [
+      { to: "/in-play-edge", label: "In-Play Live Edge & 75'+ Radar" },
+      { to: "/social-card-studio", label: "9:16 Story & Social Graphic Studio" },
+      { to: "/tournament-simulator", label: "Group & Knockout Simulator" },
+      { to: "/bet-tracker", label: "Auto-Settled ROI Bet Tracker" },
       { to: "/live-multiview", label: "4-Match Multi-View TV & Sandbox" },
       { to: "/pitch-telemetry", label: "2D Shot Map, Momentum & XIs" },
       { to: "/xpts-standings", label: "xPTS Justice Standings" },
@@ -237,7 +231,7 @@ export const Navbar = () => {
               }`}
             >
               <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only">Slip</span>
+              <span className="sr-only sm:not-sr-only">{t.slipButton}</span>
               <span className="font-mono tabular-nums text-[11px]">({selections.length})</span>
             </button>
 
@@ -362,7 +356,7 @@ export const Navbar = () => {
                       size="sm"
                       className="h-8 px-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800"
                     >
-                      Sign In
+                      {t.signIn}
                     </Button>
                   </Link>
                   <Button
@@ -372,7 +366,7 @@ export const Navbar = () => {
                     className="h-8 px-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 gap-1 cursor-pointer"
                   >
                     <Sparkles className="h-3.5 w-3.5" />
-                    <span>Join Free</span>
+                    <span>{t.joinFree}</span>
                   </Button>
                 </div>
               )}
@@ -394,11 +388,36 @@ export const Navbar = () => {
                   </SheetHeader>
 
                   <div className="py-4 space-y-5">
+                    <div className="space-y-1.5 px-2">
+                      <span className="text-[11px] font-semibold text-muted-foreground block">
+                        Language (EN / SW / FR / PT / AR)
+                      </span>
+                      <div className="grid grid-cols-5 gap-1 bg-muted p-1 rounded-md">
+                        {locales.map((loc) => (
+                          <button
+                            key={loc.code}
+                            type="button"
+                            onClick={() => {
+                              changeLocale(loc.code as SupportedLocale);
+                              toast.success(`Language: ${loc.nativeLabel}`);
+                            }}
+                            className={`py-1 rounded text-[11px] font-mono font-medium transition-colors cursor-pointer ${
+                              locale === loc.code
+                                ? "bg-primary text-primary-foreground font-bold"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {loc.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground px-2 mb-1">
                         Navigation
                       </p>
-                      {CORE_LINKS.map(({ to, label }) => (
+                      {localizedCoreLinks.map(({ to, label }) => (
                         <Link
                           key={to}
                           to={to}
@@ -463,11 +482,11 @@ export const Navbar = () => {
                             className="w-full text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 gap-1.5"
                           >
                             <Sparkles className="h-3.5 w-3.5" />
-                            <span>Create Free Account (+50 Coins)</span>
+                            <span>{t.joinFree} (+50 Coins)</span>
                           </Button>
                           <Link to="/auth" onClick={() => setOpen(false)} className="block">
                             <Button variant="outline" size="sm" className="w-full text-xs font-semibold">
-                              Sign In to Existing Account
+                              {t.signIn}
                             </Button>
                           </Link>
                         </div>
