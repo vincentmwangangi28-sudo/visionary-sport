@@ -365,7 +365,7 @@ const Index = () => {
         {/* Professional Sports Tools & Bet Tracking Suite (Commit 7771c93 + Phase 12) */}
         <section
           aria-label="Professional Sports Analytics Tools and Bet Tracking"
-          className="container mx-auto max-w-7xl px-4 sm:px-6 py-8 border-t border-border/60"
+          className="cv-auto container mx-auto max-w-7xl px-4 sm:px-6 py-8 border-t border-border/60"
         >
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-5">
             <div>
@@ -428,7 +428,7 @@ const Index = () => {
         </section>
 
         {/* Contained FAQ Section */}
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="cv-auto container mx-auto max-w-7xl px-4 sm:px-6">
           <Suspense fallback={<div className="min-h-[160px]" aria-hidden="true" />}>
             <FooterFAQ />
           </Suspense>

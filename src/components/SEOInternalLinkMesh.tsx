@@ -49,7 +49,7 @@ export const SEOInternalLinkMesh: React.FC = () => {
   return (
     <section
       aria-label="Related Football Analytics Hubs, Search Keywords & Complete Site Directory"
-      className="border-t border-border/80 pt-8 mt-4 space-y-6"
+      className="cv-auto border-t border-border/80 pt-8 mt-4 space-y-6"
     >
       {/* 1. Contextual Related Hubs & High-Intent Search Keywords for Active Route */}
       <div className="rounded-xl border border-border/80 bg-muted/20 p-4 sm:p-5 space-y-4">

@@ -6,6 +6,7 @@ import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
 import { AhrefsWebAnalyticsPanel } from '@/components/AhrefsWebAnalyticsPanel';
+import { PageSpeedInsightsPanel } from '@/components/PageSpeedInsightsPanel';
 import { 
   googleIndexingCronService, 
   CronInterval, 
@@ -481,6 +482,9 @@ export default function SEOIndexingPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Google PageSpeed Insights v5 (Report #yp4ntj2bz7 · form_factor=mobile) Core Web Vitals Panel */}
+        <PageSpeedInsightsPanel />
 
         {/* Ahrefs Web Analytics v3 (project_id=10277130) Live Traffic & Search Telemetry Panel */}
         <AhrefsWebAnalyticsPanel />

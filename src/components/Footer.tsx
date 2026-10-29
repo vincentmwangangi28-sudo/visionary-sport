@@ -4,7 +4,7 @@ import { SEOInternalLinkMesh } from '@/components/SEOInternalLinkMesh';
 
 export const Footer = () => {
   return (
-    <footer className="border-t border-border bg-card mt-16 pb-20 md:pb-8">
+    <footer className="cv-auto border-t border-border bg-card mt-16 pb-20 md:pb-8">
       <div className="container mx-auto max-w-7xl px-4 py-10 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* Brand Column */}

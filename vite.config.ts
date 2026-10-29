@@ -267,6 +267,27 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/api/pagespeed-insights") {
+          try {
+            const parsedUrl = new URL(req.url || "", "http://localhost");
+            const targetUrl = parsedUrl.searchParams.get("url") || "https://predictpro.guru";
+            const rawStrategy = (parsedUrl.searchParams.get("strategy") || parsedUrl.searchParams.get("form_factor") || "mobile").toLowerCase();
+            const strategy = rawStrategy === "desktop" ? "desktop" : "mobile";
+            const force = parsedUrl.searchParams.get("force") === "true" || parsedUrl.searchParams.get("force") === "1";
+            const { handlePageSpeedInsightsRequest } = await import("./src/server/pagespeedHandler.ts");
+            const data = await handlePageSpeedInsightsRequest({ url: targetUrl, strategy, force });
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ success: false, error: err?.message || "Failed to fetch Google PageSpeed Insights v5 report" }));
+          }
+          return;
+        }
+
         if (url === "/api/telegram-broadcast") {
           let body = "";
           req.on("data", (c: any) => { body += c; });
@@ -520,6 +541,7 @@ export default defineConfig(({ mode }) => ({
             !d.includes("vendor-charts") &&
             !d.includes("vendor-supabase") &&
             !d.includes("vendor-motion") &&
+            !d.includes("vendor-seo") &&
             !d.endsWith(".css")
         ),
     },
@@ -530,6 +552,13 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash][extname]",
         manualChunks: (id) => {
+          if (
+            id.includes("src/hooks/useSEOManager") ||
+            id.includes("src/hooks/useMatchPredictionSEO") ||
+            id.includes("src/services/seoKeywords")
+          ) {
+            return "vendor-seo";
+          }
           if (id.includes("node_modules")) {
             if (
               [

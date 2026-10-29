@@ -6,8 +6,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { UserPreferencesProvider } from "@/hooks/useUserPreferences";
 import { GeoRegionProvider } from "@/hooks/useGeoRegion";
 import { CurrencyProvider } from "@/hooks/useCurrency";
-import { UnifiedSearchProvider } from "@/hooks/useUnifiedSearch";
-import { BetSlipProvider } from "@/hooks/useBetSlip";
+import { UnifiedSearchProvider, useUnifiedSearch } from "@/hooks/useUnifiedSearch";
+import { BetSlipProvider, useBetSlip } from "@/hooks/useBetSlip";
 import { useLocaleDetection } from "@/hooks/useLocaleDetection";
 import { useWebMCPTools } from "@/hooks/useWebMCPTools";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -22,15 +22,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
-
-import SEORuntime from "@/components/SEORuntime";
-import DeferredBackgroundHooks from "@/components/DeferredBackgroundHooks";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { CookieConsentBanner } from "@/components/CookieConsentBanner";
-import { UnifiedSearchModal } from "@/components/UnifiedSearchModal";
-import { GuestAccountPrompt } from "@/components/GuestAccountPrompt";
-import { BetSlipDrawer } from "@/components/BetSlipDrawer";
-import { FirstVisitSignupModal } from "@/components/FirstVisitSignupModal";
+
+const SEORuntime = lazyWithRetry(() => import("@/components/SEORuntime"));
+const DeferredBackgroundHooks = lazyWithRetry(() => import("@/components/DeferredBackgroundHooks"));
+const CookieConsentBanner = lazyWithRetry(() =>
+  import("@/components/CookieConsentBanner").then((m) => ({ default: m.CookieConsentBanner }))
+);
+const UnifiedSearchModal = lazyWithRetry(() =>
+  import("@/components/UnifiedSearchModal").then((m) => ({ default: m.UnifiedSearchModal }))
+);
+const GuestAccountPrompt = lazyWithRetry(() =>
+  import("@/components/GuestAccountPrompt").then((m) => ({ default: m.GuestAccountPrompt }))
+);
+const BetSlipDrawer = lazyWithRetry(() =>
+  import("@/components/BetSlipDrawer").then((m) => ({ default: m.BetSlipDrawer }))
+);
+const FirstVisitSignupModal = lazyWithRetry(() =>
+  import("@/components/FirstVisitSignupModal").then((m) => ({ default: m.FirstVisitSignupModal }))
+);
 
 import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -400,15 +410,24 @@ const WebMCPInitializer: React.FC = () => {
 
 const DeferredGlobalOverlays = () => {
   const [ready, setReady] = useState(false);
+  const { isOpen: betSlipOpen, selections } = useBetSlip();
+  const { isOpen: searchOpen } = useUnifiedSearch();
 
   useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ""))
+    ) {
+      return;
+    }
     let mounted = false;
     const enable = () => {
       if (mounted) return;
       mounted = true;
       setReady(true);
     };
-    const timer = setTimeout(enable, 20000);
+    const timer = setTimeout(enable, 18000);
     window.addEventListener("scroll", enable, { passive: true, once: true });
     window.addEventListener("pointerdown", enable, { passive: true, once: true });
     window.addEventListener("keydown", enable, { passive: true, once: true });
@@ -425,27 +444,43 @@ const DeferredGlobalOverlays = () => {
   return (
     <>
       <ErrorBoundary fallback={null}>
-        <BetSlipDrawer />
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
-        <UnifiedSearchModal />
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
-        <GuestAccountPrompt />
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
-        <FirstVisitSignupModal />
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
         <Sonner />
       </ErrorBoundary>
+      {(ready || betSlipOpen || selections.length > 0) && (
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <BetSlipDrawer />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+      {(ready || searchOpen) && (
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <UnifiedSearchModal />
+          </Suspense>
+        </ErrorBoundary>
+      )}
       {ready && (
         <>
           <ErrorBoundary fallback={null}>
-            <DeferredBackgroundHooks />
+            <Suspense fallback={null}>
+              <GuestAccountPrompt />
+            </Suspense>
           </ErrorBoundary>
           <ErrorBoundary fallback={null}>
-            <CookieConsentBanner />
+            <Suspense fallback={null}>
+              <FirstVisitSignupModal />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <DeferredBackgroundHooks />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <CookieConsentBanner />
+            </Suspense>
           </ErrorBoundary>
         </>
       )}

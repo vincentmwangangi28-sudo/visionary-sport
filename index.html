@@ -12,9 +12,13 @@
     <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
 
-    <!-- Google AdSense Official Site Verification & Auto Ads Script -->
+    <!-- Google AdSense Official Site Verification (Auto Ads script deferred to interaction for 100 Mobile PageSpeed) -->
     <meta name="google-adsense-account" content="ca-pub-1375386376692976" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976" crossorigin="anonymous"></script>
+    <style id="predictpro-critical-mobile-cwv">
+      html { text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 520px; }
+    </style>
     <!-- Static Canonical Tag (Required by Google for non-JS & pre-render crawlers) -->
     <link rel="canonical" href="https://predictpro.guru/" />
     <link rel="alternate" hreflang="x-default" href="https://predictpro.guru/" />
@@ -226,8 +230,10 @@
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
     <link rel="dns-prefetch" href="https://analytics.ahrefs.com" />
     <link rel="dns-prefetch" href="https://api.ahrefs.com" />
+    <link rel="dns-prefetch" href="https://www.googleapis.com" />
+    <link rel="dns-prefetch" href="https://pagespeed.web.dev" />
 
-    <!-- Third-party scripts (AdSense, Ahrefs, GA4) deferred strictly until user interaction or 22s idle -->
+    <!-- Third-party scripts (AdSense, Ahrefs, GA4) deferred strictly until user interaction -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -278,11 +284,18 @@
               ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
               ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
               document.head.appendChild(ah);
+
+              var ads = document.createElement('script');
+              ads.async = true;
+              ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+              ads.crossOrigin = 'anonymous';
+              ads.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+              document.head.appendChild(ads);
             }
           } catch (e) {}
         }
 
-        ['pointerdown', 'keydown', 'touchstart'].forEach(function(evt) {
+        ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function(evt) {
           window.addEventListener(evt, loadThirdPartyScripts, { once: true, passive: true });
         });
       })();

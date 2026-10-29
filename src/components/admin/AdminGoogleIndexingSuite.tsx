@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AhrefsWebAnalyticsPanel } from '@/components/AhrefsWebAnalyticsPanel';
+import { PageSpeedInsightsPanel } from '@/components/PageSpeedInsightsPanel';
 
 export function AdminGoogleIndexingSuite() {
   const [settings, setSettings] = useState<GoogleIndexingSettings>(() => googleIndexingCronService.getSettings());
@@ -195,6 +196,9 @@ export function AdminGoogleIndexingSuite() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Google PageSpeed Insights v5 (Report #yp4ntj2bz7 · form_factor=mobile) Core Web Vitals Telemetry */}
+      <PageSpeedInsightsPanel />
 
       {/* Ahrefs Web Analytics v3 (project_id=10277130) Live Traffic & Search Telemetry */}
       <AhrefsWebAnalyticsPanel />
