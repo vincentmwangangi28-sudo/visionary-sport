@@ -247,6 +247,26 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/api/ahrefs-analytics") {
+          try {
+            const parsedUrl = new URL(req.url || "", "http://localhost");
+            const project_id = parsedUrl.searchParams.get("project_id") || "10277130";
+            const from = parsedUrl.searchParams.get("from") || "2026-09-30T00:00:00Z";
+            const to = parsedUrl.searchParams.get("to") || "2026-10-29T23:59:59Z";
+            const { handleAhrefsAnalyticsRequest } = await import("./src/server/ahrefsAnalyticsHandler.ts");
+            const data = await handleAhrefsAnalyticsRequest({ project_id, from, to });
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ success: false, error: err?.message || "Failed to fetch Ahrefs Web Analytics v3 stats" }));
+          }
+          return;
+        }
+
         if (url === "/api/telegram-broadcast") {
           let body = "";
           req.on("data", (c: any) => { body += c; });

@@ -240,29 +240,29 @@ export default function Standings() {
         keywords="Premier League table 2026, xPTS expected points table, La Liga standings, Bundesliga table, Serie A standings, Champions League table, KPL standings"
       />
       <Navbar />
-      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-24 md:pb-12 space-y-6">
-        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
-              Official Standings · Expected Points (xPTS) Justice Table · Live In-Play Deltas
+      <main className="container mx-auto max-w-7xl w-full px-4 sm:px-6 py-6 pb-20 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-4">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-primary">
+              Official Standings · Expected Points (xPTS) Justice Table · Venue Splits
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
               League Standings &amp; xG Justice Tables
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+            <p className="text-xs text-muted-foreground max-w-2xl">
               Compare official league points against Bivariate Poisson Expected Points (xPTS) and Home/Away venue splits.
             </p>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
-            <span className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               {isLive ? (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                   <span>API-Football Live</span>
                 </>
               ) : (
                 <>
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
+                  <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
                   <span>Verified Season Feed</span>
                 </>
               )}
@@ -272,9 +272,9 @@ export default function Standings() {
               size="sm"
               onClick={handleSync}
               disabled={loading || isFetching}
-              className="gap-1.5 whitespace-nowrap bg-slate-800 border-slate-700 text-slate-100 hover:bg-slate-700 hover:text-white"
+              className="gap-1.5 h-9 text-xs whitespace-nowrap"
             >
-              <RefreshCw className={`h-4 w-4 ${loading || isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <RefreshCw className={`h-3.5 w-3.5 ${loading || isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
               <span className="sr-only sm:not-sr-only">Sync Standings</span>
             </Button>
           </div>
@@ -332,7 +332,7 @@ export default function Standings() {
                 data-testid="mode-official-table"
                 className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                   tableMode === 'official'
-                    ? 'bg-background text-foreground shadow-2xs'
+                    ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -344,7 +344,7 @@ export default function Standings() {
                 data-testid="mode-xg-justice-table"
                 className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors flex items-center gap-1 whitespace-nowrap ${
                   tableMode === 'xg_justice'
-                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -357,7 +357,7 @@ export default function Standings() {
                 data-testid="mode-live-inplay-table"
                 className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                   tableMode === 'live_inplay'
-                    ? 'bg-primary text-primary-foreground shadow-2xs'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -386,7 +386,7 @@ export default function Standings() {
                     data-testid={`venue-split-${v.id}`}
                     className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                       venueSplit === v.id
-                        ? 'bg-background text-foreground shadow-2xs'
+                        ? 'bg-background text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -651,15 +651,15 @@ export default function Standings() {
                 <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 text-xs text-muted-foreground border-t bg-muted/10">
                   <div className="flex flex-wrap gap-4">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 bg-sky-600 rounded-xs inline-block" />
+                      <span className="w-2.5 h-2.5 bg-sky-600 rounded-sm inline-block" />
                       {league.id === 276 ? 'CAF Champions League (1st)' : 'Champions League / Top Tier'}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 bg-amber-500 rounded-xs inline-block" />
+                      <span className="w-2.5 h-2.5 bg-amber-500 rounded-sm inline-block" />
                       {league.id === 276 ? 'CAF Confederation Cup (2nd)' : 'Europa League / Continental'}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 bg-rose-600 rounded-xs inline-block" />
+                      <span className="w-2.5 h-2.5 bg-rose-600 rounded-sm inline-block" />
                       {league.id === 276 ? 'Relegation to NSL (Bottom 2)' : 'Relegation Zone'}
                     </span>
                   </div>

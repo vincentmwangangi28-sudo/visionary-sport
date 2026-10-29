@@ -3,31 +3,30 @@ import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
-import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { TeamLogo } from '@/components/TeamLogo';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
-import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
-import { GeminiMatchIntelligenceTab } from '@/components/GeminiMatchIntelligenceTab';
+import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
+import { toast } from 'sonner';
 import {
   TrendingUp,
   Target,
   Activity,
   Users,
-  Scale,
-  Check,
   Calendar,
   Layers,
-  Search,
   ExternalLink,
+  DollarSign,
+  Plus,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface Props {
   prediction: Prediction;
@@ -36,8 +35,8 @@ interface Props {
 }
 
 export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onClose }) => {
-  const { addSelection, selections } = useBetSlip();
-  const { formatKickoff } = useUserPreferences();
+  const { formatKickoff, formatOdds } = useUserPreferences();
+  const { addSelection } = useBetSlip();
   const [activeTab, setActiveTab] = useState('analytics');
 
   const outcome = getPrediction(p);
@@ -73,12 +72,9 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
     };
   }, [p, baseHome, baseDraw, baseAway]);
 
-  const isSelected = (market: string) => {
-    return selections.some((s) => s.homeTeam === p.home_team && s.awayTeam === p.away_team && s.market === market);
-  };
-
-  const handleAddBet = (market: string, odds: number) => {
+  const handleQuickAddMainTip = (market: string, odds: number) => {
     addSelection({
+      matchId: p.id,
       match: `${p.home_team} vs ${p.away_team}`,
       homeTeam: p.home_team,
       awayTeam: p.away_team,
@@ -88,7 +84,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
       odds,
       confidence,
     });
-    toast.success(`Added ${p.home_team} vs ${p.away_team} - ${market} to Match Slip`);
+    toast.success(`Added ${p.home_team} vs ${p.away_team} (${market} @${odds.toFixed(2)}) to Bet Slip!`);
   };
 
   return (
@@ -113,7 +109,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-colors border border-slate-700"
                 title={`Open full Match Center page for ${p.home_team} vs ${p.away_team}`}
               >
-                <span>Match Center</span>
+                <span>Full Match Preview</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
               <NotifyMeButton
@@ -136,7 +132,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
 
           <div className="grid grid-cols-5 items-center text-center my-4">
             <div className="col-span-2 flex items-center gap-3 text-left">
-              <TeamLogo team={p.home_team} size="lg" className="shadow-xs" />
+              <TeamLogo team={p.home_team} size="lg" className="shadow-sm" />
               <div className="min-w-0">
                 <h2 className="text-base sm:text-lg font-extrabold text-white truncate">{p.home_team}</h2>
                 <span className="text-xs text-slate-400 font-medium">Home</span>
@@ -152,65 +148,59 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                 <h2 className="text-base sm:text-lg font-extrabold text-white truncate">{p.away_team}</h2>
                 <span className="text-xs text-slate-400 font-medium">Away</span>
               </div>
-              <TeamLogo team={p.away_team} size="lg" className="shadow-xs" />
+              <TeamLogo team={p.away_team} size="lg" className="shadow-sm" />
             </div>
           </div>
 
-          {/* 3-Way Probability Matrix */}
+          {/* 3-Way Interactive Odds & Probability Matrix */}
           <div className="space-y-2 mt-4">
             <div className="flex items-center justify-between text-[11px] text-slate-300 font-medium">
-              <span>3-Way Match Outcome Probabilities</span>
+              <span>Click any 1X2 outcome to add directly to Bet Slip</span>
               <span className="font-mono text-[10px]">1 · X · 2</span>
             </div>
-            <div className="grid grid-cols-3 gap-2 font-mono tabular-nums" role="group" aria-label="Select match outcome probabilities">
+            <div className="grid grid-cols-3 gap-2 font-mono tabular-nums" role="group" aria-label="Match outcome probabilities">
               <button
                 type="button"
-                onClick={() => handleAddBet('Home Win', baseHome)}
-                aria-label={`Select 1 (${p.home_team}) outcome - ${winProbabilities.home}% probability`}
+                onClick={() => handleQuickAddMainTip('Home Win', baseHome)}
                 className={`p-2 rounded-lg border text-center transition-colors cursor-pointer ${
-                  isSelected('Home Win')
-                    ? 'bg-emerald-500 text-slate-950 border-emerald-500 font-bold'
-                    : 'bg-slate-800/90 hover:bg-slate-800 border-slate-700 text-white'
+                  outcome === 'Home Win'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-bold hover:bg-emerald-500/30'
+                    : 'bg-slate-800/90 border-slate-700 text-white hover:bg-slate-800'
                 }`}
               >
                 <div className="text-[11px] opacity-80 font-sans font-medium truncate">1 ({p.home_team})</div>
-                <div className="font-bold text-sm flex items-center justify-center gap-1 mt-0.5">
-                  {winProbabilities.home}%
-                  {isSelected('Home Win') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
+                <div className="font-bold text-sm mt-0.5">
+                  {formatOdds(baseHome)} ({winProbabilities.home}%)
                 </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleAddBet('Draw', baseDraw)}
-                aria-label={`Select X (Draw) outcome - ${winProbabilities.draw}% probability`}
+                onClick={() => handleQuickAddMainTip('Draw', baseDraw)}
                 className={`p-2 rounded-lg border text-center transition-colors cursor-pointer ${
-                  isSelected('Draw')
-                    ? 'bg-emerald-500 text-slate-950 border-emerald-500 font-bold'
-                    : 'bg-slate-800/90 hover:bg-slate-800 border-slate-700 text-white'
+                  outcome === 'Draw'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold hover:bg-amber-500/30'
+                    : 'bg-slate-800/90 border-slate-700 text-white hover:bg-slate-800'
                 }`}
               >
                 <div className="text-[11px] opacity-80 font-sans font-medium">X (Draw)</div>
-                <div className="font-bold text-sm flex items-center justify-center gap-1 mt-0.5">
-                  {winProbabilities.draw}%
-                  {isSelected('Draw') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
+                <div className="font-bold text-sm mt-0.5">
+                  {formatOdds(baseDraw)} ({winProbabilities.draw}%)
                 </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleAddBet('Away Win', baseAway)}
-                aria-label={`Select 2 (${p.away_team}) outcome - ${winProbabilities.away}% probability`}
+                onClick={() => handleQuickAddMainTip('Away Win', baseAway)}
                 className={`p-2 rounded-lg border text-center transition-colors cursor-pointer ${
-                  isSelected('Away Win')
-                    ? 'bg-emerald-500 text-slate-950 border-emerald-500 font-bold'
-                    : 'bg-slate-800/90 hover:bg-slate-800 border-slate-700 text-white'
+                  outcome === 'Away Win'
+                    ? 'bg-sky-500/20 text-sky-300 border-sky-500/50 font-bold hover:bg-sky-500/30'
+                    : 'bg-slate-800/90 border-slate-700 text-white hover:bg-slate-800'
                 }`}
               >
                 <div className="text-[11px] opacity-80 font-sans font-medium truncate">2 ({p.away_team})</div>
-                <div className="font-bold text-sm flex items-center justify-center gap-1 mt-0.5">
-                  {winProbabilities.away}%
-                  {isSelected('Away Win') && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
+                <div className="font-bold text-sm mt-0.5">
+                  {formatOdds(baseAway)} ({winProbabilities.away}%)
                 </div>
               </button>
             </div>
@@ -222,27 +212,24 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        {/* 5-Tab Navigation including Odds & Booking Codes */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6 pt-3 border-b bg-card">
-            <TabsList className="grid grid-cols-6 w-full h-9">
+            <TabsList className="grid grid-cols-5 w-full h-9">
               <TabsTrigger value="analytics" className="text-xs gap-1 font-semibold">
                 <Target className="h-3.5 w-3.5" /> Overview
               </TabsTrigger>
               <TabsTrigger value="markets" className="text-xs gap-1 font-semibold">
-                <Layers className="h-3.5 w-3.5" /> Markets
+                <Layers className="h-3.5 w-3.5" /> Markets &amp; xG
+              </TabsTrigger>
+              <TabsTrigger value="odds" className="text-xs gap-1 font-semibold">
+                <DollarSign className="h-3.5 w-3.5" /> Odds &amp; Codes
               </TabsTrigger>
               <TabsTrigger value="lineups" className="text-xs gap-1 font-semibold">
                 <Users className="h-3.5 w-3.5" /> Lineups
               </TabsTrigger>
               <TabsTrigger value="tactics" className="text-xs gap-1 font-semibold">
-                <Activity className="h-3.5 w-3.5" /> Stats &amp; xG
-              </TabsTrigger>
-              <TabsTrigger value="odds" className="text-xs gap-1 font-semibold">
-                <Scale className="h-3.5 w-3.5" /> Odds
-              </TabsTrigger>
-              <TabsTrigger value="gemini" className="text-xs gap-1 font-semibold">
-                <Search className="h-3.5 w-3.5" /> Scout
+                <Activity className="h-3.5 w-3.5" /> Stats &amp; H2H
               </TabsTrigger>
             </TabsList>
           </div>
@@ -253,7 +240,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                 <div className="md:col-span-2 bg-muted/40 border border-border rounded-xl p-5 flex flex-col justify-between">
                   <div>
                     <span className="text-xs text-primary font-bold uppercase tracking-wider">
-                      Primary Statistical Forecast
+                      Primary AI Consensus Pick
                     </span>
                     <p className="text-2xl font-extrabold text-foreground mt-1">{outcome}</p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -261,7 +248,6 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                     </p>
                   </div>
                   <div className="mt-4 pt-3 border-t border-border flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-xs font-semibold text-muted-foreground">Confidence Rating</span>
                     <ConfidenceMeter
                       confidence={confidence}
                       variant="card"
@@ -269,6 +255,19 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                       homeTeam={p.home_team}
                       awayTeam={p.away_team}
                     />
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        handleQuickAddMainTip(
+                          outcome,
+                          outcome === 'Away Win' ? baseAway : outcome === 'Draw' ? baseDraw : baseHome
+                        )
+                      }
+                      className="text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add Pick to Bet Slip
+                    </Button>
                   </div>
                 </div>
 
@@ -293,25 +292,9 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                   </p>
                 </div>
               )}
-
-              <div className="bg-muted/20 rounded-xl p-4 border border-border space-y-2">
-                <p className="text-xs font-bold text-foreground uppercase tracking-wider">Recent Head-to-Head</p>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between p-2.5 bg-card rounded-lg border border-border">
-                    <span className="font-semibold">{p.home_team}</span>
-                    <span className="font-mono font-bold px-2 py-0.5 bg-primary/15 text-primary rounded">2 - 1</span>
-                    <span className="font-semibold">{p.away_team}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-card rounded-lg border border-border">
-                    <span className="font-semibold">{p.away_team}</span>
-                    <span className="font-mono font-bold px-2 py-0.5 bg-muted text-foreground rounded">1 - 1</span>
-                    <span className="font-semibold">{p.home_team}</span>
-                  </div>
-                </div>
-              </div>
             </TabsContent>
 
-            <TabsContent value="markets" className="mt-0 space-y-4">
+            <TabsContent value="markets" className="mt-0">
               <AdvancedMarketsTab
                 homeTeam={p.home_team}
                 awayTeam={p.away_team}
@@ -324,15 +307,7 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               />
             </TabsContent>
 
-            <TabsContent value="lineups" className="mt-0 space-y-4">
-              <PitchLineupVisualizer homeTeam={p.home_team} awayTeam={p.away_team} />
-            </TabsContent>
-
-            <TabsContent value="tactics" className="mt-0 space-y-4">
-              <TacticalAnalyticsTab homeTeam={p.home_team} awayTeam={p.away_team} league={p.league} />
-            </TabsContent>
-
-            <TabsContent value="odds" className="mt-0 space-y-4">
+            <TabsContent value="odds" className="mt-0">
               <OddsComparisonTable
                 matchId={p.id}
                 homeTeam={p.home_team}
@@ -345,8 +320,22 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               />
             </TabsContent>
 
-            <TabsContent value="gemini" className="mt-0 space-y-4">
-              <GeminiMatchIntelligenceTab prediction={p} />
+            <TabsContent value="lineups" className="mt-0">
+              <PitchLineupVisualizer
+                homeTeam={p.home_team}
+                awayTeam={p.away_team}
+                league={p.league}
+              />
+            </TabsContent>
+
+            <TabsContent value="tactics" className="mt-0">
+              <TacticalAnalyticsTab
+                homeTeam={p.home_team}
+                awayTeam={p.away_team}
+                league={p.league}
+                homeOdds={baseHome}
+                awayOdds={baseAway}
+              />
             </TabsContent>
           </div>
         </Tabs>

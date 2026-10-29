@@ -792,21 +792,21 @@ export default function PlayerSearch() {
         keywords="football player search, fotmob player ratings, sofascore player comparison, player xG per 90 stats, footballer database"
       />
       <Navbar />
-      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-24 md:pb-12 max-w-6xl flex-1 space-y-6">
-        {/* Dark Broadcast Header & Action Bar */}
-        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-                Opta / xG Percentile Telemetry · 0.0–10.0 Season Ratings
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-[11px] font-mono text-slate-400">5-Axis Tactical Radar</span>
+      <main className="container mx-auto max-w-7xl w-full px-4 sm:px-6 py-6 pb-20 flex-1 space-y-5">
+        {/* Clean Page Header & Action Bar */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+              <span className="text-primary font-semibold">Opta / xG Percentile Telemetry</span>
+              <span>·</span>
+              <span>0.0–10.0 Season Ratings</span>
+              <span>·</span>
+              <span className="font-mono">5-Axis Tactical Radar</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
               Player Intelligence, 10.0 Ratings &amp; Radar Comparison
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+            <p className="text-xs text-muted-foreground max-w-2xl">
               Search 500,000+ players worldwide or compare any two footballers across 5-axis Expected Goals (xG) and progression percentiles.
             </p>
           </div>
@@ -814,14 +814,10 @@ export default function PlayerSearch() {
             variant={showCompareDrawer ? 'default' : 'outline'}
             size="sm"
             onClick={() => setShowCompareDrawer(!showCompareDrawer)}
-            className={`gap-2 self-start md:self-auto font-extrabold whitespace-nowrap ${
-              showCompareDrawer
-                ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
-                : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
-            }`}
+            className="gap-2 self-start md:self-auto font-bold whitespace-nowrap h-9 text-xs"
             data-testid="toggle-player-compare-btn"
           >
-            <ArrowLeftRight className="h-4 w-4" />
+            <ArrowLeftRight className="h-3.5 w-3.5" />
             <span>H2H Radar Compare ({comparedPlayers.length}/2)</span>
           </Button>
         </div>
@@ -1060,7 +1056,7 @@ export default function PlayerSearch() {
                 onClick={() => setPositionFilter(tab.id)}
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                   positionFilter === tab.id
-                    ? 'bg-background text-foreground shadow-2xs'
+                    ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

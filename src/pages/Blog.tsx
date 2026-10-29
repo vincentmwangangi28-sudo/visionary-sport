@@ -115,42 +115,38 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Football Betting Tips, Match Previews & Strategy Blog | PredictPro"
-        description="Daily AI match previews, expert football betting guides and strategy articles. Value betting, bankroll management, accumulator strategy and more."
+        title="Football Tactical Analysis, Expected Goals (xG) Guides & Previews | PredictPro"
+        description="Read football tactical analysis, Expected Goals (xG) methodology guides, Bivariate Poisson modeling primers, and league match previews."
         canonical="/blog"
-        keywords="football betting tips blog, football match previews, football betting strategy, value betting guide, bankroll management football, accumulator tips, Premier League betting guide, KPL betting Kenya"
+        keywords="football tactical analysis, expected goals xG guide, poisson football modeling, football match previews, Premier League tactical analysis, KPL football analysis"
         breadcrumbs={[
           { name: 'Home', item: '/' },
-          { name: 'Football Betting Strategy Blog', item: '/blog' },
+          { name: 'Football Analytics & Editorial Guides', item: '/blog' },
         ]}
       />
       <Navbar />
-      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 md:pb-12 max-w-6xl space-y-6">
+      <main className="container mx-auto max-w-7xl w-full px-4 sm:px-6 py-6 pb-20 space-y-5">
         <Breadcrumbs className="mb-1" />
-        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-                  Editorial &amp; Strategy Library · Quantitative Football Guides
-                </span>
-                <span className="text-slate-600">•</span>
-                <span className="text-[11px] font-mono text-slate-400">
-                  {allArticles.length} Published Guides
-                </span>
+        <div className="space-y-4 border-b border-border pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                <span className="text-primary font-semibold">Editorial &amp; Quantitative Library</span>
+                <span>·</span>
+                <span className="font-mono">{allArticles.length} Published Guides</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Football Betting Guides &amp; Match Previews
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+                Football Tactical Guides, xG Methodology &amp; Match Previews
               </h1>
-              <p className="text-slate-300 text-xs sm:text-sm mt-1">
-                Explore mathematical wagering strategies, bankroll staking models, league breakdowns, and match previews.
+              <p className="text-muted-foreground text-xs max-w-2xl">
+                Explore mathematical forecasting models, Expected Goals (xG) metrics, league tactical breakdowns, and match previews.
               </p>
             </div>
           </div>
 
           {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-slate-800 no-scrollbar" role="group" aria-label="Filter guides by topic">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar" role="group" aria-label="Filter guides by topic">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
               <Filter className="h-3 w-3" aria-hidden="true" /> Topic:
             </span>
             <button
@@ -159,8 +155,8 @@ export default function Blog() {
               aria-pressed={selectedCategory === "all"}
               className={`text-xs px-3 py-1.5 rounded-lg border transition-colors shrink-0 font-bold ${
                 selectedCategory === "all"
-                  ? "bg-emerald-500 text-slate-950 border-emerald-500"
-                  : "bg-slate-950 border-slate-800 hover:bg-slate-800 text-slate-300"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground"
               }`}
             >
               All Topics ({allArticles.length})
@@ -175,8 +171,8 @@ export default function Blog() {
                   aria-pressed={selectedCategory.toLowerCase() === cat.toLowerCase()}
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-colors shrink-0 font-bold flex items-center gap-1 ${
                     selectedCategory.toLowerCase() === cat.toLowerCase()
-                      ? "bg-emerald-500 text-slate-950 border-emerald-500"
-                      : "bg-slate-950 border-slate-800 hover:bg-slate-800 text-slate-300"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <span>{cat}</span>
@@ -253,7 +249,7 @@ export default function Blog() {
             <span>Complete PredictPro Knowledge Base &amp; Strategy Index</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
-            Direct internal index to all statistical manuals, mathematical staking frameworks, and league betting analyses.
+            Direct internal index to all statistical manuals, Expected Goals (xG) modeling frameworks, and league tactical analyses.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {allArticles.map(article => (

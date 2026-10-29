@@ -503,6 +503,50 @@ const ROUTE_META = {
     title: 'Universal Bet Code Converter: SportyBet, 1xBet, Bet9ja & Betway',
     description: 'Free universal football bet code converter. Instantly translate accumulator booking codes between SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
   },
+  '/cashout-calculator': {
+    title: 'Acca Cash-Out & Live Hedge Calculator | Lock In Profit',
+    description: 'Audit bookmaker Cash-Out haircuts and calculate exact 2-way or 3-way counter-hedge stakes on the final leg of your accumulator to lock in guaranteed profit.',
+  },
+  '/arbitrage-finder': {
+    title: 'Multi-Bookmaker Arbitrage & Surebet Matrix | PredictPro',
+    description: 'Scan live 2-way and 3-way mathematical surebets across SportyBet, Betika, SportPesa, Bet9ja, 1xBet, and Pinnacle with anti-detection stake rounding.',
+  },
+  '/player-props': {
+    title: 'Player Shots on Target (SOT) & Referee Cards Model | PredictPro',
+    description: 'Per-90 Poisson projections for player Shots on Target (1+ SOT, 2+ SOT), player fouls, and Referee Card Strictness indices across major leagues.',
+  },
+  '/rollover-challenge': {
+    title: 'Compound Rollover & Profit-Skim Ladder Simulator | PredictPro',
+    description: 'Interactive 3-Day to 10-Day football rollover challenge calculator with daily Profit-Skim Vault protection and multi-currency bankroll tracking.',
+  },
+  '/asian-handicap-calculator': {
+    title: 'Quarter-Ball Asian Handicap & Goal Line Split Matrix | PredictPro',
+    description: 'Exact 50/50 split-stake Half-Win, Half-Loss, and Push payout matrix for quarter-ball Asian Handicap (-0.25, -0.75) and Goal Lines (2.25, 2.75).',
+  },
+  '/syndicate-pools': {
+    title: '17-Game Jackpot Syndicate Pools & Private Mini-Leagues | PredictPro',
+    description: 'Build fault-tolerant multi-double Mega Jackpot permutation tickets, split syndicate costs, and compete in private CLV Mini-Leagues with invite codes.',
+  },
+  '/corner-stats-scanner': {
+    title: 'Corner Kick Tempo, 1st-Half Corners & Set-Piece Scanner | PredictPro',
+    description: 'Bivariate Poisson corner totals, First-Half Over 4.5 Corners radar, and Corner Handicap value scanner across 40+ global football leagues.',
+  },
+  '/cash-out-calculator': {
+    title: 'Cash-Out Equity & Live Hedge Optimizer | PredictPro',
+    description: 'Expose hidden bookmaker Cash-Out margin haircuts and compute exact DIY opposite-outcome hedge stakes to lock in higher guaranteed profit.',
+  },
+  '/referee-stats-scanner': {
+    title: 'Referee Discipline, Yellow/Red Card & Booking Points Matrix',
+    description: 'Per-90 referee yellow/red card profiler, booking points simulator, and derby card value scanner powered by Bivariate Poisson card distributions.',
+  },
+  '/player-props-lab': {
+    title: 'Player Shots on Target (SoT) & Anytime Goalscorer Poisson Lab',
+    description: 'Convert per-90 npxG, shot volume, and expected minutes into fair decimal odds for 1+ SoT, 2+ SoT, and Anytime Goalscorer markets.',
+  },
+  '/trixie-yankee-calculator': {
+    title: 'System Bet & Permutation Simulator: Trixie, Yankee, Lucky 15',
+    description: 'Calculate fault-tolerant permutation payouts and break-even scenarios for Trixie, Patent, Yankee, Lucky 15, Canadian, Heinz, and Round Robins.',
+  },
 };
 
 function clampTitle(raw) {

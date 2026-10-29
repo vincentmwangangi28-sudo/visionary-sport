@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle, Sparkles } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { FOOTER_FAQS } from '@/data/footerFaqData';
 
 export const FooterFAQ: React.FC = () => {
@@ -27,7 +27,7 @@ export const FooterFAQ: React.FC = () => {
   return (
     <section
       aria-labelledby="footer-faq-heading"
-      className="border-t border-border/70 pt-8 pb-10 my-4"
+      className="border-t border-border pt-10 pb-8"
     >
       {/* Schema.org FAQPage structured data */}
       <script
@@ -36,24 +36,16 @@ export const FooterFAQ: React.FC = () => {
       />
 
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-            <HelpCircle className="w-4 h-4" aria-hidden="true" />
-          </div>
-          <div>
-            <h2
-              id="footer-faq-heading"
-              className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2"
-            >
-              Frequently Asked Questions &amp; Football Prediction Insights
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-800 text-white dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                <Sparkles className="w-3 h-3" aria-hidden="true" /> Schema.org FAQPage
-              </span>
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Mathematical modeling, Expected Goals (xG) statistics, and algorithmic consensus forecasts explained
-            </p>
-          </div>
+        <div>
+          <h2
+            id="footer-faq-heading"
+            className="text-base sm:text-lg font-bold text-foreground"
+          >
+            Frequently Asked Questions &amp; Football Prediction Insights
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Mathematical modeling, Expected Goals (xG) statistics, and algorithmic consensus forecasts explained.
+          </p>
         </div>
 
         <button
@@ -71,7 +63,7 @@ export const FooterFAQ: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {FOOTER_FAQS.map((item, idx) => {
           const isOpen = openIndices.includes(idx);
           const panelId = `footer-faq-panel-${idx}`;
@@ -80,7 +72,7 @@ export const FooterFAQ: React.FC = () => {
           return (
             <div
               key={item.question}
-              className="rounded-xl border border-border/70 bg-card/60 hover:bg-card transition-colors p-3.5 sm:p-4 text-xs"
+              className="rounded-xl border border-border bg-card p-4 text-xs"
             >
               <button
                 id={buttonId}
@@ -90,7 +82,7 @@ export const FooterFAQ: React.FC = () => {
                 onClick={() => toggleItem(idx)}
                 className="w-full flex items-start justify-between gap-3 text-left font-semibold text-foreground group cursor-pointer"
               >
-                <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-snug">
+                <span className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
                   {item.question}
                 </span>
                 <ChevronDown
@@ -106,7 +98,7 @@ export const FooterFAQ: React.FC = () => {
                   id={panelId}
                   role="region"
                   aria-labelledby={buttonId}
-                  className="mt-2.5 pt-2.5 border-t border-border/40 text-muted-foreground leading-relaxed text-xs"
+                  className="mt-2.5 pt-2.5 border-t border-border/60 text-muted-foreground leading-relaxed text-xs"
                 >
                   <p>{item.answer}</p>
                 </div>

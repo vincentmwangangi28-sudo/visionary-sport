@@ -4,21 +4,18 @@ import {
   calculateAsianHandicap,
   calculatePropsMetrics,
 } from '@/utils/predictiveEngine';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useBetSlip } from '@/hooks/useBetSlip';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { toast } from 'sonner';
 import {
-  TrendingUp,
   Target,
   Layers,
   Flag,
   AlertTriangle,
-  Plus,
-  Check,
   Zap,
+  Plus,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface Props {
   homeTeam: string;
@@ -38,11 +35,9 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
   matchDate = '',
   homeOdds = 2.10,
   awayOdds = 3.50,
-  drawOdds = 3.30,
-  confidence = 70,
+  confidence = 75,
 }) => {
-  const { addSelection, selections } = useBetSlip();
-  const { formatOdds } = useUserPreferences();
+  const { addSelection } = useBetSlip();
 
   const xg = useMemo(() => {
     return calculateMatchXG(homeTeam, awayTeam, homeOdds, awayOdds, matchDate);
@@ -56,29 +51,24 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
     return calculatePropsMetrics(homeTeam, awayTeam, matchDate);
   }, [homeTeam, awayTeam, matchDate]);
 
-  const isSelected = (market: string) => {
-    return selections.some(
-      s => s.homeTeam === homeTeam && s.awayTeam === awayTeam && s.market === market
-    );
-  };
-
-  const handleAddBet = (market: string, odds: number, conf = confidence) => {
+  const handleAddMarket = (marketLabel: string, probPct: number, explicitOdds?: number) => {
+    const fairOdds = explicitOdds || Number(Math.max(1.22, Math.min(9.5, 0.94 / (Math.max(12, probPct) / 100))).toFixed(2));
     addSelection({
       match: `${homeTeam} vs ${awayTeam}`,
       homeTeam,
       awayTeam,
       league,
-      matchDate,
-      market,
-      odds,
-      confidence: conf,
+      matchDate: matchDate || new Date().toISOString(),
+      market: marketLabel,
+      odds: fairOdds,
+      confidence: probPct || confidence,
     });
-    toast.success(`Added ${homeTeam} vs ${awayTeam} - ${market} to Bet Slip`);
+    toast.success(`Added ${homeTeam} vs ${awayTeam} (${marketLabel} @${fairOdds}) to Bet Slip`);
   };
 
   return (
     <div className="space-y-6">
-      {/* 1. Expected Goals (xG) Engine Banner */}
+      {/* 1. Expected Goals (xG) Engine & 1-Click Goal Markets */}
       <div className="bg-card border rounded-2xl p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -86,9 +76,9 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
               <Target className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-black">Bivariate Poisson xG Engine</h3>
+              <h3 className="text-sm font-black">Bivariate Poisson xG &amp; Goal Markets</h3>
               <p className="text-xs text-muted-foreground">
-                Algorithmic expected goals based on offensive conversion & defensive conceded rates
+                Click any Over/Under or BTTS market below to add directly to your Bet Slip
               </p>
             </div>
           </div>
@@ -138,55 +128,55 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Goal Totals Quick Actions */}
+        {/* Interactive Goal Totals & BTTS Buttons */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-          <Button
+          <button
             type="button"
-            variant={isSelected('Over 2.5 Goals') ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleAddBet('Over 2.5 Goals', 1.85, xg.over25Prob)}
-            className="text-xs h-9 justify-between"
+            onClick={() => handleAddMarket('Over 2.5 Goals', xg.over25Prob)}
+            className="p-2.5 rounded-xl border bg-muted/20 hover:bg-primary/10 hover:border-primary/40 transition-colors flex items-center justify-between text-xs cursor-pointer"
           >
-            <span>Over 2.5 ({xg.over25Prob}%)</span>
-            <span className="font-bold font-mono">1.85</span>
-          </Button>
+            <span className="text-muted-foreground font-medium">Over 2.5</span>
+            <span className="font-bold font-mono text-primary flex items-center gap-0.5">
+              {xg.over25Prob}% <Plus className="h-3 w-3" />
+            </span>
+          </button>
 
-          <Button
+          <button
             type="button"
-            variant={isSelected('Under 2.5 Goals') ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleAddBet('Under 2.5 Goals', 1.95, xg.under25Prob)}
-            className="text-xs h-9 justify-between"
+            onClick={() => handleAddMarket('Under 2.5 Goals', xg.under25Prob)}
+            className="p-2.5 rounded-xl border bg-muted/20 hover:bg-primary/10 hover:border-primary/40 transition-colors flex items-center justify-between text-xs cursor-pointer"
           >
-            <span>Under 2.5 ({xg.under25Prob}%)</span>
-            <span className="font-bold font-mono">1.95</span>
-          </Button>
+            <span className="text-muted-foreground font-medium">Under 2.5</span>
+            <span className="font-bold font-mono text-primary flex items-center gap-0.5">
+              {xg.under25Prob}% <Plus className="h-3 w-3" />
+            </span>
+          </button>
 
-          <Button
+          <button
             type="button"
-            variant={isSelected('BTTS: Yes') ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleAddBet('BTTS: Yes', 1.80, xg.bttsProb)}
-            className="text-xs h-9 justify-between"
+            onClick={() => handleAddMarket('BTTS: Yes', xg.bttsProb)}
+            className="p-2.5 rounded-xl border bg-muted/20 hover:bg-primary/10 hover:border-primary/40 transition-colors flex items-center justify-between text-xs cursor-pointer"
           >
-            <span>BTTS Yes ({xg.bttsProb}%)</span>
-            <span className="font-bold font-mono">1.80</span>
-          </Button>
+            <span className="text-muted-foreground font-medium">BTTS: Yes</span>
+            <span className="font-bold font-mono text-primary flex items-center gap-0.5">
+              {xg.bttsProb}% <Plus className="h-3 w-3" />
+            </span>
+          </button>
 
-          <Button
+          <button
             type="button"
-            variant={isSelected('BTTS: No') ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleAddBet('BTTS: No', 2.05, 100 - xg.bttsProb)}
-            className="text-xs h-9 justify-between"
+            onClick={() => handleAddMarket('BTTS: No', 100 - xg.bttsProb)}
+            className="p-2.5 rounded-xl border bg-muted/20 hover:bg-primary/10 hover:border-primary/40 transition-colors flex items-center justify-between text-xs cursor-pointer"
           >
-            <span>BTTS No ({100 - xg.bttsProb}%)</span>
-            <span className="font-bold font-mono">2.05</span>
-          </Button>
+            <span className="text-muted-foreground font-medium">BTTS: No</span>
+            <span className="font-bold font-mono text-primary flex items-center gap-0.5">
+              {100 - xg.bttsProb}% <Plus className="h-3 w-3" />
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* 2. Asian Handicap Lines Matrix */}
+      {/* 2. Asian Handicap & Spread Markets */}
       <div className="bg-card border rounded-2xl p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -194,57 +184,42 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
               <Layers className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-black">Asian Handicap Lines</h3>
-              <p className="text-xs text-muted-foreground">Cover probabilities & estimated market pricing</p>
+              <h3 className="text-sm font-black">Asian Handicap &amp; Spread Markets</h3>
+              <p className="text-xs text-muted-foreground">Projected goal differential cover probabilities &amp; odds</p>
             </div>
           </div>
           <Badge className="bg-indigo-600/10 text-indigo-700 dark:text-indigo-400 border-indigo-200">
-            Split Risk
+            Asian Handicap
           </Badge>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {handicapLines.map(line => {
-            const marketLabel = `Asian ${line.team} ${line.line}`;
-            const selected = isSelected(marketLabel);
-            return (
-              <div
-                key={line.line + line.team}
-                className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
-                  selected
-                    ? 'bg-primary/10 border-primary text-foreground'
-                    : 'bg-muted/20 hover:bg-muted/40'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold">{line.team}</span>
-                    <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4">
-                      {line.line}
-                    </Badge>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
-                    <span>Cover: {line.probability}%</span>
-                    {line.evEdge > 0 && (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
-                        +{line.evEdge}% EV
-                      </span>
-                    )}
-                  </div>
+          {handicapLines.map((line) => (
+            <div
+              key={line.line + line.team}
+              className="p-3 rounded-xl border bg-muted/20 flex items-center justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold">{line.team}</span>
+                  <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4">
+                    {line.line}
+                  </Badge>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={selected ? 'default' : 'outline'}
-                  onClick={() => handleAddBet(marketLabel, line.odds, line.probability)}
-                  className="h-8 gap-1.5 font-mono text-xs"
-                >
-                  {selected ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                  {line.odds.toFixed(2)}
-                </Button>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  <span>Cover Prob: {line.probability}%</span>
+                </div>
               </div>
-            );
-          })}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAddMarket(`${line.team} ${line.line} (AH)`, line.probability, line.odds)}
+                className="h-7 text-xs font-mono font-bold gap-1"
+              >
+                <Plus className="h-3 w-3" /> @{line.odds}
+              </Button>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -258,57 +233,30 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
                 <Flag className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-black">Corner Kick Forecast</h4>
+                <h4 className="text-xs font-black">Corner Kick Markets</h4>
                 <p className="text-[11px] text-muted-foreground">Expected total: {propsData.expectedCorners.total}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30">
-              <span>Over 8.5 Corners</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">{propsData.expectedCorners.over85Prob}%</span>
-                <Button
-                  size="sm"
-                  variant={isSelected('Over 8.5 Corners') ? 'default' : 'outline'}
-                  onClick={() => handleAddBet('Over 8.5 Corners', 1.62, propsData.expectedCorners.over85Prob)}
-                  className="h-7 text-xs px-2 font-mono"
-                >
-                  1.62
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30">
-              <span>Over 9.5 Corners</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">{propsData.expectedCorners.over95Prob}%</span>
-                <Button
-                  size="sm"
-                  variant={isSelected('Over 9.5 Corners') ? 'default' : 'outline'}
-                  onClick={() => handleAddBet('Over 9.5 Corners', 1.95, propsData.expectedCorners.over95Prob)}
-                  className="h-7 text-xs px-2 font-mono"
-                >
-                  1.95
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30">
-              <span>Over 10.5 Corners</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">{propsData.expectedCorners.over105Prob}%</span>
-                <Button
-                  size="sm"
-                  variant={isSelected('Over 10.5 Corners') ? 'default' : 'outline'}
-                  onClick={() => handleAddBet('Over 10.5 Corners', 2.45, propsData.expectedCorners.over105Prob)}
-                  className="h-7 text-xs px-2 font-mono"
-                >
-                  2.45
-                </Button>
-              </div>
-            </div>
+            {[
+              { label: 'Over 8.5 Corners', prob: propsData.expectedCorners.over85Prob },
+              { label: 'Over 9.5 Corners', prob: propsData.expectedCorners.over95Prob },
+              { label: 'Over 10.5 Corners', prob: propsData.expectedCorners.over105Prob },
+            ].map((c) => (
+              <button
+                key={c.label}
+                type="button"
+                onClick={() => handleAddMarket(c.label, c.prob)}
+                className="w-full flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30 hover:bg-primary/10 transition-colors cursor-pointer"
+              >
+                <span>{c.label}</span>
+                <span className="font-mono font-bold text-primary flex items-center gap-1">
+                  {c.prob}% <Plus className="h-3 w-3" />
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -320,57 +268,30 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
                 <AlertTriangle className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-black">Bookings & Disciplinary</h4>
+                <h4 className="text-xs font-black">Cards &amp; Bookings Markets</h4>
                 <p className="text-[11px] text-muted-foreground">Expected cards: {propsData.expectedCards.total}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30">
-              <span>Over 2.5 Cards</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">{propsData.expectedCards.over25Prob}%</span>
-                <Button
-                  size="sm"
-                  variant={isSelected('Over 2.5 Cards') ? 'default' : 'outline'}
-                  onClick={() => handleAddBet('Over 2.5 Cards', 1.48, propsData.expectedCards.over25Prob)}
-                  className="h-7 text-xs px-2 font-mono"
-                >
-                  1.48
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30">
-              <span>Over 3.5 Cards</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">{propsData.expectedCards.over35Prob}%</span>
-                <Button
-                  size="sm"
-                  variant={isSelected('Over 3.5 Cards') ? 'default' : 'outline'}
-                  onClick={() => handleAddBet('Over 3.5 Cards', 1.88, propsData.expectedCards.over35Prob)}
-                  className="h-7 text-xs px-2 font-mono"
-                >
-                  1.88
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30">
-              <span>Over 4.5 Cards</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">{propsData.expectedCards.over45Prob}%</span>
-                <Button
-                  size="sm"
-                  variant={isSelected('Over 4.5 Cards') ? 'default' : 'outline'}
-                  onClick={() => handleAddBet('Over 4.5 Cards', 2.60, propsData.expectedCards.over45Prob)}
-                  className="h-7 text-xs px-2 font-mono"
-                >
-                  2.60
-                </Button>
-              </div>
-            </div>
+            {[
+              { label: 'Over 2.5 Cards', prob: propsData.expectedCards.over25Prob },
+              { label: 'Over 3.5 Cards', prob: propsData.expectedCards.over35Prob },
+              { label: 'Over 4.5 Cards', prob: propsData.expectedCards.over45Prob },
+            ].map((c) => (
+              <button
+                key={c.label}
+                type="button"
+                onClick={() => handleAddMarket(c.label, c.prob)}
+                className="w-full flex justify-between items-center text-xs p-2 rounded-lg bg-muted/30 hover:bg-primary/10 transition-colors cursor-pointer"
+              >
+                <span>{c.label}</span>
+                <span className="font-mono font-bold text-primary flex items-center gap-1">
+                  {c.prob}% <Plus className="h-3 w-3" />
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -378,17 +299,21 @@ export const AdvancedMarketsTab: React.FC<Props> = ({
       {/* 4. Top Poisson Scoreline Projections */}
       <div className="bg-muted/20 border rounded-2xl p-4 space-y-2">
         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          <Zap className="h-3.5 w-3.5 text-primary" /> Most Probable Correct Scorelines
+          <Zap className="h-3.5 w-3.5 text-primary" /> Most Probable Correct Scorelines (Click to Add)
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-          {propsData.topScorelines.map(s => (
-            <div
+          {propsData.topScorelines.map((s) => (
+            <button
+              type="button"
               key={s.score}
-              className="p-2.5 rounded-xl bg-background border text-center flex flex-col items-center justify-center"
+              onClick={() => handleAddMarket(`Correct Score ${s.score}`, s.probability, s.fairOdds)}
+              className="p-2.5 rounded-xl bg-background hover:border-primary/50 border text-center flex flex-col items-center justify-center transition-colors cursor-pointer"
             >
-              <span className="font-black text-sm font-mono text-primary">{s.score}</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5">{s.probability}% probability</span>
-            </div>
+              <span className="text-base font-black font-mono text-foreground">{s.score}</span>
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                {s.probability}% (@{s.fairOdds})
+              </span>
+            </button>
           ))}
         </div>
       </div>

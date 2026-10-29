@@ -1,16 +1,15 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { TeamLogo } from '@/components/TeamLogo';
-import { TrendingUp, Check, Coins, Pin, ArrowRight, BarChart2 } from 'lucide-react';
+import { Pin, ArrowRight, Plus, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo, memo, Suspense } from 'react';
-import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { hapticService } from '@/services/hapticService';
-import { toast } from 'sonner';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
+import { toast } from 'sonner';
 
 const MatchAnalyticsModal = lazyWithRetry(() =>
   import('./MatchAnalyticsModal').then((m) => ({ default: m.MatchAnalyticsModal }))
@@ -31,60 +30,49 @@ function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string
   return `${clean(homeTeam)}-vs-${clean(awayTeam)}`;
 }
 
-function getTeamFormSequence(teamName: string, winProb: number, realFormStr?: string): Array<'W' | 'D' | 'L'> {
-  if (realFormStr) {
-    const parsed = realFormStr
-      .toUpperCase()
-      .split('')
-      .filter((ch): ch is 'W' | 'D' | 'L' => ch === 'W' || ch === 'D' || ch === 'L')
-      .slice(-5);
-    if (parsed.length > 0) {
-      return parsed;
-    }
-  }
-  const seed = teamName.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const results: Array<'W' | 'D' | 'L'> = [];
-  for (let i = 0; i < 5; i++) {
-    const val = (seed * (i + 3) + winProb) % 100;
-    if (val < winProb + 12) {
-      results.push('W');
-    } else if (val < winProb + 36) {
-      results.push('D');
-    } else {
-      results.push('L');
-    }
-  }
-  return results;
-}
-
 interface Props {
   prediction: Prediction;
   viewMode?: 'card' | 'compact' | 'condensed';
 }
 
 export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Props) => {
-  const { addSelection, selections } = useBetSlip();
   const { formatKickoff, getKickoffRelative, formatOdds, isProbabilitiesMode, t } = useUserPreferences();
   const { isLeaguePinned, togglePinLeague } = usePinnedFavorites();
+  const { selections, addSelection } = useBetSlip();
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [unlockingCoin, setUnlockingCoin] = useState(false);
-
-  const coinUnlockKey = `pp_unlocked_${p.id || `${p.home_team}-${p.away_team}`}`;
-  const [, setCoinUnlocked] = useState(() => {
-    try {
-      return localStorage.getItem(coinUnlockKey) === 'true';
-    } catch {
-      return false;
-    }
-  });
 
   const outcome = getPrediction(p);
   const confidence = getConfidence(p);
   const analysis = getAnalysis(p);
-  const locked = false;
   const relativeKickoff = getKickoffRelative(p.match_date);
   const matchSlug = formatMatchSlug(p.home_team, p.away_team, p.match_date);
   const matchUrl = `/predict/${matchSlug}`;
+  const matchTitle = `${p.home_team} vs ${p.away_team}`;
+
+  const isMarketInSlip = (marketLabel: string) =>
+    selections.some((s) => s.match === matchTitle && s.market === marketLabel);
+
+  const handleAddMarketToSlip = (
+    e: React.MouseEvent,
+    marketLabel: string,
+    oddsVal: number | null | undefined
+  ) => {
+    e.stopPropagation();
+    hapticService.selection();
+    const resolvedOdds = oddsVal && oddsVal > 1 ? oddsVal : marketLabel === 'Draw' ? 3.30 : 1.90;
+    addSelection({
+      matchId: p.id,
+      match: matchTitle,
+      homeTeam: p.home_team,
+      awayTeam: p.away_team,
+      league: p.league,
+      matchDate: p.match_date,
+      market: marketLabel,
+      odds: resolvedOdds,
+      confidence,
+    });
+    toast.success(`Added ${p.home_team} vs ${p.away_team} (${marketLabel} @${resolvedOdds.toFixed(2)}) to Bet Slip`);
+  };
 
   const winProbabilities = useMemo(() => {
     const raw = p as Record<string, any>;
@@ -124,84 +112,14 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     const homeShare = winProbabilities.home / Math.max(1, winProbabilities.home + winProbabilities.away);
     const homeXg = Number(Math.max(0.55, totalExpectedGoals * homeShare).toFixed(2));
     const awayXg = Number(Math.max(0.45, totalExpectedGoals * (1 - homeShare)).toFixed(2));
-    const homeForm = getTeamFormSequence(p.home_team, winProbabilities.home, p.home_form);
-    const awayForm = getTeamFormSequence(p.away_team, winProbabilities.away, p.away_form);
-    return { homeXg, awayXg, homeForm, awayForm };
-  }, [p.home_team, p.away_team, p.home_form, p.away_form, p.over_under_line, winProbabilities.home, winProbabilities.away]);
-
-  const handleCoinUnlock = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    hapticService.selection();
-    setUnlockingCoin(true);
-    try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const session = (await supabase.auth.getSession()).data.session;
-      if (!session) {
-        hapticService.warning();
-        toast.info('Sign in to unlock predictions using your coin balance.');
-        return;
-      }
-
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error || !profile) {
-        hapticService.error();
-        toast.error('Could not fetch coin balance.');
-        return;
-      }
-
-      if ((profile.coins ?? 0) < 50) {
-        hapticService.warning();
-        toast.error(`You have ${profile.coins ?? 0} coins. 50 coins required.`);
-        return;
-      }
-
-      const newCoins = (profile.coins ?? 0) - 50;
-      await supabase
-        .from('profiles')
-        .update({ coins: newCoins })
-        .eq('id', session.user.id);
-
-      localStorage.setItem(coinUnlockKey, 'true');
-      setCoinUnlocked(true);
-      hapticService.boost();
-      toast.success('Unlocked with 50 coins!');
-    } catch {
-      hapticService.error();
-      toast.error('Unlock failed. Please try again.');
-    } finally {
-      setUnlockingCoin(false);
-    }
-  };
+    return { homeXg, awayXg };
+  }, [p.over_under_line, winProbabilities.home, winProbabilities.away]);
 
   const displayOutcome =
     outcome === 'Home Win' ? t('pred.home_win', 'Home Win') :
     outcome === 'Draw' ? t('pred.draw', 'Draw') :
     outcome === 'Away Win' ? t('pred.away_win', 'Away Win') :
     outcome;
-
-  const isMarketInSlip = (market: string) => {
-    return selections.some((s) => s.homeTeam === p.home_team && s.awayTeam === p.away_team && s.market === market);
-  };
-
-  const handleOddsClick = (e: React.MouseEvent, market: string, odds: number) => {
-    e.stopPropagation();
-    hapticService.selection();
-    addSelection({
-      match: `${p.home_team} vs ${p.away_team}`,
-      homeTeam: p.home_team,
-      awayTeam: p.away_team,
-      league: p.league,
-      matchDate: p.match_date,
-      market,
-      odds,
-      confidence,
-    });
-  };
 
   const formattedTime = formatKickoff(p.match_date, { includeTimezone: false }).slice(-5);
   const formattedShortDate = useMemo(() => {
@@ -214,54 +132,60 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     }
   }, [p.match_date]);
 
-  // 1. Condensed Single-Line Row (Flashscore Style)
+  // 1. Condensed Single-Line Row
   if (viewMode === 'condensed') {
     return (
       <>
         <div
           onClick={() => {
             hapticService.selection();
-            if (!locked) setShowAnalytics(true);
+            setShowAnalytics(true);
           }}
-          className="py-2 px-3.5 bg-card hover:bg-muted/40 transition-colors cursor-pointer flex items-center justify-between gap-2.5 text-xs"
+          className="py-2.5 px-4 bg-card hover:bg-muted/40 transition-colors cursor-pointer grid grid-cols-[52px_1fr_auto] sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3 text-xs"
         >
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <span className="text-[11px] font-mono tabular-nums text-muted-foreground w-11 shrink-0">
-              {formattedTime}
-            </span>
-            <div className="flex items-center gap-1.5 min-w-0 truncate">
-              <TeamLogo team={p.home_team} size="xs" badgeOnly />
-              <span className="font-semibold truncate text-foreground">{p.home_team}</span>
-              <span className="text-muted-foreground text-[10px]">v</span>
-              <TeamLogo team={p.away_team} size="xs" badgeOnly />
-              <span className="font-semibold truncate text-foreground">{p.away_team}</span>
-            </div>
+          <span className="font-mono tabular-nums text-muted-foreground">
+            {formattedTime}
+          </span>
+
+          <div className="flex items-center gap-2 min-w-0 truncate">
+            <TeamLogo team={p.home_team} size="xs" badgeOnly />
+            <span className="font-medium truncate text-foreground">{p.home_team}</span>
+            <span className="text-muted-foreground">vs</span>
+            <TeamLogo team={p.away_team} size="xs" badgeOnly />
+            <span className="font-medium truncate text-foreground">{p.away_team}</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 shrink-0 text-xs">
-            <span className="font-medium text-foreground">{displayOutcome}</span>
+          <div className="hidden sm:flex items-center justify-end gap-2 text-xs">
+            <span className="font-medium text-foreground truncate">{displayOutcome}</span>
             <span className="font-mono tabular-nums font-bold text-primary">{confidence}%</span>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0 font-mono tabular-nums" onClick={(e) => e.stopPropagation()}>
+          <div className="grid grid-cols-3 gap-1.5 w-[156px] sm:w-[168px] font-mono tabular-nums">
             {[
-              { label: 'Home Win', key: '1', prob: winProbabilities.home, odds: p.home_odds },
-              { label: 'Draw', key: 'X', prob: winProbabilities.draw, odds: p.draw_odds },
-              { label: 'Away Win', key: '2', prob: winProbabilities.away, odds: p.away_odds },
-            ].map(({ label, key, prob, odds }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={(e) => handleOddsClick(e, label, odds || 2.0)}
-                className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-colors ${
-                  isMarketInSlip(label)
-                    ? 'bg-primary text-primary-foreground border-primary font-bold'
-                    : 'bg-muted/50 hover:bg-muted border-border text-foreground'
-                }`}
-              >
-                {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
-              </button>
-            ))}
+              { label: 'Home Win', key: '1', prob: winProbabilities.home, odds: p.home_odds ?? 1.95 },
+              { label: 'Draw', key: 'X', prob: winProbabilities.draw, odds: p.draw_odds ?? 3.30 },
+              { label: 'Away Win', key: '2', prob: winProbabilities.away, odds: p.away_odds ?? 2.85 },
+            ].map(({ label, key, prob, odds }) => {
+              const favored = outcome === label;
+              const inSlip = isMarketInSlip(label);
+              return (
+                <button
+                  type="button"
+                  key={key}
+                  onClick={(e) => handleAddMarketToSlip(e, label, odds)}
+                  className={`py-1 rounded text-center text-[11px] border transition-colors cursor-pointer ${
+                    inSlip
+                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold'
+                      : favored
+                      ? 'bg-primary/10 text-primary border-primary/30 font-bold hover:bg-primary/20'
+                      : 'bg-muted/40 border-border text-foreground font-medium hover:bg-muted'
+                  }`}
+                  title={`Click to add ${label} to Bet Slip`}
+                >
+                  {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -274,171 +198,111 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     );
   }
 
-  // 2. Pro Sports Portal Match Row (FotMob / Sofascore / Oddspedia Standard)
+  // 2. Default Aligned Tabular Match Row with 1-Click Add to Bet Slip
   if (viewMode === 'compact') {
     return (
       <>
         <div
           onClick={() => {
             hapticService.selection();
-            if (!locked) setShowAnalytics(true);
+            setShowAnalytics(true);
           }}
-          className="px-4 py-2.5 bg-card hover:bg-muted/35 transition-colors cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="px-4 py-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer grid grid-cols-1 sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3"
         >
-          {/* Left: Kickoff Time + Teams + 5-Game Form Guide + xG */}
-          <div className="flex items-center gap-3.5 min-w-0 flex-1">
-            {/* Kickoff / Live Status */}
-            <div className="w-12 shrink-0 text-center pr-2.5 border-r border-border/70 font-mono tabular-nums">
-              {relativeKickoff.status === 'live' ? (
-                <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 block">
-                  LIVE
-                </span>
-              ) : (
-                <>
-                  <span className="text-xs font-bold text-foreground block">{formattedTime}</span>
-                  <span className="text-[10px] text-muted-foreground block">{formattedShortDate}</span>
-                </>
-              )}
-            </div>
-
-            {/* Teams + Form + Expected Goals */}
-            <div className="flex-1 min-w-0 space-y-1.5">
-              {/* Home Team Row */}
-              <div className="flex items-center justify-between gap-2">
-                <Link
-                  to={matchUrl}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-2 min-w-0 group/team"
-                >
-                  <TeamLogo team={p.home_team} size="xs" />
-                  <span className="text-[13px] font-semibold text-foreground truncate group-hover/team:text-primary transition-colors">
-                    {p.home_team}
-                  </span>
-                </Link>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="hidden md:flex items-center gap-0.5" title={`${p.home_team} recent form`}>
-                    {teamStats.homeForm.map((res, idx) => (
-                      <span
-                        key={idx}
-                        className={`w-3.5 h-3.5 rounded-[3px] text-[9px] font-mono font-bold flex items-center justify-center text-white ${
-                          res === 'W'
-                            ? 'bg-emerald-700'
-                            : res === 'D'
-                              ? 'bg-slate-600'
-                              : 'bg-rose-600'
-                        }`}
-                      >
-                        {res}
-                      </span>
-                    ))}
-                  </div>
-                  <span className="font-mono tabular-nums text-[11px] text-muted-foreground w-12 text-right">
-                    {teamStats.homeXg} xG
-                  </span>
-                </div>
-              </div>
-
-              {/* Away Team Row */}
-              <div className="flex items-center justify-between gap-2">
-                <Link
-                  to={matchUrl}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-2 min-w-0 group/team"
-                >
-                  <TeamLogo team={p.away_team} size="xs" />
-                  <span className="text-[13px] font-semibold text-foreground truncate group-hover/team:text-primary transition-colors">
-                    {p.away_team}
-                  </span>
-                </Link>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="hidden md:flex items-center gap-0.5" title={`${p.away_team} recent form`}>
-                    {teamStats.awayForm.map((res, idx) => (
-                      <span
-                        key={idx}
-                        className={`w-3.5 h-3.5 rounded-[3px] text-[9px] font-mono font-bold flex items-center justify-center text-white ${
-                          res === 'W'
-                            ? 'bg-emerald-700'
-                            : res === 'D'
-                              ? 'bg-slate-600'
-                              : 'bg-rose-600'
-                        }`}
-                      >
-                        {res}
-                      </span>
-                    ))}
-                  </div>
-                  <span className="font-mono tabular-nums text-[11px] text-muted-foreground w-12 text-right">
-                    {teamStats.awayXg} xG
-                  </span>
-                </div>
-              </div>
-            </div>
+          {/* Column 1: Kickoff Time & Date */}
+          <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-2 sm:gap-0.5 font-mono tabular-nums sm:border-r sm:border-border/60 sm:pr-3">
+            {relativeKickoff.status === 'live' ? (
+              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 animate-pulse">
+                LIVE
+              </span>
+            ) : (
+              <>
+                <span className="text-xs font-semibold text-foreground">{formattedTime}</span>
+                <span className="text-[11px] text-muted-foreground">{formattedShortDate}</span>
+              </>
+            )}
+            <span className="sm:hidden text-xs font-semibold text-primary">
+              {displayOutcome} · {confidence}%
+            </span>
           </div>
 
-          {/* Right: Forecast Badge + 1 / X / 2 Sportsbook Odds Matrix + Match Center Trigger */}
-          <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50 shrink-0">
-            {/* Forecast Pill */}
-            <div className="flex items-center gap-1.5 min-w-[115px] sm:justify-end">
-              <span className="text-xs font-semibold text-foreground">{displayOutcome}</span>
-              <span
-                className={`font-mono tabular-nums text-[11px] font-bold px-1.5 py-0.5 rounded ${
-                  confidence >= 80
-                    ? 'bg-emerald-700 text-white'
-                    : 'bg-emerald-800 text-white dark:bg-emerald-500/20 dark:text-emerald-300'
-                }`}
+          {/* Column 2: Clubs & Expected Goals (xG) */}
+          <div className="min-w-0 space-y-1.5">
+            <div className="flex items-center justify-between gap-3">
+              <Link
+                to={matchUrl}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-2.5 min-w-0 group/team"
               >
-                {confidence}%
+                <TeamLogo team={p.home_team} size="xs" />
+                <span className="text-sm font-medium text-foreground truncate group-hover/team:text-primary transition-colors">
+                  {p.home_team}
+                </span>
+              </Link>
+              <span className="font-mono tabular-nums text-xs text-muted-foreground shrink-0">
+                {teamStats.homeXg} xG
               </span>
             </div>
 
-            {/* 1 / X / 2 Cells */}
-            <div className="flex items-center gap-1 font-mono tabular-nums" onClick={(e) => e.stopPropagation()}>
-              {[
-                { label: 'Home Win', key: '1', prob: winProbabilities.home, odds: p.home_odds, isFavored: outcome === 'Home Win' },
-                { label: 'Draw', key: 'X', prob: winProbabilities.draw, odds: p.draw_odds, isFavored: outcome === 'Draw' },
-                { label: 'Away Win', key: '2', prob: winProbabilities.away, odds: p.away_odds, isFavored: outcome === 'Away Win' },
-              ].map(({ label, key, prob, odds, isFavored }) => {
-                const selected = isMarketInSlip(label);
-                return (
-                  <button
-                    type="button"
-                    key={key}
-                    onClick={(e) => handleOddsClick(e, label, odds || 2.0)}
-                    className={`h-8 w-[52px] rounded-md text-xs border flex flex-col items-center justify-center transition-colors cursor-pointer ${
-                      selected
-                        ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
-                        : isFavored
-                          ? 'bg-primary/5 hover:bg-primary/15 border-primary/40 text-foreground font-semibold'
-                          : 'bg-muted/50 hover:bg-muted border-border text-foreground'
-                    }`}
-                    title={`${label} (${prob}%)`}
-                  >
-                    <span className={`text-[9px] leading-none ${selected ? 'text-primary-foreground/85' : 'text-muted-foreground'}`}>
-                      {key}
-                    </span>
-                    <span className="text-[11px] font-bold leading-tight mt-0.5">
-                      {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between gap-3">
+              <Link
+                to={matchUrl}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-2.5 min-w-0 group/team"
+              >
+                <TeamLogo team={p.away_team} size="xs" />
+                <span className="text-sm font-medium text-foreground truncate group-hover/team:text-primary transition-colors">
+                  {p.away_team}
+                </span>
+              </Link>
+              <span className="font-mono tabular-nums text-xs text-muted-foreground shrink-0">
+                {teamStats.awayXg} xG
+              </span>
             </div>
+          </div>
 
-            {/* Match Stats & H2H Trigger */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAnalytics(true);
-              }}
-              className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground hover:text-primary inline-flex items-center justify-center transition-colors shrink-0"
-              title="Open Match Center, Lineups & H2H"
-              aria-label={`View match analytics for ${p.home_team} vs ${p.away_team}`}
-            >
-              <BarChart2 className="h-4 w-4" aria-hidden="true" />
-            </button>
+          {/* Column 3: AI Pick & Confidence */}
+          <div className="hidden sm:flex flex-col items-end justify-center text-right pr-2">
+            <span className="text-xs font-semibold text-foreground truncate max-w-[125px]">
+              {displayOutcome}
+            </span>
+            <span className="text-[11px] font-mono tabular-nums text-primary font-semibold mt-0.5">
+              {confidence}% conf.
+            </span>
+          </div>
+
+          {/* Column 4: Interactive 1 · X · 2 Odds Buttons (Click to Add to Bet Slip) */}
+          <div className="grid grid-cols-3 gap-1.5 w-full sm:w-[168px] font-mono tabular-nums">
+            {[
+              { label: 'Home Win', key: '1', prob: winProbabilities.home, odds: p.home_odds ?? 1.95 },
+              { label: 'Draw', key: 'X', prob: winProbabilities.draw, odds: p.draw_odds ?? 3.30 },
+              { label: 'Away Win', key: '2', prob: winProbabilities.away, odds: p.away_odds ?? 2.85 },
+            ].map(({ label, key, prob, odds }) => {
+              const isFavored = outcome === label;
+              const inSlip = isMarketInSlip(label);
+              return (
+                <button
+                  type="button"
+                  key={key}
+                  onClick={(e) => handleAddMarketToSlip(e, label, odds)}
+                  className={`h-9 rounded-md text-xs border flex flex-col items-center justify-center transition-colors cursor-pointer ${
+                    inSlip
+                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-sm'
+                      : isFavored
+                      ? 'bg-primary/10 hover:bg-primary/20 border-primary/35 text-primary font-bold'
+                      : 'bg-muted/40 hover:bg-muted border-border text-foreground font-medium'
+                  }`}
+                  title={`Add ${label} (@${Number(odds).toFixed(2)}) to Bet Slip`}
+                >
+                  <span className={`text-[9px] leading-none ${inSlip ? 'text-emerald-100' : 'text-muted-foreground'}`}>
+                    {key}
+                  </span>
+                  <span className="text-[11px] leading-tight mt-0.5">
+                    {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -452,19 +316,23 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
   }
 
   // 3. Detailed Card View
+  const recommendedOdds =
+    outcome === 'Away Win' ? p.away_odds ?? 2.65 : outcome === 'Draw' ? p.draw_odds ?? 3.30 : p.home_odds ?? 1.85;
+  const recommendedInSlip = isMarketInSlip(outcome);
+
   return (
     <>
       <Card
         onClick={() => {
           hapticService.selection();
-          if (!locked) setShowAnalytics(true);
+          setShowAnalytics(true);
         }}
-        className="group overflow-hidden cursor-pointer transition-colors hover:border-primary/50 border border-border bg-card flex flex-col justify-between shadow-2xs"
+        className="group overflow-hidden cursor-pointer transition-colors hover:border-primary/40 border border-border bg-card flex flex-col justify-between shadow-sm"
       >
-        <CardHeader className="pb-3 pt-3.5 px-4 space-y-2.5">
+        <CardHeader className="pb-3 pt-4 px-4 space-y-3">
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5 min-w-0 truncate">
-              <span className="font-semibold text-primary truncate">{p.league}</span>
+              <span className="font-semibold text-foreground truncate">{p.league}</span>
               <span aria-hidden="true">·</span>
               <span className="font-mono tabular-nums text-[11px] shrink-0">
                 {formattedShortDate}, {formattedTime}
@@ -503,106 +371,90 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-0.5">
+          <div className="space-y-2 pt-0.5">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <TeamLogo team={p.home_team} size="sm" />
-                <span className="font-bold text-sm text-foreground truncate">{p.home_team}</span>
+                <span className="font-semibold text-sm text-foreground truncate">{p.home_team}</span>
               </div>
               <span className="font-mono tabular-nums text-xs text-muted-foreground shrink-0">
-                {teamStats.homeXg} xG · {winProbabilities.home}%
+                {teamStats.homeXg} xG
               </span>
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <TeamLogo team={p.away_team} size="sm" />
-                <span className="font-bold text-sm text-foreground truncate">{p.away_team}</span>
+                <span className="font-semibold text-sm text-foreground truncate">{p.away_team}</span>
               </div>
               <span className="font-mono tabular-nums text-xs text-muted-foreground shrink-0">
-                {teamStats.awayXg} xG · {winProbabilities.away}%
+                {teamStats.awayXg} xG
               </span>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="px-4 pb-3.5 space-y-3">
-          <div className="pt-2 border-t border-border/70 flex items-center justify-between gap-2 text-xs">
-            <span className="font-medium text-muted-foreground">
-              Forecast: <strong className="text-foreground">{displayOutcome}</strong>
+        <CardContent className="px-4 pb-4 space-y-3">
+          <div className="pt-2.5 border-t border-border/70 flex items-center justify-between gap-2 text-xs">
+            <span className="text-muted-foreground">
+              AI Pick: <strong className="text-foreground font-semibold">{displayOutcome}</strong>
             </span>
-            <span className="font-mono tabular-nums font-bold text-primary">
-              {confidence}%
+            <span className="font-mono tabular-nums font-semibold text-primary">
+              {confidence}% conf.
             </span>
           </div>
 
-          {!locked && (
-            <div className="grid grid-cols-3 gap-1.5 font-mono tabular-nums" onClick={(e) => e.stopPropagation()}>
-              {[
-                { label: 'Home Win', key: '1', prob: winProbabilities.home, odds: p.home_odds },
-                { label: 'Draw', key: 'X', prob: winProbabilities.draw, odds: p.draw_odds },
-                { label: 'Away Win', key: '2', prob: winProbabilities.away, odds: p.away_odds },
-              ].map(({ label, key, prob, odds }) => {
-                const selected = isMarketInSlip(label);
-                return (
-                  <button
-                    type="button"
-                    key={label}
-                    onClick={(e) => handleOddsClick(e, label, odds || 2.0)}
-                    className={`min-h-[36px] py-1 px-2 rounded border text-xs flex items-center justify-between transition-colors cursor-pointer ${
-                      selected
-                        ? 'bg-primary text-primary-foreground border-primary font-bold'
-                        : 'bg-muted/50 hover:bg-muted border-border text-foreground'
-                    }`}
-                  >
-                    <span className={selected ? 'text-primary-foreground/85' : 'text-muted-foreground'}>{key}</span>
-                    <span className="font-semibold flex items-center gap-0.5">
-                      {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
-                      {selected && <Check className="h-3 w-3" />}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="grid grid-cols-3 gap-1.5 font-mono tabular-nums" onClick={(e) => e.stopPropagation()}>
+            {[
+              { label: 'Home Win', key: '1', prob: winProbabilities.home, odds: p.home_odds ?? 1.95 },
+              { label: 'Draw', key: 'X', prob: winProbabilities.draw, odds: p.draw_odds ?? 3.30 },
+              { label: 'Away Win', key: '2', prob: winProbabilities.away, odds: p.away_odds ?? 2.85 },
+            ].map(({ label, key, prob, odds }) => {
+              const favored = outcome === label;
+              const inSlip = isMarketInSlip(label);
+              return (
+                <button
+                  type="button"
+                  key={label}
+                  onClick={(e) => handleAddMarketToSlip(e, label, odds)}
+                  className={`min-h-[36px] py-1 px-2.5 rounded-md border text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                    inSlip
+                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold'
+                      : favored
+                      ? 'bg-primary/10 border-primary/35 text-primary font-bold hover:bg-primary/20'
+                      : 'bg-muted/40 hover:bg-muted border-border text-foreground'
+                  }`}
+                  title={`Add ${label} to Bet Slip`}
+                >
+                  <span className={inSlip ? 'text-emerald-100' : 'text-muted-foreground'}>{key}</span>
+                  <span className="font-semibold">
+                    {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-          {!locked && analysis && (
+          {analysis && (
             <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
               {analysis}
             </p>
           )}
 
-          {locked && (
-            <div className="space-y-2 pt-1" onClick={(e) => e.stopPropagation()}>
-              <div className="flex gap-2">
-                <Link to="/shop" className="flex-1">
-                  <Button size="sm" className="w-full min-h-[38px] gap-1.5 font-semibold">
-                    <TrendingUp className="h-3.5 w-3.5" /> Pro
-                  </Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCoinUnlock}
-                  disabled={unlockingCoin}
-                  className="min-h-[38px] gap-1.5 font-semibold"
-                >
-                  <Coins className="h-3.5 w-3.5" /> 50
-                </Button>
-              </div>
-            </div>
-          )}
-
           <div className="flex items-center justify-between pt-2 border-t border-border/70 text-xs" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
-                onClick={() => setShowAnalytics(true)}
-                className="font-semibold text-primary hover:underline transition-colors"
+                onClick={(e) => handleAddMarketToSlip(e, outcome, recommendedOdds)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                  recommendedInSlip
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-primary/10 hover:bg-primary/20 text-primary'
+                }`}
               >
-                Stats &amp; Lineups
+                {recommendedInSlip ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                <span>{recommendedInSlip ? 'In Slip' : '+ Bet Slip'}</span>
               </button>
-              <span aria-hidden="true" className="text-muted-foreground">·</span>
               <Link
                 to={matchUrl}
                 className="font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"

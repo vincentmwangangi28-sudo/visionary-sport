@@ -7,6 +7,7 @@ import {
   ResolvedMatchSEOData,
 } from '@/hooks/useMatchPredictionSEO';
 import { detectUserGeographicRegion } from '@/services/geoRegionService';
+import { getContextualPageIntegration } from '@/services/seoKeywords';
 
 export const BASE_URL = 'https://predictpro.guru';
 
@@ -1018,6 +1019,326 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     keywords:
       'bet code converter, convert sportybet to 1xbet, convert bet9ja to sportybet, universal booking code converter, football slip converter',
     canonicalPath: '/code-converter',
+  },
+  '/booking-code-converter': {
+    title: 'Universal Bet Booking Code Converter: 7 Bookmakers',
+    description:
+      'Translate football booking codes across SportyBet, 1xBet, Bet9ja, Betway, Betika, SportPesa & Mozzart with 1-click market equivalence mapping.',
+    keywords:
+      'booking code converter, sportybet to 1xbet code converter, bet9ja booking code translator, convert bet codes free',
+    canonicalPath: '/booking-code-converter',
+  },
+  '/referee-stats-predictions': {
+    title: 'Referee Card Stats, VAR Penalty Rates & Bookings Today',
+    description:
+      'Daily football referee card statistics, yellow/red card averages per 90, fouls-per-tackle ratios, and VAR penalty probabilities across 40+ leagues.',
+    keywords:
+      'referee card stats, referee yellow card averages, var penalty statistics, over 3.5 cards predictions today',
+    canonicalPath: '/referee-stats-predictions',
+  },
+  '/jackpot-generator': {
+    title: '17-Game Mega & Midweek Jackpot Combination Generator',
+    description:
+      'Generate mathematical 3^D × 2^T double and triple wheeling combinations for 17-game Mega and 13/15-game Midweek Jackpots on SportPesa, Betika & Mozzart.',
+    keywords:
+      'mega jackpot combination generator, 17 games jackpot solver, sportpesa jackpot generator, betika midweek jackpot combinations',
+    canonicalPath: '/jackpot-generator',
+  },
+  '/in-play-predictions': {
+    title: 'Live In-Play Football Predictions & Next-Goal AI Radar',
+    description:
+      'Real-time in-play football predictions, Attacking Pressure Per Minute (APPM) momentum spikes, and live next-goal Poisson probabilities.',
+    keywords:
+      'in-play football predictions, live next goal predictor, live soccer momentum radar, in-play betting tips',
+    canonicalPath: '/in-play-predictions',
+  },
+  '/live-multiview': {
+    title: 'Live 4-Match Multi-View Scoreboard & xG Command Center',
+    description:
+      'Monitor up to 4 live football matches simultaneously in a 2×2 tactical grid with real-time xG, momentum swings, and instant odds alerts.',
+    keywords:
+      'live football multiview, 4 match live scoreboard, in-play xG command center, multi match tracker',
+    canonicalPath: '/live-multiview',
+  },
+  '/closing-line-value': {
+    title: 'Closing Line Value (CLV) & Sharp Steam Move Scanner',
+    description:
+      'Track opening vs current bookmaker odds, sharp syndicate steam moves, and positive Closing Line Value (CLV%) across global football markets.',
+    keywords:
+      'closing line value clv scanner, sharp steam moves football, pinnacle closing line odds, beat closing line',
+    canonicalPath: '/closing-line-value',
+  },
+  '/sgp-builder': {
+    title: 'Correlated Same-Game Parlay (SGP) Gaussian Copula Builder',
+    description:
+      'Build mathematically correlated Same-Game Parlays (SGP) using Gaussian Copula joint probability pricing to expose bookmaker Bet Builder mispricings.',
+    keywords:
+      'same game parlay sgp builder, gaussian copula bet builder, correlated parlay calculator, football sgp fair odds',
+    canonicalPath: '/sgp-builder',
+  },
+  '/pitch-telemetry': {
+    title: '2D Pitch Shot Map, Expected Threat (xT) & Passing Network',
+    description:
+      'Interactive 2D football pitch telemetry featuring shot-quality xG maps, 12×8 Expected Threat (xT) zone grids, and PPDA pressing lines.',
+    keywords:
+      '2d football shot map, expected threat xt grid, passing network soccer, ppda pressing stats',
+    canonicalPath: '/pitch-telemetry',
+  },
+  '/xpts-standings': {
+    title: 'Expected Points (xPTS) Justice Table & xG Standings',
+    description:
+      'Compare actual league points against simulated Expected Points (xPTS) and Expected Goal Difference (xGD) to spot mean-reversion value.',
+    keywords:
+      'expected points xpts table, premier league justice table, understat xpts standings, xg regression teams',
+    canonicalPath: '/xpts-standings',
+  },
+  '/bracket-simulator': {
+    title: 'Knockout Bracket Simulator: UCL, World Cup & AFCON Tree',
+    description:
+      'Simulate full Round of 16, Quarter-Final, Semi-Final, and Final knockout brackets using Bivariate Poisson and ELO tie progression probabilities.',
+    keywords:
+      'champions league bracket simulator, world cup knockout bracket predictor, tournament tree simulator',
+    canonicalPath: '/bracket-simulator',
+  },
+  '/in-play-edge': {
+    title: "In-Play Momentum & 75'+ Late-Goal Pressure Radar",
+    description:
+      "Scan live football matches in the 70'–90'+ window with surging Attacking Pressure Index, corners, and shots on target for late-goal edges.",
+    keywords:
+      'late goal scanner 75 minute, in-play late goal predictions, live momentum radar football, over 0.5 late goals',
+    canonicalPath: '/in-play-edge',
+  },
+  '/social-card-studio': {
+    title: 'Social Bet Slip & Win Card 2× High-DPI PNG Studio',
+    description:
+      'Create high-resolution 1080×1350 and 1080×1920 social media prediction and winning slip cards for WhatsApp, Telegram, and X.',
+    keywords:
+      'social bet slip generator, football prediction card maker, telegram bet slip png studio',
+    canonicalPath: '/social-card-studio',
+  },
+  '/tournament-simulator': {
+    title: '10,000-Run Monte Carlo Tournament Group Stage Simulator',
+    description:
+      'Run 10,000 Monte Carlo group stage simulations to calculate exact Top-2 qualification, group winner, and wildcard advancement probabilities.',
+    keywords:
+      'tournament group simulator, monte carlo football group predictor, qualification probability calculator',
+    canonicalPath: '/tournament-simulator',
+  },
+  '/bet-tracker': {
+    title: 'Personal Bet Tracker, ROI Ledger & ESPN Auto-Settlement',
+    description:
+      'Track your football bets, bankroll equity curve, ROI%, Yield%, and Closing Line Value with 1-click live ESPN scoreboard auto-settlement.',
+    keywords:
+      'personal bet tracker, sports betting roi ledger, bankroll equity curve tracker, auto settle football bets',
+    canonicalPath: '/bet-tracker',
+  },
+  '/set-piece-specialists': {
+    title: 'Penalty Takers, Free-Kick Specialists & Aerial Threat Hub',
+    description:
+      'Club-by-club directory of primary penalty takers, direct free-kick specialists, corner delivery accuracy, and center-back aerial xG threat.',
+    keywords:
+      'football penalty takers list, direct free kick specialists, corner header threat stats, set piece xg',
+    canonicalPath: '/set-piece-specialists',
+  },
+  '/sharp-money-splits': {
+    title: 'Sharp Money, Public Betting Splits & RLM Scanner',
+    description:
+      'Compare public ticket % vs actual money handle % to detect Reverse Line Movement (RLM) and professional syndicate positions.',
+    keywords:
+      'sharp money splits football, public betting percentages soccer, reverse line movement rlm scanner',
+    canonicalPath: '/sharp-money-splits',
+  },
+  '/injury-lineup-impact': {
+    title: 'Confirmed Lineups, Key Injuries & Suspension xG Impact',
+    description:
+      'Quantify how confirmed starting XI rotations, key player injuries, and red-card suspensions shift team Expected Goals (xG) and fair odds.',
+    keywords:
+      'confirmed football lineups today, injury suspension xg impact, missing players betting impact',
+    canonicalPath: '/injury-lineup-impact',
+  },
+  '/stadium-altitude-weather': {
+    title: 'Stadium Altitude, Weather & Travel Fatigue xG Modifiers',
+    description:
+      'Analyze how high stadium elevation, heavy precipitation, wind speed, turf surface, and air travel distance impact match goal totals.',
+    keywords:
+      'stadium altitude football stats, weather impact on over under 2.5 goals, travel fatigue soccer',
+    canonicalPath: '/stadium-altitude-weather',
+  },
+  '/tactical-mismatch-matrix': {
+    title: 'Tactical Style Mismatch, PPDA Press & Coaching DNA Matrix',
+    description:
+      'Evaluate tactical matchups between High-Press (PPDA), Low-Block Counter, Possession Build-Up, and Direct Transition football systems.',
+    keywords:
+      'football tactical mismatch matrix, ppda pressing stats, high press vs low block analysis',
+    canonicalPath: '/tactical-mismatch-matrix',
+  },
+  '/referrals': {
+    title: 'Invite Friends & Earn Free PredictPro VIP Analytics Coins',
+    description:
+      'Share your referral code or prediction slips on WhatsApp and Telegram to unlock milestone badges and Pro analytical features for free.',
+    keywords:
+      'predictpro referrals, earn free vip football predictions, share bet slips rewards',
+    canonicalPath: '/referrals',
+  },
+  '/community-slips': {
+    title: 'Community Copy-Bet Feed & Upvoted Accumulator Slips',
+    description:
+      'Browse and 1-click copy the highest-rated community accumulator slips and verified multi-bookmaker booking codes.',
+    keywords:
+      'community football bet slips, copy winning accumulator codes, upvoted soccer slips today',
+    canonicalPath: '/community-slips',
+  },
+  '/pick-em-challenge': {
+    title: "Daily Free-to-Play 5-Match Football Pick'em Challenge",
+    description:
+      "Lock in your daily 5-match football predictions for free, build winning streaks, and climb the seasonal Pick'em leaderboard.",
+    keywords:
+      'free football pick em challenge, daily 5 match prediction game, soccer prediction contest',
+    canonicalPath: '/pick-em-challenge',
+  },
+  '/alert-center': {
+    title: 'Telegram, WhatsApp & Browser Push Live Alert Center',
+    description:
+      'Configure real-time Telegram, WhatsApp, and browser push alerts for +EV value drops, confirmed lineups, and 75\'+ late-goal surges.',
+    keywords:
+      'telegram football betting alerts, live goal push notifications, sharp odds drop alerts',
+    canonicalPath: '/alert-center',
+  },
+  '/cashout-calculator': {
+    title: 'Acca Cash-Out & Final-Leg Live Hedge Stake Calculator',
+    description:
+      'Calculate the exact live hedge stake on the final leg of your accumulator to lock in equal guaranteed profit regardless of the match result.',
+    keywords:
+      'acca cash out calculator, hedge final leg parlay calculator, lock in guaranteed profit betting',
+    canonicalPath: '/cashout-calculator',
+  },
+  '/arbitrage-finder': {
+    title: 'Multi-Bookie Arbitrage & Surebet Matrix (Nearest-100)',
+    description:
+      'Scan 2-way and 3-way cross-bookmaker arbitrage surebets with anti-detection stake rounding (Nearest 1, 5, 10, 50, 100) for risk-free profit.',
+    keywords:
+      'arbitrage betting finder, football surebets today, 3 way surebet calculator, anti detection stake rounding',
+    canonicalPath: '/arbitrage-finder',
+  },
+  '/player-props': {
+    title: 'Player Shots on Target (SOT), Fouls/90 & Referee Cards',
+    description:
+      'Quantitative football player prop models covering 1+ and 2+ Shots on Target (SOT), Fouls Committed per 90, To Be Booked, and Referee strictness.',
+    keywords:
+      'player shots on target predictions, player fouls per 90 stats, player to be booked tips, custom sot poisson calculator',
+    canonicalPath: '/player-props',
+  },
+  '/rollover-challenge': {
+    title: 'Compound Rollover & Profit-Skim Staking Ladder Simulator',
+    description:
+      'Plan a 3-to-14 day compound rollover challenge with automated daily profit skimming to protect your starting bankroll while scaling returns.',
+    keywords:
+      'compound rollover calculator, profit skim betting ladder, 7 day 1.50 odds rollover planner',
+    canonicalPath: '/rollover-challenge',
+  },
+  '/asian-handicap-calculator': {
+    title: 'Quarter-Ball Asian Handicap (±0.25, ±0.75) Split Matrix',
+    description:
+      'Calculate exact half-win, half-push, half-loss, and full-payout scenarios across ±0.25, ±0.50, ±0.75, and ±1.25 Asian Handicap lines.',
+    keywords:
+      'quarter ball asian handicap calculator, -0.25 -0.75 asian handicap explained, split stake handicap matrix',
+    canonicalPath: '/asian-handicap-calculator',
+  },
+  '/syndicate-pools': {
+    title: '17-Game Jackpot Syndicate Pools & Mini-Leagues Hub',
+    description:
+      'Join or create collaborative 17-game Mega Jackpot wheeling syndicates to fund multi-double and triple permutations with proportional payouts.',
+    keywords:
+      'jackpot syndicate pools, 17 game mega jackpot syndicate, group football prediction pools',
+    canonicalPath: '/syndicate-pools',
+  },
+  '/corner-stats-scanner': {
+    title: 'Corner Kick Tempo, Wing Width & Poisson Corner Scanner',
+    description:
+      'Model match corner totals (Over 8.5, 9.5, 10.5, 11.5), 1st-half vs 2nd-half corner splits, and Asian Team Corner handicaps.',
+    keywords:
+      'corner kick stats scanner, over 9.5 corners poisson model, 1st half corners predictions, wing attack width stats',
+    canonicalPath: '/corner-stats-scanner',
+  },
+  '/cash-out-calculator': {
+    title: 'Cash-Out Fair Equity vs Bookmaker Haircut Auditor',
+    description:
+      'Audit any bookmaker cash-out offer against true mathematical ticket equity and optimal partial/full lay hedge sizing.',
+    keywords:
+      'cash out equity calculator, bookmaker cash out margin auditor, hold vs cash out expected value',
+    canonicalPath: '/cash-out-calculator',
+  },
+  '/referee-stats-scanner': {
+    title: 'Referee Discipline, Fouls-per-Tackle & Booking Matrix',
+    description:
+      'Analyze referee yellow/red card averages, fouls-per-card thresholds, derby hostility multipliers, and Over 3.5 / 4.5 booking points EV.',
+    keywords:
+      'referee stats scanner, yellow cards per game referee, booking points calculator football, derby card predictions',
+    canonicalPath: '/referee-stats-scanner',
+  },
+  '/player-props-lab': {
+    title: 'Player Shots on Target (1+ / 2+ SoT) & Goal Prop Lab',
+    description:
+      'Calculate true Poisson probabilities and fair odds for Player 1+, 2+, and 3+ Shots on Target, Anytime Goalscorer, and 1+ Assist props.',
+    keywords:
+      'player shots on target lab, 1+ 2+ sot poisson calculator, anytime goalscorer fair odds, player prop +ev scanner',
+    canonicalPath: '/player-props-lab',
+  },
+  '/trixie-yankee-calculator': {
+    title: 'Trixie, Yankee, Lucky 15, Heinz & System Bet Simulator',
+    description:
+      'Simulate every winning/losing leg scenario across Trixie (4 bets), Patent (7), Yankee (11), Lucky 15 (15), Canadian (26), and Heinz (57).',
+    keywords:
+      'trixie yankee calculator, lucky 15 system bet simulator, heinz bet permutation table, round robin football calculator',
+    canonicalPath: '/trixie-yankee-calculator',
+  },
+  '/tanzania-premier-league-predictions': {
+    title: 'Tanzania NBC Premier League Predictions: Simba & Yanga',
+    description:
+      'Daily Tanzania NBC Premier League (Ligi Kuu Bara) AI football predictions, xG stats, and H2H odds for Simba SC, Young Africans (Yanga) & Azam FC.',
+    keywords:
+      'tanzania premier league predictions, ligi kuu bara tips today, simba sc vs yanga prediction, nbc premier league odds',
+    canonicalPath: '/tanzania-premier-league-predictions',
+  },
+  '/ghana-premier-league-predictions': {
+    title: 'Ghana Premier League Predictions: Kotoko & Hearts of Oak',
+    description:
+      'Daily Ghana Premier League (GPL) AI football predictions, home fortress xG models, and Under 2.5 tips for Asante Kotoko, Hearts of Oak & Medeama.',
+    keywords:
+      'ghana premier league predictions, gpl betting tips today, asante kotoko vs hearts of oak prediction',
+    canonicalPath: '/ghana-premier-league-predictions',
+  },
+  '/morocco-botola-pro-predictions': {
+    title: 'Morocco Botola Pro Predictions: Raja, Wydad & AS FAR',
+    description:
+      'Daily Morocco Botola Pro Inwi AI football predictions, defensive xGA models, and Casablanca derby tips for Raja CA, Wydad AC & AS FAR.',
+    keywords:
+      'morocco botola pro predictions, raja vs wydad casablanca tips, botola pro betting tips today',
+    canonicalPath: '/morocco-botola-pro-predictions',
+  },
+  '/caf-champions-league-predictions': {
+    title: 'CAF Champions League Predictions: Al Ahly & Sundowns',
+    description:
+      'CAF Champions League and Confederation Cup AI predictions, home altitude/travel xG modifiers, and knockout odds for Al Ahly, Sundowns & Esperance.',
+    keywords:
+      'caf champions league predictions, african club football tips, al ahly mamelodi sundowns prediction',
+    canonicalPath: '/caf-champions-league-predictions',
+  },
+  '/uganda-premier-league-predictions': {
+    title: 'Uganda Premier League Predictions: Vipers SC, KCCA & Villa',
+    description:
+      'Daily StarTimes Uganda Premier League (UPL) AI football predictions, 1X2 banker picks, and Under 2.5 stats for Vipers SC, KCCA FC & SC Villa.',
+    keywords:
+      'uganda premier league predictions, upl betting tips today, vipers sc vs kcca prediction',
+    canonicalPath: '/uganda-premier-league-predictions',
+  },
+  '/k-league-predictions': {
+    title: 'South Korea K League 1 Predictions: Ulsan HD & FC Seoul',
+    description:
+      'Daily South Korea Hana 1Q K League 1 AI football predictions, early-kickoff Over 2.5 goals, BTTS, and corner projections for Ulsan HD & Jeonbuk.',
+    keywords:
+      'k league 1 predictions, korean football betting tips, ulsan hd fc seoul prediction today',
+    canonicalPath: '/k-league-predictions',
   },
   '/auth': {
     title: 'Sign In or Create Account — PredictPro AI Football Hub',
@@ -2674,12 +2995,22 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
 
     const image = options.image || DEFAULT_IMAGE;
     const type = options.type || (matchSeo ? 'article' : routeDefaults.type) || 'website';
-    const keywords =
+    const contextualIntegration = getContextualPageIntegration(canonicalPath);
+    const baseKeywords =
       options.keywords ||
       localizedMatch?.keywords ||
       routeLocalized?.keywords ||
       matchSeo?.keywords ||
       routeDefaults.keywords;
+    const mergedKeywordList = Array.from(
+      new Set(
+        [
+          ...baseKeywords.split(',').map((k) => k.trim()).filter(Boolean),
+          ...contextualIntegration.competitorKeywords,
+        ]
+      )
+    );
+    const keywords = mergedKeywordList.slice(0, 18).join(', ');
     const noIndex = options.noIndex ?? routeDefaults.noIndex ?? false;
 
     const breadcrumbs =

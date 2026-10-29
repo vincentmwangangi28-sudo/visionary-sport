@@ -13,8 +13,8 @@ import { Input } from '@/components/ui/input';
 import {
   Award,
   Calendar,
+  ChevronRight,
   Clock,
-  Plus,
   Search,
   Sliders,
 } from 'lucide-react';
@@ -399,10 +399,10 @@ function getFdrBadgeClass(fdr: number): string {
 
 export default function TeamAnalyticsHub() {
   const { teamSlug } = useParams<{ teamSlug?: string }>();
-  const { addSelection } = useBetSlip();
   const [searchQuery, setSearchQuery] = useState('');
   const [liveUpcomingFixtures, setLiveUpcomingFixtures] = useState<Prediction[]>([]);
   const [liveFinishedMatches, setLiveFinishedMatches] = useState<OfficialFinishedMatch[]>([]);
+  const { addSelection, setIsOpen } = useBetSlip();
 
   useEffect(() => {
     let mounted = true;
@@ -585,44 +585,38 @@ export default function TeamAnalyticsHub() {
       />
       <Navbar />
 
-      <main className="max-w-[1440px] mx-auto w-full px-3 sm:px-4 py-8 pb-20 max-w-6xl space-y-6" id="main-content">
+      <main className="container mx-auto max-w-7xl w-full px-4 sm:px-6 py-6 pb-20 space-y-5" id="main-content">
         <Breadcrumbs
           currentTitle={teamSlug ? `${activeClub.name} Analytics` : 'Club Analytics & FDR Hub'}
         />
 
-        {/* Dark Broadcast Header */}
-        <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-                Club xG &amp; Poisson Telemetry Hub
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-[11px] font-mono text-slate-300">
-                ELO Rating: {activeClub.elo}
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-[11px] font-semibold text-slate-300">
-                {activeClub.league} ({activeClub.country})
-              </span>
+        {/* Clean Page Header */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-border pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
+              <span className="text-primary font-semibold">Club xG &amp; Poisson Telemetry</span>
+              <span>·</span>
+              <span className="font-mono">ELO Rating: {activeClub.elo}</span>
+              <span>·</span>
+              <span>{activeClub.league} ({activeClub.country})</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-              <TeamLogo team={activeClub.name} league={activeClub.league} size="md" />
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
+              <TeamLogo team={activeClub.name} league={activeClub.league} size="sm" />
               <span>{activeClub.name} — Quantitative xG &amp; FDR Profile</span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl">
+            <p className="text-xs text-muted-foreground max-w-3xl">
               Rolling 10-match Expected Goals (xG / xGA), Dixon-Coles Bivariate Poisson attack and defense parameters, pressing intensity (PPDA), and upcoming 5-Match Fixture Difficulty Ratings (FDR).
             </p>
           </div>
 
           <div className="w-full lg:w-72">
             <div className="relative">
-              <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter clubs (Arsenal, Al Ahly, Simba...)"
-                className="pl-9 text-xs h-9 bg-slate-950 border-slate-800 text-white placeholder:text-slate-400"
+                className="pl-9 text-xs h-9 bg-card"
               />
             </div>
           </div>
@@ -759,67 +753,74 @@ export default function TeamAnalyticsHub() {
 
           <CardContent className="p-5 pt-2">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {activeClub.upcomingFixtures.map((fix, i) => {
-                const fairOdds = Number(Math.max(1.25, 0.94 / (fix.winProb / 100)).toFixed(2));
-                const homeTeam = fix.venue === 'H' ? activeClub.name : fix.opponent;
-                const awayTeam = fix.venue === 'H' ? fix.opponent : activeClub.name;
-                return (
-                  <div
-                    key={i}
-                    className="p-3.5 rounded-xl border border-border/70 bg-background/70 hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-1 mb-2">
-                        <Badge variant="outline" className="text-[10px] font-mono">
-                          GW+{i + 1} ({fix.venue})
-                        </Badge>
-                        <Badge variant="outline" className={`text-[10px] font-bold ${getFdrBadgeClass(fix.fdr)}`}>
-                          FDR {fix.fdr}/5
-                        </Badge>
-                      </div>
-                      <Link
-                        to={`/predict/${fix.matchSlug}`}
-                        className="font-black text-sm text-foreground hover:text-primary transition-colors block"
-                      >
-                        vs {fix.opponent}
-                      </Link>
-                      <p className="text-[11px] text-muted-foreground font-mono mt-1">
-                        Proj xG: {fix.projectedXg}
-                      </p>
+              {activeClub.upcomingFixtures.map((fix, i) => (
+                <div
+                  key={i}
+                  className="p-3.5 rounded-xl border border-border/70 bg-background/70 hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-2">
+                      <Badge variant="outline" className="text-[10px] font-mono">
+                        GW+{i + 1} ({fix.venue})
+                      </Badge>
+                      <Badge variant="outline" className={`text-[10px] font-bold ${getFdrBadgeClass(fix.fdr)}`}>
+                        FDR {fix.fdr}/5
+                      </Badge>
                     </div>
+                    <Link
+                      to={`/predict/${fix.matchSlug}`}
+                      className="font-black text-sm text-foreground hover:text-primary transition-colors block"
+                    >
+                      vs {fix.opponent}
+                    </Link>
+                    <p className="text-[11px] text-muted-foreground font-mono mt-1">
+                      Proj xG: {fix.projectedXg}
+                    </p>
+                  </div>
 
-                    <div className="pt-2 border-t border-border/50 space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Win Prob:</span>
-                        <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
-                          {fix.winProb}% (@{fairOdds})
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
+                  <div className="pt-2 border-t border-border/50 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Win Prob:</span>
+                      <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
+                        {fix.winProb}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
                         onClick={() => {
+                          const fairOdds = Number(Math.max(1.25, 95 / Math.max(20, fix.winProb)).toFixed(2));
+                          const homeTeam = fix.venue === 'H' ? activeClub.name : fix.opponent;
+                          const awayTeam = fix.venue === 'H' ? fix.opponent : activeClub.name;
                           addSelection({
-                            matchId: `club-fdr-${activeClub.slug}-${i}`,
-                            match: `${homeTeam} vs ${awayTeam}`,
+                            id: `fdr-${activeClub.slug}-${i}`,
+                            matchId: `fdr-${activeClub.slug}-${i}`,
                             homeTeam,
                             awayTeam,
                             league: activeClub.league,
-                            matchDate: new Date().toISOString(),
-                            market: `${activeClub.name} to Win / 1X`,
+                            market: `${activeClub.name} Win`,
                             odds: fairOdds,
                             confidence: fix.winProb,
                           });
-                          toast.success(`Added ${activeClub.name} vs ${fix.opponent} (@${fairOdds}) to Bet Slip`);
+                          setIsOpen(true);
+                          toast.success(`Added ${activeClub.name} Win (@${fairOdds}) to Bet Slip!`);
                         }}
-                        className="w-full h-7 text-[11px] font-bold gap-1"
+                        className="flex-1 h-7 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center transition-colors cursor-pointer"
                       >
-                        <Plus className="h-3 w-3" /> Add Pick (@{fairOdds})
-                      </Button>
+                        + Add (@{Math.max(1.25, 95 / Math.max(20, fix.winProb)).toFixed(2)})
+                      </button>
+                      <Link
+                        to={`/predict/${fix.matchSlug}`}
+                        className="px-2 h-7 rounded-md border border-border bg-card hover:bg-muted/60 text-[11px] font-semibold flex items-center justify-center gap-0.5 text-foreground transition-colors"
+                        title="Match Analysis"
+                      >
+                        <span>Stats</span>
+                        <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                      </Link>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -895,7 +896,7 @@ export default function TeamAnalyticsHub() {
                 15-Minute Goal Scoring Timing Profile
               </CardTitle>
               <CardDescription className="text-xs">
-                Identifies prime First-Half Over 0.5 and Late Goal (76&apos;–90+&apos;) in-play betting windows for {activeClub.name}.
+                Displays 15-minute goal distribution and second-half scoring intensity for {activeClub.name}.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-5 space-y-3">

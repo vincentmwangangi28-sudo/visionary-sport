@@ -18,6 +18,7 @@ import {
   SitemapEntry 
 } from '@/services/sitemapGenerator';
 import { googleIndexingCronService } from '@/services/googleIndexingCron';
+import { SIMILAR_SITES_KEYWORD_BENCHMARKS } from '@/services/seoKeywords';
 import { 
   FileCode2, 
   Download, 
@@ -33,7 +34,8 @@ import {
   Layers,
   Radio,
   ShieldCheck,
-  Rss
+  Rss,
+  BarChart3
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -143,7 +145,7 @@ export default function Sitemap() {
               <Badge variant="outline" className="gap-1 border-primary/30 text-primary font-bold">
                 <Layers className="h-3.5 w-3.5" /> SEO &amp; Google Discover Directory
               </Badge>
-              <Badge variant="secondary" className="text-xs font-bold">
+              <Badge variant="secondary" className="text-xs font-bold font-mono tabular-nums">
                 {allEntries.length} Indexed Canonical Routes
               </Badge>
               <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 text-xs font-bold">
@@ -280,6 +282,61 @@ export default function Sitemap() {
             </CardContent>
           </Card>
         )}
+
+        {/* Similar & Top Sites Competitor Keyword Benchmark Matrix */}
+        <Card className="mb-8 border-primary/20 bg-card/60">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" /> Similar &amp; Top Football Analytics Sites Keyword Benchmark Matrix
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Direct semantic keyword coverage and route parity against leading mathematical prediction, expected goals, and odds portals.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {SIMILAR_SITES_KEYWORD_BENCHMARKS.map((bench) => (
+                <div
+                  key={bench.id}
+                  className="p-3.5 rounded-lg border border-border/80 bg-background/60 flex flex-col justify-between gap-2.5"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-bold text-foreground">{bench.domain}</span>
+                      <span className="text-[10px] font-mono tabular-nums text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                        {bench.category} · DR {bench.authorityScore}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-2">
+                      {bench.predictProEdge}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {bench.topKeywords.slice(0, 4).map((kw) => (
+                        <span
+                          key={kw}
+                          className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/50"
+                        >
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
+                    {bench.integratedRoutes.map((route) => (
+                      <Link
+                        key={route.path}
+                        to={route.path}
+                        className="text-[11px] font-mono text-primary hover:underline flex items-center gap-0.5"
+                      >
+                        {route.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Multi-Sitemap Index & Category Sub-Sitemaps */}
         <Card className="mb-8 border-primary/20 bg-card/60">

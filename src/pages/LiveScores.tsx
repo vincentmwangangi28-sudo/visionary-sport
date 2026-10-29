@@ -35,12 +35,12 @@ import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { TeamLogo } from '@/components/TeamLogo';
-import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
-import { LiveMomentumRadar } from '@/components/LiveMomentumRadar';
 import { LivePitchVisualizer } from '@/components/LivePitchVisualizer';
 import { LiveStreamHubModal, WatchableMatchInput } from '@/components/LiveStreamHubModal';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
 import { LiveParlaySettlementBar } from '@/components/LiveParlaySettlementBar';
+import { LiveMomentumRadar } from '@/components/LiveMomentumRadar';
+import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
 import { playLiveEventChime } from '@/services/autoSettlementService';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { Link } from 'react-router-dom';
@@ -527,10 +527,10 @@ export default function LiveScores() {
       />
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-8 pb-20 max-w-6xl space-y-6" id="main-content">
+      <main className="flex-1 container mx-auto px-4 sm:px-6 py-6 pb-20 max-w-7xl space-y-5" id="main-content">
         {/* Top Header & Sync Bar */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-5">
-          <div className="space-y-1.5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-4">
+          <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
               <span className="text-primary font-semibold">Live Match &amp; Broadcast Directory</span>
               <span aria-hidden="true">·</span>
@@ -544,8 +544,8 @@ export default function LiveScores() {
                 </>
               )}
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Live Football Scores, Streams &amp; 2D xG Center
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+              Live Football Scores &amp; In-Play xG Center
             </h1>
             <p className="text-xs text-muted-foreground font-mono tabular-nums">
               15s live telemetry sync · {isLiveFetching ? 'Updating live feed...' : `Last synced ${formatKickoff(lastSyncTime, { includeTimezone: true })}`}
@@ -558,7 +558,7 @@ export default function LiveScores() {
               variant={freeStreamOnly ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFreeStreamOnly((prev) => !prev)}
-              className={`text-xs min-h-[38px] gap-1.5 font-semibold ${
+              className={`text-xs h-9 gap-1.5 font-semibold ${
                 freeStreamOnly ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600' : ''
               }`}
               data-testid="free-stream-filter-toggle"
@@ -572,24 +572,14 @@ export default function LiveScores() {
               variant={goalThreatOnly ? 'default' : 'outline'}
               size="sm"
               onClick={() => setGoalThreatOnly((prev) => !prev)}
-              className={`text-xs min-h-[38px] gap-1.5 font-semibold ${
+              className={`text-xs h-9 gap-1.5 font-semibold ${
                 goalThreatOnly ? 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600' : ''
               }`}
               data-testid="goal-threat-radar-toggle"
             >
               <Flame className={`h-3.5 w-3.5 ${goalThreatOnly ? 'text-white' : 'text-orange-500'}`} />
-              <span>Goal Threat Radar ({highThreatCount})</span>
+              <span>High xG Pressure ({highThreatCount})</span>
             </Button>
-
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-card text-xs shadow-xs">
-              <Send className="h-3.5 w-3.5 text-sky-500" />
-              <span className="text-muted-foreground hidden sm:inline font-medium">Telegram Alerts:</span>
-              <Switch
-                checked={autoAlertsEnabled}
-                onCheckedChange={setAutoAlertsEnabled}
-                aria-label="Toggle automated Telegram live score alerts"
-              />
-            </div>
 
             <Button
               variant={audioChimeEnabled ? 'secondary' : 'outline'}
@@ -599,7 +589,7 @@ export default function LiveScores() {
                 setAudioChimeEnabled(next);
                 if (next) playLiveEventChime('goal');
               }}
-              className="text-xs min-h-[38px] gap-1.5 font-semibold"
+              className="text-xs h-9 gap-1.5 font-semibold"
               title="Toggle live goal & red card audio chime"
             >
               {audioChimeEnabled ? (
@@ -607,38 +597,72 @@ export default function LiveScores() {
               ) : (
                 <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
               )}
-              <span>{audioChimeEnabled ? 'Goal Audio: ON' : 'Goal Audio: Muted'}</span>
+              <span className="hidden sm:inline">{audioChimeEnabled ? 'Goal Audio' : 'Muted'}</span>
             </Button>
+
+            <div className="flex items-center gap-1.5 px-2.5 h-9 rounded-md border border-border bg-card text-xs font-semibold">
+              <Send className="h-3.5 w-3.5 text-sky-500" />
+              <span className="hidden sm:inline">Telegram Auto-Alerts</span>
+              <Switch
+                checked={autoAlertsEnabled}
+                onCheckedChange={(checked) => {
+                  setAutoAlertsEnabled(checked);
+                  toast.success(
+                    checked
+                      ? `Live goal & settlement alerts enabled for ${telegramChatId}`
+                      : 'Telegram live auto-alerts paused'
+                  );
+                }}
+                aria-label="Toggle Telegram live score alerts"
+              />
+            </div>
 
             <Button
               variant="outline"
               size="sm"
               onClick={() => refresh()}
               disabled={loading || isLiveFetching}
-              className="text-xs min-h-[38px] gap-1.5 font-semibold"
+              className="text-xs h-9 gap-1.5 font-semibold"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading || isLiveFetching ? 'animate-spin text-primary' : ''}`} />
-              <span>{isLiveFetching ? 'Syncing...' : 'Sync Feed'}</span>
+              <span>{isLiveFetching ? 'Syncing...' : 'Sync'}</span>
             </Button>
           </div>
         </div>
 
-        {/* Interactive Multi-Match Parlay & Slip Auto-Settlement Tracker */}
+        {/* Live Parlay & Bet Slip Auto-Settlement Tracker */}
         <LiveParlaySettlementBar matches={matches} />
 
-        {/* SofaScore-Style Attacking Momentum & 70'-89' Late-Goal Scanner */}
+        {/* Live In-Play Momentum Radar & Late Goal Value Scanner */}
         <LiveMomentumRadar />
+
+        {/* Interactive In-Play xG & Game-State Decay Simulator */}
+        <InPlayXgMomentumEngine
+          compact
+          fixture={
+            matches[0]
+              ? {
+                  homeTeam: matches[0].home_team,
+                  awayTeam: matches[0].away_team,
+                  league: matches[0].league,
+                  initialMinute: Number(String(matches[0].minute || '58').replace(/\D/g, '')) || 58,
+                  initialHomeGoals: matches[0].home_score ?? 1,
+                  initialAwayGoals: matches[0].away_score ?? 1,
+                }
+              : undefined
+          }
+        />
 
         {/* Pinned Multi-Match Watchlist Strip */}
         {pinnedMatchesList.length > 0 && (
           <div
-            className="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] space-y-2.5"
+            className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/[0.04] space-y-2.5"
             data-testid="pinned-watchlist-strip"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-600 dark:text-amber-400">
                 <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                <span>Pinned Multi-Match Watchlist ({pinnedMatchesList.length})</span>
+                <span>Pinned Watchlist ({pinnedMatchesList.length})</span>
               </div>
               <button
                 type="button"
@@ -662,7 +686,7 @@ export default function LiveScores() {
                   <div
                     key={pm.id}
                     onClick={() => setExpandedId(expandedId === pm.id ? null : pm.id)}
-                    className="p-2.5 rounded-xl border border-border/80 bg-card hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between gap-2"
+                    className="p-2.5 rounded-lg border border-border/80 bg-card hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between gap-2"
                   >
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center justify-between text-xs font-bold">
@@ -687,34 +711,17 @@ export default function LiveScores() {
           </div>
         )}
 
-        {/* Interactive In-Play Poisson & xG Momentum Simulator */}
-        <InPlayXgMomentumEngine
-          compact
-          fixture={
-            matches[0]
-              ? {
-                  homeTeam: matches[0].home_team,
-                  awayTeam: matches[0].away_team,
-                  league: matches[0].league,
-                  initialMinute: 62,
-                  initialHomeGoals: matches[0].home_score ?? 1,
-                  initialAwayGoals: matches[0].away_score ?? 1,
-                }
-              : undefined
-          }
-        />
-
-        {/* Status Tab Navigation & Search Bar (Flashscore / Sofascore Layout) */}
+        {/* Status Tab Navigation & Search Bar */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Status Tabs */}
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/40 border border-border/80 w-full sm:w-auto overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/40 border border-border/80 w-full sm:w-auto overflow-x-auto scrollbar-none">
               <button
                 type="button"
                 onClick={() => setStatusTab('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   statusTab === 'all'
-                    ? 'bg-background text-foreground shadow-xs'
+                    ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -723,9 +730,9 @@ export default function LiveScores() {
               <button
                 type="button"
                 onClick={() => setStatusTab('live')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   statusTab === 'live'
-                    ? 'bg-rose-600 text-white shadow-xs'
+                    ? 'bg-rose-600 text-white shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -735,9 +742,9 @@ export default function LiveScores() {
               <button
                 type="button"
                 onClick={() => setStatusTab('watchable')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   statusTab === 'watchable'
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 data-testid="status-tab-watchable"
@@ -748,9 +755,9 @@ export default function LiveScores() {
               <button
                 type="button"
                 onClick={() => setStatusTab('pinned')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   statusTab === 'pinned'
-                    ? 'bg-amber-500 text-white shadow-xs'
+                    ? 'bg-amber-500 text-white shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 data-testid="status-tab-pinned"
@@ -761,9 +768,9 @@ export default function LiveScores() {
               <button
                 type="button"
                 onClick={() => setStatusTab('upcoming')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   statusTab === 'upcoming'
-                    ? 'bg-background text-foreground shadow-xs'
+                    ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -772,9 +779,9 @@ export default function LiveScores() {
               <button
                 type="button"
                 onClick={() => setStatusTab('finished')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   statusTab === 'finished'
-                    ? 'bg-background text-foreground shadow-xs'
+                    ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

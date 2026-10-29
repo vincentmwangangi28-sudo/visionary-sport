@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
+import { AhrefsWebAnalyticsPanel } from '@/components/AhrefsWebAnalyticsPanel';
 import { 
   googleIndexingCronService, 
   CronInterval, 
@@ -14,6 +15,8 @@ import {
 import { 
   TOP_GOOGLE_KEYWORDS, 
   GOOGLE_SERP_FAQS, 
+  SIMILAR_SITES_KEYWORD_BENCHMARKS,
+  ALL_PAGES_INTEGRATION_CLUSTERS,
   GoogleKeywordItem 
 } from '@/services/seoKeywords';
 import {
@@ -62,7 +65,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAdmin } from '@/hooks/useAdmin';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 export default function SEOIndexingPage() {
   const { isAdmin, checking } = useAdmin();
@@ -478,6 +481,9 @@ export default function SEOIndexingPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Ahrefs Web Analytics v3 (project_id=10277130) Live Traffic & Search Telemetry Panel */}
+        <AhrefsWebAnalyticsPanel />
 
         {/* Live Server Prerender, Dynamic /api/og Card & Live ESPN Match Sitemap Inspector */}
         <LiveServerSeoInspector />
@@ -1028,6 +1034,7 @@ export default function SEOIndexingPage() {
                       <th className="p-3">SERP Target</th>
                       <th className="p-3">Search Intent</th>
                       <th className="p-3">Category</th>
+                      <th className="p-3">Similar Site Benchmark</th>
                       <th className="p-3">Target URL</th>
                       <th className="p-3">Strategic Edge</th>
                     </tr>
@@ -1039,7 +1046,7 @@ export default function SEOIndexingPage() {
                           <span className="text-primary font-mono mr-1.5">#</span>
                           {item.keyword}
                         </td>
-                        <td className="p-3 font-mono font-bold text-foreground">
+                        <td className="p-3 font-mono tabular-nums font-bold text-foreground">
                           {item.monthlySearches.toLocaleString()}
                         </td>
                         <td className="p-3">
@@ -1064,10 +1071,15 @@ export default function SEOIndexingPage() {
                             {item.primaryCategory}
                           </Badge>
                         </td>
+                        <td className="p-3">
+                          <span className="text-[10px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                            {item.competitorBenchmark || 'Forebet / PredictZ'}
+                          </span>
+                        </td>
                         <td className="p-3 font-mono text-[11px] text-primary">
-                          <a href={item.targetUrl} className="hover:underline flex items-center gap-1">
+                          <Link to={item.targetUrl} className="hover:underline flex items-center gap-1">
                             {item.targetUrl} <ExternalLink className="w-2.5 h-2.5" />
-                          </a>
+                          </Link>
                         </td>
                         <td className="p-3 text-muted-foreground max-w-xs truncate text-[11px]">
                           {item.notes}
@@ -1078,6 +1090,105 @@ export default function SEOIndexingPage() {
                 </table>
               </div>
             </div>
+
+            {/* Similar & Top Football Analytics Sites Benchmark Matrix */}
+            <Card className="border-border/60 bg-card mt-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <LineChart className="w-4 h-4 text-primary" /> Similar &amp; Top Sites Competitor Keyword Benchmark Matrix
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Head-to-head semantic keyword parity and quantitative differentiation against top-ranking football prediction, xG, and odds portals.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {SIMILAR_SITES_KEYWORD_BENCHMARKS.map((site) => (
+                  <div
+                    key={site.id}
+                    className="rounded-lg border border-border/70 bg-background/60 p-3.5 flex flex-col justify-between gap-2.5"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-xs font-bold text-foreground">{site.domain}</span>
+                        <span className="text-[10px] font-mono tabular-nums text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                          DR {site.authorityScore} · {site.monthlyTrafficEstimate}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed mb-2">
+                        {site.predictProEdge}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {site.topKeywords.slice(0, 4).map((kw) => (
+                          <span
+                            key={kw}
+                            className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/50"
+                          >
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
+                      {site.integratedRoutes.map((route) => (
+                        <Link
+                          key={route.path}
+                          to={route.path}
+                          className="text-[11px] font-mono text-primary hover:underline"
+                        >
+                          {route.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* 6-Cluster Full-Page Integration Graph */}
+            <Card className="border-border/60 bg-card mt-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary" /> 6-Cluster Full-Page Integration Registry (153 Canonical Hubs)
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Every page across PredictPro is interlinked within these 6 semantic clusters with zero orphan routes.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {ALL_PAGES_INTEGRATION_CLUSTERS.map((cluster) => (
+                  <div key={cluster.id} className="rounded-lg border border-border/70 bg-background/50 p-3.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                      <div>
+                        <div className="text-xs font-bold text-foreground">{cluster.title}</div>
+                        <div className="text-[11px] text-muted-foreground">{cluster.subtitle}</div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-mono tabular-nums px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-semibold">
+                          {cluster.pages.length} Integrated Pages
+                        </span>
+                        {cluster.competitorBenchmarks.slice(0, 3).map((comp) => (
+                          <span key={comp} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                            {comp}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {cluster.pages.map((page) => (
+                        <Link
+                          key={page.path}
+                          to={page.path}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded border border-border/70 bg-card hover:border-primary/40 text-[11px] font-medium text-foreground transition-colors"
+                        >
+                          <span>{page.label}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{page.path}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* TAB 2: Live Cron Logs & Terminal */}

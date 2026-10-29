@@ -19,7 +19,6 @@ import {
   generateDeterministicPrediction, 
   savePrediction 
 } from '@/services/predictionStorage';
-import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import {
@@ -33,20 +32,19 @@ import {
   ChevronLeft, 
   AlertCircle, 
   RefreshCw, 
-  Sparkles, 
   Trophy, 
   Calendar, 
-  ArrowRight, 
   Shield, 
   Activity, 
-  DollarSign, 
-  Flame, 
   Target,
-  Layers,
   History,
-  Share2,
-  BarChart3
+  BarChart3,
+  Ticket
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useBetSlip } from '@/hooks/useBetSlip';
+import { OddsComparisonTable } from '@/components/OddsComparisonTable';
+import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
 import { fetchAndCacheTeamLogoByLeague, preloadLeagueTeamLogos } from '@/services/teamLogos';
@@ -55,20 +53,15 @@ import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
 import { PredictionDetailSkeleton } from '@/components/PredictionCardSkeleton';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
-import { OddsComparisonTable } from '@/components/OddsComparisonTable';
-import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { MatchHeadToHeadTimeline } from '@/components/MatchHeadToHeadTimeline';
-import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
 import { RefereeSetPieceMatrix } from '@/components/RefereeSetPieceMatrix';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { QuickInsightCard } from '@/components/QuickInsightCard';
 import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
-import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
 import { evaluateMarketOutcome } from '@/services/autoSettlementService';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { Tv, Play, Radio, CheckCircle2, XCircle } from 'lucide-react';
-import { toast } from 'sonner';
 
 // Slug format: home-team-vs-away-team-2026-08-22
 function parseSlug(slug: string) {
@@ -127,9 +120,9 @@ export default function MatchPrediction() {
   const [isFallback, setIsFallback] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
-  const { addSelection } = useBetSlip();
-  const { formatKickoff, formatOdds, preferences } = useUserPreferences();
+  const { formatKickoff, formatOdds } = useUserPreferences();
   const { region } = useGeoRegion();
+  const { addSelection, setIsOpen } = useBetSlip();
 
   // Automatically generate and inject Google Discover & Schema.org JSON-LD markup for this match
   useMatchPredictionSEO(prediction, matchSlug);
@@ -542,38 +535,44 @@ export default function MatchPrediction() {
           </div>
         )}
 
-        {/* Feature Tabs: Overview, Markets, H2H, Lineups, Tactics/xG, Multi-Bookmaker Odds */}
+        {/* Feature Tabs: Overview, H2H, Lineups, Tactics & Odds */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-6 w-full h-auto p-1 bg-muted/60">
-            <TabsTrigger value="overview" className="text-xs py-2.5 font-bold gap-1">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full h-auto p-1 bg-muted/60">
+            <TabsTrigger value="overview" className="text-xs py-2.5 font-bold gap-1.5">
               <Target className="h-3.5 w-3.5" /> Match Overview
             </TabsTrigger>
-            <TabsTrigger value="markets" className="text-xs py-2.5 font-bold gap-1">
-              <Layers className="h-3.5 w-3.5" /> Asian &amp; Props
+            <TabsTrigger value="odds" className="text-xs py-2.5 font-bold gap-1.5">
+              <Ticket className="h-3.5 w-3.5" /> Odds &amp; Codes
             </TabsTrigger>
-            <TabsTrigger value="h2h" className="text-xs py-2.5 font-bold gap-1">
-              <History className="h-3.5 w-3.5" /> H2H &amp; Flow
+            <TabsTrigger value="h2h" className="text-xs py-2.5 font-bold gap-1.5">
+              <History className="h-3.5 w-3.5" /> Head-to-Head
             </TabsTrigger>
-            <TabsTrigger value="lineups" className="text-xs py-2.5 font-bold gap-1">
-              <Shield className="h-3.5 w-3.5" /> Lineups
+            <TabsTrigger value="lineups" className="text-xs py-2.5 font-bold gap-1.5">
+              <Shield className="h-3.5 w-3.5" /> Lineups &amp; News
             </TabsTrigger>
-            <TabsTrigger value="tactics" className="text-xs py-2.5 font-bold gap-1">
+            <TabsTrigger value="tactics" className="text-xs py-2.5 font-bold gap-1.5">
               <Activity className="h-3.5 w-3.5" /> Tactics &amp; xG
-            </TabsTrigger>
-            <TabsTrigger value="odds" className="text-xs py-2.5 font-bold gap-1">
-              <DollarSign className="h-3.5 w-3.5" /> Bookmakers
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: Match Overview & Multi-Markets */}
+          {/* TAB 1: Match Overview & Statistical Probabilities */}
           <TabsContent value="overview" className="space-y-6">
-            {/* Primary Prediction Banner */}
-            <Card className="border-border bg-card shadow-2xs">
+            <Card className="border-border bg-card shadow-sm">
               <CardContent className="p-6 text-center space-y-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5 uppercase font-bold tracking-wider">Projected Match Outcome</p>
-                  <Badge className={`text-lg px-5 py-2 font-black ${outcome === 'Home Win' ? 'bg-emerald-600' : outcome === 'Away Win' ? 'bg-rose-600' : 'bg-amber-600'} text-white shadow-xs`}>
-                    {outcome}
+                  <p className="text-xs text-muted-foreground mb-1.5 uppercase font-bold tracking-wider">
+                    Model Projected Outcome
+                  </p>
+                  <Badge
+                    className={`text-base px-4 py-1.5 font-bold ${
+                      outcome === 'Home Win'
+                        ? 'bg-emerald-600'
+                        : outcome === 'Away Win'
+                          ? 'bg-sky-600'
+                          : 'bg-amber-600'
+                    } text-white`}
+                  >
+                    {outcome} ({confidence}% Model Confidence)
                   </Badge>
                 </div>
 
@@ -587,306 +586,281 @@ export default function MatchPrediction() {
                   />
                 </div>
 
-                {/* 1X2 Odds Quick Actions */}
-                <div className="grid grid-cols-3 gap-3 pt-2">
-                  <Button
-                    variant="outline"
+                {/* 1X2 Model Distribution with 1-Click Add to Bet Slip */}
+                <div className="grid grid-cols-3 gap-3 pt-2 font-mono tabular-nums">
+                  <button
+                    type="button"
                     onClick={() => {
                       addSelection({
-                        match: `${prediction.home_team} vs ${prediction.away_team}`,
+                        id: `${prediction.id}-home`,
+                        matchId: prediction.id,
                         homeTeam: prediction.home_team,
                         awayTeam: prediction.away_team,
                         league: prediction.league,
-                        matchDate: prediction.match_date,
-                        market: 'Home Win (1)',
+                        market: `1 (${prediction.home_team})`,
                         odds: prediction.home_odds || 1.95,
                         confidence,
                       });
-                      toast.success(`Added ${prediction.home_team} Win to Bet Slip`);
+                      setIsOpen(true);
+                      toast.success(`Added ${prediction.home_team} Win to Bet Slip!`);
                     }}
-                    className="h-16 flex flex-col items-center justify-center p-2 hover:border-primary/60"
+                    className="rounded-xl border border-border bg-muted/30 hover:border-emerald-500/60 hover:bg-emerald-500/10 p-3 flex flex-col items-center justify-center transition-colors cursor-pointer"
                   >
-                    <span className="text-[11px] text-muted-foreground truncate max-w-full font-medium">1 ({prediction.home_team})</span>
-                    <strong className="text-sm font-black text-foreground">{formatOdds(prediction.home_odds || 1.95)}</strong>
-                  </Button>
+                    <span className="text-[11px] text-muted-foreground truncate max-w-full font-sans font-medium">
+                      1 ({prediction.home_team})
+                    </span>
+                    <strong className="text-sm font-bold text-foreground mt-0.5">
+                      {formatOdds(prediction.home_odds || 1.95)}
+                    </strong>
+                    <span className="text-[10px] font-sans text-emerald-500 font-semibold mt-0.5">+ Add Slip</span>
+                  </button>
 
-                  <Button
-                    variant="outline"
+                  <button
+                    type="button"
                     onClick={() => {
                       addSelection({
-                        match: `${prediction.home_team} vs ${prediction.away_team}`,
+                        id: `${prediction.id}-draw`,
+                        matchId: prediction.id,
                         homeTeam: prediction.home_team,
                         awayTeam: prediction.away_team,
                         league: prediction.league,
-                        matchDate: prediction.match_date,
-                        market: 'Draw (X)',
+                        market: 'X (Draw)',
                         odds: prediction.draw_odds || 3.35,
-                        confidence,
+                        confidence: Math.max(25, 100 - confidence),
                       });
-                      toast.success(`Added Draw to Bet Slip`);
+                      setIsOpen(true);
+                      toast.success(`Added Draw (${prediction.home_team} vs ${prediction.away_team}) to Bet Slip!`);
                     }}
-                    className="h-16 flex flex-col items-center justify-center p-2 hover:border-primary/60"
+                    className="rounded-xl border border-border bg-muted/30 hover:border-emerald-500/60 hover:bg-emerald-500/10 p-3 flex flex-col items-center justify-center transition-colors cursor-pointer"
                   >
-                    <span className="text-[11px] text-muted-foreground font-medium">X (Draw)</span>
-                    <strong className="text-sm font-black text-foreground">{formatOdds(prediction.draw_odds || 3.35)}</strong>
-                  </Button>
+                    <span className="text-[11px] text-muted-foreground font-sans font-medium">
+                      X (Draw)
+                    </span>
+                    <strong className="text-sm font-bold text-foreground mt-0.5">
+                      {formatOdds(prediction.draw_odds || 3.35)}
+                    </strong>
+                    <span className="text-[10px] font-sans text-emerald-500 font-semibold mt-0.5">+ Add Slip</span>
+                  </button>
 
-                  <Button
-                    variant="outline"
+                  <button
+                    type="button"
                     onClick={() => {
                       addSelection({
-                        match: `${prediction.home_team} vs ${prediction.away_team}`,
+                        id: `${prediction.id}-away`,
+                        matchId: prediction.id,
                         homeTeam: prediction.home_team,
                         awayTeam: prediction.away_team,
                         league: prediction.league,
-                        matchDate: prediction.match_date,
-                        market: 'Away Win (2)',
+                        market: `2 (${prediction.away_team})`,
                         odds: prediction.away_odds || 2.75,
                         confidence,
                       });
-                      toast.success(`Added ${prediction.away_team} Win to Bet Slip`);
+                      setIsOpen(true);
+                      toast.success(`Added ${prediction.away_team} Win to Bet Slip!`);
                     }}
-                    className="h-16 flex flex-col items-center justify-center p-2 hover:border-primary/60"
+                    className="rounded-xl border border-border bg-muted/30 hover:border-emerald-500/60 hover:bg-emerald-500/10 p-3 flex flex-col items-center justify-center transition-colors cursor-pointer"
                   >
-                    <span className="text-[11px] text-muted-foreground truncate max-w-full font-medium">2 ({prediction.away_team})</span>
-                    <strong className="text-sm font-black text-foreground">{formatOdds(prediction.away_odds || 2.75)}</strong>
-                  </Button>
+                    <span className="text-[11px] text-muted-foreground truncate max-w-full font-sans font-medium">
+                      2 ({prediction.away_team})
+                    </span>
+                    <strong className="text-sm font-bold text-foreground mt-0.5">
+                      {formatOdds(prediction.away_odds || 2.75)}
+                    </strong>
+                    <span className="text-[10px] font-sans text-emerald-500 font-semibold mt-0.5">+ Add Slip</span>
+                  </button>
                 </div>
 
                 {prediction.analysis && (
-                  <p className="text-xs text-muted-foreground bg-muted/40 p-4 rounded-xl text-left leading-relaxed border">
+                  <p className="text-xs text-muted-foreground bg-muted/40 p-4 rounded-xl text-left leading-relaxed border border-border/60">
                     {prediction.analysis}
                   </p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Expanded Secondary Betting Markets Matrix */}
-            <Card className="border-border/80">
+            {/* Secondary Statistical Goal Expectancy Matrix */}
+            <Card className="border-border">
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    <h3 className="font-bold text-base">Expanded Prediction Markets</h3>
+                    <Target className="h-4 w-4 text-primary" />
+                    <h3 className="font-bold text-sm">Goal Expectancy &amp; Bivariate Poisson Markets</h3>
                   </div>
-                  <Badge variant="outline" className="text-xs">Deep Statistical Models</Badge>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div className="p-3 bg-muted/30 rounded-xl border flex flex-col justify-between space-y-2">
-                    <div>
-                      <span className="text-xs text-muted-foreground font-semibold">Both Teams to Score</span>
-                      <p className="text-sm font-black text-foreground">BTTS - Yes ({bttsProb}%)</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        addSelection({
-                          match: `${prediction.home_team} vs ${prediction.away_team}`,
-                          homeTeam: prediction.home_team,
-                          awayTeam: prediction.away_team,
-                          league: prediction.league,
-                          matchDate: prediction.match_date,
-                          market: 'BTTS - Yes',
-                          odds: 1.78,
-                          confidence: bttsProb,
-                        });
-                        toast.success('Added BTTS - Yes to Bet Slip');
-                      }}
-                      className="w-full text-xs font-bold"
-                    >
-                      Bet @ 1.78
-                    </Button>
-                  </div>
-
-                  <div className="p-3 bg-muted/30 rounded-xl border flex flex-col justify-between space-y-2">
-                    <div>
-                      <span className="text-xs text-muted-foreground font-semibold">Total Goals</span>
-                      <p className="text-sm font-black text-foreground">Over 2.5 Goals ({over25Prob}%)</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        addSelection({
-                          match: `${prediction.home_team} vs ${prediction.away_team}`,
-                          homeTeam: prediction.home_team,
-                          awayTeam: prediction.away_team,
-                          league: prediction.league,
-                          matchDate: prediction.match_date,
-                          market: 'Over 2.5 Goals',
-                          odds: 1.92,
-                          confidence: over25Prob,
-                        });
-                        toast.success('Added Over 2.5 Goals to Bet Slip');
-                      }}
-                      className="w-full text-xs font-bold"
-                    >
-                      Bet @ 1.92
-                    </Button>
-                  </div>
-
-                  <div className="p-3 bg-muted/30 rounded-xl border flex flex-col justify-between space-y-2">
-                    <div>
-                      <span className="text-xs text-muted-foreground font-semibold">Safe Goals Line</span>
-                      <p className="text-sm font-black text-foreground">Over 1.5 Goals ({over15Prob}%)</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        addSelection({
-                          match: `${prediction.home_team} vs ${prediction.away_team}`,
-                          homeTeam: prediction.home_team,
-                          awayTeam: prediction.away_team,
-                          league: prediction.league,
-                          matchDate: prediction.match_date,
-                          market: 'Over 1.5 Goals',
-                          odds: 1.34,
-                          confidence: over15Prob,
-                        });
-                        toast.success('Added Over 1.5 Goals to Bet Slip');
-                      }}
-                      className="w-full text-xs font-bold"
-                    >
-                      Bet @ 1.34
-                    </Button>
-                  </div>
-
-                  <div className="p-3 bg-muted/30 rounded-xl border flex flex-col justify-between space-y-2">
-                    <div>
-                      <span className="text-xs text-muted-foreground font-semibold">Double Chance</span>
-                      <p className="text-sm font-black text-foreground">1X Home/Draw (82%)</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        addSelection({
-                          match: `${prediction.home_team} vs ${prediction.away_team}`,
-                          homeTeam: prediction.home_team,
-                          awayTeam: prediction.away_team,
-                          league: prediction.league,
-                          matchDate: prediction.match_date,
-                          market: '1X (Home Win or Draw)',
-                          odds: 1.30,
-                          confidence: 82,
-                        });
-                        toast.success('Added 1X Double Chance to Bet Slip');
-                      }}
-                      className="w-full text-xs font-bold"
-                    >
-                      Bet @ 1.30
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* AI Recommended Match Combo */}
-            <Card className="mt-4 border-primary/20 bg-gradient-to-br from-primary/5 via-card to-primary/5">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                      <Sparkles className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <h4 className="font-black text-sm">AI Recommended Same-Game Combo</h4>
-                      <p className="text-[11px] text-muted-foreground">Correlated match outcome + goals line with positive expected value</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-primary/10 text-primary border-primary/30 font-mono font-bold">
-                    Combined Odds: {((prediction.home_odds ?? 1.95) * 1.34 * 0.95).toFixed(2)}
+                  <Badge variant="outline" className="text-[11px] font-mono">
+                    {homeXgVal} vs {awayXgVal} xG
                   </Badge>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                  <div className="bg-background/80 border rounded-xl p-3 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Leg 1 · Result</span>
-                      <p className="font-bold text-xs text-foreground">{outcome}</p>
-                    </div>
-                    <span className="text-xs font-mono font-bold">@ {(prediction.home_odds ?? 1.95).toFixed(2)}</span>
-                  </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addSelection({
+                        id: `${prediction.id}-btts`,
+                        matchId: prediction.id,
+                        homeTeam: prediction.home_team,
+                        awayTeam: prediction.away_team,
+                        league: prediction.league,
+                        market: 'BTTS: Yes',
+                        odds: 1.78,
+                        confidence: bttsProb,
+                      });
+                      setIsOpen(true);
+                      toast.success('Added BTTS: Yes to Bet Slip!');
+                    }}
+                    className="p-3 bg-muted/30 hover:bg-emerald-500/10 hover:border-emerald-500/50 rounded-xl border border-border/60 space-y-1 text-left transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground font-medium">Both Teams Scoring</span>
+                    <p className="text-sm font-bold text-foreground font-mono tabular-nums">
+                      BTTS Yes · {bttsProb}%
+                    </p>
+                    <span className="text-[10px] text-emerald-500 font-bold block">+ Add (@1.78)</span>
+                  </button>
 
-                  <div className="bg-background/80 border rounded-xl p-3 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Leg 2 · Goals Line</span>
-                      <p className="font-bold text-xs text-foreground">Over 1.5 Goals ({over15Prob}%)</p>
-                    </div>
-                    <span className="text-xs font-mono font-bold">@ 1.34</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addSelection({
+                        id: `${prediction.id}-o25`,
+                        matchId: prediction.id,
+                        homeTeam: prediction.home_team,
+                        awayTeam: prediction.away_team,
+                        league: prediction.league,
+                        market: 'Over 2.5 Goals',
+                        odds: 1.85,
+                        confidence: over25Prob,
+                      });
+                      setIsOpen(true);
+                      toast.success('Added Over 2.5 Goals to Bet Slip!');
+                    }}
+                    className="p-3 bg-muted/30 hover:bg-emerald-500/10 hover:border-emerald-500/50 rounded-xl border border-border/60 space-y-1 text-left transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground font-medium">2.5+ Goals Probability</span>
+                    <p className="text-sm font-bold text-foreground font-mono tabular-nums">
+                      Over 2.5 · {over25Prob}%
+                    </p>
+                    <span className="text-[10px] text-emerald-500 font-bold block">+ Add (@1.85)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addSelection({
+                        id: `${prediction.id}-o15`,
+                        matchId: prediction.id,
+                        homeTeam: prediction.home_team,
+                        awayTeam: prediction.away_team,
+                        league: prediction.league,
+                        market: 'Over 1.5 Goals',
+                        odds: 1.32,
+                        confidence: over15Prob,
+                      });
+                      setIsOpen(true);
+                      toast.success('Added Over 1.5 Goals to Bet Slip!');
+                    }}
+                    className="p-3 bg-muted/30 hover:bg-emerald-500/10 hover:border-emerald-500/50 rounded-xl border border-border/60 space-y-1 text-left transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground font-medium">1.5+ Goals Probability</span>
+                    <p className="text-sm font-bold text-foreground font-mono tabular-nums">
+                      Over 1.5 · {over15Prob}%
+                    </p>
+                    <span className="text-[10px] text-emerald-500 font-bold block">+ Add (@1.32)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addSelection({
+                        id: `${prediction.id}-u35`,
+                        matchId: prediction.id,
+                        homeTeam: prediction.home_team,
+                        awayTeam: prediction.away_team,
+                        league: prediction.league,
+                        market: 'Under 3.5 Goals',
+                        odds: 1.42,
+                        confidence: under35Prob,
+                      });
+                      setIsOpen(true);
+                      toast.success('Added Under 3.5 Goals to Bet Slip!');
+                    }}
+                    className="p-3 bg-muted/30 hover:bg-emerald-500/10 hover:border-emerald-500/50 rounded-xl border border-border/60 space-y-1 text-left transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground font-medium">Under 3.5 Goals</span>
+                    <p className="text-sm font-bold text-foreground font-mono tabular-nums">
+                      Under 3.5 · {under35Prob}%
+                    </p>
+                    <span className="text-[10px] text-emerald-500 font-bold block">+ Add (@1.42)</span>
+                  </button>
                 </div>
-
-                <Button
-                  onClick={() => {
-                    addSelection({
-                      match: `${prediction.home_team} vs ${prediction.away_team}`,
-                      homeTeam: prediction.home_team,
-                      awayTeam: prediction.away_team,
-                      league: prediction.league,
-                      matchDate: prediction.match_date,
-                      market: `${outcome} & Over 1.5 Goals`,
-                      odds: parseFloat((((prediction.home_odds ?? 1.95) * 1.34) * 0.95).toFixed(2)),
-                      confidence: Math.round((confidence * over15Prob) / 100),
-                    });
-                    toast.success('Added AI Recommended Match Combo to Bet Slip!');
-                  }}
-                  className="w-full gap-2 font-bold text-xs"
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Add AI Recommended Combo to Bet Slip
-                </Button>
               </CardContent>
             </Card>
 
-            {/* 1-Click Match Booking Code & Viral WhatsApp/Telegram Syndicate Card */}
-            <div className="mt-4">
-              <ViralSlipShareCard
-                title={`${prediction.home_team} vs ${prediction.away_team} Same-Game Slip`}
-                canonicalPath={`/predict/${canonicalMatchSlug}`}
-                items={[
-                  {
-                    homeTeam: prediction.home_team,
-                    awayTeam: prediction.away_team,
-                    league: prediction.league,
-                    market: outcome,
-                    odds: prediction.home_odds ?? 1.95,
-                    confidence,
-                  },
-                  {
-                    homeTeam: prediction.home_team,
-                    awayTeam: prediction.away_team,
-                    league: prediction.league,
-                    market: 'Over 1.5 Goals',
-                    odds: 1.34,
-                    confidence: over15Prob,
-                  },
-                ]}
-                totalOdds={parseFloat((((prediction.home_odds ?? 1.95) * 1.34) * 0.95).toFixed(2))}
-                combinedConfidence={Math.round((confidence + over15Prob) / 2)}
-              />
-            </div>
+            {/* Bookmaker Odds Comparison & Viral Booking Code Generator */}
+            <OddsComparisonTable
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+              league={prediction.league}
+              baseHomeOdds={prediction.home_odds || 1.95}
+              baseDrawOdds={prediction.draw_odds || 3.35}
+              baseAwayOdds={prediction.away_odds || 2.75}
+              predictedOutcome={outcome}
+              confidence={confidence}
+            />
+
+            <ViralSlipShareCard
+              title={`${prediction.home_team} vs ${prediction.away_team} — AI Match Slip`}
+              items={[
+                {
+                  homeTeam: prediction.home_team,
+                  awayTeam: prediction.away_team,
+                  league: prediction.league,
+                  market: outcome,
+                  odds:
+                    outcome.toLowerCase().includes('away')
+                      ? prediction.away_odds || 2.45
+                      : outcome.toLowerCase().includes('draw')
+                        ? prediction.draw_odds || 3.3
+                        : prediction.home_odds || 1.95,
+                  confidence,
+                },
+                {
+                  homeTeam: prediction.home_team,
+                  awayTeam: prediction.away_team,
+                  league: prediction.league,
+                  market: over25Prob >= 58 ? 'Over 2.5 Goals' : 'Over 1.5 Goals',
+                  odds: over25Prob >= 58 ? 1.85 : 1.32,
+                  confidence: over25Prob >= 58 ? over25Prob : over15Prob,
+                },
+              ]}
+              canonicalPath={`/predict/${canonicalMatchSlug}`}
+            />
           </TabsContent>
 
-          {/* TAB 2: Asian Handicap, Cards & Corners, and Poisson xG */}
-          <TabsContent value="markets" className="space-y-6">
-            <RefereeSetPieceMatrix
+          {/* TAB 2: Bookmaker Odds & Instant Booking Codes */}
+          <TabsContent value="odds" className="space-y-6">
+            <OddsComparisonTable
               homeTeam={prediction.home_team}
               awayTeam={prediction.away_team}
               league={prediction.league}
-            />
-            <AdvancedMarketsTab
-              homeTeam={prediction.home_team}
-              awayTeam={prediction.away_team}
-              league={prediction.league}
-              matchDate={prediction.match_date}
-              homeOdds={prediction.home_odds}
-              awayOdds={prediction.away_odds}
-              drawOdds={prediction.draw_odds}
+              baseHomeOdds={prediction.home_odds || 1.95}
+              baseDrawOdds={prediction.draw_odds || 3.35}
+              baseAwayOdds={prediction.away_odds || 2.75}
+              predictedOutcome={outcome}
               confidence={confidence}
+            />
+            <ViralSlipShareCard
+              title={`${prediction.home_team} vs ${prediction.away_team} — Multi-Market Slip`}
+              items={[
+                {
+                  homeTeam: prediction.home_team,
+                  awayTeam: prediction.away_team,
+                  league: prediction.league,
+                  market: outcome,
+                  odds: prediction.home_odds || 1.95,
+                  confidence,
+                },
+              ]}
+              canonicalPath={`/predict/${canonicalMatchSlug}`}
             />
           </TabsContent>
 
@@ -899,139 +873,43 @@ export default function MatchPrediction() {
             />
           </TabsContent>
 
-          {/* TAB 4: Pitch Lineups & Formations */}
+          {/* TAB 4: Pitch Lineups & Team News */}
           <TabsContent value="lineups" className="space-y-6">
-            {espnEventId && (
-              <MatchDeepSummaryPanel
-                eventId={espnEventId}
-                homeTeam={prediction.home_team}
-                awayTeam={prediction.away_team}
-              />
-            )}
             <TeamNewsInjuryUpdates singleMatch={prediction} />
-            <PitchLineupVisualizer homeTeam={prediction.home_team} awayTeam={prediction.away_team} league={prediction.league} />
+            <PitchLineupVisualizer
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+              league={prediction.league}
+            />
           </TabsContent>
 
-          {/* TAB 3: Tactical & xG Breakdown */}
-          <TabsContent value="tactics">
+          {/* TAB 5: Tactical & Set-Piece Breakdown */}
+          <TabsContent value="tactics" className="space-y-6">
             <TacticalAnalyticsTab
               homeTeam={prediction.home_team}
               awayTeam={prediction.away_team}
               league={prediction.league}
             />
-          </TabsContent>
-
-          {/* TAB 4: Multi-Bookmaker Odds Table */}
-          <TabsContent value="odds">
-            <OddsComparisonTable
-              matchId={prediction.id}
+            <RefereeSetPieceMatrix
               homeTeam={prediction.home_team}
               awayTeam={prediction.away_team}
               league={prediction.league}
-              matchDate={prediction.match_date}
-              baseHomeOdds={prediction.home_odds || 2.05}
-              baseDrawOdds={prediction.draw_odds || 3.35}
-              baseAwayOdds={prediction.away_odds || 2.80}
             />
           </TabsContent>
         </Tabs>
-
-        {/* Live Remaining-Time Poisson & xG Momentum Simulator + Referee Set-Piece Telemetry */}
-        <div className="mt-8 space-y-6">
-          <InPlayXgMomentumEngine
-            fixture={{
-              homeTeam: prediction.home_team,
-              awayTeam: prediction.away_team,
-              league: prediction.league,
-              initialMinute: 58,
-              initialHomeGoals: 1,
-              initialAwayGoals: 1,
-              baseHomeXg: Number(homeXgVal),
-              baseAwayXg: Number(awayXgVal),
-            }}
-          />
-          <RefereeSetPieceMatrix
-            homeTeam={prediction.home_team}
-            awayTeam={prediction.away_team}
-            league={prediction.league}
-          />
-        </div>
-
-        {/* Verified Post-Match Settlement & Closing Line Value (CLV) Audit Archive */}
-        <Card className="mt-8 border-emerald-500/25 bg-gradient-to-br from-emerald-500/5 via-card to-background">
-          <CardContent className="p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge className="bg-emerald-600 text-white font-black text-[10px] px-2 py-0.5">
-                    VERIFIED MODEL AUDIT &amp; SETTLEMENT LEDGER
-                  </Badge>
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
-                    CLV Edge: +{clvEdgePct}%
-                  </Badge>
-                </div>
-                <h3 className="text-base font-black text-foreground">
-                  {prediction.home_team} vs {prediction.away_team} — Pre-Match &amp; Post-Match Verification
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Evergreen canonical record comparing opening model projection, closing bookmaker odds (CLV), and expected goals telemetry.
-                </p>
-              </div>
-              <a
-                href={`/api/og?home=${encodeURIComponent(prediction.home_team)}&away=${encodeURIComponent(prediction.away_team)}&league=${encodeURIComponent(prediction.league)}&tip=${encodeURIComponent(outcome)}&conf=${confidence}&xg=${encodeURIComponent(`${homeXgVal} - ${awayXgVal}`)}&score=${settledHomeGoals}-${settledAwayGoals}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline shrink-0"
-              >
-                <Share2 className="h-3.5 w-3.5" /> View 1200×630 Match Social Card
-              </a>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-background/80 border border-border/60">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Model Projection</span>
-                <span className="font-black text-sm text-foreground mt-0.5 block">{outcome} ({confidence}%)</span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">Most Likely FT: {settledHomeGoals}-{settledAwayGoals}</span>
-              </div>
-              <div className="p-3 rounded-xl bg-background/80 border border-border/60">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Expected Goals (xG)</span>
-                <span className="font-mono font-black text-sm text-foreground mt-0.5 block">{homeXgVal} – {awayXgVal} xG</span>
-                <span className="text-[11px] text-muted-foreground">Bivariate Poisson λ</span>
-              </div>
-              <div className="p-3 rounded-xl bg-background/80 border border-border/60">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Opening vs Closing Odds</span>
-                <span className="font-mono font-black text-sm text-foreground mt-0.5 block">
-                  {(prediction.home_odds ?? 1.95).toFixed(2)} → {closingOdds.toFixed(2)}
-                </span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">+{clvEdgePct}% Beat Closing Line</span>
-              </div>
-              <div className="p-3 rounded-xl bg-background/80 border border-border/60">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Audit Status</span>
-                <span className="font-black text-sm text-emerald-600 dark:text-emerald-400 mt-0.5 block">Verified Canonical</span>
-                <span className="text-[11px] text-muted-foreground font-mono">/predict/{canonicalMatchSlug}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Footer Navigation */}
         <div className="mt-8 flex flex-col sm:flex-row gap-3">
           <Link to="/teams" className="flex-1">
             <Button variant="default" className="w-full gap-2 text-xs font-bold">
               <BarChart3 className="h-3.5 w-3.5" />
-              Club xG &amp; FDR Analytics Hub
+              Club xG &amp; Team Analytics
             </Button>
           </Link>
-          <Link to="/screener" className="flex-1">
-            <Button variant="secondary" className="w-full gap-2 text-xs font-bold">
-              <Zap className="h-3.5 w-3.5 text-primary" />
-              Open Statistical Match Screener
-            </Button>
-          </Link>
-          <Link to="/dropping-odds" className="flex-1">
+          <Link to="/standings" className="flex-1">
             <Button variant="outline" className="w-full gap-2 text-xs font-bold">
-              <Activity className="h-3.5 w-3.5 text-rose-500" />
-              Live Dropping Odds Radar
+              <Trophy className="h-3.5 w-3.5 text-primary" />
+              League Standings &amp; xPTS
             </Button>
           </Link>
         </div>

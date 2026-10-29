@@ -31,6 +31,7 @@ import {
   Terminal,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AhrefsWebAnalyticsPanel } from '@/components/AhrefsWebAnalyticsPanel';
 
 export function AdminGoogleIndexingSuite() {
   const [settings, setSettings] = useState<GoogleIndexingSettings>(() => googleIndexingCronService.getSettings());
@@ -194,6 +195,9 @@ export function AdminGoogleIndexingSuite() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Ahrefs Web Analytics v3 (project_id=10277130) Live Traffic & Search Telemetry */}
+      <AhrefsWebAnalyticsPanel />
 
       {/* Cron Trigger & Interval Control */}
       <Card className="border-border/80">

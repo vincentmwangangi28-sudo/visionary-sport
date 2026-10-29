@@ -2,12 +2,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { DateFilterType } from '@/components/LeagueDateFilterBar';
 import { TeamLogo } from '@/components/TeamLogo';
-import { useBetSlip, encodeSlipToParam } from '@/hooks/useBetSlip';
+import { getPrediction, getConfidence } from '@/types/prediction';
 import { hapticService } from '@/services/hapticService';
 import {
   matchesDateFilter,
@@ -18,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,23 +28,11 @@ import {
   AlignJustify,
   Search,
   SlidersHorizontal,
-  Plus,
-  Copy,
-  Share2,
-  Send,
-  Gift,
+  Ticket,
   Sparkles,
-  X,
 } from 'lucide-react';
 import { LEAGUE_HUBS } from '@/data/leagueHubs';
-import { getPrediction, getConfidence } from '@/types/prediction';
-import {
-  generateMatchGameId,
-  translateMarketForBookmaker,
-} from '@/services/bookmakerBookingCodes';
-import { useAuth } from '@/hooks/useAuth';
-import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
-import { getClvSteamSignals } from '@/services/clvAndCopulaService';
+import { toast } from 'sonner';
 
 interface PredictionsDashboardProps {
   initialLeague?: string;
@@ -107,30 +95,23 @@ function getLeagueCountry(leagueName: string): string {
   return 'International';
 }
 
-export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDateFilter = 'all' }: PredictionsDashboardProps = {}) => {
-  const { user } = useAuth();
-  const [guestBannerDismissed, setGuestBannerDismissed] = useState(false);
+export const PredictionsDashboard = ({
+  initialLeague,
+  defaultLeague,
+  initialDateFilter = 'all',
+}: PredictionsDashboardProps = {}) => {
   const resolvedInitialLeague = initialLeague ?? defaultLeague;
   const [page, setPage] = useState(1);
   const [league, setLeague] = useState<string | undefined>(resolvedInitialLeague);
   const [standingsTab, setStandingsTab] = useState<'EPL' | 'LALIGA' | 'SERIEA' | 'BUNDESLIGA'>('EPL');
   const [liveStandingsMap, setLiveStandingsMap] = useState<
-    Partial<Record<'EPL' | 'LALIGA' | 'SERIEA' | 'BUNDESLIGA', Array<{ rank: number; team: string; played: number; gd: string; xPts: number; pts: number }>>>
+    Partial<
+      Record<
+        'EPL' | 'LALIGA' | 'SERIEA' | 'BUNDESLIGA',
+        Array<{ rank: number; team: string; played: number; gd: string; xPts: number; pts: number }>
+      >
+    >
   >({});
-  const [spotlightMatch, setSpotlightMatch] = useState<{
-    homeTeam: string;
-    awayTeam: string;
-    league: string;
-    statusLabel: string;
-    isLive: boolean;
-    homeScore: string | number;
-    awayScore: string | number;
-    homeXg: string;
-    awayXg: string;
-    homeTilt: number;
-    awayTilt: number;
-    shotsLabel: string;
-  } | null>(null);
 
   useEffect(() => {
     if (resolvedInitialLeague !== undefined) {
@@ -140,7 +121,10 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
   }, [resolvedInitialLeague]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))) {
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
+    ) {
       return;
     }
     let cancelled = false;
@@ -161,66 +145,6 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
     };
   }, [standingsTab]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))) {
-      return;
-    }
-    let cancelled = false;
-    fetch('/api/football?type=live')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (cancelled || !Array.isArray(json?.matches) || json.matches.length === 0) return;
-        const matches = json.matches as Array<Record<string, unknown>>;
-        const inPlay = matches.find((m) => m.status === 'live' || m.status === 'halftime');
-        const chosen = inPlay || matches.find((m) => m.status === 'upcoming') || matches[0];
-        if (!chosen) return;
-        const homeTeam = String(chosen.home_team || 'Home');
-        const awayTeam = String(chosen.away_team || 'Away');
-        const isLive = chosen.status === 'live' || chosen.status === 'halftime';
-        const isFinished = chosen.status === 'finished';
-        const hScore = typeof chosen.home_score === 'number' ? chosen.home_score : 0;
-        const aScore = typeof chosen.away_score === 'number' ? chosen.away_score : 0;
-        const seed = (homeTeam.charCodeAt(0) || 65) + (awayTeam.charCodeAt(0) || 66);
-        const homeXg = (Math.max(0.45, hScore * 0.75 + 0.68 + ((seed % 7) * 0.11))).toFixed(2);
-        const awayXg = (Math.max(0.35, aScore * 0.72 + 0.52 + (((seed >> 1) % 6) * 0.09))).toFixed(2);
-        const homeTilt = Math.min(72, Math.max(38, 52 + (hScore - aScore) * 6 + ((seed % 9) - 4)));
-        const hShots = Math.max(4, Math.round(Number(homeXg) * 6.5));
-        const aShots = Math.max(3, Math.round(Number(awayXg) * 6.2));
-        let statusLabel = 'TODAY';
-        if (isLive) {
-          const min = String(chosen.minute || 'LIVE');
-          statusLabel = chosen.status === 'halftime' ? 'HT' : min.includes("'") ? min : `${min}'`;
-        } else if (isFinished) {
-          statusLabel = 'FT';
-        } else if (chosen.match_date) {
-          const dt = new Date(String(chosen.match_date));
-          if (!isNaN(dt.getTime())) {
-            statusLabel = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
-          }
-        }
-        setSpotlightMatch({
-          homeTeam,
-          awayTeam,
-          league: String(chosen.league || 'Matchday'),
-          statusLabel,
-          isLive,
-          homeScore: isLive || isFinished ? hScore : Number(chosen.home_odds || 1.85).toFixed(2),
-          awayScore: isLive || isFinished ? aScore : Number(chosen.away_odds || 2.25).toFixed(2),
-          homeXg,
-          awayXg,
-          homeTilt,
-          awayTilt: 100 - homeTilt,
-          shotsLabel: isLive || isFinished ? `Shots: ${hShots} – ${aShots}` : `Proj. Shots: ${hShots} – ${aShots}`,
-        });
-      })
-      .catch(() => {
-        // fallback handled in render
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const [dateFilter, setDateFilter] = useState<DateFilterType>(initialDateFilter);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -232,7 +156,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
 
   const { preferences, setRiskProfile } = useUserPreferences();
   const { region, prioritizedLeagues, sortPredictions } = useGeoRegion();
-  const { addSelection } = useBetSlip();
+  const { selections, totalOdds, addSelection, setIsOpen: setBetSlipOpen } = useBetSlip();
   const { predictions, data, isLoading, pageSize = 12, isFetching, refetch } = usePredictions(page, league);
 
   const allUpcomingPool = useMemo(() => {
@@ -342,117 +266,6 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
     sortPredictions,
   ]);
 
-  const [selectedBookie, setSelectedBookie] = useState<'SportyBet' | 'Betika' | 'SportPesa' | 'Bet9ja' | '1xBet'>('SportyBet');
-
-  // Top 3 Smart Treble Picks from the active pool + deterministic booking code & deep-link
-  const smartTreble = useMemo(() => {
-    const candidates = [...allUpcomingPool]
-      .sort((a, b) => getConfidence(b) - getConfidence(a))
-      .slice(0, 3);
-    const combinedOdds = candidates.reduce((acc, item) => {
-      const out = getPrediction(item);
-      const legOdds =
-        out === 'Home Win'
-          ? item.home_odds || 1.75
-          : out === 'Away Win'
-            ? item.away_odds || 2.1
-            : item.draw_odds || 3.2;
-      return acc * legOdds;
-    }, 1);
-
-    const prefixMap: Record<string, string> = {
-      SportyBet: 'SB',
-      Betika: 'BTK',
-      SportPesa: 'MJP',
-      Bet9ja: 'B9J',
-      '1xBet': '1X',
-    };
-    const seedStr = candidates.map((c) => `${c.home_team}-${c.away_team}`).join('|') || 'TREBLE';
-    let hash = 2166136261;
-    for (let i = 0; i < seedStr.length; i++) {
-      hash ^= seedStr.charCodeAt(i);
-      hash = Math.imul(hash, 16777619);
-    }
-    const codeSuffix = Math.abs(hash).toString(36).toUpperCase().slice(0, 6).padEnd(6, '8');
-    const bookingCode = `${prefixMap[selectedBookie] || 'SB'}-${codeSuffix}`;
-
-    const encodedLegs = encodeSlipToParam(
-      candidates.map((item) => {
-        const out = getPrediction(item);
-        const legOdds =
-          out === 'Home Win'
-            ? item.home_odds || 1.75
-            : out === 'Away Win'
-              ? item.away_odds || 2.1
-              : item.draw_odds || 3.2;
-        return {
-          homeTeam: item.home_team,
-          awayTeam: item.away_team,
-          league: item.league,
-          market: out,
-          odds: legOdds,
-          confidence: getConfidence(item),
-        };
-      })
-    );
-
-    const shareUrl = `https://predictpro.guru/?slip=${encodeURIComponent(encodedLegs)}&bookie=${encodeURIComponent(selectedBookie)}&code=${encodeURIComponent(bookingCode)}`;
-    const shareText =
-      `⚽ PredictPro Daily Smart Treble (${combinedOdds.toFixed(2)}x Odds)\n\n` +
-      candidates
-        .map((c, i) => `${i + 1}. ${c.home_team} vs ${c.away_team} — ${getPrediction(c)} (${getConfidence(c)}% AI)`)
-        .join('\n') +
-      `\n\n🎟️ ${selectedBookie} Booking Code: ${bookingCode}\n👇 Click to auto-load all 3 picks into your Bet Slip:\n${shareUrl}`;
-
-    return {
-      legs: candidates,
-      combinedOdds: combinedOdds.toFixed(2),
-      bookingCode,
-      shareUrl,
-      shareText,
-      whatsappHref: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
-      telegramHref: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-    };
-  }, [allUpcomingPool, selectedBookie]);
-
-  const handleLoadTrebleToSlip = () => {
-    hapticService.boost();
-    for (const item of smartTreble.legs) {
-      const out = getPrediction(item);
-      const legOdds =
-        out === 'Home Win'
-          ? item.home_odds || 1.75
-          : out === 'Away Win'
-            ? item.away_odds || 2.1
-            : item.draw_odds || 3.2;
-      addSelection({
-        match: `${item.home_team} vs ${item.away_team}`,
-        homeTeam: item.home_team,
-        awayTeam: item.away_team,
-        league: item.league,
-        matchDate: item.match_date,
-        market: out,
-        odds: legOdds,
-        confidence: getConfidence(item),
-      });
-    }
-    toast.success(`Added 3-Fold Smart Treble (${smartTreble.combinedOdds}x) to Match Slip!`);
-  };
-
-  const handleCopyTrebleCode = () => {
-    hapticService.selection();
-    navigator.clipboard.writeText(smartTreble.bookingCode);
-    toast.success(`Copied ${selectedBookie} booking code: ${smartTreble.bookingCode}`);
-  };
-
-  const referralUrl = 'https://predictpro.guru/?ref=PRO-VIP50';
-  const referralShareText = `🎁 Join me on PredictPro AI for daily Expected Goals (xG) football predictions, live scores & instant SportyBet/Betika booking codes! Claim +50 Free VIP Coins here: ${referralUrl}`;
-  const handleCopyReferral = () => {
-    hapticService.success();
-    navigator.clipboard.writeText(referralUrl);
-    toast.success('Copied your referral invite link! Share with friends to earn +50 VIP Coins.');
-  };
-
   const totalPages = Math.max(1, Math.ceil(filteredPredictions.length / pageSize));
   const currentPage = Math.min(page, totalPages);
 
@@ -500,19 +313,19 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
   }
 
   return (
-    <div id="predictions-feed-root" className="flex flex-col lg:flex-row items-start gap-4">
+    <div id="predictions-feed-root" className="flex flex-col lg:flex-row items-start gap-6">
       {/* =====================================================================
-          LEFT SIDEBAR (235px): Competitions & Statistical Hubs (FotMob / Flashscore Style)
+          LEFT SIDEBAR (260px): Competitions, Standings & Statistical Hubs
       ===================================================================== */}
-      <aside className="w-full lg:w-[235px] shrink-0 space-y-4 hidden lg:block">
-        {/* Top Leagues */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+      <aside className="w-full lg:w-[260px] shrink-0 space-y-5 hidden lg:block">
+        {/* 1. Competitions Filter */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
           <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Competitions
             </h2>
           </div>
-          <div className="p-1.5 space-y-0.5" role="group" aria-label="Filter predictions by league">
+          <div className="p-1.5 space-y-0.5" role="group" aria-label="Filter fixtures by competition">
             {dynamicLeagueTabs.map((l) => {
               const isSelected = league === l.id || (l.id === 'All' && !league) || league === l.name;
               return (
@@ -527,7 +340,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
                   aria-pressed={isSelected}
                   className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors text-left cursor-pointer ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
+                      ? 'bg-primary text-primary-foreground font-semibold'
                       : 'text-foreground/85 hover:bg-muted hover:text-foreground font-medium'
                   }`}
                 >
@@ -535,7 +348,7 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
                   {l.country && (
                     <span
                       className={`text-[11px] shrink-0 ${
-                        isSelected ? 'text-primary-foreground font-mono' : 'text-muted-foreground'
+                        isSelected ? 'text-primary-foreground/90 font-mono' : 'text-muted-foreground'
                       }`}
                     >
                       {l.country}
@@ -547,24 +360,96 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
           </div>
         </div>
 
-        {/* Popular Markets & Pro Calculators */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+        {/* 2. League Standings & Expected Points (xPTS) */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              Standings &amp; xPTS
+            </h2>
+            <Link
+              to="/standings"
+              className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline"
+            >
+              Full Table →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-4 border-b border-border bg-muted/20 text-xs font-medium">
+            {(
+              [
+                { id: 'EPL', label: 'EPL' },
+                { id: 'LALIGA', label: 'LaLiga' },
+                { id: 'SERIEA', label: 'Serie A' },
+                { id: 'BUNDESLIGA', label: 'Bundes' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStandingsTab(tab.id)}
+                className={`py-2 min-h-[32px] text-center border-b-2 transition-colors cursor-pointer ${
+                  standingsTab === tab.id
+                    ? 'border-primary text-primary font-bold bg-card'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-2.5">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-muted-foreground border-b border-border/60">
+                  <th className="py-1.5 text-left font-medium w-5">#</th>
+                  <th className="py-1.5 text-left font-medium">Club</th>
+                  <th className="py-1.5 text-right font-medium font-mono">PL</th>
+                  <th className="py-1.5 text-right font-medium font-mono">xPTS</th>
+                  <th className="py-1.5 text-right font-semibold font-mono text-foreground">PTS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {(liveStandingsMap[standingsTab] ?? MINI_STANDINGS_DATA[standingsTab]).map((row) => (
+                  <tr key={row.team} className="hover:bg-muted/30 transition-colors">
+                    <td className="py-2 font-mono tabular-nums text-muted-foreground">{row.rank}</td>
+                    <td className="py-2 font-medium text-foreground truncate max-w-[110px]">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <TeamLogo team={row.team} size="xs" badgeOnly />
+                        <span className="truncate">{row.team}</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right font-mono tabular-nums text-muted-foreground">{row.played}</td>
+                    <td className="py-2 text-right font-mono tabular-nums text-primary font-medium">
+                      {Number(row.xPts).toFixed(1)}
+                    </td>
+                    <td className="py-2 text-right font-mono tabular-nums font-bold text-foreground">{row.pts}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 3. Betting Markets & Booking Tools */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Markets &amp; Pro Tools
+              Betting Markets &amp; Tools
             </h2>
           </div>
           <div className="p-1.5 space-y-0.5 text-[13px]">
             {[
-              { to: '/sure-win-predictions', label: 'High Probability (80%+)' },
+              { to: '/best-bets', label: "Today's Banker Picks (80%+)" },
+              { to: '/accumulator', label: 'AI Smart Acca Builder' },
+              { to: '/booking-code-converter', label: 'Booking Code Converter' },
+              { to: '/jackpot-predictions', label: '17-Game Mega Jackpot Hub' },
+              { to: '/daily-2-odds-predictions', label: 'Daily 2.00+ Rollover Tips' },
+              { to: '/value-bets', label: '+EV Value Bet Scanner' },
+              { to: '/btts', label: 'Both Teams To Score (BTTS)' },
               { to: '/over-under-predictions', label: 'Over / Under 2.5 Goals' },
-              { to: '/btts', label: 'Both Teams to Score' },
-              { to: '/correct-score', label: 'Exact Correct Score' },
-              { to: '/draw-no-bet-predictions', label: 'Draw No Bet (DNB)' },
-              { to: '/jackpot-predictions', label: '17-Game Mega Jackpot' },
-              { to: '/accumulator', label: 'Accumulator Builder' },
-              { to: '/screener', label: 'Match Stats Screener' },
-              { to: '/value-bet-calculator', label: 'Expected Value (+EV) Calc' },
+              { to: '/correct-score', label: 'Poisson Correct Score' },
+              { to: '/dropping-odds', label: 'Dropping Odds Steam' },
             ].map((item) => (
               <Link
                 key={item.to}
@@ -576,328 +461,263 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
             ))}
           </div>
         </div>
-
-        {/* Viral Refer & Earn +50 VIP Coins Widget */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs p-3.5 space-y-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-              <Gift className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-              Invite &amp; Earn VIP
-            </span>
-            <span className="font-mono tabular-nums text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-700 text-white">
-              +50 Coins
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Share your invite link on WhatsApp or Telegram. Both you and your friend unlock +50 VIP Coins.
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(referralShareText)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
-            >
-              <Share2 className="h-3 w-3" aria-hidden="true" />
-              WhatsApp
-            </a>
-            <a
-              href={`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(referralShareText)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-sky-600 hover:bg-sky-700 text-white transition-colors"
-            >
-              <Send className="h-3 w-3" aria-hidden="true" />
-              Telegram
-            </a>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleCopyReferral}
-            className="w-full h-7 text-[11px] font-semibold gap-1.5"
-          >
-            <Copy className="h-3 w-3" aria-hidden="true" />
-            Copy Invite Link
-          </Button>
-        </div>
       </aside>
 
       {/* =====================================================================
-          CENTER COLUMN: FotMob / Sofascore Competition-Grouped Match Center
+          MAIN MATCH CENTER (Wide, Tabular & Interactive Bet Slip Ready)
       ===================================================================== */}
-      <div className="flex-1 min-w-0 w-full space-y-3.5">
-        {/* Polite Guest Welcome & Free Account Invitation Banner */}
-        {!user && !guestBannerDismissed && (
-          <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-start sm:items-center gap-3 min-w-0">
-              <div className="h-9 w-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <Gift className="h-4.5 w-4.5 text-emerald-400" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-extrabold text-white">
-                    Welcome to PredictPro! Create a free account in 15 seconds
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                    +50 Free VIP Coins
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
-                  Save your daily Bet Slips across devices, convert SportyBet/1xBet/Bet9ja booking codes, and track your favourite leagues.
-                </p>
-              </div>
+      <div className="flex-1 min-w-0 w-full space-y-4">
+        {/* 1-Click Smart Banker Slip & Booking Code Bar */}
+        <div className="px-4 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-8 w-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <Ticket className="h-4 w-4" />
             </div>
-
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-              <Button
-                type="button"
-                size="sm"
-                onClick={triggerGuestAccountInvite}
-                className="h-8 px-3 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 gap-1.5 cursor-pointer"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Create Free Account</span>
-              </Button>
-              <button
-                type="button"
-                onClick={() => setGuestBannerDismissed(true)}
-                aria-label="Dismiss welcome banner"
-                className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile & Tablet Viral Syndicate Booking Code Strip (visible < xl) */}
-        {smartTreble.legs.length >= 3 && (
-          <div className="xl:hidden p-3 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
-            <div className="flex items-center justify-between sm:justify-start gap-2.5">
-              <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-mono tabular-nums text-xs font-bold shrink-0">
-                {smartTreble.combinedOdds}x Treble
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">
-                  {selectedBookie} Code:{' '}
-                  <span className="font-mono text-primary">{smartTreble.bookingCode}</span>
-                </p>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  {smartTreble.legs.map((l) => l.home_team).join(' · ')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleLoadTrebleToSlip}
-                className="h-8 px-2.5 text-xs font-bold gap-1"
-              >
-                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                Load 3 Picks
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleCopyTrebleCode}
-                className="h-8 px-2.5 text-xs font-semibold gap-1"
-              >
-                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                Copy Code
-              </Button>
-              <a
-                href={smartTreble.whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1 h-8 px-2.5 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
-              >
-                <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
-                WhatsApp
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* Top Matchday Control Bar */}
-        <div className="p-3 rounded-xl border border-border bg-card space-y-2.5 shadow-2xs">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Date Strip Tabs */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg overflow-x-auto no-scrollbar">
-              {(
-                [
-                  { id: 'all', label: 'All Dates', count: dateCounts.all },
-                  { id: 'today', label: 'Today', count: dateCounts.today },
-                  { id: 'tomorrow', label: 'Tomorrow', count: dateCounts.tomorrow },
-                  { id: 'weekend', label: 'Weekend', count: dateCounts.weekend },
-                ] as const
-              ).map((d) => (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => {
-                    hapticService.selection();
-                    setDateFilter(d.id);
-                    setPage(1);
-                  }}
-                  className={`px-3 py-1 min-h-[26px] rounded-md text-xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
-                    dateFilter === d.id
-                      ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
-                      : 'text-muted-foreground hover:text-foreground font-medium'
-                  }`}
-                >
-                  <span>{d.label}</span>
-                  <span className="font-mono tabular-nums text-[10px]">({d.count})</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg overflow-x-auto no-scrollbar" role="group" aria-label="Filter predictions">
-              {(
-                [
-                  { id: 'all', label: 'All Matches' },
-                  { id: 'recommended', label: 'Top Picks' },
-                  { id: 'high_confidence', label: '80%+ Strong' },
-                  { id: 'value_bets', label: 'Value Odds' },
-                ] as const
-              ).map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    hapticService.selection();
-                    setQuickFilter(tab.id);
-                    setPage(1);
-                  }}
-                  aria-pressed={quickFilter === tab.id}
-                  className={`px-2.5 py-1 min-h-[26px] text-xs rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    quickFilter === tab.id
-                      ? 'bg-card text-foreground font-bold shadow-2xs'
-                      : 'text-muted-foreground hover:text-foreground font-medium'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-foreground truncate">
+                {selections.length > 0
+                  ? `Active Bet Slip: ${selections.length} ${selections.length === 1 ? 'Selection' : 'Selections'} (@${totalOdds.toFixed(2)} Combined Odds)`
+                  : '1-Click AI Banker Slip & Instant Booking Codes'}
+              </p>
+              <p className="text-[11px] text-muted-foreground truncate">
+                {selections.length > 0
+                  ? 'Generate SportyBet, Betika, SportPesa, Bet9ja or 1xBet booking codes instantly.'
+                  : 'Load our top 3 highest-confidence matchday picks into your slip with one click.'}
+              </p>
             </div>
           </div>
 
-          {/* Search & View Mode Controls */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60">
-            <form
-              role="search"
-              action="/screener"
-              method="get"
-              aria-label="Filter football fixtures by club or competition"
-              toolname="filter_matchday_fixtures"
-              tooldescription="Search and filter daily AI football match predictions, Expected Goals (xG) statistics, and odds by club or competition name"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setPage(1);
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const top3 = [...filteredPredictions]
+                  .sort((a, b) => getConfidence(b) - getConfidence(a))
+                  .slice(0, 3);
+                top3.forEach((m) => {
+                  const pick = getPrediction(m);
+                  const odds =
+                    pick === 'Away Win'
+                      ? m.away_odds ?? 2.40
+                      : pick === 'Draw'
+                      ? m.draw_odds ?? 3.25
+                      : m.home_odds ?? 1.75;
+                  addSelection({
+                    matchId: m.id,
+                    match: `${m.home_team} vs ${m.away_team}`,
+                    homeTeam: m.home_team,
+                    awayTeam: m.away_team,
+                    league: m.league,
+                    matchDate: m.match_date,
+                    market: pick,
+                    odds,
+                    confidence: getConfidence(m),
+                  });
+                });
+                setBetSlipOpen(true);
+                toast.success('Loaded Top 3 AI Banker Picks into Bet Slip!');
               }}
-              className="relative flex-1 max-w-xs"
+              className="h-8 text-xs font-bold gap-1.5 border-emerald-500/40 bg-background hover:bg-emerald-500/10"
             >
-              <label htmlFor="matchday-club-search" className="sr-only">
-                Search club or competition
-              </label>
-              <button
-                type="submit"
-                aria-label="Submit search"
-                className="absolute left-1.5 top-1 h-6 w-6 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Load 3-Leg Banker</span>
+            </Button>
+
+            {selections.length > 0 && (
+              <Button
+                size="sm"
+                onClick={() => setBetSlipOpen(true)}
+                className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                <Search className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-              <Input
-                id="matchday-club-search"
-                name="q"
-                type="search"
-                required
-                toolparamdescription="Football club name, matchup, or competition name to filter predictions"
-                placeholder="Search club or competition..."
-                aria-label="Search club or competition"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
+                Open Slip ({selections.length})
+              </Button>
+            )}
+          </div>
+        </div>
+        {/* Clean Matchday Control Bar */}
+        <div className="p-3.5 rounded-xl border border-border bg-card space-y-3 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Date Tabs + Model Filter */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg overflow-x-auto no-scrollbar">
+                {(
+                  [
+                    { id: 'all', label: 'All Dates', count: dateCounts.all },
+                    { id: 'today', label: 'Today', count: dateCounts.today },
+                    { id: 'tomorrow', label: 'Tomorrow', count: dateCounts.tomorrow },
+                    { id: 'weekend', label: 'Weekend', count: dateCounts.weekend },
+                  ] as const
+                ).map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    onClick={() => {
+                      hapticService.selection();
+                      setDateFilter(d.id);
+                      setPage(1);
+                    }}
+                    className={`px-3 py-1.5 rounded-md text-xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                      dateFilter === d.id
+                        ? 'bg-card text-foreground font-semibold shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground font-medium'
+                    }`}
+                  >
+                    <span>{d.label}</span>
+                    <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
+                      {d.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div
+                className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg"
+                role="group"
+                aria-label="Filter fixtures by model confidence"
+              >
+                {(
+                  [
+                    { id: 'all', label: 'All Matches' },
+                    { id: 'recommended', label: 'Featured' },
+                    { id: 'high_confidence', label: '80%+ Bankers' },
+                    { id: 'value_bets', label: '+EV Value' },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      hapticService.selection();
+                      setQuickFilter(tab.id);
+                      setPage(1);
+                    }}
+                    aria-pressed={quickFilter === tab.id}
+                    className={`px-2.5 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      quickFilter === tab.id
+                        ? 'bg-primary text-primary-foreground font-semibold'
+                        : 'text-muted-foreground hover:text-foreground font-medium'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Search + Density Controls */}
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+              <form
+                role="search"
+                action="/screener"
+                method="get"
+                aria-label="Filter football fixtures by club or competition"
+                onSubmit={(e) => {
+                  e.preventDefault();
                   setPage(1);
                 }}
-                className="pl-8 h-8 text-xs bg-background"
-              />
-              {searchQuery && (
+                className="relative flex-1 sm:w-56"
+              >
+                <label htmlFor="matchday-club-search" className="sr-only">
+                  Search club or competition
+                </label>
                 <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery('');
+                  type="submit"
+                  aria-label="Submit search"
+                  className="absolute left-2 top-1.5 h-6 w-6 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  <Search className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+                <Input
+                  id="matchday-club-search"
+                  name="q"
+                  type="search"
+                  placeholder="Search club or league..."
+                  aria-label="Search club or competition"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
                     setPage(1);
                   }}
-                  aria-label="Clear search input"
-                  className="absolute right-1 top-0.5 h-7 w-7 inline-flex items-center justify-center text-xs text-muted-foreground hover:text-foreground"
-                >
-                  ✕
-                </button>
-              )}
-            </form>
+                  className="pl-8 h-9 text-xs bg-background"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setPage(1);
+                    }}
+                    aria-label="Clear search input"
+                    className="absolute right-1.5 top-1 h-7 w-7 inline-flex items-center justify-center text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                )}
+              </form>
 
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-0.5 bg-muted p-0.5 rounded-md" role="group" aria-label="Change layout density">
+              <div className="flex items-center gap-1 shrink-0">
+                <div
+                  className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg"
+                  role="group"
+                  aria-label="Change layout density"
+                >
+                  <Button
+                    size="icon"
+                    variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
+                    onClick={() => handleSetViewMode('compact')}
+                    className="h-8 w-8"
+                    title="Standard Match Rows"
+                    aria-label="Switch to Compact View"
+                  >
+                    <List className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant={viewMode === 'condensed' ? 'secondary' : 'ghost'}
+                    onClick={() => handleSetViewMode('condensed')}
+                    className="h-8 w-8"
+                    title="Condensed Table"
+                    aria-label="Switch to Condensed 1-Line View"
+                  >
+                    <AlignJustify className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    onClick={() => handleSetViewMode('card')}
+                    className="h-8 w-8"
+                    title="Cards"
+                    aria-label="Switch to Card Grid View"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Button>
+                </div>
+
                 <Button
                   size="icon"
-                  variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
-                  onClick={() => handleSetViewMode('compact')}
-                  className="h-7 w-7"
-                  title="Standard Match Rows"
-                  aria-label="Switch to Compact View"
+                  variant={showAdvancedFilters ? 'secondary' : 'outline'}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="h-9 w-9 shrink-0"
+                  aria-expanded={showAdvancedFilters}
+                  title="Filter Options"
+                  aria-label="Filter Options"
                 >
-                  <List className="h-3.5 w-3.5" aria-hidden="true" />
+                  <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
+
                 <Button
                   size="icon"
-                  variant={viewMode === 'condensed' ? 'secondary' : 'ghost'}
-                  onClick={() => handleSetViewMode('condensed')}
-                  className="h-7 w-7"
-                  title="Condensed Table"
-                  aria-label="Switch to Condensed 1-Line View"
+                  variant="ghost"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+                  title="Refresh Fixtures"
+                  aria-label="Refresh Fixtures"
                 >
-                  <AlignJustify className="h-3.5 w-3.5" aria-hidden="true" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={viewMode === 'card' ? 'secondary' : 'ghost'}
-                  onClick={() => handleSetViewMode('card')}
-                  className="h-7 w-7"
-                  title="Cards"
-                  aria-label="Switch to Card Grid View"
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
+                  <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
                 </Button>
               </div>
-
-              <Button
-                size="sm"
-                variant={showAdvancedFilters ? 'secondary' : 'outline'}
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className="h-8 px-2.5 text-xs font-medium gap-1 shrink-0"
-                aria-expanded={showAdvancedFilters}
-                title="Filter Options"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="sr-only sm:not-sr-only">Options</span>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => refetch()}
-                disabled={isFetching}
-                className="h-8 w-8 px-0 text-muted-foreground hover:text-foreground shrink-0"
-                title="Refresh Fixtures"
-                aria-label="Refresh Fixtures"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
-              </Button>
             </div>
           </div>
 
@@ -913,9 +733,9 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
                     setLeague(l.id === 'All' ? undefined : l.id);
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap shrink-0 border transition-colors ${
+                  className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap shrink-0 border transition-colors ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground border-primary font-bold'
+                      ? 'bg-primary text-primary-foreground border-primary font-semibold'
                       : 'bg-background text-muted-foreground border-border'
                   }`}
                 >
@@ -926,9 +746,9 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
           </div>
 
           {showAdvancedFilters && (
-            <div className="pt-2.5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-fade-in">
+            <div className="pt-2.5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-medium text-muted-foreground">Filter Profile:</span>
+                <span className="text-xs font-medium text-muted-foreground">Model Threshold:</span>
                 <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
                   {(['conservative', 'balanced', 'aggressive'] as RiskProfile[]).map((profile) => (
                     <button
@@ -939,9 +759,9 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
                         setRiskProfile(profile);
                         setPage(1);
                       }}
-                      className={`px-2 py-0.5 text-xs font-medium rounded capitalize transition-colors ${
+                      className={`px-2.5 py-0.5 text-xs font-medium rounded capitalize transition-colors ${
                         preferences.riskProfile === profile
-                          ? 'bg-card text-foreground shadow-2xs font-semibold'
+                          ? 'bg-card text-foreground shadow-sm font-semibold'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -991,54 +811,52 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
             </Button>
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-4">
             {competitionGroups.map((group) => (
               <div
                 key={group.leagueName}
-                className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
+                className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
               >
-                {/* Competition Header Bar with Column Legend */}
-                <div className="px-4 py-2.5 bg-muted/40 border-b border-border flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="h-3.5 w-1 rounded-full bg-primary shrink-0" />
-                    <h2 className="text-[13px] font-bold text-foreground truncate">
-                      {group.leagueName}
-                    </h2>
-                    {group.country && (
-                      <span className="text-xs text-muted-foreground">
-                        · {group.country}
-                      </span>
-                    )}
+                {/* Aligned Competition Header Bar */}
+                <div className="px-4 py-2.5 bg-muted/35 border-b border-border grid grid-cols-1 sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3">
+                  <div className="sm:col-span-2 flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h2 className="text-xs sm:text-[13px] font-bold text-foreground truncate">
+                        {group.leagueName}
+                      </h2>
+                      {group.country && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          · {group.country}
+                        </span>
+                      )}
+                      {group.hubUrl && (
+                        <Link
+                          to={group.hubUrl}
+                          className="text-xs font-medium text-primary hover:underline ml-1 hidden md:inline"
+                        >
+                          Overview
+                        </Link>
+                      )}
+                    </div>
+                    <span className="hidden sm:inline text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                      Proj. xG
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs shrink-0">
-                    {viewMode === 'compact' && (
-                      <div className="hidden sm:flex items-center gap-6 text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-8">
-                        <span>Form / xG</span>
-                        <span>Forecast</span>
-                        <span className="w-[140px] text-center">1 · X · 2 Odds</span>
-                      </div>
-                    )}
-                    {group.hubUrl && (
-                      <Link
-                        to={group.hubUrl}
-                        className="inline-flex items-center min-h-[24px] px-1 font-semibold text-primary hover:underline hidden md:inline-flex"
-                      >
-                        Hub
-                      </Link>
-                    )}
-                    <Link
-                      to="/standings"
-                      className="inline-flex items-center min-h-[24px] px-1 font-medium text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Table →
-                    </Link>
+                  <div className="hidden sm:block text-right pr-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    Forecast
+                  </div>
+
+                  <div className="hidden sm:grid grid-cols-3 gap-1.5 w-[168px] text-center text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    <span>Home (1)</span>
+                    <span>Draw (X)</span>
+                    <span>Away (2)</span>
                   </div>
                 </div>
 
                 {/* Match Rows */}
                 {viewMode === 'card' ? (
-                  <div className="p-3.5 grid gap-3.5 sm:grid-cols-2">
+                  <div className="p-4 grid gap-4 sm:grid-cols-2">
                     {group.matches.map((p) => (
                       <PredictionCard key={p.id} prediction={p} viewMode="card" />
                     ))}
@@ -1059,9 +877,14 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-card shadow-2xs" role="navigation" aria-label="Predictions pagination">
+              <div
+                className="flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-card shadow-sm"
+                role="navigation"
+                aria-label="Fixtures pagination"
+              >
                 <span className="text-xs text-muted-foreground font-mono tabular-nums">
-                  {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredPredictions.length)} of {filteredPredictions.length}
+                  {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredPredictions.length)} of{' '}
+                  {filteredPredictions.length}
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1091,413 +914,6 @@ export const PredictionsDashboard = ({ initialLeague, defaultLeague, initialDate
           </div>
         )}
       </div>
-
-      {/* =====================================================================
-          RIGHT SIDEBAR (310px): Smart Treble, Live Standings, In-Play & Top Players
-      ===================================================================== */}
-      <aside className="w-full xl:w-[310px] shrink-0 space-y-4 hidden xl:block">
-        {/* Widget 1: Today's 3-Fold Smart Treble Quick Builder & Booking Code Syndicate */}
-        {smartTreble.legs.length >= 3 && (
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
-            <div className="px-4 py-3 border-b border-border bg-slate-900 text-white flex items-center justify-between">
-              <div>
-                <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                  Daily Smart Treble
-                </h2>
-                <p className="text-[11px] text-slate-300">Top 3 High-Probability Picks</p>
-              </div>
-              <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 font-mono tabular-nums text-xs font-black">
-                {smartTreble.combinedOdds}x
-              </span>
-            </div>
-
-            <div className="p-3 space-y-2.5">
-              {/* Bookmaker Selector */}
-              <div className="grid grid-cols-5 gap-1 p-1 bg-muted/50 rounded-lg" role="group" aria-label="Select bookmaker for treble code">
-                {(['SportyBet', 'Betika', 'SportPesa', 'Bet9ja', '1xBet'] as const).map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => {
-                      hapticService.selection();
-                      setSelectedBookie(b);
-                    }}
-                    className={`py-1 rounded text-[10px] font-semibold transition-colors truncate px-1 cursor-pointer ${
-                      selectedBookie === b
-                        ? 'bg-card text-foreground shadow-2xs font-bold border border-border/60'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-
-              {smartTreble.legs.map((leg) => {
-                const pick = getPrediction(leg);
-                const conf = getConfidence(leg);
-                const gameId = generateMatchGameId(`${leg.home_team} vs ${leg.away_team}`, leg.league);
-                const translatedPick = translateMarketForBookmaker(pick, selectedBookie.toLowerCase());
-                return (
-                  <div
-                    key={leg.id}
-                    className="p-2 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between gap-2 text-xs"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-1 py-0.5 rounded bg-background border border-border font-mono tabular-nums text-[10px] font-bold text-primary shrink-0">
-                          #{gameId}
-                        </span>
-                        <p className="font-semibold text-foreground truncate">
-                          {leg.home_team} v {leg.away_team}
-                        </p>
-                      </div>
-                      <p className="text-[11px] text-primary font-medium mt-0.5">{translatedPick}</p>
-                    </div>
-                    <span className="font-mono tabular-nums text-[11px] font-bold text-foreground shrink-0">
-                      {conf}%
-                    </span>
-                  </div>
-                );
-              })}
-
-              {/* Instant Booking Code Bar */}
-              <div className="p-2 rounded-lg bg-muted/30 border border-border/70 flex items-center justify-between gap-2">
-                <div>
-                  <span className="text-[10px] text-muted-foreground block">{selectedBookie} Code</span>
-                  <span className="font-mono tabular-nums text-xs font-black text-primary">
-                    {smartTreble.bookingCode}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Link
-                    to={`/slip-generator?code=${encodeURIComponent(smartTreble.bookingCode)}&bookie=${encodeURIComponent(selectedBookie.toLowerCase())}`}
-                    className="h-7 px-2 inline-flex items-center rounded border border-border bg-background hover:bg-muted text-[11px] font-semibold text-foreground transition-colors"
-                  >
-                    Convert
-                  </Link>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleCopyTrebleCode}
-                    className="h-7 px-2.5 text-[11px] font-semibold gap-1"
-                  >
-                    <Copy className="h-3 w-3" aria-hidden="true" />
-                    Copy
-                  </Button>
-                </div>
-              </div>
-
-              <Button
-                size="sm"
-                onClick={handleLoadTrebleToSlip}
-                className="w-full h-8 text-xs font-bold gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                Load All 3 Picks to Slip
-              </Button>
-
-              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
-                <a
-                  href={smartTreble.whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
-                >
-                  <Share2 className="h-3 w-3" aria-hidden="true" />
-                  WhatsApp Slip
-                </a>
-                <a
-                  href={smartTreble.telegramHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1 h-7 px-2 rounded-md text-[11px] font-bold bg-sky-600 hover:bg-sky-700 text-white transition-colors"
-                >
-                  <Send className="h-3 w-3" aria-hidden="true" />
-                  Telegram Slip
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Widget 2: League Standings & Expected Points (xPTS) */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
-          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Standings &amp; xPTS
-            </h2>
-            <Link to="/standings" className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline">
-              Full Table →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-4 border-b border-border bg-muted/20 text-xs font-medium">
-            {(
-              [
-                { id: 'EPL', label: 'EPL' },
-                { id: 'LALIGA', label: 'LaLiga' },
-                { id: 'SERIEA', label: 'Serie A' },
-                { id: 'BUNDESLIGA', label: 'Bundes' },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setStandingsTab(tab.id)}
-                className={`py-2 min-h-[32px] text-center border-b-2 transition-colors cursor-pointer ${
-                  standingsTab === tab.id
-                    ? 'border-primary text-primary font-bold bg-card'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="p-2.5">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border/60">
-                  <th className="py-1.5 text-left font-medium w-6">#</th>
-                  <th className="py-1.5 text-left font-medium">Team</th>
-                  <th className="py-1.5 text-right font-medium font-mono">PL</th>
-                  <th className="py-1.5 text-right font-medium font-mono">xPTS</th>
-                  <th className="py-1.5 text-right font-semibold font-mono text-foreground">PTS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {(liveStandingsMap[standingsTab] ?? MINI_STANDINGS_DATA[standingsTab]).map((row) => (
-                  <tr key={row.team} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-2 font-mono tabular-nums text-muted-foreground">
-                      <span
-                        className={`inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold ${
-                          row.rank <= 4
-                            ? 'bg-emerald-800 text-white dark:bg-emerald-500/20 dark:text-emerald-300'
-                            : 'text-muted-foreground'
-                        }`}
-                      >
-                        {row.rank}
-                      </span>
-                    </td>
-                    <td className="py-2 font-semibold text-foreground truncate max-w-[120px]">
-                      <div className="flex items-center gap-2 truncate">
-                        <TeamLogo team={row.team} size="xs" badgeOnly />
-                        <span className="truncate">{row.team}</span>
-                      </div>
-                    </td>
-                    <td className="py-2 text-right font-mono tabular-nums text-muted-foreground">{row.played}</td>
-                    <td className="py-2 text-right font-mono tabular-nums text-primary font-medium">{Number(row.xPts).toFixed(1)}</td>
-                    <td className="py-2 text-right font-mono tabular-nums font-bold text-foreground">{row.pts}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Widget 3: In-Play / Matchday Spotlight */}
-        {(() => {
-          const fallbackMatch = allUpcomingPool[0];
-          const activeSpotlight = spotlightMatch ?? {
-            homeTeam: fallbackMatch?.home_team || 'Arsenal',
-            awayTeam: fallbackMatch?.away_team || 'Chelsea',
-            league: fallbackMatch?.league || 'Premier League',
-            statusLabel: fallbackMatch?.time || 'UPCOMING',
-            isLive: false,
-            homeScore: fallbackMatch?.home_odds ? fallbackMatch.home_odds.toFixed(2) : '1.85',
-            awayScore: fallbackMatch?.away_odds ? fallbackMatch.away_odds.toFixed(2) : '2.25',
-            homeXg: '1.68',
-            awayXg: '1.14',
-            homeTilt: 58,
-            awayTilt: 42,
-            shotsLabel: 'Proj. Shots: 13 – 9',
-          };
-          return (
-            <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
-              <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      activeSpotlight.isLive ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
-                    }`}
-                  />
-                  {activeSpotlight.isLive ? 'In-Play Spotlight' : 'Matchday Spotlight'}
-                </h2>
-                <Link to="/live" className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline">
-                  Live Center →
-                </Link>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground truncate max-w-[170px]">{activeSpotlight.league}</span>
-                  <span
-                    className={`font-mono tabular-nums font-bold ${
-                      activeSpotlight.isLive
-                        ? 'text-rose-600 dark:text-rose-400'
-                        : 'text-emerald-800 dark:text-emerald-300'
-                    }`}
-                  >
-                    {activeSpotlight.statusLabel}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <TeamLogo team={activeSpotlight.homeTeam} size="xs" />
-                      <span className="font-semibold text-foreground truncate">{activeSpotlight.homeTeam}</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-mono tabular-nums shrink-0">
-                      <span className="text-[11px] text-muted-foreground">{activeSpotlight.homeXg} xG</span>
-                      <span className="font-bold text-foreground">{activeSpotlight.homeScore}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[13px]">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <TeamLogo team={activeSpotlight.awayTeam} size="xs" />
-                      <span className="font-semibold text-foreground truncate">{activeSpotlight.awayTeam}</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-mono tabular-nums shrink-0">
-                      <span className="text-[11px] text-muted-foreground">{activeSpotlight.awayXg} xG</span>
-                      <span className="font-bold text-foreground">{activeSpotlight.awayScore}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-2 border-t border-border/60">
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono tabular-nums">
-                    <span>Attacking Tilt: {activeSpotlight.homeTilt}%</span>
-                    <span>{activeSpotlight.shotsLabel}</span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden flex">
-                    <div style={{ width: `${activeSpotlight.homeTilt}%` }} className="bg-primary" />
-                    <div style={{ width: `${activeSpotlight.awayTilt}%` }} className="bg-sky-500" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Widget 4: Matchday Ratings (10.0) */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
-          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Matchday Ratings (10.0)
-            </h2>
-            <Link to="/players" className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline">
-              All Players →
-            </Link>
-          </div>
-          <div className="divide-y divide-border/50">
-            {(allUpcomingPool.length >= 4
-              ? allUpcomingPool.slice(0, 4).map((m, idx) => {
-                  const conf = getConfidence(m);
-                  const favored =
-                    (m.home_odds || 2.0) <= (m.away_odds || 2.4) ? m.home_team : m.away_team;
-                  const projXg = Math.max(
-                    1.15,
-                    Math.min(2.65, 2.85 / Math.max(1.2, Math.min(m.home_odds || 2.0, m.away_odds || 2.4)))
-                  ).toFixed(2);
-                  const rating = Number(
-                    Math.min(9.4, Math.max(7.8, 7.4 + (conf - 60) * 0.055 - idx * 0.1)).toFixed(1)
-                  );
-                  return {
-                    id: m.id || `${favored}-${idx}`,
-                    name: `${favored} Attack XI`,
-                    club: favored,
-                    stat: `${projXg} xG · ${conf}% Conf`,
-                    rating,
-                  };
-                })
-              : [
-                  { id: 'p1', name: 'Harry Kane', club: 'Bayern Munich', stat: '1.48 xG · 2G', rating: 9.2 },
-                  { id: 'p2', name: 'Mohamed Salah', club: 'Liverpool', stat: '1.15 xG · 1G 1A', rating: 8.9 },
-                  { id: 'p3', name: 'Bukayo Saka', club: 'Arsenal', stat: '0.92 xG · 4 KP', rating: 8.8 },
-                  { id: 'p4', name: 'Jude Bellingham', club: 'Real Madrid', stat: '0.78 xG · 11 Duels', rating: 8.6 },
-                ]
-            ).map((player) => (
-              <Link
-                key={player.id}
-                to="/players"
-                className="px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-muted/30 transition-colors"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <TeamLogo team={player.club} size="xs" badgeOnly />
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-foreground truncate">{player.name}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {player.club} · <span className="font-mono tabular-nums">{player.stat}</span>
-                    </p>
-                  </div>
-                </div>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-700 text-white font-mono tabular-nums text-xs font-bold shrink-0">
-                  {player.rating.toFixed(1)}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Widget 5: Sharp Steam & CLV Radar + SGP Copula Lab */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
-          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Sharp Steam &amp; CLV Radar
-            </h2>
-            <Link
-              to="/closing-line-value"
-              className="inline-flex items-center min-h-[24px] text-xs font-semibold text-primary hover:underline"
-            >
-              CLV Scanner →
-            </Link>
-          </div>
-          <div className="divide-y divide-border/50">
-            {getClvSteamSignals()
-              .slice(0, 3)
-              .map((move) => (
-                <Link
-                  key={move.id}
-                  to="/closing-line-value"
-                  className="px-4 py-2.5 flex items-center justify-between gap-2 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-foreground truncate">
-                      {move.homeTeam} vs {move.awayTeam}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {move.market} ·{' '}
-                      <span className="font-mono tabular-nums">
-                        {move.openingOdds.toFixed(2)} → {move.currentBookieOdds.toFixed(2)}
-                      </span>
-                    </p>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono tabular-nums text-[11px] font-bold shrink-0">
-                    +{move.clvBeatPct.toFixed(1)}% CLV
-                  </span>
-                </Link>
-              ))}
-          </div>
-          <div className="p-3 bg-muted/20 border-t border-border/60 grid grid-cols-2 gap-2">
-            <Link
-              to="/closing-line-value"
-              className="py-1.5 px-2.5 rounded-md border border-border bg-background hover:bg-muted text-[11px] font-semibold text-center text-foreground transition-colors"
-            >
-              No-Vig CLV Calc
-            </Link>
-            <Link
-              to="/sgp-builder"
-              className="py-1.5 px-2.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 text-[11px] font-bold text-center transition-opacity"
-            >
-              SGP Copula Builder
-            </Link>
-          </div>
-        </div>
-      </aside>
     </div>
   );
 };

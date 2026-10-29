@@ -1,6 +1,6 @@
 {
   "name": "PredictPro",
-  "description": "Accurate AI football predictions today with 87% accuracy. Free daily betting tips, banker picks, xG stats, and value bets for 40+ global leagues.",
+  "description": "Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

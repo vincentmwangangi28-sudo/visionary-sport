@@ -28,8 +28,9 @@ import DeferredBackgroundHooks from "@/components/DeferredBackgroundHooks";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { UnifiedSearchModal } from "@/components/UnifiedSearchModal";
-import { BetSlipDrawer } from "@/components/BetSlipDrawer";
 import { GuestAccountPrompt } from "@/components/GuestAccountPrompt";
+import { BetSlipDrawer } from "@/components/BetSlipDrawer";
+import { FirstVisitSignupModal } from "@/components/FirstVisitSignupModal";
 
 import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -180,6 +181,22 @@ const InPlayEdgeRadarPage        = lazyWithRetry(() => import("./pages/InPlayEdg
 const SocialCardStudioPage       = lazyWithRetry(() => import("./pages/SocialCardStudioPage"));
 const TournamentGroupSimulatorPage = lazyWithRetry(() => import("./pages/TournamentGroupSimulatorPage"));
 const PersonalBetTrackerPage     = lazyWithRetry(() => import("./pages/PersonalBetTrackerPage"));
+const ViralReferralHubPage       = lazyWithRetry(() => import("./pages/ViralReferralHubPage"));
+const CommunitySlipsPage         = lazyWithRetry(() => import("./pages/CommunitySlipsPage"));
+const PickEmChallengePage        = lazyWithRetry(() => import("./pages/PickEmChallengePage"));
+const AlertCenterPage            = lazyWithRetry(() => import("./pages/AlertCenterPage"));
+const CashOutHedgeCalculatorPage = lazyWithRetry(() => import("./pages/CashOutHedgeCalculatorPage"));
+const ArbitrageSurebetMatrixPage = lazyWithRetry(() => import("./pages/ArbitrageSurebetMatrixPage"));
+const UniversalCodeConverterPage = lazyWithRetry(() => import("./pages/UniversalCodeConverterPage"));
+const PlayerPropsCardsHubPage    = lazyWithRetry(() => import("./pages/PlayerPropsCardsHubPage"));
+const RolloverLadderSimulatorPage = lazyWithRetry(() => import("./pages/RolloverLadderSimulatorPage"));
+const AsianHandicapMatrixPage    = lazyWithRetry(() => import("./pages/AsianHandicapMatrixPage"));
+const SyndicatePoolsHubPage      = lazyWithRetry(() => import("./pages/SyndicatePoolsHubPage"));
+const CornerPressureScannerPage  = lazyWithRetry(() => import("./pages/CornerPressureScannerPage"));
+const CashOutEquityAuditorPage   = lazyWithRetry(() => import("./pages/CashOutEquityAuditorPage"));
+const RefereeDisciplineMatrixPage = lazyWithRetry(() => import("./pages/RefereeDisciplineMatrixPage"));
+const PlayerPropsLabPage         = lazyWithRetry(() => import("./pages/PlayerPropsLabPage"));
+const SystemBetPermutationPage   = lazyWithRetry(() => import("./pages/SystemBetPermutationPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -408,13 +425,16 @@ const DeferredGlobalOverlays = () => {
   return (
     <>
       <ErrorBoundary fallback={null}>
-        <UnifiedSearchModal />
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
         <BetSlipDrawer />
       </ErrorBoundary>
       <ErrorBoundary fallback={null}>
+        <UnifiedSearchModal />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
         <GuestAccountPrompt />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <FirstVisitSignupModal />
       </ErrorBoundary>
       <ErrorBoundary fallback={null}>
         <Sonner />
@@ -595,9 +615,9 @@ const App = () => (
                             <Route path="/5-odds-predictions"           element={<RouteBoundary component={FiveOddsPredictions} />} />
                             <Route path="/slip-generator"               element={<RouteBoundary component={SlipGeneratorPage} />} />
                             <Route path="/booking-codes"                element={<RouteBoundary component={SlipGeneratorPage} />} />
-                            <Route path="/code-converter"               element={<RouteBoundary component={SlipGeneratorPage} />} />
+                            <Route path="/code-converter"               element={<RouteBoundary component={UniversalCodeConverterPage} />} />
                             <Route path="/players/:playerSlug"          element={<RouteBoundary component={PlayerProfilePage} />} />
-                            <Route path="/player-props"                 element={<RouteBoundary component={PlayerProfilePage} />} />
+                            <Route path="/player-props"                 element={<RouteBoundary component={PlayerPropsCardsHubPage} />} />
                             <Route path="/tanzania-premier-league-predictions" element={<RouteBoundary component={TanzaniaLigaPredictions} />} />
                             <Route path="/ghana-premier-league-predictions" element={<RouteBoundary component={GhanaPremierLeaguePredictions} />} />
                             <Route path="/morocco-botola-pro-predictions" element={<RouteBoundary component={MoroccoBotolaPredictions} />} />
@@ -633,6 +653,33 @@ const App = () => (
                             <Route path="/injury-lineup-impact"         element={<RouteBoundary component={InjuryLineupImpactPage} />} />
                             <Route path="/stadium-altitude-weather"     element={<RouteBoundary component={StadiumAltitudeWeatherPage} />} />
                             <Route path="/tactical-mismatch-matrix"     element={<RouteBoundary component={TacticalMismatchMatrixPage} />} />
+                            <Route path="/referrals"                    element={<RouteBoundary component={ViralReferralHubPage} />} />
+                            <Route path="/invite"                       element={<Navigate to="/referrals" replace />} />
+                            <Route path="/community-slips"              element={<RouteBoundary component={CommunitySlipsPage} />} />
+                            <Route path="/copy-bets"                    element={<Navigate to="/community-slips" replace />} />
+                            <Route path="/pick-em-challenge"            element={<RouteBoundary component={PickEmChallengePage} />} />
+                            <Route path="/pick-em"                      element={<Navigate to="/pick-em-challenge" replace />} />
+                            <Route path="/alert-center"                 element={<RouteBoundary component={AlertCenterPage} />} />
+                            <Route path="/telegram-alerts"              element={<Navigate to="/alert-center" replace />} />
+                            <Route path="/cashout-calculator"           element={<RouteBoundary component={CashOutHedgeCalculatorPage} />} />
+                            <Route path="/arbitrage-finder"             element={<RouteBoundary component={ArbitrageSurebetMatrixPage} />} />
+                            <Route path="/surebet-finder"               element={<Navigate to="/arbitrage-finder" replace />} />
+                            <Route path="/rollover-challenge"           element={<RouteBoundary component={RolloverLadderSimulatorPage} />} />
+                            <Route path="/compound-ladder"              element={<Navigate to="/rollover-challenge" replace />} />
+                            <Route path="/asian-handicap-calculator"    element={<RouteBoundary component={AsianHandicapMatrixPage} />} />
+                            <Route path="/quarter-line-calculator"      element={<Navigate to="/asian-handicap-calculator" replace />} />
+                            <Route path="/syndicate-pools"              element={<RouteBoundary component={SyndicatePoolsHubPage} />} />
+                            <Route path="/mini-leagues"                 element={<Navigate to="/syndicate-pools" replace />} />
+                            <Route path="/corner-stats-scanner"         element={<RouteBoundary component={CornerPressureScannerPage} />} />
+                            <Route path="/corner-matrix"                element={<Navigate to="/corner-stats-scanner" replace />} />
+                            <Route path="/cash-out-calculator"          element={<RouteBoundary component={CashOutEquityAuditorPage} />} />
+                            <Route path="/live-hedge-optimizer"         element={<RouteBoundary component={CashOutEquityAuditorPage} />} />
+                            <Route path="/referee-stats-scanner"        element={<RouteBoundary component={RefereeDisciplineMatrixPage} />} />
+                            <Route path="/card-markets-hub"             element={<RouteBoundary component={RefereeDisciplineMatrixPage} />} />
+                            <Route path="/player-props-lab"             element={<RouteBoundary component={PlayerPropsLabPage} />} />
+                            <Route path="/shots-on-target-scanner"      element={<RouteBoundary component={PlayerPropsLabPage} />} />
+                            <Route path="/trixie-yankee-calculator"     element={<RouteBoundary component={SystemBetPermutationPage} />} />
+                            <Route path="/system-bet-simulator"         element={<RouteBoundary component={SystemBetPermutationPage} />} />
                             <Route path="/app-store-publish"            element={<Navigate to="/admin" replace />} />
                             <Route path="/mobile-app"                   element={<Navigate to="/admin" replace />} />
                             <Route path="/download-app"                 element={<Navigate to="/admin" replace />} />
@@ -699,10 +746,9 @@ const App = () => (
                             <Route path="/trixie-calculator"            element={<Navigate to="/system-bet-calculator" replace />} />
                             <Route path="/yankee-calculator"            element={<Navigate to="/system-bet-calculator" replace />} />
                             <Route path="/patent-bet-calculator"        element={<Navigate to="/system-bet-calculator" replace />} />
-                            <Route path="/lucky-15-calculator"          element={<Navigate to="/system-bet-calculator" replace />} />
-                            <Route path="/cash-out-calculator"          element={<Navigate to="/hedge-bet-calculator" replace />} />
-                            <Route path="/live-hedge-calculator"        element={<Navigate to="/hedge-bet-calculator" replace />} />
-                            <Route path="/lock-in-profit-calculator"    element={<Navigate to="/hedge-bet-calculator" replace />} />
+                            <Route path="/lucky-15-calculator"          element={<Navigate to="/trixie-yankee-calculator" replace />} />
+                            <Route path="/live-hedge-calculator"        element={<Navigate to="/cash-out-calculator" replace />} />
+                            <Route path="/lock-in-profit-calculator"    element={<Navigate to="/cash-out-calculator" replace />} />
                             <Route path="/mexican-liga-mx-predictions"  element={<Navigate to="/liga-mx-predictions" replace />} />
                             <Route path="/liga-mx-tips"                 element={<Navigate to="/liga-mx-predictions" replace />} />
                             <Route path="/major-league-soccer-predictions" element={<Navigate to="/mls-predictions" replace />} />
