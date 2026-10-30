@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
@@ -222,12 +222,35 @@ const HOME_SCHEMA = [
 
 const Index = () => {
   const [activeMode, setActiveMode] = useState<HomeViewMode>('predictions');
+  const [faqReady, setFaqReady] = useState(
+    () => import.meta.env.MODE === 'test'
+  );
+
+  useEffect(() => {
+    if (faqReady) return;
+    let mounted = false;
+    const enable = () => {
+      if (mounted) return;
+      mounted = true;
+      setFaqReady(true);
+    };
+    const timer = setTimeout(enable, 2000);
+    window.addEventListener('scroll', enable, { passive: true, once: true });
+    window.addEventListener('pointerdown', enable, { passive: true, once: true });
+    window.addEventListener('touchstart', enable, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', enable);
+      window.removeEventListener('pointerdown', enable);
+      window.removeEventListener('touchstart', enable);
+    };
+  }, [faqReady]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="AI Football Predictions Today, Banker Tips, Booking Codes & xG | PredictPro"
-        description="Free daily AI football predictions, 80%+ banker tips, SportyBet/Betika/SportPesa booking codes, Expected Goals (xG) previews, personal bet tracking, and live scores across 40+ leagues."
+        title="AI Football Predictions Today, xG & Live Odds | PredictPro"
+        description="Free daily AI football predictions, 80%+ banker tips, Expected Goals (xG) models, SportyBet/Betika booking codes, and live scores across 40+ leagues."
         keywords="football predictions today, sure banker tips today, sportybet booking codes, betika jackpot predictions, expected goals xG, bet tracker, in-play momentum radar"
         canonical="/"
         schema={HOME_SCHEMA}
@@ -429,9 +452,13 @@ const Index = () => {
 
         {/* Contained FAQ Section */}
         <div className="cv-auto container mx-auto max-w-7xl px-4 sm:px-6">
-          <Suspense fallback={<div className="min-h-[160px]" aria-hidden="true" />}>
-            <FooterFAQ />
-          </Suspense>
+          {faqReady ? (
+            <Suspense fallback={<div className="min-h-[160px]" aria-hidden="true" />}>
+              <FooterFAQ />
+            </Suspense>
+          ) : (
+            <div className="min-h-[160px]" aria-hidden="true" />
+          )}
         </div>
       </main>
 
