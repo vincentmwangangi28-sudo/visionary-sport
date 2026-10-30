@@ -51,25 +51,65 @@ export interface LiveScoreAlertPayload {
   tacticalPulse?: string;
 }
 
+let telegramApiCooldownUntil = 0;
+
 /**
  * Primary dispatcher: calls server-side /api/telegram-broadcast (which uses
  * process.env.TELEGRAM_BOT_TOKEN and process.env.TELEGRAM_CHAT_ID directly)
- * with automatic fallback to Supabase Edge Function.
+ * with circuit-breaker protection against offline/network drops.
  */
 async function callTelegramServerApi(payload: Record<string, any>): Promise<any> {
+  if (
+    (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+    Date.now() < telegramApiCooldownUntil
+  ) {
+    return {
+      success: false,
+      simulated: true,
+      message: 'Telegram dispatcher in offline/standby mode',
+      chatId: payload?.channel || '@predictproAi',
+    };
+  }
+
+  let networkFailed = false;
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
     const res = await fetch('/api/telegram-broadcast', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
-    if (res.ok) {
+    clearTimeout(timeoutId);
+    if (res.ok && (res.headers.get('content-type') || '').includes('application/json')) {
       return await res.json();
     }
   } catch {
-    // Fallback to Supabase edge function if server route is unreachable
+    networkFailed = true;
+    telegramApiCooldownUntil = Date.now() + 15 * 60 * 1000;
   }
-  return callEdgeFn('telegram-broadcast', payload);
+
+  if (networkFailed) {
+    return {
+      success: false,
+      simulated: true,
+      message: 'Telegram server temporarily unreachable',
+      chatId: payload?.channel || '@predictproAi',
+    };
+  }
+
+  try {
+    return await callEdgeFn('telegram-broadcast', payload, undefined, 5000);
+  } catch {
+    telegramApiCooldownUntil = Date.now() + 15 * 60 * 1000;
+    return {
+      success: false,
+      simulated: true,
+      message: 'Telegram edge fallback in standby mode',
+      chatId: payload?.channel || '@predictproAi',
+    };
+  }
 }
 
 /**

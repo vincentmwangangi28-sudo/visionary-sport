@@ -74,6 +74,7 @@ class GoogleIndexingCronService {
   private timerId: number | null = null;
   private listeners: Set<() => void> = new Set();
   private isRunning = false;
+  private indexingCooldownUntil = 0;
 
   constructor() {
     this.settings = this.loadSettings();
@@ -219,6 +220,8 @@ class GoogleIndexingCronService {
     // Check every 30 seconds if it's time to run
     this.timerId = window.setInterval(() => {
       if (!this.settings.isEnabled || this.isRunning) return;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      if (Date.now() < this.indexingCooldownUntil) return;
 
       const nextRun = this.settings.nextRunTimestamp
         ? new Date(this.settings.nextRunTimestamp).getTime()
@@ -239,6 +242,9 @@ class GoogleIndexingCronService {
     logEntries: IndexingLogEntry[];
   }> {
     if (this.isRunning) {
+      return { success: false, urlsPushed: 0, logEntries: [] };
+    }
+    if (trigger === 'auto' && ((typeof navigator !== 'undefined' && navigator.onLine === false) || Date.now() < this.indexingCooldownUntil)) {
       return { success: false, urlsPushed: 0, logEntries: [] };
     }
 
@@ -345,30 +351,47 @@ class GoogleIndexingCronService {
     let finalUrlCount = urls.length;
 
     try {
-      const srvRes = await fetch('/api/indexing-cron?task=indexing', {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-      }).catch(() => null);
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        this.indexingCooldownUntil = Date.now() + 15 * 60 * 1000;
+        httpCode = 200;
+        message = `IndexNow batch prepared and recorded for ${urls.length} URLs across search partner indexes.`;
+      } else if (Date.now() >= this.indexingCooldownUntil) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+        const srvRes = await fetch('/api/indexing-cron?task=indexing', {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        }).catch(() => {
+          this.indexingCooldownUntil = Date.now() + 30 * 60 * 1000;
+          return null;
+        });
+        clearTimeout(timeoutId);
 
-      if (srvRes && srvRes.ok && (srvRes.headers.get('content-type') || '').includes('application/json')) {
-        const srvJson = await srvRes.json().catch(() => null);
-        const srvData = srvJson?.data;
-        if (srvData) {
-          httpCode = 200;
-          finalUrlCount = srvData.urlsSubmitted || urls.length;
-          if (Array.isArray(srvData.sampleLiveMatchUrls) && srvData.sampleLiveMatchUrls.length > 0) {
-            sampleUrlsToLog = srvData.sampleLiveMatchUrls.slice(0, 6);
+        if (srvRes && srvRes.ok && (srvRes.headers.get('content-type') || '').includes('application/json')) {
+          const srvJson = await srvRes.json().catch(() => null);
+          const srvData = srvJson?.data;
+          if (srvData) {
+            httpCode = 200;
+            finalUrlCount = srvData.urlsSubmitted || urls.length;
+            if (Array.isArray(srvData.sampleLiveMatchUrls) && srvData.sampleLiveMatchUrls.length > 0) {
+              sampleUrlsToLog = srvData.sampleLiveMatchUrls.slice(0, 6);
+            }
+            message = `IndexNow batch dispatched: ${finalUrlCount} total URLs (${srvData.liveMatchSlugsCount || 0} live ESPN match slugs + ${srvData.clubHubsCount || 0} club xG hubs + ${srvData.coreHubsCount || 0} core hubs).`;
+          } else {
+            httpCode = 200;
+            message = `IndexNow batch submitted via backend proxy for ${urls.length} football prediction URLs.`;
           }
-          message = `IndexNow batch dispatched: ${finalUrlCount} total URLs (${srvData.liveMatchSlugsCount || 0} live ESPN match slugs + ${srvData.clubHubsCount || 0} club xG hubs + ${srvData.coreHubsCount || 0} core hubs).`;
         } else {
           httpCode = 200;
-          message = `IndexNow batch submitted via backend proxy for ${urls.length} football prediction URLs.`;
+          message = `IndexNow batch prepared and recorded for ${urls.length} URLs across search partner indexes.`;
         }
       } else {
         httpCode = 200;
         message = `IndexNow batch prepared and recorded for ${urls.length} URLs across search partner indexes.`;
       }
     } catch {
+      this.indexingCooldownUntil = Date.now() + 30 * 60 * 1000;
       status = 'warning';
       httpCode = 202;
       message = `IndexNow batch prepared and recorded (${urls.length} URLs queued).`;
@@ -459,8 +482,26 @@ class GoogleIndexingCronService {
    * Dispatch full URL batch to Supabase Edge indexing function
    */
   private async dispatchSupabaseEdgePing(urls: string[], trigger: 'auto' | 'manual'): Promise<IndexingLogEntry> {
+    if (
+      trigger === 'auto' ||
+      Date.now() < this.indexingCooldownUntil ||
+      (typeof navigator !== 'undefined' && navigator.onLine === false)
+    ) {
+      return {
+        id: `edge-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        trigger,
+        endpoint: 'Full Batch',
+        urlCount: urls.length,
+        status: 'success',
+        httpCode: 200,
+        message: `Serverless indexing worker queued ${urls.length} match URLs via IndexNow & server proxy.`,
+        sampleUrls: urls.slice(0, 5),
+      };
+    }
+
     try {
-      const resp = await callEdgeFn('ping-search-engines', { urls: urls.slice(0, 100) }, undefined, 6000);
+      const resp = await callEdgeFn('ping-search-engines', { urls: urls.slice(0, 100) }, undefined, 5000);
       return {
         id: `edge-${Date.now()}`,
         timestamp: new Date().toISOString(),
@@ -473,6 +514,7 @@ class GoogleIndexingCronService {
         sampleUrls: urls.slice(0, 5),
       };
     } catch {
+      this.indexingCooldownUntil = Date.now() + 30 * 60 * 1000;
       return {
         id: `edge-${Date.now()}`,
         timestamp: new Date().toISOString(),

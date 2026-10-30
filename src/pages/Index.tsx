@@ -189,6 +189,27 @@ const PRO_SPORTS_TOOLS = [
     desc: 'Fault-tolerant payout table for Trixie, Patent, Yankee, Lucky 15, Canadian, Heinz & k-of-n Round Robins.',
     icon: GitBranch,
   },
+  {
+    to: '/h2h',
+    title: 'Dynamic Team H2H & Matchup Hub',
+    tag: '10-Match H2H',
+    desc: 'Compare head-to-head form, xG differential, BTTS %, and Poisson score grids with 1-click IndexNow push.',
+    icon: Users,
+  },
+  {
+    to: '/odds-comparison',
+    title: 'Bookmaker Odds Line-Shopping Hub',
+    tag: '6 Bookies',
+    desc: 'Live 1X2, Over/Under 2.5, and BTTS price comparison across SportyBet, Betika, SportPesa, Bet9ja & 1xBet.',
+    icon: ArrowRightLeft,
+  },
+  {
+    to: '/seo-audit',
+    title: 'Ahrefs SEO, Discover XML & IndexNow Command',
+    tag: 'SERP & XML',
+    desc: 'Inspect Google News/Discover XML feeds, 301 redirect matrix, Low-Hanging Fruit keywords & IndexNow dispatch.',
+    icon: Activity,
+  },
 ];
 
 const HOME_SCHEMA = [
@@ -319,9 +340,30 @@ const Index = () => {
                 <Trophy className="h-3.5 w-3.5 text-amber-500" />
                 <span>Jackpot Hub</span>
               </Link>
+              <Link
+                to="/h2h"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+              >
+                <Users className="h-3.5 w-3.5 text-primary" />
+                <span>Team H2H Hub</span>
+              </Link>
+              <Link
+                to="/odds-comparison"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Odds Line-Shopping</span>
+              </Link>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-card text-[11px] font-mono text-muted-foreground">
+                <span className="font-semibold text-foreground">Locale:</span>
+                <Link to="/?lang=en" className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground font-bold">EN</Link>
+                <Link to="/?lang=sw" className="px-1.5 py-0.5 rounded hover:bg-muted hover:text-foreground">SW</Link>
+                <Link to="/?lang=fr" className="px-1.5 py-0.5 rounded hover:bg-muted hover:text-foreground">FR</Link>
+                <Link to="/?lang=pt" className="px-1.5 py-0.5 rounded hover:bg-muted hover:text-foreground">PT</Link>
+              </div>
               <Link
                 to="/pick-em-challenge"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-bold transition-colors"
@@ -399,16 +441,27 @@ const Index = () => {
                 Professional Sports Tools, In-Play Telemetry &amp; ROI Ledger
               </h2>
             </div>
-            <div className="flex items-center gap-3 text-xs font-semibold">
+            <div className="flex items-center gap-3 text-xs font-semibold flex-wrap">
+              <Link to="/h2h" className="text-muted-foreground hover:text-foreground">
+                Team H2H Matrix →
+              </Link>
+              <Link to="/odds-comparison" className="text-muted-foreground hover:text-foreground">
+                Odds Line-Shopping →
+              </Link>
               <Link to="/xpts-standings" className="text-muted-foreground hover:text-foreground">
                 xPTS Justice Table →
               </Link>
               <Link to="/pitch-telemetry" className="text-muted-foreground hover:text-foreground">
                 2D Shot Map &amp; xT →
               </Link>
-              <Link to="/bracket-simulator" className="text-muted-foreground hover:text-foreground">
-                Knockout Bracket →
-              </Link>
+              <a
+                href="/sitemap-discover-news.xml"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground font-mono"
+              >
+                Discover XML Feed ↗
+              </a>
               <Link to="/alert-center" className="text-emerald-400 hover:underline inline-flex items-center gap-1">
                 <Bell className="h-3.5 w-3.5" />
                 Telegram &amp; Push Alerts →

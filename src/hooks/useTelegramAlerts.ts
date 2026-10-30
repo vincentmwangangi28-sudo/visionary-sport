@@ -318,6 +318,7 @@ export function useGlobalTelegramAutomation() {
 
     const checkAndDispatch = async () => {
       try {
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
         // Only auto-dispatch from browser if admin/user explicitly enabled auto-alerts in localStorage
         const explicitOptIn = localStorage.getItem(AUTO_ALERTS_ENABLED_KEY) === 'true';
         if (!explicitOptIn) return;
@@ -331,8 +332,8 @@ export function useGlobalTelegramAutomation() {
         if (predictions && predictions.length > 0) {
           await autoDispatchHighConfidencePredictions(predictions, config.minBankerConfidence || 82);
         }
-      } catch (err) {
-        console.debug('[useGlobalTelegramAutomation] Poll cycle error:', err);
+      } catch {
+        // Non-blocking background poll
       }
     };
 

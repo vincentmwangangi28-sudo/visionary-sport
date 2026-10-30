@@ -23,6 +23,13 @@ function setFnCooldown(name: string) {
 }
 
 export async function callEdgeFn(name: string, body?: unknown, userToken?: string, timeoutMs: number = 8000): Promise<any> {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const offlineErr: any = new Error(`Edge function ${name} skipped while browser is offline`);
+    offlineErr.status = 503;
+    offlineErr.isCooldown = true;
+    throw offlineErr;
+  }
+
   // If the function is gemini-tasks and in browser, prefer local proxy /api/gemini-tasks if available
   if (name === 'gemini-tasks' && typeof window !== 'undefined' && !localApiProxyUnavailable) {
     try {

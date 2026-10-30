@@ -5,8 +5,6 @@
  * continuously active to eliminate cold starts and prevent Supabase 7-day inactivity pause.
  */
 
-import { supabase } from '@/integrations/supabase/client';
-
 export const KEEPALIVE_EVENT = 'predictpro_keepalive_pulse';
 export const KEEPALIVE_STORAGE_KEY = 'predictpro_keepalive_stats';
 export const KEEPALIVE_CONFIG_KEY = 'predictpro_keepalive_enabled';
@@ -40,6 +38,8 @@ const DEFAULT_TELEMETRY: KeepaliveTelemetry = {
 
 let activeInterval: any = null;
 let isPinging = false;
+let keepaliveNetworkCooldownUntil = 0;
+let visibilityListenerAttached = false;
 
 export function isClientSentinelEnabled(): boolean {
   try {
@@ -82,7 +82,8 @@ function saveKeepaliveTelemetry(telemetry: KeepaliveTelemetry): void {
 }
 
 /**
- * Executes a single keepalive pulse across web endpoint and Supabase
+ * Executes a single keepalive pulse across the server keepalive endpoint
+ * with automatic offline & circuit-breaker protection.
  */
 export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<{
   success: boolean;
@@ -102,6 +103,24 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
     };
   }
 
+  const isAutoBackground =
+    source === 'heartbeat_timer' ||
+    source === 'visibility_resume' ||
+    source === 'client_boot';
+  const isOffline =
+    typeof navigator !== 'undefined' && navigator.onLine === false;
+
+  if (isAutoBackground && (isOffline || Date.now() < keepaliveNetworkCooldownUntil)) {
+    const current = getKeepaliveTelemetry();
+    return {
+      success: true,
+      latencyMs: current.lastLatencyMs || 0,
+      status: 'standby',
+      supabaseStatus: 'standby',
+      timestamp: current.lastPingAt || new Date().toISOString(),
+    };
+  }
+
   isPinging = true;
   const start = Date.now();
   const timestamp = new Date().toISOString();
@@ -109,7 +128,6 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
   let supabaseStatus = 'standby';
 
   try {
-    // 1. Ping the /api/keepalive endpoint (falls back to /api/health) with timeout
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutId = controller ? setTimeout(() => controller.abort(), 3000) : null;
     try {
@@ -117,41 +135,18 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
         method: 'GET',
         headers: { 'X-Keepalive-Agent': `PredictPro-ClientSentinel/${source}` },
         signal: controller?.signal,
-      }).catch(async () => {
-        return await fetch('/api/health', {
-          headers: { 'X-Keepalive-Agent': `PredictPro-ClientSentinel/${source}` },
-          signal: controller?.signal,
-        }).catch(() => null);
-      });
+      }).catch(() => null);
 
       if (apiRes && apiRes.ok) {
         endpointSuccess = true;
+        supabaseStatus = 'active_via_server';
+        keepaliveNetworkCooldownUntil = 0;
+      } else {
+        // Place background sentinel into a 10-minute cooldown on network/DNS/SSL error
+        keepaliveNetworkCooldownUntil = Date.now() + 10 * 60 * 1000;
       }
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
-    }
-
-    // 2. Direct ping to Supabase to keep PostgreSQL free-tier database unpaused (fast 2s timeout)
-    try {
-      const dbStart = Date.now();
-      const dbPromise = supabase
-        .from('predictions')
-        .select('id')
-        .limit(1);
-
-      const timeoutPromise = new Promise<{ error: any }>((resolve) =>
-        setTimeout(() => resolve({ error: { message: 'db_timeout' } }), 2000)
-      );
-
-      const res: any = await Promise.race([dbPromise, timeoutPromise]);
-
-      if (!res?.error) {
-        supabaseStatus = `ok_${Date.now() - dbStart}ms`;
-      } else {
-        supabaseStatus = 'db_standby';
-      }
-    } catch (dbErr: any) {
-      supabaseStatus = `db_exception: ${dbErr?.message || 'timeout'}`;
     }
 
     const latencyMs = Date.now() - start;
@@ -184,6 +179,7 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
       timestamp,
     };
   } catch (err: any) {
+    keepaliveNetworkCooldownUntil = Date.now() + 10 * 60 * 1000;
     const latencyMs = Date.now() - start;
     const prev = getKeepaliveTelemetry();
     const updated: KeepaliveTelemetry = {
@@ -209,38 +205,51 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
 
 /**
  * Initializes the client-side background sentinel.
- * Automatically pings every 3 minutes while the tab/app is running.
+ * Automatically pings every 10 minutes while the tab/app is running and online.
  */
 export function startClientKeepaliveSentinel(): void {
   if (typeof window === 'undefined') return;
   if (!isClientSentinelEnabled()) return;
   if (activeInterval) return;
 
-  // Immediate non-blocking warmup pulse after 5 seconds
+  // Non-blocking warmup pulse after 15 seconds if online
   setTimeout(() => {
-    triggerKeepalivePulse('client_boot').catch(() => {});
-  }, 5000);
-
-  // Ping every 3 minutes (180,000 ms)
-  activeInterval = setInterval(() => {
-    triggerKeepalivePulse('heartbeat_timer').catch(() => {});
-  }, 3 * 60 * 1000);
-
-  // Wake up when the user returns to the tab after being away
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      const current = getKeepaliveTelemetry();
-      if (!current.lastPingAt) {
-        triggerKeepalivePulse('visibility_resume').catch(() => {});
-        return;
-      }
-      const elapsedMs = Date.now() - new Date(current.lastPingAt).getTime();
-      // If away for more than 2 minutes, fire immediate refresh pulse
-      if (elapsedMs > 2 * 60 * 1000) {
-        triggerKeepalivePulse('visibility_resume').catch(() => {});
-      }
+    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+      triggerKeepalivePulse('client_boot').catch(() => {});
     }
-  });
+  }, 15000);
+
+  // Ping every 10 minutes (600,000 ms)
+  activeInterval = setInterval(() => {
+    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+      triggerKeepalivePulse('heartbeat_timer').catch(() => {});
+    }
+  }, 10 * 60 * 1000);
+
+  if (!visibilityListenerAttached) {
+    visibilityListenerAttached = true;
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (document.visibilityState !== 'visible') return;
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+        if (Date.now() < keepaliveNetworkCooldownUntil) return;
+        // Defer work off the synchronous visibilitychange event tick to prevent [Violation] warnings
+        setTimeout(() => {
+          const current = getKeepaliveTelemetry();
+          if (!current.lastPingAt) {
+            triggerKeepalivePulse('visibility_resume').catch(() => {});
+            return;
+          }
+          const elapsedMs = Date.now() - new Date(current.lastPingAt).getTime();
+          if (elapsedMs > 10 * 60 * 1000) {
+            triggerKeepalivePulse('visibility_resume').catch(() => {});
+          }
+        }, 150);
+      },
+      { passive: true }
+    );
+  }
 }
 
 export function stopClientKeepaliveSentinel(): void {

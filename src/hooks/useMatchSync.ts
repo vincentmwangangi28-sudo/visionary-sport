@@ -44,6 +44,8 @@ const SYNC_SUMMARY_KEY = 'predictpro_match_sync_summary';
 const AUTO_SYNC_ENABLED_KEY = 'predictpro_auto_match_sync_enabled';
 const TRIGGER_SETTINGS_KEY = 'predictpro_match_sync_trigger_settings';
 
+let cronApiCooldownUntil = 0;
+
 /**
  * Suggested Trigger Catalogs & Defaults
  */
@@ -231,6 +233,10 @@ export function useMatchSync() {
       return false;
     }
 
+    if (!forced && typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return false;
+    }
+
     const todayDate = getTodayDateString();
     const storedDate = localStorage.getItem(LAST_SYNC_DATE_KEY);
     const nowMs = Date.now();
@@ -260,49 +266,62 @@ export function useMatchSync() {
     try {
       // 1. Primary path: trigger the daily predictions cron API endpoint + direct jackpot cron
       let cronSuccess = false;
-      try {
-        fetch('/api/jackpot-cron', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ trigger: `useMatchSync_${trigger}`, timestamp: new Date().toISOString() }),
-        }).catch(() => {});
+      let serverNetworkFailed = false;
 
-        const cronRes = await fetch('/api/daily-predictions-cron', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            trigger: `useMatchSync_${trigger}`,
-            date: todayDate,
-            timestamp: new Date().toISOString(),
-          }),
-        });
+      if (Date.now() >= cronApiCooldownUntil) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4500);
 
-        if (cronRes.ok) {
-          const cronData = await cronRes.json().catch(() => null);
-          cronSuccess = true;
-          sourceUsed = 'cron_api';
-          summaryMessage = cronData?.data?.message || `Automated match sync executed via ${trigger}`;
+          fetch('/api/jackpot-cron', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger: `useMatchSync_${trigger}`, timestamp: new Date().toISOString() }),
+            signal: controller.signal,
+          }).catch(() => {});
+
+          const cronRes = await fetch('/api/daily-predictions-cron', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              trigger: `useMatchSync_${trigger}`,
+              date: todayDate,
+              timestamp: new Date().toISOString(),
+            }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          if (cronRes.ok) {
+            const cronData = await cronRes.json().catch(() => null);
+            cronSuccess = true;
+            sourceUsed = 'cron_api';
+            summaryMessage = cronData?.data?.message || `Automated match sync executed via ${trigger}`;
+          }
+        } catch {
+          serverNetworkFailed = true;
+          cronApiCooldownUntil = Date.now() + 30 * 60 * 1000;
         }
-      } catch (cronErr) {
-        console.debug('[useMatchSync] Local cron endpoint bypassed, trying edge fallback:', cronErr);
+      } else {
+        serverNetworkFailed = true;
       }
 
-      // 2. Secondary path: invoke Supabase Edge Function fallback
-      if (!cronSuccess) {
+      // 2. Secondary path: invoke Supabase Edge Function fallback ONLY if explicitly forced and network did not drop
+      if (!cronSuccess && forced && !serverNetworkFailed) {
         try {
           const edgeRes = await callEdgeFn(
             'cron-daily-predictions',
             { trigger, date: todayDate },
             undefined,
-            12000
+            6000
           );
           if (edgeRes) {
             cronSuccess = true;
             sourceUsed = 'edge_function';
             summaryMessage = edgeRes?.message || 'Edge function predictions refreshed';
           }
-        } catch (edgeErr) {
-          console.debug('[useMatchSync] Edge function fallback bypassed, hydrating via live feed:', edgeErr);
+        } catch {
+          // Non-blocking fallback
         }
       }
 
@@ -366,7 +385,6 @@ export function useMatchSync() {
       return true;
     } catch (err: any) {
       const errorMsg = err instanceof Error ? err.message : 'Match sync encountered an error';
-      console.warn('[useMatchSync] Error during match synchronization:', errorMsg);
 
       setStatus(prev => ({
         ...prev,
@@ -477,19 +495,22 @@ export function useMatchSync() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        const todayDate = getTodayDateString();
-        const storedDate = localStorage.getItem(LAST_SYNC_DATE_KEY);
-        const lastSyncTimeStr = localStorage.getItem(LAST_SYNC_KEY);
-        const lastSyncMs = lastSyncTimeStr ? new Date(lastSyncTimeStr).getTime() : 0;
-        const isStale = Date.now() - lastSyncMs > 30 * 60 * 1000; // 30 minutes stale
+        setTimeout(() => {
+          if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+          const todayDate = getTodayDateString();
+          const storedDate = localStorage.getItem(LAST_SYNC_DATE_KEY);
+          const lastSyncTimeStr = localStorage.getItem(LAST_SYNC_KEY);
+          const lastSyncMs = lastSyncTimeStr ? new Date(lastSyncTimeStr).getTime() : 0;
+          const isStale = Date.now() - lastSyncMs > 30 * 60 * 1000; // 30 minutes stale
 
-        if (storedDate !== todayDate || isStale) {
-          syncMatchData('tab_visible', false).catch(() => {});
-        }
+          if (storedDate !== todayDate || isStale) {
+            syncMatchData('tab_visible', false).catch(() => {});
+          }
+        }, 200);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange, { passive: true });
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [autoEnabled, isTriggerEnabled, syncMatchData]);
 

@@ -112,7 +112,10 @@ class GeminiDailyCronService {
     const todayStr = new Date().toISOString().split('T')[0];
     const topPool = predictions.slice(0, 15);
 
-    if (Date.now() > this.edgeUnavailableUntil) {
+    if (
+      Date.now() > this.edgeUnavailableUntil &&
+      (typeof navigator === 'undefined' || navigator.onLine !== false)
+    ) {
       try {
         const payload = {
           date: todayStr,
@@ -162,9 +165,8 @@ class GeminiDailyCronService {
           this.saveDigest(digest);
           return digest;
         }
-      } catch (e) {
+      } catch {
         this.edgeUnavailableUntil = Date.now() + 30 * 60 * 1000;
-        console.debug('[GeminiDailyCron] Edge function unavailable, generating statistical fallback digest:', e);
       }
     }
 
@@ -305,6 +307,9 @@ class GeminiDailyCronService {
     if (this.timer) clearInterval(this.timer);
 
     const check = () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      if (Date.now() < this.edgeUnavailableUntil) return;
+
       const settings = this.getSettings();
       if (!settings.isEnabled) return;
 
@@ -313,9 +318,7 @@ class GeminiDailyCronService {
       const now = Date.now();
 
       if (now - last >= intervalMs) {
-        this.executeCronCycle(getPredictions()).catch((err) => {
-          console.debug('[GeminiDailyCron] Heartbeat cycle error:', err);
-        });
+        this.executeCronCycle(getPredictions()).catch(() => {});
       }
     };
 

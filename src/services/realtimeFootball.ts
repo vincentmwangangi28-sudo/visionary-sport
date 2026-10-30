@@ -41,76 +41,31 @@ async function fetchEspnLeagueScoreboard(
   league: LeagueDefinition,
   includeFullMatchweek = false
 ): Promise<Array<Record<string, unknown>>> {
+  if (
+    (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+    isHostInCooldown('site.api.espn.com')
+  ) {
+    return [];
+  }
+
   const cacheKey = `espn_sb_${league.espnCode}_${includeFullMatchweek ? 'full' : 'day'}`;
   const ttl = includeFullMatchweek ? CACHE_TTLS.UPCOMING_FIXTURES : CACHE_TTLS.LIVE_SCORES;
   return fetchWithCacheAndDeduplication(cacheKey, ttl, async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4500);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      const todayYmd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const defaultUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard`;
-      
-      const fetchList: Promise<Response>[] = [
-        fetch(defaultUrl, {
-          signal: controller.signal,
-          headers: ESPN_HEADERS,
-        }),
-      ];
-
-      if (includeFullMatchweek) {
-        const todayUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${todayYmd}`;
-        fetchList.push(
-          fetch(todayUrl, {
-            signal: controller.signal,
-            headers: ESPN_HEADERS,
-          })
-        );
-      }
-
-      const responses = await Promise.all(fetchList);
+      const res = await fetch(defaultUrl, {
+        signal: controller.signal,
+        headers: ESPN_HEADERS,
+      });
       clearTimeout(timeout);
 
-      const allEvents: Array<Record<string, unknown>> = [];
-      for (const res of responses) {
-        if (!res.ok) continue;
-        try {
-          const data = await res.json();
-          if (data.events && Array.isArray(data.events)) {
-            allEvents.push(...data.events);
-          }
-        } catch {}
-      }
-
-      if (includeFullMatchweek && allEvents.length > 0) {
-        const firstIso = String(allEvents[0]?.date || '');
-        if (firstIso.length >= 10) {
-          const baseMs = new Date(`${firstIso.slice(0, 10)}T00:00:00Z`).getTime();
-          if (!isNaN(baseMs)) {
-            const extraDates = [1, 2].map((offset) => {
-              const d = new Date(baseMs + offset * 86400000);
-              return d.toISOString().slice(0, 10).replace(/-/g, '');
-            });
-            const extraResults = await Promise.all(
-              extraDates.map(async (dt) => {
-                try {
-                  const r = await fetch(
-                    `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnCode}/scoreboard?dates=${dt}`,
-                    { headers: ESPN_HEADERS }
-                  );
-                  if (!r.ok) return [];
-                  const j = await r.json();
-                  return (j.events as Array<Record<string, unknown>>) || [];
-                } catch {
-                  return [];
-                }
-              })
-            );
-            for (const extraList of extraResults) {
-              allEvents.push(...extraList);
-            }
-          }
-        }
-      }
+      if (!res.ok) return [];
+      const data = await res.json().catch(() => null);
+      const allEvents: Array<Record<string, unknown>> = Array.isArray(data?.events)
+        ? data.events
+        : [];
 
       const seenIds = new Set<string>();
       const uniqueEvents: Array<Record<string, unknown>> = [];
@@ -122,6 +77,8 @@ async function fetchEspnLeagueScoreboard(
       }
       return uniqueEvents;
     } catch {
+      clearTimeout(timeout);
+      setHostCooldown('site.api.espn.com');
       return [];
     }
   });
@@ -396,6 +353,15 @@ function computeLivePrediction(home: string, away: string, homeScore: number | n
 export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
   const cacheKey = 'live_matches_realtime_feed';
   return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.LIVE_MATCHES, async () => {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return {
+        matches: [],
+        source: 'offline_standby',
+        liveCount: 0,
+        lastUpdated: new Date().toISOString(),
+      };
+    }
+
     // 0. Query internal proxy /api/football?type=live first
     try {
       const apiRes = await fetch('/api/football?type=live');
@@ -411,7 +377,16 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
           };
         }
       }
-    } catch {}
+    } catch {
+      // Network drop on same-origin proxy: place ESPN host in cooldown to prevent 22-request storm
+      setHostCooldown('site.api.espn.com');
+      return {
+        matches: [],
+        source: 'offline_standby',
+        liveCount: 0,
+        lastUpdated: new Date().toISOString(),
+      };
+    }
 
     const matches: NormalizedMatch[] = [];
 
@@ -664,20 +639,34 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     }
   }
 
-  // Fetch real-time live events across major leagues plus global scoreboard
-  const globalScoreboardPromise = fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard', {
-    headers: ESPN_HEADERS,
-  })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((d) => (d?.events as Array<Record<string, unknown>>) || [])
-    .catch(() => [] as Array<Record<string, unknown>>);
+  // Fetch real-time live events across top leagues plus global scoreboard (if ESPN is not in cooldown)
+  if (isHostInCooldown('site.api.espn.com')) {
+    return {
+      matches: [],
+      source: 'live_feed',
+      liveCount: 0,
+      lastUpdated: new Date().toISOString(),
+    };
+  }
 
-  const livePromises = LEAGUES_LIST.slice(0, 22).map((league) => fetchEspnLeagueScoreboard(league, true));
+  let globalEvents: Array<Record<string, unknown>> = [];
+  try {
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard', {
+      headers: ESPN_HEADERS,
+    });
+    if (r.ok) {
+      const d = await r.json().catch(() => null);
+      globalEvents = (d?.events as Array<Record<string, unknown>>) || [];
+    }
+  } catch {
+    setHostCooldown('site.api.espn.com');
+  }
 
-  const [leagueResults, globalEvents] = await Promise.all([
-    Promise.all(livePromises),
-    globalScoreboardPromise,
-  ]);
+  const livePromises = isHostInCooldown('site.api.espn.com')
+    ? []
+    : LEAGUES_LIST.slice(0, 6).map((league) => fetchEspnLeagueScoreboard(league, false));
+
+  const leagueResults = await Promise.all(livePromises);
   const rawEvents = [...globalEvents, ...leagueResults.flat()];
 
   for (const ev of rawEvents) {
@@ -769,6 +758,19 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Promise<Prediction[]> {
   const cacheKey = `upcoming_fixtures_${leagueFilter || 'all'}`;
   return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
+    const getOfflineOrFallbackList = () => {
+      let supplemental = getUpdatedDefaultPredictions();
+      if (leagueFilter && leagueFilter !== 'All') {
+        const filtered = supplemental.filter((f) => matchesLeagueFilter(f.league, leagueFilter));
+        if (filtered.length > 0) supplemental = filtered;
+      }
+      return mergeAndPreservePredictions(supplemental);
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return getOfflineOrFallbackList();
+    }
+
     // 0. Query internal proxy /api/football endpoint first (instant official matches, bypasses client browser CORS/Akamai blocks)
     try {
       const q = leagueFilter && leagueFilter !== 'All' ? `?type=upcoming&league=${encodeURIComponent(leagueFilter)}` : '?type=upcoming';
@@ -787,7 +789,9 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
         }
       }
     } catch {
-      // Fallback to direct ESPN queries
+      // Network/DNS drop on same-origin /api/football: do not storm 45 ESPN URLs while offline
+      setHostCooldown('site.api.espn.com');
+      return getOfflineOrFallbackList();
     }
 
   let selectedLeagues = LEAGUES_LIST;
@@ -796,7 +800,6 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     selectedLeagues = found;
   }
 
-  // Calculate upcoming date range (today to 10 days ahead) in YYYYMMDD-YYYYMMDD format
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -807,31 +810,31 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
   const mt = String(tomorrow.getMonth() + 1).padStart(2, '0');
   const dt = String(tomorrow.getDate()).padStart(2, '0');
 
-  const future = new Date(now.getTime() + 12 * 86400000);
-  const y2 = future.getFullYear();
-  const m2 = String(future.getMonth() + 1).padStart(2, '0');
-  const d2 = String(future.getDate()).padStart(2, '0');
-
-  const rangeParam = `${y}${m}${d}-${y2}${m2}${d2}`;
-
   const ESPN_SCOREBOARD_SUPPORTED = new Set(LEAGUES_LIST.map(l => l.espnCode));
 
-  const fetchPromises = selectedLeagues
-    .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-    .slice(0, 22)
-    .map((league) => fetchEspnLeagueScoreboard(league, true));
+  let globalUpcomingEvents: Array<Record<string, unknown>> = [];
+  if (!isHostInCooldown('site.api.espn.com') && (!leagueFilter || leagueFilter === 'All')) {
+    try {
+      const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard', {
+        headers: ESPN_HEADERS,
+      });
+      if (r.ok) {
+        const dJson = await r.json().catch(() => null);
+        globalUpcomingEvents = (dJson?.events as Array<Record<string, unknown>>) || [];
+      }
+    } catch {
+      setHostCooldown('site.api.espn.com');
+    }
+  }
 
-  const allUpcomingScoreboardPromise = (!leagueFilter || leagueFilter === 'All')
-    ? fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard', { headers: ESPN_HEADERS })
-        .then(r => r.ok ? r.json() : null)
-        .then(d => (d?.events as Array<Record<string, unknown>>) || [])
-        .catch(() => [] as Array<Record<string, unknown>>)
-    : Promise.resolve([] as Array<Record<string, unknown>>);
+  const fetchPromises = isHostInCooldown('site.api.espn.com')
+    ? []
+    : selectedLeagues
+        .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
+        .slice(0, 6)
+        .map((league) => fetchEspnLeagueScoreboard(league, false));
 
-  const [resultsByLeague, globalUpcomingEvents] = await Promise.all([
-    Promise.all(fetchPromises),
-    allUpcomingScoreboardPromise,
-  ]);
+  const resultsByLeague = await Promise.all(fetchPromises);
   const rawEvents = [...globalUpcomingEvents, ...resultsByLeague.flat()];
 
   const predictions: Prediction[] = [];

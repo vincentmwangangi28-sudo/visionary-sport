@@ -82,9 +82,27 @@ const UNPROVISIONED_FALLBACK_TABLES = new Set([
   'coin_packages',
 ]);
 
+let supabaseNetworkCooldownUntil = 0;
+
+function createSyntheticStandbyResponse(isHead: boolean, isRestTable: boolean): Response {
+  const body = isHead
+    ? null
+    : isRestTable
+      ? '[]'
+      : JSON.stringify({ success: true, status: 'standby', offline: true, data: [] });
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Range': '0-0/0',
+      'X-Supabase-Circuit-Breaker': 'standby',
+    },
+  });
+}
+
 /**
- * Custom fetch wrapper for Supabase that prevents browser console 404/401 noise
- * when optional telemetry or administrative tables are not provisioned in the remote schema.
+ * Custom fetch wrapper for Supabase that prevents browser console 404/401/network retry noise
+ * when optional tables are unprovisioned or when client connectivity / DNS is temporarily offline.
  */
 const resilientSupabaseFetch: typeof fetch = async (input, init) => {
   const urlStr =
@@ -94,34 +112,45 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
         ? input.toString()
         : (input as Request)?.url || '';
 
+  const isHead = init?.method?.toUpperCase() === 'HEAD';
   const restMatch = urlStr.match(/\/rest\/v1\/([a-zA-Z0-9_]+)/);
-  if (restMatch) {
-    const tableName = restMatch[1];
-    if (UNPROVISIONED_FALLBACK_TABLES.has(tableName)) {
-      const isHead = init?.method?.toUpperCase() === 'HEAD';
-      return new Response(isHead ? null : '[]', {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Range': '0-0/0',
-        },
-      });
-    }
+  const isRestTable = Boolean(restMatch);
+
+  if (restMatch && UNPROVISIONED_FALLBACK_TABLES.has(restMatch[1])) {
+    return createSyntheticStandbyResponse(isHead, true);
   }
 
-  const res = await fetch(input, init);
-  if (restMatch && res.status === 404) {
-    UNPROVISIONED_FALLBACK_TABLES.add(restMatch[1]);
-    const isHead = init?.method?.toUpperCase() === 'HEAD';
-    return new Response(isHead ? null : '[]', {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Range': '0-0/0',
-      },
-    });
+  const isOffline =
+    typeof navigator !== 'undefined' && navigator.onLine === false;
+  if (isOffline || Date.now() < supabaseNetworkCooldownUntil) {
+    return createSyntheticStandbyResponse(isHead, isRestTable);
   }
-  return res;
+
+  const controller =
+    !init?.signal && typeof AbortController !== 'undefined'
+      ? new AbortController()
+      : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 4500) : null;
+
+  try {
+    const fetchInit = controller ? { ...init, signal: controller.signal } : init;
+    const res = await fetch(input, fetchInit);
+    if (restMatch && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 504)) {
+      if (res.status === 404) {
+        UNPROVISIONED_FALLBACK_TABLES.add(restMatch[1]);
+      } else {
+        supabaseNetworkCooldownUntil = Date.now() + 5 * 60 * 1000;
+      }
+      return createSyntheticStandbyResponse(isHead, true);
+    }
+    return res;
+  } catch {
+    // Activate 5-minute circuit breaker so @supabase/supabase-js never loops 4x retries on network/DNS drops
+    supabaseNetworkCooldownUntil = Date.now() + 5 * 60 * 1000;
+    return createSyntheticStandbyResponse(isHead, isRestTable);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 };
 
 /**

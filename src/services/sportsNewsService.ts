@@ -92,6 +92,13 @@ class SportsNewsService {
    * Direct high-speed download of live football news via open ESPN endpoints
    */
   private async fetchDirectESPNNews(): Promise<SportsArticle[]> {
+    if (
+      (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+      Date.now() < this.edgeUnavailableUntil
+    ) {
+      return [];
+    }
+
     const feeds = [
       { url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news', league: 'Premier League' },
       { url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/news', league: 'Champions League' },
@@ -100,10 +107,14 @@ class SportsNewsService {
 
     const articles: SportsArticle[] = [];
 
-    const tasks = feeds.map(async ({ url, league }) => {
+    for (const { url, league } of feeds) {
+      if (Date.now() < this.edgeUnavailableUntil) break;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
       try {
-        const res = await fetch(url);
-        if (!res.ok) return;
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) continue;
         const json = await res.json();
         const items = json.articles || [];
         for (const item of items.slice(0, 4)) {
@@ -143,11 +154,13 @@ class SportsNewsService {
           });
         }
       } catch {
-        // Ignore network hiccups on individual feed
+        clearTimeout(timeout);
+        // Set 15-minute cooldown if ESPN news endpoint is unreachable or DNS fails
+        this.edgeUnavailableUntil = Date.now() + 15 * 60 * 1000;
+        break;
       }
-    });
+    }
 
-    await Promise.allSettled(tasks);
     return articles;
   }
 

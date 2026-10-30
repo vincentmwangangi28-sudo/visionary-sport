@@ -232,28 +232,34 @@ export const usePredictions = (
       };
 
       // 1a. Fast server-side real upcoming fixtures (/api/football?type=upcoming)
-      try {
-        const url =
-          league && league !== 'All'
-            ? `/api/football?type=upcoming&league=${encodeURIComponent(league)}`
-            : '/api/football?type=upcoming';
-        const res = await fetch(url, {
-          headers: { Accept: 'application/json' },
-        });
-        if (res.ok) {
-          const json = await res.json();
-          if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
-            for (const item of json.fixtures as Prediction[]) {
-              pushIfValidUpcoming(item);
+      const isBrowserOffline =
+        typeof navigator !== 'undefined' && navigator.onLine === false;
+      let serverNetworkFailed = isBrowserOffline;
+
+      if (!isBrowserOffline) {
+        try {
+          const url =
+            league && league !== 'All'
+              ? `/api/football?type=upcoming&league=${encodeURIComponent(league)}`
+              : '/api/football?type=upcoming';
+          const res = await fetch(url, {
+            headers: { Accept: 'application/json' },
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
+              for (const item of json.fixtures as Prediction[]) {
+                pushIfValidUpcoming(item);
+              }
             }
           }
+        } catch {
+          serverNetworkFailed = true;
         }
-      } catch {
-        // Fallback to realtimeFootball service below
       }
 
-      // 1b. Supplement from client-side ESPN & RapidAPI sports feeds if server returned < 12 matches
-      if (combinedPredictions.length < 12) {
+      // 1b. Supplement from client-side ESPN & RapidAPI sports feeds only when online and server returned < 12 matches
+      if (!serverNetworkFailed && combinedPredictions.length < 12) {
         try {
           const { fetchRealtimeUpcomingFixtures } = await import('@/services/realtimeFootball');
           const realtimeFixtures = await fetchRealtimeUpcomingFixtures(league);
@@ -262,13 +268,13 @@ export const usePredictions = (
               pushIfValidUpcoming(item);
             }
           }
-        } catch (err) {
-          console.warn('Realtime fixtures fetch warning:', err);
+        } catch {
+          // silent fallback
         }
       }
 
       // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
-      if (combinedPredictions.length < 12) {
+      if (!serverNetworkFailed && combinedPredictions.length < 12) {
         try {
           const { supabase } = await import('@/integrations/supabase/client');
           const nowIso = new Date().toISOString();
@@ -292,8 +298,8 @@ export const usePredictions = (
               pushIfValidUpcoming(item);
             }
           }
-        } catch (err) {
-          console.warn('Supabase predictions query warning:', err);
+        } catch {
+          // silent fallback
         }
       }
 
