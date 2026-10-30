@@ -555,7 +555,8 @@ export default defineConfig(({ mode }) => ({
           if (
             id.includes("src/hooks/useSEOManager") ||
             id.includes("src/hooks/useMatchPredictionSEO") ||
-            id.includes("src/services/seoKeywords")
+            id.includes("src/services/seoKeywords") ||
+            id.includes("src/services/ahrefsOpportunitiesService")
           ) {
             return "vendor-seo";
           }

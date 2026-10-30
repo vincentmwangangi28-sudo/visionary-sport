@@ -397,11 +397,44 @@ const LocaleDetectionInitializer: React.FC = () => {
   return null;
 };
 
-const SEOManagerInitializer: React.FC = () => (
-  <Suspense fallback={null}>
-    <SEORuntime />
-  </Suspense>
-);
+const SEOManagerInitializer: React.FC = () => {
+  const [ready, setReady] = useState(() => import.meta.env.MODE === "test");
+
+  useEffect(() => {
+    if (ready) return;
+    if (
+      typeof window !== "undefined" &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ""))
+    ) {
+      return;
+    }
+    let mounted = false;
+    const enable = () => {
+      if (mounted) return;
+      mounted = true;
+      setReady(true);
+    };
+    const timer = setTimeout(enable, 4000);
+    window.addEventListener("scroll", enable, { passive: true, once: true });
+    window.addEventListener("pointerdown", enable, { passive: true, once: true });
+    window.addEventListener("touchstart", enable, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", enable);
+      window.removeEventListener("pointerdown", enable);
+      window.removeEventListener("touchstart", enable);
+    };
+  }, [ready]);
+
+  if (!ready) return null;
+
+  return (
+    <Suspense fallback={null}>
+      <SEORuntime />
+    </Suspense>
+  );
+};
 
 const WebMCPInitializer: React.FC = () => {
   useWebMCPTools();

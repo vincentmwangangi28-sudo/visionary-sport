@@ -1,8 +1,39 @@
+import { Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity } from 'lucide-react';
-import { SEOInternalLinkMesh } from '@/components/SEOInternalLinkMesh';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+const SEOInternalLinkMesh = lazyWithRetry(() =>
+  import('@/components/SEOInternalLinkMesh').then((m) => ({
+    default: m.SEOInternalLinkMesh,
+  }))
+);
 
 export const Footer = () => {
+  const [meshReady, setMeshReady] = useState(
+    () => import.meta.env.MODE === 'test'
+  );
+
+  useEffect(() => {
+    if (meshReady) return;
+    let mounted = false;
+    const enable = () => {
+      if (mounted) return;
+      mounted = true;
+      setMeshReady(true);
+    };
+    const timer = setTimeout(enable, 2200);
+    window.addEventListener('scroll', enable, { passive: true, once: true });
+    window.addEventListener('pointerdown', enable, { passive: true, once: true });
+    window.addEventListener('touchstart', enable, { passive: true, once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', enable);
+      window.removeEventListener('pointerdown', enable);
+      window.removeEventListener('touchstart', enable);
+    };
+  }, [meshReady]);
+
   return (
     <footer className="cv-auto border-t border-border bg-card mt-16 pb-20 md:pb-8">
       <div className="container mx-auto max-w-7xl px-4 py-10 space-y-8">
@@ -119,7 +150,11 @@ export const Footer = () => {
         </div>
 
         {/* Universal Contextual Internal Link Mesh & Complete 6-Cluster Page Directory */}
-        <SEOInternalLinkMesh />
+        {meshReady && (
+          <Suspense fallback={null}>
+            <SEOInternalLinkMesh />
+          </Suspense>
+        )}
 
         {/* Publisher Compliance & Informational Disclaimer */}
         <div className="pt-6 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-muted-foreground">

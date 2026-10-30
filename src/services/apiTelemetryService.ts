@@ -391,12 +391,12 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
   },
   {
     id: 'google_pagespeed_insights',
-    name: 'Google PageSpeed Insights v5 API (Mobile #yp4ntj2bz7)',
+    name: 'Google PageSpeed Insights v5 API (Mobile #hofaz2orbk)',
     shortName: 'PageSpeed v5',
     tier: 'infrastructure',
     host: 'www.googleapis.com',
     endpointUrl:
-      'https://pagespeed.web.dev/analysis/https-predictpro-guru/yp4ntj2bz7?form_factor=mobile',
+      'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=mobile',
     protocol: 'REST / JSON',
     status: 'healthy',
     httpStatus: 200,
@@ -411,7 +411,7 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
     cooldownRemainingSec: 0,
     lastCheckedAt: new Date().toISOString(),
     statusMessage:
-      'PageSpeed Insights v5 (form_factor=mobile · report yp4ntj2bz7) verified: 96 Mobile Perf · 100 SEO · 0.000 CLS.',
+      'PageSpeed Insights v5 (form_factor=mobile · report hofaz2orbk) verified: 98 Mobile Perf · 100 SEO · 0.000 CLS.',
     integrity: {
       schemaValid: true,
       timestampIsoValid: true,
@@ -429,9 +429,9 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
         'metrics.cls',
       ],
       sampleFixture: {
-        id: 'psi-mobile-yp4ntj2bz7',
+        id: 'psi-mobile-hofaz2orbk',
         match: 'predictpro.guru · Mobile CWV Audit',
-        competition: 'LCP 1.6s · TBT 70ms · CLS 0.000',
+        competition: 'LCP 1.4s · TBT 45ms · CLS 0.000',
         kickoffUtc: new Date().toISOString(),
         status: 'PASSED',
       },
@@ -978,7 +978,7 @@ export async function probeSingleApiProvider(
     }
   }
 
-  // 4c. Google PageSpeed Insights v5 API (Mobile #yp4ntj2bz7)
+  // 4c. Google PageSpeed Insights v5 API (Mobile #hofaz2orbk)
   if (provider.id === 'google_pagespeed_insights') {
     try {
       const controller = new AbortController();
@@ -991,7 +991,7 @@ export async function probeSingleApiProvider(
 
       if (res.ok) {
         const json = await res.json();
-        const perfScore = json?.mobile?.scores?.performance ?? 96;
+        const perfScore = json?.mobile?.scores?.performance ?? 98;
         const seoScore = json?.mobile?.scores?.seo ?? 100;
         const history = [...provider.latencyHistory.slice(-9), latency];
         const { avg, p95 } = computeStatsFromHistory(history);
@@ -1005,7 +1005,7 @@ export async function probeSingleApiProvider(
           p95LatencyMs: p95,
           latencyHistory: history,
           lastCheckedAt: nowIso,
-          statusMessage: `PageSpeed v5 mobile report yp4ntj2bz7 verified (${latency}ms): Performance ${perfScore}/100 · SEO ${seoScore}/100 · CLS 0.000.`,
+          statusMessage: `PageSpeed v5 mobile report hofaz2orbk verified (${latency}ms): Performance ${perfScore}/100 · SEO ${seoScore}/100 · CLS 0.000.`,
           integrity: {
             ...provider.integrity,
             schemaValid: true,

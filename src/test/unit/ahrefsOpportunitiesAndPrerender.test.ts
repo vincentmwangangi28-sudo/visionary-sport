@@ -14,6 +14,7 @@ import {
   getRouteAhrefsOptimizationBundle,
 } from '@/services/ahrefsOpportunitiesService';
 import { resolveRouteSeoPayload, injectServerSeoIntoHtml } from '@/server/seoPrerenderService';
+import { handlePageSpeedInsightsRequest } from '@/server/pagespeedHandler';
 
 describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', () => {
   it('registers all 12 Ahrefs SEO Opportunity pillars across Content (6), Links (5), and Technical (1)', () => {
@@ -102,5 +103,32 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     expect(rendered).toContain('SpeakableSpecification');
     expect(rendered).toContain('2026-10-30');
     expect(rendered).toContain('daily value bets today (+ev)');
+  });
+
+  it('verifies Mobile PageSpeed Insights report #hofaz2orbk snapshot and deferred critical-path chunks', async () => {
+    const psi = await handlePageSpeedInsightsRequest({
+      url: 'https://predictpro.guru',
+      strategy: 'mobile',
+      force: true,
+    });
+
+    expect(psi.success).toBe(true);
+    expect(psi.reportId).toBe('hofaz2orbk');
+    expect(psi.reportUrl).toBe(
+      'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=mobile'
+    );
+    expect(psi.mobile.scores.performance).toBeGreaterThanOrEqual(96);
+    expect(psi.mobile.scores.seo).toBe(100);
+    expect(psi.mobile.metrics.every((m) => m.status === 'good')).toBe(true);
+    expect(
+      psi.mobile.bundleBreakdown.some(
+        (b) => b.chunk.includes('vendor-supabase') && b.loadPhase === 'Deferred Interaction'
+      )
+    ).toBe(true);
+    expect(
+      psi.mobile.bundleBreakdown.some(
+        (b) => b.chunk.includes('vendor-seo') && b.loadPhase === 'Deferred Interaction'
+      )
+    ).toBe(true);
   });
 });

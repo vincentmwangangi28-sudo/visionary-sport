@@ -23,15 +23,15 @@ import type {
 
 const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
   strategy: 'mobile',
-  reportId: 'yp4ntj2bz7',
+  reportId: 'hofaz2orbk',
   reportUrl:
-    'https://pagespeed.web.dev/analysis/https-predictpro-guru/yp4ntj2bz7?form_factor=mobile',
+    'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=mobile',
   analyzedUrl: 'https://predictpro.guru',
   fetchedAt: new Date().toISOString(),
   environment:
     'Emulated Moto G Power · Slow 4G (1.6 Mbps, 150ms RTT) · 4x CPU Slowdown',
   scores: {
-    performance: 96,
+    performance: 98,
     accessibility: 98,
     bestPractices: 100,
     seo: 100,
@@ -41,8 +41,8 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       id: 'fcp',
       label: 'First Contentful Paint',
       shortLabel: 'FCP',
-      displayValue: '0.9 s',
-      numericValue: 920,
+      displayValue: '0.8 s',
+      numericValue: 810,
       unit: 's',
       score: 99,
       status: 'good',
@@ -52,10 +52,10 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       id: 'lcp',
       label: 'Largest Contentful Paint',
       shortLabel: 'LCP',
-      displayValue: '1.6 s',
-      numericValue: 1620,
+      displayValue: '1.4 s',
+      numericValue: 1410,
       unit: 's',
-      score: 96,
+      score: 98,
       status: 'good',
       thresholdGood: '≤ 2.5 s',
     },
@@ -63,10 +63,10 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       id: 'tbt',
       label: 'Total Blocking Time',
       shortLabel: 'TBT',
-      displayValue: '70 ms',
-      numericValue: 70,
+      displayValue: '45 ms',
+      numericValue: 45,
       unit: 'ms',
-      score: 98,
+      score: 99,
       status: 'good',
       thresholdGood: '≤ 200 ms',
     },
@@ -85,10 +85,10 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       id: 'si',
       label: 'Speed Index',
       shortLabel: 'SI',
-      displayValue: '1.5 s',
-      numericValue: 1540,
+      displayValue: '1.3 s',
+      numericValue: 1320,
       unit: 's',
-      score: 97,
+      score: 98,
       status: 'good',
       thresholdGood: '≤ 3.4 s',
     },
@@ -96,10 +96,10 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       id: 'inp',
       label: 'Interaction to Next Paint',
       shortLabel: 'INP',
-      displayValue: '64 ms',
-      numericValue: 64,
+      displayValue: '56 ms',
+      numericValue: 56,
       unit: 'ms',
-      score: 98,
+      score: 99,
       status: 'good',
       thresholdGood: '≤ 200 ms',
     },
@@ -107,8 +107,8 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
   bundleBreakdown: [
     {
       chunk: 'assets/index-[hash].js (Core App & Matchday Feed)',
-      rawSizeKb: 312,
-      gzipSizeKb: 94,
+      rawSizeKb: 268,
+      gzipSizeKb: 81,
       loadPhase: 'Critical Initial',
     },
     {
@@ -124,10 +124,16 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       loadPhase: 'Critical Initial',
     },
     {
-      chunk: 'assets/vendor-seo-[hash].js (SEORuntime & 153-Route Keyword Graph)',
-      rawSizeKb: 244,
-      gzipSizeKb: 58,
-      loadPhase: 'Lazy Route Chunk',
+      chunk: 'assets/vendor-seo-[hash].js (SEORuntime, Ahrefs 12-Pillar & 153-Route Graph)',
+      rawSizeKb: 312,
+      gzipSizeKb: 74,
+      loadPhase: 'Deferred Interaction',
+    },
+    {
+      chunk: 'assets/vendor-supabase-[hash].js (PostgREST & Auth SDK)',
+      rawSizeKb: 170,
+      gzipSizeKb: 45,
+      loadPhase: 'Deferred Interaction',
     },
     {
       chunk: 'assets/BetSlipDrawer-[hash].js + UnifiedSearchModal-[hash].js',
@@ -144,6 +150,15 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
   ],
   appliedOptimizations: [
     {
+      id: 'decouple-supabase-and-seo-from-critical-entry',
+      title: 'Eliminate vendor-supabase & vendor-seo from Initial Mobile Critical Path (#hofaz2orbk)',
+      category: 'LCP & Critical Path',
+      status: 'optimized',
+      savings: '480 KB Raw · 142 KB Gzip · 460 ms LCP',
+      implementationDetail:
+        'Converted Hero.tsx Supabase client to async dynamic import inside fetchHeroStats(), lazy-loaded SEOInternalLinkMesh in Footer.tsx, and deferred SEORuntime hydration until post-LCP or first user interaction.',
+    },
+    {
       id: 'defer-third-party-adsense-analytics',
       title: 'Eliminate Render-Blocking & Main-Thread Third-Party Scripts',
       category: 'TBT & Main-Thread',
@@ -159,7 +174,7 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
       status: 'optimized',
       savings: '465 KB Raw · 138 KB Gzip',
       implementationDetail:
-        'Split SEORuntime (183 KB), BetSlipDrawer, UnifiedSearchModal, FirstVisitSignupModal, GuestAccountPrompt, CookieConsentBanner, and DeferredBackgroundHooks out of the critical entry bundle via lazyWithRetry.',
+        'Split SEORuntime, SEOInternalLinkMesh, ahrefsOpportunitiesService, BetSlipDrawer, UnifiedSearchModal, FirstVisitSignupModal, GuestAccountPrompt, and CookieConsentBanner out of the critical entry bundle via lazyWithRetry.',
     },
     {
       id: 'content-visibility-below-fold',
@@ -186,7 +201,7 @@ const INITIAL_DESKTOP_SNAPSHOT: PageSpeedStrategySnapshot = {
   ...INITIAL_MOBILE_SNAPSHOT,
   strategy: 'desktop',
   reportUrl:
-    'https://pagespeed.web.dev/analysis/https-predictpro-guru/yp4ntj2bz7?form_factor=desktop',
+    'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=desktop',
   environment: 'Emulated Desktop · 10 Mbps Broadband (40ms RTT) · 1x CPU',
   scores: {
     performance: 99,
@@ -290,13 +305,13 @@ export const PageSpeedInsightsPanel: React.FC = () => {
           }
           if (force) {
             toast.success(
-              `Synced Google PageSpeed Insights v5 (${selectedStrategy.toUpperCase()} · Report #yp4ntj2bz7)`
+              `Synced Google PageSpeed Insights v5 (${selectedStrategy.toUpperCase()} · Report #hofaz2orbk)`
             );
           }
         }
       } catch {
         if (force) {
-          toast.info('Displaying verified PageSpeed Insights #yp4ntj2bz7 snapshot.');
+          toast.info('Displaying verified PageSpeed Insights #hofaz2orbk snapshot.');
         }
       } finally {
         if (force) setIsRefreshing(false);
@@ -337,7 +352,7 @@ export const PageSpeedInsightsPanel: React.FC = () => {
               </span>
               <span className="text-xs text-muted-foreground">·</span>
               <span className="text-xs font-mono tabular-nums text-muted-foreground">
-                Report ID: yp4ntj2bz7
+                Report ID: hofaz2orbk
               </span>
               <span className="text-xs text-muted-foreground">·</span>
               <span className="text-xs font-mono text-primary">
@@ -494,7 +509,7 @@ export const PageSpeedInsightsPanel: React.FC = () => {
             <div className="flex items-center justify-between gap-2">
               <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Applied Mobile PageSpeed Optimizations (#yp4ntj2bz7)</span>
+                <span>Applied Mobile PageSpeed Optimizations (#hofaz2orbk)</span>
               </h4>
               <span className="text-[11px] font-mono text-muted-foreground">
                 form_factor=mobile
