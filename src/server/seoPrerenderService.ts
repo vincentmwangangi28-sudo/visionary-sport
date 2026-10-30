@@ -7,6 +7,8 @@
 
 import { handleFootballRequest } from './footballHandler';
 import { getAllSitemapEntries, CLUB_ANALYTICS_HUBS, BLOG_POSTS_METADATA, GLOBAL_HREFLANGS } from '../services/sitemapGenerator';
+import { getContextualPageIntegration } from '../services/seoKeywords';
+import { getRouteAhrefsOptimizationBundle } from '../services/ahrefsOpportunitiesService';
 
 export const SITE_BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
 
@@ -81,6 +83,24 @@ function escapeXml(raw: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+function clampSeoTitle(rawTitle: string): string {
+  const cleaned = String(rawTitle || '').replace(/\s+/g, ' ').trim();
+  if (cleaned.length <= 60) return cleaned;
+  const withoutSuffix = cleaned.replace(/\s*[|—-]\s*PredictPro.*$/i, '').trim();
+  if (withoutSuffix.length + 13 <= 60) {
+    return `${withoutSuffix} | PredictPro`;
+  }
+  return `${withoutSuffix.slice(0, 44).trim()} | PredictPro`;
+}
+
+function clampSeoDescription(rawDescription: string): string {
+  const cleaned = String(rawDescription || '').replace(/\s+/g, ' ').trim();
+  if (cleaned.length <= 155) return cleaned;
+  const sliced = cleaned.slice(0, 152);
+  const lastSpace = sliced.lastIndexOf(' ');
+  return `${(lastSpace > 110 ? sliced.slice(0, lastSpace) : sliced).replace(/[.,;:\s-]+$/, '')}...`;
 }
 
 /**
@@ -259,9 +279,20 @@ export async function resolveRouteSeoPayload(
       };
     }
 
-    const title = `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} AI Prediction, xG (${matchRecord.homeXg}-${matchRecord.awayXg}) & Odds | PredictPro`;
-    const description = `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} (${matchRecord.league}) mathematical prediction: ${matchRecord.prediction} (${matchRecord.confidence}% AI confidence). Projected xG ${matchRecord.homeXg}–${matchRecord.awayXg}, most likely score ${matchRecord.projectedScore}, 6×6 Dixon-Coles Poisson matrix, H2H stats & fair odds.`;
-    const keywords = `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} prediction, ${matchRecord.homeTeam} ${matchRecord.awayTeam} xG stats, ${matchRecord.league} predictions today, ${matchRecord.homeTeam} vs ${matchRecord.awayTeam} correct score ${matchRecord.projectedScore}, AI football predictions today`;
+    const integration = getContextualPageIntegration(cleanPath);
+    const title = clampSeoTitle(
+      `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} xG & Tips | PredictPro`
+    );
+    const description = clampSeoDescription(
+      `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} (${matchRecord.league}): ${matchRecord.prediction} (${matchRecord.confidence}%). xG ${matchRecord.homeXg}-${matchRecord.awayXg}, score ${matchRecord.projectedScore}, Poisson matrix & H2H odds.`
+    );
+    const keywords = [
+      `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} prediction`,
+      `${matchRecord.homeTeam} ${matchRecord.awayTeam} xG stats`,
+      `${matchRecord.league} predictions today`,
+      `${matchRecord.homeTeam} vs ${matchRecord.awayTeam} correct score ${matchRecord.projectedScore}`,
+      ...integration.competitorKeywords.slice(0, 8),
+    ].join(', ');
 
     const sportsEventSchema = {
       '@context': 'https://schema.org',
@@ -326,8 +357,11 @@ export async function resolveRouteSeoPayload(
       conf: '88',
     });
     const ogImageUrl = `${baseUrl}/api/og?${ogParams.toString()}`;
-    const title = `${clubName} Expected Goals (xG), Form & 5-Match FDR Hub (${clubLeague}) | PredictPro`;
-    const description = `Explore ${clubName} (${clubLeague}) quantitative team analytics: rolling 10-match xG vs xGA trendlines, home/away venue splits, 5-match Fixture Difficulty Rating (FDR), and upcoming AI match predictions.`;
+    const clubIntegration = getContextualPageIntegration(cleanPath);
+    const title = clampSeoTitle(`${clubName} xG, Form & 5-Match FDR Hub | PredictPro`);
+    const description = clampSeoDescription(
+      `${clubName} (${clubLeague}) analytics: rolling 10-match xG vs xGA, home/away splits, 5-match Fixture Difficulty (FDR), and upcoming AI predictions.`
+    );
 
     const teamSchema = {
       '@context': 'https://schema.org',
@@ -347,7 +381,13 @@ export async function resolveRouteSeoPayload(
       canonicalUrl,
       title,
       description,
-      keywords: `${clubName} predictions today, ${clubName} xG stats, ${clubName} fixture difficulty FDR, ${clubLeague} analytics, AI football predictions`,
+      keywords: [
+        `${clubName} predictions today`,
+        `${clubName} xG stats`,
+        `${clubName} fixture difficulty FDR`,
+        `${clubLeague} analytics`,
+        ...clubIntegration.competitorKeywords.slice(0, 8),
+      ].join(', '),
       ogImageUrl,
       ogType: 'website',
       routeCategory: 'team',
@@ -366,15 +406,23 @@ export async function resolveRouteSeoPayload(
       conf: '86',
     });
     const ogImageUrl = `${baseUrl}/api/og?${ogParams.toString()}`;
-    const title = `${playerName} xG/90, 2D Pitch Heatmap & Anytime Goalscorer Prop Simulator | PredictPro`;
-    const description = `Quantitative player analytics for ${playerName}: non-penalty Expected Goals per 90 (npxG/90), shots on target probabilities, 5-axis tactical radar, and interactive Anytime Goalscorer Poisson calculator.`;
+    const playerIntegration = getContextualPageIntegration(cleanPath);
+    const title = clampSeoTitle(`${playerName} xG/90 & Goalscorer Props | PredictPro`);
+    const description = clampSeoDescription(
+      `${playerName} player analytics: npxG/90, shots on target probabilities, 5-axis tactical radar, and interactive Anytime Goalscorer Poisson calculator.`
+    );
 
     return {
       pathname: cleanPath,
       canonicalUrl,
       title,
       description,
-      keywords: `${playerName} anytime goalscorer prediction, ${playerName} xG per 90 stats, ${playerName} shots on target odds, player props football`,
+      keywords: [
+        `${playerName} anytime goalscorer prediction`,
+        `${playerName} xG per 90 stats`,
+        `${playerName} shots on target odds`,
+        ...playerIntegration.competitorKeywords.slice(0, 8),
+      ].join(', '),
       ogImageUrl,
       ogType: 'profile' as any,
       routeCategory: 'player',
@@ -395,18 +443,21 @@ export async function resolveRouteSeoPayload(
   // 4. Match against all registered Sitemap Hubs & Static Pages
   const allEntries = getAllSitemapEntries(baseUrl);
   const matchedEntry = allEntries.find((e) => e.path === cleanPath);
+  const routeIntegration = getContextualPageIntegration(cleanPath);
 
-  const routeTitle = matchedEntry
+  const rawRouteTitle = matchedEntry
     ? `${matchedEntry.title} | PredictPro`
     : cleanPath === '/'
-    ? 'PredictPro — AI Football Predictions Today, Expected Goals (xG) & 17-Game Jackpot Models'
-    : `${formatTitleCaseFromSlug(cleanPath.slice(1))} — AI Football Predictions & xG Analytics | PredictPro`;
+    ? 'PredictPro — AI Football Predictions, xG & Jackpots'
+    : `${routeIntegration.currentHub.label} — AI Football & xG | PredictPro`;
+  const routeTitle = clampSeoTitle(rawRouteTitle);
 
-  const routeDescription = cleanPath.includes('jackpot')
-    ? 'Mathematical 17-game Mega Jackpot and 13/15-game Midweek Jackpot combination generator for SportPesa, Betika, Mozzart & SportyBet using Bivariate Poisson entropy, Banker locks & Double/Triple hedging.'
+  const rawRouteDescription = cleanPath.includes('jackpot')
+    ? 'Mathematical 17-game Mega & 13/15-game Midweek Jackpot generator for SportPesa, Betika, Mozzart & SportyBet with Bivariate Poisson & Banker locks.'
     : cleanPath.includes('corners') || cleanPath.includes('cards') || cleanPath.includes('set-piece')
-    ? 'Quantitative football prop analytics: wing attack width corner totals, referee card strictness & foul intensity models, designated penalty takers, and aerial set-piece threat ratings.'
-    : 'Free daily AI football predictions, Expected Goals (xG) analytics, 6×6 Dixon-Coles Bivariate Poisson score matrices, H2H dominance simulators, and universal booking code converters across 40+ global and African leagues.';
+    ? 'Quantitative football prop analytics: wing attack corner totals, referee card strictness models, penalty takers & aerial set-piece threat ratings.'
+    : 'Free daily AI football predictions, Expected Goals (xG), 6×6 Dixon-Coles Poisson matrices, H2H stats & 17-game Jackpot models across 40+ leagues.';
+  const routeDescription = clampSeoDescription(rawRouteDescription);
 
   const ogParams = new URLSearchParams({
     title: routeTitle.replace(/\s*\|\s*PredictPro.*$/, '').slice(0, 44),
@@ -415,6 +466,8 @@ export async function resolveRouteSeoPayload(
     conf: '87',
   });
   const ogImageUrl = `${baseUrl}/api/og?${ogParams.toString()}`;
+
+  const ahrefsBundle = getRouteAhrefsOptimizationBundle(cleanPath);
 
   const webAppSchema = {
     '@context': 'https://schema.org',
@@ -425,6 +478,12 @@ export async function resolveRouteSeoPayload(
     operatingSystem: 'Web, Android, iOS',
     description: routeDescription,
     image: ogImageUrl,
+    datePublished: '2026-05-15',
+    dateModified: ahrefsBundle.lastModifiedIso,
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['[data-speakable="true"]', 'h1'],
+    },
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -436,6 +495,14 @@ export async function resolveRouteSeoPayload(
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: [
+      {
+        '@type': 'Question',
+        name: ahrefsBundle.aiOverviewQuestion,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${ahrefsBundle.aiOverviewAnswer} (${ahrefsBundle.aiOverviewBullets.join(' · ')})`,
+        },
+      },
       {
         '@type': 'Question',
         name: 'How does PredictPro calculate football match probabilities and Expected Goals (xG)?',
@@ -460,8 +527,14 @@ export async function resolveRouteSeoPayload(
     canonicalUrl,
     title: routeTitle,
     description: routeDescription,
-    keywords:
-      'AI football predictions today, expected goals xG predictions, SportPesa Mega Jackpot 17 games prediction, Betika midweek jackpot tips, Premier League predictions, CAF Champions League, FKF KPL, PSL predictions, Poisson score calculator',
+    keywords: [
+      ...ahrefsBundle.strikingDistanceKeywords.map((k) => k.keyword),
+      ...routeIntegration.competitorKeywords.slice(0, 10),
+      'AI football predictions today',
+      'expected goals xG predictions',
+      'SportPesa Mega Jackpot 17 games prediction',
+      'Poisson score calculator',
+    ].join(', '),
     ogImageUrl,
     ogType: 'website',
     routeCategory: cleanPath.includes('jackpot') ? 'jackpot' : cleanPath.includes('predictions') ? 'league' : 'core',
@@ -489,6 +562,14 @@ export async function injectServerSeoIntoHtml(
     html = html.replace(
       /<meta\s+name=["']description["'][^>]*>/i,
       `<meta name="description" content="${escapeHtml(payload.description)}" />`
+    );
+  }
+
+  // Replace or inject meta keywords
+  if (/<meta\s+name=["']keywords["'][^>]*>/i.test(html)) {
+    html = html.replace(
+      /<meta\s+name=["']keywords["'][^>]*>/i,
+      `<meta name="keywords" content="${escapeHtml(payload.keywords)}" />`
     );
   }
 

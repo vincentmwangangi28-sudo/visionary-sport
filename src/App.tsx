@@ -708,13 +708,13 @@ const App = () => (
                             <Route path="/corner-stats-scanner"         element={<RouteBoundary component={CornerPressureScannerPage} />} />
                             <Route path="/corner-matrix"                element={<Navigate to="/corner-stats-scanner" replace />} />
                             <Route path="/cash-out-calculator"          element={<RouteBoundary component={CashOutEquityAuditorPage} />} />
-                            <Route path="/live-hedge-optimizer"         element={<RouteBoundary component={CashOutEquityAuditorPage} />} />
+                            <Route path="/live-hedge-optimizer"         element={<Navigate to="/cash-out-calculator" replace />} />
                             <Route path="/referee-stats-scanner"        element={<RouteBoundary component={RefereeDisciplineMatrixPage} />} />
-                            <Route path="/card-markets-hub"             element={<RouteBoundary component={RefereeDisciplineMatrixPage} />} />
+                            <Route path="/card-markets-hub"             element={<Navigate to="/referee-stats-scanner" replace />} />
                             <Route path="/player-props-lab"             element={<RouteBoundary component={PlayerPropsLabPage} />} />
-                            <Route path="/shots-on-target-scanner"      element={<RouteBoundary component={PlayerPropsLabPage} />} />
+                            <Route path="/shots-on-target-scanner"      element={<Navigate to="/player-props-lab" replace />} />
                             <Route path="/trixie-yankee-calculator"     element={<RouteBoundary component={SystemBetPermutationPage} />} />
-                            <Route path="/system-bet-simulator"         element={<RouteBoundary component={SystemBetPermutationPage} />} />
+                            <Route path="/system-bet-simulator"         element={<Navigate to="/trixie-yankee-calculator" replace />} />
                             <Route path="/app-store-publish"            element={<Navigate to="/admin" replace />} />
                             <Route path="/mobile-app"                   element={<Navigate to="/admin" replace />} />
                             <Route path="/download-app"                 element={<Navigate to="/admin" replace />} />
@@ -725,15 +725,29 @@ const App = () => (
                             <Route path="/penalty-takers"               element={<Navigate to="/set-piece-specialists" replace />} />
                             <Route path="/live-predictions"             element={<Navigate to="/in-play-predictions" replace />} />
                             <Route path="/mega-jackpot-generator"       element={<Navigate to="/jackpot-generator" replace />} />
+                            <Route path="/sportpesa-mega-jackpot-predictions" element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/betika-grand-jackpot-predictions" element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/mozzart-super-grand-jackpot"  element={<Navigate to="/jackpot-predictions" replace />} />
+                            <Route path="/corners-cards-predictions"    element={<Navigate to="/corners-predictions" replace />} />
+                            <Route path="/forebet-predictions"          element={<Navigate to="/predict" replace />} />
+                            <Route path="/predictz-tips"                element={<Navigate to="/predict" replace />} />
+                            <Route path="/windrawwin-tips"              element={<Navigate to="/predict" replace />} />
+                            <Route path="/footystats-xg"                element={<Navigate to="/statistics" replace />} />
+                            <Route path="/understat-xg"                 element={<Navigate to="/xpts-standings" replace />} />
+                            <Route path="/math-predictions"             element={<Navigate to="/poisson-calculator" replace />} />
+                            <Route path="/1x2-predictions"              element={<Navigate to="/best-bets" replace />} />
+                            <Route path="/correct-score-today"          element={<Navigate to="/correct-score" replace />} />
+                            <Route path="/banker-of-the-day"            element={<Navigate to="/bet-of-the-day" replace />} />
+                            <Route path="/free-vip-tips"                element={<Navigate to="/best-bets" replace />} />
                             <Route path="/referee-card-stats"           element={<Navigate to="/referee-stats-predictions" replace />} />
                             <Route path="/convert-bet-code"             element={<Navigate to="/booking-code-converter" replace />} />
                             <Route path="/ligi-kuu-bara-predictions"    element={<Navigate to="/tanzania-premier-league-predictions" replace />} />
                             <Route path="/gpl-predictions"              element={<Navigate to="/ghana-premier-league-predictions" replace />} />
                             <Route path="/botola-pro-predictions"       element={<Navigate to="/morocco-botola-pro-predictions" replace />} />
                             <Route path="/upl-predictions"              element={<Navigate to="/uganda-premier-league-predictions" replace />} />
-                            <Route path="/sportybet-code-converter"     element={<Navigate to="/booking-code-converter" replace />} />
-                            <Route path="/1xbet-code-converter"         element={<Navigate to="/booking-code-converter" replace />} />
-                            <Route path="/bet9ja-code-converter"        element={<Navigate to="/booking-code-converter" replace />} />
+                            <Route path="/sportybet-code-converter"     element={<Navigate to="/code-converter" replace />} />
+                            <Route path="/1xbet-code-converter"         element={<Navigate to="/code-converter" replace />} />
+                            <Route path="/bet9ja-code-converter"        element={<Navigate to="/code-converter" replace />} />
                             <Route path="/disclaimer"                   element={<Navigate to="/responsible-gaming" replace />} />
                             <Route path="/ads-policy"                   element={<Navigate to="/responsible-gaming" replace />} />
                             {/* 301-equivalent client redirects to reclaim incoming links & eliminate 404s */}

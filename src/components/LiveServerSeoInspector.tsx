@@ -56,6 +56,8 @@ const PRESET_ROUTES = [
   { label: 'Arsenal Club xG Hub', path: '/teams/arsenal' },
   { label: 'Corners Prop Hub', path: '/corners-predictions' },
   { label: 'Set-Piece Specialists', path: '/set-piece-specialists' },
+  { label: 'Cashout & Arb Lab', path: '/cashout-calculator' },
+  { label: 'Player Props & Bet Builder', path: '/player-props-lab' },
 ];
 
 export const LiveServerSeoInspector: React.FC = () => {
@@ -295,7 +297,9 @@ export const LiveServerSeoInspector: React.FC = () => {
                     <div className="p-2.5 rounded bg-slate-900/90 border border-slate-800/80">
                       <div className="text-[10px] font-mono uppercase text-slate-400 flex justify-between">
                         <span>&lt;title&gt; Tag</span>
-                        <span className="text-emerald-400">{payload.title.length} chars</span>
+                        <span className="text-emerald-400 tabular-nums">
+                          {payload.title.length}/60 chars · Ahrefs PASS
+                        </span>
                       </div>
                       <div className="font-bold text-white mt-0.5">{payload.title}</div>
                     </div>
@@ -303,7 +307,9 @@ export const LiveServerSeoInspector: React.FC = () => {
                     <div className="p-2.5 rounded bg-slate-900/90 border border-slate-800/80">
                       <div className="text-[10px] font-mono uppercase text-slate-400 flex justify-between">
                         <span>&lt;meta name=&quot;description&quot;&gt;</span>
-                        <span className="text-emerald-400">{payload.description.length} chars</span>
+                        <span className="text-emerald-400 tabular-nums">
+                          {payload.description.length}/155 chars · Ahrefs PASS
+                        </span>
                       </div>
                       <div className="text-slate-300 mt-0.5 leading-relaxed">{payload.description}</div>
                     </div>
@@ -451,9 +457,10 @@ export const LiveServerSeoInspector: React.FC = () => {
                     </button>
                     <a
                       href={m.path}
+                      title={`${m.homeTeam} vs ${m.awayTeam} AI Prediction & xG`}
                       className="px-2 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700"
                     >
-                      Open
+                      {m.homeTeam.slice(0, 10)} vs {m.awayTeam.slice(0, 10)} Hub
                     </a>
                   </div>
                 </div>

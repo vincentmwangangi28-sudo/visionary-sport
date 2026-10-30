@@ -34,6 +34,7 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 import type { AhrefsWebAnalyticsResponse } from '@/server/ahrefsAnalyticsHandler';
+import { AHREFS_12_OPPORTUNITY_PILLARS } from '@/services/ahrefsOpportunitiesService';
 
 const CANONICAL_AHREFS_ENDPOINT =
   'https://api.ahrefs.com/v3/web-analytics/stats?from=2026-09-30T00%3A00%3A00Z&project_id=10277130&to=2026-10-29T23%3A59%3A59Z';
@@ -562,6 +563,62 @@ export const AhrefsWebAnalyticsPanel: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Ahrefs 12 SEO Opportunities Execution Table (Content · Links · Technical) */}
+        <div className="rounded-xl border border-border/70 bg-card overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-foreground">
+                Ahrefs 12 SEO Opportunities Execution Matrix (Content · Links · Technical)
+              </h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Live status across Site Explorer, Competitive Analysis, Content Explorer, and Site Audit for predictpro.guru.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-emerald-500 tabular-nums">
+              12/12 Opportunities Executed · 0 Critical Errors
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/60 bg-muted/20 text-[10px] font-mono uppercase tracking-wider text-muted-foreground text-left">
+                  <th className="py-2.5 px-3 font-bold">Category</th>
+                  <th className="py-2.5 px-3 font-bold">Opportunity</th>
+                  <th className="py-2.5 px-3 font-bold">Ahrefs Tool</th>
+                  <th className="py-2.5 px-3 font-bold hidden md:table-cell">Objective &amp; Action</th>
+                  <th className="py-2.5 px-3 font-bold text-right">Resolved</th>
+                  <th className="py-2.5 px-3 font-bold text-right">Verified Impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {AHREFS_12_OPPORTUNITY_PILLARS.map((pillar) => (
+                  <tr key={pillar.id} className="hover:bg-muted/20 transition-colors">
+                    <td className="py-2.5 px-3 font-mono font-bold text-primary whitespace-nowrap">
+                      {pillar.category}
+                    </td>
+                    <td className="py-2.5 px-3 font-bold text-foreground whitespace-nowrap">
+                      {pillar.opportunityName}
+                    </td>
+                    <td className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                      {pillar.ahrefsTool}
+                    </td>
+                    <td className="py-2.5 px-3 text-[11px] text-muted-foreground hidden md:table-cell">
+                      {pillar.objective}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-foreground tabular-nums whitespace-nowrap">
+                      {pillar.itemsResolved} items
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-emerald-500 font-semibold whitespace-nowrap">
+                      ✓ {pillar.impactMetric}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </CardContent>

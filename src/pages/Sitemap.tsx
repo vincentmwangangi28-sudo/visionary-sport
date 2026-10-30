@@ -467,13 +467,15 @@ export default function Sitemap() {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t text-[11px] text-muted-foreground">
-                  <span>Freq: <strong className="text-foreground">{entry.changeFrequency}</strong> · <span className="font-mono">{entry.lastModified}</span></span>
+                <div className="flex items-center justify-between pt-2 border-t text-[11px] text-muted-foreground gap-2">
+                  <span className="shrink-0">Freq: <strong className="text-foreground">{entry.changeFrequency}</strong> · <span className="font-mono">{entry.lastModified}</span></span>
                   <Link
                     to={entry.path}
-                    className="text-primary font-bold hover:underline inline-flex items-center gap-1"
+                    title={`Open ${entry.title}`}
+                    className="text-primary font-bold hover:underline inline-flex items-center gap-1 truncate"
                   >
-                    Visit <ExternalLink className="h-3 w-3" />
+                    <span className="truncate">Open {entry.title.replace(/\s*[|—-]\s*PredictPro.*$/i, '').slice(0, 28)}</span>
+                    <ExternalLink className="h-3 w-3 shrink-0" />
                   </Link>
                 </div>
               </CardContent>

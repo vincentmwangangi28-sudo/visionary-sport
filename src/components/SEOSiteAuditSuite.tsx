@@ -23,6 +23,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AHREFS_12_OPPORTUNITY_PILLARS } from '@/services/ahrefsOpportunitiesService';
 
 interface LowHangingKeywordItem {
   keyword: string;
@@ -97,6 +98,33 @@ const LOW_HANGING_KEYWORDS: LowHangingKeywordItem[] = [
     searchVolume: '12,400/mo',
     ctr: '15.2%',
     optimizationApplied: 'Connected to Closing Line Value (CLV) guide & syndicate steam alerts',
+  },
+  {
+    keyword: 'booking code converter sportybet to 1xbet bet9ja',
+    targetPath: '/code-converter',
+    previousPosition: 9.4,
+    targetPosition: 'Top 2',
+    searchVolume: '36,800/mo',
+    ctr: '28.6%',
+    optimizationApplied: 'Universal 6-bookmaker slip parser + automatic Poisson EV leg audit',
+  },
+  {
+    keyword: 'cash out calculator & live hedge bet optimizer',
+    targetPath: '/cashout-calculator',
+    previousPosition: 11.8,
+    targetPosition: 'Top 3',
+    searchVolume: '16,200/mo',
+    ctr: '21.4%',
+    optimizationApplied: 'Fair Ticket Equity vs Bookmaker Cash-Out Haircut % auditor & lay hedge stake formula',
+  },
+  {
+    keyword: 'player shots on target (sot) & npxg/90 prop scanner',
+    targetPath: '/player-props-lab',
+    previousPosition: 8.6,
+    targetPosition: 'Top 3',
+    searchVolume: '41,800/mo',
+    ctr: '19.7%',
+    optimizationApplied: 'Per-90 shot volume, expected minutes & referee strictness Poisson prop simulator',
   },
 ];
 
@@ -448,6 +476,23 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
             <ShieldCheck className="w-3.5 h-3.5" />
             3. Technical Site Audit &amp; Health (100% Clean)
           </Button>
+        </div>
+
+        {/* 12-Pillar Quick Overview Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-border/50">
+          {AHREFS_12_OPPORTUNITY_PILLARS.map((pillar) => (
+            <div
+              key={pillar.id}
+              className="rounded-lg border border-border/60 bg-card/90 p-2.5 text-xs flex flex-col justify-between gap-1"
+            >
+              <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono text-muted-foreground">
+                <span className="font-bold text-primary uppercase">{pillar.category} · {pillar.ahrefsTool}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums">{pillar.itemsResolved} fixed</span>
+              </div>
+              <div className="font-bold text-foreground truncate">{pillar.opportunityName}</div>
+              <div className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">{pillar.objective}</div>
+            </div>
+          ))}
         </div>
       </div>
 

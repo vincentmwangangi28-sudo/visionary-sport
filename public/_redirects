@@ -86,6 +86,29 @@
 /expected-value-calculator  /value-bet-calculator         301
 /kelly-calculator           /kelly-criterion-calculator   301
 /over-1-5                   /over-1-5-goals-predictions   301
+/sportpesa-mega-jackpot-predictions /jackpot-predictions  301
+/betika-grand-jackpot-predictions   /jackpot-predictions  301
+/mozzart-super-grand-jackpot        /jackpot-predictions  301
+/corners-cards-predictions  /corners-predictions          301
+/forebet-predictions        /predict                      301
+/predictz-tips              /predict                      301
+/windrawwin-tips            /predict                      301
+/footystats-xg              /statistics                   301
+/understat-xg               /xpts-standings               301
+/math-predictions           /poisson-calculator           301
+/1x2-predictions            /best-bets                    301
+/correct-score-today        /correct-score                301
+/banker-of-the-day          /bet-of-the-day               301
+/free-vip-tips              /best-bets                    301
+/live-hedge-optimizer       /cash-out-calculator          301
+/card-markets-hub           /referee-stats-scanner        301
+/shots-on-target-scanner    /player-props-lab             301
+/system-bet-simulator       /trixie-yankee-calculator     301
+/sportybet-code-converter   /code-converter               301
+/1xbet-code-converter       /code-converter               301
+/bet9ja-code-converter      /code-converter               301
+/matches/:matchSlug         /predict/:matchSlug           301
+/team/:teamSlug             /teams/:teamSlug              301
 
 # Enforce HTTPS & non-www canonical host on custom domain
 http://predictpro.guru/*      https://predictpro.guru/:splat 301!
