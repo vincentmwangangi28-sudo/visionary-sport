@@ -64,8 +64,8 @@ export const SEOInternalLinkMesh: React.FC = () => {
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-muted-foreground border-b border-border/60 pb-2.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold inline-flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+            <span className="text-emerald-800 dark:text-emerald-300 font-bold inline-flex items-center gap-1">
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
               <span>AI Overview &amp; Featured Snippet Summary</span>
             </span>
             <span aria-hidden="true">·</span>
@@ -164,7 +164,7 @@ export const SEOInternalLinkMesh: React.FC = () => {
             onClick={() => setShowCompetitorMatrix((prev) => !prev)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:border-primary/40 text-xs font-semibold text-foreground transition-colors self-start lg:self-auto cursor-pointer"
           >
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
             <span>Similar &amp; Top Sites Keyword Benchmarks</span>
             {showCompetitorMatrix ? (
               <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
@@ -230,7 +230,7 @@ export const SEOInternalLinkMesh: React.FC = () => {
                     <span className="font-mono font-bold text-foreground truncate">
                       {bench.domain}
                     </span>
-                    <span className="text-[10px] font-mono font-bold text-emerald-500 shrink-0">
+                    <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-emerald-300 shrink-0">
                       AS {bench.authorityScore} · {bench.monthlyTrafficEstimate}
                     </span>
                   </div>
@@ -268,6 +268,8 @@ export const SEOInternalLinkMesh: React.FC = () => {
           <div className="relative w-full md:w-64">
             <Search className="h-3.5 w-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="seo-directory-page-filter"
+              name="seo-directory-page-filter"
               type="search"
               value={filterText}
               onChange={(e) => {
@@ -307,8 +309,8 @@ export const SEOInternalLinkMesh: React.FC = () => {
             onClick={() => setSelectedClusterId('all')}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold whitespace-nowrap transition-colors cursor-pointer border ${
               selectedClusterId === 'all'
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'bg-card text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10'
+                ? 'bg-emerald-700 text-white border-emerald-700'
+                : 'bg-card text-emerald-800 dark:text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/10'
             }`}
           >
             View All ({totalPagesCount})

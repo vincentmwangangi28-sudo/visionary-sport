@@ -79,32 +79,10 @@ export function useLocaleDetection(): UseLocaleDetectionReturn {
 
       if (!alreadyAdjusted) {
         setIsFirstLoad(true);
-        const freshProfile = detectFullLocaleProfile();
-        setProfile(freshProfile);
 
-        // Adjust language if supported
-        const updates: Record<string, any> = {};
-
-        if (freshProfile.isLanguageSupported && freshProfile.supportedLanguage !== preferences.language) {
-          updates.language = freshProfile.supportedLanguage;
-        }
-
-        // Adjust timezone only if missing ('auto' is already default)
-        if (!preferences.timezone) {
-          updates.timezone = 'auto';
-        }
-
-        // Adjust date and time formats only when different from current preferences
-        if (freshProfile.dateFormat && freshProfile.dateFormat !== preferences.dateFormat) {
-          updates.dateFormat = freshProfile.dateFormat;
-        }
-
-        if (freshProfile.timeFormat && freshProfile.timeFormat !== preferences.timeFormat) {
-          updates.timeFormat = freshProfile.timeFormat;
-        }
-
-        if (Object.keys(updates).length > 0) {
-          updatePreferences(updates);
+        // Adjust language only if supported and different from current preference
+        if (profile.isLanguageSupported && profile.supportedLanguage !== preferences.language) {
+          updatePreferences({ language: profile.supportedLanguage });
         }
 
         // Mark as auto-adjusted
@@ -112,11 +90,11 @@ export function useLocaleDetection(): UseLocaleDetectionReturn {
           FIRST_LOAD_STORAGE_KEY,
           JSON.stringify({
             adjustedAt: new Date().toISOString(),
-            language: freshProfile.supportedLanguage,
-            timezone: freshProfile.timezone,
-            dateFormat: freshProfile.dateFormat,
-            timeFormat: freshProfile.timeFormat,
-            rawLocale: freshProfile.rawLocale,
+            language: profile.supportedLanguage,
+            timezone: profile.timezone,
+            dateFormat: profile.dateFormat,
+            timeFormat: profile.timeFormat,
+            rawLocale: profile.rawLocale,
           })
         );
 
@@ -128,6 +106,12 @@ export function useLocaleDetection(): UseLocaleDetectionReturn {
       console.warn('Auto-adjusting locale failed on first load:', e);
     }
   }, [
+    profile.dateFormat,
+    profile.isLanguageSupported,
+    profile.rawLocale,
+    profile.supportedLanguage,
+    profile.timeFormat,
+    profile.timezone,
     preferences.dateFormat,
     preferences.language,
     preferences.timeFormat,

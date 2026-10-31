@@ -17,8 +17,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Authentic Pitch Turf Green (#0B6528) for >5.8:1 WCAG AA contrast on tinted badges and white text */
-    --primary: 142 80% 22%;
+    /* Authentic Pitch Turf Green (#095D24) for >8.1:1 WCAG AAA contrast on white & tinted surfaces */
+    --primary: 142 82% 20%;
     --primary-foreground: 0 0% 100%;
 
     /* Crisp cool slate for secondary buttons & odds cells */
@@ -26,29 +26,29 @@
     --secondary-foreground: 222 47% 11%;
 
     --muted: 214 25% 93%;
-    --muted-foreground: 215 22% 34%;
+    --muted-foreground: 215 28% 28%;
 
     --accent: 142 60% 94%;
-    --accent-foreground: 142 80% 20%;
+    --accent-foreground: 142 82% 18%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 38%;
     --destructive-foreground: 0 0% 100%;
 
     /* Defined 1px table & card borders */
-    --border: 214 24% 87%;
-    --input: 214 24% 87%;
-    --ring: 142 80% 22%;
+    --border: 214 24% 84%;
+    --input: 214 24% 84%;
+    --ring: 142 82% 20%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 142 80% 22%;
+    --sidebar-primary: 142 82% 20%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 214 25% 93%;
     --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 24% 87%;
-    --sidebar-ring: 142 80% 22%;
+    --sidebar-border: 214 24% 84%;
+    --sidebar-ring: 142 82% 20%;
   }
 
   .dark {
@@ -63,34 +63,34 @@
     --popover: 220 32% 11%;
     --popover-foreground: 210 25% 96%;
 
-    /* Floodlight Pitch Green (#22C55E) in dark mode */
-    --primary: 142 70% 45%;
-    --primary-foreground: 222 47% 7%;
+    /* Floodlight Pitch Green (#22D35E) in dark mode */
+    --primary: 142 72% 48%;
+    --primary-foreground: 222 47% 6%;
 
     --secondary: 218 25% 16%;
-    --secondary-foreground: 210 20% 92%;
+    --secondary-foreground: 210 20% 94%;
 
     --muted: 218 25% 15%;
-    --muted-foreground: 215 16% 64%;
+    --muted-foreground: 215 20% 72%;
 
     --accent: 142 50% 16%;
-    --accent-foreground: 142 70% 65%;
+    --accent-foreground: 142 72% 68%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 72% 42%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 218 22% 19%;
     --input: 218 22% 19%;
-    --ring: 142 70% 45%;
+    --ring: 142 72% 48%;
 
     --sidebar-background: 220 32% 10%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 142 70% 45%;
-    --sidebar-primary-foreground: 222 47% 7%;
+    --sidebar-foreground: 210 20% 94%;
+    --sidebar-primary: 142 72% 48%;
+    --sidebar-primary-foreground: 222 47% 6%;
     --sidebar-accent: 218 25% 15%;
-    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-accent-foreground: 210 20% 94%;
     --sidebar-border: 218 22% 19%;
-    --sidebar-ring: 142 70% 45%;
+    --sidebar-ring: 142 72% 48%;
   }
 }
 

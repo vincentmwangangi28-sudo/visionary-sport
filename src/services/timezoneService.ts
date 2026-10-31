@@ -33,9 +33,27 @@ export const POPULAR_TIMEZONES: TimezoneOption[] = [
   { value: 'Australia/Sydney', iana: 'Australia/Sydney', label: 'Sydney (AEST)', offset: 'UTC+10', region: 'Australia', flag: '🇦🇺' },
 ];
 
+let cachedDeviceTimezone: string | null = null;
+const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function getCachedFormatter(
+  locale: string,
+  options: Intl.DateTimeFormatOptions
+): Intl.DateTimeFormat {
+  const key = `${locale}|${options.timeZone || ''}|${options.hour || ''}|${options.minute || ''}|${options.hour12 ?? ''}|${options.weekday || ''}|${options.year || ''}|${options.month || ''}|${options.day || ''}|${options.timeZoneName || ''}`;
+  let fmt = dateTimeFormatterCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, options);
+    dateTimeFormatterCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 export function getDeviceTimezone(): string {
+  if (cachedDeviceTimezone) return cachedDeviceTimezone;
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    cachedDeviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    return cachedDeviceTimezone;
   } catch {
     return 'UTC';
   }
@@ -75,7 +93,7 @@ export function formatKickoffDateTime(
 
     const isHour12 = options?.timeFormat === '12h';
 
-    const timeFormatter = new Intl.DateTimeFormat(resolvedLocale, {
+    const timeFormatter = getCachedFormatter(resolvedLocale, {
       timeZone: targetTz,
       hour: '2-digit',
       minute: '2-digit',
@@ -91,7 +109,7 @@ export function formatKickoffDateTime(
     const parts: string[] = [];
 
     if (options.includeWeekday) {
-      const weekdayFormatter = new Intl.DateTimeFormat(resolvedLocale, {
+      const weekdayFormatter = getCachedFormatter(resolvedLocale, {
         timeZone: targetTz,
         weekday: 'short',
       });
@@ -100,23 +118,23 @@ export function formatKickoffDateTime(
 
     if (options.includeDate) {
       if (options.dateFormat === 'YYYY-MM-DD') {
-        const p = new Intl.DateTimeFormat('en-US', { timeZone: targetTz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
+        const p = getCachedFormatter('en-US', { timeZone: targetTz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
         const y = p.find((x) => x.type === 'year')?.value;
         const m = p.find((x) => x.type === 'month')?.value;
         const day = p.find((x) => x.type === 'day')?.value;
         parts.push(`${y}-${m}-${day}`);
       } else if (options.dateFormat === 'MM/DD/YYYY') {
-        const p = new Intl.DateTimeFormat('en-US', { timeZone: targetTz, month: '2-digit', day: '2-digit' }).formatToParts(d);
+        const p = getCachedFormatter('en-US', { timeZone: targetTz, month: '2-digit', day: '2-digit' }).formatToParts(d);
         const m = p.find((x) => x.type === 'month')?.value;
         const day = p.find((x) => x.type === 'day')?.value;
         parts.push(`${m}/${day}`);
       } else if (options.dateFormat === 'DD/MM/YYYY') {
-        const p = new Intl.DateTimeFormat('en-GB', { timeZone: targetTz, month: '2-digit', day: '2-digit' }).formatToParts(d);
+        const p = getCachedFormatter('en-GB', { timeZone: targetTz, month: '2-digit', day: '2-digit' }).formatToParts(d);
         const m = p.find((x) => x.type === 'month')?.value;
         const day = p.find((x) => x.type === 'day')?.value;
         parts.push(`${day}/${m}`);
       } else {
-        const dateFormatter = new Intl.DateTimeFormat(resolvedLocale, {
+        const dateFormatter = getCachedFormatter(resolvedLocale, {
           timeZone: targetTz,
           month: 'short',
           day: 'numeric',
@@ -140,7 +158,7 @@ export function formatKickoffDateTime(
 
 export function getTimezoneShortLabel(tz: string, date: Date = new Date()): string {
   try {
-    const formatter = new Intl.DateTimeFormat('en-US', {
+    const formatter = getCachedFormatter('en-US', {
       timeZone: tz,
       timeZoneName: 'short',
     });

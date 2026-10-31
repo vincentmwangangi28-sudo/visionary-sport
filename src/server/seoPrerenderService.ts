@@ -166,35 +166,8 @@ export async function resolveLiveMatchSlugs(baseUrl: string = SITE_BASE_URL): Pr
     });
   };
 
-  try {
-    const [upcomingRes, liveRes] = await Promise.all([
-      handleFootballRequest({ type: 'upcoming' }).catch(() => null),
-      handleFootballRequest({ type: 'live' }).catch(() => null),
-    ]);
-
-    const rawMatches = [
-      ...(Array.isArray(liveRes?.matches) ? liveRes.matches : []),
-      ...(Array.isArray(upcomingRes?.matches) ? upcomingRes.matches : []),
-    ];
-
-    for (const m of rawMatches) {
-      const home = m.homeTeam || m.home_team;
-      const away = m.awayTeam || m.away_team;
-      if (!home || !away) continue;
-      const league = m.league || 'Global Football';
-      const matchDate = m.date || m.match_date || todayIso;
-      const pred = m.prediction || 'Home Win';
-      const conf = Number(m.confidence) || 78;
-      const hXg = Number(m.homeXg) || 1.72;
-      const aXg = Number(m.awayXg) || 1.08;
-      const score = m.predictedScore || `${Math.max(1, Math.round(hXg))}-${Math.max(0, Math.round(aXg))}`;
-      addMatchRecord(home, away, league, matchDate, pred, conf, hXg, aXg, score, 'espn_live');
-    }
-  } catch {
-    // Fallback handled below
-  }
-
-  // Always include high-search-volume global & African flagship fixtures
+  // Serve high-search-volume global & African flagship fixtures synchronously (<1ms)
+  // so HTML SSR / transformIndexHtml never blocks on external API timeouts during page loads.
   const flagshipFixtures = [
     { home: 'Arsenal', away: 'Chelsea', league: 'Premier League', pred: 'Home Win', conf: 82, hXg: 1.94, aXg: 0.98, score: '2-1' },
     { home: 'Liverpool', away: 'Manchester City', league: 'Premier League', pred: 'BTTS & Over 2.5', conf: 85, hXg: 1.88, aXg: 1.64, score: '2-2' },

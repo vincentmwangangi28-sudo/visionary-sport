@@ -84,14 +84,14 @@ export const MobileBottomNav = () => {
             setIsOpen(true);
           }}
           className={`relative flex flex-col items-center justify-center gap-1 transition-colors min-h-[48px] ${
-            selections.length > 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-muted-foreground hover:text-foreground'
+            selections.length > 0 ? 'text-emerald-800 dark:text-emerald-300 font-bold' : 'text-muted-foreground hover:text-foreground'
           }`}
           aria-label="Open Bet Slip"
         >
           <div className="relative">
             <Ticket className="h-4 w-4" />
             {selections.length > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-600 text-white text-[9px] font-mono font-black flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-700 text-white text-[9px] font-mono font-black flex items-center justify-center">
                 {selections.length}
               </span>
             )}

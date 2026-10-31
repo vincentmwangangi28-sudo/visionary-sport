@@ -33,28 +33,38 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
     }
 
     let cancelled = false;
-    fetch('/api/football?type=live')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (cancelled || !Array.isArray(json?.matches)) return;
-        const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
-        for (const m of json.matches) {
-          const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
-          map[key] = {
-            homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
-            awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
-            minute: m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE',
-            isLive: m.status === 'live' || m.status === 'halftime',
-          };
-        }
-        setLiveMap(map);
-      })
-      .catch(() => {
-        // silent fallback
-      });
+    let triggered = false;
+    const loadLiveRibbon = () => {
+      if (triggered || cancelled) return;
+      triggered = true;
+      fetch('/api/football?type=live')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          if (cancelled || !Array.isArray(json?.matches)) return;
+          const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
+          for (const m of json.matches) {
+            const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
+            map[key] = {
+              homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
+              awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
+              minute: m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE',
+              isLive: m.status === 'live' || m.status === 'halftime',
+            };
+          }
+          setLiveMap(map);
+        })
+        .catch(() => {
+          // silent fallback
+        });
+    };
+
+    const timer = setTimeout(loadLiveRibbon, 25000);
+    window.addEventListener('scroll', loadLiveRibbon, { passive: true, once: true });
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
+      window.removeEventListener('scroll', loadLiveRibbon);
     };
   }, []);
 
@@ -79,11 +89,9 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
     return enriched.slice(0, 8);
   }, [data?.allPredictions, predictions, liveMap, filterMode]);
 
-  if (upcomingStrip.length === 0) return null;
-
   return (
     <div
-      className="w-full bg-card border-b border-border"
+      className="w-full bg-card border-b border-border min-h-[41px]"
       role="region"
       aria-label="Live Matchday Scoreboard and Fixtures"
       data-testid="global-matchday-command-ribbon"
@@ -109,7 +117,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
             data-testid="ribbon-filter-live"
             className={`px-2 py-1 rounded text-[11px] font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer ${
               filterMode === 'live'
-                ? 'bg-rose-600 text-white'
+                ? 'bg-rose-700 text-white'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -137,13 +145,9 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
             const conf = getConfidence(item);
             const slug = formatMatchSlug(item.home_team, item.away_team);
             const timeStr = (() => {
-              try {
-                const d = new Date(item.match_date);
-                if (isNaN(d.getTime())) return '19:45';
-                return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-              } catch {
-                return '19:45';
-              }
+              const d = new Date(item.match_date);
+              if (isNaN(d.getTime())) return '19:45';
+              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
             })();
 
             return (
@@ -154,7 +158,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                 title={`${item.home_team} vs ${item.away_team} (${getPrediction(item)} - ${conf}%)`}
               >
                 {liveInfo?.isLive ? (
-                  <span className="font-mono tabular-nums text-[10px] font-bold text-rose-600 dark:text-rose-400">
+                  <span className="font-mono tabular-nums text-[10px] font-bold text-rose-700 dark:text-rose-400">
                     {liveInfo.minute}
                   </span>
                 ) : filterMode === 'tv' ? (
@@ -193,14 +197,14 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         <div className="hidden lg:flex items-center gap-1.5 shrink-0 pl-2 border-l border-border">
           <Link
             to="/community-slips"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
           >
             <Users className="h-3 w-3" aria-hidden="true" />
             <span>Copy Slips</span>
           </Link>
           <Link
             to="/pick-em-challenge"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-amber-500 hover:bg-amber-500/10 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-amber-900 dark:text-amber-300 hover:bg-amber-500/10 transition-colors"
           >
             <Trophy className="h-3 w-3" aria-hidden="true" />
             <span>Pick&apos;em</span>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, startTransition } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
@@ -128,20 +128,37 @@ export const PredictionsDashboard = ({
       return;
     }
     let cancelled = false;
-    fetch(`/api/football?type=standings&league=${standingsTab}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (cancelled || !Array.isArray(json?.standings) || json.standings.length === 0) return;
-        setLiveStandingsMap((prev) => ({
-          ...prev,
-          [standingsTab]: json.standings.slice(0, 6),
-        }));
-      })
-      .catch(() => {
-        // fallback to default table
-      });
+    let triggered = false;
+    const loadStandings = () => {
+      if (triggered || cancelled) return;
+      triggered = true;
+      fetch(`/api/football?type=standings&league=${standingsTab}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          if (cancelled || !Array.isArray(json?.standings) || json.standings.length === 0) return;
+          setLiveStandingsMap((prev) => ({
+            ...prev,
+            [standingsTab]: json.standings.slice(0, 6),
+          }));
+        })
+        .catch(() => {
+          // fallback to default table
+        });
+    };
+
+    if (standingsTab !== 'EPL') {
+      loadStandings();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const timer = setTimeout(loadStandings, 25000);
+    window.addEventListener('scroll', loadStandings, { passive: true, once: true });
     return () => {
       cancelled = true;
+      clearTimeout(timer);
+      window.removeEventListener('scroll', loadStandings);
     };
   }, [standingsTab]);
 
@@ -334,21 +351,23 @@ export const PredictionsDashboard = ({
                   type="button"
                   onClick={() => {
                     hapticService.selection();
-                    setLeague(l.id === 'All' ? undefined : l.id);
-                    setPage(1);
+                    startTransition(() => {
+                      setLeague(l.id === 'All' ? undefined : l.id);
+                      setPage(1);
+                    });
                   }}
                   aria-pressed={isSelected}
                   className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors text-left cursor-pointer ${
                     isSelected
                       ? 'bg-primary text-primary-foreground font-semibold'
-                      : 'text-foreground/85 hover:bg-muted hover:text-foreground font-medium'
+                      : 'text-foreground hover:bg-muted font-medium'
                   }`}
                 >
                   <span className="truncate">{l.name}</span>
                   {l.country && (
                     <span
                       className={`text-[11px] shrink-0 ${
-                        isSelected ? 'text-primary-foreground/90 font-mono' : 'text-muted-foreground'
+                        isSelected ? 'text-primary-foreground font-mono' : 'text-muted-foreground'
                       }`}
                     >
                       {l.country}
@@ -386,7 +405,7 @@ export const PredictionsDashboard = ({
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setStandingsTab(tab.id)}
+                onClick={() => startTransition(() => setStandingsTab(tab.id))}
                 className={`py-2 min-h-[32px] text-center border-b-2 transition-colors cursor-pointer ${
                   standingsTab === tab.id
                     ? 'border-primary text-primary font-bold bg-card'
@@ -470,8 +489,8 @@ export const PredictionsDashboard = ({
         {/* 1-Click Smart Banker Slip & Booking Code Bar */}
         <div className="px-4 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
-              <Ticket className="h-4 w-4" />
+            <div className="h-8 w-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center shrink-0">
+              <Ticket className="h-4 w-4" aria-hidden="true" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-foreground truncate">
@@ -520,7 +539,7 @@ export const PredictionsDashboard = ({
               }}
               className="h-8 text-xs font-bold gap-1.5 border-emerald-500/40 bg-background hover:bg-emerald-500/10"
             >
-              <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+              <Sparkles className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
               <span>Load 3-Leg Banker</span>
             </Button>
 
@@ -528,7 +547,7 @@ export const PredictionsDashboard = ({
               <Button
                 size="sm"
                 onClick={() => setBetSlipOpen(true)}
-                className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="h-8 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white"
               >
                 Open Slip ({selections.length})
               </Button>
@@ -554,8 +573,10 @@ export const PredictionsDashboard = ({
                     type="button"
                     onClick={() => {
                       hapticService.selection();
-                      setDateFilter(d.id);
-                      setPage(1);
+                      startTransition(() => {
+                        setDateFilter(d.id);
+                        setPage(1);
+                      });
                     }}
                     className={`px-3 py-1.5 rounded-md text-xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
                       dateFilter === d.id
@@ -589,8 +610,10 @@ export const PredictionsDashboard = ({
                     type="button"
                     onClick={() => {
                       hapticService.selection();
-                      setQuickFilter(tab.id);
-                      setPage(1);
+                      startTransition(() => {
+                        setQuickFilter(tab.id);
+                        setPage(1);
+                      });
                     }}
                     aria-pressed={quickFilter === tab.id}
                     className={`px-2.5 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
@@ -730,8 +753,10 @@ export const PredictionsDashboard = ({
                   key={l.id}
                   type="button"
                   onClick={() => {
-                    setLeague(l.id === 'All' ? undefined : l.id);
-                    setPage(1);
+                    startTransition(() => {
+                      setLeague(l.id === 'All' ? undefined : l.id);
+                      setPage(1);
+                    });
                   }}
                   className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap shrink-0 border transition-colors ${
                     isSelected

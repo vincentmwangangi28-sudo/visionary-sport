@@ -358,6 +358,46 @@ export const LOW_HANGING_FRUIT_KEYWORDS: LowHangingKeywordOpportunity[] = [
     trafficPotential: 8900,
     upgradeExecuted: 'Real-time Pinnacle vs soft-bookmaker line compression tracker & CLV alert integration',
   },
+  {
+    keyword: 'head to head (h2h) football stats & poisson matchup simulator',
+    targetPath: '/h2h',
+    currentPosition: 6.1,
+    targetPosition: 2,
+    monthlyVolume: 45000,
+    keywordDifficulty: 30,
+    trafficPotential: 31200,
+    upgradeExecuted: 'Added 10-match H2H form, xG differential, BTTS %, and 1-click IndexNow push',
+  },
+  {
+    keyword: 'football arbitrage surebet calculator & multi-bookie odds comparison',
+    targetPath: '/arbitrage-finder',
+    currentPosition: 7.5,
+    targetPosition: 2,
+    monthlyVolume: 34100,
+    keywordDifficulty: 25,
+    trafficPotential: 22800,
+    upgradeExecuted: 'Added 2-way & 3-way surebet scanner across SportyBet, Betika, Bet9ja, 1xBet & Pinnacle with anti-limit stake rounding',
+  },
+  {
+    keyword: 'football bet tracker & closing line value (clv) roi ledger',
+    targetPath: '/bet-tracker',
+    currentPosition: 8.9,
+    targetPosition: 3,
+    monthlyVolume: 18900,
+    keywordDifficulty: 21,
+    trafficPotential: 14100,
+    upgradeExecuted: 'Integrated automatic ESPN full-time score settlement and 30-day bankroll yield curve',
+  },
+  {
+    keyword: 'in-play football momentum radar & late goal (75+) predictions',
+    targetPath: '/in-play-edge',
+    currentPosition: 5.7,
+    targetPosition: 1,
+    monthlyVolume: 21600,
+    keywordDifficulty: 23,
+    trafficPotential: 16400,
+    upgradeExecuted: 'Added live attacking pressure index, trailing-favorite xG spikes & remaining-minutes Poisson edge',
+  },
 ];
 
 export const AI_OVERVIEW_FEATURED_SNIPPETS: AiOverviewSnippetOpportunity[] = [
@@ -714,6 +754,20 @@ export const RECLAIMED_404_REDIRECTS_LIST: Reclaimed404RedirectItem[] = [
     topReferringSource: 'Goal market statistical trackers',
     redirectStatus: '301 Permanent + SPA Replace',
   },
+  {
+    broken404Path: '/odds-comparison, /bookmaker-odds, /surebet-finder',
+    destinationPath: '/arbitrage-finder',
+    referringDomainsReclaimed: 21,
+    topReferringSource: 'Line-shopping & cross-bookmaker odds comparison portals',
+    redirectStatus: '301 Permanent + SPA Replace',
+  },
+  {
+    broken404Path: '/seo-audit, /ahrefs-audit, /site-audit',
+    destinationPath: '/seo-indexing',
+    referringDomainsReclaimed: 14,
+    topReferringSource: 'Technical SEO & webmaster audit benchmarks',
+    redirectStatus: '301 Permanent + SPA Replace',
+  },
 ];
 
 export const INTERNAL_LINK_OPPORTUNITIES_MATRIX: InternalLinkOpportunityItem[] = [
@@ -893,12 +947,12 @@ export const TECHNICAL_CRITICAL_AUDIT_CHECKS: TechnicalCriticalAuditCheck[] = [
   },
   {
     subsystem: 'Performance',
-    checkName: 'Mobile PageSpeed Insights (#yp4ntj2bz7) & Core Web Vitals',
+    checkName: 'Mobile PageSpeed Insights (#hofaz2orbk) & Core Web Vitals',
     criticalErrorsCount: 0,
     warningsCount: 0,
     benchmarkTarget: 'LCP <= 2.5s · CLS <= 0.02 · INP <= 120ms',
-    currentVerifiedValue: '335 KB Entry JS (-57%) · Deferred 3P Scripts',
-    remediationDetail: 'Partitioned vendor-seo & global overlays via React.lazy, deferred adsbygoogle.js to first interaction, and applied content-visibility: auto.',
+    currentVerifiedValue: 'Deferred vendor-seo & vendor-supabase · 0 Long Tasks',
+    remediationDetail: 'Eliminated vendor-supabase & vendor-seo from initial homepage bundle, deferred visibilitychange handlers, and added offline circuit breakers.',
   },
   {
     subsystem: 'Sitemaps',

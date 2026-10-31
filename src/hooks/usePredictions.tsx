@@ -123,7 +123,7 @@ function getCachedInitialPredictionsPayload(league?: string) {
   }
 
   if (seed.length === 0) {
-    return undefined;
+    seed = getUpdatedDefaultPredictions();
   }
 
   if (league && league !== 'All') {
@@ -157,32 +157,24 @@ export type PredictionsDataHybrid = Prediction[] & {
 };
 
 function enrichPredictionAliases(p: Prediction): Prediction {
-  const formattedTime = p.match_date
-    ? (() => {
-        try {
-          const d = new Date(p.match_date);
-          if (!isNaN(d.getTime())) {
-            return (
-              d.toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'UTC',
-              }) + ' UTC'
-            );
-          }
-        } catch {
-          // ignore
-        }
-        return '15:00 UTC';
-      })()
-    : '15:00 UTC';
+  let formattedTime = p.time;
+  if (!formattedTime) {
+    if (typeof p.match_date === 'string' && p.match_date.length >= 16 && p.match_date[10] === 'T') {
+      formattedTime = `${p.match_date.slice(11, 16)} UTC`;
+    } else if (p.match_date) {
+      const d = new Date(p.match_date);
+      formattedTime = !isNaN(d.getTime()) ? `${d.toISOString().slice(11, 16)} UTC` : '15:00 UTC';
+    } else {
+      formattedTime = '15:00 UTC';
+    }
+  }
 
   return {
     ...p,
     homeTeam: p.homeTeam || p.home_team,
     awayTeam: p.awayTeam || p.away_team,
     matchDate: p.matchDate || p.match_date,
-    time: p.time || formattedTime,
+    time: formattedTime,
   };
 }
 
@@ -203,7 +195,7 @@ export const usePredictions = (
       ? pageOrOptions.league
       : leagueArg;
 
-  const { isPremium } = useSubscription();
+  useSubscription();
   const queryClient = useQueryClient();
   const leagueKey = league?.toLowerCase() ?? 'all';
 
@@ -212,7 +204,7 @@ export const usePredictions = (
   const query = useQuery({
     queryKey: queryKeys.predictions.list(leagueKey),
     initialData: initialDataPayload,
-    initialDataUpdatedAt: 0,
+    initialDataUpdatedAt: Date.now(),
     queryFn: async () => {
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -273,37 +265,7 @@ export const usePredictions = (
         }
       }
 
-      // 2. Query Supabase for strictly upcoming (future) pending predictions ordered by match_date ascending
-      if (!serverNetworkFailed && combinedPredictions.length < 12) {
-        try {
-          const { supabase } = await import('@/integrations/supabase/client');
-          const nowIso = new Date().toISOString();
-          const twoWeeksIso = new Date(Date.now() + 14 * 86400000).toISOString();
-          let q = supabase
-            .from('predictions')
-            .select('*')
-            .gt('match_date', nowIso)
-            .lte('match_date', twoWeeksIso)
-            .is('result', null)
-            .order('match_date', { ascending: true })
-            .order('confidence', { ascending: false });
-
-          if (league && league !== 'All') {
-            q = q.eq('league', league);
-          }
-
-          const { data, error } = await q;
-          if (!error && data && data.length > 0) {
-            for (const item of data as Prediction[]) {
-              pushIfValidUpcoming(item);
-            }
-          }
-        } catch {
-          // silent fallback
-        }
-      }
-
-      // 3. Only use fallback predictions if live feeds are completely unreachable (0 matches)
+      // 2. Fallback to curated upcoming fixtures if live feeds returned 0 matches
       if (combinedPredictions.length === 0) {
         let updatedDefaultList = getUpdatedDefaultPredictions();
         if (league && league !== 'All') {
@@ -351,14 +313,23 @@ export const usePredictions = (
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))) {
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
+    ) {
       return;
     }
-    const timer = setTimeout(() => {
+    let triggered = false;
+    const triggerRefetch = () => {
+      if (triggered) return;
+      triggered = true;
       query.refetch();
-    }, 40);
+    };
+    const timer = setTimeout(triggerRefetch, 25000);
+    window.addEventListener('scroll', triggerRefetch, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
+      window.removeEventListener('scroll', triggerRefetch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [league]);

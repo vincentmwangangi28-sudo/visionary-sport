@@ -300,7 +300,7 @@ export const Navbar = () => {
             data-testid="navbar-betslip-trigger"
             className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
               selections.length > 0
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-sm'
+                ? 'bg-emerald-800 hover:bg-emerald-900 text-white border-emerald-800 shadow-sm'
                 : 'bg-background hover:bg-muted text-foreground border-border'
             }`}
             title="Open Bet Slip & Booking Code Generator"
@@ -310,14 +310,14 @@ export const Navbar = () => {
             <span
               className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
                 selections.length > 0
-                  ? 'bg-white/20 text-white font-black'
+                  ? 'bg-emerald-950/60 text-white font-black'
                   : 'bg-muted text-muted-foreground'
               }`}
             >
               {selections.length}
             </span>
             {selections.length > 0 && (
-              <span className="hidden md:inline font-mono text-[11px] text-emerald-100">
+              <span className="hidden md:inline font-mono text-[11px] text-white">
                 @{totalOdds.toFixed(2)}
               </span>
             )}
@@ -326,7 +326,7 @@ export const Navbar = () => {
           {/* Daily Spin & Rewards */}
           <Link
             to="/rewards"
-            className="hidden xl:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold transition-colors"
+            className="hidden xl:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-300 text-xs font-bold transition-colors"
             title="Daily Spin Wheel & Free Coins"
           >
             <Coins className="h-3.5 w-3.5" />

@@ -2099,8 +2099,15 @@ const VERIFIED_FIXTURE_SEEDS: VerifiedFixtureSeed[] = [
  * Guarantees that Today (dayOffset = 0), Tomorrow (dayOffset = 1), and Upcoming/Weekend (dayOffset = 2..4)
  * always contain a comprehensive, multi-league slate of matches at any hour of the day.
  */
+let cachedDefaultPredictions: Prediction[] | null = null;
+let cachedDefaultPredictionsAt = 0;
+
 export function getUpdatedDefaultPredictions(): Prediction[] {
-  const now = new Date();
+  const nowMs = Date.now();
+  if (cachedDefaultPredictions && nowMs - cachedDefaultPredictionsAt < 60_000) {
+    return cachedDefaultPredictions;
+  }
+  const now = new Date(nowMs);
   const nowIso = now.toISOString();
   const dayRotationSeed = Math.floor(now.getTime() / 86_400_000);
 
@@ -2155,7 +2162,12 @@ export function getUpdatedDefaultPredictions(): Prediction[] {
     };
   });
 
-  return list.sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
+  cachedDefaultPredictions = list.sort(
+    (a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime()
+  );
+  cachedDefaultPredictionsAt = nowMs;
+  return cachedDefaultPredictions;
 }
 
 export const DEFAULT_PREDICTIONS: Prediction[] = getUpdatedDefaultPredictions();
+

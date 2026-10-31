@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, startTransition, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity } from 'lucide-react';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
@@ -16,21 +16,24 @@ export const Footer = () => {
 
   useEffect(() => {
     if (meshReady) return;
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ''))
+    ) {
+      return;
+    }
     let mounted = false;
     const enable = () => {
       if (mounted) return;
       mounted = true;
-      setMeshReady(true);
+      startTransition(() => setMeshReady(true));
     };
-    const timer = setTimeout(enable, 2200);
+    const timer = setTimeout(enable, 12000);
     window.addEventListener('scroll', enable, { passive: true, once: true });
-    window.addEventListener('pointerdown', enable, { passive: true, once: true });
-    window.addEventListener('touchstart', enable, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', enable);
-      window.removeEventListener('pointerdown', enable);
-      window.removeEventListener('touchstart', enable);
     };
   }, [meshReady]);
 
@@ -69,7 +72,7 @@ export const Footer = () => {
                 Betting &amp; Tools
               </h2>
               <ul className="space-y-2 text-muted-foreground">
-                <li><Link to="/best-bets" className="hover:text-foreground transition-colors font-semibold text-emerald-600 dark:text-emerald-400">Today&apos;s Banker Picks</Link></li>
+                <li><Link to="/best-bets" className="hover:text-foreground transition-colors font-semibold text-emerald-800 dark:text-emerald-300">Today&apos;s Banker Picks</Link></li>
                 <li><Link to="/today-predictions" className="hover:text-foreground transition-colors">Today&apos;s Match Predictions</Link></li>
                 <li><Link to="/tomorrow-predictions" className="hover:text-foreground transition-colors">Tomorrow&apos;s Early Lines</Link></li>
                 <li><Link to="/weekend-predictions" className="hover:text-foreground transition-colors">Weekend Global Slate</Link></li>

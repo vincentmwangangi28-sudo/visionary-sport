@@ -16,7 +16,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { BreadcrumbLayoutSchema } from "@/components/BreadcrumbLayoutSchema";
 import { queryClient } from "@/lib/queryClient";
-import React, { Suspense, memo, useState, useEffect, useCallback, ComponentType, ReactNode } from "react";
+import React, { Suspense, memo, useState, useEffect, useCallback, startTransition, ComponentType, ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PredictionCardSkeleton } from "@/components/PredictionCardSkeleton";
@@ -413,17 +413,13 @@ const SEOManagerInitializer: React.FC = () => {
     const enable = () => {
       if (mounted) return;
       mounted = true;
-      setReady(true);
+      startTransition(() => setReady(true));
     };
-    const timer = setTimeout(enable, 4000);
+    const timer = setTimeout(enable, 4500);
     window.addEventListener("scroll", enable, { passive: true, once: true });
-    window.addEventListener("pointerdown", enable, { passive: true, once: true });
-    window.addEventListener("touchstart", enable, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", enable);
-      window.removeEventListener("pointerdown", enable);
-      window.removeEventListener("touchstart", enable);
     };
   }, [ready]);
 
@@ -458,19 +454,13 @@ const DeferredGlobalOverlays = () => {
     const enable = () => {
       if (mounted) return;
       mounted = true;
-      setReady(true);
+      startTransition(() => setReady(true));
     };
-    const timer = setTimeout(enable, 18000);
+    const timer = setTimeout(enable, 12000);
     window.addEventListener("scroll", enable, { passive: true, once: true });
-    window.addEventListener("pointerdown", enable, { passive: true, once: true });
-    window.addEventListener("keydown", enable, { passive: true, once: true });
-    window.addEventListener("touchstart", enable, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", enable);
-      window.removeEventListener("pointerdown", enable);
-      window.removeEventListener("keydown", enable);
-      window.removeEventListener("touchstart", enable);
     };
   }, []);
 
@@ -606,7 +596,10 @@ const App = () => (
                             <Route path="/afcon-predictions"            element={<RouteBoundary component={AFCONPredictions} />} />
                             <Route path="/blog"                         element={<RouteBoundary component={Blog} />} />
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
-                            <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} isProtected adminOnly />} />
+                            <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
+                            <Route path="/seo-audit"                    element={<RouteBoundary component={SEOIndexingPage} />} />
+                            <Route path="/ahrefs-audit"                 element={<Navigate to="/seo-indexing" replace />} />
+                            <Route path="/site-audit"                   element={<Navigate to="/seo-indexing" replace />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
                             <Route path="/privacy"                      element={<RouteBoundary component={PrivacyPolicy} />} />
                             <Route path="/privacy-policy"               element={<Navigate to="/privacy" replace />} />
@@ -731,6 +724,8 @@ const App = () => (
                             <Route path="/telegram-alerts"              element={<Navigate to="/alert-center" replace />} />
                             <Route path="/cashout-calculator"           element={<RouteBoundary component={CashOutHedgeCalculatorPage} />} />
                             <Route path="/arbitrage-finder"             element={<RouteBoundary component={ArbitrageSurebetMatrixPage} />} />
+                            <Route path="/odds-comparison"              element={<RouteBoundary component={ArbitrageSurebetMatrixPage} />} />
+                            <Route path="/bookmaker-odds"               element={<Navigate to="/arbitrage-finder" replace />} />
                             <Route path="/surebet-finder"               element={<Navigate to="/arbitrage-finder" replace />} />
                             <Route path="/rollover-challenge"           element={<RouteBoundary component={RolloverLadderSimulatorPage} />} />
                             <Route path="/compound-ladder"              element={<Navigate to="/rollover-challenge" replace />} />

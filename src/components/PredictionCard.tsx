@@ -21,6 +21,11 @@ const NotifyMeButton = lazyWithRetry(() =>
   import('@/components/NotifyMeButton').then((m) => ({ default: m.NotifyMeButton }))
 );
 
+const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+});
+
 function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string): string {
   const clean = (name: string) =>
     name
@@ -126,7 +131,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     try {
       const d = new Date(p.match_date);
       if (isNaN(d.getTime())) return 'Upcoming';
-      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      return SHORT_DATE_FORMATTER.format(d);
     } catch {
       return 'Upcoming';
     }
@@ -175,7 +180,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
                   className={`py-1 rounded text-center text-[11px] border transition-colors cursor-pointer ${
                     inSlip
-                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold'
+                      ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                       : favored
                       ? 'bg-primary/10 text-primary border-primary/30 font-bold hover:bg-primary/20'
                       : 'bg-muted/40 border-border text-foreground font-medium hover:bg-muted'
@@ -212,7 +217,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
           {/* Column 1: Kickoff Time & Date */}
           <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-2 sm:gap-0.5 font-mono tabular-nums sm:border-r sm:border-border/60 sm:pr-3">
             {relativeKickoff.status === 'live' ? (
-              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 animate-pulse">
+              <span className="text-xs font-bold text-rose-700 dark:text-rose-400 animate-pulse">
                 LIVE
               </span>
             ) : (
@@ -287,14 +292,14 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
                   className={`h-9 rounded-md text-xs border flex flex-col items-center justify-center transition-colors cursor-pointer ${
                     inSlip
-                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-sm'
+                      ? 'bg-emerald-700 text-white border-emerald-700 font-bold shadow-sm'
                       : isFavored
                       ? 'bg-primary/10 hover:bg-primary/20 border-primary/35 text-primary font-bold'
                       : 'bg-muted/40 hover:bg-muted border-border text-foreground font-medium'
                   }`}
                   title={`Add ${label} (@${Number(odds).toFixed(2)}) to Bet Slip`}
                 >
-                  <span className={`text-[9px] leading-none ${inSlip ? 'text-emerald-100' : 'text-muted-foreground'}`}>
+                  <span className={`text-[9px] leading-none ${inSlip ? 'text-white' : 'text-muted-foreground'}`}>
                     {key}
                   </span>
                   <span className="text-[11px] leading-tight mt-0.5">
@@ -419,14 +424,14 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
                   className={`min-h-[36px] py-1 px-2.5 rounded-md border text-xs flex items-center justify-between transition-colors cursor-pointer ${
                     inSlip
-                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold'
+                      ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                       : favored
                       ? 'bg-primary/10 border-primary/35 text-primary font-bold hover:bg-primary/20'
                       : 'bg-muted/40 hover:bg-muted border-border text-foreground'
                   }`}
                   title={`Add ${label} to Bet Slip`}
                 >
-                  <span className={inSlip ? 'text-emerald-100' : 'text-muted-foreground'}>{key}</span>
+                  <span className={inSlip ? 'text-white' : 'text-muted-foreground'}>{key}</span>
                   <span className="font-semibold">
                     {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
                   </span>
@@ -448,7 +453,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
                 onClick={(e) => handleAddMarketToSlip(e, outcome, recommendedOdds)}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
                   recommendedInSlip
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-emerald-700 text-white'
                     : 'bg-primary/10 hover:bg-primary/20 text-primary'
                 }`}
               >

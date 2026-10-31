@@ -109,6 +109,11 @@
 /bet9ja-code-converter      /code-converter               301
 /matches/:matchSlug         /predict/:matchSlug           301
 /team/:teamSlug             /teams/:teamSlug              301
+/odds-comparison            /arbitrage-finder             301
+/bookmaker-odds             /arbitrage-finder             301
+/seo-audit                  /seo-indexing                 301
+/ahrefs-audit               /seo-indexing                 301
+/site-audit                 /seo-indexing                 301
 
 # Enforce HTTPS & non-www canonical host on custom domain
 http://predictpro.guru/*      https://predictpro.guru/:splat 301!

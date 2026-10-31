@@ -23,16 +23,16 @@ const SIZE_MAP: Record<string, { container: string; img: string; text: string; d
 };
 
 const PALETTE = [
-  '#b91c1c',
-  '#1d4ed8',
-  '#047857',
-  '#6d28d9',
-  '#b45309',
-  '#0f766e',
-  '#be123c',
+  '#991b1b',
+  '#1e3a8a',
+  '#065f46',
+  '#5b21b6',
+  '#78350f',
+  '#115e59',
+  '#881337',
   '#1e40af',
-  '#15803d',
-  '#4338ca',
+  '#14532d',
+  '#312e81',
 ];
 
 function computeTeamInitialsAndColor(teamName: string): {
@@ -141,7 +141,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
         sizeConfig.container
       } ${sizeConfig.text} font-mono leading-none ${className}`}
       style={{
-        background: `linear-gradient(135deg, ${bgColor} 0%, #111827 120%)`,
+        backgroundColor: bgColor,
+        backgroundImage: `linear-gradient(135deg, ${bgColor} 0%, #111827 120%)`,
         color: textColor,
       }}
       title={team}

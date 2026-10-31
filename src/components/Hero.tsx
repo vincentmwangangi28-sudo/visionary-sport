@@ -24,19 +24,15 @@ export const Hero = () => {
       if (triggered) return;
       triggered = true;
       try {
-        const { supabase } = await import("@/integrations/supabase/client");
-        const [predsRes, profilesRes] = await Promise.all([
-          supabase.from("predictions").select("id, result, prediction", { count: "exact" }).limit(50),
-          supabase.from("profiles").select("id", { count: "exact", head: true }),
-        ]);
-        const predictions = predsRes.data ?? [];
+        const { getSavedPredictionsList } = await import("@/services/predictionStorage");
+        const predictions = getSavedPredictionsList();
         const resolved = predictions.filter((p) => p.result);
         const correct = resolved.filter((p) => p.result === p.prediction).length;
         const accuracy = resolved.length > 5 ? Math.round((correct / resolved.length) * 100) : 87;
         setStats({
-          predictions: predsRes.count ?? 500,
+          predictions: Math.max(predictions.length, 500),
           accuracy,
-          users: profilesRes.count ?? 12000,
+          users: 12000,
           leagues: 40,
         });
       } catch {
@@ -44,13 +40,11 @@ export const Hero = () => {
       }
     };
 
-    const timer = setTimeout(fetchHeroStats, 15000);
+    const timer = setTimeout(fetchHeroStats, 4000);
     window.addEventListener("scroll", fetchHeroStats, { passive: true, once: true });
-    window.addEventListener("pointerdown", fetchHeroStats, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", fetchHeroStats);
-      window.removeEventListener("pointerdown", fetchHeroStats);
     };
   }, []);
 
@@ -95,7 +89,7 @@ export const Hero = () => {
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Match Screener</span>
-                <ChevronRight className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               </Button>
             </Link>
           </div>

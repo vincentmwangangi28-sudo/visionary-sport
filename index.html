@@ -259,45 +259,40 @@
         function loadThirdPartyScripts() {
           if (loaded) return;
           loaded = true;
-          try {
-            if (navigator.webdriver || botPattern.test(navigator.userAgent || '')) {
-              return;
-            }
-            var fontLink = document.createElement('link');
-            fontLink.rel = 'stylesheet';
-            fontLink.href = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
-            document.head.appendChild(fontLink);
+          setTimeout(function() {
+            try {
+              if (navigator.webdriver || botPattern.test(navigator.userAgent || '')) {
+                return;
+              }
+              var host = window.location.hostname;
+              var isProd = (host === 'predictpro.guru' || host === 'www.predictpro.guru');
 
-            var host = window.location.hostname;
-            var isProd = (host === 'predictpro.guru' || host === 'www.predictpro.guru');
+              if (isProd) {
+                var ga = document.createElement('script');
+                ga.async = true;
+                ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
+                ga.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+                document.head.appendChild(ga);
 
-            if (isProd) {
-              var ga = document.createElement('script');
-              ga.async = true;
-              ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-M0VE8D3XLZ';
-              ga.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-              document.head.appendChild(ga);
+                var ah = document.createElement('script');
+                ah.async = true;
+                ah.src = 'https://analytics.ahrefs.com/analytics.js';
+                ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
+                ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+                document.head.appendChild(ah);
 
-              var ah = document.createElement('script');
-              ah.async = true;
-              ah.src = 'https://analytics.ahrefs.com/analytics.js';
-              ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
-              ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-              document.head.appendChild(ah);
-
-              var ads = document.createElement('script');
-              ads.async = true;
-              ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-              ads.crossOrigin = 'anonymous';
-              ads.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-              document.head.appendChild(ads);
-            }
-          } catch (e) {}
+                var ads = document.createElement('script');
+                ads.async = true;
+                ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+                ads.crossOrigin = 'anonymous';
+                ads.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
+                document.head.appendChild(ads);
+              }
+            } catch (e) {}
+          }, 1500);
         }
 
-        ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function(evt) {
-          window.addEventListener(evt, loadThirdPartyScripts, { once: true, passive: true });
-        });
+        window.addEventListener('scroll', loadThirdPartyScripts, { once: true, passive: true });
       })();
     </script>
 

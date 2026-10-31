@@ -166,6 +166,8 @@ export const UnifiedSearchModal: React.FC = () => {
         <div className="relative flex items-center border-b border-border/80 px-4 py-3 bg-muted/20">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground mr-3" />
           <input
+            id="unified-global-search-input"
+            name="q"
             ref={inputRef}
             type="text"
             value={query}

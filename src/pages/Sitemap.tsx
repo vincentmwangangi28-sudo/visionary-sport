@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -282,6 +283,11 @@ export default function Sitemap() {
             </CardContent>
           </Card>
         )}
+
+        {/* 12-Pillar Ahrefs Content, Links & Technical Site Audit Suite */}
+        <div className="mb-8">
+          <SEOSiteAuditSuite onTriggerIndexNow={handlePingDiscoveryEngines} />
+        </div>
 
         {/* Similar & Top Sites Competitor Keyword Benchmark Matrix */}
         <Card className="mb-8 border-primary/20 bg-card/60">

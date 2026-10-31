@@ -23,7 +23,10 @@ import {
   Radio,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AHREFS_12_OPPORTUNITY_PILLARS } from '@/services/ahrefsOpportunitiesService';
+import {
+  AHREFS_12_OPPORTUNITY_PILLARS,
+  TECHNICAL_CRITICAL_AUDIT_CHECKS,
+} from '@/services/ahrefsOpportunitiesService';
 
 interface LowHangingKeywordItem {
   keyword: string;
@@ -396,6 +399,20 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
   onTriggerIndexNow,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'content' | 'links' | 'technical'>('content');
+  const [selectedPillarId, setSelectedPillarId] = useState<string>('low-hanging-fruit');
+
+  const handleSelectPillar = (pillarId: string, category: 'Content' | 'Links' | 'Technical') => {
+    setSelectedPillarId(pillarId);
+    const nextTab =
+      category === 'Content' ? 'content' : category === 'Links' ? 'links' : 'technical';
+    setActiveSubTab(nextTab);
+    setTimeout(() => {
+      const el = document.getElementById(`pillar-${pillarId}`);
+      if (el && typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
 
   const embedWidgetSnippet = `<!-- PredictPro Live AI Football Predictions Citation Widget -->
 <div style="border:1px solid #1e293b;border-radius:12px;padding:16px;background:#0f172a;color:#f8fafc;font-family:system-ui,sans-serif;max-width:420px;">
@@ -480,19 +497,37 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
 
         {/* 12-Pillar Quick Overview Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-border/50">
-          {AHREFS_12_OPPORTUNITY_PILLARS.map((pillar) => (
-            <div
-              key={pillar.id}
-              className="rounded-lg border border-border/60 bg-card/90 p-2.5 text-xs flex flex-col justify-between gap-1"
-            >
-              <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono text-muted-foreground">
-                <span className="font-bold text-primary uppercase">{pillar.category} · {pillar.ahrefsTool}</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums">{pillar.itemsResolved} fixed</span>
-              </div>
-              <div className="font-bold text-foreground truncate">{pillar.opportunityName}</div>
-              <div className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">{pillar.objective}</div>
-            </div>
-          ))}
+          {AHREFS_12_OPPORTUNITY_PILLARS.map((pillar) => {
+            const isSelected = selectedPillarId === pillar.id;
+            return (
+              <button
+                key={pillar.id}
+                type="button"
+                onClick={() => handleSelectPillar(pillar.id, pillar.category)}
+                className={`text-left rounded-lg border p-2.5 text-xs flex flex-col justify-between gap-1 transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary bg-primary/10 shadow-2xs'
+                    : 'border-border/60 bg-card/90 hover:border-primary/40'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1.5 text-[10px] font-mono text-muted-foreground w-full">
+                  <span className="font-bold text-primary uppercase">
+                    {pillar.category} · {pillar.ahrefsTool}
+                  </span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums">
+                    {pillar.itemsResolved} fixed
+                  </span>
+                </div>
+                <div className="font-bold text-foreground truncate w-full">{pillar.opportunityName}</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-2 leading-snug">
+                  {pillar.objective}
+                </div>
+                <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 pt-1 border-t border-border/40 truncate w-full">
+                  {pillar.impactMetric}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -500,7 +535,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
       {activeSubTab === 'content' && (
         <div className="space-y-6">
           {/* 1A: Low-Hanging Fruit Keywords (Positions 4-15) */}
-          <Card className="border-border/60">
+          <Card id="pillar-low-hanging-fruit" className="border-border/60 scroll-mt-24">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
@@ -560,7 +595,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           </Card>
 
           {/* 1B: AI Overviews & Featured Snippets (Positions 2-8) */}
-          <Card className="border-border/60">
+          <Card id="pillar-ai-overviews-snippets" className="border-border/60 scroll-mt-24">
             <CardHeader className="pb-3">
               <Badge variant="outline" className="w-fit text-[10px] font-bold text-emerald-600 border-emerald-500/30 mb-1">
                 Site Explorer · AI Overviews &amp; Featured Snippets (Positions 2–8)
@@ -614,7 +649,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
 
           {/* 1C: Competitor Content Gap + Content Refresh (Declining Traffic & Published Once) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-border/60">
+            <Card id="pillar-content-gap" className="border-border/60 scroll-mt-24">
               <CardHeader className="pb-3">
                 <Badge variant="outline" className="w-fit text-[10px] font-bold text-amber-600 border-amber-500/30 mb-1">
                   Competitive Analysis · Top 10 Competitor Content Gap
@@ -653,7 +688,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
             </Card>
 
             {/* 1D: Potential Cannibalization Resolver */}
-            <Card className="border-border/60">
+            <Card id="pillar-potential-cannibalization" className="border-border/60 scroll-mt-24">
               <CardHeader className="pb-3">
                 <Badge variant="outline" className="w-fit text-[10px] font-bold text-blue-600 border-blue-500/30 mb-1">
                   Site Explorer · Potential Cannibalization Prevention
@@ -691,7 +726,8 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           </div>
 
           {/* 1E & 1F: Content with Declining Traffic (Site Explorer) & Pages Only Published Once (Content Explorer) */}
-          <Card className="border-border/60">
+          <div id="pillar-published-once" className="scroll-mt-24">
+          <Card id="pillar-declining-traffic" className="border-border/60 scroll-mt-24">
             <CardHeader className="pb-3">
               <Badge variant="outline" className="w-fit text-[10px] font-bold text-purple-600 border-purple-500/30 mb-1">
                 Site Explorer &amp; Content Explorer · Declining Traffic (6M) &amp; Published-Once Refresh
@@ -735,6 +771,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       )}
 
@@ -825,7 +862,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           </Card>
 
           {/* 2A: 404 Link Reclamation & Redirects Implemented */}
-          <Card className="border-border/60">
+          <Card id="pillar-redirects-to-implement" className="border-border/60 scroll-mt-24">
             <CardHeader className="pb-3">
               <Badge variant="outline" className="w-fit text-[10px] font-bold text-primary border-primary/30 mb-1">
                 Site Explorer · 404 Backlink Reclamation
@@ -874,7 +911,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
 
           {/* 2B: Internal Link Opportunities (Site Audit) & Descriptive Anchors (Site Explorer) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-border/60">
+            <Card id="pillar-internal-link-opportunities" className="border-border/60 scroll-mt-24">
               <CardHeader className="pb-3">
                 <Badge variant="outline" className="w-fit text-[10px] font-bold text-emerald-600 border-emerald-500/30 mb-1">
                   Site Audit · Internal Link Opportunities
@@ -909,7 +946,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               </CardContent>
             </Card>
 
-            <Card className="border-border/60">
+            <Card id="pillar-descriptive-anchors" className="border-border/60 scroll-mt-24">
               <CardHeader className="pb-3">
                 <Badge variant="outline" className="w-fit text-[10px] font-bold text-blue-600 border-blue-500/30 mb-1">
                   Site Explorer · Descriptive Anchors Audit
@@ -940,7 +977,8 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           </div>
 
           {/* 2C: Link Intersect & Unlinked Brand Mentions Outreach Generator */}
-          <Card className="border-border/60">
+          <div id="pillar-unlinked-brand-mentions" className="scroll-mt-24">
+          <Card id="pillar-link-intersect" className="border-border/60 scroll-mt-24">
             <CardHeader className="pb-3">
               <Badge variant="outline" className="w-fit text-[10px] font-bold text-amber-600 border-amber-500/30 mb-1">
                 Competitive Analysis &amp; Content Explorer · Link Intersect + Unlinked Mentions
@@ -1003,6 +1041,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               ))}
             </CardContent>
           </Card>
+          </div>
 
           {/* 2C: Embeddable HTML Backlink Widget for Partner Blogs & Unlinked Mentions */}
           <Card className="border-border/60">
@@ -1046,7 +1085,32 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
 
       {/* SECTION 3: TECHNICAL SITE AUDIT */}
       {activeSubTab === 'technical' && (
-        <div className="space-y-4">
+        <div id="pillar-critical-issues" className="space-y-4 scroll-mt-24">
+          {/* Canonical Technical Site Audit Subsystem Matrix */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {TECHNICAL_CRITICAL_AUDIT_CHECKS.map((chk) => (
+              <div
+                key={chk.subsystem}
+                className="rounded-xl border border-emerald-500/30 bg-card p-3.5 space-y-1.5 text-xs"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-bold uppercase text-primary">
+                    {chk.subsystem} Audit
+                  </span>
+                  <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    {chk.criticalErrorsCount} Errors · {chk.warningsCount} Warnings
+                  </span>
+                </div>
+                <div className="font-bold text-foreground">{chk.checkName}</div>
+                <div className="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  {chk.currentVerifiedValue}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  {chk.remediationDetail}
+                </p>
+              </div>
+            ))}
+          </div>
           <Card className="border-emerald-500/30 bg-emerald-500/5">
             <CardHeader className="pb-3">
               <div className="flex flex-wrap items-center justify-between gap-2">

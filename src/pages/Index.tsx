@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, startTransition, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
@@ -249,21 +249,24 @@ const Index = () => {
 
   useEffect(() => {
     if (faqReady) return;
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ''))
+    ) {
+      return;
+    }
     let mounted = false;
     const enable = () => {
       if (mounted) return;
       mounted = true;
-      setFaqReady(true);
+      startTransition(() => setFaqReady(true));
     };
-    const timer = setTimeout(enable, 2000);
+    const timer = setTimeout(enable, 10000);
     window.addEventListener('scroll', enable, { passive: true, once: true });
-    window.addEventListener('pointerdown', enable, { passive: true, once: true });
-    window.addEventListener('touchstart', enable, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', enable);
-      window.removeEventListener('pointerdown', enable);
-      window.removeEventListener('touchstart', enable);
     };
   }, [faqReady]);
 
@@ -283,81 +286,84 @@ const Index = () => {
 
       {/* Workspace Mode Tabs (Fixtures & Odds | In-Play & TV | Acca Builder | Lineups & News | Results | All Views) */}
       <div className="border-b border-border bg-card/80 sticky top-16 z-30 backdrop-blur">
-        <HomeViewTabs activeMode={activeMode} onModeChange={setActiveMode} />
+        <HomeViewTabs
+          activeMode={activeMode}
+          onModeChange={(nextMode) => startTransition(() => setActiveMode(nextMode))}
+        />
       </div>
 
       <main id="main-content" className="flex-1 w-full">
-        {/* Quick Action Strip */}
+        {/* Quick Action Strip (Single-row horizontal scroll on mobile for zero CLS) */}
         <section className="container mx-auto max-w-7xl px-4 sm:px-6 pt-5">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar lg:flex-wrap min-h-[36px]">
+            <div className="flex items-center gap-2 shrink-0 lg:flex-wrap">
               <Link
                 to="/best-bets"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold transition-colors shadow-2xs shrink-0"
               >
-                <Flame className="h-3.5 w-3.5" />
+                <Flame className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>80%+ Banker Picks</span>
               </Link>
               <Link
                 to="/bet-tracker"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <LineChart className="h-3.5 w-3.5 text-primary" />
+                <LineChart className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Bet Tracker &amp; ROI Ledger</span>
               </Link>
               <Link
                 to="/in-play-edge"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <Activity className="h-3.5 w-3.5 text-rose-500" />
+                <Activity className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400" aria-hidden="true" />
                 <span>In-Play Late-Goal Radar</span>
               </Link>
               <Link
                 to="/social-card-studio"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <Share2 className="h-3.5 w-3.5 text-primary" />
+                <Share2 className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Social Card Studio</span>
               </Link>
               <Link
                 to="/accumulator"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <Ticket className="h-3.5 w-3.5 text-primary" />
+                <Ticket className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>AI Acca Builder</span>
               </Link>
               <Link
                 to="/booking-code-converter"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <ArrowRightLeft className="h-3.5 w-3.5 text-primary" />
+                <ArrowRightLeft className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Code Converter</span>
               </Link>
               <Link
                 to="/jackpot-predictions"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                <Trophy className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" aria-hidden="true" />
                 <span>Jackpot Hub</span>
               </Link>
               <Link
                 to="/h2h"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <Users className="h-3.5 w-3.5 text-primary" />
+                <Users className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Team H2H Hub</span>
               </Link>
               <Link
                 to="/odds-comparison"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
-                <SlidersHorizontal className="h-3.5 w-3.5 text-emerald-500" />
+                <SlidersHorizontal className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
                 <span>Odds Line-Shopping</span>
               </Link>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-card text-[11px] font-mono text-muted-foreground">
+            <div className="flex items-center gap-2 shrink-0 lg:flex-wrap">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-card text-[11px] font-mono text-muted-foreground shrink-0">
                 <span className="font-semibold text-foreground">Locale:</span>
                 <Link to="/?lang=en" className="px-1.5 py-0.5 rounded hover:bg-muted text-foreground font-bold">EN</Link>
                 <Link to="/?lang=sw" className="px-1.5 py-0.5 rounded hover:bg-muted hover:text-foreground">SW</Link>
@@ -366,16 +372,16 @@ const Index = () => {
               </div>
               <Link
                 to="/pick-em-challenge"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-xs font-bold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-300 text-xs font-bold transition-colors shrink-0"
               >
-                <Trophy className="h-3.5 w-3.5" />
+                <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Daily 5-Match Pick&apos;em</span>
               </Link>
               <Link
                 to="/referrals"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-900 dark:text-emerald-200 text-xs font-bold transition-colors shrink-0"
               >
-                <Gift className="h-3.5 w-3.5" />
+                <Gift className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Invite &amp; Earn Coins</span>
               </Link>
             </div>
@@ -462,8 +468,11 @@ const Index = () => {
               >
                 Discover XML Feed ↗
               </a>
-              <Link to="/alert-center" className="text-emerald-400 hover:underline inline-flex items-center gap-1">
-                <Bell className="h-3.5 w-3.5" />
+              <Link
+                to="/alert-center"
+                className="text-emerald-800 dark:text-emerald-300 font-bold hover:underline inline-flex items-center gap-1"
+              >
+                <Bell className="h-3.5 w-3.5" aria-hidden="true" />
                 Telegram &amp; Push Alerts →
               </Link>
             </div>

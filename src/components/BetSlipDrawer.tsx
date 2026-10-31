@@ -959,6 +959,7 @@ export const BetSlipDrawer = () => {
                   <div className="relative">
                     <Input
                       id="betslip-stake-input"
+                      name="betslip-stake"
                       type="number"
                       min="10"
                       step="10"

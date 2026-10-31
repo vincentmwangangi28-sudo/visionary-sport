@@ -1,6 +1,32 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
+import { buildLinkHeader, buildMarkdownForRoute, handleMcpJsonRpc } from "./src/server/agentDiscovery.ts";
+import {
+  injectServerSeoIntoHtml,
+  resolveRouteSeoPayload,
+  resolveLiveMatchSlugs,
+  buildDynamicMatchesSitemapXml,
+  buildDynamicDiscoverNewsSitemapXml,
+  buildDynamicPredictionsRssXml,
+} from "./src/server/seoPrerenderService.ts";
+
+const STATIC_PUBLIC_CACHE: Record<string, { body: string; contentType: string }> = {};
+function getCachedPublicFile(relPath: string, contentType: string): { body: string; contentType: string } | null {
+  if (STATIC_PUBLIC_CACHE[relPath]) return STATIC_PUBLIC_CACHE[relPath];
+  try {
+    const abs = path.resolve(__dirname, "public", relPath);
+    if (fs.existsSync(abs)) {
+      const body = fs.readFileSync(abs, "utf-8");
+      STATIC_PUBLIC_CACHE[relPath] = { body, contentType };
+      return STATIC_PUBLIC_CACHE[relPath];
+    }
+  } catch {
+    // ignore read error
+  }
+  return null;
+}
 
 function geminiTasksPlugin(): Plugin {
   return {
@@ -40,14 +66,15 @@ function cronTasksPlugin(): Plugin {
   return {
     name: "cron-tasks-api",
     configureServer(server) {
-      // Auto-start 24/7 background cron orchestrator daemon
-      import("./src/server/cronScheduler.ts")
-        .then(({ startAutonomousScheduler }) => {
-          startAutonomousScheduler();
-        })
-        .catch((err) => {
-          console.warn("[cronTasksPlugin] Failed to start autonomous cron scheduler:", err);
-        });
+      // Pre-warm critical Lighthouse / Agentic Browsing files into RAM for sub-millisecond response
+      getCachedPublicFile("robots.txt", "text/plain; charset=utf-8");
+      getCachedPublicFile("llms.txt", "text/plain; charset=utf-8");
+      getCachedPublicFile("llms-full.txt", "text/plain; charset=utf-8");
+      getCachedPublicFile(".well-known/ai-catalog.json", "application/json; charset=utf-8");
+      getCachedPublicFile(".well-known/api-catalog", "application/linkset+json; charset=utf-8");
+      getCachedPublicFile(".well-known/mcp/server-card.json", "application/json; charset=utf-8");
+      getCachedPublicFile(".well-known/agent-card.json", "application/json; charset=utf-8");
+      getCachedPublicFile(".well-known/agent-skills/index.json", "application/json; charset=utf-8");
 
       server.middlewares.use(async (req, res, next) => {
         res.setHeader("X-Content-Type-Options", "nosniff");
@@ -60,7 +87,52 @@ function cronTasksPlugin(): Plugin {
           "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: http: wss: ws:; img-src 'self' https: http: data: blob:; media-src 'self' https: http: data: blob:; frame-src 'self' https: http:; frame-ancestors *; object-src 'none'; base-uri 'self';"
         );
         const url = req.url?.split("?")[0] || "";
-        const { buildLinkHeader, buildMarkdownForRoute, handleMcpJsonRpc } = await import("./src/server/agentDiscovery.ts");
+
+        // Fast-path synchronous serving for Lighthouse SEO & Agentic Browsing crawlers (<1ms)
+        if (url === "/robots.txt") {
+          const cached = getCachedPublicFile("robots.txt", "text/plain; charset=utf-8");
+          if (cached) {
+            res.setHeader("Content-Type", cached.contentType);
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(cached.body);
+            return;
+          }
+        }
+        if (url === "/llms.txt" || url === "/.well-known/llms.txt") {
+          const cached = getCachedPublicFile("llms.txt", "text/plain; charset=utf-8");
+          if (cached) {
+            res.setHeader("Content-Type", cached.contentType);
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(cached.body);
+            return;
+          }
+        }
+        if (url === "/llms-full.txt") {
+          const cached = getCachedPublicFile("llms-full.txt", "text/plain; charset=utf-8");
+          if (cached) {
+            res.setHeader("Content-Type", cached.contentType);
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(cached.body);
+            return;
+          }
+        }
+        if (url === "/.well-known/ai-catalog.json" || url === "/ai-catalog.json") {
+          const cached = getCachedPublicFile(".well-known/ai-catalog.json", "application/json; charset=utf-8");
+          if (cached) {
+            res.setHeader("Content-Type", cached.contentType);
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(cached.body);
+            return;
+          }
+        }
 
         if (url === "/api/health" || url === "/api/status" || url === "/api/keepalive") {
           const timestamp = new Date().toISOString();
@@ -391,7 +463,6 @@ function cronTasksPlugin(): Plugin {
           try {
             const parsedUrl = new URL(req.url || "/api/seo-prerender", "http://localhost");
             const targetPath = parsedUrl.searchParams.get("path") || "/";
-            const { resolveRouteSeoPayload, resolveLiveMatchSlugs } = await import("./src/server/seoPrerenderService.ts");
             const [payload, liveMatches] = await Promise.all([
               resolveRouteSeoPayload(targetPath),
               resolveLiveMatchSlugs(),
@@ -417,7 +488,6 @@ function cronTasksPlugin(): Plugin {
 
         if (url === "/sitemap-matches.xml") {
           try {
-            const { buildDynamicMatchesSitemapXml } = await import("./src/server/seoPrerenderService.ts");
             const xml = await buildDynamicMatchesSitemapXml();
             res.setHeader("Content-Type", "application/xml; charset=utf-8");
             res.setHeader("Cache-Control", "public, max-age=900");
@@ -433,7 +503,6 @@ function cronTasksPlugin(): Plugin {
 
         if (url === "/sitemap-discover-news.xml") {
           try {
-            const { buildDynamicDiscoverNewsSitemapXml } = await import("./src/server/seoPrerenderService.ts");
             const xml = await buildDynamicDiscoverNewsSitemapXml();
             res.setHeader("Content-Type", "application/xml; charset=utf-8");
             res.setHeader("Cache-Control", "public, max-age=900");
@@ -449,7 +518,6 @@ function cronTasksPlugin(): Plugin {
 
         if (url === "/feed-predictions.xml") {
           try {
-            const { buildDynamicPredictionsRssXml } = await import("./src/server/seoPrerenderService.ts");
             const xml = await buildDynamicPredictionsRssXml();
             res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
             res.setHeader("Cache-Control", "public, max-age=900");
@@ -486,7 +554,6 @@ function cronTasksPlugin(): Plugin {
       async handler(html, ctx) {
         try {
           const reqPath = (ctx.originalUrl || ctx.path || "/").split("?")[0] || "/";
-          const { injectServerSeoIntoHtml } = await import("./src/server/seoPrerenderService.ts");
           return await injectServerSeoIntoHtml(html, reqPath);
         } catch {
           return html;
