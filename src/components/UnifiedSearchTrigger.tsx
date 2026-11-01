@@ -60,8 +60,9 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
       <button
         type="button"
         onClick={() => openSearch()}
+        aria-label="Search predictions, matches, teams, and leagues (Press Command+K or / to open)"
         className={cn(
-          'flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/80 text-xs text-muted-foreground transition-all',
+          'flex items-center gap-2 h-9 min-h-[36px] px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/80 text-xs text-muted-foreground transition-all cursor-pointer select-none',
           className
         )}
         title="Search (⌘K or /)"

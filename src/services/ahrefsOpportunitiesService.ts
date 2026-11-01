@@ -947,7 +947,7 @@ export const TECHNICAL_CRITICAL_AUDIT_CHECKS: TechnicalCriticalAuditCheck[] = [
   },
   {
     subsystem: 'Performance',
-    checkName: 'Mobile PageSpeed Insights (#hofaz2orbk) & Core Web Vitals',
+    checkName: 'Mobile PageSpeed Insights (#ksa4i5gm2f) & Core Web Vitals',
     criticalErrorsCount: 0,
     warningsCount: 0,
     benchmarkTarget: 'LCP <= 2.5s · CLS <= 0.02 · INP <= 120ms',
@@ -1080,5 +1080,140 @@ export function getRouteAhrefsOptimizationBundle(pathname: string): RouteAhrefsO
     lastModifiedIso: '2026-10-30',
     revisionNumber: 14,
     contextualInternalLinks,
+  };
+}
+
+/**
+ * Resolves whether an incoming pathname corresponds to a historic 404 URL with high backlink equity
+ * and returns the canonical 301 / SPA target route, or null if no redirect is needed.
+ */
+export function resolveReclaimed404Redirect(rawPath: string): string | null {
+  if (!rawPath) return null;
+  const path = rawPath.split('?')[0].replace(/\/+$/, '') || '/';
+
+  for (const item of RECLAIMED_404_REDIRECTS_LIST) {
+    const brokenPaths = item.broken404Path.split(',').map((p) => p.trim());
+    for (const broken of brokenPaths) {
+      if (broken === path) {
+        return item.destinationPath;
+      }
+
+      // Check dynamic slug patterns e.g. /match/:matchSlug or /matches/:matchSlug
+      if (broken.includes(':')) {
+        const brokenParts = broken.split('/').filter(Boolean);
+        const pathParts = path.split('/').filter(Boolean);
+        if (brokenParts.length === pathParts.length) {
+          let matches = true;
+          let matchedParam = '';
+          for (let i = 0; i < brokenParts.length; i++) {
+            if (brokenParts[i].startsWith(':')) {
+              matchedParam = pathParts[i];
+            } else if (brokenParts[i] !== pathParts[i]) {
+              matches = false;
+              break;
+            }
+          }
+          if (matches && matchedParam) {
+            return item.destinationPath.replace(/:[a-zA-Z0-9_]+/, matchedParam);
+          }
+        }
+      }
+    }
+  }
+
+  // Check cannibalization alias paths as secondary 301 reclamation targets
+  for (const item of CANNIBALIZATION_RESOLUTION_MATRIX) {
+    if (item.competingOrAliasPaths.includes(path)) {
+      return item.primaryCanonicalPath;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Aggregates high-level quantitative metrics across all 12 Ahrefs Opportunity Pillars.
+ */
+export function getAhrefsSummaryStats() {
+  const totalKeywordsVolume = LOW_HANGING_FRUIT_KEYWORDS.reduce((acc, k) => acc + k.monthlyVolume, 0);
+  const totalCompetitorGapVolume = COMPETITOR_CONTENT_GAP_HUBS.reduce((acc, g) => acc + g.monthlyVolume, 0);
+  const totalReferringDomainsReclaimed = RECLAIMED_404_REDIRECTS_LIST.reduce(
+    (acc, r) => acc + r.referringDomainsReclaimed,
+    0
+  );
+  const avgStrikingPosition = (
+    LOW_HANGING_FRUIT_KEYWORDS.reduce((acc, k) => acc + k.currentPosition, 0) /
+    LOW_HANGING_FRUIT_KEYWORDS.length
+  ).toFixed(1);
+  const totalCriticalErrors = TECHNICAL_CRITICAL_AUDIT_CHECKS.reduce(
+    (acc, c) => acc + c.criticalErrorsCount,
+    0
+  );
+
+  return {
+    totalPillars: AHREFS_12_OPPORTUNITY_PILLARS.length,
+    contentPillarsCount: 6,
+    linkPillarsCount: 5,
+    technicalPillarsCount: 1,
+    totalKeywordsTracked: LOW_HANGING_FRUIT_KEYWORDS.length,
+    totalMonthlySearchVolumeTargeted: totalKeywordsVolume + totalCompetitorGapVolume,
+    avgStrikingPosition: Number(avgStrikingPosition),
+    reclaimed404Count: RECLAIMED_404_REDIRECTS_LIST.length,
+    totalReferringDomainsReclaimed,
+    totalCompetitorGapsClosed: COMPETITOR_CONTENT_GAP_HUBS.length,
+    aiOverviewSnippetsOptimized: AI_OVERVIEW_FEATURED_SNIPPETS.length,
+    internalLinkRulesActive: INTERNAL_LINK_OPPORTUNITIES_MATRIX.length,
+    criticalErrorsCount: totalCriticalErrors,
+    siteHealthScore: 100,
+  };
+}
+
+/**
+ * Multi-pillar search query matcher for the interactive Ahrefs Mission Control Hub.
+ */
+export function searchAhrefsOpportunities(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    return {
+      keywords: LOW_HANGING_FRUIT_KEYWORDS,
+      snippets: AI_OVERVIEW_FEATURED_SNIPPETS,
+      contentGaps: COMPETITOR_CONTENT_GAP_HUBS,
+      refreshes: CONTENT_REFRESH_AND_SINGLE_PUBLISH_RECORDS,
+      cannibalization: CANNIBALIZATION_RESOLUTION_MATRIX,
+      redirects: RECLAIMED_404_REDIRECTS_LIST,
+      internalLinks: INTERNAL_LINK_OPPORTUNITIES_MATRIX,
+      linkIntersects: LINK_INTERSECT_AND_UNLINKED_MENTIONS,
+      technicalChecks: TECHNICAL_CRITICAL_AUDIT_CHECKS,
+    };
+  }
+
+  return {
+    keywords: LOW_HANGING_FRUIT_KEYWORDS.filter(
+      (k) => k.keyword.toLowerCase().includes(q) || k.targetPath.toLowerCase().includes(q)
+    ),
+    snippets: AI_OVERVIEW_FEATURED_SNIPPETS.filter(
+      (s) => s.query.toLowerCase().includes(q) || s.targetPath.toLowerCase().includes(q) || s.conciseAnswer.toLowerCase().includes(q)
+    ),
+    contentGaps: COMPETITOR_CONTENT_GAP_HUBS.filter(
+      (g) => g.keywordCluster.toLowerCase().includes(q) || g.pageTitle.toLowerCase().includes(q)
+    ),
+    refreshes: CONTENT_REFRESH_AND_SINGLE_PUBLISH_RECORDS.filter(
+      (r) => r.path.toLowerCase().includes(q) || r.title.toLowerCase().includes(q)
+    ),
+    cannibalization: CANNIBALIZATION_RESOLUTION_MATRIX.filter(
+      (c) => c.keywordCluster.toLowerCase().includes(q) || c.primaryCanonicalPath.toLowerCase().includes(q)
+    ),
+    redirects: RECLAIMED_404_REDIRECTS_LIST.filter(
+      (r) => r.broken404Path.toLowerCase().includes(q) || r.destinationPath.toLowerCase().includes(q)
+    ),
+    internalLinks: INTERNAL_LINK_OPPORTUNITIES_MATRIX.filter(
+      (i) => i.mentionedKeyword.toLowerCase().includes(q) || i.descriptiveAnchorText.toLowerCase().includes(q) || i.targetDestinationPath.toLowerCase().includes(q)
+    ),
+    linkIntersects: LINK_INTERSECT_AND_UNLINKED_MENTIONS.filter(
+      (l) => l.prospectDomain.toLowerCase().includes(q) || l.outreachSubject.toLowerCase().includes(q)
+    ),
+    technicalChecks: TECHNICAL_CRITICAL_AUDIT_CHECKS.filter(
+      (t) => t.checkName.toLowerCase().includes(q) || t.subsystem.toLowerCase().includes(q)
+    ),
   };
 }

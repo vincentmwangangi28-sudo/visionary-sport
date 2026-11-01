@@ -398,6 +398,15 @@ export default function SEOIndexingPage() {
             >
               <Sparkles className="h-3.5 w-3.5" /> Discover XML
             </Button>
+            <Link to="/ahrefs-opportunities">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs font-semibold border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
+              >
+                <TrendingUp className="h-3.5 w-3.5" /> Ahrefs 12-Pillars Hub
+              </Button>
+            </Link>
           </div>
         </div>
 

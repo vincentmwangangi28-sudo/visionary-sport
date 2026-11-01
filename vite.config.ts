@@ -11,6 +11,7 @@ import {
   buildDynamicDiscoverNewsSitemapXml,
   buildDynamicPredictionsRssXml,
 } from "./src/server/seoPrerenderService.ts";
+import { resolveReclaimed404Redirect } from "./src/services/ahrefsOpportunitiesService.ts";
 
 const STATIC_PUBLIC_CACHE: Record<string, { body: string; contentType: string }> = {};
 function getCachedPublicFile(relPath: string, contentType: string): { body: string; contentType: string } | null {
@@ -70,6 +71,7 @@ function cronTasksPlugin(): Plugin {
       getCachedPublicFile("robots.txt", "text/plain; charset=utf-8");
       getCachedPublicFile("llms.txt", "text/plain; charset=utf-8");
       getCachedPublicFile("llms-full.txt", "text/plain; charset=utf-8");
+      getCachedPublicFile(".well-known/ard.json", "application/json; charset=utf-8");
       getCachedPublicFile(".well-known/ai-catalog.json", "application/json; charset=utf-8");
       getCachedPublicFile(".well-known/api-catalog", "application/linkset+json; charset=utf-8");
       getCachedPublicFile(".well-known/mcp/server-card.json", "application/json; charset=utf-8");
@@ -122,14 +124,29 @@ function cronTasksPlugin(): Plugin {
             return;
           }
         }
-        if (url === "/.well-known/ai-catalog.json" || url === "/ai-catalog.json") {
-          const cached = getCachedPublicFile(".well-known/ai-catalog.json", "application/json; charset=utf-8");
+        if (url === "/.well-known/ard.json" || url === "/ard.json" || url === "/.well-known/ai-catalog.json" || url === "/ai-catalog.json") {
+          const cached = getCachedPublicFile(
+            url.includes("ard") ? ".well-known/ard.json" : ".well-known/ai-catalog.json",
+            "application/json; charset=utf-8"
+          ) || getCachedPublicFile(".well-known/ard.json", "application/json; charset=utf-8");
           if (cached) {
             res.setHeader("Content-Type", cached.contentType);
             res.setHeader("Cache-Control", "public, max-age=3600");
             res.setHeader("Access-Control-Allow-Origin", "*");
             res.statusCode = 200;
             res.end(cached.body);
+            return;
+          }
+        }
+
+        // Reclaim backlink equity from historic 404 URLs via 301 Permanent Redirect
+        if (!url.startsWith("/api/") && !url.startsWith("/@") && !url.startsWith("/src/") && !url.startsWith("/assets/")) {
+          const reclaimedTarget = resolveReclaimed404Redirect(url);
+          if (reclaimedTarget && reclaimedTarget !== url) {
+            res.statusCode = 301;
+            res.setHeader("Location", reclaimedTarget);
+            res.setHeader("Cache-Control", "public, max-age=86400");
+            res.end();
             return;
           }
         }

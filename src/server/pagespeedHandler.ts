@@ -62,9 +62,9 @@ export interface PageSpeedApiResponse {
   timestamp: string;
 }
 
-const DEFAULT_REPORT_ID = 'hofaz2orbk';
+const DEFAULT_REPORT_ID = 'ksa4i5gm2f';
 const DEFAULT_REPORT_URL =
-  'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=mobile';
+  'https://pagespeed.web.dev/analysis/https-predictpro-guru/ksa4i5gm2f?hl=en&form_factor=mobile';
 const DEFAULT_TARGET_URL = 'https://predictpro.guru';
 
 let cachedResponse: { data: PageSpeedApiResponse; expiresAt: number } | null = null;
@@ -185,8 +185,8 @@ function buildCalibratedSnapshots(targetUrl: string): {
     fetchedAt: nowIso,
     environment: 'Emulated Moto G Power · Slow 4G (1.6 Mbps, 150ms RTT) · 4x CPU Slowdown',
     scores: {
-      performance: 98,
-      accessibility: 98,
+      performance: 99,
+      accessibility: 100,
       bestPractices: 100,
       seo: 100,
     },
@@ -195,10 +195,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'fcp',
         label: 'First Contentful Paint',
         shortLabel: 'FCP',
-        displayValue: '0.8 s',
-        numericValue: 810,
+        displayValue: '0.9 s',
+        numericValue: 926,
         unit: 's',
-        score: 99,
+        score: 100,
         status: 'good',
         thresholdGood: '≤ 1.8 s',
       },
@@ -206,10 +206,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'lcp',
         label: 'Largest Contentful Paint',
         shortLabel: 'LCP',
-        displayValue: '1.4 s',
-        numericValue: 1410,
+        displayValue: '0.9 s',
+        numericValue: 926,
         unit: 's',
-        score: 98,
+        score: 100,
         status: 'good',
         thresholdGood: '≤ 2.5 s',
       },
@@ -217,10 +217,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'tbt',
         label: 'Total Blocking Time',
         shortLabel: 'TBT',
-        displayValue: '45 ms',
-        numericValue: 45,
+        displayValue: '100 ms',
+        numericValue: 100,
         unit: 'ms',
-        score: 99,
+        score: 97,
         status: 'good',
         thresholdGood: '≤ 200 ms',
       },
@@ -239,10 +239,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'si',
         label: 'Speed Index',
         shortLabel: 'SI',
-        displayValue: '1.3 s',
-        numericValue: 1320,
+        displayValue: '0.9 s',
+        numericValue: 926,
         unit: 's',
-        score: 98,
+        score: 100,
         status: 'good',
         thresholdGood: '≤ 3.4 s',
       },
@@ -250,10 +250,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'inp',
         label: 'Interaction to Next Paint',
         shortLabel: 'INP',
-        displayValue: '56 ms',
-        numericValue: 56,
+        displayValue: '95 ms',
+        numericValue: 95,
         unit: 'ms',
-        score: 99,
+        score: 98,
         status: 'good',
         thresholdGood: '≤ 200 ms',
       },

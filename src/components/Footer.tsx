@@ -146,6 +146,8 @@ export const Footer = () => {
                 <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
                 <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link to="/ahrefs-opportunities" className="hover:text-foreground transition-colors font-semibold text-primary">Ahrefs 12-Pillar Organic Growth Hub</Link></li>
+                <li><Link to="/seo-indexing" className="hover:text-foreground transition-colors">SEO &amp; Indexing Center</Link></li>
                 <li><Link to="/sitemap" className="hover:text-foreground transition-colors font-semibold text-primary">HTML Sitemap &amp; SEO Directory</Link></li>
               </ul>
             </div>

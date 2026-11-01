@@ -386,6 +386,8 @@ export const ALL_PAGES_INTEGRATION_CLUSTERS: PageIntegrationCluster[] = [
       { path: '/news', label: 'Breaking Injury & Lineup News Wire', badge: 'News Wire', keywords: ['football injury news today', 'confirmed starting xi wire', 'transfer xg impact'] },
       { path: '/methodology', label: 'Bivariate Poisson & xG Methodology', badge: 'Whitepaper', keywords: ['bivariate poisson football model', 'dixon coles equations', 'how predictpro ai works'] },
       { path: '/widgets', label: 'Embeddable Publisher Live Widgets', badge: 'Widgets', keywords: ['free football prediction widgets', 'embed live scores & odds', 'webmaster sports widgets'] },
+      { path: '/ahrefs-opportunities', label: 'Ahrefs 12-Pillar Organic Growth Hub', badge: 'Ahrefs 12P', keywords: ['ahrefs seo opportunities', 'ai overviews featured snippets football', 'reclaimed 404 redirects football'] },
+      { path: '/seo-indexing', label: 'Google Search Console & Indexing Hub', badge: 'GSC Sync', keywords: ['google indexing api automated submission', 'real time serp indexing cron', 'instant sitemap ping'] },
       { path: '/sitemap', label: 'HTML Sitemap & Google Discover Index', badge: '170+ URLs', keywords: ['predictpro sitemap', 'all football prediction pages', 'google discover feeds'] },
       { path: '/about', label: 'About PredictPro Editorial & Data Desk', badge: 'E-E-A-T', keywords: ['about predictpro', 'quantitative sports data scientists', 'editorial standards'] },
       { path: '/contact', label: 'Contact Support & Data Engineering', badge: '24/7 Desk', keywords: ['contact predictpro', 'api partnership inquiry', 'editorial desk email'] },

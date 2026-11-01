@@ -64,6 +64,7 @@ const BETTING_HUB_TOOLS = [
   { to: '/pick-em-challenge', label: "Daily 5-Match Pick'em", tag: '+50 Coins' },
   { to: '/alert-center', label: 'Telegram & Push Alert Hub', tag: 'Live Alerts' },
   { to: '/referrals', label: 'Invite Friends & Earn Coins', tag: 'VIP Perks' },
+  { to: '/ahrefs-opportunities', label: 'Ahrefs 12-Pillar Organic Growth Hub', tag: 'Ahrefs 12P' },
 ];
 
 export const Navbar = () => {
@@ -145,7 +146,7 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-4" aria-label="Primary Navigation">
+          <nav className="hidden xl:flex items-center gap-3.5" aria-label="Primary Navigation">
             {primaryLinks.map((item) => (
               <Link
                 key={item.to}
@@ -177,7 +178,8 @@ export const Navbar = () => {
                 }}
                 aria-expanded={leaguesOpen}
                 aria-haspopup="true"
-                className="py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer"
+                aria-label="Open competitions and major leagues dropdown"
+                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <span>Leagues</span>
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${leaguesOpen ? 'rotate-180' : ''}`} />
@@ -235,7 +237,8 @@ export const Navbar = () => {
                 }}
                 aria-expanded={toolsOpen}
                 aria-haspopup="true"
-                className="py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer"
+                aria-label="Open betting markets and pro quantitative tools dropdown"
+                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Calculator className="h-3.5 w-3.5 text-primary" />
                 <span>Markets &amp; Tools</span>

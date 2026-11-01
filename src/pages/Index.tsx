@@ -204,10 +204,10 @@ const PRO_SPORTS_TOOLS = [
     icon: ArrowRightLeft,
   },
   {
-    to: '/seo-audit',
-    title: 'Ahrefs SEO, Discover XML & IndexNow Command',
-    tag: 'SERP & XML',
-    desc: 'Inspect Google News/Discover XML feeds, 301 redirect matrix, Low-Hanging Fruit keywords & IndexNow dispatch.',
+    to: '/ahrefs-opportunities',
+    title: 'Ahrefs 12-Pillar Organic Growth & AI Overviews Hub',
+    tag: 'Ahrefs 12P',
+    desc: 'Capture top-3 rankings, Google AI Overviews, 301 reclaimed backlinks, competitor content gaps & zero critical errors.',
     icon: Activity,
   },
 ];

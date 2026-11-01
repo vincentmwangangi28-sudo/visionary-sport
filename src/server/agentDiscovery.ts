@@ -11,6 +11,7 @@ export const AGENT_LINK_HEADER_RELATIONS = [
   '</auth.md>; rel="service-doc"; type="text/markdown"',
   '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"',
   '</.well-known/agent-card.json>; rel="describedby"; type="application/json"',
+  '</.well-known/ard.json>; rel="ard"; type="application/json"',
   '</.well-known/ai-catalog.json>; rel="ai-catalog"; type="application/json"',
 ];
 

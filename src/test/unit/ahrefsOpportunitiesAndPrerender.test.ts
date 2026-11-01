@@ -12,6 +12,7 @@ import {
   DESCRIPTIVE_ANCHOR_REPLACEMENTS,
   TECHNICAL_CRITICAL_AUDIT_CHECKS,
   getRouteAhrefsOptimizationBundle,
+  resolveReclaimed404Redirect,
 } from '@/services/ahrefsOpportunitiesService';
 import { resolveRouteSeoPayload, injectServerSeoIntoHtml } from '@/server/seoPrerenderService';
 import { handlePageSpeedInsightsRequest } from '@/server/pagespeedHandler';
@@ -105,7 +106,7 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     expect(rendered).toContain('daily value bets today (+ev)');
   });
 
-  it('verifies Mobile PageSpeed Insights report #hofaz2orbk snapshot and deferred critical-path chunks', async () => {
+  it('verifies Mobile PageSpeed Insights report #ksa4i5gm2f snapshot and deferred critical-path chunks', async () => {
     const psi = await handlePageSpeedInsightsRequest({
       url: 'https://predictpro.guru',
       strategy: 'mobile',
@@ -113,9 +114,9 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     });
 
     expect(psi.success).toBe(true);
-    expect(psi.reportId).toBe('hofaz2orbk');
+    expect(psi.reportId).toBe('ksa4i5gm2f');
     expect(psi.reportUrl).toBe(
-      'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=mobile'
+      'https://pagespeed.web.dev/analysis/https-predictpro-guru/ksa4i5gm2f?hl=en&form_factor=mobile'
     );
     expect(psi.mobile.scores.performance).toBeGreaterThanOrEqual(96);
     expect(psi.mobile.scores.seo).toBe(100);
@@ -130,5 +131,42 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
         (b) => b.chunk.includes('vendor-seo') && b.loadPhase === 'Deferred Interaction'
       )
     ).toBe(true);
+  });
+
+  it('accurately resolves 301 reclaimed 404 URLs, parameter substitutions, and alias paths', () => {
+    // Exact paths
+    expect(resolveReclaimed404Redirect('/sportpesa-mega-jackpot-predictions')).toBe('/jackpot-predictions');
+    expect(resolveReclaimed404Redirect('/corners-cards-predictions')).toBe('/corners-predictions');
+    expect(resolveReclaimed404Redirect('/sportybet-code-converter')).toBe('/code-converter');
+    expect(resolveReclaimed404Redirect('/epl')).toBe('/premier-league-predictions');
+    expect(resolveReclaimed404Redirect('/both-teams-to-score')).toBe('/btts');
+
+    // Dynamic :param pattern substitutions
+    expect(resolveReclaimed404Redirect('/match/arsenal-vs-chelsea')).toBe('/predict/arsenal-vs-chelsea');
+    expect(resolveReclaimed404Redirect('/matches/real-madrid-vs-barcelona')).toBe('/predict/real-madrid-vs-barcelona');
+    expect(resolveReclaimed404Redirect('/team/arsenal')).toBe('/teams/arsenal');
+
+    // Non-redirect path returns null
+    expect(resolveReclaimed404Redirect('/unknown-custom-page')).toBeNull();
+  });
+
+  it('computes accurate high-level summary metrics and search filtering for Ahrefs opportunities', async () => {
+    const { getAhrefsSummaryStats, searchAhrefsOpportunities } = await import('@/services/ahrefsOpportunitiesService');
+    const stats = getAhrefsSummaryStats();
+
+    expect(stats.totalPillars).toBe(12);
+    expect(stats.contentPillarsCount).toBe(6);
+    expect(stats.linkPillarsCount).toBe(5);
+    expect(stats.technicalPillarsCount).toBe(1);
+    expect(stats.totalReferringDomainsReclaimed).toBeGreaterThanOrEqual(200);
+    expect(stats.siteHealthScore).toBe(100);
+    expect(stats.criticalErrorsCount).toBe(0);
+
+    const jackpotSearch = searchAhrefsOpportunities('jackpot');
+    expect(jackpotSearch.keywords.some((k) => k.keyword.includes('jackpot'))).toBe(true);
+    expect(jackpotSearch.redirects.some((r) => r.broken404Path.includes('jackpot'))).toBe(true);
+
+    const emptySearch = searchAhrefsOpportunities('');
+    expect(emptySearch.keywords.length).toBe(LOW_HANGING_FRUIT_KEYWORDS.length);
   });
 });

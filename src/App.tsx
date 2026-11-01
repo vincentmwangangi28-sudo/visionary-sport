@@ -90,6 +90,7 @@ const GlobalTournaments  = lazyWithRetry(() => import("./pages/GlobalTournaments
 const Recommendations    = lazyWithRetry(() => import("./pages/Recommendations"));
 const UpcomingFixturesPage = lazyWithRetry(() => import("./pages/UpcomingFixturesPage"));
 const SEOIndexingPage        = lazyWithRetry(() => import("./pages/SEOIndexingPage"));
+const AhrefsOpportunitiesPage= lazyWithRetry(() => import("./pages/AhrefsOpportunitiesPage"));
 const JackpotPredictions     = lazyWithRetry(() => import("./pages/JackpotPredictions"));
 const USSoccerPredictions    = lazyWithRetry(() => import("./pages/USSoccerPredictions"));
 const StreaksRadar           = lazyWithRetry(() => import("./pages/StreaksRadar"));
@@ -598,7 +599,9 @@ const App = () => (
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
                             <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
                             <Route path="/seo-audit"                    element={<RouteBoundary component={SEOIndexingPage} />} />
-                            <Route path="/ahrefs-audit"                 element={<Navigate to="/seo-indexing" replace />} />
+                            <Route path="/ahrefs-opportunities"         element={<RouteBoundary component={AhrefsOpportunitiesPage} />} />
+                            <Route path="/ahrefs"                       element={<Navigate to="/ahrefs-opportunities" replace />} />
+                            <Route path="/ahrefs-audit"                 element={<Navigate to="/ahrefs-opportunities" replace />} />
                             <Route path="/site-audit"                   element={<Navigate to="/seo-indexing" replace />} />
                             <Route path="/sitemap"                      element={<RouteBoundary component={Sitemap} />} />
                             <Route path="/privacy"                      element={<RouteBoundary component={PrivacyPolicy} />} />

@@ -1,17 +1,53 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Home, Search, Zap } from "lucide-react";
+import { Home, Search, Zap, ArrowRight, ShieldCheck } from "lucide-react";
+import { resolveReclaimed404Redirect } from "@/services/ahrefsOpportunitiesService";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const reclaimedTarget = useMemo(() => {
+    return resolveReclaimed404Redirect(location.pathname);
+  }, [location.pathname]);
 
   useEffect(() => {
-    console.error("404: non-existent route:", location.pathname);
-  }, [location.pathname]);
+    if (reclaimedTarget) {
+      navigate(reclaimedTarget, { replace: true });
+    } else {
+      console.warn("404: non-existent route:", location.pathname);
+    }
+  }, [reclaimedTarget, navigate, location.pathname]);
+
+  if (reclaimedTarget) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <SEO
+          title="Redirecting to Canonical Hub | PredictPro"
+          description="Preserving link equity and redirecting to the canonical predictive analytics page."
+          noIndex={true}
+        />
+        <div className="text-center max-w-md space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-500">
+            <ShieldCheck className="w-6 h-6 animate-pulse" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Reclaiming Link Equity</h1>
+          <p className="text-sm text-muted-foreground">
+            Redirecting to <span className="font-mono text-emerald-500">{reclaimedTarget}</span>...
+          </p>
+          <Link to={reclaimedTarget}>
+            <Button size="sm" className="gap-2 mt-2">
+              Continue to {reclaimedTarget} <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

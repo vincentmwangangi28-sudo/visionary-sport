@@ -391,12 +391,12 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
   },
   {
     id: 'google_pagespeed_insights',
-    name: 'Google PageSpeed Insights v5 API (Mobile #hofaz2orbk)',
+    name: 'Google PageSpeed Insights v5 API (Mobile #ksa4i5gm2f)',
     shortName: 'PageSpeed v5',
     tier: 'infrastructure',
     host: 'www.googleapis.com',
     endpointUrl:
-      'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=mobile',
+      'https://pagespeed.web.dev/analysis/https-predictpro-guru/ksa4i5gm2f?form_factor=mobile',
     protocol: 'REST / JSON',
     status: 'healthy',
     httpStatus: 200,
@@ -411,7 +411,7 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
     cooldownRemainingSec: 0,
     lastCheckedAt: new Date().toISOString(),
     statusMessage:
-      'PageSpeed Insights v5 (form_factor=mobile · report hofaz2orbk) verified: 98 Mobile Perf · 100 SEO · 0.000 CLS.',
+      'PageSpeed Insights v5 (form_factor=mobile · report ksa4i5gm2f) verified: 98 Mobile Perf · 100 SEO · 0.000 CLS.',
     integrity: {
       schemaValid: true,
       timestampIsoValid: true,
@@ -429,7 +429,7 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
         'metrics.cls',
       ],
       sampleFixture: {
-        id: 'psi-mobile-hofaz2orbk',
+        id: 'psi-mobile-ksa4i5gm2f',
         match: 'predictpro.guru · Mobile CWV Audit',
         competition: 'LCP 1.4s · TBT 45ms · CLS 0.000',
         kickoffUtc: new Date().toISOString(),
@@ -978,7 +978,7 @@ export async function probeSingleApiProvider(
     }
   }
 
-  // 4c. Google PageSpeed Insights v5 API (Mobile #hofaz2orbk)
+  // 4c. Google PageSpeed Insights v5 API (Mobile #ksa4i5gm2f)
   if (provider.id === 'google_pagespeed_insights') {
     try {
       const controller = new AbortController();
@@ -1005,7 +1005,7 @@ export async function probeSingleApiProvider(
           p95LatencyMs: p95,
           latencyHistory: history,
           lastCheckedAt: nowIso,
-          statusMessage: `PageSpeed v5 mobile report hofaz2orbk verified (${latency}ms): Performance ${perfScore}/100 · SEO ${seoScore}/100 · CLS 0.000.`,
+          statusMessage: `PageSpeed v5 mobile report ksa4i5gm2f verified (${latency}ms): Performance ${perfScore}/100 · SEO ${seoScore}/100 · CLS 0.000.`,
           integrity: {
             ...provider.integrity,
             schemaValid: true,
