@@ -99,7 +99,7 @@ export const LiveMatches = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {live.slice(0, 6).map((m) => (
             <Link to="/live" key={m.id} onClick={() => hapticService.selection()}>
-              <Card className="border-red-500/30 bg-red-500/5 hover:border-red-500/50 transition-all cursor-pointer h-full shadow-sm">
+              <Card className="border-red-500/30 bg-red-500/5 hover:border-red-500/50 transition-all duration-200 ease-out hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-md animate-card-reveal cursor-pointer h-full shadow-sm">
                 <CardContent className="p-4 flex flex-col justify-between h-full">
                   <div className="flex items-center justify-between mb-2">
                     <Badge variant="outline" className="text-[11px] font-medium truncate max-w-[180px]">

@@ -428,7 +428,7 @@ export default function PersonalizedDashboard() {
                   {personalizedMatches.slice(0, 6).map((match) => (
                     <div
                       key={match.id}
-                      className="p-4 rounded-xl border border-border/70 bg-card hover:border-primary/50 transition-all flex flex-col justify-between gap-3"
+                      className="p-4 rounded-xl border border-border/70 bg-card hover:border-primary/50 transition-all duration-200 ease-out hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-md animate-card-reveal flex flex-col justify-between gap-3"
                     >
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">

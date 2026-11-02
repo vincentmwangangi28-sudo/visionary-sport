@@ -1,6 +1,11 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { TeamLogo } from '@/components/TeamLogo';
+import {
+  PredictionCardSkeleton,
+  PredictionCompactSkeleton,
+  PredictionCondensedSkeleton,
+} from '@/components/PredictionCardSkeleton';
 import { Pin, ArrowRight, Plus, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo, memo, Suspense } from 'react';
@@ -38,9 +43,10 @@ function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string
 interface Props {
   prediction: Prediction;
   viewMode?: 'card' | 'compact' | 'condensed';
+  isLoading?: boolean;
 }
 
-export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Props) => {
+export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoading = false }: Props) => {
   const { formatKickoff, getKickoffRelative, formatOdds, isProbabilitiesMode, t } = useUserPreferences();
   const { isLeaguePinned, togglePinLeague } = usePinnedFavorites();
   const { selections, addSelection } = useBetSlip();
@@ -137,16 +143,23 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     }
   }, [p.match_date]);
 
+  if (isLoading) {
+    if (viewMode === 'condensed') return <PredictionCondensedSkeleton />;
+    if (viewMode === 'compact') return <PredictionCompactSkeleton />;
+    return <PredictionCardSkeleton />;
+  }
+
   // 1. Condensed Single-Line Row
   if (viewMode === 'condensed') {
     return (
       <>
         <div
+          data-testid="prediction-card-condensed"
           onClick={() => {
             hapticService.selection();
             setShowAnalytics(true);
           }}
-          className="py-2.5 px-4 bg-card hover:bg-muted/40 transition-colors cursor-pointer grid grid-cols-[52px_1fr_auto] sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3 text-xs"
+          className="py-2.5 px-4 bg-card hover:bg-muted/40 transition-all duration-200 ease-out hover:scale-[1.005] animate-card-reveal cursor-pointer grid grid-cols-[52px_1fr_auto] sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3 text-xs"
         >
           <span className="font-mono tabular-nums text-muted-foreground">
             {formattedTime}
@@ -208,11 +221,12 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
     return (
       <>
         <div
+          data-testid="prediction-card-compact"
           onClick={() => {
             hapticService.selection();
             setShowAnalytics(true);
           }}
-          className="px-4 py-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer grid grid-cols-1 sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3"
+          className="px-4 py-3 bg-card hover:bg-muted/30 transition-all duration-200 ease-out hover:scale-[1.01] hover:shadow-xs animate-card-reveal cursor-pointer grid grid-cols-1 sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3"
         >
           {/* Column 1: Kickoff Time & Date */}
           <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-2 sm:gap-0.5 font-mono tabular-nums sm:border-r sm:border-border/60 sm:pr-3">
@@ -328,11 +342,12 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact' }: Pro
   return (
     <>
       <Card
+        data-testid="prediction-card"
         onClick={() => {
           hapticService.selection();
           setShowAnalytics(true);
         }}
-        className="group overflow-hidden cursor-pointer transition-colors hover:border-primary/40 border border-border bg-card flex flex-col justify-between shadow-sm"
+        className="group overflow-hidden cursor-pointer transition-all duration-200 ease-out hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 animate-card-reveal border border-border bg-card flex flex-col justify-between shadow-sm"
       >
         <CardHeader className="pb-3 pt-4 px-4 space-y-3">
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">

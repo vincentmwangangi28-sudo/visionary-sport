@@ -415,7 +415,7 @@ export const MatchScreener: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m) => (
-            <Card key={m.id} className="border-border hover:border-primary/50 transition-colors shadow-2xs">
+            <Card key={m.id} className="border-border hover:border-primary/50 transition-all duration-200 ease-out hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-md animate-card-reveal shadow-2xs">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-primary truncate">{m.league}</span>

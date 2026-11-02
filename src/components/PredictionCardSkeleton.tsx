@@ -6,7 +6,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
  * Includes league pill, clock, home/away team badges, outcome chip, and action bar.
  */
 export const PredictionCardSkeleton = () => (
-  <Card className="overflow-hidden border bg-card">
+  <Card
+    aria-busy="true"
+    data-testid="prediction-card-skeleton"
+    className="overflow-hidden border bg-card animate-fade-in transition-all duration-300 ease-out"
+  >
     <CardHeader className="pb-2 pt-3.5 px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
@@ -77,7 +81,11 @@ export const PredictionCardSkeleton = () => (
  * Compact row skeleton matching PredictionCard's 'compact' view mode.
  */
 export const PredictionCompactSkeleton = () => (
-  <div className="p-3 rounded-xl border bg-card flex items-center justify-between gap-3">
+  <div
+    aria-busy="true"
+    data-testid="prediction-compact-skeleton"
+    className="p-3 rounded-xl border bg-card flex items-center justify-between gap-3 animate-fade-in transition-all duration-300 ease-out"
+  >
     <div className="flex-1 min-w-0 space-y-2">
       <div className="flex items-center gap-2">
         <Skeleton className="h-4 w-20 rounded-full" />
@@ -99,7 +107,11 @@ export const PredictionCompactSkeleton = () => (
 );
 
 export const PredictionCondensedSkeleton = () => (
-  <div className="py-2 px-3 rounded-lg border bg-card flex items-center justify-between gap-2.5">
+  <div
+    aria-busy="true"
+    data-testid="prediction-condensed-skeleton"
+    className="py-2 px-3 rounded-lg border bg-card flex items-center justify-between gap-2.5 animate-fade-in transition-all duration-300 ease-out"
+  >
     <div className="flex items-center gap-2 flex-1">
       <Skeleton className="h-3.5 w-10 rounded" />
       <Skeleton className="h-4 w-4 rounded-full" />
@@ -128,7 +140,7 @@ export const PredictionListSkeleton = ({
 }) => {
   if (viewMode === 'condensed') {
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 transition-opacity duration-300 ease-out" aria-live="polite" aria-busy="true">
         {Array.from({ length: count }).map((_, i) => (
           <PredictionCondensedSkeleton key={i} />
         ))}
@@ -138,7 +150,7 @@ export const PredictionListSkeleton = ({
 
   if (viewMode === 'compact') {
     return (
-      <div className="space-y-2.5">
+      <div className="space-y-2.5 transition-opacity duration-300 ease-out" aria-live="polite" aria-busy="true">
         {Array.from({ length: count }).map((_, i) => (
           <PredictionCompactSkeleton key={i} />
         ))}
@@ -147,7 +159,7 @@ export const PredictionListSkeleton = ({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ease-out" aria-live="polite" aria-busy="true">
       {Array.from({ length: count }).map((_, i) => (
         <PredictionCardSkeleton key={i} />
       ))}
@@ -159,7 +171,7 @@ export const PredictionListSkeleton = ({
  * Content-aware skeleton for the Live Scores match list.
  */
 export const LiveMatchCardSkeleton = () => (
-  <Card className="border bg-card overflow-hidden">
+  <Card className="border bg-card overflow-hidden animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -205,7 +217,7 @@ export const LiveMatchListSkeleton = ({ count = 5 }: { count?: number }) => (
  * Content-aware skeleton for Value Bets with edge percentages and bookmaker odds.
  */
 export const ValueBetCardSkeleton = () => (
-  <Card className="border-l-4 border-l-muted">
+  <Card className="border-l-4 border-l-muted animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -244,7 +256,7 @@ export const ValueBetListSkeleton = ({ count = 5 }: { count?: number }) => (
  * Content-aware skeleton for BTTS / Over-Under cards.
  */
 export const BTTSCardSkeleton = () => (
-  <Card className="border bg-card">
+  <Card className="border bg-card animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24 rounded-full" />
@@ -387,7 +399,7 @@ export const NewsGridSkeleton = ({ count = 6 }: { count?: number }) => (
  * Content-aware skeleton for Correct Score cards showing score pills and probabilities.
  */
 export const CorrectScoreCardSkeleton = () => (
-  <Card className="border bg-card">
+  <Card className="border bg-card animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24 rounded-full" />
@@ -556,7 +568,7 @@ export const PredictionDetailSkeleton = () => (
  * Skeleton for UpcomingMatches section cards.
  */
 export const UpcomingMatchCardSkeleton = () => (
-  <Card className="border bg-card overflow-hidden">
+  <Card className="border bg-card overflow-hidden animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <Skeleton className="h-5 w-24 rounded-full" />
@@ -631,7 +643,7 @@ export const LiveMatchGridSkeleton = ({ count = 3 }: { count?: number }) => (
  * Skeleton for AccumulatorBuilder fixture list.
  */
 export const AccaFixtureCardSkeleton = () => (
-  <Card className="border bg-card">
+  <Card className="border bg-card animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -689,7 +701,7 @@ export const PastResultsGridSkeleton = ({ count = 6 }: { count?: number }) => (
  * Skeleton for MatchScreener filtered match cards.
  */
 export const ScreenerMatchCardSkeleton = () => (
-  <Card className="border bg-card">
+  <Card className="border bg-card animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24 rounded-full" />
@@ -728,7 +740,7 @@ export const ScreenerMatchGridSkeleton = ({ count = 6 }: { count?: number }) => 
  * Skeleton for DroppingOddsRadar cards.
  */
 export const DroppingOddsCardSkeleton = () => (
-  <Card className="border bg-card">
+  <Card className="border bg-card animate-fade-in transition-all duration-300 ease-out">
     <CardContent className="p-5 space-y-3.5">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24 rounded-full" />

@@ -323,8 +323,8 @@ export const PredictionsDashboard = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <PredictionListSkeleton count={6} />
+      <div className="space-y-4 animate-fade-in transition-opacity duration-300">
+        <PredictionListSkeleton count={6} viewMode={viewMode} />
       </div>
     );
   }
@@ -881,13 +881,13 @@ export const PredictionsDashboard = ({
 
                 {/* Match Rows */}
                 {viewMode === 'card' ? (
-                  <div className="p-4 grid gap-4 sm:grid-cols-2">
+                  <div className={`p-4 grid gap-4 sm:grid-cols-2 transition-opacity duration-300 ${isFetching ? 'opacity-65 pointer-events-none' : 'opacity-100'}`}>
                     {group.matches.map((p) => (
                       <PredictionCard key={p.id} prediction={p} viewMode="card" />
                     ))}
                   </div>
                 ) : (
-                  <div className="divide-y divide-border/60">
+                  <div className={`divide-y divide-border/60 transition-opacity duration-300 ${isFetching ? 'opacity-65 pointer-events-none' : 'opacity-100'}`}>
                     {group.matches.map((p) => (
                       <PredictionCard
                         key={p.id}

@@ -221,7 +221,7 @@ export default function CorrectScore() {
               return (
                 <Card
                   key={p.id}
-                  className={`hover:border-primary/40 transition-all ${isPremium ? 'border-amber-500/30' : ''}`}
+                  className={`hover:border-primary/40 transition-all duration-200 ease-out hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-md animate-card-reveal ${isPremium ? 'border-amber-500/30' : ''}`}
                 >
                   <CardContent className="p-4 flex flex-col justify-between h-full">
                     <div>

@@ -384,7 +384,7 @@ export const UpcomingMatches: React.FC = () => {
                     return (
                 <Card
                   key={m.id}
-                  className="hover:border-primary/50 transition-all duration-200 h-full flex flex-col justify-between group bg-card shadow-xs hover:shadow-md cursor-pointer"
+                  className="hover:border-primary/50 transition-all duration-200 ease-out hover:scale-[1.015] hover:-translate-y-0.5 animate-card-reveal h-full flex flex-col justify-between group bg-card shadow-xs hover:shadow-md cursor-pointer"
                   onClick={() => {
                     hapticService.selection();
                     setSelectedMatch(m);

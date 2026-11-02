@@ -282,7 +282,7 @@ export default function ValueBets() {
               const matchUrl = `/predict/${matchSlug}`;
 
               return (
-              <Card key={i} className={`border-l-4 ${bet.edge === 'strong' ? 'border-l-green-500' : 'border-l-amber-500'}`}>
+              <Card key={i} className={`border-l-4 transition-all duration-200 ease-out hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-md animate-card-reveal ${bet.edge === 'strong' ? 'border-l-green-500' : 'border-l-amber-500'}`}>
                 <CardContent className="p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex-1">
