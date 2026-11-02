@@ -271,6 +271,7 @@ export default function Auth() {
                     <Input
                       id="fullName"
                       name="fullName"
+                      autoComplete="name"
                       toolparamdescription="Full name of the user creating a PredictPro account"
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}

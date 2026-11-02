@@ -13,7 +13,14 @@ import { LIVE_LINEUP_TRANSFER_WIRE } from '@/pages/News';
 import { WIDGET_TYPES, SVG_AUTHORITY_BADGES, TARGET_ANCHOR_HUBS } from '@/pages/Widgets';
 import { FALLBACK_STANDINGS } from '@/data/standingsData';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
   it('strips /combiner/i?img= from espncdn URLs so Googlebot never hits robot-disallowed combiner paths', () => {
     const combinerUrl = 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/103.png&w=40&h=40&scale=crop';
     expect(sanitizeLogoCdnUrl(combinerUrl)).toBe('https://a.espncdn.com/i/teamlogos/soccer/500/103.png');
@@ -143,23 +150,28 @@ describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () 
     expect(screen.getAllByText(/Azam Sports HD/i).length).toBeGreaterThan(0);
   });
 
-  it('renders GlobalMatchdayCommandRibbon with Player Ratings, Lineup Wire, and Daily IQ Challenge drawers', () => {
+  it('renders GlobalMatchdayCommandRibbon with mode filters and quick links', () => {
     render(
-      <MemoryRouter>
-        <GlobalMatchdayCommandRibbon />
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <GlobalMatchdayCommandRibbon />
+        </MemoryRouter>
+      </QueryClientProvider>
     );
 
     expect(screen.getByTestId('global-matchday-command-ribbon')).toBeInTheDocument();
+    expect(screen.getByTestId('ribbon-filter-all')).toBeInTheDocument();
+    expect(screen.getByTestId('ribbon-filter-live')).toBeInTheDocument();
+    expect(screen.getByTestId('ribbon-filter-tv')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('toggle-player-ratings-drawer'));
-    expect(screen.getByTestId('player-ratings-drawer')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('ribbon-filter-live'));
+    expect(screen.getByTestId('ribbon-filter-live')).toHaveClass('bg-rose-700');
 
-    fireEvent.click(screen.getByTestId('toggle-tactical-pulse-drawer'));
-    expect(screen.getByTestId('tactical-pulse-drawer')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('ribbon-filter-tv'));
+    expect(screen.getByTestId('ribbon-filter-tv')).toHaveClass('bg-primary');
 
-    fireEvent.click(screen.getByTestId('toggle-iq-challenge-drawer'));
-    expect(screen.getByTestId('iq-challenge-drawer')).toBeInTheDocument();
+    expect(screen.getByText(/Copy Slips/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pick'em/i)).toBeInTheDocument();
   });
 
   it('computes Expected Points (xPTS) Justice Table and Home/Away splits in Standings', () => {

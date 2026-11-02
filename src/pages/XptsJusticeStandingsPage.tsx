@@ -21,6 +21,9 @@ import {
   XPTS_JUSTICE_STANDINGS,
   XptsTeamStandingRow,
 } from '@/services/pitchTelemetryAndXptsService';
+import { LeagueTableStats } from '@/components/LeagueTableStats';
+import { computeEnrichedStandings } from '@/pages/Standings';
+import { FALLBACK_STANDINGS, LEAGUES } from '@/data/standingsData';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
@@ -29,6 +32,17 @@ type StandingsViewMode = 'XPTS_JUSTICE' | 'ACTUAL' | 'HOME_ONLY' | 'AWAY_ONLY' |
 export const XptsJusticeStandingsPage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const [viewMode, setViewMode] = useState<StandingsViewMode>('XPTS_JUSTICE');
+  const [selectedLeagueId, setSelectedLeagueId] = useState<number>(39);
+
+  const selectedLeagueMeta = useMemo(
+    () => LEAGUES.find((l) => l.id === selectedLeagueId) || LEAGUES[0],
+    [selectedLeagueId]
+  );
+
+  const enrichedLeagueStandings = useMemo(() => {
+    const raw = FALLBACK_STANDINGS[selectedLeagueId] || FALLBACK_STANDINGS[39] || [];
+    return computeEnrichedStandings(raw, 'all', 'xg_justice', []);
+  }, [selectedLeagueId]);
 
   const sortedRows = useMemo(() => {
     const copy = [...XPTS_JUSTICE_STANDINGS];
@@ -247,6 +261,43 @@ export const XptsJusticeStandingsPage: React.FC = () => {
             </table>
           </div>
         </Card>
+
+        {/* Multi-League Interactive League Table Stats (xPTS, xG-Diff & Goal Variance Explorer) */}
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-foreground">
+                Multi-League xPTS &amp; Expected Goals Difference (xG-Diff) Explorer
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Switch leagues and sort clubs by Expected Points (xPTS), Expected Goals Difference (xG-Diff), and Goal Variance
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {LEAGUES.slice(0, 5).map((league) => (
+                <button
+                  key={league.id}
+                  type="button"
+                  onClick={() => setSelectedLeagueId(league.id)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                    selectedLeagueId === league.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {league.flag} {league.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <LeagueTableStats
+            standings={enrichedLeagueStandings}
+            leagueName={selectedLeagueMeta.name}
+            leagueFlag={selectedLeagueMeta.flag}
+            season="2026/2027"
+          />
+        </section>
       </main>
 
       <Footer />

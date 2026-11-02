@@ -142,6 +142,8 @@ export const PaywaveExpressPaymentDialog = ({ open, onClose, plan, price }: Prop
               </label>
               <Input
                 id="paywave-phone"
+                name="tel"
+                autoComplete="tel"
                 type="tel"
                 placeholder="+254712345678 or 0712345678"
                 value={phone}

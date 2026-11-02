@@ -63,6 +63,33 @@ export interface CompetitorContentGapItem {
   predictProAdvantage: string;
 }
 
+export type CompetitorDomain =
+  | 'forebet.com'
+  | 'predictz.com'
+  | 'footystats.org'
+  | 'statarea.com'
+  | 'windrawwin.com'
+  | 'whoscored.com'
+  | 'understat.com'
+  | 'oddsportal.com';
+
+export interface CompetitorKeywordGapAnalysisItem {
+  id: string;
+  keyword: string;
+  competitorDomain: CompetitorDomain;
+  competitorName: string;
+  competitorRank: number;
+  predictProCurrentRank: number | null; // null if currently unranked outside top 20
+  monthlyVolume: number;
+  keywordDifficulty: number;
+  searchIntent: 'Informational' | 'Commercial' | 'Transactional';
+  gapType: 'Missing High-Volume Keyword' | 'Striking Distance (Positions 4–15)' | 'Outranked by Legacy Model';
+  competitorLimitation: string;
+  predictProEdgeSolution: string;
+  targetPath: string;
+  actionPriority: 'P1 - High ROI' | 'P2 - Fast Win' | 'P3 - Core Strategic';
+}
+
 export interface ContentRefreshRecord {
   path: string;
   title: string;
@@ -560,6 +587,389 @@ export const COMPETITOR_CONTENT_GAP_HUBS: CompetitorContentGapItem[] = [
     keywordDifficulty: 30,
     competitorsRanking: ['Understat', 'FBref', 'OptaAnalyst', 'FootyStats'],
     predictProAdvantage: 'Identifies unlucky clubs outperforming in npxGD that are mispriced by bookmakers next matchweek',
+  },
+  {
+    keywordCluster: 'forebet prediction today mathematical poisson matrix & ev devigging',
+    targetPath: '/poisson-calculator',
+    pageTitle: 'Mathematical Football Predictions & True Poisson Probability Matrix',
+    monthlyVolume: 450000,
+    keywordDifficulty: 44,
+    competitorsRanking: ['Forebet', 'Vitibet', 'Statarea', 'PredictZ'],
+    predictProAdvantage: 'Bivariate Poisson with Dixon-Coles rho draw adjustment and real-time Pinnacle/SportyBet fair value devigging',
+  },
+  {
+    keywordCluster: 'predictz weekend accumulator tips & joint probability acca optimizer',
+    targetPath: '/accumulator-builder',
+    pageTitle: 'Weekend Football Accumulator Builder & Joint Copula Odds Optimizer',
+    monthlyVolume: 145000,
+    keywordDifficulty: 33,
+    competitorsRanking: ['PredictZ', 'WinDrawWin', 'FootyStats', 'Oddspedia'],
+    predictProAdvantage: 'Gaussian Copula accumulator optimizer modeling correlation penalties and bookmaker accumulator payout boost',
+  },
+  {
+    keywordCluster: 'statarea prediction today 1x2 percentage vs true no-vig odds',
+    targetPath: '/best-bets',
+    pageTitle: 'Daily Top Value Bets & Banker Predictions with No-Vig Fair Odds',
+    monthlyVolume: 230000,
+    keywordDifficulty: 34,
+    competitorsRanking: ['Statarea', 'Forebet', 'Betensured', 'PredictZ'],
+    predictProAdvantage: 'Replaces raw crowd-voted bias with 75%+ Poisson model probability and Kelly fractional stake sizing',
+  },
+  {
+    keywordCluster: 'windrawwin draw predictions today & low-score draw filter',
+    targetPath: '/draw-predictions',
+    pageTitle: 'Mathematical Draw Predictions & High-Entropy Dixon-Coles Draw Scanner',
+    monthlyVolume: 120000,
+    keywordDifficulty: 27,
+    competitorsRanking: ['WinDrawWin', 'Forebet', 'Statarea', 'Vitibet'],
+    predictProAdvantage: 'Isolates parity fixtures with low xG differential (≤0.15) and market draw odds exceeding 3.40',
+  },
+  {
+    keywordCluster: 'over 1.5 goals predictions stats & first-half goal decay curves',
+    targetPath: '/over-15-goals-predictions',
+    pageTitle: 'Over 1.5 Goals Predictions & First-Half Goal Decay Poisson Model',
+    monthlyVolume: 125000,
+    keywordDifficulty: 26,
+    competitorsRanking: ['FootyStats', 'Forebet', 'WinDrawWin', 'SofaScore'],
+    predictProAdvantage: 'Combines team open-play tempo with 1st-half vs 2nd-half Poisson goal decay curves',
+  },
+];
+
+export const TOP_SITES_KEYWORD_GAP_ANALYSIS: CompetitorKeywordGapAnalysisItem[] = [
+  // 1. Forebet (DR 78) Gaps
+  {
+    id: 'gap-forebet-math-today',
+    keyword: 'forebet prediction today mathematical',
+    competitorDomain: 'forebet.com',
+    competitorName: 'Forebet',
+    competitorRank: 1,
+    predictProCurrentRank: 5,
+    monthlyVolume: 450000,
+    keywordDifficulty: 44,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Forebet uses rigid 1-point Poisson distributions without low-score draw correlation (Dixon-Coles) or bookmaker margin devigging.',
+    predictProEdgeSolution: 'Interactive Bivariate Poisson 6x6 score matrix with live Kelly stakes, Dixon-Coles rho draw adjustment, and devigged bookmaker margins.',
+    targetPath: '/poisson-calculator',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-forebet-correct-score',
+    keyword: 'forebet correct score prediction',
+    competitorDomain: 'forebet.com',
+    competitorName: 'Forebet',
+    competitorRank: 1,
+    predictProCurrentRank: 7,
+    monthlyVolume: 185000,
+    keywordDifficulty: 38,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Only outputs a single static scoreline (e.g. 2-1) without multi-score Dutching probabilities, draw boost adjustments, or odds comparison.',
+    predictProEdgeSolution: '3-scoreline Dutching calculator and exact Dixon-Coles rho matrix with bookie value comparison and stake distribution.',
+    targetPath: '/correct-score',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-forebet-tomorrow',
+    keyword: 'forebet tomorrow predictions & banker',
+    competitorDomain: 'forebet.com',
+    competitorName: 'Forebet',
+    competitorRank: 2,
+    predictProCurrentRank: 6,
+    monthlyVolume: 210000,
+    keywordDifficulty: 35,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Lacks early market line movement tracking, closing line value (CLV) alerts, and soft-vs-sharp bookmaker divergence.',
+    predictProEdgeSolution: 'Pinnacle vs soft bookie line divergence detector with 24h advance steam alerts and positive EV early bird bets.',
+    targetPath: '/tomorrow',
+    actionPriority: 'P2 - Fast Win',
+  },
+  {
+    id: 'gap-forebet-ht-ft',
+    keyword: 'forebet ht ft prediction tips',
+    competitorDomain: 'forebet.com',
+    competitorName: 'Forebet',
+    competitorRank: 1,
+    predictProCurrentRank: null,
+    monthlyVolume: 84000,
+    keywordDifficulty: 29,
+    searchIntent: 'Transactional',
+    gapType: 'Missing High-Volume Keyword',
+    competitorLimitation: 'Provides basic 1/1 or X/1 heuristics without joint 1st-half / 2nd-half bivariate modeling or longshot value filters.',
+    predictProEdgeSolution: 'Joint HT/FT Markov chain state transition engine with positive EV overlays and optimal stake allocation.',
+    targetPath: '/halftime-fulltime-predictions',
+    actionPriority: 'P2 - Fast Win',
+  },
+
+  // 2. PredictZ (DR 74) Gaps
+  {
+    id: 'gap-predictz-weekend-acca',
+    keyword: 'predictz weekend accumulator tips',
+    competitorDomain: 'predictz.com',
+    competitorName: 'PredictZ',
+    competitorRank: 1,
+    predictProCurrentRank: 8,
+    monthlyVolume: 145000,
+    keywordDifficulty: 33,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'PredictZ lists unweighted form runs with no correlation penalty for accas, resulting in severe negative expectation on multi-bets.',
+    predictProEdgeSolution: 'Gaussian Copula accumulator optimizer calculating true joint probability, anti-correlation penalties, and multi-bookie booking codes.',
+    targetPath: '/accumulator-builder',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-predictz-btts',
+    keyword: 'predictz both teams to score btts',
+    competitorDomain: 'predictz.com',
+    competitorName: 'PredictZ',
+    competitorRank: 2,
+    predictProCurrentRank: 4,
+    monthlyVolume: 98000,
+    keywordDifficulty: 28,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Relies on simplistic last 5 games percentage rather than shot quality, non-penalty xG, or goalkeeper save percentages.',
+    predictProEdgeSolution: 'Bivariate Poisson P(H>0 & A>0) with non-penalty expected goals (npxG) and clean sheet decay models.',
+    targetPath: '/btts',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-predictz-5-odds',
+    keyword: 'predictz 5 odds daily prediction',
+    competitorDomain: 'predictz.com',
+    competitorName: 'PredictZ',
+    competitorRank: 1,
+    predictProCurrentRank: 5,
+    monthlyVolume: 78000,
+    keywordDifficulty: 25,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Arbitrary odds selection with unverified 65%+ vigorish built into bookie prices without math validation.',
+    predictProEdgeSolution: 'Mathematical 5.00+ target odds slip generator with strict +EV positive expectation filter and automated SportyBet code creation.',
+    targetPath: '/five-odds-predictions',
+    actionPriority: 'P2 - Fast Win',
+  },
+
+  // 3. FootyStats (DR 77) Gaps
+  {
+    id: 'gap-footystats-xg-table',
+    keyword: 'expected goals table premier league xg',
+    competitorDomain: 'footystats.org',
+    competitorName: 'FootyStats',
+    competitorRank: 2,
+    predictProCurrentRank: 6,
+    monthlyVolume: 115000,
+    keywordDifficulty: 41,
+    searchIntent: 'Informational',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Paywalls deep underlying metrics (xPTS, rolling npxGD) behind premium tiers and provides no betting line value conversion.',
+    predictProEdgeSolution: 'Public Expected Points (xPTS) Justice Table with luck regression radar, 2-club H2H compare tray, and 1-click +EV bet slip integration.',
+    targetPath: '/xpts-standings',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-footystats-over15',
+    keyword: 'over 1.5 goals predictions stats',
+    competitorDomain: 'footystats.org',
+    competitorName: 'FootyStats',
+    competitorRank: 1,
+    predictProCurrentRank: 4,
+    monthlyVolume: 125000,
+    keywordDifficulty: 26,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Simple historic goal frequency without modeling tempo or game state decay (leading vs trailing game state).',
+    predictProEdgeSolution: 'First-half vs second-half Poisson goal expectancy curves with Asian Over 1.75 split lines and live momentum indicators.',
+    targetPath: '/over-15-goals-predictions',
+    actionPriority: 'P2 - Fast Win',
+  },
+  {
+    id: 'gap-footystats-referee-cards',
+    keyword: 'referee card stats yellow cards per game',
+    competitorDomain: 'footystats.org',
+    competitorName: 'FootyStats',
+    competitorRank: 2,
+    predictProCurrentRank: 7,
+    monthlyVolume: 72000,
+    keywordDifficulty: 22,
+    searchIntent: 'Informational',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Raw referee averages without factoring derby intensity, team foul rates, or card-drawing winger matchups.',
+    predictProEdgeSolution: 'Referee Discipline Matrix combining cards/90 strictness index with team foul rate for Over 3.5/4.5 booking point props.',
+    targetPath: '/referee-stats-scanner',
+    actionPriority: 'P2 - Fast Win',
+  },
+  {
+    id: 'gap-footystats-corners',
+    keyword: 'corner stats over 9.5 corners prediction',
+    competitorDomain: 'footystats.org',
+    competitorName: 'FootyStats',
+    competitorRank: 1,
+    predictProCurrentRank: 5,
+    monthlyVolume: 88000,
+    keywordDifficulty: 24,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Static team averages ignoring attack width, cross volume, and trailing-team corner surge in final 20 minutes.',
+    predictProEdgeSolution: 'Team Corner Pressure Scanner splitting 1st-half (46%) vs 2nd-half (54%) expectancy and Asian Corner lines.',
+    targetPath: '/corner-stats-scanner',
+    actionPriority: 'P2 - Fast Win',
+  },
+
+  // 4. Statarea (DR 71) Gaps
+  {
+    id: 'gap-statarea-1x2',
+    keyword: 'statarea prediction today 1x2 percentage',
+    competitorDomain: 'statarea.com',
+    competitorName: 'Statarea',
+    competitorRank: 1,
+    predictProCurrentRank: 6,
+    monthlyVolume: 230000,
+    keywordDifficulty: 34,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Displays community vote percentages contaminated by bias and heavy bookmaker overrounds without showing fair no-vig odds.',
+    predictProEdgeSolution: 'No-vig true mathematical win probabilities with Kelly stake sizing, Banker filters (75%+), and direct slip execution.',
+    targetPath: '/best-bets',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-statarea-weekend',
+    keyword: 'statarea prediction weekend matches',
+    competitorDomain: 'statarea.com',
+    competitorName: 'Statarea',
+    competitorRank: 2,
+    predictProCurrentRank: 7,
+    monthlyVolume: 95000,
+    keywordDifficulty: 29,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Outdated table layouts with zero mobile-first filtering or one-click booking code export.',
+    predictProEdgeSolution: 'Fast weekend fixture screener with instant SportyBet, 1xBet, and Bet9ja slip booking code generation.',
+    targetPath: '/weekend',
+    actionPriority: 'P2 - Fast Win',
+  },
+
+  // 5. WinDrawWin (DR 75) Gaps
+  {
+    id: 'gap-windrawwin-btts',
+    keyword: 'windrawwin prediction today both teams to score',
+    competitorDomain: 'windrawwin.com',
+    competitorName: 'WinDrawWin',
+    competitorRank: 1,
+    predictProCurrentRank: 5,
+    monthlyVolume: 150000,
+    keywordDifficulty: 35,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Historical head-to-head counts without adjustment for tactical manager changes, pitch dimensions, or defensive injuries.',
+    predictProEdgeSolution: 'Tactical mismatch matrix with injury/lineup impact and rolling 10-match shot concession rates.',
+    targetPath: '/btts',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-windrawwin-draws',
+    keyword: 'draw predictions today statarea windrawwin',
+    competitorDomain: 'windrawwin.com',
+    competitorName: 'WinDrawWin',
+    competitorRank: 1,
+    predictProCurrentRank: 6,
+    monthlyVolume: 120000,
+    keywordDifficulty: 27,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Unfiltered draws with low win rates and no Dixon-Coles rho parameter to identify genuine tactical parity.',
+    predictProEdgeSolution: 'Dixon-Coles high-entropy draw scanner isolating low-tempo, equal-xG matches with draw odds > 3.40.',
+    targetPath: '/draw-predictions',
+    actionPriority: 'P2 - Fast Win',
+  },
+
+  // 6. WhoScored (DR 84) Gaps
+  {
+    id: 'gap-whoscored-sot',
+    keyword: 'player shots on target stats today sot',
+    competitorDomain: 'whoscored.com',
+    competitorName: 'WhoScored',
+    competitorRank: 1,
+    predictProCurrentRank: 8,
+    monthlyVolume: 95000,
+    keywordDifficulty: 37,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Shows historical match ratings and raw shots without per-90 pricing vs bookmaker prop lines.',
+    predictProEdgeSolution: 'Player Props Lab with npxG/90, expected minutes, penalty duties, and true fair odds for Over 0.5/1.5 SOT.',
+    targetPath: '/player-props-lab',
+    actionPriority: 'P1 - High ROI',
+  },
+  {
+    id: 'gap-whoscored-h2h',
+    keyword: 'team head to head h2h statistics simulator',
+    competitorDomain: 'whoscored.com',
+    competitorName: 'WhoScored',
+    competitorRank: 2,
+    predictProCurrentRank: 4,
+    monthlyVolume: 88000,
+    keywordDifficulty: 30,
+    searchIntent: 'Informational',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Raw historic match scores dating back 10 years without recency weighting or xG differentials.',
+    predictProEdgeSolution: 'Monte Carlo 10,000-iteration H2H simulator with rolling form, xG diff, and direct Bet Slip integration.',
+    targetPath: '/h2h',
+    actionPriority: 'P1 - High ROI',
+  },
+
+  // 7. Understat (DR 73) Gaps
+  {
+    id: 'gap-understat-xpts',
+    keyword: 'understat expected points xpts justice table',
+    competitorDomain: 'understat.com',
+    competitorName: 'Understat',
+    competitorRank: 1,
+    predictProCurrentRank: 4,
+    monthlyVolume: 58000,
+    keywordDifficulty: 31,
+    searchIntent: 'Informational',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Academic table only; no betting market mapping, luck regression alerts, or multi-league sorting.',
+    predictProEdgeSolution: 'Justice Standings with xPTS, xG-Diff, Goal Variance, 2-club H2H compare tray, and positive regression value bets.',
+    targetPath: '/xpts-standings',
+    actionPriority: 'P1 - High ROI',
+  },
+
+  // 8. OddsPortal (DR 79) Gaps
+  {
+    id: 'gap-oddsportal-dropping',
+    keyword: 'dropping odds sharp money alerts',
+    competitorDomain: 'oddsportal.com',
+    competitorName: 'OddsPortal',
+    competitorRank: 1,
+    predictProCurrentRank: 6,
+    monthlyVolume: 68000,
+    keywordDifficulty: 32,
+    searchIntent: 'Commercial',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Crowded raw odds feed without quantifying steam magnitude or CLV beat percentage.',
+    predictProEdgeSolution: 'Sharp money compression tracker comparing Pinnacle closing lines with soft recreational bookies.',
+    targetPath: '/dropping-odds',
+    actionPriority: 'P2 - Fast Win',
+  },
+  {
+    id: 'gap-oddsportal-surebet',
+    keyword: 'arbitrage surebet calculator free',
+    competitorDomain: 'oddsportal.com',
+    competitorName: 'OddsPortal',
+    competitorRank: 1,
+    predictProCurrentRank: 5,
+    monthlyVolume: 62000,
+    keywordDifficulty: 28,
+    searchIntent: 'Transactional',
+    gapType: 'Striking Distance (Positions 4–15)',
+    competitorLimitation: 'Limits free users to low margins (<1%) and requires paid subscription for full scanners.',
+    predictProEdgeSolution: 'Zero-paywall 2-way and 3-way surebet scanner with anti-account-flagging stake rounding.',
+    targetPath: '/arbitrage-finder',
+    actionPriority: 'P2 - Fast Win',
   },
 ];
 
@@ -1134,9 +1544,13 @@ export function resolveReclaimed404Redirect(rawPath: string): string | null {
 /**
  * Aggregates high-level quantitative metrics across all 12 Ahrefs Opportunity Pillars.
  */
+/**
+ * Aggregates high-level quantitative metrics across all 12 Ahrefs Opportunity Pillars.
+ */
 export function getAhrefsSummaryStats() {
   const totalKeywordsVolume = LOW_HANGING_FRUIT_KEYWORDS.reduce((acc, k) => acc + k.monthlyVolume, 0);
   const totalCompetitorGapVolume = COMPETITOR_CONTENT_GAP_HUBS.reduce((acc, g) => acc + g.monthlyVolume, 0);
+  const totalTopSitesGapVolume = TOP_SITES_KEYWORD_GAP_ANALYSIS.reduce((acc, g) => acc + g.monthlyVolume, 0);
   const totalReferringDomainsReclaimed = RECLAIMED_404_REDIRECTS_LIST.reduce(
     (acc, r) => acc + r.referringDomainsReclaimed,
     0
@@ -1157,15 +1571,95 @@ export function getAhrefsSummaryStats() {
     technicalPillarsCount: 1,
     totalKeywordsTracked: LOW_HANGING_FRUIT_KEYWORDS.length,
     totalMonthlySearchVolumeTargeted: totalKeywordsVolume + totalCompetitorGapVolume,
+    totalTopSitesGapVolume,
     avgStrikingPosition: Number(avgStrikingPosition),
     reclaimed404Count: RECLAIMED_404_REDIRECTS_LIST.length,
     totalReferringDomainsReclaimed,
     totalCompetitorGapsClosed: COMPETITOR_CONTENT_GAP_HUBS.length,
+    totalTopSitesGapsAnalyzed: TOP_SITES_KEYWORD_GAP_ANALYSIS.length,
     aiOverviewSnippetsOptimized: AI_OVERVIEW_FEATURED_SNIPPETS.length,
     internalLinkRulesActive: INTERNAL_LINK_OPPORTUNITIES_MATRIX.length,
     criticalErrorsCount: totalCriticalErrors,
     siteHealthScore: 100,
   };
+}
+
+/**
+ * Returns all competitor keyword gaps against top soccer prediction domains.
+ */
+export function getTopSitesKeywordGaps(): CompetitorKeywordGapAnalysisItem[] {
+  return TOP_SITES_KEYWORD_GAP_ANALYSIS;
+}
+
+/**
+ * Aggregates statistics for Top Competitor Site keyword gaps.
+ */
+export function getTopSitesKeywordGapStats() {
+  const total = TOP_SITES_KEYWORD_GAP_ANALYSIS.length;
+  const totalSearchVolume = TOP_SITES_KEYWORD_GAP_ANALYSIS.reduce((acc, g) => acc + g.monthlyVolume, 0);
+  const avgKD = Math.round(
+    TOP_SITES_KEYWORD_GAP_ANALYSIS.reduce((acc, g) => acc + g.keywordDifficulty, 0) / Math.max(1, total)
+  );
+
+  // Group by competitor domain
+  const byDomain = TOP_SITES_KEYWORD_GAP_ANALYSIS.reduce<Record<string, { count: number; volume: number }>>((acc, g) => {
+    if (!acc[g.competitorDomain]) {
+      acc[g.competitorDomain] = { count: 0, volume: 0 };
+    }
+    acc[g.competitorDomain].count += 1;
+    acc[g.competitorDomain].volume += g.monthlyVolume;
+    return acc;
+  }, {});
+
+  const p1PriorityCount = TOP_SITES_KEYWORD_GAP_ANALYSIS.filter((g) => g.actionPriority === 'P1 - High ROI').length;
+
+  return {
+    totalGaps: total,
+    totalSearchVolume,
+    avgKD,
+    p1PriorityCount,
+    byDomain,
+  };
+}
+
+export interface FilterTopSitesGapsOptions {
+  domain?: string;
+  gapType?: string;
+  priority?: string;
+  query?: string;
+}
+
+/**
+ * Filters competitor keyword gaps by domain, gap type, priority, and free text search.
+ */
+export function filterTopSitesKeywordGaps(options: FilterTopSitesGapsOptions = {}) {
+  let list = [...TOP_SITES_KEYWORD_GAP_ANALYSIS];
+
+  if (options.domain && options.domain !== 'all') {
+    list = list.filter((g) => g.competitorDomain === options.domain || g.competitorName.toLowerCase() === options.domain.toLowerCase());
+  }
+
+  if (options.gapType && options.gapType !== 'all') {
+    list = list.filter((g) => g.gapType === options.gapType);
+  }
+
+  if (options.priority && options.priority !== 'all') {
+    list = list.filter((g) => g.actionPriority === options.priority);
+  }
+
+  if (options.query) {
+    const q = options.query.trim().toLowerCase();
+    list = list.filter(
+      (g) =>
+        g.keyword.toLowerCase().includes(q) ||
+        g.competitorName.toLowerCase().includes(q) ||
+        g.competitorLimitation.toLowerCase().includes(q) ||
+        g.predictProEdgeSolution.toLowerCase().includes(q) ||
+        g.targetPath.toLowerCase().includes(q)
+    );
+  }
+
+  return list;
 }
 
 /**
@@ -1178,6 +1672,7 @@ export function searchAhrefsOpportunities(query: string) {
       keywords: LOW_HANGING_FRUIT_KEYWORDS,
       snippets: AI_OVERVIEW_FEATURED_SNIPPETS,
       contentGaps: COMPETITOR_CONTENT_GAP_HUBS,
+      topSitesGaps: TOP_SITES_KEYWORD_GAP_ANALYSIS,
       refreshes: CONTENT_REFRESH_AND_SINGLE_PUBLISH_RECORDS,
       cannibalization: CANNIBALIZATION_RESOLUTION_MATRIX,
       redirects: RECLAIMED_404_REDIRECTS_LIST,
@@ -1196,6 +1691,14 @@ export function searchAhrefsOpportunities(query: string) {
     ),
     contentGaps: COMPETITOR_CONTENT_GAP_HUBS.filter(
       (g) => g.keywordCluster.toLowerCase().includes(q) || g.pageTitle.toLowerCase().includes(q)
+    ),
+    topSitesGaps: TOP_SITES_KEYWORD_GAP_ANALYSIS.filter(
+      (g) =>
+        g.keyword.toLowerCase().includes(q) ||
+        g.competitorName.toLowerCase().includes(q) ||
+        g.competitorDomain.toLowerCase().includes(q) ||
+        g.predictProEdgeSolution.toLowerCase().includes(q) ||
+        g.targetPath.toLowerCase().includes(q)
     ),
     refreshes: CONTENT_REFRESH_AND_SINGLE_PUBLISH_RECORDS.filter(
       (r) => r.path.toLowerCase().includes(q) || r.title.toLowerCase().includes(q)

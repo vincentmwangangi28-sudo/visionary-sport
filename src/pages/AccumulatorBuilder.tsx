@@ -17,6 +17,7 @@ import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
 import { fetchOfficialFinishedResults, gradeSelectionAgainstFeed } from '@/services/autoSettlementService';
 import { Trash2, Plus, Share2, Copy, CheckCheck, Flame, Download, Sparkles, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { AccaOptimizerPanel } from '@/components/AccaOptimizerPanel';
 import { curateAccaWithGemini } from '@/services/geminiTasksService';
 import { hapticService } from '@/services/hapticService';
 import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
@@ -344,6 +345,9 @@ export default function AccumulatorBuilder() {
             </button>
           </div>
         </div>
+
+        {/* Algorithmic Acca & Bet-Builder Optimizer */}
+        <AccaOptimizerPanel predictions={predictions} selectedBookmaker={selectedBookmaker} />
 
         <LiveParlaySettlementBar />
 

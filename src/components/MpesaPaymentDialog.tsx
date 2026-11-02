@@ -208,6 +208,8 @@ export const MpesaPaymentDialog: React.FC<MpesaPaymentDialogProps> = ({
                 </label>
                 <Input
                   id="mobile-phone-input"
+                  name="tel"
+                  autoComplete="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="0712 345 678"

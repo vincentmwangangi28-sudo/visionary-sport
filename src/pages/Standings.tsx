@@ -20,6 +20,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { LEAGUES, FALLBACK_STANDINGS, LeagueConfig, StandingRow } from '@/data/standingsData';
 import { useStandings } from '@/hooks/useFootballData';
@@ -27,6 +30,7 @@ import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
 import type { NormalizedMatch } from '@/lib/matchNormalizer';
 import { normalizeTeamName } from '@/services/predictionStorage';
 import { TeamFormTrendsChart } from '@/components/TeamFormTrendsChart';
+import { LeagueTableStats, AdvancedSortField } from '@/components/LeagueTableStats';
 import { TeamLogo } from '@/components/TeamLogo';
 import { toast } from 'sonner';
 
@@ -49,6 +53,10 @@ export interface EnrichedStandingRow extends StandingRow {
   xgDiff: number;
   xPts: number;
   justiceDelta: number; // Positive = overperforming xPTS; Negative = underperforming (due positive regression)
+  goalVariance: number; // Actual GD minus Expected GD (GD - xG-Diff)
+  attackVariance: number; // Actual GF minus xGF
+  defenseVariance: number; // xGA minus Actual GA
+  ppg: number;
   liveRankDelta: number;
   liveProjectedPts: number;
   liveMatchBadge?: string;
@@ -73,15 +81,25 @@ export function computeEnrichedStandings(
         ? row.gd
         : Math.round(row.gd * (venueSplit === 'home' ? 0.62 : 0.38));
 
-    // Compute realistic Expected Goals (xGF, xGA) & Expected Points (xPTS)
-    const baseGoalsFor = Math.max(played, Math.round(played * 1.45 + gd * 0.55));
-    const baseGoalsAgainst = Math.max(4, baseGoalsFor - gd);
+    // Compute realistic Expected Goals (xGF, xGA), Expected Points (xPTS) & Goal Variance
+    const baseGoalsFor =
+      venueSplit === 'all' && typeof row.gf === 'number'
+        ? row.gf
+        : Math.max(played, Math.round(played * 1.45 + gd * 0.55));
+    const baseGoalsAgainst =
+      venueSplit === 'all' && typeof row.ga === 'number'
+        ? row.ga
+        : Math.max(2, baseGoalsFor - gd);
     const xgfOffset = ((seed % 9) - 4) * 0.65;
     const xgaOffset = (((seed * 2) % 9) - 4) * 0.55;
 
-    const xgf = Number(Math.max(4, baseGoalsFor - xgfOffset).toFixed(1));
-    const xga = Number(Math.max(4, baseGoalsAgainst + xgaOffset).toFixed(1));
+    const xgf = Number(Math.max(2.5, baseGoalsFor - xgfOffset).toFixed(1));
+    const xga = Number(Math.max(2.5, baseGoalsAgainst + xgaOffset).toFixed(1));
     const xgDiff = Number((xgf - xga).toFixed(1));
+    const goalVariance = Number((gd - xgDiff).toFixed(1));
+    const attackVariance = Number((baseGoalsFor - xgf).toFixed(1));
+    const defenseVariance = Number((xga - baseGoalsAgainst).toFixed(1));
+    const ppg = Number((points / Math.max(1, played)).toFixed(2));
 
     const rawXpts = points - ((seed % 7) - 3) * 1.15;
     const xPts = Number(Math.max(3, rawXpts).toFixed(1));
@@ -120,6 +138,8 @@ export function computeEnrichedStandings(
 
     return {
       ...row,
+      gf: baseGoalsFor,
+      ga: baseGoalsAgainst,
       played,
       won,
       drawn,
@@ -131,6 +151,10 @@ export function computeEnrichedStandings(
       xgDiff,
       xPts,
       justiceDelta,
+      goalVariance,
+      attackVariance,
+      defenseVariance,
+      ppg,
       liveRankDelta: 0,
       liveProjectedPts,
       liveMatchBadge,
@@ -187,6 +211,8 @@ export default function Standings() {
   const [tableMode, setTableMode] = useState<StandingsTableMode>('official');
   const [venueSplit, setVenueSplit] = useState<StandingsVenueSplit>('all');
   const [liveMatches, setLiveMatches] = useState<NormalizedMatch[]>([]);
+  const [sortField, setSortField] = useState<AdvancedSortField>('points');
+  const [sortAsc, setSortAsc] = useState<boolean>(false);
 
   useEffect(() => {
     let active = true;
@@ -214,10 +240,61 @@ export default function Standings() {
   );
   const isLive = data?.isLive ?? false;
 
-  const standings = useMemo(
+  const baseStandings = useMemo(
     () => computeEnrichedStandings(rawStandings, venueSplit, tableMode, liveMatches),
     [rawStandings, venueSplit, tableMode, liveMatches]
   );
+
+  const standings = useMemo(() => {
+    if (
+      (tableMode === 'official' && sortField === 'points' && !sortAsc) ||
+      (tableMode === 'xg_justice' && sortField === 'xPts' && !sortAsc)
+    ) {
+      return baseStandings;
+    }
+
+    return [...baseStandings].sort((a, b) => {
+      const valA = a[sortField] ?? 0;
+      const valB = b[sortField] ?? 0;
+      if (valA === valB) {
+        return b.points - a.points || b.gd - a.gd;
+      }
+      return sortAsc ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
+    });
+  }, [baseStandings, tableMode, sortField, sortAsc]);
+
+  const handleHeaderSort = (field: AdvancedSortField) => {
+    let nextAsc = false;
+    if (sortField === field) {
+      nextAsc = !sortAsc;
+    } else if (field === 'xga' || field === 'justiceDelta') {
+      nextAsc = true;
+    }
+    setSortField(field);
+    setSortAsc(nextAsc);
+  };
+
+  const handleStatsSortChange = (field: AdvancedSortField, asc: boolean) => {
+    setSortField(field);
+    setSortAsc(asc);
+    if (
+      (field === 'xPts' || field === 'xgDiff' || field === 'goalVariance' || field === 'justiceDelta') &&
+      tableMode === 'official'
+    ) {
+      setTableMode('xg_justice');
+    }
+  };
+
+  const renderHeaderSortIcon = (field: AdvancedSortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-3 w-3 opacity-40 shrink-0" aria-hidden="true" />;
+    }
+    return sortAsc ? (
+      <ArrowUp className="h-3 w-3 text-primary shrink-0" aria-hidden="true" />
+    ) : (
+      <ArrowDown className="h-3 w-3 text-primary shrink-0" aria-hidden="true" />
+    );
+  };
 
   const handleSync = async () => {
     const res = await refetch();
@@ -250,7 +327,7 @@ export default function Standings() {
               League Standings &amp; xG Justice Tables
             </h1>
             <p className="text-xs text-muted-foreground max-w-2xl">
-              Compare official league points against Bivariate Poisson Expected Points (xPTS) and Home/Away venue splits.
+              Compare official league points against Bivariate Poisson Expected Points (xPTS), xG-Diff, and Goal Variance across Home/Away venue splits.
             </p>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -328,7 +405,11 @@ export default function Standings() {
             >
               <button
                 type="button"
-                onClick={() => setTableMode('official')}
+                onClick={() => {
+                  setTableMode('official');
+                  setSortField('points');
+                  setSortAsc(false);
+                }}
                 data-testid="mode-official-table"
                 className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                   tableMode === 'official'
@@ -340,7 +421,11 @@ export default function Standings() {
               </button>
               <button
                 type="button"
-                onClick={() => setTableMode('xg_justice')}
+                onClick={() => {
+                  setTableMode('xg_justice');
+                  setSortField('xPts');
+                  setSortAsc(false);
+                }}
                 data-testid="mode-xg-justice-table"
                 className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors flex items-center gap-1 whitespace-nowrap ${
                   tableMode === 'xg_justice'
@@ -353,7 +438,11 @@ export default function Standings() {
               </button>
               <button
                 type="button"
-                onClick={() => setTableMode('live_inplay')}
+                onClick={() => {
+                  setTableMode('live_inplay');
+                  setSortField('points');
+                  setSortAsc(false);
+                }}
                 data-testid="mode-live-inplay-table"
                 className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${
                   tableMode === 'live_inplay'
@@ -435,6 +524,19 @@ export default function Standings() {
           />
         )}
 
+        {/* Interactive League Table Stats Component (Sort by xPTS, xG-Diff, Goal Variance, etc.) */}
+        {standings.length > 0 && !loading && (
+          <LeagueTableStats
+            standings={baseStandings}
+            leagueName={league.name}
+            leagueFlag={league.flag}
+            season={league.season || '2026/2027'}
+            activeSortField={sortField}
+            activeSortAsc={sortAsc}
+            onSortChange={handleStatsSortChange}
+          />
+        )}
+
         <Card id="standings-table-card" className="overflow-hidden border-border">
           <CardHeader className="py-3 px-4 border-b bg-muted/20">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -444,7 +546,7 @@ export default function Standings() {
                 <span className="text-xs font-normal text-muted-foreground">
                   · {league.season || '2025/2026'} ·{' '}
                   {tableMode === 'xg_justice'
-                    ? 'Ranked by Expected Points (xPTS)'
+                    ? 'Ranked by Expected Points (xPTS) & Advanced Metrics'
                     : tableMode === 'live_inplay'
                     ? 'Live In-Play Projected Standings'
                     : venueSplit === 'home'
@@ -507,17 +609,90 @@ export default function Standings() {
                       <th className="text-right py-2.5 px-2 hidden sm:table-cell">W</th>
                       <th className="text-right py-2.5 px-2 hidden sm:table-cell">D</th>
                       <th className="text-right py-2.5 px-2 hidden sm:table-cell">L</th>
-                      <th className="text-right py-2.5 px-2 hidden md:table-cell">GD</th>
+                      <th className="text-right py-2.5 px-2 hidden md:table-cell">
+                        <button
+                          type="button"
+                          onClick={() => handleHeaderSort('gd')}
+                          className="inline-flex items-center justify-end gap-1 hover:text-foreground cursor-pointer ml-auto"
+                        >
+                          <span>GD</span>
+                          {renderHeaderSortIcon('gd')}
+                        </button>
+                      </th>
                       {tableMode === 'xg_justice' && (
                         <>
-                          <th className="text-right py-2.5 px-2 text-emerald-600 dark:text-emerald-400">xGF</th>
-                          <th className="text-right py-2.5 px-2 text-rose-600 dark:text-rose-400">xGA</th>
-                          <th className="text-right py-2.5 px-2 font-bold text-primary">xPTS</th>
-                          <th className="text-right py-2.5 px-3">Justice Δ</th>
+                          <th className="text-right py-2.5 px-2 text-emerald-600 dark:text-emerald-400">
+                            <button
+                              type="button"
+                              onClick={() => handleHeaderSort('xgf')}
+                              className="inline-flex items-center justify-end gap-1 hover:opacity-80 cursor-pointer ml-auto"
+                            >
+                              <span>xGF</span>
+                              {renderHeaderSortIcon('xgf')}
+                            </button>
+                          </th>
+                          <th className="text-right py-2.5 px-2 text-rose-600 dark:text-rose-400">
+                            <button
+                              type="button"
+                              onClick={() => handleHeaderSort('xga')}
+                              className="inline-flex items-center justify-end gap-1 hover:opacity-80 cursor-pointer ml-auto"
+                            >
+                              <span>xGA</span>
+                              {renderHeaderSortIcon('xga')}
+                            </button>
+                          </th>
+                          <th className="text-right py-2.5 px-2 font-bold text-foreground">
+                            <button
+                              type="button"
+                              onClick={() => handleHeaderSort('xgDiff')}
+                              className="inline-flex items-center justify-end gap-1 hover:text-primary cursor-pointer ml-auto"
+                            >
+                              <span>xG-Diff</span>
+                              {renderHeaderSortIcon('xgDiff')}
+                            </button>
+                          </th>
+                          <th className="text-right py-2.5 px-2 font-bold text-primary">
+                            <button
+                              type="button"
+                              onClick={() => handleHeaderSort('xPts')}
+                              className="inline-flex items-center justify-end gap-1 hover:opacity-80 cursor-pointer ml-auto"
+                            >
+                              <span>xPTS</span>
+                              {renderHeaderSortIcon('xPts')}
+                            </button>
+                          </th>
+                          <th className="text-right py-2.5 px-2">
+                            <button
+                              type="button"
+                              onClick={() => handleHeaderSort('goalVariance')}
+                              className="inline-flex items-center justify-end gap-1 hover:text-foreground cursor-pointer ml-auto"
+                              title="Goal Variance (GD - xGD)"
+                            >
+                              <span>Goal Var</span>
+                              {renderHeaderSortIcon('goalVariance')}
+                            </button>
+                          </th>
+                          <th className="text-right py-2.5 px-3">
+                            <button
+                              type="button"
+                              onClick={() => handleHeaderSort('justiceDelta')}
+                              className="inline-flex items-center justify-end gap-1 hover:text-foreground cursor-pointer ml-auto"
+                            >
+                              <span>Justice Δ</span>
+                              {renderHeaderSortIcon('justiceDelta')}
+                            </button>
+                          </th>
                         </>
                       )}
                       <th className="text-right py-2.5 px-3 font-bold text-foreground">
-                        {tableMode === 'live_inplay' ? 'Live Pts' : 'Pts'}
+                        <button
+                          type="button"
+                          onClick={() => handleHeaderSort('points')}
+                          className="inline-flex items-center justify-end gap-1 hover:text-primary cursor-pointer ml-auto"
+                        >
+                          <span>{tableMode === 'live_inplay' ? 'Live Pts' : 'Pts'}</span>
+                          {renderHeaderSortIcon('points')}
+                        </button>
                       </th>
                       <th className="text-center py-2.5 px-2 hidden lg:table-cell">Form</th>
                     </tr>
@@ -551,7 +726,7 @@ export default function Standings() {
                               <span
                                 className={`inline-flex w-6 h-6 rounded-md text-xs font-bold items-center justify-center ${rankBadgeClass}`}
                               >
-                                {row.position}
+                                {i + 1}
                               </span>
                               {tableMode === 'live_inplay' && (
                                 <span className="text-[10px] font-bold">
@@ -573,8 +748,8 @@ export default function Standings() {
                                 {row.team}
                               </span>
                               {row.liveMatchBadge && (
-                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                  {row.liveMatchBadge}
+                                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                                  · {row.liveMatchBadge}
                                 </span>
                               )}
                             </div>
@@ -611,8 +786,33 @@ export default function Standings() {
                               <td className="text-right py-2.5 px-2 text-xs text-rose-600 dark:text-rose-400 font-semibold">
                                 {row.xga.toFixed(1)}
                               </td>
+                              <td
+                                className={`text-right py-2.5 px-2 text-xs font-bold ${
+                                  row.xgDiff > 0
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : row.xgDiff < 0
+                                    ? 'text-rose-500'
+                                    : 'text-muted-foreground'
+                                }`}
+                              >
+                                {row.xgDiff > 0 ? `+${row.xgDiff.toFixed(1)}` : row.xgDiff.toFixed(1)}
+                              </td>
                               <td className="text-right py-2.5 px-2 font-black text-primary">
                                 {row.xPts.toFixed(1)}
+                              </td>
+                              <td
+                                className={`text-right py-2.5 px-2 text-xs font-bold ${
+                                  row.goalVariance < -1.0
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : row.goalVariance > 1.0
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-muted-foreground'
+                                }`}
+                                title="Goal Variance = Actual GD minus Expected GD"
+                              >
+                                {row.goalVariance > 0
+                                  ? `+${row.goalVariance.toFixed(1)}`
+                                  : row.goalVariance.toFixed(1)}
                               </td>
                               <td
                                 className={`text-right py-2.5 px-3 text-xs font-bold ${
@@ -665,7 +865,7 @@ export default function Standings() {
                   </div>
                   {tableMode === 'xg_justice' && (
                     <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                      Negative Justice Δ = Club is creating high xG and due for positive point regression.
+                      Negative Justice Δ / Negative Goal Variance = Club is creating high xG and due for positive point regression.
                     </span>
                   )}
                 </div>

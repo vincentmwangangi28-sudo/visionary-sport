@@ -132,6 +132,8 @@ export const WavaveExpressPaymentDialog = ({ open, onClose, plan, price }: Props
               </label>
               <Input
                 id="wavave-phone"
+                name="tel"
+                autoComplete="tel"
                 type="tel"
                 placeholder="+254712345678 or 0712345678"
                 value={phone}

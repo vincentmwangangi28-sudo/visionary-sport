@@ -26,6 +26,8 @@ interface ScreenedMatch {
   bttsProb: number;
   over25Prob: number;
   xGExpectancy: number;
+  xGDiffPer90: number;
+  xPtsRegressionPick: boolean;
 }
 
 function formatSlug(home: string, away: string): string {
@@ -38,6 +40,7 @@ export const MatchScreener: React.FC = () => {
   const [minValueEdge, setMinValueEdge] = useState<number>(4);
   const [selectedMarket, setSelectedMarket] = useState<string>('all');
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
+  const [onlyXptsRegression, setOnlyXptsRegression] = useState<boolean>(false);
   const [displayMode, setDisplayMode] = useState<'table' | 'grid'>('table');
   const [matches, setMatches] = useState<ScreenedMatch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -70,6 +73,8 @@ export const MatchScreener: React.FC = () => {
         const bttsProb = 50 + (hash % 38);
         const over25Prob = 48 + (hash % 42);
         const xGExpectancy = Number((2.1 + (hash % 16) / 10).toFixed(2));
+        const xGDiffPer90 = Number((((hash % 21) - 6) * 0.08).toFixed(2));
+        const xPtsRegressionPick = xGDiffPer90 >= 0.32 || valueEdge >= 7;
 
         list.push({
           id: f.id || `scr-${idx}`,
@@ -84,6 +89,8 @@ export const MatchScreener: React.FC = () => {
           bttsProb,
           over25Prob,
           xGExpectancy,
+          xGDiffPer90,
+          xPtsRegressionPick,
         });
       });
 
@@ -103,6 +110,7 @@ export const MatchScreener: React.FC = () => {
   const filtered = matches.filter((m) => {
     if (m.aiConfidence < minConfidence) return false;
     if (m.valueEdge < minValueEdge) return false;
+    if (onlyXptsRegression && !m.xPtsRegressionPick) return false;
     if (selectedLeague !== 'all' && !m.league.toLowerCase().includes(selectedLeague.toLowerCase())) return false;
     if (selectedMarket === 'btts' && m.bttsProb < 60) return false;
     if (selectedMarket === 'over25' && m.over25Prob < 60) return false;
@@ -270,9 +278,24 @@ export const MatchScreener: React.FC = () => {
 
       {/* Summary Action Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <p className="text-xs font-medium text-muted-foreground">
-          Showing <strong className="font-mono text-foreground">{filtered.length}</strong> fixtures matching filter criteria
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-xs font-medium text-muted-foreground">
+            Showing <strong className="font-mono text-foreground">{filtered.length}</strong> fixtures matching filter criteria
+          </p>
+          <button
+            type="button"
+            onClick={() => setOnlyXptsRegression((v) => !v)}
+            data-testid="screener-xpts-regression-toggle"
+            aria-pressed={onlyXptsRegression}
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-colors cursor-pointer ${
+              onlyXptsRegression
+                ? 'bg-emerald-600 text-white border-emerald-600'
+                : 'bg-background text-muted-foreground hover:text-foreground border-border'
+            }`}
+          >
+            xPTS Positive Regression &amp; xG-Diff Edge Only
+          </button>
+        </div>
 
         {filtered.length > 0 && (
           <Button size="sm" onClick={handleAddAllToAcca} className="h-8 gap-1.5 text-xs font-bold">
@@ -292,7 +315,10 @@ export const MatchScreener: React.FC = () => {
           </p>
         </Card>
       ) : displayMode === 'table' ? (
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+        <div
+          className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
+          style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 640px' }}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -300,6 +326,7 @@ export const MatchScreener: React.FC = () => {
                   <th className="py-2.5 px-4 text-left font-semibold">Match</th>
                   <th className="py-2.5 px-3 text-left font-semibold">Competition</th>
                   <th className="py-2.5 px-3 text-right font-semibold font-mono">Total xG</th>
+                  <th className="py-2.5 px-3 text-right font-semibold font-mono">xG-Diff/90</th>
                   <th className="py-2.5 px-3 text-right font-semibold font-mono">BTTS</th>
                   <th className="py-2.5 px-3 text-right font-semibold font-mono">O2.5</th>
                   <th className="py-2.5 px-3 text-left font-semibold">Forecast</th>
@@ -330,6 +357,15 @@ export const MatchScreener: React.FC = () => {
                       <td className="py-2.5 px-3 text-muted-foreground">{m.league}</td>
                       <td className="py-2.5 px-3 text-right font-mono tabular-nums font-medium text-foreground">
                         {m.xGExpectancy.toFixed(2)}
+                      </td>
+                      <td
+                        className={`py-2.5 px-3 text-right font-mono tabular-nums font-semibold ${
+                          m.xGDiffPer90 >= 0
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-500'
+                        }`}
+                      >
+                        {m.xGDiffPer90 >= 0 ? `+${m.xGDiffPer90.toFixed(2)}` : m.xGDiffPer90.toFixed(2)}
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono tabular-nums text-muted-foreground">
                         {m.bttsProb}%

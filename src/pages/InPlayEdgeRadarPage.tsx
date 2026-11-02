@@ -422,12 +422,14 @@ export const InPlayEdgeRadarPage: React.FC = () => {
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-foreground">Current Match Minute</span>
+                    <label htmlFor="inplay-sim-minute" className="font-medium text-foreground">Current Match Minute</label>
                     <span className="font-mono tabular-nums font-bold text-primary">
                       {simMinute}&apos; ({simResult.remainingMinutes}m left incl. stoppage)
                     </span>
                   </div>
                   <input
+                    id="inplay-sim-minute"
+                    name="simMinute"
                     type="range"
                     min={15}
                     max={88}
@@ -440,12 +442,14 @@ export const InPlayEdgeRadarPage: React.FC = () => {
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-foreground">Shots in Last 15 Mins</span>
+                    <label htmlFor="inplay-sim-shots" className="font-medium text-foreground">Shots in Last 15 Mins</label>
                     <span className="font-mono tabular-nums font-bold text-foreground">
                       {simShots15} shots
                     </span>
                   </div>
                   <input
+                    id="inplay-sim-shots"
+                    name="simShots15"
                     type="range"
                     min={1}
                     max={12}
@@ -458,12 +462,14 @@ export const InPlayEdgeRadarPage: React.FC = () => {
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-foreground">Corners in Last 15 Mins</span>
+                    <label htmlFor="inplay-sim-corners" className="font-medium text-foreground">Corners in Last 15 Mins</label>
                     <span className="font-mono tabular-nums font-bold text-foreground">
                       {simCorners15} corners
                     </span>
                   </div>
                   <input
+                    id="inplay-sim-corners"
+                    name="simCorners15"
                     type="range"
                     min={0}
                     max={8}
@@ -476,12 +482,14 @@ export const InPlayEdgeRadarPage: React.FC = () => {
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-foreground">Attacking Field Tilt %</span>
+                    <label htmlFor="inplay-sim-tilt" className="font-medium text-foreground">Attacking Field Tilt %</label>
                     <span className="font-mono tabular-nums font-bold text-foreground">
                       {simTiltPct}%
                     </span>
                   </div>
                   <input
+                    id="inplay-sim-tilt"
+                    name="simTiltPct"
                     type="range"
                     min={40}
                     max={90}
@@ -493,10 +501,12 @@ export const InPlayEdgeRadarPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-foreground mb-1">
+                  <label htmlFor="inplay-sim-odds" className="block text-xs font-medium text-foreground mb-1">
                     Live Bookmaker Next-Goal Odds
                   </label>
                   <input
+                    id="inplay-sim-odds"
+                    name="simBookieOdds"
                     type="number"
                     step="0.05"
                     min="1.10"
@@ -541,6 +551,30 @@ export const InPlayEdgeRadarPage: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Quick Stage Simulated Bet */}
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  addSelection({
+                    id: `sim-inplay-${simMinute}-${Date.now()}`,
+                    homeTeam: 'Simulated Match',
+                    awayTeam: 'Live Pressure Fixture',
+                    league: 'In-Play Live Radar',
+                    market: `Next Goal Before Full-Time (${simMinute}’ In-Play)`,
+                    pick: `Over 0.5 Remaining Goals`,
+                    odds: simBookieOdds,
+                    confidence: Math.round(simResult.nextGoalProbPct),
+                  });
+                  setSlipOpen(true);
+                  toast.success(`Staged Simulated In-Play Edge (+${simResult.edgePct}%) to Bet Slip!`);
+                }}
+                className="w-full text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Stage Simulated Edge to Bet Slip ({simBookieOdds.toFixed(2)})</span>
+              </Button>
 
               <div className="pt-1 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">

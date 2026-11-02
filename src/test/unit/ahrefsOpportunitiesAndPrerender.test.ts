@@ -4,6 +4,10 @@ import {
   LOW_HANGING_FRUIT_KEYWORDS,
   AI_OVERVIEW_FEATURED_SNIPPETS,
   COMPETITOR_CONTENT_GAP_HUBS,
+  TOP_SITES_KEYWORD_GAP_ANALYSIS,
+  getTopSitesKeywordGaps,
+  getTopSitesKeywordGapStats,
+  filterTopSitesKeywordGaps,
   CONTENT_REFRESH_AND_SINGLE_PUBLISH_RECORDS,
   CANNIBALIZATION_RESOLUTION_MATRIX,
   RECLAIMED_404_REDIRECTS_LIST,
@@ -168,5 +172,52 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
 
     const emptySearch = searchAhrefsOpportunities('');
     expect(emptySearch.keywords.length).toBe(LOW_HANGING_FRUIT_KEYWORDS.length);
+  });
+
+  it('analyzes keyword gaps across top competitor sites (Forebet, PredictZ, FootyStats, Statarea, WinDrawWin, WhoScored, Understat, OddsPortal)', () => {
+    const gaps = getTopSitesKeywordGaps();
+    expect(gaps.length).toBeGreaterThanOrEqual(18);
+
+    // Verify all 8 core competitor domains are benchmarked
+    const domains = new Set(gaps.map((g) => g.competitorDomain));
+    expect(domains.has('forebet.com')).toBe(true);
+    expect(domains.has('predictz.com')).toBe(true);
+    expect(domains.has('footystats.org')).toBe(true);
+    expect(domains.has('statarea.com')).toBe(true);
+    expect(domains.has('windrawwin.com')).toBe(true);
+    expect(domains.has('whoscored.com')).toBe(true);
+    expect(domains.has('understat.com')).toBe(true);
+    expect(domains.has('oddsportal.com')).toBe(true);
+
+    // Verify each gap entry is complete with limitation and PredictPro solution
+    for (const gap of gaps) {
+      expect(gap.keyword.length).toBeGreaterThan(10);
+      expect(gap.monthlyVolume).toBeGreaterThan(10000);
+      expect(gap.keywordDifficulty).toBeGreaterThan(0);
+      expect(gap.competitorRank).toBeGreaterThanOrEqual(1);
+      expect(gap.competitorLimitation.length).toBeGreaterThan(20);
+      expect(gap.predictProEdgeSolution.length).toBeGreaterThan(20);
+      expect(gap.targetPath.startsWith('/')).toBe(true);
+    }
+
+    // Verify statistics aggregation
+    const stats = getTopSitesKeywordGapStats();
+    expect(stats.totalGaps).toBe(gaps.length);
+    expect(stats.totalSearchVolume).toBeGreaterThan(1500000); // Over 1.5M searches/mo
+    expect(stats.avgKD).toBeGreaterThanOrEqual(20);
+    expect(stats.p1PriorityCount).toBeGreaterThanOrEqual(5);
+    expect(stats.byDomain['forebet.com'].count).toBeGreaterThanOrEqual(3);
+
+    // Verify filtering functions
+    const forebetGaps = filterTopSitesKeywordGaps({ domain: 'forebet.com' });
+    expect(forebetGaps.every((g) => g.competitorDomain === 'forebet.com')).toBe(true);
+    expect(forebetGaps.length).toBeGreaterThanOrEqual(3);
+
+    const p1Gaps = filterTopSitesKeywordGaps({ priority: 'P1 - High ROI' });
+    expect(p1Gaps.every((g) => g.actionPriority === 'P1 - High ROI')).toBe(true);
+    expect(p1Gaps.length).toBeGreaterThanOrEqual(5);
+
+    const poissonGaps = filterTopSitesKeywordGaps({ query: 'poisson' });
+    expect(poissonGaps.length).toBeGreaterThanOrEqual(1);
   });
 });

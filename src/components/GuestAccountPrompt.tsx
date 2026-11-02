@@ -144,7 +144,9 @@ export const GuestAccountPrompt: React.FC = () => {
                 <UserIcon className="h-3.5 w-3.5 text-muted-foreground absolute left-3 top-2.5" />
                 <Input
                   id="guest-full-name"
+                  name="name"
                   type="text"
+                  autoComplete="name"
                   placeholder="Alex Morgan"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -160,7 +162,9 @@ export const GuestAccountPrompt: React.FC = () => {
               <Mail className="h-3.5 w-3.5 text-muted-foreground absolute left-3 top-2.5" />
               <Input
                 id="guest-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 required
                 placeholder="you@example.com"
                 value={email}
@@ -176,7 +180,9 @@ export const GuestAccountPrompt: React.FC = () => {
               <Lock className="h-3.5 w-3.5 text-muted-foreground absolute left-3 top-2.5" />
               <Input
                 id="guest-password"
+                name="password"
                 type="password"
+                autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
                 required
                 minLength={6}
                 placeholder="••••••••"

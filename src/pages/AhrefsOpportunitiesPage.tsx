@@ -8,6 +8,9 @@ import {
   LOW_HANGING_FRUIT_KEYWORDS,
   AI_OVERVIEW_FEATURED_SNIPPETS,
   COMPETITOR_CONTENT_GAP_HUBS,
+  TOP_SITES_KEYWORD_GAP_ANALYSIS,
+  getTopSitesKeywordGapStats,
+  filterTopSitesKeywordGaps,
   CONTENT_REFRESH_AND_SINGLE_PUBLISH_RECORDS,
   CANNIBALIZATION_RESOLUTION_MATRIX,
   RECLAIMED_404_REDIRECTS_LIST,
@@ -35,6 +38,10 @@ import {
   Layers,
   Activity,
   Compass,
+  Filter,
+  Globe,
+  Target,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,8 +54,28 @@ export default function AhrefsOpportunitiesPage() {
   const [test404Input, setTest404Input] = useState('/sportpesa-mega-jackpot-predictions');
   const [selectedAioSnippet, setSelectedAioSnippet] = useState(AI_OVERVIEW_FEATURED_SNIPPETS[0]);
 
+  // Competitor Keyword Gap specific filters
+  const [gapCompetitorFilter, setGapCompetitorFilter] = useState<string>('all');
+  const [gapPriorityFilter, setGapPriorityFilter] = useState<string>('all');
+  const [gapTypeFilter, setGapTypeFilter] = useState<string>('all');
+  const [gapViewMode, setGapViewMode] = useState<'matrix' | 'hubs'>('matrix');
+
   const stats = useMemo(() => getAhrefsSummaryStats(), []);
   const searchResults = useMemo(() => searchAhrefsOpportunities(searchQuery), [searchQuery]);
+
+  const filteredTopSitesGaps = useMemo(() => {
+    let list = searchResults.topSitesGaps || TOP_SITES_KEYWORD_GAP_ANALYSIS;
+    if (gapCompetitorFilter !== 'all') {
+      list = list.filter((g) => g.competitorDomain === gapCompetitorFilter);
+    }
+    if (gapPriorityFilter !== 'all') {
+      list = list.filter((g) => g.actionPriority === gapPriorityFilter);
+    }
+    if (gapTypeFilter !== 'all') {
+      list = list.filter((g) => g.gapType === gapTypeFilter);
+    }
+    return list;
+  }, [searchResults.topSitesGaps, gapCompetitorFilter, gapPriorityFilter, gapTypeFilter]);
 
   const test404Result = useMemo(() => {
     return resolveReclaimed404Redirect(test404Input);
@@ -236,7 +263,7 @@ export default function AhrefsOpportunitiesPage() {
                   activeTab === 'gaps' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Competitor Gaps ({COMPETITOR_CONTENT_GAP_HUBS.length})
+                Competitor Keyword Gaps ({TOP_SITES_KEYWORD_GAP_ANALYSIS.length})
               </button>
               <button
                 onClick={() => setActiveTab('redirects')}
@@ -533,61 +560,409 @@ export default function AhrefsOpportunitiesPage() {
           </div>
         )}
 
-        {/* TAB 4: Competitor Content Gap Matrix */}
+        {/* TAB 4: Competitor Content Gap Matrix & Top Sites Keyword Gaps */}
         {activeTab === 'gaps' && (
-          <div className="space-y-4">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-bold text-white">Top Suggestions from Content Gap</h3>
-                <p className="text-xs text-slate-400">
-                  New high-traffic content hubs created for keywords that Top 10 competitors (Forebet, Betensured, Windrawwin, Statarea, PredictZ) rank for, backed by PredictPro's mathematical edge.
+          <div className="space-y-6">
+            {/* Header & Controls */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Ahrefs Content Gap (Competitive Analysis)
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">
+                    8 Domains Benchmarked
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-cyan-400" />
+                  Top Sites Keyword Gap Analysis & Market Share Strategy
+                </h3>
+                <p className="text-xs text-slate-300 max-w-3xl">
+                  Exploits quantitative weaknesses in legacy football prediction sites (Forebet 1-point Poisson, PredictZ unweighted accas, FootyStats paywalled xG, Statarea un-devigged polls) to capture top-3 rankings.
                 </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                  <button
+                    onClick={() => setGapViewMode('matrix')}
+                    className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                      gapViewMode === 'matrix' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Keyword Matrix ({filteredTopSitesGaps.length})
+                  </button>
+                  <button
+                    onClick={() => setGapViewMode('hubs')}
+                    className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                      gapViewMode === 'hubs' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Landing Hubs ({searchResults.contentGaps.length})
+                  </button>
+                </div>
+
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const csvRows = [
+                      ['Keyword', 'Competitor Domain', 'Competitor Rank', 'PredictPro Rank', 'Monthly Volume', 'KD', 'Search Intent', 'Priority', 'PredictPro Target Route', 'PredictPro Edge'],
+                      ...filteredTopSitesGaps.map((g) => [
+                        g.keyword,
+                        g.competitorDomain,
+                        `#${g.competitorRank}`,
+                        g.predictProCurrentRank ? `#${g.predictProCurrentRank}` : 'Unranked (>20)',
+                        g.monthlyVolume,
+                        g.keywordDifficulty,
+                        g.searchIntent,
+                        g.actionPriority,
+                        g.targetPath,
+                        g.predictProEdgeSolution,
+                      ]),
+                    ]
+                      .map((row) => row.map((cell) => `"${cell}"`).join(','))
+                      .join('\n');
+                    const blob = new Blob([csvRows], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `predictpro-top-sites-keyword-gaps-${new Date().toISOString().slice(0, 10)}.csv`;
+                    a.click();
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
+                >
+                  <FileText className="w-3.5 h-3.5 mr-1.5" />
+                  Export Gaps CSV
+                </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {searchResults.contentGaps.map((gap, i) => (
-                <div
-                  key={i}
-                  className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3 flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-cyan-400 font-semibold">{gap.monthlyVolume.toLocaleString()} searches/mo</span>
-                      <span className="text-slate-400">KD: {gap.keywordDifficulty}</span>
-                    </div>
+            {/* KPI Summary Strip */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-1">
+                <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
+                  <span>Targeted Gap Volume</span>
+                  <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-cyan-400 tabular-nums">
+                  {(filteredTopSitesGaps.reduce((acc, g) => acc + g.monthlyVolume, 0) / 1000).toFixed(0)}K
+                  <span className="text-xs text-slate-400 font-normal"> /mo</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Across {filteredTopSitesGaps.length} filtered high-intent queries
+                </div>
+              </div>
 
-                    <h4 className="text-sm font-bold text-white hover:text-emerald-400 transition-colors">
-                      <Link to={gap.targetPath} className="flex items-center gap-1.5">
-                        <span>{gap.pageTitle}</span>
-                        <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                      </Link>
-                    </h4>
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-1">
+                <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
+                  <span>Competitor Sites</span>
+                  <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-white tabular-nums">
+                  8 Domains
+                </div>
+                <div className="text-[11px] text-emerald-400">
+                  Forebet, PredictZ, FootyStats, etc.
+                </div>
+              </div>
 
-                    <div className="text-xs text-slate-300">
-                      <span className="text-slate-500 font-medium">Competitors Ranking: </span>
-                      <span className="text-slate-300">{gap.competitorsRanking.join(', ')}</span>
-                    </div>
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-1">
+                <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
+                  <span>Average KD</span>
+                  <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-amber-400 tabular-nums">
+                  {Math.round(
+                    filteredTopSitesGaps.reduce((acc, g) => acc + g.keywordDifficulty, 0) / Math.max(1, filteredTopSitesGaps.length)
+                  )} / 100
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  High-intent commercial viability
+                </div>
+              </div>
 
-                    <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 text-xs text-slate-300">
-                      <span className="text-emerald-400 font-semibold">PredictPro Advantage: </span>
-                      {gap.predictProAdvantage}
-                    </div>
-                  </div>
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-1">
+                <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
+                  <span>P1 High-ROI Targets</span>
+                  <Target className="w-3.5 h-3.5 text-rose-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-rose-400 tabular-nums">
+                  {filteredTopSitesGaps.filter((g) => g.actionPriority === 'P1 - High ROI').length}
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Direct mathematical edge over competitors
+                </div>
+              </div>
+            </div>
 
-                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
-                    <span className="font-mono text-slate-500 text-[11px]">{gap.targetPath}</span>
-                    <Link
-                      to={gap.targetPath}
-                      className="text-emerald-400 hover:underline flex items-center gap-1 font-medium"
-                    >
-                      <span>Explore Hub</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
+            {/* Interactive Filters Bar */}
+            <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                {/* Competitor Domain Selector */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-slate-400 font-medium mr-1 flex items-center gap-1">
+                    <Filter className="w-3 h-3 text-cyan-400" />
+                    Competitor:
+                  </span>
+                  {[
+                    { id: 'all', label: 'All Top Sites' },
+                    { id: 'forebet.com', label: 'Forebet' },
+                    { id: 'predictz.com', label: 'PredictZ' },
+                    { id: 'footystats.org', label: 'FootyStats' },
+                    { id: 'statarea.com', label: 'Statarea' },
+                    { id: 'windrawwin.com', label: 'WinDrawWin' },
+                    { id: 'whoscored.com', label: 'WhoScored' },
+                    { id: 'understat.com', label: 'Understat' },
+                    { id: 'oddsportal.com', label: 'OddsPortal' },
+                  ].map((comp) => {
+                    const isSelected = gapCompetitorFilter === comp.id;
+                    return (
+                      <button
+                        key={comp.id}
+                        onClick={() => setGapCompetitorFilter(comp.id)}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                          isSelected
+                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                            : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80'
+                        }`}
+                      >
+                        {comp.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Priority & Gap Type Filters */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <select
+                    value={gapPriorityFilter}
+                    onChange={(e) => setGapPriorityFilter(e.target.value)}
+                    className="bg-slate-950 border border-slate-700 text-slate-200 rounded-md px-2.5 py-1 text-xs focus:ring-1 focus:ring-cyan-500 outline-none"
+                  >
+                    <option value="all">All Priorities</option>
+                    <option value="P1 - High ROI">P1 - High ROI</option>
+                    <option value="P2 - Fast Win">P2 - Fast Win</option>
+                  </select>
+
+                  <select
+                    value={gapTypeFilter}
+                    onChange={(e) => setGapTypeFilter(e.target.value)}
+                    className="bg-slate-950 border border-slate-700 text-slate-200 rounded-md px-2.5 py-1 text-xs focus:ring-1 focus:ring-cyan-500 outline-none"
+                  >
+                    <option value="all">All Gap Types</option>
+                    <option value="Striking Distance (Positions 4–15)">Striking Distance (Pos 4–15)</option>
+                    <option value="Missing High-Volume Keyword">Missing High-Volume Keyword</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* VIEW MODE 1: Top Sites Keyword Gap Matrix */}
+            {gapViewMode === 'matrix' && (
+              <div className="space-y-4">
+                <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/80">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
+                        <tr>
+                          <th className="py-2.5 px-3">Keyword Query</th>
+                          <th className="py-2.5 px-3">Target Competitor</th>
+                          <th className="py-2.5 px-3 text-center">Ranks (Comp vs Ours)</th>
+                          <th className="py-2.5 px-3 text-right">Volume</th>
+                          <th className="py-2.5 px-3 text-center">KD</th>
+                          <th className="py-2.5 px-3 text-center">Intent</th>
+                          <th className="py-2.5 px-3 text-center">Priority</th>
+                          <th className="py-2.5 px-3">PredictPro Edge & Action Hub</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+                        {filteredTopSitesGaps.map((gap) => (
+                          <tr key={gap.id} className="hover:bg-slate-800/50 transition-colors">
+                            <td className="py-2.5 px-3 font-sans font-medium text-slate-200">
+                              <div className="flex items-center gap-1.5">
+                                <span>{gap.keyword}</span>
+                                <button
+                                  onClick={() => handleCopy(gap.keyword, gap.id)}
+                                  className="text-slate-500 hover:text-cyan-400 transition-colors p-0.5"
+                                  title="Copy keyword"
+                                >
+                                  {copiedKey === gap.id ? (
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                  ) : (
+                                    <Copy className="w-3 h-3" />
+                                  )}
+                                </button>
+                              </div>
+                            </td>
+
+                            <td className="py-2.5 px-3 font-sans">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                                {gap.competitorName}
+                              </span>
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center">
+                              <span className="text-amber-400 font-bold tabular-nums">#{gap.competitorRank}</span>
+                              <span className="text-slate-500 mx-1.5">vs</span>
+                              {gap.predictProCurrentRank ? (
+                                <span className="text-emerald-400 font-bold tabular-nums">#{gap.predictProCurrentRank}</span>
+                              ) : (
+                                <span className="text-slate-500 italic text-[10px]">Unranked</span>
+                              )}
+                            </td>
+
+                            <td className="py-2.5 px-3 text-right text-cyan-400 tabular-nums font-semibold">
+                              {gap.monthlyVolume.toLocaleString()}
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center tabular-nums">
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                  gap.keywordDifficulty > 35
+                                    ? 'bg-rose-500/20 text-rose-300'
+                                    : gap.keywordDifficulty > 25
+                                    ? 'bg-amber-500/20 text-amber-300'
+                                    : 'bg-emerald-500/20 text-emerald-300'
+                                }`}
+                              >
+                                {gap.keywordDifficulty}
+                              </span>
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center font-sans">
+                              <span className="text-[10px] text-slate-400">
+                                {gap.searchIntent}
+                              </span>
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center font-sans">
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                                  gap.actionPriority.startsWith('P1')
+                                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                    : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                                }`}
+                              >
+                                {gap.actionPriority.split(' ')[0]}
+                              </span>
+                            </td>
+
+                            <td className="py-2.5 px-3 font-sans">
+                              <Link
+                                to={gap.targetPath}
+                                className="text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1 font-medium"
+                              >
+                                <span>{gap.targetPath}</span>
+                                <ExternalLink className="w-3 h-3 shrink-0 opacity-70" />
+                              </Link>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Detailed Cards for Qualitative Weakness & PredictPro Edge */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredTopSitesGaps.slice(0, 8).map((gap) => (
+                    <div
+                      key={`card-${gap.id}`}
+                      className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3 flex flex-col justify-between"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                              {gap.competitorName} ({gap.competitorDomain})
+                            </span>
+                            <span className="text-amber-400 font-mono font-bold">Rank #{gap.competitorRank}</span>
+                          </div>
+                          <span className="text-cyan-400 font-mono font-semibold">
+                            {gap.monthlyVolume.toLocaleString()} searches/mo
+                          </span>
+                        </div>
+
+                        <h4 className="text-sm font-bold text-white flex items-center justify-between">
+                          <span>"{gap.keyword}"</span>
+                          <span className="text-xs font-normal text-slate-400">KD: {gap.keywordDifficulty}</span>
+                        </h4>
+
+                        <div className="bg-rose-950/20 border border-rose-900/30 rounded-lg p-2 text-xs text-rose-200">
+                          <span className="font-semibold text-rose-300 block mb-0.5">Competitor Limitation:</span>
+                          {gap.competitorLimitation}
+                        </div>
+
+                        <div className="bg-emerald-950/20 border border-emerald-900/30 rounded-lg p-2 text-xs text-emerald-200">
+                          <span className="font-semibold text-emerald-300 block mb-0.5">PredictPro Edge Solution:</span>
+                          {gap.predictProEdgeSolution}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <span className="font-mono text-slate-400 text-[11px]">{gap.targetPath}</span>
+                        <Link
+                          to={gap.targetPath}
+                          className="text-emerald-400 hover:underline flex items-center gap-1 font-medium"
+                        >
+                          <span>Open Live Hub</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW MODE 2: Dedicated Content Gap Landing Hubs */}
+            {gapViewMode === 'hubs' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {searchResults.contentGaps.map((gap, i) => (
+                  <div
+                    key={i}
+                    className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3 flex flex-col justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="text-cyan-400 font-semibold">{gap.monthlyVolume.toLocaleString()} searches/mo</span>
+                        <span className="text-slate-400">KD: {gap.keywordDifficulty}</span>
+                      </div>
+
+                      <h4 className="text-sm font-bold text-white hover:text-emerald-400 transition-colors">
+                        <Link to={gap.targetPath} className="flex items-center gap-1.5">
+                          <span>{gap.pageTitle}</span>
+                          <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                        </Link>
+                      </h4>
+
+                      <div className="text-xs text-slate-300">
+                        <span className="text-slate-500 font-medium">Competitors Ranking: </span>
+                        <span className="text-slate-300">{gap.competitorsRanking.join(', ')}</span>
+                      </div>
+
+                      <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 text-xs text-slate-300">
+                        <span className="text-emerald-400 font-semibold">PredictPro Advantage: </span>
+                        {gap.predictProAdvantage}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+                      <span className="font-mono text-slate-500 text-[11px]">{gap.targetPath}</span>
+                      <Link
+                        to={gap.targetPath}
+                        className="text-emerald-400 hover:underline flex items-center gap-1 font-medium"
+                      >
+                        <span>Explore Hub</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
