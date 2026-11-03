@@ -293,7 +293,7 @@ export default function Daily2OddsPredictions() {
 
         <ViralSlipShareCard
           title={ticket.label}
-          canonicalPath="/daily-2-odds"
+          canonicalPath="/daily-2-odds-predictions"
           items={ticket.legs.map((l) => ({
             homeTeam: l.homeTeam,
             awayTeam: l.awayTeam,

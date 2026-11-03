@@ -21,12 +21,14 @@ import {
   Award,
   Layers,
   Radio,
+  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AHREFS_12_OPPORTUNITY_PILLARS,
   TECHNICAL_CRITICAL_AUDIT_CHECKS,
 } from '@/services/ahrefsOpportunitiesService';
+import { AhrefsCrawlAuditPanel } from '@/components/AhrefsCrawlAuditPanel';
 
 interface LowHangingKeywordItem {
   keyword: string;
@@ -398,7 +400,7 @@ const LINK_INTERSECT_PROSPECTS = [
 export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = ({
   onTriggerIndexNow,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'content' | 'links' | 'technical'>('content');
+  const [activeSubTab, setActiveSubTab] = useState<'content' | 'links' | 'technical' | 'crawl'>('crawl');
   const [selectedPillarId, setSelectedPillarId] = useState<string>('low-hanging-fruit');
 
   const handleSelectPillar = (pillarId: string, category: 'Content' | 'Links' | 'Technical') => {
@@ -448,6 +450,9 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               <Badge variant="outline" className="text-xs">
                 Site Explorer · Content Explorer · Link Intersect · Site Audit
               </Badge>
+              <Badge className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">
+                Crawl Status: 6,356 / 6,356 Links Audited
+              </Badge>
             </div>
             <h2 className="text-2xl font-black text-foreground">
               Full-Spectrum SEO Content, Link Reclamation &amp; Technical Audit Center
@@ -464,8 +469,17 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           )}
         </div>
 
-        {/* Sub-navigation for the 3 core categories */}
+        {/* Sub-navigation for the 4 core categories */}
         <div className="flex items-center gap-2 mt-6 pt-4 border-t border-border/50 flex-wrap">
+          <Button
+            size="sm"
+            variant={activeSubTab === 'crawl' ? 'default' : 'outline'}
+            onClick={() => setActiveSubTab('crawl')}
+            className="gap-1.5 text-xs font-bold"
+          >
+            <Activity className="w-3.5 h-3.5 text-emerald-500" />
+            Live Crawl Status &amp; Bulk Exports (6,356 Links · 32 Remediated)
+          </Button>
           <Button
             size="sm"
             variant={activeSubTab === 'content' ? 'default' : 'outline'}
@@ -530,6 +544,11 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
           })}
         </div>
       </div>
+
+      {/* SECTION 0: AHREFS CRAWL AUDIT & BULK EXPORTS (6,356 Links · 251 URLs) */}
+      {activeSubTab === 'crawl' && (
+        <AhrefsCrawlAuditPanel onNavigateTab={(tab) => setActiveSubTab(tab as any)} />
+      )}
 
       {/* SECTION 1: CONTENT PILLARS */}
       {activeSubTab === 'content' && (

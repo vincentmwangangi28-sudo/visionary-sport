@@ -599,7 +599,7 @@ export const COMPETITOR_CONTENT_GAP_HUBS: CompetitorContentGapItem[] = [
   },
   {
     keywordCluster: 'predictz weekend accumulator tips & joint probability acca optimizer',
-    targetPath: '/accumulator-builder',
+    targetPath: '/accumulator',
     pageTitle: 'Weekend Football Accumulator Builder & Joint Copula Odds Optimizer',
     monthlyVolume: 145000,
     keywordDifficulty: 33,
@@ -626,7 +626,7 @@ export const COMPETITOR_CONTENT_GAP_HUBS: CompetitorContentGapItem[] = [
   },
   {
     keywordCluster: 'over 1.5 goals predictions stats & first-half goal decay curves',
-    targetPath: '/over-15-goals-predictions',
+    targetPath: '/over-1-5-goals-predictions',
     pageTitle: 'Over 1.5 Goals Predictions & First-Half Goal Decay Poisson Model',
     monthlyVolume: 125000,
     keywordDifficulty: 26,
@@ -682,7 +682,7 @@ export const TOP_SITES_KEYWORD_GAP_ANALYSIS: CompetitorKeywordGapAnalysisItem[] 
     gapType: 'Striking Distance (Positions 4–15)',
     competitorLimitation: 'Lacks early market line movement tracking, closing line value (CLV) alerts, and soft-vs-sharp bookmaker divergence.',
     predictProEdgeSolution: 'Pinnacle vs soft bookie line divergence detector with 24h advance steam alerts and positive EV early bird bets.',
-    targetPath: '/tomorrow',
+    targetPath: '/tomorrow-predictions',
     actionPriority: 'P2 - Fast Win',
   },
   {
@@ -716,7 +716,7 @@ export const TOP_SITES_KEYWORD_GAP_ANALYSIS: CompetitorKeywordGapAnalysisItem[] 
     gapType: 'Striking Distance (Positions 4–15)',
     competitorLimitation: 'PredictZ lists unweighted form runs with no correlation penalty for accas, resulting in severe negative expectation on multi-bets.',
     predictProEdgeSolution: 'Gaussian Copula accumulator optimizer calculating true joint probability, anti-correlation penalties, and multi-bookie booking codes.',
-    targetPath: '/accumulator-builder',
+    targetPath: '/accumulator',
     actionPriority: 'P1 - High ROI',
   },
   {
@@ -748,7 +748,7 @@ export const TOP_SITES_KEYWORD_GAP_ANALYSIS: CompetitorKeywordGapAnalysisItem[] 
     gapType: 'Striking Distance (Positions 4–15)',
     competitorLimitation: 'Arbitrary odds selection with unverified 65%+ vigorish built into bookie prices without math validation.',
     predictProEdgeSolution: 'Mathematical 5.00+ target odds slip generator with strict +EV positive expectation filter and automated SportyBet code creation.',
-    targetPath: '/five-odds-predictions',
+    targetPath: '/5-odds-predictions',
     actionPriority: 'P2 - Fast Win',
   },
 
@@ -782,7 +782,7 @@ export const TOP_SITES_KEYWORD_GAP_ANALYSIS: CompetitorKeywordGapAnalysisItem[] 
     gapType: 'Striking Distance (Positions 4–15)',
     competitorLimitation: 'Simple historic goal frequency without modeling tempo or game state decay (leading vs trailing game state).',
     predictProEdgeSolution: 'First-half vs second-half Poisson goal expectancy curves with Asian Over 1.75 split lines and live momentum indicators.',
-    targetPath: '/over-15-goals-predictions',
+    targetPath: '/over-1-5-goals-predictions',
     actionPriority: 'P2 - Fast Win',
   },
   {
@@ -848,7 +848,7 @@ export const TOP_SITES_KEYWORD_GAP_ANALYSIS: CompetitorKeywordGapAnalysisItem[] 
     gapType: 'Striking Distance (Positions 4–15)',
     competitorLimitation: 'Outdated table layouts with zero mobile-first filtering or one-click booking code export.',
     predictProEdgeSolution: 'Fast weekend fixture screener with instant SportyBet, 1xBet, and Bet9ja slip booking code generation.',
-    targetPath: '/weekend',
+    targetPath: '/weekend-predictions',
     actionPriority: 'P2 - Fast Win',
   },
 

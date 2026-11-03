@@ -190,7 +190,7 @@ export default function Under25GoalsPredictions() {
               <HelpCircle className="w-4 h-4 text-emerald-400" /> Related Goal Markets
             </h3>
             <div className="flex flex-wrap gap-1.5 mt-2">
-              <Link to="/over-2-5-goals-predictions" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+              <Link to="/over-under-predictions" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
                 Over 2.5 Goals <ArrowRight className="w-3 h-3" />
               </Link>
               <span className="text-muted-foreground">•</span>

@@ -60,7 +60,7 @@ const BETTING_HUB_TOOLS = [
   { to: '/player-props-lab', label: 'Player Shots (SoT) & Goal Prop Lab', tag: '1+ / 2+ SoT' },
   { to: '/trixie-yankee-calculator', label: 'System Bet & Permutation Simulator', tag: 'Yankee / Heinz' },
   { to: '/h2h', label: 'Dynamic Team H2H & Matchup Hub', tag: '10-Match H2H' },
-  { to: '/odds-comparison', label: 'Bookmaker Odds Line-Shopping Hub', tag: '6 Bookies' },
+  { to: '/arbitrage-finder', label: 'Bookmaker Odds & Surebet Matrix', tag: 'Surebets' },
   { to: '/pick-em-challenge', label: "Daily 5-Match Pick'em", tag: '+50 Coins' },
   { to: '/alert-center', label: 'Telegram & Push Alert Hub', tag: 'Live Alerts' },
   { to: '/referrals', label: 'Invite Friends & Earn Coins', tag: 'VIP Perks' },
@@ -370,7 +370,7 @@ export const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-1.5">
               <Button asChild variant="ghost" size="sm" className="h-9 px-3 text-xs font-medium gap-1.5">
-                <Link to="/my-dashboard" title="Saved Matches & Preferences">
+                <Link to="/dashboard" title="Saved Matches & Preferences">
                   <User className="h-3.5 w-3.5 text-primary" />
                   <span className="hidden sm:inline">Dashboard</span>
                 </Link>

@@ -45,11 +45,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AhrefsCrawlAuditPanel } from '@/components/AhrefsCrawlAuditPanel';
 
 export default function AhrefsOpportunitiesPage() {
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Content' | 'Links' | 'Technical'>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'keywords' | 'aio' | 'gaps' | 'redirects' | 'internal-links' | 'technical'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'crawl' | 'keywords' | 'aio' | 'gaps' | 'redirects' | 'internal-links' | 'technical'>('overview');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [test404Input, setTest404Input] = useState('/sportpesa-mega-jackpot-predictions');
   const [selectedAioSnippet, setSelectedAioSnippet] = useState(AI_OVERVIEW_FEATURED_SNIPPETS[0]);
@@ -242,6 +243,15 @@ export default function AhrefsOpportunitiesPage() {
                 12-Pillar Matrix
               </button>
               <button
+                onClick={() => setActiveTab('crawl')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                  activeTab === 'crawl' ? 'bg-emerald-600 text-white shadow-sm font-semibold' : 'text-emerald-400 hover:text-emerald-300'
+                }`}
+              >
+                <Activity className="w-3.5 h-3.5" />
+                Crawl Audit &amp; Bulk Exports (6,356)
+              </button>
+              <button
                 onClick={() => setActiveTab('keywords')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                   activeTab === 'keywords' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
@@ -375,6 +385,11 @@ export default function AhrefsOpportunitiesPage() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* TAB: Ahrefs Webmaster Tools Crawl Status & Bulk Exports */}
+        {activeTab === 'crawl' && (
+          <AhrefsCrawlAuditPanel />
         )}
 
         {/* TAB 2: Low-Hanging Fruit Keywords (Positions 4–15) */}

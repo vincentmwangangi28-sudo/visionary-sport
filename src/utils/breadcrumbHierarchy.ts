@@ -107,7 +107,7 @@ export function getBreadcrumbsForPath(
   pathname: string,
   options: BreadcrumbOptions = {}
 ): NormalizedBreadcrumbCrumb[] {
-  const cleanPath = (pathname || '/').trim().replace(/\/+$/, '') || '/';
+  let cleanPath = (pathname || '/').trim().replace(/\/+$/, '') || '/';
 
   // If custom items are provided, return them normalized (supporting both {name, item} and {label, href})
   if (options.items && options.items.length > 0) {
@@ -137,6 +137,40 @@ export function getBreadcrumbsForPath(
   // Home route
   if (cleanPath === '/') {
     return [{ name: 'Home', item: '/', current: true }];
+  }
+
+  // Canonical normalization to prevent internal 3xx redirects in breadcrumb schema & UI
+  const CANONICAL_REDIRECT_MAP: Record<string, string> = {
+    '/over-2-5-goals-predictions': '/over-under-predictions',
+    '/ht-ft-predictions': '/halftime-fulltime-predictions',
+    '/corners-cards-predictions': '/corners-predictions',
+    '/global-tournaments': '/tournaments',
+    '/trends': '/streaks',
+    '/upcoming-fixtures': '/upcoming',
+    '/compare': '/h2h',
+    '/results': '/archive',
+    '/kelly-calculator': '/kelly-criterion-calculator',
+    '/my-dashboard': '/dashboard',
+    '/epl-predictions': '/premier-league-predictions',
+    '/ucl-predictions': '/champions-league-predictions',
+    '/daily-2-odds': '/daily-2-odds-predictions',
+    '/tips': '/best-bets',
+    '/free-tips': '/best-bets',
+    '/sure-bets': '/best-bets',
+    '/banker-bets': '/best-bets',
+    '/betting-tips': '/best-bets',
+    '/today': '/best-bets',
+    '/tomorrow': '/tomorrow-predictions',
+    '/weekend': '/weekend-predictions',
+    '/acca': '/accumulator',
+    '/accumulators': '/accumulator',
+    '/both-teams-to-score': '/btts',
+    '/over-2-5-goals': '/btts',
+    '/odds-comparison': '/arbitrage-finder',
+  };
+
+  if (CANONICAL_REDIRECT_MAP[cleanPath]) {
+    cleanPath = CANONICAL_REDIRECT_MAP[cleanPath];
   }
 
   const crumbs: NormalizedBreadcrumbCrumb[] = [{ name: 'Home', item: '/' }];
@@ -193,7 +227,7 @@ export function getBreadcrumbsForPath(
     '/tomorrow-predictions': 'Tomorrow Predictions',
     '/weekend-predictions': 'Weekend Predictions',
     '/over-1-5-goals-predictions': 'Over 1.5 Goals',
-    '/over-2-5-goals-predictions': 'Over 2.5 Goals',
+    '/over-under-predictions': 'Over/Under 2.5 Goals',
     '/over-3-5-goals-predictions': 'Over 3.5 Goals',
     '/under-2-5-goals-predictions': 'Under 2.5 Goals',
     '/first-half-goals-predictions': 'First Half (1H) Goals',
@@ -208,29 +242,25 @@ export function getBreadcrumbsForPath(
     '/5-odds-predictions': 'Sure 5 & 10 Odds Accumulators',
     '/anytime-goalscorer-predictions': 'Goalscorer Predictions',
     '/double-chance-predictions': 'Double Chance (1X/X2)',
-    '/ht-ft-predictions': 'HT/FT Predictions',
+    '/halftime-fulltime-predictions': 'HT/FT Predictions',
     '/draw-predictions': 'Draw Predictions',
     '/asian-handicap-predictions': 'Asian Handicap',
     '/handicap-1x2-predictions': 'European Handicap (-1)',
-    '/corners-cards-predictions': 'Corners & Cards',
+    '/corners-predictions': 'Corners & Bookings',
     '/draw-no-bet-predictions': 'Draw No Bet (DNB)',
     '/win-to-nil-predictions': 'Win to Nil & Clean Sheet',
     '/correct-score': 'Correct Score',
     '/btts': 'BTTS (Both Teams Score)',
     '/accumulator': 'Acca Builder',
     '/tournaments': 'Global Tournaments',
-    '/global-tournaments': 'Global Tournaments',
     '/dropping-odds': 'Dropping Odds',
     '/screener': 'Match Screener',
     '/streaks': 'Streaks Radar',
-    '/trends': 'Streaks & Trends',
     '/track-record': 'Audited Track Record',
     '/standings': 'League Standings',
     '/upcoming': 'Upcoming Fixtures',
-    '/upcoming-fixtures': 'Upcoming Fixtures',
     '/recommendations': 'AI Recommendations',
     '/h2h': 'H2H Comparison',
-    '/compare': 'H2H Comparison',
   };
 
   if (predictionFeatureMappings[cleanPath]) {
@@ -280,7 +310,6 @@ export function getBreadcrumbsForPath(
     '/news': 'Football News',
     '/insights': 'Market Insights',
     '/archive': 'Results Archive',
-    '/results': 'Results Archive',
     '/statistics': 'Statistics',
     '/highlights': 'Match Highlights',
     '/players': 'Player Search',
@@ -288,7 +317,7 @@ export function getBreadcrumbsForPath(
     '/tipsters': 'Tipsters Community',
     '/leaderboard': 'Tipsters Leaderboard',
     '/bankroll': 'Bankroll Manager',
-    '/kelly-calculator': 'Kelly Criterion Calculator',
+    '/kelly-criterion-calculator': 'Kelly Criterion Calculator',
     '/parlay-calculator': 'Parlay Odds Calculator',
     '/system-bet-calculator': 'System Bet Calculator',
     '/hedge-bet-calculator': 'Hedge & Cash-Out Calculator',
@@ -304,7 +333,6 @@ export function getBreadcrumbsForPath(
     '/shop': 'VIP Pro Shop',
     '/rewards': 'Rewards & Coins',
     '/dashboard': 'My Dashboard',
-    '/my-dashboard': 'My Dashboard',
     '/preferences': 'User Preferences',
     '/auth': 'Sign In',
     '/admin': 'Admin Operations',
