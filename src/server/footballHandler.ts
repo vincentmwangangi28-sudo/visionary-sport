@@ -1208,7 +1208,7 @@ export async function handleFootballRequest(params: {
   const type = params.type || 'upcoming';
 
   if (type === 'highlights') {
-    const { handleHighlightsRequest } = await import('./highlightsHandler');
+    const { handleHighlightsRequest } = await import('./highlightsHandler.ts');
     return handleHighlightsRequest({
       homeTeam: params.homeTeam,
       awayTeam: params.awayTeam,

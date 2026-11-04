@@ -37,6 +37,7 @@ import {
   export4xxAuditCsv,
   exportImageAltTextAuditCsv,
   exportRobotsTxtAuditCsv,
+  exportUncrawledLinksCsv,
 } from '@/services/ahrefsCrawlAuditService';
 import { resolveReclaimed404Redirect } from '@/services/ahrefsOpportunitiesService';
 
@@ -324,6 +325,14 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={exportUncrawledLinksCsv}
+                  className="h-8 text-xs font-bold gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" /> Export CSV
+                </Button>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> 100% Crawled
                 </span>

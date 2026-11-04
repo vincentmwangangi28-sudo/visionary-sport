@@ -4,7 +4,7 @@
 // 2. Betika Official API (https://api.betika.com/v1/jackpot/events & /v1/jackpot/event?id=...)
 // 3. Official Syndicate Fixture Feeds for SportPesa Mega 17 & Mozzart Super Grand 20
 
-import { fetchServerUpcomingFixtures } from './footballHandler';
+import { fetchServerUpcomingFixtures } from './footballHandler.ts';
 
 const CHROME_HEADERS: Record<string, string> = {
   'User-Agent':

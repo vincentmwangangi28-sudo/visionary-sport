@@ -5,10 +5,10 @@
  * and powers live ESPN match XML sitemaps and RSS feeds.
  */
 
-import { handleFootballRequest } from './footballHandler';
-import { getAllSitemapEntries, CLUB_ANALYTICS_HUBS, BLOG_POSTS_METADATA, GLOBAL_HREFLANGS } from '../services/sitemapGenerator';
-import { getContextualPageIntegration } from '../services/seoKeywords';
-import { getRouteAhrefsOptimizationBundle } from '../services/ahrefsOpportunitiesService';
+import { handleFootballRequest } from './footballHandler.ts';
+import { getAllSitemapEntries, CLUB_ANALYTICS_HUBS, BLOG_POSTS_METADATA, GLOBAL_HREFLANGS } from '../services/sitemapGenerator.ts';
+import { getContextualPageIntegration } from '../services/seoKeywords.ts';
+import { getRouteAhrefsOptimizationBundle } from '../services/ahrefsOpportunitiesService.ts';
 
 export const SITE_BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
 

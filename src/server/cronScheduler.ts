@@ -12,7 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { handleCronTask } from './cronApiHandler';
+import { handleCronTask } from './cronApiHandler.ts';
 
 export interface ScheduledJobConfig {
   id: string;

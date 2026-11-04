@@ -1,4 +1,4 @@
-import { getUpdatedDefaultPredictions } from '../data/mockPredictions';
+import { getUpdatedDefaultPredictions } from '../data/mockPredictions.ts';
 
 export interface SitemapEntry {
   url: string;

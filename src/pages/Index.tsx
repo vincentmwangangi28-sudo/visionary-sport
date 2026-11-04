@@ -197,7 +197,7 @@ const PRO_SPORTS_TOOLS = [
     icon: Users,
   },
   {
-    to: '/odds-comparison',
+    to: '/arbitrage-finder',
     title: 'Bookmaker Odds Line-Shopping Hub',
     tag: '6 Bookies',
     desc: 'Live 1X2, Over/Under 2.5, and BTTS price comparison across SportyBet, Betika, SportPesa, Bet9ja & 1xBet.',
@@ -354,7 +354,7 @@ const Index = () => {
                 <span>Team H2H Hub</span>
               </Link>
               <Link
-                to="/odds-comparison"
+                to="/arbitrage-finder"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors shrink-0"
               >
                 <SlidersHorizontal className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
@@ -451,7 +451,7 @@ const Index = () => {
               <Link to="/h2h" className="text-muted-foreground hover:text-foreground">
                 Team H2H Matrix →
               </Link>
-              <Link to="/odds-comparison" className="text-muted-foreground hover:text-foreground">
+              <Link to="/arbitrage-finder" className="text-muted-foreground hover:text-foreground">
                 Odds Line-Shopping →
               </Link>
               <Link to="/xpts-standings" className="text-muted-foreground hover:text-foreground">

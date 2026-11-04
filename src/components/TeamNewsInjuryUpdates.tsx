@@ -562,7 +562,7 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
                               {item.status}
                             </span>
                             <ChevronDown
-                              className={`h-4 w-4 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+                              className={`h-4 w-4 transition-transform duration-200 ease-out motion-reduce:transition-none ${
                                 isExpanded ? 'rotate-180 text-primary' : 'text-muted-foreground'
                               }`}
                               aria-hidden="true"
@@ -574,7 +574,7 @@ export const TeamNewsInjuryUpdates: React.FC<TeamNewsInjuryUpdatesProps> = ({
                           id={panelId}
                           role="region"
                           aria-label={`${item.player} injury and lineup details`}
-                          className={`grid transition-[grid-template-rows,opacity] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+                          className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none ${
                             isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                           }`}
                         >

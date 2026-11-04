@@ -198,6 +198,23 @@ export function setFootballCache<T>(key: string, data: T, ttlMs = CACHE_TTLS.UPC
     expiresAt: now + ttlMs,
   };
 
+  // Enforce memory bounds to prevent memory bloat over prolonged sessions
+  if (memoryCache.size >= 150) {
+    for (const [k, rec] of memoryCache.entries()) {
+      if (now >= rec.expiresAt) {
+        memoryCache.delete(k);
+      }
+    }
+    if (memoryCache.size >= 150) {
+      // Evict oldest entries
+      let evicted = 0;
+      for (const k of memoryCache.keys()) {
+        memoryCache.delete(k);
+        if (++evicted >= 30) break;
+      }
+    }
+  }
+
   memoryCache.set(key, record as CacheRecord<unknown>);
 
   try {

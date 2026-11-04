@@ -17,7 +17,7 @@ const STATIC_PUBLIC_CACHE: Record<string, { body: string; contentType: string }>
 function getCachedPublicFile(relPath: string, contentType: string): { body: string; contentType: string } | null {
   if (STATIC_PUBLIC_CACHE[relPath]) return STATIC_PUBLIC_CACHE[relPath];
   try {
-    const abs = path.resolve(__dirname, "public", relPath);
+    const abs = path.resolve(import.meta.dirname || process.cwd(), "public", relPath);
     if (fs.existsSync(abs)) {
       const body = fs.readFileSync(abs, "utf-8");
       STATIC_PUBLIC_CACHE[relPath] = { body, contentType };

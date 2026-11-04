@@ -176,7 +176,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
             data,
           };
         }
-        const { handleFootballRequest } = await import('./footballHandler');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
         const liveData = await handleFootballRequest({ type: 'live' });
         return {
           success: true,
@@ -207,7 +207,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
             data,
           };
         }
-        const { handleFootballRequest } = await import('./footballHandler');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const scannedList = upcomingData?.fixtures || upcomingData?.matches || [];
         return {
@@ -254,7 +254,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'sync':
       case 'daily-predictions':
       case 'daily': {
-        const { handleFootballRequest } = await import('./footballHandler');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const upcomingList = upcomingData?.fixtures || upcomingData?.matches || [];
         if (IS_CUSTOM_SUPABASE) {
@@ -289,7 +289,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'jackpot-settle':
       case 'jackpot-rollover':
       case 'jackpot-engine': {
-        const { handleDirectJackpotFetch } = await import('./jackpotDirectHandler');
+        const { handleDirectJackpotFetch } = await import('./jackpotDirectHandler.ts');
         const directSync = await handleDirectJackpotFetch(true);
 
         const totalMatches = directSync.counts?.totalMatches || 80;
@@ -367,7 +367,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
             data,
           };
         }
-        const { handleFootballRequest } = await import('./footballHandler');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
         const standingsData = await handleFootballRequest({ type: 'standings' });
         return {
           success: true,
@@ -381,7 +381,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       }
 
       case 'telegram-broadcast': {
-        const { handleTelegramRequest } = await import('./telegramHandler');
+        const { handleTelegramRequest } = await import('./telegramHandler.ts');
         const result = await handleTelegramRequest({
           action: 'broadcast',
           parse_mode: 'HTML',
@@ -399,7 +399,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       }
 
       case 'evening-recap': {
-        const { handleTelegramRequest } = await import('./telegramHandler');
+        const { handleTelegramRequest } = await import('./telegramHandler.ts');
         const result = await handleTelegramRequest({
           action: 'broadcast',
           parse_mode: 'HTML',
@@ -494,8 +494,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
 
       case 'booking-codes':
       case 'booking-code': {
-        const { handleFootballRequest } = await import('./footballHandler');
-        const { generateRegionalBookingCode } = await import('../services/bookmakerBookingCodes');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
+        const { generateRegionalBookingCode } = await import('../services/bookmakerBookingCodes.ts');
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const upcomingList = upcomingData?.fixtures || upcomingData?.matches || [];
         const dayKey = executedAt.slice(0, 13);
@@ -523,7 +523,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'live-momentum':
       case 'momentum':
       case 'late-goals': {
-        const { handleFootballRequest } = await import('./footballHandler');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
         const liveData: any = await handleFootballRequest({ type: 'live' });
         const liveList = liveData?.matches || liveData?.fixtures || [];
         const count = Array.isArray(liveList) ? liveList.length : 6;
@@ -545,7 +545,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
 
       case 'referee-props':
       case 'props-referee': {
-        const { handleFootballRequest } = await import('./footballHandler');
+        const { handleFootballRequest } = await import('./footballHandler.ts');
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const upcomingList = upcomingData?.fixtures || upcomingData?.matches || [];
         const count = Array.isArray(upcomingList) ? upcomingList.length : 18;

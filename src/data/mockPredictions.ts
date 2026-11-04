@@ -1,4 +1,4 @@
-import { Prediction } from '../types/prediction';
+import { Prediction } from '../types/prediction.ts';
 
 /**
  * Generates an always-upcoming ISO timestamp for a fixture relative to the current time.
