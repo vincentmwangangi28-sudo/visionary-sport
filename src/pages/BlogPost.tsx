@@ -933,6 +933,39 @@ export default function BlogPost() {
           },
         ]}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "@id": `https://predictpro.guru/blog/${slug}#article`,
+            headline: post.title,
+            description: post.description,
+            url: `https://predictpro.guru/blog/${slug}`,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://predictpro.guru/blog/${slug}`,
+            },
+            datePublished: `${post.date}T08:00:00+00:00`,
+            dateModified: "2026-10-23T08:00:00+00:00",
+            author: {
+              "@type": "Organization",
+              name: "PredictPro Quantitative Research Desk",
+              url: "https://predictpro.guru",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "PredictPro",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://predictpro.guru/icon-512.png",
+              },
+            },
+            image: "https://predictpro.guru/og-image.jpg",
+          }),
+        }}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-3xl">
         {/* Dynamic Breadcrumbs */}

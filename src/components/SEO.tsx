@@ -12,7 +12,12 @@ export type SEOProps = SEOManagerOptions;
 
 export const SEO = (props: SEOProps) => {
   const [runtimeReady, setRuntimeReady] = useState(
-    () => import.meta.env.MODE === 'test'
+    () =>
+      import.meta.env.MODE === 'test' ||
+      (typeof navigator !== 'undefined' &&
+        /bot|googlebot|crawler|spider|robot|crawling|ahrefs|bingbot|yandex|duckduck/i.test(
+          navigator.userAgent || ''
+        ))
   );
 
   useEffect(() => {

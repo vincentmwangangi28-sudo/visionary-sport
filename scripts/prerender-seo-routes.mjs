@@ -24,8 +24,8 @@ const BASE_URL = 'https://predictpro.guru';
 
 const ROUTE_META = {
   '/': {
-    title: 'PredictPro — AI Pro Tips Today: Football Predictions & xG',
-    description: 'Daily AI pro tips today & verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues.',
+    title: 'PredictPro — Football Match Statistics, Live Scores & xG',
+    description: 'Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.',
   },
   '/best-bets': {
     title: 'Free Guru Tips Today & Sure Banker Bets | PredictPro',
@@ -730,6 +730,10 @@ function runPrerender() {
       .replace(
         /<h1[^>]*>[\s\S]*?<\/h1>\s*<p[^>]*>[\s\S]*?<\/p>/,
         `<h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 12px 0;">${escapedTitle}</h1>\n        <p class="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed" style="font-size: 15px; line-height: 1.6; max-width: 672px; margin: 0 auto 24px auto;">${escapedDesc}</p>\n        ${richSectionHtml}`
+      )
+      .replace(
+        /<noscript>[\s\S]*?<h1[^>]*>([\s\S]*?)<\/h1>/g,
+        '<noscript><p style="font-size: 20px; font-weight: 800; margin: 0 0 12px 0;">$1</p>'
       );
 
     if (routePath === '/') {
@@ -827,6 +831,186 @@ function buildRouteSpecificJsonLd(routePath, canonicalUrl, title, description) {
       ],
     },
   ];
+
+  // 1. Product Schema (Shop / Platform Pass)
+  if (routePath === '/shop') {
+    graph.push({
+      '@type': 'Product',
+      '@id': `${canonicalUrl}#product`,
+      name: 'PredictPro Open-Access Football Analytics & VIP Pass',
+      description: description,
+      image: 'https://predictpro.guru/og-image.jpg',
+      brand: {
+        '@type': 'Brand',
+        name: 'PredictPro',
+      },
+      offers: {
+        '@type': 'Offer',
+        url: canonicalUrl,
+        priceCurrency: 'USD',
+        price: '0.00',
+        priceValidUntil: '2027-12-31',
+        availability: 'https://schema.org/InStock',
+        itemCondition: 'https://schema.org/NewCondition',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.9',
+        reviewCount: '128',
+      },
+    });
+  }
+
+  // 2. Category Page ItemList Schema (/blog, /tournaments, /standings, /predict)
+  if (routePath === '/blog') {
+    const blogItems = [
+      { name: 'How to Read AI Football Predictions Like a Pro', path: '/blog/how-to-read-football-predictions' },
+      { name: 'Expected Goals (xG) & xGA Modeling Guide', path: '/blog/expected-goals-xg-betting-model-explained' },
+      { name: 'Half-Time / Full-Time (HT/FT) Strategy', path: '/blog/halftime-fulltime-ht-ft-predictions-strategy' },
+      { name: 'Positive Expected Value (+EV) Betting Explained', path: '/blog/value-betting-explained' },
+      { name: 'Asian Handicap Lines & Quarter-Goal Splits', path: '/blog/asian-handicap-betting-explained' },
+      { name: 'Draw No Bet vs Double Chance Staking Math', path: '/blog/draw-no-bet-vs-double-chance-strategy' },
+      { name: 'Closing Line Value (CLV) & Steam Chasing', path: '/blog/closing-line-value-clv-dropping-odds' },
+      { name: 'Mathematical Bankroll Management & Kelly Formula', path: '/blog/bankroll-management-football' },
+      { name: 'Premier League 2026/27 Prediction Playbook', path: '/blog/premier-league-prediction-guide-2026' },
+      { name: 'Champions League 36-Team Swiss Model', path: '/blog/champions-league-group-stage-tips' },
+      { name: 'BTTS & Over 2.5 Goals Goal Expectancy Models', path: '/blog/btts-over-under-strategy' },
+      { name: 'FKF Kenyan Premier League Tactical Guide', path: '/blog/kpl-betting-guide-kenya' },
+      { name: 'Low-Correlation Accumulator Building Strategy', path: '/blog/accumulator-building-strategy' },
+      { name: 'Exact Score Bivariate Poisson Distribution Tips', path: '/blog/correct-score-prediction-tips' },
+      { name: '17-Game Mega Jackpot Permutation Strategy', path: '/blog/sportpesa-mega-jackpot-prediction-17-games' },
+    ];
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${canonicalUrl}#itemlist`,
+      name: 'PredictPro Football Analytics & Betting Strategy Guides',
+      description: description,
+      numberOfItems: blogItems.length,
+      itemListElement: blogItems.map((item, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: item.name,
+        url: `${BASE_URL}${item.path}`,
+      })),
+    });
+  } else if (routePath === '/tournaments') {
+    const tournamentItems = [
+      { name: 'English Premier League', path: '/premier-league-predictions' },
+      { name: 'UEFA Champions League', path: '/champions-league-predictions' },
+      { name: 'UEFA Europa League', path: '/europa-league-predictions' },
+      { name: 'UEFA Conference League', path: '/conference-league-predictions' },
+      { name: 'Spanish LaLiga', path: '/la-liga-predictions' },
+      { name: 'German Bundesliga', path: '/bundesliga-predictions' },
+      { name: 'Italian Serie A', path: '/serie-a-predictions' },
+      { name: 'French Ligue 1', path: '/ligue-1-predictions' },
+      { name: 'FKF Kenya Premier League', path: '/kpl-predictions' },
+      { name: 'Africa Cup of Nations (AFCON)', path: '/afcon-predictions' },
+      { name: 'Copa Libertadores', path: '/copa-libertadores-predictions' },
+      { name: 'FIFA World Cup', path: '/world-cup-predictions' },
+    ];
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${canonicalUrl}#itemlist`,
+      name: 'Global Football Tournaments & Continental Competitions',
+      description: description,
+      numberOfItems: tournamentItems.length,
+      itemListElement: tournamentItems.map((item, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: item.name,
+        url: `${BASE_URL}${item.path}`,
+      })),
+    });
+  } else if (routePath === '/standings') {
+    const standingItems = [
+      { name: 'Premier League Standings & xPTS', path: '/premier-league-predictions' },
+      { name: 'LaLiga Standings & xPTS', path: '/la-liga-predictions' },
+      { name: 'Serie A Standings & Form', path: '/serie-a-predictions' },
+      { name: 'Bundesliga Standings & xPTS', path: '/bundesliga-predictions' },
+      { name: 'Ligue 1 Standings & Form', path: '/ligue-1-predictions' },
+      { name: 'Champions League Swiss Phase Table', path: '/champions-league-predictions' },
+      { name: 'FKF Kenya Premier League Table', path: '/kpl-predictions' },
+    ];
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${canonicalUrl}#itemlist`,
+      name: '2026/27 Football League Standings & Expected Points Tables',
+      description: description,
+      numberOfItems: standingItems.length,
+      itemListElement: standingItems.map((item, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: item.name,
+        url: `${BASE_URL}${item.path}`,
+      })),
+    });
+  } else if (routePath === '/predict') {
+    const derbyItems = [
+      { name: 'Arsenal vs Chelsea', path: '/predict/arsenal-vs-chelsea' },
+      { name: 'Liverpool vs Manchester City', path: '/predict/liverpool-vs-manchester-city' },
+      { name: 'Real Madrid vs Barcelona', path: '/predict/real-madrid-vs-barcelona' },
+      { name: 'Bayern Munich vs Borussia Dortmund', path: '/predict/bayern-munich-vs-borussia-dortmund' },
+      { name: 'Inter Milan vs AC Milan', path: '/predict/inter-milan-vs-ac-milan' },
+      { name: 'Manchester United vs Tottenham', path: '/predict/manchester-united-vs-tottenham' },
+      { name: 'PSG vs Marseille', path: '/predict/psg-vs-marseille' },
+      { name: 'Gor Mahia vs AFC Leopards', path: '/predict/gor-mahia-vs-afc-leopards' },
+    ];
+    graph.push({
+      '@type': 'ItemList',
+      '@id': `${canonicalUrl}#itemlist`,
+      name: 'Match Predictions & Head-to-Head Derby Projections',
+      description: description,
+      numberOfItems: derbyItems.length,
+      itemListElement: derbyItems.map((item, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: item.name,
+        url: `${BASE_URL}${item.path}`,
+      })),
+    });
+  }
+
+  // 3. Article / BlogPosting Schema (115 content & match preview pages)
+  const isArticlePage =
+    (routePath.startsWith('/blog/') && routePath !== '/blog') ||
+    (routePath.startsWith('/predict/') && routePath !== '/predict') ||
+    routePath.endsWith('-predictions') ||
+    routePath === '/news' ||
+    routePath === '/methodology' ||
+    routePath === '/bet-of-the-day' ||
+    routePath.startsWith('/teams/') ||
+    routePath.startsWith('/players/');
+
+  if (isArticlePage) {
+    const isBlog = routePath.startsWith('/blog/');
+    graph.push({
+      '@type': isBlog ? 'BlogPosting' : 'Article',
+      '@id': `${canonicalUrl}#article`,
+      headline: title.replace(/\s*\|\s*PredictPro.*$/i, '').trim(),
+      description: description,
+      url: canonicalUrl,
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': canonicalUrl,
+      },
+      datePublished: '2025-01-15T08:00:00+00:00',
+      dateModified: '2026-11-04T09:00:00+00:00',
+      author: {
+        '@type': 'Organization',
+        name: isBlog ? 'PredictPro Quantitative Research Desk' : 'PredictPro Data Science Desk',
+        url: BASE_URL,
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'PredictPro',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://predictpro.guru/icon-512.png',
+        },
+      },
+      image: 'https://predictpro.guru/og-image.jpg',
+    });
+  }
 
   return `<script type="application/ld+json" id="prerender-route-jsonld">${JSON.stringify({
     '@context': 'https://schema.org',

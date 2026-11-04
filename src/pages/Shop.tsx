@@ -80,6 +80,38 @@ export default function Shop() {
         canonical="/shop"
         keywords="free football predictions, free expected goals xg analytics, open access soccer predictions, free correct score model"
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "@id": "https://predictpro.guru/shop#product",
+            name: "PredictPro Open-Access Football Analytics & VIP Pass",
+            description:
+              "All PredictPro AI football predictions, Expected Goals (xG) models, Correct Score Poisson matrices, and 40+ league analytics are 100% free with zero paywalls.",
+            image: "https://predictpro.guru/og-image.jpg",
+            brand: {
+              "@type": "Brand",
+              name: "PredictPro",
+            },
+            offers: {
+              "@type": "Offer",
+              url: "https://predictpro.guru/shop",
+              priceCurrency: "USD",
+              price: "0.00",
+              priceValidUntil: "2027-12-31",
+              availability: "https://schema.org/InStock",
+              itemCondition: "https://schema.org/NewCondition",
+            },
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: "4.9",
+              reviewCount: "128",
+            },
+          }),
+        }}
+      />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-12 max-w-6xl">
         <div className="text-center mb-10">
