@@ -1,4 +1,4 @@
-import { Suspense, lazy, startTransition, useEffect, useState } from 'react';
+import { Suspense, startTransition, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
@@ -7,6 +7,8 @@ import { HomeViewTabs, HomeViewMode } from '@/components/HomeViewTabs';
 import { PredictionsDashboard } from '@/components/PredictionsDashboard';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { FooterFAQ } from '@/components/FooterFAQ';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import {
   Flame,
   Ticket,
@@ -25,20 +27,17 @@ import {
   Wallet,
 } from 'lucide-react';
 
-const LiveMatches = lazy(() =>
+const LiveMatches = lazyWithRetry(() =>
   import('@/components/LiveMatches').then((m) => ({ default: m.LiveMatches }))
 );
-const AISmartSlipGenerator = lazy(() =>
+const AISmartSlipGenerator = lazyWithRetry(() =>
   import('@/components/AISmartSlipGenerator').then((m) => ({ default: m.AISmartSlipGenerator }))
 );
-const TeamNewsInjuryUpdates = lazy(() =>
+const TeamNewsInjuryUpdates = lazyWithRetry(() =>
   import('@/components/TeamNewsInjuryUpdates').then((m) => ({ default: m.TeamNewsInjuryUpdates }))
 );
-const PastResultsArchive = lazy(() =>
+const PastResultsArchive = lazyWithRetry(() =>
   import('@/components/PastResultsArchive').then((m) => ({ default: m.PastResultsArchive }))
-);
-const FooterFAQ = lazy(() =>
-  import('@/components/FooterFAQ').then((m) => ({ default: m.FooterFAQ }))
 );
 
 const PRO_SPORTS_TOOLS = [
@@ -197,7 +196,7 @@ const PRO_SPORTS_TOOLS = [
     icon: Users,
   },
   {
-    to: '/arbitrage-finder',
+    to: '/odds-comparison',
     title: 'Bookmaker Odds Line-Shopping Hub',
     tag: '6 Bookies',
     desc: 'Live 1X2, Over/Under 2.5, and BTTS price comparison across SportyBet, Betika, SportPesa, Bet9ja & 1xBet.',
@@ -243,32 +242,6 @@ const HOME_SCHEMA = [
 
 const Index = () => {
   const [activeMode, setActiveMode] = useState<HomeViewMode>('predictions');
-  const [faqReady, setFaqReady] = useState(
-    () => import.meta.env.MODE === 'test'
-  );
-
-  useEffect(() => {
-    if (faqReady) return;
-    if (
-      typeof window !== 'undefined' &&
-      (navigator.webdriver ||
-        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ''))
-    ) {
-      return;
-    }
-    let mounted = false;
-    const enable = () => {
-      if (mounted) return;
-      mounted = true;
-      startTransition(() => setFaqReady(true));
-    };
-    const timer = setTimeout(enable, 10000);
-    window.addEventListener('scroll', enable, { passive: true, once: true });
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', enable);
-    };
-  }, [faqReady]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -483,7 +456,7 @@ const Index = () => {
               const Icon = tool.icon;
               return (
                 <Link
-                  key={tool.to}
+                  key={`${tool.to}-${tool.title}`}
                   to={tool.to}
                   className="group rounded-xl border border-border bg-card p-4 hover:border-primary/50 transition-all flex flex-col justify-between space-y-3 shadow-2xs"
                 >
@@ -514,13 +487,7 @@ const Index = () => {
 
         {/* Contained FAQ Section */}
         <div className="cv-auto container mx-auto max-w-7xl px-4 sm:px-6">
-          {faqReady ? (
-            <Suspense fallback={<div className="min-h-[160px]" aria-hidden="true" />}>
-              <FooterFAQ />
-            </Suspense>
-          ) : (
-            <div className="min-h-[160px]" aria-hidden="true" />
-          )}
+          <FooterFAQ />
         </div>
       </main>
 

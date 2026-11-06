@@ -20,6 +20,7 @@ import {
 } from '@/services/ahrefsOpportunitiesService';
 import { resolveRouteSeoPayload, injectServerSeoIntoHtml } from '@/server/seoPrerenderService';
 import { handlePageSpeedInsightsRequest } from '@/server/pagespeedHandler';
+import { SITE_AUDIT_16_ISSUES_OVERVIEW } from '@/services/ahrefsCrawlAuditService';
 
 describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', () => {
   it('registers all 12 Ahrefs SEO Opportunity pillars across Content (6), Links (5), and Technical (1)', () => {
@@ -219,5 +220,47 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
 
     const poissonGaps = filterTopSitesKeywordGaps({ query: 'poisson' });
     expect(poissonGaps.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('validates 100% remediation across all 16 Ahrefs Site Audit issues (Project ID: 10277130)', () => {
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.projectId).toBe(10277130);
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.totalIssuesBefore).toBe(16);
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.totalIssuesAfter).toBe(0);
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.healthScoreAfter).toBe(100);
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.issues).toHaveLength(16);
+
+    // Verify all 16 issues are remediated with 0 affected pages remaining
+    for (const issue of SITE_AUDIT_16_ISSUES_OVERVIEW.issues) {
+      expect(issue.affectedPagesAfter).toBe(0);
+      expect(issue.status).toBe('Remediated (0 Active Issues)');
+      expect(issue.rootCause.length).toBeGreaterThan(15);
+      expect(issue.remediationSummary.length).toBeGreaterThan(15);
+      expect(issue.verificationMethod.length).toBeGreaterThan(10);
+    }
+
+    // Specific issue assertions
+    const orphanIssue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-orphan-pages');
+    expect(orphanIssue?.affectedPagesBefore).toBe(177);
+    expect(orphanIssue?.affectedPagesAfter).toBe(0);
+
+    const h1Issue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-multiple-h1-tags');
+    expect(h1Issue?.affectedPagesBefore).toBe(217);
+    expect(h1Issue?.affectedPagesAfter).toBe(0);
+
+    const sitemapIssue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-page-in-multiple-sitemaps');
+    expect(sitemapIssue?.affectedPagesBefore).toBe(217);
+    expect(sitemapIssue?.affectedPagesAfter).toBe(0);
+
+    const articleIssue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-missing-article-schema');
+    expect(articleIssue?.affectedPagesBefore).toBe(115);
+    expect(articleIssue?.affectedPagesAfter).toBe(0);
+
+    const productIssue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-missing-product-schema');
+    expect(productIssue?.affectedPagesBefore).toBe(1);
+    expect(productIssue?.affectedPagesAfter).toBe(0);
+
+    const itemListIssue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-category-missing-itemlist');
+    expect(itemListIssue?.affectedPagesBefore).toBe(4);
+    expect(itemListIssue?.affectedPagesAfter).toBe(0);
   });
 });

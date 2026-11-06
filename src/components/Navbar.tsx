@@ -60,7 +60,7 @@ const BETTING_HUB_TOOLS = [
   { to: '/player-props-lab', label: 'Player Shots (SoT) & Goal Prop Lab', tag: '1+ / 2+ SoT' },
   { to: '/trixie-yankee-calculator', label: 'System Bet & Permutation Simulator', tag: 'Yankee / Heinz' },
   { to: '/h2h', label: 'Dynamic Team H2H & Matchup Hub', tag: '10-Match H2H' },
-  { to: '/arbitrage-finder', label: 'Bookmaker Odds & Surebet Matrix', tag: 'Surebets' },
+  { to: '/odds-comparison', label: 'Odds Comparison & Line Shopping', tag: '6 Bookies' },
   { to: '/pick-em-challenge', label: "Daily 5-Match Pick'em", tag: '+50 Coins' },
   { to: '/alert-center', label: 'Telegram & Push Alert Hub', tag: 'Live Alerts' },
   { to: '/referrals', label: 'Invite Friends & Earn Coins', tag: 'VIP Perks' },
@@ -257,7 +257,7 @@ export const Navbar = () => {
                   <div className="space-y-0.5">
                     {BETTING_HUB_TOOLS.map((tool) => (
                       <Link
-                        key={tool.to}
+                        key={`${tool.to}-${tool.label}`}
                         to={tool.to}
                         role="menuitem"
                         onClick={() => setToolsOpen(false)}
