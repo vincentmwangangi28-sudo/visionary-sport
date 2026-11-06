@@ -122,14 +122,6 @@ const CORE_PAGES = [
   { path: '/stadium-altitude-weather', priority: 0.90, freq: 'daily', title: 'Stadium Altitude, Weather, Pitch Surface & Travel Fatigue xG Modifier Hub' },
   { path: '/tactical-mismatch-matrix', priority: 0.90, freq: 'daily', title: 'Tactical Style Mismatch, PPDA Press & Coaching DNA Matrix' },
   { path: '/referee-stats-predictions', priority: 0.95, freq: 'daily', title: 'Referee Card Stats, VAR Penalty Rates & Bookings Predictions Today' },
-  { path: '/teams/arsenal', priority: 0.85, freq: 'daily', title: 'Arsenal xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/real-madrid', priority: 0.85, freq: 'daily', title: 'Real Madrid xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/manchester-city', priority: 0.85, freq: 'daily', title: 'Manchester City xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/gor-mahia', priority: 0.85, freq: 'daily', title: 'Gor Mahia xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/al-ahly', priority: 0.85, freq: 'daily', title: 'Al Ahly xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/mamelodi-sundowns', priority: 0.85, freq: 'daily', title: 'Mamelodi Sundowns xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/young-africans', priority: 0.85, freq: 'daily', title: 'Young Africans (Yanga) xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
-  { path: '/teams/simba-sc', priority: 0.85, freq: 'daily', title: 'Simba SC xG Stats, Poisson Ratings & FDR Schedule | PredictPro' },
   { path: '/booking-codes', priority: 0.95, freq: 'daily', title: 'Free SportyBet, 1xBet, Bet9ja, SportPesa & Betika Booking Codes Today' },
   { path: '/code-converter', priority: 0.90, freq: 'daily', title: 'Free Bet Code Converter: Convert SportyBet, 1xBet, Bet9ja & Betway Codes' },
   { path: '/rewards', priority: 0.75, freq: 'daily', title: 'Daily Rewards, Coin Wheel & Prediction Unlocks | PredictPro' },
@@ -226,6 +218,8 @@ const CLUB_ANALYTICS_SLUGS = [
   'gor-mahia',
   'kaizer-chiefs',
   'orlando-pirates',
+  'young-africans',
+  'simba-sc',
 ];
 
 // Key Featured Match Slugs
@@ -450,7 +444,6 @@ ${nodes}
 
 export function buildSitemapIndexXml() {
   const subSitemaps = [
-    `${BASE_URL}/sitemap.xml`,
     `${BASE_URL}/sitemap-core.xml`,
     `${BASE_URL}/sitemap-leagues.xml`,
     `${BASE_URL}/sitemap-matches.xml`,

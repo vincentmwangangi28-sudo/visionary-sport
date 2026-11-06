@@ -1,41 +1,8 @@
-import { Suspense, startTransition, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity } from 'lucide-react';
-import { lazyWithRetry } from '@/lib/lazyWithRetry';
-
-const SEOInternalLinkMesh = lazyWithRetry(() =>
-  import('@/components/SEOInternalLinkMesh').then((m) => ({
-    default: m.SEOInternalLinkMesh,
-  }))
-);
+import { SEOInternalLinkMesh } from '@/components/SEOInternalLinkMesh';
 
 export const Footer = () => {
-  const [meshReady, setMeshReady] = useState(
-    () => import.meta.env.MODE === 'test'
-  );
-
-  useEffect(() => {
-    if (meshReady) return;
-    if (
-      typeof window !== 'undefined' &&
-      (navigator.webdriver ||
-        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ''))
-    ) {
-      return;
-    }
-    let mounted = false;
-    const enable = () => {
-      if (mounted) return;
-      mounted = true;
-      startTransition(() => setMeshReady(true));
-    };
-    const timer = setTimeout(enable, 12000);
-    window.addEventListener('scroll', enable, { passive: true, once: true });
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', enable);
-    };
-  }, [meshReady]);
 
   return (
     <footer className="cv-auto border-t border-border bg-card mt-16 pb-20 md:pb-8">
@@ -155,11 +122,7 @@ export const Footer = () => {
         </div>
 
         {/* Universal Contextual Internal Link Mesh & Complete 6-Cluster Page Directory */}
-        {meshReady && (
-          <Suspense fallback={null}>
-            <SEOInternalLinkMesh />
-          </Suspense>
-        )}
+        <SEOInternalLinkMesh />
 
         {/* Publisher Compliance & Informational Disclaimer */}
         <div className="pt-6 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-muted-foreground">

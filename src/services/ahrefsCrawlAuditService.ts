@@ -755,7 +755,7 @@ export const SITE_AUDIT_16_ISSUES_OVERVIEW: SiteAuditProjectOverview = {
   previousCrawlDate: '2026-11-04T06:13:18Z',
   totalIssuesBefore: 16,
   totalIssuesAfter: 0,
-  healthScoreBefore: 82,
+  healthScoreBefore: 32,
   healthScoreAfter: 100,
   issues: [
     {

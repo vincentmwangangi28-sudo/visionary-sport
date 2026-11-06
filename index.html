@@ -26,14 +26,6 @@
     <script>
       (function () {
         try {
-          var isBot = /bot|googlebot|crawler|spider|robot|crawling|ahrefs|bingbot|yandex|duckduck/i.test(navigator.userAgent || '');
-          if (!isBot && typeof window !== 'undefined' && window.location) {
-            var host = window.location.hostname;
-            if (host === 'www.predictpro.guru' || (host === 'predictpro.guru' && window.location.protocol === 'http:')) {
-              window.location.replace('https://predictpro.guru' + window.location.pathname + window.location.search + window.location.hash);
-              return;
-            }
-          }
           var rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '/';
           var cleanPath = rawPath === '/' ? '/' : rawPath.replace(/\/+$/, '');
           var canonicalHref = 'https://predictpro.guru' + (cleanPath === '/' ? '/' : cleanPath);
