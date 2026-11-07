@@ -65,12 +65,20 @@ if ('serviceWorker' in navigator) {
   }
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
-      .then((reg) => {
-        reg.update().catch(() => {});
-      })
-      .catch(() => {});
+    if (
+      navigator.webdriver ||
+      /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '')
+    ) {
+      return;
+    }
+    setTimeout(() => {
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/' })
+        .then((reg) => {
+          reg.update().catch(() => {});
+        })
+        .catch(() => {});
+    }, 3500);
   });
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Activity,
@@ -6,10 +6,10 @@ import {
   Calendar,
   Ticket,
   Flame,
+  X,
 } from 'lucide-react';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UnifiedSearchTrigger } from '@/components/UnifiedSearchTrigger';
 
 export const MobileBottomNav = () => {
@@ -17,6 +17,15 @@ export const MobileBottomNav = () => {
   const { isAdmin } = useAdmin();
   const { selections, setIsOpen } = useBetSlip();
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSheetOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [sheetOpen]);
 
   const handleHaptic = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -66,9 +75,9 @@ export const MobileBottomNav = () => {
               aria-current={item.isActive ? 'page' : undefined}
             >
               <div className="relative">
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" aria-hidden="true" />
                 {item.hasBeacon && (
-                  <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" aria-hidden="true" />
                 )}
               </div>
               <span className="text-[10px] leading-none">{item.label}</span>
@@ -86,10 +95,9 @@ export const MobileBottomNav = () => {
           className={`relative flex flex-col items-center justify-center gap-1 transition-colors min-h-[48px] ${
             selections.length > 0 ? 'text-emerald-800 dark:text-emerald-300 font-bold' : 'text-muted-foreground hover:text-foreground'
           }`}
-          aria-label="Open Bet Slip"
         >
           <div className="relative">
-            <Ticket className="h-4 w-4" />
+            <Ticket className="h-4 w-4" aria-hidden="true" />
             {selections.length > 0 && (
               <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-700 text-white text-[9px] font-mono font-black flex items-center justify-center">
                 {selections.length}
@@ -99,26 +107,49 @@ export const MobileBottomNav = () => {
           <span className="text-[10px] leading-none">Bet Slip</span>
         </button>
 
-        {/* More Sheet Menu */}
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              onClick={handleHaptic}
-              className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors min-h-[48px]"
-              aria-label="Open More Menu"
-            >
-              <Menu className="h-4 w-4" />
-              <span className="text-[10px] leading-none">More</span>
-            </button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-xl max-h-[82vh] overflow-y-auto px-4 pb-8 pt-4">
-            <SheetHeader className="text-left pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-sm font-bold">Betting Hub, Markets &amp; Leagues</SheetTitle>
+        {/* More Sheet Menu Trigger */}
+        <button
+          type="button"
+          onClick={() => {
+            handleHaptic();
+            setSheetOpen(true);
+          }}
+          aria-expanded={sheetOpen}
+          className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors min-h-[48px]"
+        >
+          <Menu className="h-4 w-4" aria-hidden="true" />
+          <span className="text-[10px] leading-none">More</span>
+        </button>
+      </div>
+
+      {/* Lightweight Accessible Bottom Drawer */}
+      {sheetOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs"
+            onClick={() => setSheetOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Betting Hub, Markets & Leagues"
+            className="relative z-50 bg-background border-t border-border rounded-t-xl max-h-[82vh] overflow-y-auto px-4 pb-8 pt-4 shadow-2xl"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h2 className="text-sm font-bold text-foreground">Betting Hub, Markets &amp; Leagues</h2>
+              <div className="flex items-center gap-1.5">
                 <UnifiedSearchTrigger variant="icon" />
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen(false)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground"
+                  aria-label="Close menu"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
               </div>
-            </SheetHeader>
+            </div>
 
             <div className="py-4 space-y-4">
               <div>
@@ -183,9 +214,10 @@ export const MobileBottomNav = () => {
                 </div>
               )}
             </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
+

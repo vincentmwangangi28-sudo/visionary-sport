@@ -17,101 +17,19 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export interface CuratedBookingCode {
-  id: string;
-  tier: '2.00 Sure Rollover' | '5.00 Smart Acca' | '10.00 Weekend VIP' | '17-Game Mega Jackpot';
-  bookmaker: 'SportyBet' | '1xBet' | 'Bet9ja' | 'SportPesa' | 'Betway' | 'MozzartBet';
-  code: string;
-  totalOdds: string;
-  legs: number;
-  expiryTime: string;
-  verified: boolean;
-}
+import {
+  DEFAULT_BOOKING_CODES,
+  DEFAULT_JACKPOT_POOL,
+  type CuratedBookingCode,
+  type JackpotOverrideItem,
+} from '@/services/adminOverrideSyncService';
 
-export interface JackpotOverrideItem {
-  gameNo: number;
-  homeTeam: string;
-  awayTeam: string;
-  league: string;
-  singlePick: '1' | 'X' | '2';
-  doubleCover: 'None (Banker)' | '1X' | 'X2' | '12';
-  confidence: number;
-  isBankerLock: boolean;
-}
-
-export const DEFAULT_BOOKING_CODES: CuratedBookingCode[] = [
-  {
-    id: 'code-1',
-    tier: '2.00 Sure Rollover',
-    bookmaker: 'SportyBet',
-    code: 'BC8942X',
-    totalOdds: '2.14',
-    legs: 2,
-    expiryTime: 'Today 19:45 UTC',
-    verified: true,
-  },
-  {
-    id: 'code-2',
-    tier: '2.00 Sure Rollover',
-    bookmaker: '1xBet',
-    code: 'PRD26X',
-    totalOdds: '2.18',
-    legs: 2,
-    expiryTime: 'Today 19:45 UTC',
-    verified: true,
-  },
-  {
-    id: 'code-3',
-    tier: '5.00 Smart Acca',
-    bookmaker: 'Bet9ja',
-    code: 'B9J551092',
-    totalOdds: '5.42',
-    legs: 4,
-    expiryTime: 'Today 20:00 UTC',
-    verified: true,
-  },
-  {
-    id: 'code-4',
-    tier: '10.00 Weekend VIP',
-    bookmaker: 'SportPesa',
-    code: 'SP99481',
-    totalOdds: '11.20',
-    legs: 6,
-    expiryTime: 'Tomorrow 14:00 UTC',
-    verified: true,
-  },
-  {
-    id: 'code-5',
-    tier: '5.00 Smart Acca',
-    bookmaker: 'Betway',
-    code: 'BW77310',
-    totalOdds: '5.18',
-    legs: 4,
-    expiryTime: 'Today 20:30 UTC',
-    verified: true,
-  },
-  {
-    id: 'code-6',
-    tier: '2.00 Sure Rollover',
-    bookmaker: 'MozzartBet',
-    code: 'MZ44219',
-    totalOdds: '2.09',
-    legs: 2,
-    expiryTime: 'Today 19:45 UTC',
-    verified: true,
-  },
-];
-
-export const DEFAULT_JACKPOT_POOL: JackpotOverrideItem[] = [
-  { gameNo: 1, homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League', singlePick: '1', doubleCover: 'None (Banker)', confidence: 84, isBankerLock: true },
-  { gameNo: 2, homeTeam: 'Brighton', awayTeam: 'Aston Villa', league: 'Premier League', singlePick: 'X', doubleCover: '1X', confidence: 68, isBankerLock: false },
-  { gameNo: 3, homeTeam: 'Newcastle', awayTeam: 'Tottenham', league: 'Premier League', singlePick: '1', doubleCover: '12', confidence: 73, isBankerLock: false },
-  { gameNo: 4, homeTeam: 'Real Sociedad', awayTeam: 'Villarreal', league: 'LaLiga', singlePick: '1', doubleCover: '1X', confidence: 71, isBankerLock: false },
-  { gameNo: 5, homeTeam: 'Atalanta', awayTeam: 'Fiorentina', league: 'Serie A', singlePick: '1', doubleCover: 'None (Banker)', confidence: 82, isBankerLock: true },
-  { gameNo: 6, homeTeam: 'Eintracht Frankfurt', awayTeam: 'VfB Stuttgart', league: 'Bundesliga', singlePick: '2', doubleCover: 'X2', confidence: 69, isBankerLock: false },
-  { gameNo: 7, homeTeam: 'Gor Mahia', awayTeam: 'AFC Leopards', league: 'FKF Premier League', singlePick: '1', doubleCover: 'None (Banker)', confidence: 86, isBankerLock: true },
-  { gameNo: 8, homeTeam: 'Mamelodi Sundowns', awayTeam: 'Orlando Pirates', league: 'South Africa PSL', singlePick: '1', doubleCover: '1X', confidence: 79, isBankerLock: true },
-];
+export {
+  DEFAULT_BOOKING_CODES,
+  DEFAULT_JACKPOT_POOL,
+  type CuratedBookingCode,
+  type JackpotOverrideItem,
+};
 
 export const AdminJackpotAndCodesManagerTab: React.FC = () => {
   const [codes, setCodes] = useState<CuratedBookingCode[]>(() => {

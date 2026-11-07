@@ -637,12 +637,40 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: "assets/[name]-[hash][extname]",
         manualChunks: (id) => {
           if (
-            id.includes("src/hooks/useSEOManager") ||
-            id.includes("src/hooks/useMatchPredictionSEO") ||
-            id.includes("src/services/seoKeywords") ||
-            id.includes("src/services/ahrefsOpportunitiesService")
+            id.includes("rolldown/runtime") ||
+            id.includes("vite/preload-helper") ||
+            id.includes("\0rolldown") ||
+            id.includes("\0vite") ||
+            id.includes("src/lib/utils") ||
+            id.includes("src/lib/lazyWithRetry") ||
+            id.includes("src/lib/queryClient") ||
+            id.includes("src/lib/logger") ||
+            id.includes("src/lib/dateFilterUtils") ||
+            id.includes("src/hooks/useAuth") ||
+            id.includes("src/hooks/useAdmin") ||
+            id.includes("src/hooks/useUserPreferences") ||
+            id.includes("src/hooks/useGeoRegion") ||
+            id.includes("src/hooks/useCurrency") ||
+            id.includes("src/hooks/useUnifiedSearch") ||
+            id.includes("src/hooks/useBetSlip") ||
+            id.includes("src/hooks/usePinnedFavorites") ||
+            id.includes("src/hooks/useSubscription") ||
+            id.includes("src/services/hapticService") ||
+            id.includes("src/services/geoRegionService") ||
+            id.includes("src/services/i18n") ||
+            id.includes("src/services/localeDetectionService") ||
+            id.includes("src/services/predictionStorage") ||
+            id.includes("src/services/adminOverrideSyncService") ||
+            id.includes("src/components/ui/button") ||
+            id.includes("src/components/ui/badge") ||
+            id.includes("src/components/ui/skeleton") ||
+            id.includes("src/components/ui/card") ||
+            id.includes("src/components/ui/input") ||
+            id.includes("src/components/ui/sonner") ||
+            id.includes("rolldown:runtime") ||
+            id.includes("\0rolldown")
           ) {
-            return "vendor-seo";
+            return "vendor-framework";
           }
           if (id.includes("node_modules")) {
             if (
@@ -660,21 +688,19 @@ export default defineConfig(({ mode }) => ({
                 "/@remix-run/",
                 "/@tanstack/",
                 "/react-helmet-async/",
-                "/@radix-ui/",
-                "/@floating-ui/",
-                "/aria-hidden/",
-                "/react-remove-scroll",
-                "/use-sidecar/",
-                "/use-callback-ref/",
+                "/@radix-ui/react-slot/",
+                "/@radix-ui/react-compose-refs/",
                 "/clsx/",
                 "/tailwind-merge/",
                 "/class-variance-authority/",
                 "/sonner/",
+                "/lucide-react/",
+                "/tslib/",
               ].some((p) => id.includes(p))
             ) {
               return "vendor-framework";
             }
-            if (id.includes("@supabase") || id.includes("/tslib/")) {
+            if (id.includes("@supabase")) {
               return "vendor-supabase";
             }
             if (
@@ -683,9 +709,6 @@ export default defineConfig(({ mode }) => ({
               id.includes("motion-utils")
             ) {
               return "vendor-motion";
-            }
-            if (id.includes("lucide-react")) {
-              return "vendor-icons";
             }
             if (id.includes("date-fns")) {
               return "vendor-date";

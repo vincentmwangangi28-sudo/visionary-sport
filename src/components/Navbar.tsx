@@ -128,7 +128,7 @@ export const Navbar = () => {
     { to: '/live', label: 'Live Scores', active: pathname === '/live', isLive: true },
     { to: '/best-bets', label: 'Banker Picks', active: pathname === '/best-bets', isHot: true },
     { to: '/bet-tracker', label: 'Bet Tracker', active: pathname === '/bet-tracker' },
-    { to: '/in-play-edge', label: 'In-Play Edge', active: pathname === '/in-play-edge' },
+    { to: '/in-play-edge', label: 'In-Play Edge', active: pathname === '/in-play-edge', desktopOnly2xl: true },
     { to: '/standings', label: 'Standings', active: pathname === '/standings' },
   ];
 
@@ -136,7 +136,7 @@ export const Navbar = () => {
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur border-b border-border">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Zone 1: Brand Identity + Primary Navigation */}
-        <div className="flex items-center gap-6 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
           <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="PredictPro Home">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
               <Activity className="h-4 w-4" aria-hidden="true" />
@@ -146,13 +146,15 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-3.5" aria-label="Primary Navigation">
+          <nav className="hidden xl:flex items-center gap-2.5 min-w-0" aria-label="Primary Navigation">
             {primaryLinks.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 aria-current={item.active ? 'page' : undefined}
-                className={`py-1 text-sm font-medium transition-colors flex items-center gap-1.5 border-b-2 whitespace-nowrap ${
+                className={`py-1 text-sm font-medium transition-colors items-center gap-1.5 border-b-2 whitespace-nowrap shrink-0 ${
+                  item.desktopOnly2xl ? 'hidden 2xl:flex' : 'flex'
+                } ${
                   item.active
                     ? 'border-primary text-foreground font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -169,7 +171,7 @@ export const Navbar = () => {
             ))}
 
             {/* Competitions Dropdown */}
-            <div className="relative" ref={leaguesRef}>
+            <div className="relative shrink-0" ref={leaguesRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -178,11 +180,10 @@ export const Navbar = () => {
                 }}
                 aria-expanded={leaguesOpen}
                 aria-haspopup="true"
-                aria-label="Open competitions and major leagues dropdown"
-                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer"
+                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
               >
                 <span>Leagues</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${leaguesOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${leaguesOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {leaguesOpen && (
@@ -228,7 +229,7 @@ export const Navbar = () => {
             </div>
 
             {/* Betting Hub & Booking Tools Dropdown */}
-            <div className="relative" ref={toolsRef}>
+            <div className="relative shrink-0" ref={toolsRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -237,12 +238,11 @@ export const Navbar = () => {
                 }}
                 aria-expanded={toolsOpen}
                 aria-haspopup="true"
-                aria-label="Open betting markets and pro quantitative tools dropdown"
-                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer"
+                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
               >
-                <Calculator className="h-3.5 w-3.5 text-primary" />
+                <Calculator aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
                 <span>Markets &amp; Tools</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {toolsOpen && (
@@ -301,14 +301,14 @@ export const Navbar = () => {
             type="button"
             onClick={() => setIsOpen(true)}
             data-testid="navbar-betslip-trigger"
-            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-colors cursor-pointer shrink-0 ${
               selections.length > 0
                 ? 'bg-emerald-800 hover:bg-emerald-900 text-white border-emerald-800 shadow-sm'
                 : 'bg-background hover:bg-muted text-foreground border-border'
             }`}
             title="Open Bet Slip & Booking Code Generator"
           >
-            <Ticket className="h-3.5 w-3.5" />
+            <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">Bet Slip</span>
             <span
               className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
@@ -329,10 +329,10 @@ export const Navbar = () => {
           {/* Daily Spin & Rewards */}
           <Link
             to="/rewards"
-            className="hidden xl:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-300 text-xs font-bold transition-colors"
+            className="hidden 2xl:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-300 text-xs font-bold transition-colors shrink-0"
             title="Daily Spin Wheel & Free Coins"
           >
-            <Coins className="h-3.5 w-3.5" />
+            <Coins className="h-3.5 w-3.5" aria-hidden="true" />
             <span>Rewards</span>
           </Link>
 

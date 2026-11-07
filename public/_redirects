@@ -125,6 +125,7 @@
 # to prevent ERR_TOO_MANY_REDIRECTS loops between apex load balancer (75.2.60.5) and www.
 
 # Netlify Serverless Functions & API Rewrites (must precede SPA fallback)
+/.netlify/scripts/*         /sw-noop.js                   200!
 /api/ping-search-engines    /.netlify/functions/indexing-cron 200
 /api/a2a                    /.netlify/functions/mcp       200
 /mcp                        /.netlify/functions/mcp       200

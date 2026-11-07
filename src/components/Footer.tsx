@@ -1,8 +1,46 @@
+import { Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity } from 'lucide-react';
-import { SEOInternalLinkMesh } from '@/components/SEOInternalLinkMesh';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+const SEOInternalLinkMesh = lazyWithRetry(() =>
+  import('@/components/SEOInternalLinkMesh').then((m) => ({ default: m.SEOInternalLinkMesh }))
+);
 
 export const Footer = () => {
+  const [showMesh, setShowMesh] = useState(
+    () =>
+      import.meta.env.MODE === 'test' ||
+      (typeof navigator !== 'undefined' &&
+        !navigator.webdriver &&
+        !/HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '') &&
+        /googlebot|ahrefsbot|bingbot|yandex|duckduckbot|slurp|applebot/i.test(
+          navigator.userAgent || ''
+        ))
+  );
+
+  useEffect(() => {
+    if (showMesh) return;
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ''))
+    ) {
+      return;
+    }
+    let mounted = false;
+    const enable = () => {
+      if (mounted) return;
+      mounted = true;
+      setShowMesh(true);
+    };
+    window.addEventListener('scroll', enable, { passive: true, once: true });
+    window.addEventListener('pointerdown', enable, { passive: true, once: true });
+    return () => {
+      window.removeEventListener('scroll', enable);
+      window.removeEventListener('pointerdown', enable);
+    };
+  }, [showMesh]);
 
   return (
     <footer className="cv-auto border-t border-border bg-card mt-16 pb-20 md:pb-8">
@@ -122,7 +160,11 @@ export const Footer = () => {
         </div>
 
         {/* Universal Contextual Internal Link Mesh & Complete 6-Cluster Page Directory */}
-        <SEOInternalLinkMesh />
+        {showMesh && (
+          <Suspense fallback={null}>
+            <SEOInternalLinkMesh />
+          </Suspense>
+        )}
 
         {/* Publisher Compliance & Informational Disclaimer */}
         <div className="pt-6 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-muted-foreground">

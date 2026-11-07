@@ -8,7 +8,7 @@
  * - Provides an instant offline HTML fallback ONLY when the browser is actually offline.
  */
 
-const CACHE_VERSION = 'predictpro-v5';
+const CACHE_VERSION = 'predictpro-v6';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const PRECACHE_ASSETS = [
@@ -41,7 +41,7 @@ self.addEventListener('install', (event) => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. ACTIVATE — Purge ALL older caches (v1, v2, v3, v4)
+// 2. ACTIVATE — Purge ALL older caches (v1, v2, v3, v4, v5)
 // ---------------------------------------------------------------------------
 self.addEventListener('activate', (event) => {
   const allowedCaches = new Set([STATIC_CACHE]);
@@ -64,24 +64,33 @@ self.addEventListener('activate', (event) => {
 });
 
 // ---------------------------------------------------------------------------
-// 3. FETCH — Offline-only navigation fallback (zero interception when online)
+// 3. FETCH — Block Netlify HUD watermark & provide offline navigation fallback
 // ---------------------------------------------------------------------------
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
   if (request.method !== 'GET') return;
 
-  // When online, let the browser and Netlify CDN (immutable /assets/* caching) handle all requests natively.
-  // This prevents sw.js "Fetch failed loading" console logs on aborted/redirected navigations and eliminates
-  // service worker postMessage / clone overhead on the main thread.
-  if (self.navigator && self.navigator.onLine !== false) {
-    return;
-  }
-
   let url;
   try {
     url = new URL(request.url);
   } catch {
+    return;
+  }
+
+  // Block Netlify-injected HUD / Collaborative Drawer watermark scripts
+  if (url.pathname.startsWith('/.netlify/scripts/')) {
+    event.respondWith(
+      new Response('/* blocked */', {
+        status: 200,
+        headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
+      })
+    );
+    return;
+  }
+
+  // When online, let the browser and Netlify CDN (immutable /assets/* caching) handle all requests natively.
+  if (self.navigator && self.navigator.onLine !== false) {
     return;
   }
 

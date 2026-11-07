@@ -7,7 +7,6 @@ import { HomeViewTabs, HomeViewMode } from '@/components/HomeViewTabs';
 import { PredictionsDashboard } from '@/components/PredictionsDashboard';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
-import { FooterFAQ } from '@/components/FooterFAQ';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import {
   Flame,
@@ -27,6 +26,9 @@ import {
   Wallet,
 } from 'lucide-react';
 
+const FooterFAQ = lazyWithRetry(() =>
+  import('@/components/FooterFAQ').then((m) => ({ default: m.FooterFAQ }))
+);
 const LiveMatches = lazyWithRetry(() =>
   import('@/components/LiveMatches').then((m) => ({ default: m.LiveMatches }))
 );
@@ -487,7 +489,9 @@ const Index = () => {
 
         {/* Contained FAQ Section */}
         <div className="cv-auto container mx-auto max-w-7xl px-4 sm:px-6">
-          <FooterFAQ />
+          <Suspense fallback={<div className="min-h-[240px]" aria-hidden="true" />}>
+            <FooterFAQ />
+          </Suspense>
         </div>
       </main>
 

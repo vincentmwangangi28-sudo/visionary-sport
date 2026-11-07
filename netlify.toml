@@ -52,6 +52,12 @@
 
 # API & Serverless Function Rewrites (must come before SPA fallback)
 [[redirects]]
+  from = "/.netlify/scripts/*"
+  to = "/sw-noop.js"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/ping-search-engines"
   to = "/.netlify/functions/indexing-cron"
   status = 200

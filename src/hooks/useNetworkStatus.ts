@@ -27,13 +27,14 @@ export function useNetworkStatus(): NetworkStatus {
   });
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  // Check cached data status
+  // Check cached data status only when offline
   useEffect(() => {
+    if (isOnline) return;
     import('@/services/offlineSyncService')
       .then(({ checkOfflineCachesReady }) => checkOfflineCachesReady())
       .then(setHasCachedData)
       .catch(() => {});
-  }, []);
+  }, [isOnline]);
 
   const syncOfflineData = useCallback(async () => {
     if (!navigator.onLine) {

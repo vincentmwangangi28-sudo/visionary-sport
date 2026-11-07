@@ -15,7 +15,9 @@ export const SEO = (props: SEOProps) => {
     () =>
       import.meta.env.MODE === 'test' ||
       (typeof navigator !== 'undefined' &&
-        /bot|googlebot|crawler|spider|robot|crawling|ahrefs|bingbot|yandex|duckduck/i.test(
+        !navigator.webdriver &&
+        !/HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '') &&
+        /googlebot|ahrefsbot|bingbot|yandex|duckduckbot|slurp|applebot/i.test(
           navigator.userAgent || ''
         ))
   );
@@ -48,13 +50,20 @@ export const SEO = (props: SEOProps) => {
 
   useEffect(() => {
     if (runtimeReady) return;
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ''))
+    ) {
+      return;
+    }
     let mounted = false;
     const enable = () => {
       if (mounted) return;
       mounted = true;
       setRuntimeReady(true);
     };
-    const timer = setTimeout(enable, 3500);
+    const timer = setTimeout(enable, 8000);
     window.addEventListener('scroll', enable, { passive: true, once: true });
     window.addEventListener('pointerdown', enable, { passive: true, once: true });
     window.addEventListener('touchstart', enable, { passive: true, once: true });

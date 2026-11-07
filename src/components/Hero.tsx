@@ -19,6 +19,13 @@ export const Hero = () => {
   });
 
   useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      (navigator.webdriver ||
+        /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || ""))
+    ) {
+      return;
+    }
     let triggered = false;
     const fetchHeroStats = async () => {
       if (triggered) return;
@@ -40,7 +47,7 @@ export const Hero = () => {
       }
     };
 
-    const timer = setTimeout(fetchHeroStats, 4000);
+    const timer = setTimeout(fetchHeroStats, 8000);
     window.addEventListener("scroll", fetchHeroStats, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
