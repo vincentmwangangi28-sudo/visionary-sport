@@ -115,10 +115,6 @@
 /ahrefs-audit               /seo-indexing                 301
 /site-audit                 /seo-indexing                 301
 
-# Enforce HTTPS & non-www canonical host on custom domain
-http://predictpro.guru/*      https://predictpro.guru/:splat 301!
-http://www.predictpro.guru/*  https://predictpro.guru/:splat 301!
-https://www.predictpro.guru/* https://predictpro.guru/:splat 301!
 
 # Static SEO, Favicon & Agentic Crawler Files
 /favicon.ico                /favicon.ico                  200
