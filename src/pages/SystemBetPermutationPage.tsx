@@ -120,10 +120,10 @@ export const SystemBetPermutationPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="System Bet & Permutation Calculator: Trixie, Yankee, Lucky 15, Canadian & Heinz | PredictPro"
+        title="System Bet & Permutation Simulator: Trixie, Yankee, Lucky 15"
         description="Interactive sports betting System Bet Calculator for Trixie (4 bets), Patent (7), Yankee (11), Lucky 15 (15), Canadian (26), Heinz (57), and 3/5 or 4/6 Round Robins."
         keywords="system bet calculator, trixie calculator, yankee bet calculator, lucky 15 calculator, canadian bet calculator, heinz bet calculator, round robin betting"
-        canonical="/system-bet-calculator"
+        canonical="/trixie-yankee-calculator"
       />
       <Navbar />
 

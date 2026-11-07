@@ -2,10 +2,6 @@
 // Supports match cards (/api/og?home=Arsenal&away=Chelsea&league=Premier+League&tip=Home+Win&conf=78&xg=2.14+-+0.98&score=2-1)
 // and accumulator/hub cards (/api/og?title=5-Fold+Banker+Slip&subtitle=Combined+Odds+6.45&code=PP-84920&conf=84)
 
-export const config = {
-  runtime: 'edge',
-};
-
 function escapeSvg(raw: string): string {
   return String(raw || '')
     .replace(/&/g, '&amp;')

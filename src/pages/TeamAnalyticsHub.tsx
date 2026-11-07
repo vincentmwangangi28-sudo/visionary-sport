@@ -77,9 +77,9 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
     upcomingFixtures: [
       { opponent: 'Chelsea', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '2.14 - 0.98', winProb: 68 },
       { opponent: 'Liverpool', venue: 'A', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.42 - 1.56', winProb: 38 },
-      { opponent: 'Aston Villa', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '1.95 - 0.88', winProb: 64 },
-      { opponent: 'Tottenham Hotspur', venue: 'A', fdr: 4, matchSlug: 'manchester-united-vs-tottenham-hotspur', projectedXg: '1.76 - 1.24', winProb: 54 },
-      { opponent: 'Newcastle United', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '1.88 - 0.92', winProb: 62 },
+      { opponent: 'Aston Villa', venue: 'H', fdr: 3, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.95 - 0.88', winProb: 64 },
+      { opponent: 'Tottenham Hotspur', venue: 'A', fdr: 4, matchSlug: 'manchester-united-vs-tottenham', projectedXg: '1.76 - 1.24', winProb: 54 },
+      { opponent: 'Newcastle United', venue: 'H', fdr: 3, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.88 - 0.92', winProb: 62 },
     ],
   },
   {
@@ -123,9 +123,9 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
     upcomingFixtures: [
       { opponent: 'Liverpool', venue: 'A', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.64 - 1.58', winProb: 46 },
       { opponent: 'Arsenal', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.86 - 1.14', winProb: 59 },
-      { opponent: 'Tottenham Hotspur', venue: 'H', fdr: 3, matchSlug: 'manchester-united-vs-tottenham-hotspur', projectedXg: '2.35 - 1.05', winProb: 71 },
+      { opponent: 'Tottenham Hotspur', venue: 'H', fdr: 3, matchSlug: 'manchester-united-vs-tottenham', projectedXg: '2.35 - 1.05', winProb: 71 },
       { opponent: 'Chelsea', venue: 'A', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.92 - 1.22', winProb: 58 },
-      { opponent: 'Newcastle United', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '2.24 - 0.86', winProb: 72 },
+      { opponent: 'Newcastle United', venue: 'H', fdr: 3, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '2.24 - 0.86', winProb: 72 },
     ],
   },
   {
@@ -147,8 +147,8 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
       { opponent: 'Manchester City', venue: 'H', fdr: 5, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '1.78 - 1.52', winProb: 48 },
       { opponent: 'Chelsea', venue: 'H', fdr: 4, matchSlug: 'arsenal-vs-chelsea', projectedXg: '2.12 - 1.08', winProb: 65 },
       { opponent: 'Arsenal', venue: 'A', fdr: 5, matchSlug: 'arsenal-vs-chelsea', projectedXg: '1.38 - 1.64', winProb: 36 },
-      { opponent: 'Aston Villa', venue: 'H', fdr: 3, matchSlug: 'newcastle-united-vs-aston-villa', projectedXg: '2.18 - 0.96', winProb: 68 },
-      { opponent: 'Manchester United', venue: 'A', fdr: 4, matchSlug: 'manchester-united-vs-tottenham-hotspur', projectedXg: '1.89 - 1.18', winProb: 57 },
+      { opponent: 'Aston Villa', venue: 'H', fdr: 3, matchSlug: 'liverpool-vs-manchester-city', projectedXg: '2.18 - 0.96', winProb: 68 },
+      { opponent: 'Manchester United', venue: 'A', fdr: 4, matchSlug: 'manchester-united-vs-tottenham', projectedXg: '1.89 - 1.18', winProb: 57 },
     ],
   },
   {
@@ -194,7 +194,7 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
       { opponent: 'Real Madrid', venue: 'A', fdr: 5, matchSlug: 'real-madrid-vs-barcelona', projectedXg: '1.38 - 1.94', winProb: 35 },
       { opponent: 'Inter Milan', venue: 'H', fdr: 4, matchSlug: 'inter-milan-vs-ac-milan', projectedXg: '2.04 - 1.08', winProb: 62 },
       { opponent: 'PSG', venue: 'H', fdr: 4, matchSlug: 'psg-vs-marseille', projectedXg: '2.16 - 1.18', winProb: 64 },
-      { opponent: 'Ajax', venue: 'A', fdr: 3, matchSlug: 'ajax-vs-psv-eindhoven', projectedXg: '2.28 - 1.12', winProb: 66 },
+      { opponent: 'Ajax', venue: 'A', fdr: 3, matchSlug: 'ajax-vs-feyenoord', projectedXg: '2.28 - 1.12', winProb: 66 },
     ],
   },
   {
@@ -283,7 +283,7 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
     recentForm: ['W', 'W', 'W', 'D', 'W'],
     upcomingFixtures: [
       { opponent: 'Orlando Pirates', venue: 'H', fdr: 4, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '1.82 - 0.86', winProb: 65 },
-      { opponent: 'Kaizer Chiefs', venue: 'A', fdr: 3, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '1.76 - 0.82', winProb: 63 },
+      { opponent: 'Kaizer Chiefs', venue: 'A', fdr: 3, matchSlug: 'kaizer-chiefs-vs-orlando-pirates', projectedXg: '1.76 - 0.82', winProb: 63 },
       { opponent: 'Al Ahly', venue: 'H', fdr: 5, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.48 - 1.18', winProb: 51 },
       { opponent: 'Wydad AC', venue: 'A', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.32 - 1.14', winProb: 46 },
       { opponent: 'Stellenbosch FC', venue: 'H', fdr: 2, matchSlug: 'mamelodi-sundowns-vs-orlando-pirates', projectedXg: '2.08 - 0.66', winProb: 74 },
@@ -305,11 +305,11 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
     ppda: 8.7,
     recentForm: ['W', 'W', 'W', 'W', 'D'],
     upcomingFixtures: [
-      { opponent: 'Simba SC', venue: 'H', fdr: 4, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.78 - 0.84', winProb: 64 },
-      { opponent: 'Azam FC', venue: 'A', fdr: 3, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.56 - 0.88', winProb: 58 },
+      { opponent: 'Simba SC', venue: 'H', fdr: 4, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '1.78 - 0.84', winProb: 64 },
+      { opponent: 'Azam FC', venue: 'A', fdr: 3, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '1.56 - 0.88', winProb: 58 },
       { opponent: 'Al Ahly', venue: 'H', fdr: 5, matchSlug: 'al-ahly-vs-zamalek', projectedXg: '1.32 - 1.38', winProb: 42 },
-      { opponent: 'Coastal Union', venue: 'H', fdr: 2, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '2.18 - 0.54', winProb: 78 },
-      { opponent: 'Singida Black Stars', venue: 'A', fdr: 3, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.64 - 0.78', winProb: 62 },
+      { opponent: 'Coastal Union', venue: 'H', fdr: 2, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '2.18 - 0.54', winProb: 78 },
+      { opponent: 'Singida Black Stars', venue: 'A', fdr: 3, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '1.64 - 0.78', winProb: 62 },
     ],
   },
   {
@@ -328,11 +328,11 @@ export const FEATURED_CLUB_PROFILES: ClubAnalyticsProfile[] = [
     ppda: 8.9,
     recentForm: ['W', 'D', 'W', 'W', 'W'],
     upcomingFixtures: [
-      { opponent: 'Young Africans', venue: 'A', fdr: 5, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '0.84 - 1.78', winProb: 32 },
-      { opponent: 'Azam FC', venue: 'H', fdr: 3, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.74 - 0.82', winProb: 63 },
-      { opponent: 'Namungo FC', venue: 'H', fdr: 2, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '2.06 - 0.58', winProb: 75 },
+      { opponent: 'Young Africans', venue: 'A', fdr: 5, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '0.84 - 1.78', winProb: 32 },
+      { opponent: 'Azam FC', venue: 'H', fdr: 3, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '1.74 - 0.82', winProb: 63 },
+      { opponent: 'Namungo FC', venue: 'H', fdr: 2, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '2.06 - 0.58', winProb: 75 },
       { opponent: 'Raja Casablanca', venue: 'H', fdr: 4, matchSlug: 'wydad-ac-vs-raja-casablanca', projectedXg: '1.42 - 1.18', winProb: 48 },
-      { opponent: 'KMC FC', venue: 'A', fdr: 2, matchSlug: 'young-africans-vs-simba-sc', projectedXg: '1.82 - 0.68', winProb: 69 },
+      { opponent: 'KMC FC', venue: 'A', fdr: 2, matchSlug: 'simba-sc-vs-young-africans', projectedXg: '1.82 - 0.68', winProb: 69 },
     ],
   },
   {

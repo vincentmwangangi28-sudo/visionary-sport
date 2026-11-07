@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: VIP Subscription Expiry & Renewal Reminders Cron
 // Invoked on schedule: "0 9 * * *" (Daily at 09:00 AM UTC)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

@@ -3,10 +3,6 @@
 
 import { handleTelegramRequest } from '../src/server/telegramHandler';
 
-export const config = {
-  runtime: 'edge',
-};
-
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
 

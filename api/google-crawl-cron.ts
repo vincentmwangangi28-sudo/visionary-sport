@@ -1,9 +1,5 @@
-// Vercel Serverless / Edge Function: Google Crawl Cron
-import handler from './indexing-cron.js';
-
-export const config = {
-  runtime: 'edge',
-};
+// Serverless / Edge Function: Google Crawl Cron
+import handler from './indexing-cron';
 
 export default handler;
 

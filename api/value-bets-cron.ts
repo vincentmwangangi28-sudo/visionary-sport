@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: Dropping Odds & Value Bets (+EV) Scanner Cron
 // Invoked on schedule: "*/20 * * * *" (Every 20 Minutes)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

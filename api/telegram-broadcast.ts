@@ -1,9 +1,5 @@
 import { handleTelegramRequest, TelegramRequestPayload } from '../src/server/telegramHandler';
 
-export const config = {
-  runtime: 'edge',
-};
-
 export default async function handler(request: Request) {
   if (request.method === 'OPTIONS') {
     return new Response(null, {

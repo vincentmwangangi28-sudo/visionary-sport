@@ -598,7 +598,7 @@ const App = () => (
                             <Route path="/blog"                         element={<RouteBoundary component={Blog} />} />
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
                             <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
-                            <Route path="/seo-audit"                    element={<RouteBoundary component={SEOIndexingPage} />} />
+                            <Route path="/seo-audit"                    element={<Navigate to="/seo-indexing" replace />} />
                             <Route path="/ahrefs-opportunities"         element={<RouteBoundary component={AhrefsOpportunitiesPage} />} />
                             <Route path="/ahrefs"                       element={<Navigate to="/ahrefs-opportunities" replace />} />
                             <Route path="/ahrefs-audit"                 element={<Navigate to="/ahrefs-opportunities" replace />} />
@@ -727,7 +727,7 @@ const App = () => (
                             <Route path="/telegram-alerts"              element={<Navigate to="/alert-center" replace />} />
                             <Route path="/cashout-calculator"           element={<RouteBoundary component={CashOutHedgeCalculatorPage} />} />
                             <Route path="/arbitrage-finder"             element={<RouteBoundary component={ArbitrageSurebetMatrixPage} />} />
-                            <Route path="/odds-comparison"              element={<RouteBoundary component={ArbitrageSurebetMatrixPage} />} />
+                            <Route path="/odds-comparison"              element={<Navigate to="/arbitrage-finder" replace />} />
                             <Route path="/bookmaker-odds"               element={<Navigate to="/arbitrage-finder" replace />} />
                             <Route path="/surebet-finder"               element={<Navigate to="/arbitrage-finder" replace />} />
                             <Route path="/rollover-challenge"           element={<RouteBoundary component={RolloverLadderSimulatorPage} />} />

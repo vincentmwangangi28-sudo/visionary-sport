@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: League Standings & Form Matrix Sync Cron
 // Invoked on schedule: "0 2 * * *" (Daily at 02:00 AM UTC)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

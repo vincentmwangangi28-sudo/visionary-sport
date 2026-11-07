@@ -3,10 +3,6 @@
 
 import { handleFootballRequest } from '../src/server/footballHandler';
 
-export const config = {
-  runtime: 'edge',
-};
-
 export default async function handler(request: Request) {
   const now = new Date().toISOString();
 

@@ -60,7 +60,7 @@ const BETTING_HUB_TOOLS = [
   { to: '/player-props-lab', label: 'Player Shots (SoT) & Goal Prop Lab', tag: '1+ / 2+ SoT' },
   { to: '/trixie-yankee-calculator', label: 'System Bet & Permutation Simulator', tag: 'Yankee / Heinz' },
   { to: '/h2h', label: 'Dynamic Team H2H & Matchup Hub', tag: '10-Match H2H' },
-  { to: '/odds-comparison', label: 'Odds Comparison & Line Shopping', tag: '6 Bookies' },
+  { to: '/sharp-money-splits', label: 'Sharp Money & Public Betting Splits', tag: 'RLM Scanner' },
   { to: '/pick-em-challenge', label: "Daily 5-Match Pick'em", tag: '+50 Coins' },
   { to: '/alert-center', label: 'Telegram & Push Alert Hub', tag: 'Live Alerts' },
   { to: '/referrals', label: 'Invite Friends & Earn Coins', tag: 'VIP Perks' },

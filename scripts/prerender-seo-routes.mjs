@@ -547,6 +547,66 @@ const ROUTE_META = {
     title: 'System Bet & Permutation Simulator: Trixie, Yankee, Lucky 15',
     description: 'Calculate fault-tolerant permutation payouts and break-even scenarios for Trixie, Patent, Yankee, Lucky 15, Canadian, Heinz, and Round Robins.',
   },
+  '/bet-tracker': {
+    title: 'Bet Tracker & ROI Ledger | ESPN Auto-Grade | PredictPro',
+    description: 'Track personal wagers, Closing Line Value (CLV) edge, bankroll curve, and auto-settle bets against live ESPN full-time football scores.',
+  },
+  '/in-play-edge': {
+    title: 'In-Play Momentum & Late-Goal Radar | Live xG Pressure',
+    description: 'Live attacking pressure index, trailing-favorite xG spikes, and remaining-minutes Bivariate Poisson goal probabilities across live matches.',
+  },
+  '/social-card-studio': {
+    title: 'Social Slip & Match Card Studio | High-DPI PNG Exporter',
+    description: 'Export 1080p match prediction graphics and accumulator booking code cards for WhatsApp, Telegram, X, and Instagram.',
+  },
+  '/tournament-simulator': {
+    title: 'Monte Carlo Tournament Group Simulator | 10,000 Runs',
+    description: 'Simulate 10,000 tournament group stage runs with Bivariate Poisson match probabilities, Top-2 qualification %, and custom score overrides.',
+  },
+  '/live-multiview': {
+    title: 'Multi-Match Live Command Grid | 2x2 Pitch Tracker',
+    description: 'Pin up to 4 concurrent live football matches with real-time 2D SVG pitch ball trackers, momentum waves, and synced ESPN scoreboards.',
+  },
+  '/closing-line-value': {
+    title: 'Closing Line Value (CLV) & Steam Move Radar | PredictPro',
+    description: 'Track opening vs current bookmaker odds, sharp syndicate steam alerts, and Fair No-Vig Pinnacle probability benchmarks.',
+  },
+  '/sgp-builder': {
+    title: 'Same-Game Parlay (SGP) Copula Correlation Lab | PredictPro',
+    description: 'Combine correlated match markets (1X2, BTTS, Over/Under, Corners, Cards) with Gaussian Copula dependency adjustments.',
+  },
+  '/pitch-telemetry': {
+    title: '2D Pitch Shot Map, xT Grid & Pass Network Telemetry',
+    description: 'Interactive 2D SVG pitch shot maps, 12x8 Expected Threat (xT) value grids, and tactical pass network matrices.',
+  },
+  '/xpts-standings': {
+    title: 'Expected Points (xPTS) Justice Standings & Regression Radar',
+    description: 'Compare actual league points vs simulated Expected Points (xPTS) and xG differentials to spot regression candidates.',
+  },
+  '/bracket-simulator': {
+    title: 'Tournament Knockout Bracket & Title Odds Simulator',
+    description: 'Interactive Round of 16 to Final knockout tree simulator with 90-minute vs extra-time/penalty advancement probabilities.',
+  },
+  '/community-slips': {
+    title: 'Community Copy-Bet Feed & Verified Slip Leaderboard',
+    description: 'Browse verified community accumulator slips, filter by target odds or bookmaker, and load selections into your bet slip.',
+  },
+  '/pick-em-challenge': {
+    title: "Daily 5-Match Pick'em Challenge & Coin Leaderboard",
+    description: 'Predict 5 featured daily football fixtures for free, build your streak multiplier, and climb the community leaderboard.',
+  },
+  '/alert-center': {
+    title: 'Telegram, Browser Push & Custom Match Alert Center',
+    description: 'Configure real-time browser notifications and Telegram alerts for +EV value edges, steam moves, and high-confidence banker picks.',
+  },
+  '/referrals': {
+    title: 'Viral Referral Hub & VIP Coin Rewards | PredictPro',
+    description: 'Share your personal referral link on WhatsApp or Telegram to earn bonus reward coins and unlock milestone badges.',
+  },
+  '/ahrefs-opportunities': {
+    title: 'Ahrefs 12-Pillar Organic Search & Technical SEO Hub',
+    description: 'Complete 12-pillar organic search intelligence, competitor keyword gap benchmarks, and live IndexNow verification.',
+  },
 };
 
 function clampTitle(raw) {

@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: Odds Drift & Starting Lineups Radar Cron
 // Invoked on schedule: "*/15 11-22 * * *" (Every 15 Mins during matchday hours)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

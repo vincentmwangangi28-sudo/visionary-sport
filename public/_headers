@@ -46,6 +46,42 @@
   Content-Type: application/xml; charset=utf-8
   X-Robots-Tag: all
 
+/sitemap-index.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/sitemap-core.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/sitemap-leagues.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/sitemap-matches.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/sitemap-blog.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
+/sitemap-discover-news.xml
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/xml; charset=utf-8
+  X-Robots-Tag: all
+
 /sitemap-yandex.xml
   Cache-Control: public, max-age=3600
   Access-Control-Allow-Origin: *

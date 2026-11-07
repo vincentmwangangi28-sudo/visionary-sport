@@ -196,10 +196,10 @@ const PRO_SPORTS_TOOLS = [
     icon: Users,
   },
   {
-    to: '/odds-comparison',
-    title: 'Bookmaker Odds Line-Shopping Hub',
-    tag: '6 Bookies',
-    desc: 'Live 1X2, Over/Under 2.5, and BTTS price comparison across SportyBet, Betika, SportPesa, Bet9ja & 1xBet.',
+    to: '/sharp-money-splits',
+    title: 'Sharp Money & Public Betting Splits',
+    tag: 'RLM Scanner',
+    desc: 'Track ticket % vs money handle %, reverse line movement (RLM), and institutional sharp steam across 40+ leagues.',
     icon: ArrowRightLeft,
   },
   {

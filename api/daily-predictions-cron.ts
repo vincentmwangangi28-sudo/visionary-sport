@@ -3,10 +3,6 @@
 
 import { handleFootballRequest } from '../src/server/footballHandler';
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

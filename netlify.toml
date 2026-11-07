@@ -1,0 +1,149 @@
+# Netlify Configuration for PredictPro (predictpro.guru)
+# Project: predictproguru (Site ID: 4d5e7d5d-0202-4c3c-99a8-4986b0ba9b58)
+# Repository: github.com/vincentmwangangi28-sudo/visionary-sport
+
+[build]
+  base = "/"
+  command = "bun run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+  NPM_FLAGS = "--legacy-peer-deps"
+  SECRETS_SCAN_OMIT_KEYS = "VITE_INDEXNOW_KEY"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Scheduled Functions (Netlify Cron Jobs matching actual function filenames)
+[functions."indexing-cron"]
+  schedule = "0 */6 * * *"
+
+[functions."google-crawl-cron"]
+  schedule = "15 */6 * * *"
+
+[functions."daily-predictions-cron"]
+  schedule = "0 4 * * *"
+
+[functions."live-momentum-cron"]
+  schedule = "*/30 * * * *"
+
+[functions."odds-drift-cron"]
+  schedule = "0 */4 * * *"
+
+[functions."settle-results-cron"]
+  schedule = "30 */3 * * *"
+
+[functions."sitemap-cron"]
+  schedule = "0 */12 * * *"
+
+[functions."standings-cron"]
+  schedule = "0 */6 * * *"
+
+[functions."value-bets-cron"]
+  schedule = "20 */4 * * *"
+
+[functions."jackpot-cron"]
+  schedule = "0 5 * * *"
+
+# Note: Do NOT add host-level www <-> apex 301 redirects here;
+# Netlify Domain Management handles HTTPS and Primary Domain (predictpro.guru / www.predictpro.guru) natively at the edge.
+
+# API & Serverless Function Rewrites (must come before SPA fallback)
+[[redirects]]
+  from = "/api/ping-search-engines"
+  to = "/.netlify/functions/indexing-cron"
+  status = 200
+
+[[redirects]]
+  from = "/api/a2a"
+  to = "/.netlify/functions/mcp"
+  status = 200
+
+[[redirects]]
+  from = "/mcp"
+  to = "/.netlify/functions/mcp"
+  status = 200
+
+[[redirects]]
+  from = "/api/status"
+  to = "/.netlify/functions/health"
+  status = 200
+
+[[redirects]]
+  from = "/api/telegram-config"
+  to = "/.netlify/functions/telegram-broadcast?mode=config"
+  status = 200
+
+[[redirects]]
+  from = "/api/highlights"
+  to = "/.netlify/functions/football?type=highlights"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Legacy 301 Redirects
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/predictions"
+  to = "/predict"
+  status = 301
+
+[[redirects]]
+  from = "/tips"
+  to = "/best-bets"
+  status = 301
+
+[[redirects]]
+  from = "/vip-tips"
+  to = "/shop"
+  status = 301
+
+[[redirects]]
+  from = "/Sure-Odds"
+  to = "/sure-win-predictions"
+  status = 301
+
+[[redirects]]
+  from = "/accumulator"
+  to = "/accumulator"
+  status = 200
+
+[[redirects]]
+  from = "/accumulators"
+  to = "/accumulator"
+  status = 301
+
+[[redirects]]
+  from = "/blog-posts"
+  to = "/blog"
+  status = 301
+
+[[redirects]]
+  from = "/seo-audit"
+  to = "/seo-indexing"
+  status = 301
+
+[[redirects]]
+  from = "/odds-comparison"
+  to = "/arbitrage-finder"
+  status = 301
+
+# SPA Fallback (Pre-rendered static HTML files in dist/ are served automatically before this rule)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

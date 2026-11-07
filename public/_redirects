@@ -114,11 +114,24 @@
 /seo-audit                  /seo-indexing                 301
 /ahrefs-audit               /seo-indexing                 301
 /site-audit                 /seo-indexing                 301
+/predict/manchester-united-vs-tottenham-hotspur /predict/manchester-united-vs-tottenham 301
+/predict/young-africans-vs-simba-sc /predict/simba-sc-vs-young-africans 301
+/predict/newcastle-united-vs-aston-villa /predict/arsenal-vs-chelsea 301
+/predict/ajax-vs-psv-eindhoven /predict/ajax-vs-feyenoord 301
+/predict/benfica-vs-porto   /predict/benfica-vs-sporting-cp 301
+/predict/inter-miami-vs-la-galaxy /predict/inter-miami-vs-new-york-red-bulls 301
 
-# Enforce HTTPS & non-www canonical host on custom domain
-http://predictpro.guru/*      https://predictpro.guru/:splat 301!
-http://www.predictpro.guru/*  https://predictpro.guru/:splat 301!
-https://www.predictpro.guru/* https://predictpro.guru/:splat 301!
+# Note: Host-level HTTPS & www/apex redirects are handled natively by Netlify Domain Management
+# to prevent ERR_TOO_MANY_REDIRECTS loops between apex load balancer (75.2.60.5) and www.
+
+# Netlify Serverless Functions & API Rewrites (must precede SPA fallback)
+/api/ping-search-engines    /.netlify/functions/indexing-cron 200
+/api/a2a                    /.netlify/functions/mcp       200
+/mcp                        /.netlify/functions/mcp       200
+/api/status                 /.netlify/functions/health    200
+/api/telegram-config        /.netlify/functions/telegram-broadcast?mode=config 200
+/api/highlights             /.netlify/functions/football?type=highlights 200
+/api/*                      /.netlify/functions/:splat    200
 
 # Static SEO, Favicon & Agentic Crawler Files
 /favicon.ico                /favicon.ico                  200
@@ -149,6 +162,12 @@ https://www.predictpro.guru/* https://predictpro.guru/:splat 301!
 /openapi.json               /openapi.json                 200
 /.well-known/*              /.well-known/:splat           200
 /sitemap.xml                /sitemap.xml                  200
+/sitemap-index.xml          /sitemap-index.xml            200
+/sitemap-core.xml           /sitemap-core.xml             200
+/sitemap-leagues.xml        /sitemap-leagues.xml          200
+/sitemap-matches.xml        /sitemap-matches.xml          200
+/sitemap-blog.xml           /sitemap-blog.xml             200
+/sitemap-discover-news.xml  /sitemap-discover-news.xml    200
 /sitemap-yandex.xml         /sitemap-yandex.xml           200
 /rss.xml                    /rss.xml                      200
 /feed.xml                   /feed.xml                     200

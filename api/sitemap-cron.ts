@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: Dynamic Sitemap Generator Cron
 // Invoked on schedule: "0 3 * * *" (Daily at 03:00 UTC)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
 
 export default async function handler(request: Request) {

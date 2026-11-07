@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: Settle Prediction Results Cron
 // Invoked on schedule: "*/30 * * * *" (Every 30 Minutes)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

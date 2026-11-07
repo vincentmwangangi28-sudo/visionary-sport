@@ -4,10 +4,6 @@
 
 import { handleDirectJackpotFetch } from '../src/server/jackpotDirectHandler';
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

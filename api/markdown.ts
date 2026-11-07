@@ -1,9 +1,5 @@
 import { buildLinkHeader, buildMarkdownForRoute } from '../src/server/agentDiscovery';
 
-export const config = {
-  runtime: 'edge',
-};
-
 export default async function handler(request: Request) {
   const url = new URL(request.url);
   const targetPath = url.searchParams.get('path') || url.pathname || '/';

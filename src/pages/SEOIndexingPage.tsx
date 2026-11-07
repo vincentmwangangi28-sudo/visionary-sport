@@ -410,6 +410,130 @@ export default function SEOIndexingPage() {
           </div>
         </div>
 
+        {/* Netlify Continuous Deployment & DNS Zone Card */}
+        <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-card to-primary/5 mb-8">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <Badge className="bg-emerald-600 text-white border-0 text-[11px] font-bold">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Netlify Continuous Deployment Active
+                  </Badge>
+                  <Badge variant="outline" className="text-[11px] font-mono">
+                    Site ID: 4d5e7d5d-0202-4c3c-99a8-4986b0ba9b58
+                  </Badge>
+                  <Badge variant="outline" className="text-[11px] font-mono">
+                    Node.js 24.x · Ubuntu Noble 24.04 · bun run build
+                  </Badge>
+                </div>
+                <CardTitle className="text-lg font-extrabold flex items-center gap-2 flex-wrap">
+                  <span>Domain &amp; Netlify DNS Zone Configuration (predictpro.guru)</span>
+                  <a
+                    href="https://app.netlify.com/projects/predictproguru/deploys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center"
+                  >
+                    <img
+                      src="https://api.netlify.com/api/v1/badges/4d5e7d5d-0202-4c3c-99a8-4986b0ba9b58/deploy-status"
+                      alt="Netlify Status"
+                      className="h-5"
+                    />
+                  </a>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Repository: <code className="font-mono text-foreground">github.com/vincentmwangangi28-sudo/visionary-sport</code> (`main` branch) · Publish: <code className="font-mono text-foreground">dist</code> · Functions: <code className="font-mono text-foreground">netlify/functions</code> (27 active) · Pretty URLs: Enabled
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const zoneFile = [
+                      '; Netlify DNS Zone Export for predictpro.guru (Project: predictproguru)',
+                      '$ORIGIN predictpro.guru.',
+                      '$TTL 3600',
+                      'predictpro.guru.\t3600\tIN\tA\t75.2.60.5',
+                      'www.predictpro.guru.\t3600\tIN\tCNAME\tpredictproguru.netlify.app.',
+                      'predictpro.guru.\t3600\tIN\tNS\tdns1.p07.nsone.net.',
+                      'predictpro.guru.\t3600\tIN\tNS\tdns2.p07.nsone.net.',
+                      'predictpro.guru.\t3600\tIN\tNS\tdns3.p07.nsone.net.',
+                      'predictpro.guru.\t3600\tIN\tNS\tdns4.p07.nsone.net.',
+                    ].join('\n');
+                    const blob = new Blob([zoneFile], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'predictpro.guru-dns-records.txt';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success('Downloaded predictpro.guru DNS zone records');
+                  }}
+                  className="text-xs font-semibold gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download DNS Records
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      ['dns1.p07.nsone.net', 'dns2.p07.nsone.net', 'dns3.p07.nsone.net', 'dns4.p07.nsone.net'].join('\n')
+                    );
+                    toast.success('Copied all 4 Netlify NS1 Name Servers to clipboard');
+                  }}
+                  className="text-xs font-semibold gap-1.5"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy NS1 Name Servers
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-border/60 bg-background/60 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Active DNS Records (TTL 3600)
+                </div>
+                <div className="space-y-1.5 font-mono text-xs">
+                  <div className="flex items-center justify-between py-1 px-2 rounded bg-muted/40">
+                    <span className="font-bold text-foreground">predictpro.guru</span>
+                    <span className="text-muted-foreground">3600 IN A</span>
+                    <Badge variant="secondary" className="font-mono text-[11px]">75.2.60.5</Badge>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded bg-muted/40">
+                    <span className="font-bold text-foreground">www.predictpro.guru</span>
+                    <span className="text-muted-foreground">3600 IN CNAME</span>
+                    <Badge variant="secondary" className="font-mono text-[11px]">predictproguru.netlify.app</Badge>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/60 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Assigned Netlify DNS Name Servers (NS1)
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 font-mono text-xs">
+                  {['dns1.p07.nsone.net', 'dns2.p07.nsone.net', 'dns3.p07.nsone.net', 'dns4.p07.nsone.net'].map((ns) => (
+                    <button
+                      key={ns}
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(ns);
+                        toast.success(`Copied ${ns}`);
+                      }}
+                      className="flex items-center justify-between py-1.5 px-2.5 rounded bg-muted/40 hover:bg-muted text-left transition-colors"
+                    >
+                      <span className="text-foreground font-semibold">{ns}</span>
+                      <Copy className="w-3 h-3 text-muted-foreground shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 4 Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="border-border/60 bg-card">

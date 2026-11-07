@@ -1,10 +1,6 @@
 // Vercel Serverless / Edge Function: Database Hygiene & Stale Matches Cleanup Cron
 // Invoked on schedule: "0 3 * * 1" (Every Monday at 03:00 AM UTC)
 
-export const config = {
-  runtime: 'edge',
-};
-
 const SUPABASE_BASE_URL = process.env.SUPABASE_URL || '';
 const IS_CUSTOM_SUPABASE = Boolean(
   SUPABASE_BASE_URL &&

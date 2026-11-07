@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -66,6 +66,8 @@ interface GeneratedSlipLeg {
 
 export default function SlipGeneratorPage() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const isBookingCodesRoute = location.pathname === '/booking-codes';
   const { predictions } = usePredictions(1);
   const {
     addSelections,
@@ -368,9 +370,17 @@ export default function SlipGeneratorPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="AI Bet Slip Generator & Bookmaker Booking Code Converter (SportyBet, 1xBet, Bet9ja)"
-        description="Generate AI football accumulator slips by target odds and convert booking codes instantly between SportyBet, 1xBet, Bet9ja, SportPesa, Betika, Betway, and Bet365."
-        canonical="/slip-generator"
+        title={
+          isBookingCodesRoute
+            ? 'Daily Football Booking Codes: SportyBet, 1xBet, Bet9ja & Betway'
+            : 'Smart Bet Slip Generator & Booking Code Converter | PredictPro'
+        }
+        description={
+          isBookingCodesRoute
+            ? 'Copy verified daily AI football booking codes for SportyBet, 1xBet, Bet9ja, Betway, and Betika with 1-click slip loading and Poisson probability breakdowns.'
+            : 'Generate custom 2.00 to 50.00+ odds AI football accumulator slips and convert booking codes across SportyBet, 1xBet, Bet9ja, Betway, and Betika.'
+        }
+        canonical={isBookingCodesRoute ? '/booking-codes' : '/slip-generator'}
         keywords="ai bet slip generator, sportybet booking code converter, 1xbet code converter, bet9ja booking code today, sportpesa booking code, free booking codes today"
       />
       <Navbar />

@@ -5,10 +5,6 @@ import {
   DEFAULT_AHREFS_TO,
 } from '../src/server/ahrefsAnalyticsHandler';
 
-export const config = {
-  runtime: 'edge',
-};
-
 export default async function handler(request: Request) {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
