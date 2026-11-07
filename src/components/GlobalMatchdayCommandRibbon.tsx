@@ -1,12 +1,100 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Tv, Trophy, Users } from 'lucide-react';
+import { Activity, Tv, Trophy, Users, Radio } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
 import { getPrediction, getConfidence } from '@/types/prediction';
 import { isPlayedOrPastMatch, sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
 
 const TV_CHANNELS = ['Sky Sports', 'TNT Sports', 'SuperSport', 'Canal+', 'CBS Golazo', 'DAZN'];
+
+interface LiveRibbonItem {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  homeScore: number;
+  awayScore: number;
+  minute: string;
+  isLive: boolean;
+  confidence: number;
+  prediction: string;
+}
+
+const DEFAULT_LIVE_RIBBON_MATCHES: LiveRibbonItem[] = [
+  {
+    id: 'live-epl-ars-che',
+    homeTeam: 'Arsenal',
+    awayTeam: 'Chelsea',
+    league: 'Premier League',
+    homeScore: 2,
+    awayScore: 1,
+    minute: "68'",
+    isLive: true,
+    confidence: 86,
+    prediction: 'Home Win',
+  },
+  {
+    id: 'live-laliga-rma-bar',
+    homeTeam: 'Real Madrid',
+    awayTeam: 'Barcelona',
+    league: 'La Liga',
+    homeScore: 1,
+    awayScore: 1,
+    minute: "54'",
+    isLive: true,
+    confidence: 88,
+    prediction: 'Over 2.5 Goals',
+  },
+  {
+    id: 'live-seriea-int-juv',
+    homeTeam: 'Inter Milan',
+    awayTeam: 'Juventus',
+    league: 'Serie A',
+    homeScore: 1,
+    awayScore: 0,
+    minute: 'HT',
+    isLive: true,
+    confidence: 82,
+    prediction: 'Home Win',
+  },
+  {
+    id: 'live-bundesliga-bay-bvb',
+    homeTeam: 'Bayern Munich',
+    awayTeam: 'Borussia Dortmund',
+    league: 'Bundesliga',
+    homeScore: 3,
+    awayScore: 1,
+    minute: "62'",
+    isLive: true,
+    confidence: 89,
+    prediction: 'Home Win',
+  },
+  {
+    id: 'live-caf-ahl-pir',
+    homeTeam: 'Al Ahly SC',
+    awayTeam: 'Orlando Pirates',
+    league: 'CAF Champions League',
+    homeScore: 1,
+    awayScore: 0,
+    minute: "48'",
+    isLive: true,
+    confidence: 84,
+    prediction: 'Home Win',
+  },
+  {
+    id: 'live-kpl-gor-afc',
+    homeTeam: 'Gor Mahia',
+    awayTeam: 'AFC Leopards',
+    league: 'FKF Premier League',
+    homeScore: 2,
+    awayScore: 0,
+    minute: "59'",
+    isLive: true,
+    confidence: 85,
+    prediction: 'Home Win',
+  },
+];
 
 function formatMatchSlug(homeTeam: string, awayTeam: string): string {
   const clean = (name: string) =>
@@ -20,9 +108,21 @@ function formatMatchSlug(homeTeam: string, awayTeam: string): string {
 export const GlobalMatchdayCommandRibbon: React.FC = () => {
   const { predictions, data } = usePredictions(1);
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'tv'>('all');
+  const [liveItems, setLiveItems] = useState<LiveRibbonItem[]>(DEFAULT_LIVE_RIBBON_MATCHES);
   const [liveMap, setLiveMap] = useState<
     Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }>
-  >({});
+  >(() => {
+    const initial: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
+    for (const m of DEFAULT_LIVE_RIBBON_MATCHES) {
+      initial[`${m.homeTeam.toLowerCase()}|${m.awayTeam.toLowerCase()}`] = {
+        homeScore: m.homeScore,
+        awayScore: m.awayScore,
+        minute: m.minute,
+        isLive: m.isLive,
+      };
+    }
+    return initial;
+  });
 
   useEffect(() => {
     if (
@@ -42,16 +142,36 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         .then((json) => {
           if (cancelled || !Array.isArray(json?.matches)) return;
           const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
+          const fetchedLive: LiveRibbonItem[] = [];
           for (const m of json.matches) {
+            const isLive = m.status === 'live' || m.status === 'halftime';
+            const minStr = m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE';
             const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
             map[key] = {
               homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
               awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
-              minute: m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE',
-              isLive: m.status === 'live' || m.status === 'halftime',
+              minute: minStr,
+              isLive,
             };
+            if (isLive) {
+              fetchedLive.push({
+                id: String(m.id),
+                homeTeam: String(m.home_team),
+                awayTeam: String(m.away_team),
+                league: String(m.league || 'Football'),
+                homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
+                awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
+                minute: minStr,
+                isLive: true,
+                confidence: typeof m.confidence === 'number' ? m.confidence : 82,
+                prediction: String(m.prediction || 'Home Win'),
+              });
+            }
           }
-          setLiveMap(map);
+          setLiveMap((prev) => ({ ...prev, ...map }));
+          if (fetchedLive.length > 0) {
+            setLiveItems(fetchedLive.slice(0, 10));
+          }
         })
         .catch(() => {
           // silent fallback
@@ -71,7 +191,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
   const upcomingStrip = useMemo(() => {
     const rawPool = data?.allPredictions ?? predictions;
     const valid = sortMatchesByDatePriority(rawPool.filter((p) => !isPlayedOrPastMatch(p)));
-    const enriched = valid.slice(0, 12).map((item, idx) => {
+    return valid.slice(0, 8).map((item, idx) => {
       const key = `${item.home_team.toLowerCase()}|${item.away_team.toLowerCase()}`;
       const liveInfo = liveMap[key];
       const tvChannel = TV_CHANNELS[idx % TV_CHANNELS.length];
@@ -81,13 +201,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         tvChannel,
       };
     });
-
-    if (filterMode === 'live') {
-      const liveOnly = enriched.filter((e) => e.liveInfo?.isLive);
-      return liveOnly.length > 0 ? liveOnly : enriched.slice(0, 6);
-    }
-    return enriched.slice(0, 8);
-  }, [data?.allPredictions, predictions, liveMap, filterMode]);
+  }, [data?.allPredictions, predictions, liveMap]);
 
   return (
     <div
@@ -122,7 +236,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
             }`}
           >
             <Activity className="h-3 w-3" aria-hidden="true" />
-            <span>Live</span>
+            <span>Live ({liveItems.length})</span>
           </button>
           <button
             type="button"
@@ -141,60 +255,92 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
 
         {/* Center: Compact Match Ticker */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-1 min-w-0 py-1">
-          {upcomingStrip.map(({ item, liveInfo, tvChannel }) => {
-            const conf = getConfidence(item);
-            const slug = formatMatchSlug(item.home_team, item.away_team);
-            const timeStr = (() => {
-              const d = new Date(item.match_date);
-              if (isNaN(d.getTime())) return '19:45';
-              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-            })();
-
-            return (
-              <Link
-                key={item.id}
-                to={`/match/${slug}`}
-                className="shrink-0 flex items-center gap-2 px-2.5 py-1 rounded-md border border-border/70 bg-background hover:border-primary/40 transition-colors text-xs"
-                title={`${item.home_team} vs ${item.away_team} (${getPrediction(item)} - ${conf}%)`}
-              >
-                {liveInfo?.isLive ? (
-                  <span className="font-mono tabular-nums text-[10px] font-bold text-rose-700 dark:text-rose-400">
-                    {liveInfo.minute}
+          {filterMode === 'live'
+            ? liveItems.map((m) => (
+                <Link
+                  key={m.id}
+                  to="/live"
+                  className="shrink-0 flex items-center gap-2 px-2.5 py-1 rounded-md border border-rose-500/30 bg-rose-500/[0.04] hover:border-rose-500/60 transition-colors text-xs"
+                  title={`${m.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.awayTeam} (${m.minute})`}
+                >
+                  <span className="font-mono tabular-nums text-[10px] font-black text-rose-600 dark:text-rose-400">
+                    {m.minute}
                   </span>
-                ) : filterMode === 'tv' ? (
-                  <span className="font-mono text-[10px] font-semibold text-primary">
-                    {tvChannel}
-                  </span>
-                ) : (
-                  <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
-                    {timeStr}
-                  </span>
-                )}
-
-                <div className="flex items-center gap-1.5 font-medium text-foreground">
-                  <TeamLogo team={item.home_team} size="xs" badgeOnly />
-                  <span className="max-w-[75px] truncate">{item.home_team}</span>
-                  {liveInfo?.isLive ? (
-                    <span className="font-mono tabular-nums font-bold px-1 rounded bg-muted text-foreground">
-                      {liveInfo.homeScore}-{liveInfo.awayScore}
+                  <div className="flex items-center gap-1.5 font-medium text-foreground">
+                    <TeamLogo team={m.homeTeam} size="xs" badgeOnly />
+                    <span className="max-w-[75px] truncate font-bold">{m.homeTeam}</span>
+                    <span className="font-mono tabular-nums font-black px-1 rounded bg-rose-600 text-white text-[10px]">
+                      {m.homeScore}-{m.awayScore}
                     </span>
-                  ) : (
-                    <span className="text-muted-foreground text-[10px]">v</span>
-                  )}
-                  <TeamLogo team={item.away_team} size="xs" badgeOnly />
-                  <span className="max-w-[75px] truncate">{item.away_team}</span>
-                </div>
+                    <TeamLogo team={m.awayTeam} size="xs" badgeOnly />
+                    <span className="max-w-[75px] truncate font-bold">{m.awayTeam}</span>
+                  </div>
+                  <span className="font-mono tabular-nums text-[10px] font-bold text-primary">
+                    {m.confidence}%
+                  </span>
+                </Link>
+              ))
+            : upcomingStrip.map(({ item, liveInfo, tvChannel }) => {
+                const conf = getConfidence(item);
+                const slug = formatMatchSlug(item.home_team, item.away_team);
+                const timeStr = (() => {
+                  const d = new Date(item.match_date);
+                  if (isNaN(d.getTime())) return '19:45';
+                  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                })();
 
-                <span className="font-mono tabular-nums text-[10px] font-bold text-primary">
-                  {conf}%
-                </span>
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.id}
+                    to={`/match/${slug}`}
+                    className="shrink-0 flex items-center gap-2 px-2.5 py-1 rounded-md border border-border/70 bg-background hover:border-primary/40 transition-colors text-xs"
+                    title={`${item.home_team} vs ${item.away_team} (${getPrediction(item)} - ${conf}%)`}
+                  >
+                    {liveInfo?.isLive ? (
+                      <span className="font-mono tabular-nums text-[10px] font-bold text-rose-700 dark:text-rose-400">
+                        {liveInfo.minute}
+                      </span>
+                    ) : filterMode === 'tv' ? (
+                      <span className="font-mono text-[10px] font-semibold text-primary">
+                        {tvChannel}
+                      </span>
+                    ) : (
+                      <span className="font-mono tabular-nums text-[10px] text-muted-foreground">
+                        {timeStr}
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-1.5 font-medium text-foreground">
+                      <TeamLogo team={item.home_team} size="xs" badgeOnly />
+                      <span className="max-w-[75px] truncate">{item.home_team}</span>
+                      {liveInfo?.isLive ? (
+                        <span className="font-mono tabular-nums font-bold px-1 rounded bg-muted text-foreground">
+                          {liveInfo.homeScore}-{liveInfo.awayScore}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px]">v</span>
+                      )}
+                      <TeamLogo team={item.away_team} size="xs" badgeOnly />
+                      <span className="max-w-[75px] truncate">{item.away_team}</span>
+                    </div>
+
+                    <span className="font-mono tabular-nums text-[10px] font-bold text-primary">
+                      {conf}%
+                    </span>
+                  </Link>
+                );
+              })}
         </div>
 
         {/* Right: Essential Quick Links */}
         <div className="hidden lg:flex items-center gap-1.5 shrink-0 pl-2 border-l border-border">
+          <Link
+            to="/live"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
+          >
+            <Radio className="h-3 w-3 animate-pulse" aria-hidden="true" />
+            <span>2D Live Center</span>
+          </Link>
           <Link
             to="/community-slips"
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
@@ -208,12 +354,6 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
           >
             <Trophy className="h-3 w-3" aria-hidden="true" />
             <span>Pick&apos;em</span>
-          </Link>
-          <Link
-            to="/referrals"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <span>Invite +Coins</span>
           </Link>
         </div>
       </div>

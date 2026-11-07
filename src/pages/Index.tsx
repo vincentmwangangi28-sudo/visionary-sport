@@ -375,10 +375,12 @@ const Index = () => {
         )}
 
         {/* In-Play & Live Matches View */}
-        {(activeMode === 'live' || activeMode === 'all') && (
-          <Suspense fallback={<div className="min-h-[220px]" aria-hidden="true" />}>
-            <LiveMatches />
-          </Suspense>
+        {(activeMode === 'live' || activeMode === 'predictions' || activeMode === 'all') && (
+          <div className="cv-auto">
+            <Suspense fallback={<div className="min-h-[220px]" aria-hidden="true" />}>
+              <LiveMatches />
+            </Suspense>
+          </div>
         )}
 
         {/* AI Smart Slip Generator View */}
