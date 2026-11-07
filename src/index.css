@@ -194,3 +194,25 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Suppress any Netlify Collaborative Drawer, Deploy Preview watermark, or injected platform overlay */
+netlify-drawer,
+#netlify-drawer,
+#netlify-cdp-loader,
+[data-netlify-deploy-drawer],
+[data-netlify-drawer],
+[id^="netlify-"],
+[class*="netlify-drawer"],
+[class*="netlify-watermark"],
+[class*="netlify-badge"],
+iframe[src*="app.netlify.com"],
+iframe[src*="netlify.com/cdp"],
+a[href*="netlify.com"][target="_blank"][style*="fixed"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}

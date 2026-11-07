@@ -70,6 +70,15 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     const timer = setTimeout(() => {
       try {
         if (typeof window !== 'undefined' && adRef.current && adRef.current.innerHTML.trim() === '') {
+          const scriptId = 'predictpro-adsense-sdk';
+          if (!document.getElementById(scriptId)) {
+            const ads = document.createElement('script');
+            ads.id = scriptId;
+            ads.async = true;
+            ads.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adConfig.publisherId}`;
+            ads.crossOrigin = 'anonymous';
+            document.head.appendChild(ads);
+          }
           window.adsbygoogle = window.adsbygoogle || [];
           window.adsbygoogle.push({});
           pushedRef.current = true;
@@ -77,10 +86,10 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       } catch {
         setAdUnfilled(true);
       }
-    }, 200);
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [isPremium, adConfig.enabled, adConfig.testMode, hasValidSlot]);
+  }, [isPremium, adConfig.enabled, adConfig.testMode, adConfig.publisherId, hasValidSlot]);
 
   useEffect(() => {
     const el = adRef.current;

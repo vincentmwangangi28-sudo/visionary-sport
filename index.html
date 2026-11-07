@@ -273,19 +273,38 @@
                 ah.setAttribute('data-key', 'c8s+HDjX+BXC8gS/Bj9fQw');
                 ah.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
                 document.head.appendChild(ah);
-
-                var ads = document.createElement('script');
-                ads.async = true;
-                ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
-                ads.crossOrigin = 'anonymous';
-                ads.onerror = function(e){ if (e && e.preventDefault) e.preventDefault(); };
-                document.head.appendChild(ads);
               }
             } catch (e) {}
-          }, 1500);
+          }, 2500);
         }
 
         window.addEventListener('scroll', loadThirdPartyScripts, { once: true, passive: true });
+
+        // Remove any Netlify-injected Collaborative Drawer / Deploy Preview watermark overlay
+        function stripNetlifyWatermark() {
+          try {
+            var selectors = [
+              'netlify-drawer',
+              '#netlify-drawer',
+              '#netlify-cdp-loader',
+              '[data-netlify-deploy-drawer]',
+              '[data-netlify-drawer]',
+              'iframe[src*="app.netlify.com"]',
+              'iframe[src*="netlify.com/cdp"]',
+              'script[src*="app.netlify.com"]',
+              'script[src*="netlify.com/scripts/cdp"]'
+            ];
+            var nodes = document.querySelectorAll(selectors.join(','));
+            for (var i = 0; i < nodes.length; i++) {
+              if (nodes[i] && nodes[i].parentNode) {
+                nodes[i].parentNode.removeChild(nodes[i]);
+              }
+            }
+          } catch (e) {}
+        }
+        stripNetlifyWatermark();
+        document.addEventListener('DOMContentLoaded', stripNetlifyWatermark);
+        window.addEventListener('load', stripNetlifyWatermark);
       })();
     </script>
 

@@ -153,17 +153,33 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
   }
 };
 
+function hasStoredAuthSession(): boolean {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+  try {
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 /**
  * Creates an instance of the Supabase client given resolved credentials
  */
 function createClientInstance(url: string, key: string): SupabaseClient<Database> {
   try {
+    const hasSession = hasStoredAuthSession();
     return createClient<Database>(url, key, {
       auth: {
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
         persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
+        autoRefreshToken: hasSession,
+        detectSessionInUrl: typeof window !== 'undefined' && window.location.search.includes('code='),
         flowType: 'pkce',
       },
       global: {

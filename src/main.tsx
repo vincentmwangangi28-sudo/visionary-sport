@@ -57,7 +57,7 @@ if ('serviceWorker' in navigator) {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => !k.startsWith('predictpro-v4'))
+            .filter((k) => !k.startsWith('predictpro-v5'))
             .map((k) => caches.delete(k).catch(() => false))
         )
       )
@@ -67,62 +67,10 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
-      .then(async (reg) => {
+      .then((reg) => {
         reg.update().catch(() => {});
-
-        const notifySWOfSWR = () => {
-          if (reg.active) {
-            reg.active.postMessage({
-              type: 'ENABLE_MATCH_SWR',
-              strategy: 'stale-while-revalidate',
-            });
-          }
-        };
-
-        notifySWOfSWR();
-
-        const { prewarmOfflineCaches, triggerMatchDataRevalidation } = await import('./services/offlineSyncService');
-
-        if (navigator.onLine) {
-          prewarmOfflineCaches().catch(() => {});
-        }
-
-        window.addEventListener('online', () => {
-          triggerMatchDataRevalidation().catch(() => {});
-          prewarmOfflineCaches().catch(() => {});
-        });
-
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible' && navigator.onLine) {
-            triggerMatchDataRevalidation().catch(() => {});
-          }
-        });
-
-        setInterval(() => {
-          if (navigator.onLine && document.visibilityState === 'visible') {
-            triggerMatchDataRevalidation().catch(() => {});
-          }
-        }, 5 * 60 * 1000);
-
-        setInterval(() => {
-          reg.update().catch(() => {});
-        }, 60 * 60 * 1000);
       })
-      .catch((err) => console.warn('SW registration failed:', err));
-
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'ENABLE_MATCH_SWR',
-          strategy: 'stale-while-revalidate',
-        });
-      }
-      if (navigator.onLine) {
-        import('./services/offlineSyncService')
-          .then(({ prewarmOfflineCaches }) => prewarmOfflineCaches())
-          .catch(() => {});
-      }
-    });
+      .catch(() => {});
   });
 }
 

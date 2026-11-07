@@ -129,7 +129,7 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
 
   try {
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutId = controller ? setTimeout(() => controller.abort(), 3000) : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 10000) : null;
     try {
       const apiRes = await fetch('/api/keepalive', {
         method: 'GET',
@@ -142,8 +142,8 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
         supabaseStatus = 'active_via_server';
         keepaliveNetworkCooldownUntil = 0;
       } else {
-        // Place background sentinel into a 10-minute cooldown on network/DNS/SSL error
-        keepaliveNetworkCooldownUntil = Date.now() + 10 * 60 * 1000;
+        // Place background sentinel into a 15-minute cooldown on network/DNS/SSL error
+        keepaliveNetworkCooldownUntil = Date.now() + 15 * 60 * 1000;
       }
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
@@ -179,7 +179,7 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
       timestamp,
     };
   } catch (err: any) {
-    keepaliveNetworkCooldownUntil = Date.now() + 10 * 60 * 1000;
+    keepaliveNetworkCooldownUntil = Date.now() + 15 * 60 * 1000;
     const latencyMs = Date.now() - start;
     const prev = getKeepaliveTelemetry();
     const updated: KeepaliveTelemetry = {
@@ -205,26 +205,32 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
 
 /**
  * Initializes the client-side background sentinel.
- * Automatically pings every 10 minutes while the tab/app is running and online.
+ * Automatically pings every 15 minutes while the tab/app is running and online.
  */
 export function startClientKeepaliveSentinel(): void {
   if (typeof window === 'undefined') return;
   if (!isClientSentinelEnabled()) return;
   if (activeInterval) return;
 
-  // Non-blocking warmup pulse after 15 seconds if online
+  // Non-blocking warmup pulse after 60 seconds if online and tab is visible
   setTimeout(() => {
-    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+    if (
+      (typeof navigator === 'undefined' || navigator.onLine !== false) &&
+      (typeof document === 'undefined' || document.visibilityState === 'visible')
+    ) {
       triggerKeepalivePulse('client_boot').catch(() => {});
     }
-  }, 15000);
+  }, 60000);
 
-  // Ping every 10 minutes (600,000 ms)
+  // Ping every 15 minutes (900,000 ms)
   activeInterval = setInterval(() => {
-    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+    if (
+      (typeof navigator === 'undefined' || navigator.onLine !== false) &&
+      (typeof document === 'undefined' || document.visibilityState === 'visible')
+    ) {
       triggerKeepalivePulse('heartbeat_timer').catch(() => {});
     }
-  }, 10 * 60 * 1000);
+  }, 15 * 60 * 1000);
 
   if (!visibilityListenerAttached) {
     visibilityListenerAttached = true;

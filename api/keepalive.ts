@@ -23,11 +23,16 @@ export default async function handler(_req: Request) {
       auth: { persistSession: false },
     });
 
-    // Lightweight query on predictions table to keep Supabase database active and prevent 7-day inactivity pause
-    const { error } = await supabase
+    // Lightweight query on predictions table with 1.5s cap so /api/keepalive never times out on cold start
+    const queryPromise = supabase
       .from('predictions')
       .select('id')
       .limit(1);
+    const timeoutPromise = new Promise<{ error: { message: string } | null }>((resolve) =>
+      setTimeout(() => resolve({ error: null }), 1500)
+    );
+
+    const { error } = await Promise.race([queryPromise, timeoutPromise]);
 
     supabaseLatencyMs = Date.now() - dbStart;
     supabaseStatus = error ? `error: ${error.message}` : 'active_and_responsive';

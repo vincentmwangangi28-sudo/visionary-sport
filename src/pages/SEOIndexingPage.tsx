@@ -427,19 +427,7 @@ export default function SEOIndexingPage() {
                   </Badge>
                 </div>
                 <CardTitle className="text-lg font-extrabold flex items-center gap-2 flex-wrap">
-                  <span>Domain &amp; Netlify DNS Zone Configuration (predictpro.guru)</span>
-                  <a
-                    href="https://app.netlify.com/projects/predictproguru/deploys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center"
-                  >
-                    <img
-                      src="https://api.netlify.com/api/v1/badges/4d5e7d5d-0202-4c3c-99a8-4986b0ba9b58/deploy-status"
-                      alt="Netlify Status"
-                      className="h-5"
-                    />
-                  </a>
+                  <span>Domain &amp; DNS Zone Configuration (predictpro.guru)</span>
                 </CardTitle>
                 <CardDescription className="text-xs">
                   Repository: <code className="font-mono text-foreground">github.com/vincentmwangangi28-sudo/visionary-sport</code> (`main` branch) · Publish: <code className="font-mono text-foreground">dist</code> · Functions: <code className="font-mono text-foreground">netlify/functions</code> (27 active) · Pretty URLs: Enabled

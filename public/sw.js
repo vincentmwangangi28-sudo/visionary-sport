@@ -1,79 +1,23 @@
 /**
- * PredictPro Guru — Production Service Worker (v4)
+ * PredictPro Guru — Production Service Worker (v5)
  *
- * Quota-safe, zero-blocking offline caching strategy:
- * - Never caches cross-origin opaque responses (prevents Chromium 7MB/image padding & QuotaExceededError).
- * - Never intercepts cross-origin API/image requests when online (prevents postMessage storms & synthetic 503s).
- * - Wraps all CacheStorage operations in try/catch so storage pressure never breaks network responses.
+ * Lightweight, zero-overhead service worker:
+ * - Never intercepts online HTML navigation requests (eliminates sw.js:173 Fetch failed loading logs
+ *   and navigation preload / redirect race conditions).
+ * - Never intercepts cross-origin requests or API routes.
+ * - Provides an instant offline HTML fallback ONLY when the browser is actually offline.
  */
 
-const CACHE_VERSION = 'predictpro-v4';
+const CACHE_VERSION = 'predictpro-v5';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
-const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
-
-const MAX_DYNAMIC_ITEMS = 35;
 
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json',
   '/favicon.svg',
-  '/robots.txt',
 ];
-
-const SPA_ROUTES = [
-  '/',
-  '/live',
-  '/upcoming',
-  '/standings',
-  '/accumulators',
-  '/analytics',
-  '/value-bets',
-  '/Screener',
-  '/screener',
-  '/bankroll',
-  '/contests',
-  '/community',
-  '/pricing',
-  '/blog',
-  '/faq',
-  '/glossary',
-  '/methodology',
-];
-
-/**
- * Safe cache.put wrapper — never throws QuotaExceededError and never caches opaque responses
- */
-async function safeCachePut(cacheName, request, response) {
-  try {
-    if (!response || !response.ok || response.type === 'opaque') {
-      return;
-    }
-    const cache = await caches.open(cacheName);
-    await cache.put(request, response);
-  } catch {
-    // Ignore QuotaExceededError — never fail a request because cache is full
-  }
-}
-
-/**
- * Trim a cache to a maximum number of entries
- */
-async function trimCache(cacheName, maxItems) {
-  try {
-    const cache = await caches.open(cacheName);
-    const keys = await cache.keys();
-    if (keys.length > maxItems) {
-      const toDelete = keys.slice(0, keys.length - maxItems);
-      await Promise.all(toDelete.map((key) => cache.delete(key).catch(() => {})));
-    }
-  } catch {
-    // Ignore cache trim errors
-  }
-}
 
 // ---------------------------------------------------------------------------
-// 1. INSTALL — Precache core app shell
+// 1. INSTALL — Precache minimal offline shell metadata
 // ---------------------------------------------------------------------------
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -82,7 +26,7 @@ self.addEventListener('install', (event) => {
       .then((cache) =>
         Promise.allSettled(
           PRECACHE_ASSETS.map((url) =>
-            fetch(url, { cache: 'reload' })
+            fetch(url)
               .then((res) => {
                 if (res && res.ok && res.type !== 'opaque') {
                   return cache.put(url, res).catch(() => {});
@@ -97,10 +41,10 @@ self.addEventListener('install', (event) => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. ACTIVATE — Purge ALL older caches (including v1/v2/v3 & bloated logo caches)
+// 2. ACTIVATE — Purge ALL older caches (v1, v2, v3, v4)
 // ---------------------------------------------------------------------------
 self.addEventListener('activate', (event) => {
-  const allowedCaches = new Set([STATIC_CACHE, DYNAMIC_CACHE]);
+  const allowedCaches = new Set([STATIC_CACHE]);
 
   event.waitUntil(
     caches
@@ -120,12 +64,19 @@ self.addEventListener('activate', (event) => {
 });
 
 // ---------------------------------------------------------------------------
-// 3. FETCH — Same-origin app shell & static asset caching only
+// 3. FETCH — Offline-only navigation fallback (zero interception when online)
 // ---------------------------------------------------------------------------
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
   if (request.method !== 'GET') return;
+
+  // When online, let the browser and Netlify CDN (immutable /assets/* caching) handle all requests natively.
+  // This prevents sw.js "Fetch failed loading" console logs on aborted/redirected navigations and eliminates
+  // service worker postMessage / clone overhead on the main thread.
+  if (self.navigator && self.navigator.onLine !== false) {
+    return;
+  }
 
   let url;
   try {
@@ -134,48 +85,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (!url.protocol.startsWith('http')) return;
+  if (url.origin !== self.location.origin) return;
 
-  // NEVER intercept cross-origin requests (ESPN, Wikimedia, TheSportsDB, Google Fonts, etc.).
-  // Letting the browser handle cross-origin requests natively avoids:
-  // 1. Chromium's 7MB per-item quota padding on opaque responses (QuotaExceededError)
-  // 2. Duplicate no-cors retry fetches on 404 logos
-  // 3. Synthetic 503 responses when cache quota is full
-  // 4. Main-thread postMessage revalidation storms
-  if (url.origin !== self.location.origin) {
-    return;
-  }
-
-  // Skip Vite HMR, dev scripts, API routes, and raw SEO/IndexNow verification files (.txt, .xml)
-  if (
-    url.pathname.startsWith('/@') ||
-    url.pathname.startsWith('/node_modules/') ||
-    url.pathname.startsWith('/src/') ||
-    url.pathname.startsWith('/api/') ||
-    url.pathname.endsWith('.txt') ||
-    url.pathname.endsWith('.xml') ||
-    url.searchParams.has('t') ||
-    url.searchParams.has('import')
-  ) {
-    return;
-  }
-
-  // A. HTML Navigation Requests (Network-First with Offline App-Shell Fallback)
   const isNav =
     request.mode === 'navigate' ||
-    request.destination === 'document' ||
-    SPA_ROUTES.includes(url.pathname);
+    request.destination === 'document';
 
   if (isNav) {
     event.respondWith(
       (async () => {
         try {
-          const networkResponse = await fetch(request);
-          if (networkResponse && networkResponse.ok) {
-            safeCachePut(DYNAMIC_CACHE, request, networkResponse.clone());
-            return networkResponse;
-          }
-          return networkResponse;
+          return await fetch(request);
         } catch {
           const cachedPage =
             (await caches.match(request).catch(() => null)) ||
@@ -184,36 +104,10 @@ self.addEventListener('fetch', (event) => {
           if (cachedPage) return cachedPage;
 
           return new Response(
-            '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>PredictPro — Offline</title></head><body><main><h1>You are currently offline</h1><p>Please reconnect to view live football predictions.</p></main></body></html>',
+            '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PredictPro — Offline</title></head><body style="font-family:system-ui,sans-serif;background:#090d16;color:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;text-align:center;"><main><h1>You are currently offline</h1><p>Please check your connection to view live football predictions and xG analytics.</p></main></body></html>',
             { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
           );
         }
-      })()
-    );
-    return;
-  }
-
-  // B. Same-Origin Static Assets (JS, CSS, SVG, Fonts, Icons) -> Stale-While-Revalidate
-  const isStaticAsset =
-    /\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|webp|ico|json)$/i.test(url.pathname) ||
-    url.pathname.startsWith('/assets/');
-
-  if (isStaticAsset) {
-    event.respondWith(
-      (async () => {
-        const cached = await caches.match(request).catch(() => null);
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.ok) {
-              safeCachePut(DYNAMIC_CACHE, request, networkResponse.clone()).then(() =>
-                trimCache(DYNAMIC_CACHE, MAX_DYNAMIC_ITEMS)
-              );
-            }
-            return networkResponse;
-          })
-          .catch(() => cached);
-
-        return cached || fetchPromise;
       })()
     );
   }
@@ -244,20 +138,16 @@ self.addEventListener('message', (event) => {
   }
 
   if (data.type === 'GET_CACHE_STATS') {
-    event.waitUntil(
-      (async () => {
-        if (event.ports && event.ports[0]) {
-          event.ports[0].postMessage({
-            version: CACHE_VERSION,
-            staticCount: 5,
-            matchDataCount: 0,
-            logoCount: 0,
-            dynamicCount: 5,
-            totalItems: 10,
-            updatedAt: new Date().toISOString(),
-          });
-        }
-      })()
-    );
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({
+        version: CACHE_VERSION,
+        staticCount: 2,
+        matchDataCount: 0,
+        logoCount: 0,
+        dynamicCount: 0,
+        totalItems: 2,
+        updatedAt: new Date().toISOString(),
+      });
+    }
   }
 });
