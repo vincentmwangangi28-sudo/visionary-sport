@@ -107,6 +107,22 @@ export function generateRegionalBookingCode(
 }
 
 /**
+ * Generates a direct one-click bookmaker slip deep-link URL pre-populated with booking code and tracking params
+ */
+export function getBookmakerDeepLinkUrl(
+  bookmakerId: string,
+  bookingCode: string,
+  selectionsCount: number = 1
+): string {
+  const bookmaker =
+    REGIONAL_BOOKMAKERS.find((b) => b.id === bookmakerId.toLowerCase()) ||
+    REGIONAL_BOOKMAKERS[0];
+  const base = bookmaker.websiteUrl.replace(/\/$/, '');
+  const codeParam = encodeURIComponent(bookingCode);
+  return `${base}/?bookingCode=${codeParam}&shareCode=${codeParam}&legs=${selectionsCount}&utm_source=predictpro.guru&utm_medium=betslip_deeplink`;
+}
+
+/**
  * Generates deterministic 4-digit Bookmaker SMS / Coupon Game ID (e.g., 4812)
  */
 export function generateMatchGameId(

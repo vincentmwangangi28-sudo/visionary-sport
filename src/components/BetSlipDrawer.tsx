@@ -9,6 +9,7 @@ import { triggerGuestAccountInvite } from '@/components/GuestAccountPrompt';
 import {
   REGIONAL_BOOKMAKERS,
   generateRegionalBookingCode,
+  getBookmakerDeepLinkUrl,
   translateMarketForBookmaker,
   generateMatchGameId,
   downloadSlipAsPngImage,
@@ -867,12 +868,14 @@ export const BetSlipDrawer = () => {
                             {copied ? t('slip.copied', 'Copied') : 'Copy'}
                           </Button>
                           <a
-                            href={activeBookmaker.websiteUrl}
+                            href={getBookmakerDeepLinkUrl(activeBookmaker.id, generatedCode, selections.length)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            aria-label={`Open ${activeBookmaker.name} website`}
-                            className="inline-flex items-center justify-center rounded-md text-xs font-medium border bg-background hover:bg-muted h-8 px-2"
+                            onClick={() => handleCopyCode(generatedCode)}
+                            aria-label={`Load slip ${generatedCode} on ${activeBookmaker.name}`}
+                            className="inline-flex items-center justify-center gap-1 rounded-md text-xs font-semibold border border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-2.5 whitespace-nowrap"
                           >
+                            <span>Load on {activeBookmaker.name}</span>
                             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                           </a>
                         </div>

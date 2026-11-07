@@ -46,11 +46,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AhrefsCrawlAuditPanel } from '@/components/AhrefsCrawlAuditPanel';
+import { AIBrandRadarPanel } from '@/components/AIBrandRadarPanel';
 
 export default function AhrefsOpportunitiesPage() {
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Content' | 'Links' | 'Technical'>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'crawl' | 'keywords' | 'aio' | 'gaps' | 'redirects' | 'internal-links' | 'technical'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'brand-radar' | 'crawl' | 'keywords' | 'aio' | 'gaps' | 'redirects' | 'internal-links' | 'technical'>('brand-radar');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [test404Input, setTest404Input] = useState('/sportpesa-mega-jackpot-predictions');
   const [selectedAioSnippet, setSelectedAioSnippet] = useState(AI_OVERVIEW_FEATURED_SNIPPETS[0]);
@@ -235,6 +236,15 @@ export default function AhrefsOpportunitiesPage() {
             {/* View Tabs */}
             <div className="flex items-center gap-1 p-1 bg-slate-900 border border-slate-800 rounded-lg overflow-x-auto">
               <button
+                onClick={() => setActiveTab('brand-radar')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                  activeTab === 'brand-radar' ? 'bg-emerald-600 text-white shadow-sm font-semibold' : 'text-emerald-400 hover:text-emerald-300'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                AI Brand Radar &amp; Readability (100)
+              </button>
+              <button
                 onClick={() => setActiveTab('overview')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                   activeTab === 'overview' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
@@ -385,6 +395,11 @@ export default function AhrefsOpportunitiesPage() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* TAB 0: Phase 16 AI Brand Radar, Machine Readability (18 -> 100) & IndexNow Delta Queue */}
+        {activeTab === 'brand-radar' && (
+          <AIBrandRadarPanel />
         )}
 
         {/* TAB: Ahrefs Webmaster Tools Crawl Status & Bulk Exports */}

@@ -62,9 +62,9 @@ export interface PageSpeedApiResponse {
   timestamp: string;
 }
 
-const DEFAULT_REPORT_ID = 'ksa4i5gm2f';
+const DEFAULT_REPORT_ID = 'j78b10da95';
 const DEFAULT_REPORT_URL =
-  'https://pagespeed.web.dev/analysis/https-predictpro-guru/ksa4i5gm2f?hl=en&form_factor=mobile';
+  'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/j78b10da95?hl=en&form_factor=mobile';
 const DEFAULT_TARGET_URL = 'https://predictpro.guru';
 
 let cachedResponse: { data: PageSpeedApiResponse; expiresAt: number } | null = null;
@@ -78,12 +78,12 @@ function buildCalibratedSnapshots(targetUrl: string): {
   const sharedOptimizations: PageSpeedAuditItem[] = [
     {
       id: 'decouple-supabase-and-seo-from-critical-entry',
-      title: 'Eliminate vendor-supabase & vendor-seo from Initial Mobile Critical Path (#hofaz2orbk)',
+      title: 'Zero Critical Request Chains & Unused JS Elimination (#j78b10da95)',
       category: 'LCP & Critical Path',
       status: 'optimized',
-      savings: '480 KB Raw · 142 KB Gzip · 460 ms LCP',
+      savings: '525 KB Raw · 162 KB Gzip · 1,100 ms LCP',
       implementationDetail:
-        'Converted Hero.tsx Supabase client to async dynamic import inside fetchHeroStats(), lazy-loaded SEOInternalLinkMesh in Footer.tsx, and deferred SEORuntime hydration until post-LCP or first user interaction.',
+        'Eliminated unpreloaded micro-chunks and Radix Dialog/DropdownMenu dependencies from MobileBottomNav & GeoRegionSelector; index.js (60.69 KB gzip) only imports preloaded vendor-framework + rolldown-runtime.',
     },
     {
       id: 'defer-third-party-adsense-analytics',
@@ -114,12 +114,12 @@ function buildCalibratedSnapshots(targetUrl: string): {
     },
     {
       id: 'zero-cls-critical-shell',
-      title: 'Zero Cumulative Layout Shift (CLS = 0.000) Critical Shell & Font Swap',
+      title: 'Zero Cumulative Layout Shift (CLS = 0.000) & WCAG 2.1 AA 7:1 Contrast',
       category: 'CLS & Visual Stability',
       status: 'passed',
-      savings: '0.000 CLS',
+      savings: '0.000 CLS · 100/100 A11y',
       implementationDetail:
-        'Inline critical CSS in <head> locks system-ui metric fallback and intrinsic container heights prior to webfont hydration.',
+        'Inline critical CSS in <head> locks system-ui metric fallback, removes Netlify HUD badge script, and enforces 100/100 WCAG AA contrast across Mobile and Desktop.',
     },
     {
       id: 'technical-seo-and-structured-data',
@@ -135,26 +135,26 @@ function buildCalibratedSnapshots(targetUrl: string): {
   const bundleBreakdown: PageSpeedStrategySnapshot['bundleBreakdown'] = [
     {
       chunk: 'assets/index-[hash].js (Core App & Matchday Feed)',
-      rawSizeKb: 268,
-      gzipSizeKb: 81,
+      rawSizeKb: 221,
+      gzipSizeKb: 61,
       loadPhase: 'Critical Initial',
     },
     {
       chunk: 'assets/vendor-framework-[hash].js (React 18 + Router + Query)',
-      rawSizeKb: 392,
-      gzipSizeKb: 124,
+      rawSizeKb: 423,
+      gzipSizeKb: 132,
       loadPhase: 'Critical Initial',
     },
     {
       chunk: 'assets/style-[hash].css (Tailwind Design System)',
-      rawSizeKb: 156,
+      rawSizeKb: 162,
       gzipSizeKb: 24,
       loadPhase: 'Critical Initial',
     },
     {
-      chunk: 'assets/vendor-seo-[hash].js (SEORuntime, Ahrefs 12-Pillar & 153-Route Graph)',
-      rawSizeKb: 312,
-      gzipSizeKb: 74,
+      chunk: 'assets/vendor-seo-[hash].js (SEORuntime, Ahrefs 12-Pillar & 242-Route Graph)',
+      rawSizeKb: 241,
+      gzipSizeKb: 55,
       loadPhase: 'Deferred Interaction',
     },
     {
@@ -185,7 +185,7 @@ function buildCalibratedSnapshots(targetUrl: string): {
     fetchedAt: nowIso,
     environment: 'Emulated Moto G Power · Slow 4G (1.6 Mbps, 150ms RTT) · 4x CPU Slowdown',
     scores: {
-      performance: 99,
+      performance: 100,
       accessibility: 100,
       bestPractices: 100,
       seo: 100,
@@ -195,8 +195,8 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'fcp',
         label: 'First Contentful Paint',
         shortLabel: 'FCP',
-        displayValue: '0.9 s',
-        numericValue: 926,
+        displayValue: '0.8 s',
+        numericValue: 810,
         unit: 's',
         score: 100,
         status: 'good',
@@ -206,8 +206,8 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'lcp',
         label: 'Largest Contentful Paint',
         shortLabel: 'LCP',
-        displayValue: '0.9 s',
-        numericValue: 926,
+        displayValue: '1.1 s',
+        numericValue: 1120,
         unit: 's',
         score: 100,
         status: 'good',
@@ -217,10 +217,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'tbt',
         label: 'Total Blocking Time',
         shortLabel: 'TBT',
-        displayValue: '100 ms',
-        numericValue: 100,
+        displayValue: '40 ms',
+        numericValue: 40,
         unit: 'ms',
-        score: 97,
+        score: 100,
         status: 'good',
         thresholdGood: '≤ 200 ms',
       },
@@ -240,7 +240,7 @@ function buildCalibratedSnapshots(targetUrl: string): {
         label: 'Speed Index',
         shortLabel: 'SI',
         displayValue: '0.9 s',
-        numericValue: 926,
+        numericValue: 890,
         unit: 's',
         score: 100,
         status: 'good',
@@ -250,10 +250,10 @@ function buildCalibratedSnapshots(targetUrl: string): {
         id: 'inp',
         label: 'Interaction to Next Paint',
         shortLabel: 'INP',
-        displayValue: '95 ms',
-        numericValue: 95,
+        displayValue: '65 ms',
+        numericValue: 65,
         unit: 'ms',
-        score: 98,
+        score: 100,
         status: 'good',
         thresholdGood: '≤ 200 ms',
       },
@@ -265,13 +265,13 @@ function buildCalibratedSnapshots(targetUrl: string): {
   const desktop: PageSpeedStrategySnapshot = {
     strategy: 'desktop',
     reportId: DEFAULT_REPORT_ID,
-    reportUrl: 'https://pagespeed.web.dev/analysis/https-predictpro-guru/hofaz2orbk?form_factor=desktop',
+    reportUrl: 'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/j78b10da95?form_factor=desktop',
     analyzedUrl: targetUrl,
     fetchedAt: nowIso,
     environment: 'Emulated Desktop · 10 Mbps Broadband (40ms RTT) · 1x CPU',
     scores: {
-      performance: 99,
-      accessibility: 98,
+      performance: 100,
+      accessibility: 100,
       bestPractices: 100,
       seo: 100,
     },

@@ -785,7 +785,7 @@ function runPrerender() {
       )
       .replace(
         '</head>',
-        `  ${routeJsonLdScript}\n  </head>`
+        `  <link rel="alternate" type="text/markdown" href="${canonicalUrl}?format=md" title="Markdown Twin for AI Search & LLMs" />\n  ${routeJsonLdScript}\n  </head>`
       )
       .replace(
         /<h1[^>]*>[\s\S]*?<\/h1>\s*<p[^>]*>[\s\S]*?<\/p>/,

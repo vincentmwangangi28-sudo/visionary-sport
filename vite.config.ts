@@ -339,10 +339,32 @@ function cronTasksPlugin(): Plugin {
         if (url === "/api/ahrefs-analytics") {
           try {
             const parsedUrl = new URL(req.url || "", "http://localhost");
+            const endpointType = parsedUrl.searchParams.get("endpoint") || "";
+            const hasAiSelect =
+              endpointType === "ai-responses-count" ||
+              parsedUrl.searchParams.has("select") ||
+              parsedUrl.searchParams.has("target");
+            const {
+              handleAhrefsAnalyticsRequest,
+              handleAhrefsAIResponsesCountRequest,
+            } = await import("./src/server/ahrefsAnalyticsHandler.ts");
+
+            if (hasAiSelect) {
+              const target = parsedUrl.searchParams.get("target") || "predictpro.guru/";
+              const select =
+                parsedUrl.searchParams.get("select") ||
+                "all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok";
+              const aiData = await handleAhrefsAIResponsesCountRequest({ target, select });
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.setHeader("Access-Control-Allow-Origin", "*");
+              res.statusCode = 200;
+              res.end(JSON.stringify(aiData));
+              return;
+            }
+
             const project_id = parsedUrl.searchParams.get("project_id") || "10277130";
             const from = parsedUrl.searchParams.get("from") || "2026-09-30T00:00:00Z";
             const to = parsedUrl.searchParams.get("to") || "2026-10-29T23:59:59Z";
-            const { handleAhrefsAnalyticsRequest } = await import("./src/server/ahrefsAnalyticsHandler.ts");
             const data = await handleAhrefsAnalyticsRequest({ project_id, from, to });
             res.setHeader("Content-Type", "application/json; charset=utf-8");
             res.setHeader("Access-Control-Allow-Origin", "*");

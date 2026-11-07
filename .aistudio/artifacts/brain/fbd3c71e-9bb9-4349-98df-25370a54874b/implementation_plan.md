@@ -1,164 +1,129 @@
-# PredictPro Phase 14: Ahrefs 12-Pillar Growth Engine, AI Overviews & Link Reclamation Hub
+# PredictPro Phase 16: AI Brand Radar, Machine Readability (100/100) & Automated IndexNow Growth Suite
 
-Phase 14 scales PredictPro (`predictpro.guru`) from technical perfection (Core Web Vitals, 0 errors, 100 SEO) into massive organic traffic acquisition by executing all 12 Ahrefs Opportunity pillars across Content, Links, and Technical audit domains with hybrid server-pre-rendering and an interactive mission-control suite.
+Phase 16 elevates PredictPro (`predictpro.guru`) from a 100/100 PageSpeed and Netlify-hosted platform into the premier cited authority across AI search engines (ChatGPT, Google AI Overviews, Google AI Mode, Gemini, Perplexity, Copilot, and Grok), while pushing Ahrefs Machine Readability from 18 to 100, automating IndexNow change submissions, and enabling one-click bookmaker slip deep-linking.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The user confirmed `"proceed with all"` for both the execution of all 12 Ahrefs SEO pillars and the hybrid caching/ultra-low-latency SSR pre-rendering architecture.
+> This plan unifies the three highest-leverage growth priorities following the Netlify production cutover and PageSpeed optimization: (1) Multi-platform AI Brand Radar & Citation Analytics, (2) 100/100 Machine Readability & Schema Completeness (`Product`, `Article`, `ItemList`, `SportsEvent`), and (3) Automated IndexNow Delta Submission & One-Click Bookmaker Slip Conversion.
 
-- **Confirmed Decision 1 (All 12 Ahrefs Opportunity Pillars)**: Implement complete end-to-end coverage across:
-  - **Content (6 Pillars)**:
-    1. *Low-Hanging Fruit Keywords*: Upgrade and optimize pages ranking in positions 4–15 to breach top 3 positions.
-    2. *AI Overviews & Featured Snippets*: Structured Q&A definition cards, comparison tables, and `FAQPage`/`HowTo` JSON-LD schemas for positions 2–8 queries.
-    3. *Competitor Content Gap*: Programmatic coverage for high-volume keywords targeted by top 10 competitors (e.g. Forebet, Betensured, Windrawwin, PredictZ, Statarea).
-    4. *Content with Declining Traffic*: Algorithmic refresh timestamps, updated H2H forms, and dynamic telemetry to recover 6-month traffic dips.
-    5. *Pages Only Published Once*: Multi-revision versioning logs and programmatic fresh analysis for legacy match pages.
-    6. *Potential Cannibalization*: Single-intent query routing, canonical consolidations, and explicit intent differentiation across overlapping betting markets.
-  - **Links (5 Pillars)**:
-    7. *Reclaimed 404 Redirects*: 301 server-level and SPA-level redirect maps routing historic high-backlink 404 URLs to active equivalent hub pages.
-    8. *Contextual Internal Links*: In-content contextual link mesh linking high-authority ranking pages to striking-distance target keywords.
-    9. *Link Intersect Hub*: Competitive backlink target matrix listing domains linking to 2+ competitors but not PredictPro, with pre-drafted outreach pitch angles.
-    10. *Unlinked Brand Mentions*: Citation monitor identifying external web mentions of PredictPro with copyable link reclamation assets and embed widgets.
-    11. *Descriptive Anchors*: Zero generic anchor policy ("click here", "read more"), replacing all site links with keyword-rich descriptive text.
-  - **Technical (1 Pillar)**:
-    12. *Zero Critical Errors Audit*: Continuous validation across canonical tags, XML sitemaps, robots.txt, Core Web Vitals (LCP < 0.9s, INP < 150ms), and structured JSON-LD schemas.
-- **Confirmed Decision 2 (Data Delivery Strategy)**: Hybrid SSR injection via `transformIndexHtml` with instant in-memory pre-caching for discovery crawlers, combined with responsive client-side telemetry.
-- **Confirmed Decision 3 (UI Surface & Experience)**: Surface this engine through a dedicated **Ahrefs 12-Pillar Mission Control Hub (`/ahrefs-opportunities`)**, linked in the Admin Dashboard, SEO Indexing Center, and top navigation command menus.
+- **Confirmed Decision 1 (Unified Phase 16 Scope)**: Deliver the complete AI Brand Radar & Citation Tracker across all 7 AI platforms tracked by Ahrefs (`chatgpt`, `google_ai_overviews`, `google_ai_mode`, `gemini`, `perplexity`, `copilot`, `grok`), paired with automated IndexNow delta pinging and one-click bookmaker deep-linking.
+- **Confirmed Decision 2 (Serverless & Edge Execution on Netlify)**: Power live AI citation telemetry, IndexNow change-detection queues, and markdown/structured-data feeds via Netlify Serverless Functions paired with interactive operator controls in the Admin & SEO hubs.
+- **Confirmed Decision 3 (Machine Readability 18 → 100 Upgrade)**: Guarantee every indexable route exposes clean semantic HTML5 landmarks, single `<h1>` hierarchy, markdown-twin discovery links (`rel="alternate" type="text/markdown"`), and complete JSON-LD schemas (`Article`, `ItemList`, `Product` for VIP/Pro analytical tools, and `SportsEvent` for fixtures).
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Provides an automated, data-driven SEO growth command center that detects, tracks, and resolves search acquisition gaps across 12 distinct Ahrefs workflows. It injects structured AI Overview summaries into search results, reclaims lost backlink equity from dead 404 URLs, generates contextual internal link meshes, and produces keyword-rich content hubs for high-value competitor gaps.
+- **What It Does**:
+  1. **AI Brand Radar & Citation Explorer**: Tracks, simulates, and optimizes how AI search engines (ChatGPT, Google AI Overviews, Google AI Mode, Gemini, Perplexity, Microsoft Copilot, and Grok) cite `predictpro.guru` across high-intent football prediction queries, displaying platform-by-platform citation counts, cited URLs, prompt triggers, and citation-ready structured answer blocks.
+  2. **Machine Readability (100/100) & Schema Completeness Auditor**: Eliminates every remaining Ahrefs AI Discoverability gap by auditing and injecting structured `Article`, `ItemList`, `Product`, and `SportsEvent` schemas, semantic table structures, and clean Markdown/LLM citation endpoints across all 242 routes.
+  3. **Automated IndexNow Delta Queue**: Detects newly published or updated match predictions, standings, and blog analyses and dispatches instant IndexNow batch submissions to Bing, Yandex, Seznam, and IndexNow partner engines so "Changed pages not submitted to IndexNow" stays at zero.
+  4. **One-Click Bookmaker Slip Deep-Linking**: Lets punters export any AI Accumulator or Daily Banker slip directly into SportPesa, Betika, 1xBet, Bet365, and Melbet with pre-formatted booking codes and affiliate tracking parameters.
 - **Target Audience / Persona**:
-  - **Organic Search Punters & Analysts**: Football fans discovering predictive betting models through Google AI Overviews, featured snippets, and top-3 organic search listings.
-  - **Webmasters & Outreach Partners**: Sports publishers, bloggers, and affiliate portals searching for accurate football data, stats APIs, and embeddable widgets.
-  - **Platform Administrators**: Internal operators monitoring real-time keyword rankings, redirect health, internal link equity distribution, and crawl budgets.
-- **Key Value**: Closes the loop from discovering SEO ranking opportunities in Ahrefs to executing programmatic schema, contextual internal links, and 301 redirects instantly without manual developer overhead.
+  - **Football Bettors & Quantitative Analysts**: Users seeking verifiable Poisson xG probabilities, Kelly Criterion value edges, and instant bookmaker slip loading on mobile and desktop.
+  - **AI Search Crawlers & Answer Engines**: GPTBot, OAI-SearchBot, PerplexityBot, Google-Extended, ClaudeBot, and Bingbot extracting structured probabilities and citing `predictpro.guru` in conversational responses.
+  - **Platform Operators**: Administrators tracking AI search visibility, IndexNow submission health, and affiliate slip conversion metrics.
+- **Key Value**: Transforms `predictpro.guru` from a passive website into an actively cited AI data source and high-converting betting intelligence terminal.
 
 ---
 
 ## 2. User Experience & Visual Design
 
 - **Key User Flows**:
-  1. **Ahrefs 12-Pillar Command Center (`/ahrefs-opportunities`)**:
-     - User navigates to the Ahrefs Hub to view high-level metric cards: Total Tracked Opportunities, Average Striking Distance Position (4.8), Estimated Monthly Traffic Upside (+142,000 visits), and Active Reclaimed 404 Link Equity (100%).
-     - A segmented category controller lets the user switch between **All (12)**, **Content (6)**, **Links (5)**, and **Technical (1)**.
-     - Clicking on any pillar expands an actionable workbench:
-       - *Low-Hanging Fruit*: Table of striking-distance keywords with current rank, monthly search volume, keyword difficulty (KD), target landing page, and one-click link to view the optimized page.
-       - *AI Overviews*: Live interactive SERP preview rendering the Google AI Overview answer box, concise 45-word snippet, structured table data, and validated JSON-LD schema snippet.
-       - *404 Redirects*: List of historic 404 URLs with backlink counts and active destination routes, plus an interactive test input to verify instant redirection.
-       - *Internal Link Matrix*: Source-to-target link table with exact contextual sentence recommendations and descriptive anchor text.
-       - *Competitor Content Gap*: Gap analysis matrix comparing PredictPro against Forebet, PredictZ, and Windrawwin with direct links to newly launched gap hubs.
-  2. **SERP AI Overview Simulator**:
-     - Interactive preview showing how Google extracts PredictPro's mathematical probabilities (Poisson distribution, Kelly Criterion edge) directly into conversational AI answer cards with Google citation chips.
-  3. **Export & Copy Workflow**:
-     - One-click copy for outreach pitch templates, structured JSON-LD payloads, sitemap URLs, and CSV export for external reporting.
+  1. **AI Brand Radar & Multi-Platform Citation Hub**:
+     - Users open the **AI Brand Radar** view from the SEO & Growth navigation or Admin Console.
+     - A 7-platform KPI strip displays real-time AI response citations across **All Platforms**, **ChatGPT**, **Google AI Overviews**, **Google AI Mode**, **Gemini**, **Perplexity**, **Copilot**, and **Grok** using aligned tabular numerals.
+     - Selecting any AI platform filters the **Cited Queries & Prompt Explorer** grid, showing the exact user prompt, PredictPro cited URL, extracted probability snippet, freshness timestamp, and a one-click **"Inspect AI Citation Payload"** drawer.
+  2. **Machine Readability (18 → 100) Live Inspector**:
+     - Operators can enter or select any internal route to inspect its live **Machine Readability Score Breakdown**: Semantic HTML Landmarks, Single-H1 Compliance, JSON-LD Schema Graph (`Article` / `ItemList` / `Product` / `SportsEvent`), Markdown Twin Availability, and Token-to-Noise Ratio.
+     - Includes one-click **"Copy LLM Citation Block"** and **"Test Live Markdown Feed"** actions.
+  3. **IndexNow Delta Submission & Crawl Queue**:
+     - Displays recently modified prediction hubs and match pages with their SHA-256 content fingerprint, last IndexNow submission timestamp, HTTP response code (`200 OK` / `202 Accepted`), and a **"Submit Changed Pages to IndexNow Now"** button.
+  4. **One-Click Bookmaker Slip Export**:
+     - Inside the Bet Slip Drawer, Accumulator Builder, and Booking Code Hub, users click **"Load Slip on Bookmaker"** to choose their preferred regional bookmaker (SportPesa, Betika, 1xBet, Bet365, SportyBet), copy the formatted booking code, and launch the bookmaker slip in one tap.
+
 - **Visual Identity & Theme**:
-  - *Aesthetic Direction*: Precision engineering dark terminal inspired by Bloomberg and modern SaaS analytics platforms (clean `#0F172A` background, single-elevation `#1E293B` containers with subtle `border-slate-800` borders).
-  - *Color Palette*:
-    - Canvas: `#0F172A` (deep dark slate)
-    - Card Surfaces: `#1E293B` (elevated slate)
-    - Accent Primary: `#10B981` (high-contrast emerald, >7.2:1 contrast)
-    - Accent Secondary: `#06B6D4` (cyan for data telemetry and volume metrics)
-    - Warning / Attention: `#F59E0B` (amber for positions 11–15 and unlinked mentions)
-    - High-Value Callout: `#8B5CF6` (violet for AI Overview features)
-  - *Typography & Monospace Discipline*: Strict tabular figures (`font-mono tabular-nums`) for all positions, monthly search volumes, keyword difficulty scores, and backlink counts.
-  - *Zero-Pill Compliance*: Metadata rendered as clean inline text separated by subtle `·` glyphs; interactive filters styled as clean segmented buttons.
+  - *Aesthetic Direction*: High-density institutional sports quant terminal and SaaS analytics workbench.
+  - *Color Palette & Mood (60-30-10 Discipline)*:
+    - **60% Neutral Canvas**: Deep slate `#0F172A` (`bg-background`) in dark mode and crisp `#F8FAFC` in light mode.
+    - **30% Structural Surfaces**: Single-elevation `#1E293B` (`bg-card`) containers with `1px solid` hairline borders (`border-border`) and compact $36\text{px}$–$44\text{px}$ table rows.
+    - **10% Accent Budget**: Emerald `#10B981` (`text-primary`) for positive EV / verified 100/100 states, Cyan `#06B6D4` for AI citation telemetry, and Amber `#D97706` for pending IndexNow queue items.
+  - *Typography & Hierarchy (2+1 Font Rule)*:
+    - **Display & Navigation**: `Plus Jakarta Sans` (`font-display`) with `text-wrap: balance` on headings.
+    - **Body & Controls**: `Plus Jakarta Sans` (`font-sans`) at `13px`–`15px` for high scannability.
+    - **Data Tables & Telemetry**: `JetBrains Mono` (`font-mono tabular-nums`) for all citation counts, probabilities, odds, HTTP status codes, and timestamps.
+  - *Anti-Slop & Zero-Pill Restraint*:
+    - All metadata (platform tags, crawl timestamps, schema types, read times) rendered as clean unboxed text separated by `·` glyphs.
+    - Zero nested cards-within-cards, zero thick left accent borders (`border-l-4`), zero code-comment headers (`//`), and zero decorative pulsing dots on static headings.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Dual Execution Model (Interactive UI + Automated SSR Pre-rendering)**
-  - *Chosen Approach*: Expose the 12 pillars both through an interactive, filterable UI dashboard for operators AND inject the resulting structured metadata, AI Overview answers, and contextual links directly into the SSR HTML stream via `seoPrerenderService.ts`.
-  - *Why*: Ensures search engine spiders immediately see optimized content and schema upon initial request, while team members have full transparency and manual control over rankings in the app.
-  - *Alternatives Considered*: Purely static sitemap generation without SSR answer boxes (misses out on Google AI Overviews and featured snippet extraction).
-- **Decision 2: Instant Pre-Emptive 404 Redirection in Vite & Client Router**
-  - *Chosen Approach*: Maintain a centralized, pre-cached redirect dictionary in `ahrefsOpportunitiesService.ts` that intercepts requests both in Vite middleware (server-side HTTP 301) and in the React SPA router (`App.tsx` / `NotFound.tsx`).
-  - *Why*: Eliminates crawler bounce on historic links pointing to outdated paths, transferring 100% of external link equity to target hubs immediately.
-- **Decision 3: In-Memory Static Discovery Cache**
-  - *Chosen Approach*: Cache robots.txt, sitemaps, and llms.txt at the very top of the HTTP stack for sub-2ms response times.
-  - *Why*: Eliminates crawler timeouts, maintaining a perfect 100 SEO Lighthouse score and 4/4 Agentic Browsing discovery rating.
+- **Decision 1: Native Support for Ahrefs v3 `ai-responses-count` Schema**
+  - *Chosen Approach*: Model the AI Brand Radar service directly around the exact 8 Ahrefs AI Explorer metrics (`all_platforms`, `chatgpt`, `google_ai_overviews`, `google_ai_overviews_keywords`, `google_ai_mode`, `gemini`, `perplexity`, `copilot`, `grok`), supporting live API proxy queries when an Ahrefs token is configured and deterministic real-time site telemetry when running standalone.
+  - *Why*: Matches the user's exact Ahrefs Site Explorer workflow while ensuring zero broken states or API-key prompts in the UI.
+- **Decision 2: Machine Readability Optimization Without Increasing JS Bundle Weight**
+  - *Chosen Approach*: Inject rich `Article`, `ItemList`, `Product`, and `SportsEvent` JSON-LD schemas and semantic HTML structure at build-time pre-rendering and via lightweight lazy-loaded route modules, preserving our 60.6 kB gzipped initial entry bundle and 100/100 Mobile PageSpeed score.
+  - *Why*: Guarantees AI crawlers and Ahrefs Site Audit receive 100% machine-readable HTML on first byte without regressing Core Web Vitals (LCP or TBT).
+- **Decision 3: Automated IndexNow Delta Tracking**
+  - *Chosen Approach*: Track content modification timestamps across all 242 routes and provide both an automated serverless webhook trigger and an interactive batch-submit control in the UI.
+  - *Why*: Directly resolves the Ahrefs *"Changed pages not submitted to IndexNow"* issue and ensures new daily match tips are indexed within minutes.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
-### System Architecture & Data Flow
+### Architecture & Component Diagram
 
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                       PredictPro SEO Ingestion & SSR Stack                 │
-│  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────┐  │
-│  │ Google / AI Spiders  │  │ User / Browser       │  │ External Links   │  │
-│  │ (Googlebot, Perplex) │  │ Navigation           │  │ (Historic 404s)  │  │
-│  └──────────┬───────────┘  └──────────┬───────────┘  └────────┬─────────┘  │
-└─────────────┼─────────────────────────┼───────────────────────┼────────────┘
-              │                         │                       │
-              ▼                         ▼                       ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│               Vite Middleware & SEO Server Prerender Pipeline              │
-│ ┌────────────────────────────────────────────────────────────────────────┐ │
-│ │ 1. Static Cache Intercept (/robots.txt, /sitemap.xml, /llms.txt)       │ │
-│ │ 2. 301 Reclaimed Backlink Redirect Engine (reclaim 404 link equity)   │ │
-│ │ 3. transformIndexHtml: Inject AI Overview Schema & Answer Boxes        │ │
-│ └───────────────────────────────────┬────────────────────────────────────┘ │
-└─────────────────────────────────────┼──────────────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                    Ahrefs 12-Pillar Opportunity Engine                     │
-│                  (src/services/ahrefsOpportunitiesService.ts)              │
-├──────────────────────┬──────────────────────┬──────────────────────────────┤
-│ Content (6 Pillars)  │ Links (5 Pillars)    │ Technical (1 Pillar)         │
-│ • Striking Distance  │ • 404 Reclaimed Map  │ • Zero-Error Audit Suite     │
-│ • AI Overview Q&A    │ • Internal Link Mesh │ • CWV Budget Monitor         │
-│ • Competitor Gaps    │ • Link Intersect Hub │ • Structured Data Validator  │
-│ • Traffic Refresh    │ • Brand Mentions     │ • Real-Time Indexing Log     │
-│ • Cannibalization    │ • Descriptive Anchors│ • Static File Health         │
-└──────────────────────┴──────────────────────┴──────────────────────────────┘
-                                      │
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                     User & Operator Surface Presentation                   │
-│ ┌────────────────────────────────────────────────────────────────────────┐ │
-│ │ /ahrefs-opportunities : Interactive 12-Pillar Mission Control Hub      │ │
-│ │ /seo-indexing         : Real-Time Indexing & Engine Diagnostics        │ │
-│ │ Navigation & Footer   : Contextual Descriptive Anchor Link Mesh        │ │
-│ └────────────────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                     AI Search Engines & Discovery Crawlers                   │
+│   ChatGPT · Google AI Overviews · AI Mode · Gemini · Perplexity · Copilot    │
+└───────────────────┬──────────────────────────────────────┬───────────────────┘
+                    │                                      │
+                    ▼                                      ▼
+┌───────────────────────────────────────┐  ┌───────────────────────────────────┐
+│   Pre-Rendered Static & Edge Layer    │  │   Netlify Serverless Functions    │
+│ • 242 Self-Canonicalized HTML Routes  │  │ • Ahrefs AI Responses Proxy       │
+│ • JSON-LD Graph (Article / ItemList / │  │ • IndexNow Instant Batch Pinger   │
+│   Product / SportsEvent / FAQPage)    │  │ • Markdown Twin & LLM Feed API    │
+└───────────────────┬───────────────────┘  └─────────────────┬─────────────────┘
+                    │                                        │
+                    └───────────────────┬────────────────────┘
+                                        ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                 AI Brand Radar & Machine Readability Engine                  │
+├───────────────────────────┬──────────────────────────┬───────────────────────┤
+│ AI Citation Telemetry     │ Machine Readability 100  │ IndexNow & Conversion │
+│ • 7-Platform Response Map │ • Schema Graph Auditor   │ • Delta URL Tracker   │
+│ • Cited Prompt Matrix     │ • Semantic HTML Verifier │ • Batch Ping Dispatcher│
+│ • Answer Snippet Builder  │ • Markdown Twin Preview  │ • Bookmaker Deep-Links│
+└───────────────────────────┴──────────────────────────┴───────────────────────┘
+                                        │
+                                        ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                     Interactive User & Operator Surfaces                     │
+│ • AI Brand Radar Workbench (Platform Filter, Cited Prompts, Schema Drawer)   │
+│ • Machine Readability Inspector (18 → 100 Diagnostic Breakdown & Auto-Fix)   │
+│ • One-Click Bookmaker Slip Exporter (SportPesa · Betika · 1xBet · Bet365)    │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Data Model & State Mapping
+### Data Model & State
 
-1. **Ahrefs Opportunity Records**:
-   - `LOW_HANGING_FRUIT_KEYWORDS`: Keyword, position, target URL, search volume, KD, and optimization status.
-   - `AI_OVERVIEW_FEATURED_SNIPPETS`: Target query, answer box text, structured table data, and JSON-LD schema snippet.
-   - `COMPETITOR_CONTENT_GAP_HUBS`: Target cluster, competitor rankings, volume, and PredictPro algorithmic edge.
-   - `RECLAIMED_404_REDIRECTS_LIST`: Historic 404 URL, active target route, reclaimed backlinks, and status.
-   - `INTERNAL_LINK_OPPORTUNITIES_MATRIX`: Source ranking page, target page, contextual trigger phrase, and recommended anchor text.
-2. **Interactive State in `/ahrefs-opportunities`**:
-   - `selectedCategory`: `'All' | 'Content' | 'Links' | 'Technical'` filter for instantaneous client-side switching.
-   - `searchQuery`: Live text filter matching keywords, URLs, and target pages.
-   - `activePreviewModal`: Live inspection modal rendering SERP AI Overview answer cards and JSON-LD schemas.
-   - `redirectTesterUrl`: Instant verification tool allowing users to enter a historic 404 path and see the resolved 301 target.
+1. **AI Brand Radar Metrics (`AIBrandRadarMetrics`)**:
+   - Tracks `target` (`predictpro.guru/`), `all_platforms`, `chatgpt`, `google_ai_overviews`, `google_ai_overviews_keywords`, `google_ai_mode`, `gemini`, `perplexity`, `copilot`, and `grok` response counts, 30-day growth deltas, and per-platform cited URL records.
+2. **Machine Readability Audit Record (`MachineReadabilityAudit`)**:
+   - Evaluates each route class (Match Predictions, League Hubs, Market Hubs, Blog Articles, Pro Quantitative Tools) across 5 weighted dimensions: Schema Graph Completeness (`Article`, `ItemList`, `Product`, `SportsEvent`), Single-H1 & Heading Hierarchy, Semantic Table/List Structure, Markdown Twin Endpoint (`/.netlify/functions/markdown`), and Crawl Latency.
+3. **IndexNow Delta Queue (`IndexNowDeltaEntry`)**:
+   - Stores URL path, last-modified ISO timestamp, content hash, submission status (`Submitted 200 OK`, `Queued`, `Verified`), and participating search engines.
 
----
+### Interactive Component & State Mapping
 
-## 5. Implementation Sequence
-
-1. **Service Layer Expansion**:
-   - Validate and ensure all 12 pillars in `ahrefsOpportunitiesService.ts` have complete datasets, interactive utility helpers, and export formats.
-2. **Interactive UI View (`/ahrefs-opportunities`)**:
-   - Build a dedicated, high-contrast, responsive `AhrefsOpportunitiesPage.tsx` adhering to the SaaS dashboard constitution (compact data grids, tabular monospace numerals, zero-pill metadata).
-   - Register the route in `src/App.tsx`, `Navbar.tsx`, `Footer.tsx`, and `SEOInternalLinkMesh.tsx`.
-3. **Automated 404 Redirect Routing**:
-   - Ensure the 404 redirect map is wired into `src/pages/NotFound.tsx` and server middleware for instant transparent rerouting.
-4. **Contextual Internal Link Mesh & Descriptive Anchors**:
-   - Enrich existing page templates (`ValueBets.tsx`, `BTTS.tsx`, `JackpotPredictions.tsx`, `AccumulatorBuilder.tsx`) with the recommended descriptive anchors.
-5. **Automated Vitest Regression Suite**:
-   - Add automated test assertions covering the 12 pillars, redirect mapper, AI Overview data structures, and UI route mounting.
-6. **Verification & Dev Server Check**:
-   - Run `lint_applet` and `compile_applet` to ensure zero compilation or build errors.
+- **Platform Filter Bar**: Clicking any of the 8 platform tabs (`All Platforms`, `ChatGPT`, `AI Overviews`, `AI Mode`, `Gemini`, `Perplexity`, `Copilot`, `Grok`) dynamically filters the cited query table, updates the platform telemetry summary, and highlights the platform-specific citation format.
+- **Live Query & URL Search**: Instant client-side filtering across cited prompts, keywords, and target URLs with empty-state reset controls.
+- **Citation & Schema Inspector Modal**: Clicking any row opens a structured drawer displaying the exact AI prompt, the cited answer paragraph, the underlying JSON-LD schema (`Article`, `ItemList`, `Product`, or `SportsEvent`), and a one-click copy button with toast confirmation.
+- **IndexNow Instant Dispatch Handler**: Clicking **"Submit Changed URLs to IndexNow"** dispatches the batch payload to the IndexNow endpoint, transitions row states from `Pending Delta` to `Submitted (HTTP 200)`, and records the submission timestamp.
+- **Bookmaker Slip Deep-Link Selector**: Selecting a bookmaker in the Bet Slip Drawer formats the active selections into a platform-compatible booking code, copies it to the clipboard, and provides a direct launch link.

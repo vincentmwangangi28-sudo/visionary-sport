@@ -6,6 +6,7 @@ import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
 import { AhrefsWebAnalyticsPanel } from '@/components/AhrefsWebAnalyticsPanel';
+import { AIBrandRadarPanel } from '@/components/AIBrandRadarPanel';
 import { PageSpeedInsightsPanel } from '@/components/PageSpeedInsightsPanel';
 import { 
   googleIndexingCronService, 
@@ -604,11 +605,16 @@ export default function SEOIndexingPage() {
           </Card>
         </div>
 
-        {/* Google PageSpeed Insights v5 (Report #yp4ntj2bz7 · form_factor=mobile) Core Web Vitals Panel */}
+        {/* Google PageSpeed Insights v5 (Report #j78b10da95 · form_factor=mobile) Core Web Vitals Panel */}
         <PageSpeedInsightsPanel />
 
         {/* Ahrefs Web Analytics v3 (project_id=10277130) Live Traffic & Search Telemetry Panel */}
         <AhrefsWebAnalyticsPanel />
+
+        {/* Phase 16: Ahrefs v3 AI Brand Radar (ai-responses-count), Machine Readability (100/100) & IndexNow Delta Queue */}
+        <div className="mb-8">
+          <AIBrandRadarPanel />
+        </div>
 
         {/* Live Server Prerender, Dynamic /api/og Card & Live ESPN Match Sitemap Inspector */}
         <LiveServerSeoInspector />
