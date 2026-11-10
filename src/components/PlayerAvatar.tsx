@@ -1,5 +1,6 @@
 import React, { useState, memo } from 'react';
 import { TeamLogo } from '@/components/TeamLogo';
+import { resolveTeamIdentity, TeamKitPattern } from '@/services/teamLogos';
 
 export interface PlayerAvatarProps {
   playerId?: number;
@@ -322,45 +323,20 @@ interface KitPalette {
   primary: string;
   secondary: string;
   accent: string;
-  pattern: 'solid' | 'stripes' | 'sleeves';
+  pattern: TeamKitPattern;
 }
 
-function getClubKitPalette(team = ''): KitPalette {
-  const lower = team.toLowerCase();
-  if (lower.includes('manchester city') || lower.includes('man city')) {
-    return { primary: '#38bdf8', secondary: '#0284c7', accent: '#ffffff', pattern: 'solid' };
+export function getClubKitPalette(team = ''): KitPalette {
+  if (!team) {
+    return { primary: '#10b981', secondary: '#047857', accent: '#ffffff', pattern: 'solid' };
   }
-  if (lower.includes('real madrid')) {
-    return { primary: '#f8fafc', secondary: '#cbd5e1', accent: '#eab308', pattern: 'solid' };
-  }
-  if (lower.includes('arsenal')) {
-    return { primary: '#dc2626', secondary: '#ffffff', accent: '#fef08a', pattern: 'sleeves' };
-  }
-  if (lower.includes('liverpool') || lower.includes('bayern') || lower.includes('al ahly') || lower.includes('manchester united')) {
-    return { primary: '#b91c1c', secondary: '#991b1b', accent: '#fbbf24', pattern: 'solid' };
-  }
-  if (lower.includes('barcelona')) {
-    return { primary: '#1d4ed8', secondary: '#b91c1c', accent: '#facc15', pattern: 'stripes' };
-  }
-  if (lower.includes('inter')) {
-    return { primary: '#1d4ed8', secondary: '#0f172a', accent: '#38bdf8', pattern: 'stripes' };
-  }
-  if (lower.includes('ac milan')) {
-    return { primary: '#dc2626', secondary: '#111827', accent: '#ffffff', pattern: 'stripes' };
-  }
-  if (lower.includes('chelsea') || lower.includes('psg') || lower.includes('paris')) {
-    return { primary: '#1d4ed8', secondary: '#1e3a8a', accent: '#ef4444', pattern: 'solid' };
-  }
-  if (lower.includes('gor mahia') || lower.includes('sporting') || lower.includes('celtic')) {
-    return { primary: '#059669', secondary: '#065f46', accent: '#ffffff', pattern: 'stripes' };
-  }
-  if (lower.includes('galatasaray')) {
-    return { primary: '#b91c1c', secondary: '#d97706', accent: '#fde047', pattern: 'stripes' };
-  }
-  if (lower.includes('dortmund') || lower.includes('kaizer chiefs') || lower.includes('sundowns')) {
-    return { primary: '#eab308', secondary: '#111827', accent: '#ffffff', pattern: 'solid' };
-  }
-  return { primary: '#10b981', secondary: '#047857', accent: '#ffffff', pattern: 'solid' };
+  const identity = resolveTeamIdentity(team);
+  return {
+    primary: identity.primaryColor,
+    secondary: identity.secondaryColor,
+    accent: identity.accentColor,
+    pattern: identity.kitPattern,
+  };
 }
 
 const SIZE_CLASSES: Record<
@@ -448,11 +424,20 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = memo(
                 <rect x="39" y="43" width="5" height="21" />
               </g>
             )}
+            {kit.pattern === 'hoops' && (
+              <g fill={kit.secondary} opacity="0.85">
+                <rect x="14" y="47" width="36" height="4" />
+                <rect x="11" y="55" width="42" height="4" />
+              </g>
+            )}
             {kit.pattern === 'sleeves' && (
               <g fill={kit.secondary}>
                 <path d="M10 64 C10 51, 15 46, 21 44 L21 64 Z" />
                 <path d="M54 64 C54 51, 49 46, 43 44 L43 64 Z" />
               </g>
+            )}
+            {kit.pattern === 'sash' && (
+              <polygon points="20,43 26,42 44,64 38,64" fill={kit.secondary} opacity="0.88" />
             )}
             {/* V-Neck Collar */}
             <polygon points="26,42 32,49 38,42" fill={kit.accent} opacity="0.9" />

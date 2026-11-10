@@ -5,6 +5,8 @@ import {
   fetchAndCacheTeamLogoByLeague,
   preloadLeagueTeamLogos,
   clearTeamLogosCache,
+  resolveTeamIdentity,
+  mapTeamToLogoAndJersey,
 } from '@/services/teamLogos';
 
 describe('League-Aware Team Logo Caching Service', () => {
@@ -116,6 +118,24 @@ describe('League-Aware Team Logo Caching Service', () => {
     it('handles non-existent league IDs without throwing', async () => {
       const preloaded = await preloadLeagueTeamLogos(99999);
       expect(preloaded).toEqual({});
+    });
+  });
+
+  describe('resolveTeamIdentity & mapTeamToLogoAndJersey', () => {
+    it('maps club names to official logos, jersey colors, kit patterns, and star players', () => {
+      const arsenal = resolveTeamIdentity('Arsenal', 'Premier League');
+      expect(arsenal.name).toBe('Arsenal');
+      expect(arsenal.shortName).toBe('ARS');
+      expect(arsenal.logoUrl).toContain('espncdn.com');
+      expect(arsenal.primaryColor).toBe('#EF0107');
+      expect(arsenal.secondaryColor).toBe('#FFFFFF');
+      expect(arsenal.kitPattern).toBe('sleeves');
+      expect(arsenal.starPlayer.name).toBe('Bukayo Saka');
+
+      const barca = mapTeamToLogoAndJersey('FC Barcelona', 'La Liga');
+      expect(barca.shortName).toBe('FCB');
+      expect(barca.kitPattern).toBe('stripes');
+      expect(barca.starPlayer.name).toBe('Lamine Yamal');
     });
   });
 });

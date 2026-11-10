@@ -1339,7 +1339,6 @@ const LOCAL_STORAGE_CACHE_KEY = 'predictpro_league_team_logos_v6';
 function isBlockedLogoUrl(url?: string | null): boolean {
   if (!url || typeof url !== 'string') return true;
   if (failedLogoUrls.has(url)) return true;
-  if (url.includes('media.api-sports.io')) return true;
   if (url.includes('/3282.png') || url.includes('/7340.png') || url.includes('/2258.png')) return true;
   return false;
 }
@@ -1737,4 +1736,262 @@ export function clearTeamLogosCache(): void {
     }
   }
 }
+
+export type TeamKitPattern = 'solid' | 'stripes' | 'sleeves' | 'hoops' | 'sash';
+
+export interface TeamStarPlayerProfile {
+  name: string;
+  role: string;
+  jerseyNumber: number;
+  xgPer90: number;
+  rating: number;
+}
+
+export interface ResolvedTeamIdentity {
+  name: string;
+  shortName: string;
+  logoUrl: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  textColor: string;
+  kitPattern: TeamKitPattern;
+  starPlayer: TeamStarPlayerProfile;
+  keyPlayers: TeamStarPlayerProfile[];
+}
+
+const CLUB_STAR_PLAYERS: Record<string, TeamStarPlayerProfile[]> = {
+  'arsenal': [
+    { name: 'Bukayo Saka', role: 'RW', jerseyNumber: 7, xgPer90: 0.58, rating: 8.3 },
+    { name: 'Martin Ødegaard', role: 'CAM', jerseyNumber: 8, xgPer90: 0.36, rating: 8.1 },
+    { name: 'Declan Rice', role: 'CDM', jerseyNumber: 41, xgPer90: 0.18, rating: 7.9 },
+  ],
+  'manchester city': [
+    { name: 'Erling Haaland', role: 'ST', jerseyNumber: 9, xgPer90: 0.89, rating: 8.6 },
+    { name: 'Phil Foden', role: 'CAM', jerseyNumber: 47, xgPer90: 0.48, rating: 8.1 },
+    { name: 'Rodri', role: 'CDM', jerseyNumber: 16, xgPer90: 0.22, rating: 8.4 },
+  ],
+  'liverpool': [
+    { name: 'Mohamed Salah', role: 'RW', jerseyNumber: 11, xgPer90: 0.74, rating: 8.5 },
+    { name: 'Luis Díaz', role: 'LW', jerseyNumber: 7, xgPer90: 0.46, rating: 7.8 },
+    { name: 'Virgil van Dijk', role: 'CB', jerseyNumber: 4, xgPer90: 0.12, rating: 8.0 },
+  ],
+  'chelsea': [
+    { name: 'Cole Palmer', role: 'CAM', jerseyNumber: 20, xgPer90: 0.66, rating: 8.4 },
+    { name: 'Nicolas Jackson', role: 'ST', jerseyNumber: 15, xgPer90: 0.54, rating: 7.6 },
+    { name: 'Moisés Caicedo', role: 'CDM', jerseyNumber: 25, xgPer90: 0.11, rating: 7.7 },
+  ],
+  'manchester united': [
+    { name: 'Bruno Fernandes', role: 'CAM', jerseyNumber: 8, xgPer90: 0.44, rating: 7.9 },
+    { name: 'Rasmus Højlund', role: 'ST', jerseyNumber: 9, xgPer90: 0.49, rating: 7.4 },
+    { name: 'Amad Diallo', role: 'RW', jerseyNumber: 16, xgPer90: 0.38, rating: 7.6 },
+  ],
+  'tottenham hotspur': [
+    { name: 'Son Heung-min', role: 'LW', jerseyNumber: 7, xgPer90: 0.55, rating: 7.9 },
+    { name: 'Dominic Solanke', role: 'ST', jerseyNumber: 19, xgPer90: 0.52, rating: 7.6 },
+    { name: 'James Maddison', role: 'CAM', jerseyNumber: 10, xgPer90: 0.34, rating: 7.7 },
+  ],
+  'newcastle united': [
+    { name: 'Alexander Isak', role: 'ST', jerseyNumber: 14, xgPer90: 0.69, rating: 8.1 },
+    { name: 'Bruno Guimarães', role: 'CM', jerseyNumber: 39, xgPer90: 0.21, rating: 7.8 },
+  ],
+  'aston villa': [
+    { name: 'Ollie Watkins', role: 'ST', jerseyNumber: 11, xgPer90: 0.61, rating: 7.9 },
+    { name: 'Morgan Rogers', role: 'CAM', jerseyNumber: 27, xgPer90: 0.35, rating: 7.6 },
+  ],
+  'real madrid': [
+    { name: 'Kylian Mbappé', role: 'ST', jerseyNumber: 9, xgPer90: 0.84, rating: 8.5 },
+    { name: 'Vinícius Júnior', role: 'LW', jerseyNumber: 7, xgPer90: 0.68, rating: 8.4 },
+    { name: 'Jude Bellingham', role: 'CAM', jerseyNumber: 5, xgPer90: 0.51, rating: 8.3 },
+  ],
+  'barcelona': [
+    { name: 'Lamine Yamal', role: 'RW', jerseyNumber: 19, xgPer90: 0.52, rating: 8.5 },
+    { name: 'Robert Lewandowski', role: 'ST', jerseyNumber: 9, xgPer90: 0.79, rating: 8.3 },
+    { name: 'Raphinha', role: 'LW', jerseyNumber: 11, xgPer90: 0.61, rating: 8.2 },
+  ],
+  'atletico madrid': [
+    { name: 'Julián Alvarez', role: 'ST', jerseyNumber: 19, xgPer90: 0.57, rating: 7.9 },
+    { name: 'Antoine Griezmann', role: 'CF', jerseyNumber: 7, xgPer90: 0.53, rating: 8.0 },
+  ],
+  'bayern munich': [
+    { name: 'Harry Kane', role: 'ST', jerseyNumber: 9, xgPer90: 0.88, rating: 8.6 },
+    { name: 'Jamal Musiala', role: 'CAM', jerseyNumber: 42, xgPer90: 0.56, rating: 8.3 },
+    { name: 'Michael Olise', role: 'RW', jerseyNumber: 17, xgPer90: 0.45, rating: 8.0 },
+  ],
+  'borussia dortmund': [
+    { name: 'Serhou Guirassy', role: 'ST', jerseyNumber: 9, xgPer90: 0.73, rating: 8.1 },
+    { name: 'Julian Brandt', role: 'CAM', jerseyNumber: 10, xgPer90: 0.34, rating: 7.7 },
+  ],
+  'bayer leverkusen': [
+    { name: 'Florian Wirtz', role: 'CAM', jerseyNumber: 10, xgPer90: 0.54, rating: 8.4 },
+    { name: 'Victor Boniface', role: 'ST', jerseyNumber: 22, xgPer90: 0.67, rating: 7.9 },
+  ],
+  'inter milan': [
+    { name: 'Lautaro Martínez', role: 'ST', jerseyNumber: 10, xgPer90: 0.71, rating: 8.3 },
+    { name: 'Marcus Thuram', role: 'ST', jerseyNumber: 9, xgPer90: 0.56, rating: 8.0 },
+    { name: 'Nicolò Barella', role: 'CM', jerseyNumber: 23, xgPer90: 0.24, rating: 7.9 },
+  ],
+  'ac milan': [
+    { name: 'Christian Pulisic', role: 'RW', jerseyNumber: 11, xgPer90: 0.51, rating: 8.0 },
+    { name: 'Rafael Leão', role: 'LW', jerseyNumber: 10, xgPer90: 0.49, rating: 7.9 },
+  ],
+  'juventus': [
+    { name: 'Dušan Vlahović', role: 'ST', jerseyNumber: 9, xgPer90: 0.64, rating: 7.8 },
+    { name: 'Kenan Yıldız', role: 'LW', jerseyNumber: 10, xgPer90: 0.39, rating: 7.7 },
+  ],
+  'napoli': [
+    { name: 'Romelu Lukaku', role: 'ST', jerseyNumber: 11, xgPer90: 0.63, rating: 7.8 },
+    { name: 'Khvicha Kvaratskhelia', role: 'LW', jerseyNumber: 77, xgPer90: 0.52, rating: 8.1 },
+  ],
+  'atalanta': [
+    { name: 'Ademola Lookman', role: 'CF', jerseyNumber: 11, xgPer90: 0.62, rating: 8.2 },
+  ],
+  'paris saint-germain': [
+    { name: 'Ousmane Dembélé', role: 'RW', jerseyNumber: 10, xgPer90: 0.59, rating: 8.2 },
+    { name: 'Bradley Barcola', role: 'LW', jerseyNumber: 29, xgPer90: 0.55, rating: 8.0 },
+    { name: 'Achraf Hakimi', role: 'RB', jerseyNumber: 2, xgPer90: 0.28, rating: 8.1 },
+  ],
+  'sporting cp': [
+    { name: 'Viktor Gyökeres', role: 'ST', jerseyNumber: 9, xgPer90: 0.87, rating: 8.5 },
+  ],
+  'galatasaray': [
+    { name: 'Victor Osimhen', role: 'ST', jerseyNumber: 45, xgPer90: 0.82, rating: 8.3 },
+  ],
+  'gor mahia': [
+    { name: 'Austin Odhiambo', role: 'CAM', jerseyNumber: 10, xgPer90: 0.54, rating: 8.1 },
+    { name: 'Benson Omala', role: 'ST', jerseyNumber: 9, xgPer90: 0.62, rating: 7.9 },
+  ],
+  'afc leopards': [
+    { name: 'Victor Omune', role: 'CF', jerseyNumber: 10, xgPer90: 0.44, rating: 7.5 },
+  ],
+  'tusker': [
+    { name: 'Erick Kapaito', role: 'ST', jerseyNumber: 9, xgPer90: 0.56, rating: 7.7 },
+  ],
+  'kenya police': [
+    { name: 'Tito Okello', role: 'ST', jerseyNumber: 9, xgPer90: 0.51, rating: 7.6 },
+  ],
+  'al ahly': [
+    { name: 'Wessam Abou Ali', role: 'ST', jerseyNumber: 9, xgPer90: 0.68, rating: 8.0 },
+  ],
+  'mamelodi sundowns': [
+    { name: 'Lucas Ribeiro', role: 'CF', jerseyNumber: 10, xgPer90: 0.61, rating: 8.0 },
+  ],
+};
+
+function resolveCanonicalEntry(teamName: string): { key: string; info: TeamLogoInfo } | null {
+  if (!teamName) return null;
+  const rawKey = teamName.toLowerCase().trim();
+  if (CANONICAL_TEAM_LOGOS[rawKey]) {
+    return { key: rawKey, info: CANONICAL_TEAM_LOGOS[rawKey] };
+  }
+  if (ALIASES[rawKey] && CANONICAL_TEAM_LOGOS[ALIASES[rawKey]]) {
+    const k = ALIASES[rawKey];
+    return { key: k, info: CANONICAL_TEAM_LOGOS[k] };
+  }
+  const cleaned = cleanTeamName(teamName);
+  if (CANONICAL_TEAM_LOGOS[cleaned]) {
+    return { key: cleaned, info: CANONICAL_TEAM_LOGOS[cleaned] };
+  }
+  if (ALIASES[cleaned] && CANONICAL_TEAM_LOGOS[ALIASES[cleaned]]) {
+    const k = ALIASES[cleaned];
+    return { key: k, info: CANONICAL_TEAM_LOGOS[k] };
+  }
+  if (cleaned.length >= 4) {
+    for (const [key, info] of Object.entries(CANONICAL_TEAM_LOGOS)) {
+      if (key.length >= 4 && (cleaned.includes(key) || key.includes(cleaned))) {
+        return { key, info };
+      }
+    }
+  }
+  return null;
+}
+
+function inferKitPattern(canonicalKey: string): TeamKitPattern {
+  if (
+    /barcelona|inter milan|ac milan|atletico madrid|juventus|newcastle|brentford|brighton|porto|athletic bilbao|real sociedad|southampton|sunderland/i.test(
+      canonicalKey
+    )
+  ) {
+    return 'stripes';
+  }
+  if (/sporting cp|celtic|gor mahia/i.test(canonicalKey)) {
+    return 'hoops';
+  }
+  if (/arsenal|aston villa|west ham/i.test(canonicalKey)) {
+    return 'sleeves';
+  }
+  if (/rayo vallecano|river plate/i.test(canonicalKey)) {
+    return 'sash';
+  }
+  return 'solid';
+}
+
+function isLightHexColor(hex: string): boolean {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return false;
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.68;
+}
+
+/**
+ * Maps any team name to its official club logo URL, jersey kit colors, kit pattern,
+ * broadcast short code, and featured star players using the canonical dictionary + live cache.
+ */
+export function resolveTeamIdentity(
+  teamName: string,
+  leagueIdOrName?: number | string | null,
+  customLogo?: string | null
+): ResolvedTeamIdentity {
+  const safeName = (teamName || 'Football Club').trim();
+  const matched = resolveCanonicalEntry(safeName);
+  const fallbackInitials = getTeamInitialsAndColor(safeName);
+  const resolvedLogoUrl = getTeamLogoWithLeague(safeName, leagueIdOrName, customLogo);
+
+  const primaryColor = matched?.info.primaryColor || fallbackInitials.bgColor;
+  const secondaryColor = matched?.info.secondaryColor || '#FFFFFF';
+  const accentColor =
+    secondaryColor.toUpperCase() === '#FFFFFF' ? '#FACC15' : '#FFFFFF';
+  const textColor = isLightHexColor(primaryColor) ? '#0F172A' : '#FFFFFF';
+  const kitPattern = matched ? inferKitPattern(matched.key) : 'solid';
+  const shortName = matched?.info.shortName || fallbackInitials.initials;
+
+  const knownStars = matched ? CLUB_STAR_PLAYERS[matched.key] : undefined;
+  const hash = safeName.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const fallbackStars: TeamStarPlayerProfile[] = [
+    {
+      name: `${shortName} #9 Striker`,
+      role: 'ST',
+      jerseyNumber: 9,
+      xgPer90: Number((0.48 + (hash % 22) / 100).toFixed(2)),
+      rating: Number((7.4 + (hash % 9) / 10).toFixed(1)),
+    },
+    {
+      name: `${shortName} #10 Playmaker`,
+      role: 'CAM',
+      jerseyNumber: 10,
+      xgPer90: Number((0.34 + (hash % 18) / 100).toFixed(2)),
+      rating: Number((7.2 + (hash % 8) / 10).toFixed(1)),
+    },
+  ];
+  const keyPlayers = knownStars && knownStars.length > 0 ? knownStars : fallbackStars;
+
+  return {
+    name: matched?.info.name || safeName,
+    shortName,
+    logoUrl: resolvedLogoUrl,
+    primaryColor,
+    secondaryColor,
+    accentColor,
+    textColor,
+    kitPattern,
+    starPlayer: keyPlayers[0],
+    keyPlayers,
+  };
+}
+
+export const mapTeamToLogoAndJersey = resolveTeamIdentity;
+
 

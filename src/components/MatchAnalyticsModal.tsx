@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { TeamLogo } from '@/components/TeamLogo';
+import { TeamLogo, TeamJerseyBadge } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { resolveTeamIdentity } from '@/services/teamLogos';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
@@ -131,8 +133,9 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
           </div>
 
           <div className="grid grid-cols-5 items-center text-center my-4">
-            <div className="col-span-2 flex items-center gap-3 text-left">
-              <TeamLogo team={p.home_team} size="lg" className="shadow-sm" />
+            <div className="col-span-2 flex items-center gap-2.5 text-left">
+              <TeamLogo team={p.home_team} logoUrl={p.home_logo} league={p.league} size="lg" className="shadow-sm" />
+              <TeamJerseyBadge team={p.home_team} league={p.league} size="sm" />
               <div className="min-w-0">
                 <h2 className="text-base sm:text-lg font-extrabold text-white truncate">{p.home_team}</h2>
                 <span className="text-xs text-slate-400 font-medium">Home</span>
@@ -143,14 +146,54 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                 VS
               </span>
             </div>
-            <div className="col-span-2 flex items-center justify-end gap-3 text-right">
+            <div className="col-span-2 flex items-center justify-end gap-2.5 text-right">
               <div className="min-w-0">
                 <h2 className="text-base sm:text-lg font-extrabold text-white truncate">{p.away_team}</h2>
                 <span className="text-xs text-slate-400 font-medium">Away</span>
               </div>
-              <TeamLogo team={p.away_team} size="lg" className="shadow-sm" />
+              <TeamJerseyBadge team={p.away_team} league={p.league} size="sm" />
+              <TeamLogo team={p.away_team} logoUrl={p.away_logo} league={p.league} size="lg" className="shadow-sm" />
             </div>
           </div>
+
+          {(() => {
+            const homeId = resolveTeamIdentity(p.home_team, p.league, p.home_logo);
+            const awayId = resolveTeamIdentity(p.away_team, p.league, p.away_logo);
+            return (
+              <div className="grid grid-cols-2 gap-2.5 py-2.5 px-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <PlayerAvatar
+                    name={homeId.starPlayer.name}
+                    team={p.home_team}
+                    jerseyNumber={homeId.starPlayer.jerseyNumber}
+                    size="xs"
+                    showClubBadge={false}
+                  />
+                  <div className="min-w-0 text-left">
+                    <span className="text-[10px] text-slate-400 block">Key Player</span>
+                    <span className="font-bold text-white truncate block">
+                      {homeId.starPlayer.name} ({homeId.starPlayer.xgPer90} xG)
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 min-w-0">
+                  <div className="min-w-0 text-right">
+                    <span className="text-[10px] text-slate-400 block">Key Player</span>
+                    <span className="font-bold text-white truncate block">
+                      {awayId.starPlayer.name} ({awayId.starPlayer.xgPer90} xG)
+                    </span>
+                  </div>
+                  <PlayerAvatar
+                    name={awayId.starPlayer.name}
+                    team={p.away_team}
+                    jerseyNumber={awayId.starPlayer.jerseyNumber}
+                    size="xs"
+                    showClubBadge={false}
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* 3-Way Interactive Odds & Probability Matrix */}
           <div className="space-y-2 mt-4">

@@ -46,8 +46,9 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { TeamLogo } from '@/components/TeamLogo';
-import { fetchAndCacheTeamLogoByLeague, preloadLeagueTeamLogos } from '@/services/teamLogos';
+import { TeamLogo, TeamJerseyBadge } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { fetchAndCacheTeamLogoByLeague, preloadLeagueTeamLogos, resolveTeamIdentity } from '@/services/teamLogos';
 import { NotifyMeButton } from '@/components/NotifyMeButton';
 import { PitchLineupVisualizer } from '@/components/PitchLineupVisualizer';
 import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
@@ -391,14 +392,21 @@ export default function MatchPrediction() {
         <div className="bg-slate-900 text-white border border-slate-800 rounded-2xl p-6 mb-6 shadow-xs">
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
-              <TeamLogo
-                team={prediction.home_team}
-                logoUrl={prediction.home_logo}
-                leagueId={prediction.league}
-                league={prediction.league}
-                size="lg"
-                className="mb-2 shadow-xs"
-              />
+              <div className="flex items-center gap-2 mb-2">
+                <TeamLogo
+                  team={prediction.home_team}
+                  logoUrl={prediction.home_logo}
+                  leagueId={prediction.league}
+                  league={prediction.league}
+                  size="lg"
+                  className="shadow-xs"
+                />
+                <TeamJerseyBadge
+                  team={prediction.home_team}
+                  league={prediction.league}
+                  size="md"
+                />
+              </div>
               <h2 className="text-base sm:text-2xl font-extrabold text-white truncate w-full">{prediction.home_team}</h2>
               <span className="text-xs text-slate-400 font-mono mt-0.5">
                 {prediction.home_record ? `${prediction.home_record} · ` : ''}{homeXgVal} xG
@@ -446,20 +454,86 @@ export default function MatchPrediction() {
             </div>
 
             <div className="flex flex-col items-center text-center flex-1 min-w-0">
-              <TeamLogo
-                team={prediction.away_team}
-                logoUrl={prediction.away_logo}
-                leagueId={prediction.league}
-                league={prediction.league}
-                size="lg"
-                className="mb-2 shadow-xs"
-              />
+              <div className="flex items-center gap-2 mb-2">
+                <TeamJerseyBadge
+                  team={prediction.away_team}
+                  league={prediction.league}
+                  size="md"
+                />
+                <TeamLogo
+                  team={prediction.away_team}
+                  logoUrl={prediction.away_logo}
+                  leagueId={prediction.league}
+                  league={prediction.league}
+                  size="lg"
+                  className="shadow-xs"
+                />
+              </div>
               <h2 className="text-base sm:text-2xl font-extrabold text-white truncate w-full">{prediction.away_team}</h2>
               <span className="text-xs text-slate-400 font-mono mt-0.5">
                 {prediction.away_record ? `${prediction.away_record} · ` : ''}{awayXgVal} xG
               </span>
             </div>
           </div>
+
+          {/* Head-to-Head Key Player & Kit Spotlight Strip */}
+          {(() => {
+            const homeId = resolveTeamIdentity(prediction.home_team, prediction.league, prediction.home_logo);
+            const awayId = resolveTeamIdentity(prediction.away_team, prediction.league, prediction.away_logo);
+            return (
+              <div className="mt-4 pt-3.5 border-t border-slate-800/90 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <PlayerAvatar
+                      name={homeId.starPlayer.name}
+                      team={prediction.home_team}
+                      jerseyNumber={homeId.starPlayer.jerseyNumber}
+                      rating={homeId.starPlayer.rating}
+                      size="sm"
+                      showClubBadge={false}
+                      showRatingBadge
+                    />
+                    <div className="min-w-0">
+                      <span className="text-[10px] text-slate-400 block">
+                        {prediction.home_team} Key Attacker (#{homeId.starPlayer.jerseyNumber} · {homeId.starPlayer.role})
+                      </span>
+                      <span className="text-xs font-bold text-white block truncate">
+                        {homeId.starPlayer.name}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="font-mono tabular-nums text-xs font-bold text-emerald-400 shrink-0">
+                    {homeId.starPlayer.xgPer90.toFixed(2)} xG/90
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <PlayerAvatar
+                      name={awayId.starPlayer.name}
+                      team={prediction.away_team}
+                      jerseyNumber={awayId.starPlayer.jerseyNumber}
+                      rating={awayId.starPlayer.rating}
+                      size="sm"
+                      showClubBadge={false}
+                      showRatingBadge
+                    />
+                    <div className="min-w-0">
+                      <span className="text-[10px] text-slate-400 block">
+                        {prediction.away_team} Key Attacker (#{awayId.starPlayer.jerseyNumber} · {awayId.starPlayer.role})
+                      </span>
+                      <span className="text-xs font-bold text-white block truncate">
+                        {awayId.starPlayer.name}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="font-mono tabular-nums text-xs font-bold text-sky-400 shrink-0">
+                    {awayId.starPlayer.xgPer90.toFixed(2)} xG/90
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="text-center text-xs text-slate-300 mt-5 pt-3.5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="flex flex-wrap items-center gap-2">

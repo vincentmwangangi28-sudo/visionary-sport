@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Prediction, getPrediction, getConfidence, getAnalysis } from '@/types/prediction';
-import { TeamLogo } from '@/components/TeamLogo';
+import { TeamLogo, TeamJerseyBadge } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { resolveTeamIdentity } from '@/services/teamLogos';
 import {
   PredictionCardSkeleton,
   PredictionCompactSkeleton,
@@ -126,6 +128,15 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
     return { homeXg, awayXg };
   }, [p.over_under_line, winProbabilities.home, winProbabilities.away]);
 
+  const homeIdentity = useMemo(
+    () => resolveTeamIdentity(p.home_team, p.league, p.home_logo),
+    [p.home_team, p.league, p.home_logo]
+  );
+  const awayIdentity = useMemo(
+    () => resolveTeamIdentity(p.away_team, p.league, p.away_logo),
+    [p.away_team, p.league, p.away_logo]
+  );
+
   const displayOutcome =
     outcome === 'Home Win' ? t('pred.home_win', 'Home Win') :
     outcome === 'Draw' ? t('pred.draw', 'Draw') :
@@ -166,10 +177,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
           </span>
 
           <div className="flex items-center gap-2 min-w-0 truncate">
-            <TeamLogo team={p.home_team} size="xs" badgeOnly />
+            <TeamLogo team={p.home_team} logoUrl={p.home_logo} league={p.league} size="xs" />
             <span className="font-medium truncate text-foreground">{p.home_team}</span>
             <span className="text-muted-foreground">vs</span>
-            <TeamLogo team={p.away_team} size="xs" badgeOnly />
+            <TeamLogo team={p.away_team} logoUrl={p.away_logo} league={p.league} size="xs" />
             <span className="font-medium truncate text-foreground">{p.away_team}</span>
           </div>
 
@@ -245,15 +256,16 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             </span>
           </div>
 
-          {/* Column 2: Clubs & Expected Goals (xG) */}
+          {/* Column 2: Clubs, Official Crests, Jersey Kits & Expected Goals (xG) */}
           <div className="min-w-0 space-y-1.5">
             <div className="flex items-center justify-between gap-3">
               <Link
                 to={matchUrl}
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2.5 min-w-0 group/team"
+                className="flex items-center gap-2 min-w-0 group/team"
               >
-                <TeamLogo team={p.home_team} size="xs" />
+                <TeamLogo team={p.home_team} logoUrl={p.home_logo} league={p.league} size="xs" />
+                <TeamJerseyBadge team={p.home_team} league={p.league} size="xs" />
                 <span className="text-sm font-medium text-foreground truncate group-hover/team:text-primary transition-colors">
                   {p.home_team}
                 </span>
@@ -267,9 +279,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
               <Link
                 to={matchUrl}
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2.5 min-w-0 group/team"
+                className="flex items-center gap-2 min-w-0 group/team"
               >
-                <TeamLogo team={p.away_team} size="xs" />
+                <TeamLogo team={p.away_team} logoUrl={p.away_logo} league={p.league} size="xs" />
+                <TeamJerseyBadge team={p.away_team} league={p.league} size="xs" />
                 <span className="text-sm font-medium text-foreground truncate group-hover/team:text-primary transition-colors">
                   {p.away_team}
                 </span>
@@ -280,14 +293,35 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             </div>
           </div>
 
-          {/* Column 3: AI Pick & Confidence */}
-          <div className="hidden sm:flex flex-col items-end justify-center text-right pr-2">
-            <span className="text-xs font-semibold text-foreground truncate max-w-[125px]">
-              {displayOutcome}
-            </span>
-            <span className="text-[11px] font-mono tabular-nums text-primary font-semibold mt-0.5">
-              {confidence}% conf.
-            </span>
+          {/* Column 3: AI Pick, Confidence & Star Player Headshots */}
+          <div className="hidden sm:flex items-center justify-end gap-2.5 pr-2">
+            <div
+              className="flex items-center -space-x-1.5 shrink-0"
+              title={`Key Matchup: ${homeIdentity.starPlayer.name} vs ${awayIdentity.starPlayer.name}`}
+            >
+              <PlayerAvatar
+                name={homeIdentity.starPlayer.name}
+                team={p.home_team}
+                jerseyNumber={homeIdentity.starPlayer.jerseyNumber}
+                size="xs"
+                showClubBadge={false}
+              />
+              <PlayerAvatar
+                name={awayIdentity.starPlayer.name}
+                team={p.away_team}
+                jerseyNumber={awayIdentity.starPlayer.jerseyNumber}
+                size="xs"
+                showClubBadge={false}
+              />
+            </div>
+            <div className="flex flex-col items-end justify-center text-right">
+              <span className="text-xs font-semibold text-foreground truncate max-w-[100px]">
+                {displayOutcome}
+              </span>
+              <span className="text-[11px] font-mono tabular-nums text-primary font-semibold mt-0.5">
+                {confidence}% conf.
+              </span>
+            </div>
           </div>
 
           {/* Column 4: Interactive 1 · X · 2 Odds Buttons (Click to Add to Bet Slip) */}
@@ -393,8 +427,9 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
 
           <div className="space-y-2 pt-0.5">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <TeamLogo team={p.home_team} size="sm" />
+              <div className="flex items-center gap-2 min-w-0">
+                <TeamLogo team={p.home_team} logoUrl={p.home_logo} league={p.league} size="sm" />
+                <TeamJerseyBadge team={p.home_team} league={p.league} size="xs" />
                 <span className="font-semibold text-sm text-foreground truncate">{p.home_team}</span>
               </div>
               <span className="font-mono tabular-nums text-xs text-muted-foreground shrink-0">
@@ -403,13 +438,49 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <TeamLogo team={p.away_team} size="sm" />
+              <div className="flex items-center gap-2 min-w-0">
+                <TeamLogo team={p.away_team} logoUrl={p.away_logo} league={p.league} size="sm" />
+                <TeamJerseyBadge team={p.away_team} league={p.league} size="xs" />
                 <span className="font-semibold text-sm text-foreground truncate">{p.away_team}</span>
               </div>
               <span className="font-mono tabular-nums text-xs text-muted-foreground shrink-0">
                 {teamStats.awayXg} xG
               </span>
+            </div>
+          </div>
+
+          {/* Key Player Matchup Strip */}
+          <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2 text-[11px]">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <PlayerAvatar
+                name={homeIdentity.starPlayer.name}
+                team={p.home_team}
+                jerseyNumber={homeIdentity.starPlayer.jerseyNumber}
+                size="xs"
+                showClubBadge={false}
+              />
+              <span className="font-medium text-foreground truncate">
+                {homeIdentity.starPlayer.name}
+              </span>
+              <span className="font-mono tabular-nums text-[10px] text-muted-foreground shrink-0">
+                ({homeIdentity.starPlayer.xgPer90} xG)
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-muted-foreground shrink-0">vs</span>
+            <div className="flex items-center gap-1.5 min-w-0 justify-end">
+              <span className="font-mono tabular-nums text-[10px] text-muted-foreground shrink-0">
+                ({awayIdentity.starPlayer.xgPer90} xG)
+              </span>
+              <span className="font-medium text-foreground truncate">
+                {awayIdentity.starPlayer.name}
+              </span>
+              <PlayerAvatar
+                name={awayIdentity.starPlayer.name}
+                team={p.away_team}
+                jerseyNumber={awayIdentity.starPlayer.jerseyNumber}
+                size="xs"
+                showClubBadge={false}
+              />
             </div>
           </div>
         </CardHeader>

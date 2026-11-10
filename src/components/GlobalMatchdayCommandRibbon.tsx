@@ -178,7 +178,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         });
     };
 
-    const timer = setTimeout(loadLiveRibbon, 25000);
+    const timer = setTimeout(loadLiveRibbon, 1500);
     window.addEventListener('scroll', loadLiveRibbon, { passive: true, once: true });
 
     return () => {

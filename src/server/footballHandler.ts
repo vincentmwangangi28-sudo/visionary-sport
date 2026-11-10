@@ -282,7 +282,12 @@ function resolveLeagueNameFromEvent(ev: Record<string, any>, fallbackLeagueName:
     }
   }
   const noteHeadline = String(ev.competitions?.[0]?.notes?.[0]?.headline || '').trim();
-  if (noteHeadline) return noteHeadline;
+  if (
+    noteHeadline &&
+    !/\b(1st leg|2nd leg|aggregate|penalties|win on|lead|tied|quarterfinals|semifinals|round)\b/i.test(noteHeadline)
+  ) {
+    return noteHeadline.split(' - ')[0].trim();
+  }
   const cleanedSlug = rawSlug.replace(/^20\d\d-\d\d-/, '').replace(/^20\d\d-/, '');
   if (cleanedSlug && !GENERIC_STAGE_SLUGS.has(cleanedSlug)) {
     return cleanedSlug
@@ -913,10 +918,21 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
     const isoNow = new Date(now).toISOString();
     const todayDatePrefix = isoNow.slice(0, 10);
 
+    const TOP_LIVE_LEAGUES =
+      /premier league|la liga|serie a|bundesliga|ligue 1|champions league|europa league|nations league|caf|afcon|mls|saudi pro|eredivisie|primeira liga/i;
+
     // Promote today's top real ESPN fixtures (which carry real numeric ESPN event IDs so /api/football?type=summary works)
     const promotableCandidates = liveMatches
-      .filter((m) => m.status === 'upcoming' && /^live-\d+$/.test(m.id))
+      .filter(
+        (m) =>
+          m.status === 'upcoming' &&
+          /^live-\d+$/.test(m.id) &&
+          !/\bu21\b|\bu19\b|efl trophy/i.test(`${m.home_team} ${m.away_team} ${m.league}`)
+      )
       .sort((a, b) => {
+        const aTop = TOP_LIVE_LEAGUES.test(a.league) ? 0 : 1;
+        const bTop = TOP_LIVE_LEAGUES.test(b.league) ? 0 : 1;
+        if (aTop !== bTop) return aTop - bTop;
         const aToday = a.match_date.slice(0, 10) === todayDatePrefix ? 0 : 1;
         const bToday = b.match_date.slice(0, 10) === todayDatePrefix ? 0 : 1;
         if (aToday !== bToday) return aToday - bToday;
