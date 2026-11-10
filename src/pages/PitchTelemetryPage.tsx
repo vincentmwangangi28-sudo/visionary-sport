@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -460,8 +461,14 @@ export const PitchTelemetryPage: React.FC = () => {
                         style={{ left: `${pl.x}%`, top: `${pl.y}%` }}
                         className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col items-center group cursor-pointer z-10"
                       >
-                        <div className="h-7 w-7 rounded-full bg-emerald-500 text-slate-950 border-2 border-white font-mono text-[10px] font-black flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                          {pl.number}
+                        <div className="rounded-full ring-2 ring-emerald-400 shadow-md group-hover:scale-110 transition-transform">
+                          <PlayerAvatar
+                            name={pl.name}
+                            team={match.homeTeam}
+                            jerseyNumber={pl.number}
+                            size="xs"
+                            showClubBadge={false}
+                          />
                         </div>
                         <span className="mt-0.5 px-1.5 py-0.2 rounded bg-slate-950/90 text-white text-[10px] font-bold whitespace-nowrap">
                           {pl.name}{' '}
@@ -479,8 +486,14 @@ export const PitchTelemetryPage: React.FC = () => {
                         style={{ left: `${pl.x}%`, top: `${pl.y}%` }}
                         className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col items-center group cursor-pointer z-10"
                       >
-                        <div className="h-7 w-7 rounded-full bg-sky-400 text-slate-950 border-2 border-white font-mono text-[10px] font-black flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                          {pl.number}
+                        <div className="rounded-full ring-2 ring-sky-400 shadow-md group-hover:scale-110 transition-transform">
+                          <PlayerAvatar
+                            name={pl.name}
+                            team={match.awayTeam}
+                            jerseyNumber={pl.number}
+                            size="xs"
+                            showClubBadge={false}
+                          />
                         </div>
                         <span className="mt-0.5 px-1.5 py-0.2 rounded bg-slate-950/90 text-white text-[10px] font-bold whitespace-nowrap">
                           {pl.name}{' '}
@@ -501,6 +514,11 @@ export const PitchTelemetryPage: React.FC = () => {
                     <Badge className="bg-emerald-500 text-slate-950 font-mono font-bold">
                       {selectedShot.outcome} ({selectedShot.minute}&apos;)
                     </Badge>
+                    <PlayerAvatar
+                      name={selectedShot.player}
+                      team={selectedShot.team === 'HOME' ? match.homeTeam : match.awayTeam}
+                      size="sm"
+                    />
                     <span className="font-black text-sm text-foreground">
                       {selectedShot.player}
                     </span>
@@ -520,6 +538,17 @@ export const PitchTelemetryPage: React.FC = () => {
               {activePitchTab === 'FORMATION_XI' && selectedPlayer && (
                 <div className="p-3 rounded-xl bg-muted/40 border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2.5">
+                    <PlayerAvatar
+                      name={selectedPlayer.name}
+                      team={
+                        match.homeLineup.some((p) => p.name === selectedPlayer.name)
+                          ? match.homeTeam
+                          : match.awayTeam
+                      }
+                      jerseyNumber={selectedPlayer.number}
+                      rating={selectedPlayer.rating}
+                      size="sm"
+                    />
                     <Badge className="bg-emerald-500 text-slate-950 font-mono font-bold">
                       #{selectedPlayer.number} · {selectedPlayer.role}
                     </Badge>

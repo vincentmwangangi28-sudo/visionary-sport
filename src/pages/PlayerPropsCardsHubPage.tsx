@@ -6,6 +6,7 @@ import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 import {
@@ -249,19 +250,28 @@ export const PlayerPropsCardsHubPage: React.FC = () => {
                   {filteredPlayers.map((row) => (
                     <tr key={row.id} className="hover:bg-muted/40">
                       <td className="py-3 pr-3 font-sans">
-                        <div className="font-bold text-foreground">
-                          <Link
-                            to={`/players/${row.playerName.toLowerCase().replace(/\s+/g, '-')}`}
-                            className="hover:text-primary transition-colors"
-                          >
-                            {row.playerName}
-                          </Link>{' '}
-                          <span className="text-[11px] font-normal text-muted-foreground">
-                            ({row.position})
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {row.team} vs {row.opponent} · {row.league}
+                        <div className="flex items-center gap-2.5">
+                          <PlayerAvatar
+                            name={row.playerName}
+                            team={row.team}
+                            size="sm"
+                          />
+                          <div>
+                            <div className="font-bold text-foreground">
+                              <Link
+                                to={`/players/${row.playerName.toLowerCase().replace(/\s+/g, '-')}`}
+                                className="hover:text-primary transition-colors"
+                              >
+                                {row.playerName}
+                              </Link>{' '}
+                              <span className="text-[11px] font-normal text-muted-foreground">
+                                ({row.position})
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {row.team} vs {row.opponent} · {row.league}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="py-3 px-2.5 text-right">{row.shotsPer90.toFixed(2)}</td>
@@ -380,13 +390,20 @@ export const PlayerPropsCardsHubPage: React.FC = () => {
         {activeTab === 'calculator' && (
           <section className="rounded-xl border border-border bg-card p-5 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
-              <div>
-                <h2 className="text-base font-bold text-foreground">
-                  Custom Player Shots on Target (SOT) Poisson Pricing Calculator
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Enter any attacker&apos;s per-90 SOT rate and expected minutes to compute true fair odds for 1+, 2+, and 3+ Shots on Target
-                </p>
+              <div className="flex items-center gap-3">
+                <PlayerAvatar
+                  name={customPlayerName || 'Player'}
+                  size="md"
+                  showClubBadge={false}
+                />
+                <div>
+                  <h2 className="text-base font-bold text-foreground">
+                    Custom Player Shots on Target (SOT) Poisson Pricing Calculator
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Enter any attacker&apos;s per-90 SOT rate and expected minutes to compute true fair odds for 1+, 2+, and 3+ Shots on Target
+                  </p>
+                </div>
               </div>
               <Button
                 size="sm"

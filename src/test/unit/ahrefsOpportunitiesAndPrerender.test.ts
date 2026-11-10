@@ -119,9 +119,9 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     });
 
     expect(psi.success).toBe(true);
-    expect(psi.reportId).toBe('ksa4i5gm2f');
+    expect(psi.reportId).toBe('j78b10da95');
     expect(psi.reportUrl).toBe(
-      'https://pagespeed.web.dev/analysis/https-predictpro-guru/ksa4i5gm2f?hl=en&form_factor=mobile'
+      'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/j78b10da95?hl=en&form_factor=mobile'
     );
     expect(psi.mobile.scores.performance).toBeGreaterThanOrEqual(96);
     expect(psi.mobile.scores.seo).toBe(100);

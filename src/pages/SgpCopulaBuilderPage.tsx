@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -260,7 +261,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span
-                        className={`h-5 w-5 rounded-md flex items-center justify-center text-xs font-bold ${
+                        className={`h-5 w-5 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${
                           isSelected
                             ? 'bg-emerald-500 text-slate-950'
                             : 'bg-muted text-muted-foreground'
@@ -268,6 +269,14 @@ export const SgpCopulaBuilderPage: React.FC = () => {
                       >
                         {isSelected ? '✓' : '+'}
                       </span>
+                      {leg.category === 'PLAYER_PROP' && (
+                        <PlayerAvatar
+                          name={leg.label.split(/\s+(?:1\+|2\+|Anytime|Over|To\s)/i)[0]}
+                          team={activeMatch.homeTeam}
+                          size="xs"
+                          showClubBadge={false}
+                        />
+                      )}
                       <div className="min-w-0">
                         <span className="text-[10px] font-mono uppercase tracking-wider text-primary block">
                           {leg.category}

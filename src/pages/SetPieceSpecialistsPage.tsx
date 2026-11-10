@@ -821,7 +821,15 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                         1+ SOT @ {club.directFreeKickSpecialist.shotOnTargetOdds.toFixed(2)}
                       </span>
                     </div>
-                    <p className="font-bold text-foreground">{club.directFreeKickSpecialist.name}</p>
+                    <div className="flex items-center gap-2">
+                      <PlayerAvatar
+                        name={club.directFreeKickSpecialist.name}
+                        team={club.clubName}
+                        size="sm"
+                        showClubBadge={false}
+                      />
+                      <p className="font-bold text-foreground">{club.directFreeKickSpecialist.name}</p>
+                    </div>
                     <p className="text-[11px] text-muted-foreground leading-snug">
                       {club.directFreeKickSpecialist.notes}
                     </p>
@@ -858,9 +866,25 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                         Assist @ {club.primaryCornerTaker.assistOdds.toFixed(2)}
                       </span>
                     </div>
-                    <p className="font-bold text-foreground">
-                      {club.primaryCornerTaker.name} → {club.primaryAerialTarget.name} ({club.primaryAerialTarget.headedGoalsSeason} Headed Goals)
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center -space-x-1.5 shrink-0">
+                        <PlayerAvatar
+                          name={club.primaryCornerTaker.name}
+                          team={club.clubName}
+                          size="xs"
+                          showClubBadge={false}
+                        />
+                        <PlayerAvatar
+                          name={club.primaryAerialTarget.name}
+                          team={club.clubName}
+                          size="xs"
+                          showClubBadge={false}
+                        />
+                      </div>
+                      <p className="font-bold text-foreground">
+                        {club.primaryCornerTaker.name} → {club.primaryAerialTarget.name} ({club.primaryAerialTarget.headedGoalsSeason} Headed Goals)
+                      </p>
+                    </div>
                     <p className="text-[11px] text-muted-foreground leading-snug">
                       {club.primaryCornerTaker.deliveryStyle}
                     </p>

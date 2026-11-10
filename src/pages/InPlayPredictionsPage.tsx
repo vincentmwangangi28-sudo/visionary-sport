@@ -8,6 +8,7 @@ import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
 import { MarketQuickStrip } from '@/components/MarketQuickStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
 import { MatchTacticalSimulatorModal } from '@/components/MatchTacticalSimulatorModal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -687,15 +688,27 @@ export const InPlayPredictionsPage: React.FC = () => {
                         Official Match Events Timeline (ESPN Live Feed)
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {match.matchEvents.slice(0, 6).map((ev, evIdx) => (
-                          <span
-                            key={evIdx}
-                            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background border border-border/80 text-foreground"
-                          >
-                            <strong className="font-mono text-primary">{ev.minute}</strong>
-                            <span>{ev.text}</span>
-                          </span>
-                        ))}
+                        {match.matchEvents.slice(0, 6).map((ev, evIdx) => {
+                          const evPlayer = ev.text
+                            .replace(/^(?:⚽|🟨|🟥|🔄)+\s*(?:\((?:OG|PEN)\)\s*)?/iu, '')
+                            .replace(/\s*\(.*?\)\s*$/g, '')
+                            .trim();
+                          return (
+                            <span
+                              key={evIdx}
+                              className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded bg-background border border-border/80 text-foreground"
+                            >
+                              <strong className="font-mono text-primary">{ev.minute}</strong>
+                              <PlayerAvatar
+                                name={evPlayer}
+                                team={ev.team === 'home' ? match.homeTeam : match.awayTeam}
+                                size="xs"
+                                showClubBadge={false}
+                              />
+                              <span>{ev.text}</span>
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

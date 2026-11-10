@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AdBannerHorizontal } from '@/components/AdBanner';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { TeamNewsInjuryUpdates } from '@/components/TeamNewsInjuryUpdates';
 import {
   sportsNewsService,
@@ -32,6 +33,8 @@ export interface LineupTransferWireItem {
   desk: 'Spain (Marca / MD)' | 'UK (Sky / BBC)' | 'Europe (Kicker / Gazzetta / L\'Équipe)' | 'Africa (CAF / KPL)';
   tag: string;
   fixture: string;
+  starPlayer: string;
+  club: string;
   headline: string;
   xgDelta: string;
   probShift: string;
@@ -45,6 +48,8 @@ export const LIVE_LINEUP_TRANSFER_WIRE: LineupTransferWireItem[] = [
     desk: 'UK (Sky / BBC)',
     tag: 'Confirmed Starting XI',
     fixture: 'Arsenal vs Chelsea',
+    starPlayer: 'Bukayo Saka',
+    club: 'Arsenal',
     headline: 'Saka, Ødegaard & Rice all start in aggressive 4-3-3 high press; right half-space overload active.',
     xgDelta: '+0.36 Home xG',
     probShift: 'Home Win 68% → 74%',
@@ -56,6 +61,8 @@ export const LIVE_LINEUP_TRANSFER_WIRE: LineupTransferWireItem[] = [
     desk: 'Spain (Marca / MD)',
     tag: 'Tactical System Shift',
     fixture: 'Real Madrid vs Barcelona',
+    starPlayer: 'Kylian Mbappé',
+    club: 'Real Madrid',
     headline: 'Mbappé & Vinícius paired in split-striker transition shape against high defensive line.',
     xgDelta: '+0.42 Total xG',
     probShift: 'Over 2.5 Goals 71% → 79%',
@@ -67,6 +74,8 @@ export const LIVE_LINEUP_TRANSFER_WIRE: LineupTransferWireItem[] = [
     desk: 'Europe (Kicker / Gazzetta / L\'Équipe)',
     tag: 'Bundesliga & Serie A Intel',
     fixture: 'Bayern Munich vs Borussia Dortmund',
+    starPlayer: 'Harry Kane',
+    club: 'Bayern Munich',
     headline: 'Kane & Musiala central combination averaging 4.8 box entries per 15 minutes in Der Klassiker.',
     xgDelta: '+0.39 Home xG',
     probShift: 'BTTS Yes 76%',
@@ -78,6 +87,8 @@ export const LIVE_LINEUP_TRANSFER_WIRE: LineupTransferWireItem[] = [
     desk: 'Africa (CAF / KPL)',
     tag: 'Mashemeji Derby Lineup',
     fixture: 'Gor Mahia vs AFC Leopards',
+    starPlayer: 'Austin Odhiambo',
+    club: 'Gor Mahia',
     headline: 'Austin Odhiambo starts in #10 playmaker role; full-back width driving 64% final-third tilt.',
     xgDelta: '+0.33 Home xG',
     probShift: 'Home Win 72% → 78%',
@@ -275,7 +286,15 @@ export default function News() {
                     <span className="font-semibold text-primary">{item.tag}</span>
                     <span className="font-mono">{item.updatedAgo}</span>
                   </div>
-                  <p className="text-xs font-extrabold text-foreground">{item.fixture}</p>
+                  <div className="flex items-center gap-2">
+                    <PlayerAvatar
+                      name={item.starPlayer}
+                      team={item.club}
+                      size="xs"
+                      showClubBadge={false}
+                    />
+                    <p className="text-xs font-extrabold text-foreground">{item.fixture}</p>
+                  </div>
                   <p className="text-[11px] text-muted-foreground leading-snug">{item.headline}</p>
                 </div>
 
