@@ -503,12 +503,23 @@ export default function LiveScores() {
     let result = matches;
 
     // Date Ribbon Filter (when user switches to Yesterday / -2d / Tomorrow / +2d)
+    const targetDateIso = new Date(Date.now() + dateOffset * 86_400_000).toISOString().slice(0, 10);
     if (dateOffset < 0) {
-      const finishedOnly = result.filter((m) => m.status === 'finished');
-      if (finishedOnly.length > 0) result = finishedOnly;
+      const exactDayMatches = result.filter((m) => String(m.match_date || '').slice(0, 10) === targetDateIso);
+      if (exactDayMatches.length > 0) {
+        result = exactDayMatches;
+      } else {
+        const finishedOnly = result.filter((m) => m.status === 'finished');
+        if (finishedOnly.length > 0) result = finishedOnly;
+      }
     } else if (dateOffset > 0) {
-      const upcomingOnly = result.filter((m) => m.status === 'upcoming');
-      if (upcomingOnly.length > 0) result = upcomingOnly;
+      const exactDayMatches = result.filter((m) => String(m.match_date || '').slice(0, 10) === targetDateIso);
+      if (exactDayMatches.length > 0) {
+        result = exactDayMatches;
+      } else {
+        const upcomingOnly = result.filter((m) => m.status === 'upcoming');
+        if (upcomingOnly.length > 0) result = upcomingOnly;
+      }
     }
 
     // League filter

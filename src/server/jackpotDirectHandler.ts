@@ -6,12 +6,15 @@
 
 import { fetchServerUpcomingFixtures } from './footballHandler.ts';
 
-const CHROME_HEADERS: Record<string, string> = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-  Accept: 'application/json, text/plain, */*',
-  'X-Requested-With': 'XMLHttpRequest',
-};
+const CHROME_HEADERS: Record<string, string> =
+  typeof window !== 'undefined'
+    ? { Accept: 'application/json, text/plain, */*' }
+    : {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        Accept: 'application/json, text/plain, */*',
+        'X-Requested-With': 'XMLHttpRequest',
+      };
 
 export interface RawDirectJackpotMatch {
   pos: number;
@@ -27,6 +30,11 @@ export interface RawDirectJackpotMatch {
   drawOdds: number;
   awayOdds: number;
   officialTip?: string;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  matchStatus?: 'upcoming' | 'live' | 'finished';
+  minute?: string | null;
+  venue?: string | null;
   source: 'sportpesa_direct' | 'betika_direct' | 'mozzart_direct';
 }
 
@@ -165,6 +173,7 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
             homeOdds: hOdd,
             drawOdds: dOdd,
             awayOdds: aOdd,
+            matchStatus: 'upcoming',
             source: 'betika_direct',
           };
         });
@@ -221,17 +230,38 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
 
             liveOddsByTeams.set(`${normTeam(homeTeam)}_${normTeam(awayTeam)}`, { h: hOdd, d: dOdd, a: aOdd });
 
+            // Extract official SportPesa result (e.g. ev.state.result === "0:1")
+            let homeScore: number | null = null;
+            let awayScore: number | null = null;
+            let matchStatus: 'upcoming' | 'live' | 'finished' = 'upcoming';
+            let minute: string | null = null;
+
+            const rawResult = String(ev.state?.result || '').trim();
+            if (rawResult.includes(':')) {
+              const parts = rawResult.split(':').map((p) => parseInt(p.trim(), 10));
+              if (!isNaN(parts[0]) && !isNaN(parts[1])) {
+                homeScore = parts[0];
+                awayScore = parts[1];
+                matchStatus = 'finished';
+                minute = 'FT';
+              }
+            }
+
             return {
               pos: idx + 1,
               fixtureId: `sp-mw-${ev.id || idx + 1}`,
               smsId: ev.smsId ? `SMS #${ev.smsId}` : undefined,
               homeTeam,
               awayTeam,
-              league: `${ev.country?.name || 'International'} · ${ev.competition?.name || 'Official Fixture'}`,
+              league: `${ev.country?.name || 'International'} · ${ev.competition?.name || 'Championship'}`,
               kickoffIso: String(ev.date || new Date().toISOString()),
               homeOdds: hOdd,
               drawOdds: dOdd,
               awayOdds: aOdd,
+              homeScore,
+              awayScore,
+              matchStatus,
+              minute,
               source: 'sportpesa_direct',
             };
           });
@@ -242,86 +272,105 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
     }
   })();
 
-  // 3. Fetch SportPesa Mega 17 & Mozzart Super Grand 20 official fixture lists
+  // 3. Fetch SportPesa Mega 17, Betika Midweek 15 & Mozzart Super Grand 20 official fixture lists
   const syndicateTask = (async () => {
-    const [spMegaRaw, mozzartRaw] = await Promise.all([
+    const [spMegaRaw, mozzartRaw, bkMidweekRaw] = await Promise.all([
       extractSokapediaJackpotPool('sportpesa-mega-jackpot-predictions'),
       extractSokapediaJackpotPool('mozzart-super-grand-jackpot-predictions'),
+      extractSokapediaJackpotPool('betika-midweek-jackpot-predictions'),
     ]);
 
+    const parseSokapediaMatch = (
+      x: any,
+      idx: number,
+      prefix: string,
+      sourceTag: 'sportpesa_direct' | 'betika_direct' | 'mozzart_direct'
+    ): RawDirectJackpotMatch => {
+      const homeTeam = String(x.home_team_name || '').trim();
+      const awayTeam = String(x.away_team_name || '').trim();
+      const matchedOdds = liveOddsByTeams.get(`${normTeam(homeTeam)}_${normTeam(awayTeam)}`);
+      const tip = String(x.jackpot_tip || '1').toUpperCase();
+
+      const bookieOdds = x.odds?.[0];
+      const parsedH = parseFloat(bookieOdds?.bets_home || '');
+      const parsedD = parseFloat(bookieOdds?.bets_draw || '');
+      const parsedA = parseFloat(bookieOdds?.bets_away || '');
+
+      const defaultOdds =
+        !isNaN(parsedH) && !isNaN(parsedD) && !isNaN(parsedA) && parsedH > 1 && parsedA > 1
+          ? { h: parsedH, d: parsedD, a: parsedA }
+          : tip === '1'
+          ? { h: 2.08, d: 3.30, a: 3.45 }
+          : tip === '2'
+          ? { h: 3.15, d: 3.25, a: 2.22 }
+          : tip.includes('1') && tip.includes('X')
+          ? { h: 2.38, d: 3.15, a: 2.95 }
+          : tip.includes('2') && tip.includes('X')
+          ? { h: 2.85, d: 3.15, a: 2.42 }
+          : { h: 2.50, d: 3.25, a: 2.65 };
+
+      const odds = matchedOdds || defaultOdds;
+      const rawDate = String(x.date || '').trim();
+      const statusShort = String(x.status_short || '').toUpperCase();
+
+      let matchStatus: 'upcoming' | 'live' | 'finished' = 'upcoming';
+      let minute: string | null = null;
+      let homeScore: number | null = null;
+      let awayScore: number | null = null;
+
+      const gHome = typeof x.goals_home === 'number' && x.goals_home >= 0 ? x.goals_home : null;
+      const gAway = typeof x.goals_away === 'number' && x.goals_away >= 0 ? x.goals_away : null;
+
+      if (['FT', 'AET', 'PEN'].includes(statusShort) && gHome !== null && gAway !== null) {
+        matchStatus = 'finished';
+        minute = 'FT';
+        homeScore = gHome;
+        awayScore = gAway;
+      } else if (['1H', '2H', 'HT', 'LIVE', 'ET'].includes(statusShort) && gHome !== null && gAway !== null) {
+        matchStatus = 'live';
+        minute = statusShort === 'HT' ? 'HT' : x.status_elapased ? `${x.status_elapased}'` : 'LIVE';
+        homeScore = gHome;
+        awayScore = gAway;
+      }
+
+      return {
+        pos: Number(x.jackpot_position || idx + 1),
+        fixtureId: `${prefix}-${x.fixture_id || idx + 1}`,
+        homeTeam,
+        awayTeam,
+        homeLogo: x.home_team_logo || null,
+        awayLogo: x.away_team_logo || null,
+        league: `${x.country_name || 'Football'} · ${x.league_name || 'League'}`,
+        kickoffIso: rawDate.includes('T') ? rawDate : `${rawDate.replace(' ', 'T')}Z`,
+        homeOdds: odds.h,
+        drawOdds: odds.d,
+        awayOdds: odds.a,
+        officialTip: tip,
+        homeScore,
+        awayScore,
+        matchStatus,
+        minute,
+        venue: x.venue_name || null,
+        source: sourceTag,
+      };
+    };
+
     if (spMegaRaw.length > 0) {
-      pools.sportpesa = spMegaRaw.map((x: any, idx: number) => {
-        const homeTeam = String(x.home_team_name || '').trim();
-        const awayTeam = String(x.away_team_name || '').trim();
-        const matchedOdds = liveOddsByTeams.get(`${normTeam(homeTeam)}_${normTeam(awayTeam)}`);
-        const tip = String(x.jackpot_tip || '1').toUpperCase();
-
-        // Derive realistic market-aligned odds when not in liveOddsByTeams
-        const defaultOdds =
-          tip === '1'
-            ? { h: 2.08, d: 3.30, a: 3.45 }
-            : tip === '2'
-            ? { h: 3.15, d: 3.25, a: 2.22 }
-            : tip.includes('1') && tip.includes('X')
-            ? { h: 2.38, d: 3.15, a: 2.95 }
-            : tip.includes('2') && tip.includes('X')
-            ? { h: 2.85, d: 3.15, a: 2.42 }
-            : { h: 2.50, d: 3.25, a: 2.65 };
-
-        const odds = matchedOdds || defaultOdds;
-        const rawDate = String(x.date || '').trim();
-
-        return {
-          pos: Number(x.jackpot_position || idx + 1),
-          fixtureId: `sp-mega-${x.fixture_id || idx + 1}`,
-          homeTeam,
-          awayTeam,
-          homeLogo: x.home_team_logo || null,
-          awayLogo: x.away_team_logo || null,
-          league: `${x.country_name || 'Football'} · ${x.league_name || 'League'}`,
-          kickoffIso: rawDate.includes('T') ? rawDate : `${rawDate.replace(' ', 'T')}Z`,
-          homeOdds: odds.h,
-          drawOdds: odds.d,
-          awayOdds: odds.a,
-          officialTip: tip,
-          source: 'sportpesa_direct',
-        };
-      });
+      pools.sportpesa = spMegaRaw.map((x: any, idx: number) =>
+        parseSokapediaMatch(x, idx, 'sp-mega', 'sportpesa_direct')
+      );
     }
 
     if (mozzartRaw.length > 0) {
-      pools.mozzart = mozzartRaw.map((x: any, idx: number) => {
-        const homeTeam = String(x.home_team_name || '').trim();
-        const awayTeam = String(x.away_team_name || '').trim();
-        const matchedOdds = liveOddsByTeams.get(`${normTeam(homeTeam)}_${normTeam(awayTeam)}`);
-        const tip = String(x.jackpot_tip || '1').toUpperCase();
+      pools.mozzart = mozzartRaw.map((x: any, idx: number) =>
+        parseSokapediaMatch(x, idx, 'mozzart', 'mozzart_direct')
+      );
+    }
 
-        const defaultOdds =
-          tip === '1'
-            ? { h: 2.12, d: 3.30, a: 3.35 }
-            : tip === '2'
-            ? { h: 3.10, d: 3.25, a: 2.25 }
-            : { h: 2.45, d: 3.15, a: 2.75 };
-
-        const odds = matchedOdds || defaultOdds;
-        const rawDate = String(x.date || '').trim();
-
-        return {
-          pos: Number(x.jackpot_position || idx + 1),
-          fixtureId: `mozzart-${x.fixture_id || idx + 1}`,
-          homeTeam,
-          awayTeam,
-          homeLogo: x.home_team_logo || null,
-          awayLogo: x.away_team_logo || null,
-          league: `${x.country_name || 'Football'} · ${x.league_name || 'League'}`,
-          kickoffIso: rawDate.includes('T') ? rawDate : `${rawDate.replace(' ', 'T')}Z`,
-          homeOdds: odds.h,
-          drawOdds: odds.d,
-          awayOdds: odds.a,
-          officialTip: tip,
-          source: 'mozzart_direct',
-        };
-      });
+    if ((!pools.betika || pools.betika.length < 12) && bkMidweekRaw.length > 0) {
+      pools.betika = bkMidweekRaw.map((x: any, idx: number) =>
+        parseSokapediaMatch(x, idx, 'betika-mw', 'betika_direct')
+      );
     }
   })();
 
@@ -339,9 +388,15 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
 
     if (needsBackfill) {
       const espnUpcoming = await fetchServerUpcomingFixtures();
-      if (Array.isArray(espnUpcoming) && espnUpcoming.length > 0) {
+      const cleanUpcoming = (espnUpcoming || []).filter(
+        (m) =>
+          !/\btbd\b/i.test(m.home_team || '') &&
+          !/\btbd\b/i.test(m.away_team || '') &&
+          !/ncaa/i.test(m.league || '')
+      );
+      if (cleanUpcoming.length > 0) {
         // Sort by competitive parity (closest moneyline odds first, typical for Jackpot coupons)
-        const competitiveFixtures = [...espnUpcoming].sort((a, b) => {
+        const competitiveFixtures = [...cleanUpcoming].sort((a, b) => {
           const diffA = Math.abs((a.home_odds || 2.4) - (a.away_odds || 2.8));
           const diffB = Math.abs((b.home_odds || 2.4) - (b.away_odds || 2.8));
           return diffA - diffB;

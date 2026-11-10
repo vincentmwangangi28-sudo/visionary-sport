@@ -249,6 +249,21 @@ export function settleJackpotPool(
         awayScore: aS,
         actualOutcome: outcome,
       };
+    } else if (
+      (g.matchStatus === 'finished' || g.matchStatus === 'live') &&
+      typeof g.homeScore === 'number' &&
+      typeof g.awayScore === 'number'
+    ) {
+      const hS = g.homeScore;
+      const aS = g.awayScore;
+      const outcome: '1' | 'X' | '2' = hS > aS ? '1' : hS === aS ? 'X' : '2';
+      res = {
+        status: g.matchStatus,
+        minute: g.matchStatus === 'finished' ? 'FT' : g.minute || 'LIVE',
+        homeScore: hS,
+        awayScore: aS,
+        actualOutcome: outcome,
+      };
     } else {
       res = deriveDeterministicResult(g, nowMs);
     }
@@ -258,19 +273,23 @@ export function settleJackpotPool(
     let isWon: boolean | null = null;
     let doubleChanceWon: boolean | null = null;
 
-    if (res.status === 'finished' && res.actualOutcome) {
-      finishedCount++;
-      // Single pick evaluation
-      isWon = userPick === res.actualOutcome || g.recommendedPick === res.actualOutcome;
-      if (isWon) wonSingleCount++;
+    if ((res.status === 'finished' || res.status === 'live') && res.actualOutcome) {
+      if (res.status === 'finished') {
+        finishedCount++;
+      } else {
+        liveCount++;
+      }
+      // Single pick evaluation (supports user picking either 1/X/2 or a Double Chance 1X/X2/12)
+      isWon =
+        userPick.includes(res.actualOutcome) ||
+        g.recommendedPick === res.actualOutcome;
+      if (res.status === 'finished' && isWon) wonSingleCount++;
 
       // Double Chance evaluation
       doubleChanceWon =
         g.doubleChance.includes(res.actualOutcome) ||
-        (userPick.length === 2 && userPick.includes(res.actualOutcome));
-      if (doubleChanceWon) wonDoubleCount++;
-    } else if (res.status === 'live') {
-      liveCount++;
+        userPick.includes(res.actualOutcome);
+      if (res.status === 'finished' && doubleChanceWon) wonDoubleCount++;
     } else {
       upcomingCount++;
     }
@@ -303,8 +322,12 @@ export function settleJackpotPool(
 
   const totalGames = games.length;
   const isOver = totalGames > 0 && finishedCount === totalGames;
-  const strikeRate = finishedCount > 0 ? Math.round((wonSingleCount / finishedCount) * 100) : 0;
-  const { bonusWon, estimatedPayout } = calculateBonusTier(provider, wonSingleCount, totalGames);
+  const strikeRate = finishedCount > 0 ? Math.round((wonDoubleCount / finishedCount) * 100) : 0;
+  const { bonusWon, estimatedPayout } = calculateBonusTier(
+    provider,
+    Math.max(wonSingleCount, wonDoubleCount),
+    totalGames
+  );
 
   const meta = JACKPOT_PROVIDERS[provider];
   const roundId = `${provider.toUpperCase()}-RD-${new Date().getFullYear()}-W${getWeekNumber(new Date())}`;

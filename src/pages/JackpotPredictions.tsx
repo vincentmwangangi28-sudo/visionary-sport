@@ -15,6 +15,7 @@ import { hapticService } from '@/services/hapticService';
 import {
   fetchLiveJackpotPools,
   getInitialOfficialJackpotPools,
+  buildUpcomingJackpotPoolFromEspn,
   JACKPOT_PROVIDERS,
   JackpotProviderId,
   JackpotGame,
@@ -460,12 +461,15 @@ export default function JackpotPredictions() {
       setCronStatusMessage(res.message);
 
       if (action === 'rollover') {
-        const nextSlate = rollOverToNextJackpotSlate(currentPool, provider);
+        const nextSlate =
+          basePredictions.length >= 10
+            ? buildUpcomingJackpotPoolFromEspn(provider, basePredictions)
+            : rollOverToNextJackpotSlate(currentPool, provider);
         setPools((prev) => ({ ...prev, [provider]: nextSlate }));
         setActiveView('predictions');
         toast({
-          title: '🔄 Rolled Over to Upcoming Jackpot Edition',
-          description: `Archived completed matches and refreshed schedule to next upcoming draw with live Poisson calculations.`,
+          title: '🔄 Loaded Live Upcoming Matchweek Jackpot Slate',
+          description: `Populated ${nextSlate.length} upcoming fixtures with live moneyline odds and Bivariate Poisson probabilities.`,
         });
       } else if (action === 'settle') {
         setActiveView('results');
@@ -933,6 +937,50 @@ export default function JackpotPredictions() {
                   </Button>
                 </div>
               </div>
+
+              {/* Official Round Settled vs Live Upcoming Matchweek Switcher */}
+              {settlementSummary.isOver && (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className="bg-emerald-600 text-white font-black text-[10px]">
+                        OFFICIAL FT SCORES VERIFIED ({settlementSummary.finishedGames}/{settlementSummary.totalGames})
+                      </Badge>
+                      <span className="font-black text-foreground">
+                        Single Picks: {settlementSummary.correctSingleCount}/{settlementSummary.totalGames} · Double Chance Hedges: {settlementSummary.correctDoubleCount}/{settlementSummary.totalGames}
+                      </span>
+                      {settlementSummary.hitBonusTier && (
+                        <Badge variant="outline" className="border-amber-500/50 text-amber-700 dark:text-amber-300 font-black text-[10px]">
+                          {settlementSummary.hitBonusTier}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      This official bookmaker coupon has completed with verified full-time scores shown on every match below. Inspect full settlement details or load the next upcoming matchweek slate.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setActiveView('results')}
+                      className="h-8 text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/15"
+                    >
+                      <BarChart2 className="h-3.5 w-3.5 mr-1" />
+                      Full Scorecard
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleTriggerCronAction('rollover')}
+                      disabled={cronTriggering}
+                      className="h-8 text-xs font-bold gap-1.5 bg-primary text-primary-foreground"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${cronTriggering ? 'animate-spin' : ''}`} />
+                      Load Upcoming Slate
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Matches Table */}
               {loading && currentPool.length === 0 ? (

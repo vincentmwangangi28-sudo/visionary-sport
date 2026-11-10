@@ -139,15 +139,34 @@ export function initStaticHostApiBridge(): void {
       urlObj.pathname.startsWith('/api/football') ||
       urlObj.pathname.startsWith('/api/highlights');
 
+    const isJackpotEndpoint =
+      urlObj.pathname.startsWith('/api/jackpots') ||
+      urlObj.pathname.startsWith('/api/jackpot-cron');
+
     const isHealthOrKeepalive =
       urlObj.pathname === '/api/health' ||
       urlObj.pathname === '/api/status' ||
       urlObj.pathname === '/api/keepalive';
 
+    const executeClientJackpotHandler = async (): Promise<Response> => {
+      const { handleDirectJackpotFetch } = await import('@/server/jackpotDirectHandler');
+      const data = await handleDirectJackpotFetch(urlObj.searchParams.get('force') === 'true');
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'X-PredictPro-Bridge': 'static-edge-jackpot',
+        },
+      });
+    };
+
     // If static host is already confirmed, resolve immediately without a redundant network roundtrip
     if (isStaticHostConfirmed) {
       if (isFootballOrHighlights) {
         return executeClientFootballHandler(urlObj);
+      }
+      if (isJackpotEndpoint) {
+        return executeClientJackpotHandler();
       }
       if (isHealthOrKeepalive) {
         return new Response(
@@ -175,6 +194,9 @@ export function initStaticHostApiBridge(): void {
         if (isFootballOrHighlights) {
           return executeClientFootballHandler(urlObj);
         }
+        if (isJackpotEndpoint) {
+          return executeClientJackpotHandler();
+        }
         if (isHealthOrKeepalive) {
           return new Response(
             JSON.stringify({
@@ -195,6 +217,9 @@ export function initStaticHostApiBridge(): void {
     } catch (err) {
       if (isFootballOrHighlights) {
         return executeClientFootballHandler(urlObj);
+      }
+      if (isJackpotEndpoint) {
+        return executeClientJackpotHandler();
       }
       throw err;
     }
