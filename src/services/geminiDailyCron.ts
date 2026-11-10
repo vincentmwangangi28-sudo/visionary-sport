@@ -198,7 +198,7 @@ class GeminiDailyCronService {
         ``,
         topPicksText,
         ``,
-        `🔗 <a href="https://predictpro.guru/best-bets">Load AI Bankers on PredictPro.guru</a>`,
+        `🔗 <a href="https://www.predictpro.guru/best-bets">Load AI Bankers on PredictPro.guru</a>`,
       ].join('\n');
 
       const res = await broadcastCustomMessage(message);

@@ -421,14 +421,14 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#10b981;font-weight:700;margin-bottom:6px;">
     Verified Poisson &amp; xG Football Intelligence
   </div>
-  <a href="https://predictpro.guru/best-bets" target="_blank" rel="noopener" style="color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;display:block;margin-bottom:6px;">
+  <a href="https://www.predictpro.guru/best-bets" target="_blank" rel="noopener" style="color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;display:block;margin-bottom:6px;">
     Today's AI Banker Football Predictions &amp; +EV Value Bets →
   </a>
   <p style="font-size:12px;color:#94a3b8;margin:0 0 10px 0;line-height:1.5;">
     Live Bivariate Poisson scoreline matrices, Expected Goals (xG) differentials, and Closing Line Value (CLV) across 40+ leagues.
   </p>
   <div style="font-size:11px;color:#cbd5e1;">
-    Data powered by <a href="https://predictpro.guru" target="_blank" rel="noopener" style="color:#10b981;font-weight:700;text-decoration:underline;">PredictPro AI Football Predictions</a>
+    Data powered by <a href="https://www.predictpro.guru/" target="_blank" rel="noopener" style="color:#10b981;font-weight:700;text-decoration:underline;">PredictPro AI Football Predictions</a>
   </div>
 </div>`;
 

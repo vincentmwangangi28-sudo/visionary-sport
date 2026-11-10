@@ -245,12 +245,12 @@ export default function EmbedWidget() {
       <div className="pt-3 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
         <span>Verified Poisson &amp; xG Telemetry</span>
         <a
-          href="https://predictpro.guru"
+          href="https://www.predictpro.guru/"
           target="_blank"
           rel="noopener"
           className="text-emerald-500 hover:text-emerald-400 font-bold flex items-center gap-1 transition-colors"
         >
-          predictpro.guru <ExternalLink className="h-3 w-3" />
+          www.predictpro.guru <ExternalLink className="h-3 w-3" />
         </a>
       </div>
     </div>

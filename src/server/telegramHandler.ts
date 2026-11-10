@@ -149,7 +149,7 @@ export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string 
       `🧠 <b>Quantitative Rationale:</b>`,
       `${reason}`,
       ``,
-      `🔗 <a href="https://predictpro.guru/best-bets">View Live xG &amp; Full Slate on PredictPro.guru</a>`,
+      `🔗 <a href="https://www.predictpro.guru/best-bets">View Live xG &amp; Full Slate on PredictPro.guru</a>`,
     ].join('\n');
   }
 
@@ -184,7 +184,7 @@ export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string 
       ``,
       `💡 <i>${reason}</i>`,
       ``,
-      `👉 <a href="https://predictpro.guru/predict">Open Match Center on PredictPro.guru</a>`,
+      `👉 <a href="https://www.predictpro.guru/predict">Open Match Center on PredictPro.guru</a>`,
     ].join('\n');
   }
 
@@ -207,7 +207,7 @@ export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string 
       `🏟️ <b>${home}  [ ${score} ]  ${away}</b>`,
       `🏆 <i>${league}</i>${tip}${pulse}`,
       ``,
-      `📡 <a href="https://predictpro.guru/live">Track Live Match &amp; In-Play Odds</a>`,
+      `📡 <a href="https://www.predictpro.guru/live">Track Live Match &amp; In-Play Odds</a>`,
     ].join('\n');
   }
 
@@ -229,7 +229,7 @@ export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string 
       legsText,
       ``,
       `🔥 <b>Combined Odds:</b> ${totalOdds}x`,
-      `🔗 <a href="https://predictpro.guru/accumulator">Load Slip on PredictPro.guru</a>`,
+      `🔗 <a href="https://www.predictpro.guru/accumulator">Load Slip on PredictPro.guru</a>`,
     ].join('\n');
   }
 
@@ -250,7 +250,7 @@ export function buildTelegramAlertHtml(payload: TelegramRequestPayload): string 
       `🎯 <b>Market:</b> ${market} @ <b>${odds}</b>`,
       `📊 <b>AI True Probability:</b> ${aiProb}% (+${ev}% Edge)`,
       ``,
-      `🔗 <a href="https://predictpro.guru/value-bets">View Value Scanner on PredictPro.guru</a>`,
+      `🔗 <a href="https://www.predictpro.guru/value-bets">View Value Scanner on PredictPro.guru</a>`,
     ].join('\n');
   }
 

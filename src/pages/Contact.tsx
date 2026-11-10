@@ -84,7 +84,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <strong className="text-foreground block text-xs uppercase tracking-wider mb-0.5">Website Domain:</strong>
-                  <a href="https://predictpro.guru" className="text-primary hover:underline">https://predictpro.guru</a>
+                  <a href="https://www.predictpro.guru/" className="text-primary hover:underline">https://www.predictpro.guru</a>
                 </div>
                 <div>
                   <strong className="text-foreground block text-xs uppercase tracking-wider mb-0.5">AdSense Publisher ID:</strong>

@@ -148,7 +148,7 @@ export default function Daily2OddsPredictions() {
         confidence: parseInt(l.conf, 10) || 84,
       }))
     );
-    return `https://predictpro.guru/daily-2-odds?slip=${encodeURIComponent(encoded)}`;
+    return `https://www.predictpro.guru/daily-2-odds-predictions?slip=${encodeURIComponent(encoded)}`;
   }, [ticket]);
 
   const shareMessage = useMemo(() => {

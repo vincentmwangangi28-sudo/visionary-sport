@@ -1,7 +1,7 @@
 // Netlify Scheduled / Serverless Function for Google Crawl & Search Engine Indexing Cron
 // Invoked on schedule: "0 */6 * * *"
 
-const BASE_URL = 'https://predictpro.guru';
+const BASE_URL = 'https://www.predictpro.guru';
 const INDEXNOW_KEY = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
 
 const PRIORITY_URLS = [

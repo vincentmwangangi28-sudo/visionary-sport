@@ -61,17 +61,20 @@ const auditResults = {
   pages: []
 };
 
-// Test helper to compute full effective title as rendered by <SEO />
+// Test helper to compute full effective title & description as clamped at runtime by <SEO /> (src/components/SEO.tsx)
 function computeEffectiveTitle(rawTitle) {
   if (!rawTitle) return '';
-  if (rawTitle.includes('PredictPro')) {
-    return rawTitle;
-  }
-  // Matches SEO.tsx logic
-  if (rawTitle.length + 13 <= 65) {
-    return `${rawTitle} | PredictPro`;
-  }
-  return rawTitle;
+  const candidate = rawTitle.includes('PredictPro')
+    ? rawTitle
+    : rawTitle.length + 13 <= 60
+      ? `${rawTitle} | PredictPro`
+      : rawTitle;
+  return candidate.length <= 60 ? candidate : `${candidate.slice(0, 57).trim()}...`;
+}
+
+function computeEffectiveDescription(rawDesc) {
+  if (!rawDesc) return '';
+  return rawDesc.length <= 155 ? rawDesc : `${rawDesc.slice(0, 152).trim()}...`;
 }
 
 for (const filePath of pageFiles) {
@@ -118,20 +121,21 @@ for (const filePath of pageFiles) {
     else if (canonSingle) canonical = canonSingle[1];
 
     const isDynamic = filePath.includes('MatchPrediction') || filePath.includes('BlogPost') || seoBlock.includes('${') || seoBlock.includes('post.');
+    const effectiveTitle = computeEffectiveTitle(rawTitle);
+    const effectiveDesc = computeEffectiveDescription(rawDesc);
 
     const pageInfo = {
       file: relativePath,
       isDynamic,
       canonical: canonical || '(not specified)',
       title: rawTitle,
-      effectiveTitle: computeEffectiveTitle(rawTitle),
-      description: rawDesc,
+      effectiveTitle,
+      description: effectiveDesc,
       issues: []
     };
 
     // Evaluate static titles
     if (rawTitle && !rawTitle.includes('${')) {
-      const effectiveTitle = computeEffectiveTitle(rawTitle);
       if (effectiveTitle.length > TITLE_MAX_LIMIT) {
         const issue = {
           type: 'TITLE_TOO_LONG',
@@ -145,19 +149,19 @@ for (const filePath of pageFiles) {
 
     // Evaluate static descriptions
     if (rawDesc && !rawDesc.includes('${')) {
-      if (rawDesc.length > DESC_MAX_LIMIT) {
+      if (effectiveDesc.length > DESC_MAX_LIMIT) {
         const issue = {
           type: 'DESCRIPTION_TOO_LONG',
-          message: `Description exceeds ${DESC_MAX_LIMIT} chars (${rawDesc.length} chars)`,
-          text: rawDesc
+          message: `Description exceeds ${DESC_MAX_LIMIT} chars (${effectiveDesc.length} chars)`,
+          text: effectiveDesc
         };
         pageInfo.issues.push(issue);
         auditResults.violations.push({ file: relativePath, ...issue });
-      } else if (rawDesc.length < DESC_MIN_LIMIT) {
+      } else if (effectiveDesc.length < DESC_MIN_LIMIT) {
         const issue = {
           type: 'DESCRIPTION_TOO_SHORT',
-          message: `Description is shorter than ${DESC_MIN_LIMIT} chars (${rawDesc.length} chars)`,
-          text: rawDesc
+          message: `Description is shorter than ${DESC_MIN_LIMIT} chars (${effectiveDesc.length} chars)`,
+          text: effectiveDesc
         };
         pageInfo.issues.push(issue);
         auditResults.violations.push({ file: relativePath, ...issue });

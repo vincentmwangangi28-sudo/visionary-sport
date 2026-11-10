@@ -60,7 +60,7 @@ export const AdminPartnerWidgetStudioTab: React.FC = () => {
     title="PredictPro Live Football Analytics Widget"
   ></iframe>
   <div style="text-align:right;padding:4px 6px 0;font-size:11px;">
-    <a href="https://predictpro.guru?utm_source=widget&utm_campaign=${encodeURIComponent(
+    <a href="https://www.predictpro.guru/?utm_source=widget&utm_campaign=${encodeURIComponent(
       partnerRefId || 'partner'
     )}" target="_blank" rel="dofollow" style="color:#10b981;text-decoration:none;font-weight:600;">
       ⚡ ${anchorText}
