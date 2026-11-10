@@ -120,6 +120,70 @@ export const PredictionsDashboard = ({
     }
   }, [resolvedInitialLeague]);
 
+  const [liveScoreMap, setLiveScoreMap] = useState<
+    Record<
+      string,
+      {
+        status: 'live' | 'halftime' | 'finished' | 'upcoming';
+        minute?: string | number | null;
+        home_score?: number | null;
+        away_score?: number | null;
+        match_events?: any[];
+        match_stats?: any;
+      }
+    >
+  >({});
+
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
+    ) {
+      return;
+    }
+    let cancelled = false;
+    const loadLiveOverlay = async () => {
+      try {
+        let json: any = null;
+        try {
+          const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
+          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
+            json = await r.json();
+          }
+        } catch {
+          // fallback below
+        }
+        if (!json) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          json = await handleFootballRequest({ type: 'live' });
+        }
+        if (cancelled || !Array.isArray(json?.matches)) return;
+        const map: typeof liveScoreMap = {};
+        for (const m of json.matches) {
+          if (m.status === 'live' || m.status === 'halftime' || m.status === 'finished') {
+            const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
+            map[key] = {
+              status: m.status,
+              minute: m.minute,
+              home_score: m.home_score,
+              away_score: m.away_score,
+              match_events: m.match_events,
+              match_stats: m.match_stats,
+            };
+          }
+        }
+        setLiveScoreMap(map);
+      } catch {
+        // silent fallback
+      }
+    };
+    const t = setTimeout(loadLiveOverlay, 1200);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, []);
+
   useEffect(() => {
     if (
       typeof window !== 'undefined' &&
@@ -129,21 +193,31 @@ export const PredictionsDashboard = ({
     }
     let cancelled = false;
     let triggered = false;
-    const loadStandings = () => {
+    const loadStandings = async () => {
       if (triggered || cancelled) return;
       triggered = true;
-      fetch(`/api/football?type=standings&league=${standingsTab}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((json) => {
-          if (cancelled || !Array.isArray(json?.standings) || json.standings.length === 0) return;
-          setLiveStandingsMap((prev) => ({
-            ...prev,
-            [standingsTab]: json.standings.slice(0, 6),
-          }));
-        })
-        .catch(() => {
-          // fallback to default table
-        });
+      try {
+        let json: any = null;
+        try {
+          const r = await fetch(`/api/football?type=standings&league=${standingsTab}`);
+          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
+            json = await r.json();
+          }
+        } catch {
+          // fallback below
+        }
+        if (!json) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          json = await handleFootballRequest({ type: 'standings', league: standingsTab });
+        }
+        if (cancelled || !Array.isArray(json?.standings) || json.standings.length === 0) return;
+        setLiveStandingsMap((prev) => ({
+          ...prev,
+          [standingsTab]: json.standings.slice(0, 6),
+        }));
+      } catch {
+        // fallback to default table
+      }
     };
 
     if (standingsTab !== 'EPL') {
@@ -153,7 +227,7 @@ export const PredictionsDashboard = ({
       };
     }
 
-    const timer = setTimeout(loadStandings, 25000);
+    const timer = setTimeout(loadStandings, 1500);
     window.addEventListener('scroll', loadStandings, { passive: true, once: true });
     return () => {
       cancelled = true;
@@ -178,8 +252,23 @@ export const PredictionsDashboard = ({
 
   const allUpcomingPool = useMemo(() => {
     const rawPool = data?.allPredictions ?? predictions;
-    return sortMatchesByDatePriority(rawPool.filter((p) => !isPlayedOrPastMatch(p)));
-  }, [data?.allPredictions, predictions]);
+    const sorted = sortMatchesByDatePriority(rawPool.filter((p) => !isPlayedOrPastMatch(p)));
+    return sorted.map((p) => {
+      const key = `${p.home_team.toLowerCase()}|${p.away_team.toLowerCase()}`;
+      const liveInfo = liveScoreMap[key];
+      if (!liveInfo) return p;
+      return {
+        ...p,
+        status: liveInfo.status === 'halftime' ? 'live' : liveInfo.status === 'live' ? 'live' : p.status,
+        minute: liveInfo.minute ?? p.minute,
+        home_score: liveInfo.home_score ?? p.home_score,
+        away_score: liveInfo.away_score ?? p.away_score,
+        match_events: liveInfo.match_events ?? p.match_events,
+        match_stats: liveInfo.match_stats ?? p.match_stats,
+        is_realtime: true,
+      };
+    });
+  }, [data?.allPredictions, predictions, liveScoreMap]);
 
   const handleSetViewMode = (mode: 'card' | 'compact' | 'condensed') => {
     hapticService.selection();

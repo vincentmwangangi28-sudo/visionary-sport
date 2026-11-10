@@ -15,7 +15,9 @@ import {
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TeamLogo } from '@/components/TeamLogo';
+import { TeamLogo, TeamJerseyBadge } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { resolveTeamIdentity } from '@/services/teamLogos';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { hapticService } from '@/services/hapticService';
 import { toast } from 'sonner';
@@ -277,45 +279,69 @@ export const AISmartSlipGenerator: React.FC<{ predictions?: Prediction[] }> = ({
 
         {/* Generated Legs List */}
         <div className="space-y-2">
-          {currentPreset.legs.map((leg, index) => (
-            <div
-              key={`${leg.match}-${leg.market}`}
-              className="p-3 rounded-xl bg-card border border-border/60 hover:border-primary/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
-            >
-              <div className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[11px] font-black text-muted-foreground shrink-0">
-                  {index + 1}
-                </span>
-                <div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-semibold">
-                    <span>{leg.league}</span>
-                  </div>
-                  <div className="font-extrabold text-sm text-foreground flex items-center gap-2">
-                    <TeamLogo teamName={leg.homeTeam} size="xs" />
-                    <span>{leg.homeTeam}</span>
-                    <span className="text-muted-foreground font-normal text-xs">vs</span>
-                    <TeamLogo teamName={leg.awayTeam} size="xs" />
-                    <span>{leg.awayTeam}</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1 italic">
-                    {leg.reason}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-3 pl-9 sm:pl-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/30">
-                <Badge variant="secondary" className="font-bold text-xs">
-                  {leg.market}
-                </Badge>
-                <div className="text-right flex flex-col items-end gap-0.5">
-                  <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-400">
-                    @{leg.odds.toFixed(2)}
+          {currentPreset.legs.map((leg, index) => {
+            const homeId = resolveTeamIdentity(leg.homeTeam, leg.league);
+            const awayId = resolveTeamIdentity(leg.awayTeam, leg.league);
+            return (
+              <div
+                key={`${leg.match}-${leg.market}`}
+                className="p-3 rounded-xl bg-card border border-border/60 hover:border-primary/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[11px] font-black text-muted-foreground shrink-0">
+                    {index + 1}
                   </span>
-                  <ConfidenceMeter confidence={leg.confidence} variant="compact" />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-semibold">
+                      <span>{leg.league}</span>
+                    </div>
+                    <div className="font-extrabold text-sm text-foreground flex items-center gap-1.5 flex-wrap">
+                      <TeamLogo team={leg.homeTeam} league={leg.league} size="xs" />
+                      <TeamJerseyBadge team={leg.homeTeam} league={leg.league} size="xs" />
+                      <span>{leg.homeTeam}</span>
+                      <span className="text-muted-foreground font-normal text-xs">vs</span>
+                      <TeamJerseyBadge team={leg.awayTeam} league={leg.league} size="xs" />
+                      <TeamLogo team={leg.awayTeam} league={leg.league} size="xs" />
+                      <span>{leg.awayTeam}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                      <div className="flex items-center -space-x-1.5 shrink-0">
+                        <PlayerAvatar
+                          name={homeId.starPlayer.name}
+                          team={leg.homeTeam}
+                          jerseyNumber={homeId.starPlayer.jerseyNumber}
+                          size="xs"
+                          showClubBadge={false}
+                        />
+                        <PlayerAvatar
+                          name={awayId.starPlayer.name}
+                          team={leg.awayTeam}
+                          jerseyNumber={awayId.starPlayer.jerseyNumber}
+                          size="xs"
+                          showClubBadge={false}
+                        />
+                      </div>
+                      <span className="truncate">
+                        {homeId.starPlayer.name} ({homeId.starPlayer.xgPer90.toFixed(2)} xG/90) vs {awayId.starPlayer.name}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-3 pl-9 sm:pl-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/30 shrink-0">
+                  <Badge variant="secondary" className="font-bold text-xs">
+                    {leg.market}
+                  </Badge>
+                  <div className="text-right flex flex-col items-end gap-0.5">
+                    <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-400">
+                      @{leg.odds.toFixed(2)}
+                    </span>
+                    <ConfidenceMeter confidence={leg.confidence} variant="compact" />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Summary Footer & Action Bar */}
