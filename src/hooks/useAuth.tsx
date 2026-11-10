@@ -136,10 +136,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    initAuth();
+    if (
+      hasStoredAuthSession() ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth'))
+    ) {
+      initAuth();
+      return () => {
+        unsubscribed = true;
+        authSub?.unsubscribe();
+      };
+    }
+
+    setLoading(false);
+    const onInteract = () => {
+      initAuth();
+    };
+    window.addEventListener('pointerdown', onInteract, { passive: true, once: true });
+    window.addEventListener('touchstart', onInteract, { passive: true, once: true });
+    window.addEventListener('keydown', onInteract, { passive: true, once: true });
 
     return () => {
       unsubscribed = true;
+      window.removeEventListener('pointerdown', onInteract);
+      window.removeEventListener('touchstart', onInteract);
+      window.removeEventListener('keydown', onInteract);
       authSub?.unsubscribe();
     };
   }, []);

@@ -3331,8 +3331,16 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       document.documentElement.dir = resolved.detectedLocale.isRTL ? 'rtl' : 'ltr';
     }
 
+    const isWwwHost =
+      typeof window !== 'undefined' &&
+      window.location &&
+      window.location.hostname === 'www.predictpro.guru';
+    const domCanonicalUrl = isWwwHost
+      ? resolved.canonicalUrl.replace('https://predictpro.guru', 'https://www.predictpro.guru')
+      : resolved.canonicalUrl;
+
     upsertMetaTag('name', 'description', resolved.description);
-    upsertLinkTag('canonical', resolved.canonicalUrl);
+    upsertLinkTag('canonical', domCanonicalUrl);
 
     // Defer secondary head tag mutations (35+ hreflang links, 20 og:locale:alternate tags, JSON-LD serialization)
     // off the critical hydration frame to eliminate main-thread blocking (TBT / INP).
@@ -3369,7 +3377,10 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       const validHreflangs = new Set<string>();
       for (const item of resolved.hreflangLinks) {
         validHreflangs.add(item.hreflang);
-        upsertLinkTag('alternate', item.href, item.hreflang);
+        const domHref = isWwwHost
+          ? item.href.replace('https://predictpro.guru', 'https://www.predictpro.guru')
+          : item.href;
+        upsertLinkTag('alternate', domHref, item.hreflang);
       }
       pruneAlternateHreflangTags(validHreflangs);
 
@@ -3378,7 +3389,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
         : resolved.fullTitle;
 
       upsertMetaTag('property', 'og:type', resolved.type);
-      upsertMetaTag('property', 'og:url', resolved.canonicalUrl);
+      upsertMetaTag('property', 'og:url', domCanonicalUrl);
       upsertMetaTag('property', 'og:title', resolved.fullTitle);
       upsertMetaTag('property', 'og:description', resolved.description);
       upsertMetaTag('property', 'og:image', resolved.image);

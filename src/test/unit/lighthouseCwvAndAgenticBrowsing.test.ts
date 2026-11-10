@@ -32,7 +32,7 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
   it('validates robots.txt, llms.txt, and .well-known/ai-catalog.json for Lighthouse SEO & Agentic Browsing 4/4', () => {
     const robotsTxt = fs.readFileSync(path.resolve(process.cwd(), 'public/robots.txt'), 'utf-8');
     expect(robotsTxt).toContain('User-agent: *');
-    expect(robotsTxt).toContain('Sitemap: https://predictpro.guru/sitemap.xml');
+    expect(robotsTxt).toMatch(/Sitemap: https:\/\/(www\.)?predictpro\.guru\/sitemap\.xml/);
 
     const llmsTxt = fs.readFileSync(path.resolve(process.cwd(), 'public/llms.txt'), 'utf-8');
     expect(llmsTxt).toContain('# PredictPro');

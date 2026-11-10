@@ -178,13 +178,17 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         });
     };
 
-    const timer = setTimeout(loadLiveRibbon, 1500);
+    const timer = setTimeout(loadLiveRibbon, 8000);
     window.addEventListener('scroll', loadLiveRibbon, { passive: true, once: true });
+    window.addEventListener('pointerdown', loadLiveRibbon, { passive: true, once: true });
+    window.addEventListener('touchstart', loadLiveRibbon, { passive: true, once: true });
 
     return () => {
       cancelled = true;
       clearTimeout(timer);
       window.removeEventListener('scroll', loadLiveRibbon);
+      window.removeEventListener('pointerdown', loadLiveRibbon);
+      window.removeEventListener('touchstart', loadLiveRibbon);
     };
   }, []);
 

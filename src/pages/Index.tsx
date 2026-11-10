@@ -375,7 +375,7 @@ const Index = () => {
         )}
 
         {/* In-Play & Live Matches View */}
-        {(activeMode === 'live' || activeMode === 'predictions' || activeMode === 'all') && (
+        {(activeMode === 'live' || activeMode === 'all') && (
           <div className="cv-auto">
             <Suspense fallback={<div className="min-h-[220px]" aria-hidden="true" />}>
               <LiveMatches />

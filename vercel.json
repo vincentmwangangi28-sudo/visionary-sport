@@ -6,15 +6,10 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.predictpro.guru" }],
-      "destination": "https://predictpro.guru/:path*",
-      "permanent": true
-    },
     { "source": "/predictions", "destination": "/predict", "permanent": true },
     { "source": "/predictions/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
     { "source": "/match/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
+    { "source": "/match-prediction/:matchSlug", "destination": "/predict/:matchSlug", "permanent": true },
     { "source": "/football-predictions", "destination": "/", "permanent": true },
     { "source": "/soccer-predictions", "destination": "/", "permanent": true },
     { "source": "/tips", "destination": "/best-bets", "permanent": true },

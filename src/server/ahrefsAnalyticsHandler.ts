@@ -64,8 +64,8 @@ export interface AhrefsWebAnalyticsResponse {
 }
 
 export const DEFAULT_AHREFS_PROJECT_ID = 10277130;
-export const DEFAULT_AHREFS_FROM = '2026-09-30T00:00:00Z';
-export const DEFAULT_AHREFS_TO = '2026-10-29T23:59:59Z';
+export const DEFAULT_AHREFS_FROM = '2026-10-12T00:00:00Z';
+export const DEFAULT_AHREFS_TO = '2026-11-10T23:59:59Z';
 export const DEFAULT_AHREFS_TRACKER_KEY = 'c8s+HDjX+BXC8gS/Bj9fQw';
 
 function buildDeterministicTimeseries(fromIso: string, toIso: string): AhrefsDailyStatPoint[] {
@@ -389,6 +389,7 @@ export interface AhrefsAIResponsesCountMetrics {
   google_ai_overviews: number;
   google_ai_overviews_keywords: number;
   google_ai_mode: number;
+  google_ai_mode_keywords: number;
   gemini: number;
   perplexity: number;
   copilot: number;
@@ -424,7 +425,7 @@ export interface AhrefsAIResponsesCountResponse {
 }
 
 export const DEFAULT_AI_RESPONSES_SELECT =
-  'all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok';
+  'all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,google_ai_mode_keywords,gemini,perplexity,copilot,grok';
 export const DEFAULT_AI_RESPONSES_TARGET = 'predictpro.guru/';
 
 export async function handleAhrefsAIResponsesCountRequest(params?: {
@@ -445,6 +446,7 @@ export async function handleAhrefsAIResponsesCountRequest(params?: {
     google_ai_overviews: 468,
     google_ai_overviews_keywords: 615,
     google_ai_mode: 194,
+    google_ai_mode_keywords: 284,
     gemini: 162,
     perplexity: 186,
     copilot: 78,
@@ -483,6 +485,9 @@ export async function handleAhrefsAIResponsesCountRequest(params?: {
               raw.google_ai_overviews_keywords ?? defaultMetrics.google_ai_overviews_keywords
             ),
             google_ai_mode: Number(raw.google_ai_mode ?? defaultMetrics.google_ai_mode),
+            google_ai_mode_keywords: Number(
+              raw.google_ai_mode_keywords ?? defaultMetrics.google_ai_mode_keywords
+            ),
             gemini: Number(raw.gemini ?? defaultMetrics.gemini),
             perplexity: Number(raw.perplexity ?? defaultMetrics.perplexity),
             copilot: Number(raw.copilot ?? defaultMetrics.copilot),
@@ -509,6 +514,7 @@ export async function handleAhrefsAIResponsesCountRequest(params?: {
       google_ai_overviews: 142,
       google_ai_overviews_keywords: 185,
       google_ai_mode: 64,
+      google_ai_mode_keywords: 92,
       gemini: 48,
       perplexity: 58,
       copilot: 22,

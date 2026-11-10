@@ -2,6 +2,7 @@
 /predictions                /predict                      301
 /predictions/:matchSlug     /predict/:matchSlug           301
 /match/:matchSlug           /predict/:matchSlug           301
+/match-prediction/:matchSlug /predict/:matchSlug          301
 /football-predictions       /                             301
 /soccer-predictions         /                             301
 /tips                       /best-bets                    301

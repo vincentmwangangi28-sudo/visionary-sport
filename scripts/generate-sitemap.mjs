@@ -19,7 +19,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const SITEMAP_PATH = path.join(ROOT_DIR, 'public', 'sitemap.xml');
 const YANDEX_SITEMAP_PATH = path.join(ROOT_DIR, 'public', 'sitemap-yandex.xml');
 
-const BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
+const BASE_URL = process.env.SITE_URL || 'https://www.predictpro.guru';
 const TODAY = new Date().toISOString().split('T')[0];
 
 const CORE_PAGES = [

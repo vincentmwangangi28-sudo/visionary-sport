@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth, syncUserProfileActivity } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +22,10 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { callEdgeFn } from '@/lib/callEdgeFunction';
+
+const getSupabase = () => import('@/integrations/supabase/client').then((m) => m.supabase);
+const invokeEdgeFn = (fnName: string, body: Record<string, unknown>) =>
+  import('@/lib/callEdgeFunction').then((m) => m.callEdgeFn(fnName, body));
 
 const STORAGE_ENGAGED_SECONDS_KEY = 'predictpro_guest_preview_seconds_v3';
 const STORAGE_PAGE_VIEWS_KEY = 'predictpro_guest_page_views_v3';
@@ -252,6 +254,7 @@ export const FirstVisitSignupModal: React.FC = () => {
     if (!targetEmail) return;
     setResendingEmail(true);
     try {
+      const supabase = await getSupabase();
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: targetEmail,
@@ -286,6 +289,7 @@ export const FirstVisitSignupModal: React.FC = () => {
 
     setSubmitting(true);
     try {
+      const supabase = await getSupabase();
       if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: `${window.location.origin}/auth?mode=reset`,
@@ -347,7 +351,7 @@ export const FirstVisitSignupModal: React.FC = () => {
           Array.isArray(signUpData?.user?.identities) && signUpData.user.identities.length === 0;
 
         if (signUpData?.user && !isExistingObfuscatedUser) {
-          callEdgeFn('apply-referral-on-signup', {
+          invokeEdgeFn('apply-referral-on-signup', {
             referral_code: undefined,
             new_user_id: signUpData.user.id,
           }).catch(() => {});

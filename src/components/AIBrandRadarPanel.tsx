@@ -60,7 +60,9 @@ export const AIBrandRadarPanel: React.FC = () => {
         selectedPlatform === 'all_platforms' ||
         (selectedPlatform === 'google_ai_overviews_keywords'
           ? item.platform === 'google_ai_overviews'
-          : item.platform === selectedPlatform);
+          : selectedPlatform === 'google_ai_mode_keywords'
+            ? item.platform === 'google_ai_mode'
+            : item.platform === selectedPlatform);
       const matchesQuery =
         !q ||
         item.promptQuery.toLowerCase().includes(q) ||
@@ -351,8 +353,8 @@ export const AIBrandRadarPanel: React.FC = () => {
             </div>
           </div>
 
-          {/* 9-Card Interactive Platform Filter Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2.5">
+          {/* 10-Card Interactive Platform Filter Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 xl:grid-cols-10 gap-2.5">
             {platformMetrics.map((p) => {
               const isSelected = selectedPlatform === p.key;
               return (

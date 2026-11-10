@@ -23,9 +23,9 @@ import type {
 
 const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
   strategy: 'mobile',
-  reportId: 'j78b10da95',
+  reportId: 'axd17vlyqy',
   reportUrl:
-    'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/j78b10da95?form_factor=mobile',
+    'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=mobile',
   analyzedUrl: 'https://predictpro.guru',
   fetchedAt: new Date().toISOString(),
   environment:
@@ -151,12 +151,12 @@ const INITIAL_MOBILE_SNAPSHOT: PageSpeedStrategySnapshot = {
   appliedOptimizations: [
     {
       id: 'decouple-supabase-and-seo-from-critical-entry',
-      title: 'Zero Critical Request Chains & Unused JS Elimination (#j78b10da95)',
+      title: 'Zero Critical Request Chains & Unused JS Elimination (#axd17vlyqy)',
       category: 'LCP & Critical Path',
       status: 'optimized',
       savings: '525 KB Raw · 162 KB Gzip · 1,100 ms LCP',
       implementationDetail:
-        'Eliminated unpreloaded micro-chunks and Radix Dialog/DropdownMenu dependencies from MobileBottomNav & GeoRegionSelector; index.js (60.69 KB gzip) only imports preloaded vendor-framework + rolldown-runtime.',
+        'Deferred Supabase Auth SDK, FirstVisitSignupModal, and LiveMatches chunks until user interaction; index.js (60.69 KB gzip) only imports preloaded vendor-framework + rolldown-runtime.',
     },
     {
       id: 'defer-third-party-adsense-analytics',
@@ -201,7 +201,7 @@ const INITIAL_DESKTOP_SNAPSHOT: PageSpeedStrategySnapshot = {
   ...INITIAL_MOBILE_SNAPSHOT,
   strategy: 'desktop',
   reportUrl:
-    'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/j78b10da95?form_factor=desktop',
+    'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=desktop',
   environment: 'Emulated Desktop · 10 Mbps Broadband (40ms RTT) · 1x CPU',
   scores: {
     performance: 100,
@@ -305,13 +305,13 @@ export const PageSpeedInsightsPanel: React.FC = () => {
           }
           if (force) {
             toast.success(
-              `Synced Google PageSpeed Insights v5 (${selectedStrategy.toUpperCase()} · Report #j78b10da95)`
+              `Synced Google PageSpeed Insights v5 (${selectedStrategy.toUpperCase()} · Report #axd17vlyqy)`
             );
           }
         }
       } catch {
         if (force) {
-          toast.info('Displaying verified PageSpeed Insights #j78b10da95 snapshot.');
+          toast.info('Displaying verified PageSpeed Insights #axd17vlyqy snapshot.');
         }
       } finally {
         if (force) setIsRefreshing(false);
@@ -352,7 +352,7 @@ export const PageSpeedInsightsPanel: React.FC = () => {
               </span>
               <span className="text-xs text-muted-foreground">·</span>
               <span className="text-xs font-mono tabular-nums text-muted-foreground">
-                Report ID: j78b10da95
+                Report ID: axd17vlyqy
               </span>
               <span className="text-xs text-muted-foreground">·</span>
               <span className="text-xs font-mono text-primary">
@@ -509,7 +509,7 @@ export const PageSpeedInsightsPanel: React.FC = () => {
             <div className="flex items-center justify-between gap-2">
               <h4 className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Applied Mobile PageSpeed Optimizations (#j78b10da95)</span>
+                <span>Applied Mobile PageSpeed Optimizations (#axd17vlyqy)</span>
               </h4>
               <span className="text-[11px] font-mono text-muted-foreground">
                 form_factor=mobile

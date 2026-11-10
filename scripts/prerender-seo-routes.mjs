@@ -20,7 +20,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const SITEMAP_PATH = path.join(ROOT_DIR, 'public', 'sitemap.xml');
 
-const BASE_URL = 'https://predictpro.guru';
+const BASE_URL = 'https://www.predictpro.guru';
 
 const ROUTE_META = {
   '/': {
@@ -780,7 +780,7 @@ function runPrerender() {
         `<meta name="twitter:description" content="${escapedDesc}" />`
       )
       .replace(
-        /"@id": "https:\/\/predictpro\.guru\/#webpage",\s*"url": "https:\/\/predictpro\.guru\/",\s*"name": "[^"]*",\s*"description": "[^"]*"/,
+        /"@id": "https:\/\/(?:www\.)?predictpro\.guru\/#webpage",\s*"url": "https:\/\/(?:www\.)?predictpro\.guru\/",\s*"name": "[^"]*",\s*"description": "[^"]*"/,
         `"@id": "${canonicalUrl}#webpage",\n          "url": "${canonicalUrl}",\n          "name": "${escapedTitle}",\n          "description": "${escapedDesc}"`
       )
       .replace(
@@ -899,7 +899,7 @@ function buildRouteSpecificJsonLd(routePath, canonicalUrl, title, description) {
       '@id': `${canonicalUrl}#product`,
       name: 'PredictPro Open-Access Football Analytics & VIP Pass',
       description: description,
-      image: 'https://predictpro.guru/og-image.jpg',
+      image: `${BASE_URL}/og-image.jpg`,
       brand: {
         '@type': 'Brand',
         name: 'PredictPro',
@@ -1065,10 +1065,10 @@ function buildRouteSpecificJsonLd(routePath, canonicalUrl, title, description) {
         name: 'PredictPro',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://predictpro.guru/icon-512.png',
+          url: `${BASE_URL}/icon-512.png`,
         },
       },
-      image: 'https://predictpro.guru/og-image.jpg',
+      image: `${BASE_URL}/og-image.jpg`,
     });
   }
 

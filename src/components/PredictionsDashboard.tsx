@@ -142,21 +142,14 @@ export const PredictionsDashboard = ({
       return;
     }
     let cancelled = false;
+    let triggered = false;
     const loadLiveOverlay = async () => {
+      if (triggered || cancelled) return;
+      triggered = true;
       try {
-        let json: any = null;
-        try {
-          const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
-          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
-            json = await r.json();
-          }
-        } catch {
-          // fallback below
-        }
-        if (!json) {
-          const { handleFootballRequest } = await import('@/server/footballHandler');
-          json = await handleFootballRequest({ type: 'live' });
-        }
+        const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
+        if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) return;
+        const json = await r.json();
         if (cancelled || !Array.isArray(json?.matches)) return;
         const map: typeof liveScoreMap = {};
         for (const m of json.matches) {
@@ -177,10 +170,16 @@ export const PredictionsDashboard = ({
         // silent fallback
       }
     };
-    const t = setTimeout(loadLiveOverlay, 1200);
+    const t = setTimeout(loadLiveOverlay, 8000);
+    window.addEventListener('scroll', loadLiveOverlay, { passive: true, once: true });
+    window.addEventListener('pointerdown', loadLiveOverlay, { passive: true, once: true });
+    window.addEventListener('touchstart', loadLiveOverlay, { passive: true, once: true });
     return () => {
       cancelled = true;
       clearTimeout(t);
+      window.removeEventListener('scroll', loadLiveOverlay);
+      window.removeEventListener('pointerdown', loadLiveOverlay);
+      window.removeEventListener('touchstart', loadLiveOverlay);
     };
   }, []);
 
@@ -197,19 +196,9 @@ export const PredictionsDashboard = ({
       if (triggered || cancelled) return;
       triggered = true;
       try {
-        let json: any = null;
-        try {
-          const r = await fetch(`/api/football?type=standings&league=${standingsTab}`);
-          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
-            json = await r.json();
-          }
-        } catch {
-          // fallback below
-        }
-        if (!json) {
-          const { handleFootballRequest } = await import('@/server/footballHandler');
-          json = await handleFootballRequest({ type: 'standings', league: standingsTab });
-        }
+        const r = await fetch(`/api/football?type=standings&league=${standingsTab}`);
+        if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) return;
+        const json = await r.json();
         if (cancelled || !Array.isArray(json?.standings) || json.standings.length === 0) return;
         setLiveStandingsMap((prev) => ({
           ...prev,
@@ -227,12 +216,16 @@ export const PredictionsDashboard = ({
       };
     }
 
-    const timer = setTimeout(loadStandings, 1500);
+    const timer = setTimeout(loadStandings, 8500);
     window.addEventListener('scroll', loadStandings, { passive: true, once: true });
+    window.addEventListener('pointerdown', loadStandings, { passive: true, once: true });
+    window.addEventListener('touchstart', loadStandings, { passive: true, once: true });
     return () => {
       cancelled = true;
       clearTimeout(timer);
       window.removeEventListener('scroll', loadStandings);
+      window.removeEventListener('pointerdown', loadStandings);
+      window.removeEventListener('touchstart', loadStandings);
     };
   }, [standingsTab]);
 

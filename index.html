@@ -21,15 +21,16 @@
       netlify-hud, #netlify-hud, [data-netlify-hud], [class*="netlify-hud"], netlify-widget, netlify-drawer, #netlify-drawer, #netlify-cdp-loader, [data-netlify-deploy-drawer], [data-netlify-drawer], [id^="netlify-"], iframe[src*=".netlify/"], iframe[src*="app.netlify.com"] { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; width: 0 !important; height: 0 !important; }
     </style>
     <!-- Static Canonical Tag (Required by Google for non-JS & pre-render crawlers) -->
-    <link rel="canonical" href="https://predictpro.guru/" />
-    <link rel="alternate" hreflang="x-default" href="https://predictpro.guru/" />
-    <link rel="alternate" hreflang="en" href="https://predictpro.guru/" />
+    <link rel="canonical" href="https://www.predictpro.guru/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.predictpro.guru/" />
+    <link rel="alternate" hreflang="en" href="https://www.predictpro.guru/" />
     <script>
       (function () {
         try {
           var rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '/';
           var cleanPath = rawPath === '/' ? '/' : rawPath.replace(/\/+$/, '');
-          var canonicalHref = 'https://predictpro.guru' + (cleanPath === '/' ? '/' : cleanPath);
+          var activeOrigin = (typeof window !== 'undefined' && window.location && window.location.hostname === 'predictpro.guru') ? 'https://predictpro.guru' : 'https://www.predictpro.guru';
+          var canonicalHref = activeOrigin + (cleanPath === '/' ? '/' : cleanPath);
           var canonicalTag = document.querySelector('link[rel="canonical"]');
           if (canonicalTag) {
             canonicalTag.setAttribute('href', canonicalHref);
@@ -112,10 +113,10 @@
         } catch (e) {}
       })();
     </script>
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://predictpro.guru/sitemap.xml" />
-    <link rel="alternate" type="application/rss+xml" title="PredictPro Strategy &amp; Predictions RSS Feed" href="https://predictpro.guru/rss.xml" />
-    <link rel="alternate" type="application/atom+xml" title="PredictPro AI Sports Intelligence Atom Feed" href="https://predictpro.guru/feed.xml" />
-    <link rel="alternate" type="application/rss+xml" title="PredictPro Daily Match Predictions Syndication Feed" href="https://predictpro.guru/feed-predictions.xml" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://www.predictpro.guru/sitemap.xml" />
+    <link rel="alternate" type="application/rss+xml" title="PredictPro Strategy &amp; Predictions RSS Feed" href="https://www.predictpro.guru/rss.xml" />
+    <link rel="alternate" type="application/atom+xml" title="PredictPro AI Sports Intelligence Atom Feed" href="https://www.predictpro.guru/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="PredictPro Daily Match Predictions Syndication Feed" href="https://www.predictpro.guru/feed-predictions.xml" />
     <link rel="ard" type="application/json" href="/.well-known/ard.json" />
     <link rel="ai-catalog" type="application/json" href="/.well-known/ai-catalog.json" />
     <link rel="api-catalog" type="application/linkset+json" href="/.well-known/api-catalog" />
@@ -176,11 +177,11 @@
 
     <!-- Open Graph defaults (Synchronized per-route) -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://predictpro.guru/" />
+    <meta property="og:url" content="https://www.predictpro.guru/" />
     <meta property="og:site_name" content="PredictPro — Football Statistics &amp; xG" />
     <meta property="og:title" content="PredictPro — Football Match Statistics, Live Scores &amp; xG" />
     <meta property="og:description" content="Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues." />
-    <meta property="og:image" content="https://predictpro.guru/og-image.jpg" />
+    <meta property="og:image" content="https://www.predictpro.guru/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
@@ -190,7 +191,7 @@
     <meta name="twitter:site" content="@PredictProAI" />
     <meta name="twitter:title" content="PredictPro — Football Match Statistics, Live Scores &amp; xG" />
     <meta name="twitter:description" content="Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues." />
-    <meta name="twitter:image" content="https://predictpro.guru/og-image.jpg" />
+    <meta name="twitter:image" content="https://www.predictpro.guru/og-image.jpg" />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
@@ -346,46 +347,46 @@
       "@graph": [
         {
           "@type": "WebSite",
-          "@id": "https://predictpro.guru/#website",
+          "@id": "https://www.predictpro.guru/#website",
           "name": "PredictPro",
-          "url": "https://predictpro.guru",
+          "url": "https://www.predictpro.guru",
           "description": "AI-powered football predictions today with 87% accuracy across 40+ leagues worldwide",
           "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://predictpro.guru/predict?q={search_term_string}",
+            "target": "https://www.predictpro.guru/predict?q={search_term_string}",
             "query-input": "required name=search_term_string"
           }
         },
         {
           "@type": "WebPage",
-          "@id": "https://predictpro.guru/#webpage",
-          "url": "https://predictpro.guru/",
+          "@id": "https://www.predictpro.guru/#webpage",
+          "url": "https://www.predictpro.guru/",
           "name": "PredictPro — AI Football Predictions Today, xG Statistics & Match Analytics",
           "description": "Independent AI-powered football predictions today with 87% accuracy. Daily Expected Goals (xG) statistics, Bivariate Poisson match probabilities, and H2H analytics across 40+ leagues worldwide. 18+ Informational only.",
           "isPartOf": {
             "@type": "WebSite",
-            "@id": "https://predictpro.guru/#website"
+            "@id": "https://www.predictpro.guru/#website"
           },
           "breadcrumb": {
-            "@id": "https://predictpro.guru/#breadcrumb"
+            "@id": "https://www.predictpro.guru/#breadcrumb"
           },
           "inLanguage": "en"
         },
         {
           "@type": "BreadcrumbList",
-          "@id": "https://predictpro.guru/#breadcrumb",
+          "@id": "https://www.predictpro.guru/#breadcrumb",
           "itemListElement": [
             {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://predictpro.guru/"
+              "item": "https://www.predictpro.guru/"
             }
           ]
         },
         {
           "@type": "SoftwareApplication",
-          "@id": "https://predictpro.guru/#app",
+          "@id": "https://www.predictpro.guru/#app",
           "name": "PredictPro AI Football Engine",
           "operatingSystem": "All",
           "applicationCategory": "SportsApplication",
@@ -404,14 +405,14 @@
         },
         {
           "@type": ["Organization", "ProfessionalService"],
-          "@id": "https://predictpro.guru/#organization",
+          "@id": "https://www.predictpro.guru/#organization",
           "name": "PredictPro",
           "legalName": "PredictPro Sports Analytics",
-          "url": "https://predictpro.guru",
-          "image": "https://predictpro.guru/og-image.jpg",
+          "url": "https://www.predictpro.guru",
+          "image": "https://www.predictpro.guru/og-image.jpg",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://predictpro.guru/favicon-120x120.png",
+            "url": "https://www.predictpro.guru/favicon-120x120.png",
             "width": 120,
             "height": 120
           },

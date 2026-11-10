@@ -293,11 +293,11 @@ if (fs.existsSync(DIST_DIR)) {
       });
     } else {
       const canonicalHref = canonicalMatches[0][1];
-      if (!canonicalHref.startsWith('https://predictpro.guru')) {
+      if (!canonicalHref.startsWith('https://www.predictpro.guru') && !canonicalHref.startsWith('https://predictpro.guru')) {
         auditResults.violations.push({
           file: relHtml,
           type: 'INVALID_CANONICAL_DOMAIN',
-          message: `Canonical URL must use apex domain https://predictpro.guru, found "${canonicalHref}"`,
+          message: `Canonical URL must use https://www.predictpro.guru or https://predictpro.guru, found "${canonicalHref}"`,
           text: canonicalHref
         });
       }

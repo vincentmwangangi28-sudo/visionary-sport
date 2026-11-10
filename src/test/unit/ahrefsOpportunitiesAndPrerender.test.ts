@@ -111,7 +111,7 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     expect(rendered).toContain('daily value bets today (+ev)');
   });
 
-  it('verifies Mobile PageSpeed Insights report #ksa4i5gm2f snapshot and deferred critical-path chunks', async () => {
+  it('verifies Mobile PageSpeed Insights report #axd17vlyqy snapshot and deferred critical-path chunks', async () => {
     const psi = await handlePageSpeedInsightsRequest({
       url: 'https://predictpro.guru',
       strategy: 'mobile',
@@ -119,9 +119,9 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     });
 
     expect(psi.success).toBe(true);
-    expect(psi.reportId).toBe('j78b10da95');
+    expect(psi.reportId).toBe('axd17vlyqy');
     expect(psi.reportUrl).toBe(
-      'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/j78b10da95?hl=en&form_factor=mobile'
+      'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=mobile'
     );
     expect(psi.mobile.scores.performance).toBeGreaterThanOrEqual(96);
     expect(psi.mobile.scores.seo).toBe(100);
@@ -262,5 +262,57 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     const itemListIssue = SITE_AUDIT_16_ISSUES_OVERVIEW.issues.find((i) => i.id === 'issue-category-missing-itemlist');
     expect(itemListIssue?.affectedPagesBefore).toBe(4);
     expect(itemListIssue?.affectedPagesAfter).toBe(0);
+  });
+
+  it('verifies Ahrefs v3 Site Explorer ai-responses-count 10-metric endpoint including google_ai_mode_keywords', async () => {
+    const { handleAhrefsAIResponsesCountRequest, DEFAULT_AI_RESPONSES_SELECT } = await import(
+      '@/server/ahrefsAnalyticsHandler'
+    );
+    const { AHREFS_AI_RESPONSES_API_URL, AI_PLATFORM_DESCRIPTORS } = await import(
+      '@/services/aiBrandRadarService'
+    );
+
+    expect(DEFAULT_AI_RESPONSES_SELECT).toBe(
+      'all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,google_ai_mode_keywords,gemini,perplexity,copilot,grok'
+    );
+    expect(AHREFS_AI_RESPONSES_API_URL).toBe(
+      'https://api.ahrefs.com/v3/site-explorer/ai-responses-count?select=all_platforms%2Cchatgpt%2Cgoogle_ai_overviews%2Cgoogle_ai_overviews_keywords%2Cgoogle_ai_mode%2Cgoogle_ai_mode_keywords%2Cgemini%2Cperplexity%2Ccopilot%2Cgrok&target=predictpro.guru%2F'
+    );
+    expect(AI_PLATFORM_DESCRIPTORS).toHaveLength(10);
+    expect(AI_PLATFORM_DESCRIPTORS.some((p) => p.key === 'google_ai_mode_keywords')).toBe(true);
+
+    const res = await handleAhrefsAIResponsesCountRequest();
+    expect(res.success).toBe(true);
+    expect(res.target).toBe('predictpro.guru/');
+    expect(res.endpointUrl).toBe(AHREFS_AI_RESPONSES_API_URL);
+    expect(res.metrics.google_ai_mode_keywords).toBeGreaterThan(0);
+    expect(res.deltas30d.google_ai_mode_keywords).toBeGreaterThan(0);
+
+    const {
+      handleAhrefsAnalyticsRequest,
+      DEFAULT_AHREFS_FROM,
+      DEFAULT_AHREFS_TO,
+      DEFAULT_AHREFS_PROJECT_ID,
+    } = await import('@/server/ahrefsAnalyticsHandler');
+    expect(DEFAULT_AHREFS_PROJECT_ID).toBe(10277130);
+    expect(DEFAULT_AHREFS_FROM).toBe('2026-10-12T00:00:00Z');
+    expect(DEFAULT_AHREFS_TO).toBe('2026-11-10T23:59:59Z');
+
+    const webStats = await handleAhrefsAnalyticsRequest({
+      project_id: 10277130,
+      from: DEFAULT_AHREFS_FROM,
+      to: DEFAULT_AHREFS_TO,
+    });
+    expect(webStats.success).toBe(true);
+    expect(webStats.projectId).toBe(10277130);
+    expect(webStats.window.from).toBe('2026-10-12T00:00:00Z');
+    expect(webStats.window.to).toBe('2026-11-10T23:59:59Z');
+    expect(webStats.endpointUrl).toBe(
+      'https://api.ahrefs.com/v3/web-analytics/stats?from=2026-10-12T00%3A00%3A00Z&project_id=10277130&to=2026-11-10T23%3A59%3A59Z'
+    );
+
+    const { AI_CITED_RESPONSES_MATRIX } = await import('@/services/aiBrandRadarService');
+    expect(AI_CITED_RESPONSES_MATRIX.every((c) => !c.citedUrlPath.startsWith('/match-prediction/'))).toBe(true);
+    expect(AI_CITED_RESPONSES_MATRIX.every((c) => c.citedUrlPath !== '/banker-of-the-day')).toBe(true);
   });
 });

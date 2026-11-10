@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 
-const BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
+const BASE_URL = process.env.SITE_URL || 'https://www.predictpro.guru';
 const BUILD_DATE = new Date().toUTCString();
 const TODAY_ISO = new Date().toISOString();
 

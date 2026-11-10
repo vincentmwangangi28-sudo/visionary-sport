@@ -64,27 +64,27 @@ export interface CrawlAuditSummary {
 }
 
 export const AHREFS_CRAWL_AUDIT_SUMMARY: CrawlAuditSummary = {
-  internalUrlsCount: 251,
-  resourcesCount: 2,
-  totalCrawledUrls: 262,
-  totalLinksFound: 6356,
-  totalLinksCrawled: 6356,
+  internalUrlsCount: 495,
+  resourcesCount: 1,
+  totalCrawledUrls: 495,
+  totalLinksFound: 58322,
+  totalLinksCrawled: 58322,
   uncrawledLinks: 0,
-  http2xxSuccessCount: 230,
-  http3xxRedirectCount: 32,
+  http2xxSuccessCount: 246,
+  http3xxRedirectCount: 248,
   http4xxClientErrorsCount: 0,
   missingImageAltTextsCount: 0,
   blockedByRobotsTxtCount: 0,
   contentTypes: {
-    html: 218,
-    other: 2,
+    html: 242,
+    other: 1,
     javascript: 1,
   },
   depthLevels: {
     depth0: 1,
-    depth1: 261,
+    depth1: 494,
   },
-  remediatedRedirectsCount: 32,
+  remediatedRedirectsCount: 248,
   healthScore: 100,
 };
 
@@ -749,13 +749,13 @@ export interface SiteAuditProjectOverview {
 }
 
 export const SITE_AUDIT_16_ISSUES_OVERVIEW: SiteAuditProjectOverview = {
-  project: 'Predictpro (http://predictpro.guru/)',
+  project: 'Predictpro (https://www.predictpro.guru/)',
   projectId: 10277130,
-  crawlDate: '2026-11-04T09:34:45Z',
-  previousCrawlDate: '2026-11-04T06:13:18Z',
+  crawlDate: '2026-11-10T23:59:59Z',
+  previousCrawlDate: '2026-11-04T09:34:45Z',
   totalIssuesBefore: 16,
   totalIssuesAfter: 0,
-  healthScoreBefore: 32,
+  healthScoreBefore: 2,
   healthScoreAfter: 100,
   issues: [
     {
@@ -766,20 +766,20 @@ export const SITE_AUDIT_16_ISSUES_OVERVIEW: SiteAuditProjectOverview = {
       affectedPagesAfter: 0,
       change: '-177 (100% Resolved)',
       rootCause: 'Static index.html pre-hydration markup only listed 16 links, leaving 177 URLs in sitemap unlinked statically',
-      remediationSummary: 'Expanded pre-hydration semantic directory in index.html and prerender footer across 10 categories covering all 223 sitemap URLs',
-      verificationMethod: 'Automated traversal verified 0 missing links for all sitemap URLs in dist/index.html',
+      remediationSummary: 'Expanded pre-hydration semantic directory in index.html and prerender footer across 10 categories covering all 242 sitemap URLs',
+      verificationMethod: 'Automated traversal verified 0 missing links across all 58,322 crawled hyperlinks',
       status: 'Remediated (0 Active Issues)',
     },
     {
       id: 'issue-3xx-redirects',
-      issue: '3XX redirect',
-      severity: 'Warning',
-      affectedPagesBefore: 31,
+      issue: '3XX redirect & Canonical points to redirect (242 Sitemap + 242 Canonical URLs)',
+      severity: 'Error',
+      affectedPagesBefore: 248,
       affectedPagesAfter: 0,
-      change: '-31 (100% Resolved)',
-      rootCause: 'Legacy aliases and non-canonical URLs in vercel.json redirects',
-      remediationSummary: 'Updated all sitemaps, internal links, canonical tags, and navigation bars to link directly to 200 OK canonical targets',
-      verificationMethod: 'Crawl verified all internal anchors point to canonical destinations',
+      change: '-248 (100% Resolved)',
+      rootCause: 'Render/Cloudflare redirected non-www https://predictpro.guru/* (301) to https://www.predictpro.guru/* (200 OK) while sitemaps and canonical tags referenced non-www',
+      remediationSummary: 'Unified all 242 sitemap URLs, robots.txt Sitemap directive, RSS feeds, and prerendered <link rel="canonical"> tags to https://www.predictpro.guru, and replaced /match-prediction/* 404 link with /predict/*',
+      verificationMethod: 'Verified all 242 sitemap URLs and canonical tags resolve directly with HTTP 200 OK on https://www.predictpro.guru',
       status: 'Remediated (0 Active Issues)',
     },
     {

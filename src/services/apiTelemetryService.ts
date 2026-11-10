@@ -921,7 +921,7 @@ export async function probeSingleApiProvider(
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       const res = await fetch(
-        '/api/ahrefs-analytics?from=2026-09-30T00%3A00%3A00Z&project_id=10277130&to=2026-10-29T23%3A59%3A59Z',
+        '/api/ahrefs-analytics?from=2026-10-12T00%3A00%3A00Z&project_id=10277130&to=2026-11-10T23%3A59%3A59Z',
         { signal: controller.signal }
       );
       clearTimeout(timeout);

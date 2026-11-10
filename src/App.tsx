@@ -457,11 +457,17 @@ const DeferredGlobalOverlays = () => {
       mounted = true;
       startTransition(() => setReady(true));
     };
-    const timer = setTimeout(enable, 12000);
+    const timer = setTimeout(enable, 6000);
     window.addEventListener("scroll", enable, { passive: true, once: true });
+    window.addEventListener("pointerdown", enable, { passive: true, once: true });
+    window.addEventListener("touchstart", enable, { passive: true, once: true });
+    window.addEventListener("keydown", enable, { passive: true, once: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scroll", enable);
+      window.removeEventListener("pointerdown", enable);
+      window.removeEventListener("touchstart", enable);
+      window.removeEventListener("keydown", enable);
     };
   }, []);
 
@@ -484,18 +490,18 @@ const DeferredGlobalOverlays = () => {
           </Suspense>
         </ErrorBoundary>
       )}
-      <ErrorBoundary fallback={null}>
-        <Suspense fallback={null}>
-          <FirstVisitSignupModal />
-        </Suspense>
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
-        <Suspense fallback={null}>
-          <GuestAccountPrompt />
-        </Suspense>
-      </ErrorBoundary>
       {ready && (
         <>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <FirstVisitSignupModal />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <GuestAccountPrompt />
+            </Suspense>
+          </ErrorBoundary>
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>
               <DeferredBackgroundHooks />
@@ -565,6 +571,7 @@ const App = () => (
                             <Route path="/predict/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
                             <Route path="/match/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
                             <Route path="/matches/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
+                            <Route path="/match-prediction/:matchSlug" element={<RouteBoundary component={MatchPrediction} />} />
                             <Route path="/best-bets"     element={<RouteBoundary component={BestBets} />} />
                             <Route path="/upcoming"      element={<RouteBoundary component={UpcomingFixturesPage} />} />
                             <Route path="/upcoming-fixtures" element={<Navigate to="/upcoming" replace />} />

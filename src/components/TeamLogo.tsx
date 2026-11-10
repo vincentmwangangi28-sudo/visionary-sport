@@ -167,6 +167,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
     );
   }
 
+  const bgColor = identity.primaryColor;
+
   const logoElement = resolvedUrl ? (
     <div
       className={`relative inline-flex items-center justify-center flex-shrink-0 select-none overflow-hidden transition-all duration-200 bg-card/90 dark:bg-zinc-900 border border-border/60 dark:border-zinc-800 shadow-2xs ring-1 ring-black/5 dark:ring-white/5 ${
@@ -198,10 +200,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
         sizeConfig.container
       } ${sizeConfig.text} font-mono leading-none ${className}`}
       style={{
-        backgroundColor: identity.primaryColor,
-        backgroundImage: `linear-gradient(135deg, ${identity.primaryColor} 0%, ${
-          identity.secondaryColor === '#FFFFFF' ? '#0f172a' : identity.secondaryColor
-        } 135%)`,
+        backgroundColor: bgColor,
         color: identity.textColor,
       }}
       title={identity.name}

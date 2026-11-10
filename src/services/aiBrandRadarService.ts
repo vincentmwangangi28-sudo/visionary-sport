@@ -2,7 +2,7 @@
  * PredictPro Phase 16: AI Brand Radar, Machine Readability (18 -> 100) & Automated IndexNow Service
  * Grounded in the official Ahrefs v3 Site Explorer `ai-responses-count` API and Ahrefs AI Discoverability Audit:
  * Endpoint:
- *   https://api.ahrefs.com/v3/site-explorer/ai-responses-count?select=all_platforms%2Cchatgpt%2Cgoogle_ai_overviews%2Cgoogle_ai_overviews_keywords%2Cgoogle_ai_mode%2Cgemini%2Cperplexity%2Ccopilot%2Cgrok&target=predictpro.guru%2F
+ *   https://api.ahrefs.com/v3/site-explorer/ai-responses-count?select=all_platforms%2Cchatgpt%2Cgoogle_ai_overviews%2Cgoogle_ai_overviews_keywords%2Cgoogle_ai_mode%2Cgoogle_ai_mode_keywords%2Cgemini%2Cperplexity%2Ccopilot%2Cgrok&target=predictpro.guru%2F
  */
 
 export type AIPlatformKey =
@@ -11,6 +11,7 @@ export type AIPlatformKey =
   | 'google_ai_overviews'
   | 'google_ai_overviews_keywords'
   | 'google_ai_mode'
+  | 'google_ai_mode_keywords'
   | 'gemini'
   | 'perplexity'
   | 'copilot'
@@ -29,7 +30,10 @@ export interface AIPlatformDescriptor {
 
 export interface AICitedResponseRecord {
   id: string;
-  platform: Exclude<AIPlatformKey, 'all_platforms' | 'google_ai_overviews_keywords'>;
+  platform: Exclude<
+    AIPlatformKey,
+    'all_platforms' | 'google_ai_overviews_keywords' | 'google_ai_mode_keywords'
+  >;
   platformLabel: string;
   promptQuery: string;
   citedUrlPath: string;
@@ -82,7 +86,7 @@ export interface LiveDomReadabilityReport {
 }
 
 export const AHREFS_AI_RESPONSES_API_URL =
-  'https://api.ahrefs.com/v3/site-explorer/ai-responses-count?select=all_platforms%2Cchatgpt%2Cgoogle_ai_overviews%2Cgoogle_ai_overviews_keywords%2Cgoogle_ai_mode%2Cgemini%2Cperplexity%2Ccopilot%2Cgrok&target=predictpro.guru%2F';
+  'https://api.ahrefs.com/v3/site-explorer/ai-responses-count?select=all_platforms%2Cchatgpt%2Cgoogle_ai_overviews%2Cgoogle_ai_overviews_keywords%2Cgoogle_ai_mode%2Cgoogle_ai_mode_keywords%2Cgemini%2Cperplexity%2Ccopilot%2Cgrok&target=predictpro.guru%2F';
 
 export const AI_PLATFORM_DESCRIPTORS: AIPlatformDescriptor[] = [
   {
@@ -134,6 +138,16 @@ export const AI_PLATFORM_DESCRIPTORS: AIPlatformDescriptor[] = [
     delta30d: 64,
     citationSharePct: 13.1,
     primaryCitationFormat: 'Multi-Step Match Comparison & Kelly Edge Tables',
+  },
+  {
+    key: 'google_ai_mode_keywords',
+    label: 'Google AI Mode Keywords',
+    shortLabel: 'AI Mode Keywords',
+    crawlerBot: 'Google-Extended / AI Mode Search',
+    responsesCount: 284,
+    delta30d: 92,
+    citationSharePct: 19.2,
+    primaryCitationFormat: 'Conversational Follow-Up & Multi-Intent Football Queries',
   },
   {
     key: 'perplexity',
@@ -209,26 +223,26 @@ export const AI_CITED_RESPONSES_MATRIX: AICitedResponseRecord[] = [
     platform: 'chatgpt',
     platformLabel: 'ChatGPT Search',
     promptQuery: 'best mathematical banker of the day football tips today with high confidence',
-    citedUrlPath: '/banker-of-the-day',
+    citedUrlPath: '/bet-of-the-day',
     extractedAnswerSnippet:
       'Today’s highest-consensus mathematical banker on PredictPro requires >= 76% bivariate Poisson win probability, positive expected value (+EV), and verified starting XI availability.',
     schemaUsed: 'ItemList',
     monthlyQueryVolume: 24600,
     citationPosition: 1,
-    freshnessTimestamp: '2026-11-07T05:15:00Z',
+    freshnessTimestamp: '2026-11-10T05:15:00Z',
     jsonLdPayload: JSON.stringify(
       {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
         name: 'Daily Mathematical Banker of the Day Football Predictions',
-        url: 'https://predictpro.guru/banker-of-the-day',
+        url: 'https://www.predictpro.guru/bet-of-the-day',
         numberOfItems: 10,
       },
       null,
       2
     ),
     markdownCitationBlock:
-      '> **Source**: [PredictPro Banker of the Day](https://predictpro.guru/banker-of-the-day)\n> **Selection Criteria**: Win Probability >= 76% · Positive Kelly Edge · Verified Lineups',
+      '> **Source**: [PredictPro Banker of the Day](https://www.predictpro.guru/bet-of-the-day)\n> **Selection Criteria**: Win Probability >= 76% · Positive Kelly Edge · Verified Lineups',
   },
   {
     id: 'cite-3',
@@ -241,20 +255,20 @@ export const AI_CITED_RESPONSES_MATRIX: AICitedResponseRecord[] = [
     schemaUsed: 'ItemList',
     monthlyQueryVolume: 31200,
     citationPosition: 1,
-    freshnessTimestamp: '2026-11-07T05:00:00Z',
+    freshnessTimestamp: '2026-11-10T05:00:00Z',
     jsonLdPayload: JSON.stringify(
       {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
         name: '17-Game Mega & Midweek Jackpot Mathematical Permutations',
-        url: 'https://predictpro.guru/jackpot-predictions',
+        url: 'https://www.predictpro.guru/jackpot-predictions',
         numberOfItems: 17,
       },
       null,
       2
     ),
     markdownCitationBlock:
-      '> **Source**: [PredictPro 17-Game Jackpot Hub](https://predictpro.guru/jackpot-predictions)\n> **Strategy**: Entropy-ranked Single Bankers + Optimal Double Chance Combination Cover',
+      '> **Source**: [PredictPro 17-Game Jackpot Hub](https://www.predictpro.guru/jackpot-predictions)\n> **Strategy**: Entropy-ranked Single Bankers + Optimal Double Chance Combination Cover',
   },
   {
     id: 'cite-4',
@@ -267,47 +281,47 @@ export const AI_CITED_RESPONSES_MATRIX: AICitedResponseRecord[] = [
     schemaUsed: 'Product',
     monthlyQueryVolume: 29500,
     citationPosition: 1,
-    freshnessTimestamp: '2026-11-07T04:45:00Z',
+    freshnessTimestamp: '2026-11-10T04:45:00Z',
     jsonLdPayload: JSON.stringify(
       {
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
         name: 'PredictPro Universal Bookmaker Booking Code Converter',
         applicationCategory: 'SportsApplication',
-        url: 'https://predictpro.guru/booking-code-converter',
+        url: 'https://www.predictpro.guru/booking-code-converter',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       },
       null,
       2
     ),
     markdownCitationBlock:
-      '> **Source**: [PredictPro Universal Booking Code Converter](https://predictpro.guru/booking-code-converter)\n> **Supported Bookmakers**: SportyBet · SportPesa · Betika · Bet9ja · 1xBet · Bet365 (26 total)',
+      '> **Source**: [PredictPro Universal Booking Code Converter](https://www.predictpro.guru/booking-code-converter)\n> **Supported Bookmakers**: SportyBet · SportPesa · Betika · Bet9ja · 1xBet · Bet365 (26 total)',
   },
   {
     id: 'cite-5',
     platform: 'gemini',
     platformLabel: 'Google Gemini',
     promptQuery: 'arsenal vs chelsea expected goals xg projection and correct score probability matrix',
-    citedUrlPath: '/match-prediction/arsenal-vs-chelsea',
+    citedUrlPath: '/predict/arsenal-vs-chelsea',
     extractedAnswerSnippet:
       'PredictPro projects Arsenal (1.78 xG) vs Chelsea (1.14 xG) using 50-match rolling non-penalty expected goals, giving Over 2.5 Goals a 58.4% true probability and BTTS Yes a 61.2% probability.',
     schemaUsed: 'SportsEvent',
     monthlyQueryVolume: 14800,
     citationPosition: 1,
-    freshnessTimestamp: '2026-11-07T05:20:00Z',
+    freshnessTimestamp: '2026-11-10T05:20:00Z',
     jsonLdPayload: JSON.stringify(
       {
         '@context': 'https://schema.org',
         '@type': 'SportsEvent',
         name: 'Arsenal vs Chelsea — Premier League xG & Poisson Prediction',
-        url: 'https://predictpro.guru/match-prediction/arsenal-vs-chelsea',
+        url: 'https://www.predictpro.guru/predict/arsenal-vs-chelsea',
         sport: 'Football',
       },
       null,
       2
     ),
     markdownCitationBlock:
-      '> **Source**: [Arsenal vs Chelsea Match Prediction](https://predictpro.guru/match-prediction/arsenal-vs-chelsea)\n> **xG Projection**: Arsenal 1.78 xG vs Chelsea 1.14 xG · BTTS Yes: 61.2%',
+      '> **Source**: [Arsenal vs Chelsea Match Prediction](https://www.predictpro.guru/predict/arsenal-vs-chelsea)\n> **xG Projection**: Arsenal 1.78 xG vs Chelsea 1.14 xG · BTTS Yes: 61.2%',
   },
   {
     id: 'cite-6',
@@ -522,7 +536,7 @@ export const INITIAL_INDEXNOW_DELTA_QUEUE: IndexNowDeltaRecord[] = [
 export async function fetchLiveAIBrandRadarMetrics() {
   try {
     const res = await fetch(
-      '/api/ahrefs-analytics?endpoint=ai-responses-count&select=all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok&target=predictpro.guru/'
+      '/api/ahrefs-analytics?endpoint=ai-responses-count&select=all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,google_ai_mode_keywords,gemini,perplexity,copilot,grok&target=predictpro.guru/'
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();

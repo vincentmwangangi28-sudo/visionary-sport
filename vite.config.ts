@@ -353,7 +353,7 @@ function cronTasksPlugin(): Plugin {
               const target = parsedUrl.searchParams.get("target") || "predictpro.guru/";
               const select =
                 parsedUrl.searchParams.get("select") ||
-                "all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok";
+                "all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,google_ai_mode_keywords,gemini,perplexity,copilot,grok";
               const aiData = await handleAhrefsAIResponsesCountRequest({ target, select });
               res.setHeader("Content-Type", "application/json; charset=utf-8");
               res.setHeader("Access-Control-Allow-Origin", "*");
@@ -363,8 +363,8 @@ function cronTasksPlugin(): Plugin {
             }
 
             const project_id = parsedUrl.searchParams.get("project_id") || "10277130";
-            const from = parsedUrl.searchParams.get("from") || "2026-09-30T00:00:00Z";
-            const to = parsedUrl.searchParams.get("to") || "2026-10-29T23:59:59Z";
+            const from = parsedUrl.searchParams.get("from") || "2026-10-12T00:00:00Z";
+            const to = parsedUrl.searchParams.get("to") || "2026-11-10T23:59:59Z";
             const data = await handleAhrefsAnalyticsRequest({ project_id, from, to });
             res.setHeader("Content-Type", "application/json; charset=utf-8");
             res.setHeader("Access-Control-Allow-Origin", "*");

@@ -37,7 +37,7 @@ import type { AhrefsWebAnalyticsResponse } from '@/server/ahrefsAnalyticsHandler
 import { AHREFS_12_OPPORTUNITY_PILLARS } from '@/services/ahrefsOpportunitiesService';
 
 const CANONICAL_AHREFS_ENDPOINT =
-  'https://api.ahrefs.com/v3/web-analytics/stats?from=2026-09-30T00%3A00%3A00Z&project_id=10277130&to=2026-10-29T23%3A59%3A59Z';
+  'https://api.ahrefs.com/v3/web-analytics/stats?from=2026-10-12T00%3A00%3A00Z&project_id=10277130&to=2026-11-10T23%3A59%3A59Z';
 
 const FALLBACK_TELEMETRY: AhrefsWebAnalyticsResponse = {
   success: true,
@@ -47,35 +47,35 @@ const FALLBACK_TELEMETRY: AhrefsWebAnalyticsResponse = {
   trackerKey: 'c8s+HDjX+BXC8gS/Bj9fQw',
   endpointUrl: CANONICAL_AHREFS_ENDPOINT,
   window: {
-    from: '2026-09-30T00:00:00Z',
-    to: '2026-10-29T23:59:59Z',
+    from: '2026-10-12T00:00:00Z',
+    to: '2026-11-10T23:59:59Z',
     days: 30,
   },
   stats: {
-    visitors: 22490,
-    visits: 30140,
-    pageviews: 84620,
-    viewsPerVisit: 2.81,
-    bounceRate: 33.1,
-    avgSessionDurationSec: 228,
-    visitorsDeltaPct: 24.6,
-    pageviewsDeltaPct: 31.2,
-    bounceRateDeltaPct: -3.8,
+    visitors: 24180,
+    visits: 32410,
+    pageviews: 91240,
+    viewsPerVisit: 2.82,
+    bounceRate: 32.4,
+    avgSessionDurationSec: 234,
+    visitorsDeltaPct: 26.8,
+    pageviewsDeltaPct: 33.5,
+    bounceRateDeltaPct: -4.2,
   },
   timeseries: Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(Date.UTC(2026, 8, 30 + i));
+    const d = new Date(Date.UTC(2026, 9, 12 + i));
     const dayOfWeek = d.getUTCDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const visitors = Math.round((440 + i * 14 + Math.sin(i * 0.8) * 35) * (isWeekend ? 1.45 : 1));
+    const visitors = Math.round((460 + i * 15 + Math.sin(i * 0.8) * 35) * (isWeekend ? 1.45 : 1));
     const visits = Math.round(visitors * 1.33);
-    const pageviews = Math.round(visits * 2.8);
+    const pageviews = Math.round(visits * 2.82);
     return {
       date: d.toISOString().slice(0, 10),
       visitors,
       visits,
       pageviews,
-      bounceRate: isWeekend ? 31.2 : 34.1,
-      avgSessionDurationSec: isWeekend ? 252 : 214,
+      bounceRate: isWeekend ? 30.8 : 33.6,
+      avgSessionDurationSec: isWeekend ? 258 : 219,
     };
   }),
   topPages: [
@@ -192,12 +192,12 @@ export const AhrefsWebAnalyticsPanel: React.FC = () => {
   const fetchAhrefsStats = useCallback(
     async (preset: '30d_oct' | '14d' | '7d' = windowPreset, showToast = false) => {
       setLoading(true);
-      let from = '2026-09-30T00:00:00Z';
-      const to = '2026-10-29T23:59:59Z';
+      let from = '2026-10-12T00:00:00Z';
+      const to = '2026-11-10T23:59:59Z';
       if (preset === '14d') {
-        from = '2026-10-16T00:00:00Z';
+        from = '2026-10-28T00:00:00Z';
       } else if (preset === '7d') {
-        from = '2026-10-23T00:00:00Z';
+        from = '2026-11-04T00:00:00Z';
       }
 
       try {
@@ -290,7 +290,7 @@ export const AhrefsWebAnalyticsPanel: React.FC = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                2026-09-30 → 10-29 (30d)
+                2026-10-12 → 11-10 (30d)
               </button>
               <button
                 type="button"
