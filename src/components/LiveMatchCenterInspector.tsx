@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { TeamLogo } from '@/components/TeamLogo';
 import { LivePitchVisualizer } from '@/components/LivePitchVisualizer';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
+import { fetchDeepMatchSummary } from '@/services/autoSettlementService';
+import { RealMatchSummary, RealTeamRoster } from '@/types/prediction';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -178,20 +180,116 @@ function getClubLineupPreset(
       { number: 7, name: 'S. Gnabry', pos: 'LW', x: 64, y: 20 },
       { number: 9, name: 'H. Kane', pos: 'ST', x: 78, y: 50 },
     ];
+  } else if (lower.includes('paris saint-germain') || lower === 'psg') {
+    formation = '4-3-3';
+    manager = 'Luis Enrique';
+    rawStarters = [
+      { number: 1, name: 'G. Donnarumma', pos: 'GK', x: 8, y: 50 },
+      { number: 2, name: 'A. Hakimi', pos: 'RB', x: 24, y: 82 },
+      { number: 5, name: 'Marquinhos', pos: 'CB', x: 22, y: 62 },
+      { number: 51, name: 'W. Pacho', pos: 'CB', x: 22, y: 38 },
+      { number: 25, name: 'N. Mendes', pos: 'LB', x: 24, y: 18 },
+      { number: 17, name: 'Vitinha', pos: 'CDM', x: 42, y: 50 },
+      { number: 87, name: 'J. Neves', pos: 'CM', x: 52, y: 70 },
+      { number: 33, name: 'W. Zaïre-Emery', pos: 'CM', x: 50, y: 30 },
+      { number: 10, name: 'O. Dembélé', pos: 'RW', x: 74, y: 80 },
+      { number: 19, name: 'Lee Kang-In', pos: 'ST', x: 78, y: 50 },
+      { number: 29, name: 'B. Barcola', pos: 'LW', x: 74, y: 20 },
+    ];
+  } else if (lower.includes('inter') || lower.includes('internazionale')) {
+    formation = '3-5-2';
+    manager = 'Simone Inzaghi';
+    rawStarters = [
+      { number: 1, name: 'Y. Sommer', pos: 'GK', x: 8, y: 50 },
+      { number: 28, name: 'B. Pavard', pos: 'CB', x: 22, y: 75 },
+      { number: 15, name: 'F. Acerbi', pos: 'CB', x: 20, y: 50 },
+      { number: 95, name: 'A. Bastoni', pos: 'CB', x: 22, y: 25 },
+      { number: 2, name: 'D. Dumfries', pos: 'RWB', x: 46, y: 84 },
+      { number: 23, name: 'N. Barella', pos: 'CM', x: 48, y: 64 },
+      { number: 20, name: 'H. Çalhanoğlu', pos: 'CDM', x: 42, y: 50 },
+      { number: 22, name: 'H. Mkhitaryan', pos: 'CM', x: 48, y: 36 },
+      { number: 32, name: 'F. Dimarco', pos: 'LWB', x: 46, y: 16 },
+      { number: 9, name: 'M. Thuram', pos: 'ST', x: 76, y: 62 },
+      { number: 10, name: 'L. Martínez', pos: 'ST', x: 78, y: 38 },
+    ];
+  } else if (lower.includes('manchester city') || lower.includes('man city')) {
+    formation = '4-2-3-1';
+    manager = 'Pep Guardiola';
+    rawStarters = [
+      { number: 31, name: 'Ederson', pos: 'GK', x: 8, y: 50 },
+      { number: 82, name: 'R. Lewis', pos: 'RB', x: 24, y: 82 },
+      { number: 3, name: 'R. Dias', pos: 'CB', x: 22, y: 62 },
+      { number: 25, name: 'M. Akanji', pos: 'CB', x: 22, y: 38 },
+      { number: 24, name: 'J. Gvardiol', pos: 'LB', x: 24, y: 18 },
+      { number: 8, name: 'M. Kovačić', pos: 'CDM', x: 40, y: 62 },
+      { number: 20, name: 'B. Silva', pos: 'CM', x: 42, y: 38 },
+      { number: 26, name: 'Savinho', pos: 'RW', x: 64, y: 80 },
+      { number: 47, name: 'P. Foden', pos: 'CAM', x: 60, y: 50 },
+      { number: 11, name: 'J. Doku', pos: 'LW', x: 64, y: 20 },
+      { number: 9, name: 'E. Haaland', pos: 'ST', x: 78, y: 50 },
+    ];
+  } else if (lower.includes('liverpool')) {
+    formation = '4-2-3-1';
+    manager = 'Arne Slot';
+    rawStarters = [
+      { number: 62, name: 'C. Kelleher', pos: 'GK', x: 8, y: 50 },
+      { number: 66, name: 'T. Alexander-Arnold', pos: 'RB', x: 24, y: 82 },
+      { number: 5, name: 'I. Konaté', pos: 'CB', x: 22, y: 62 },
+      { number: 4, name: 'V. van Dijk', pos: 'CB', x: 22, y: 38 },
+      { number: 26, name: 'A. Robertson', pos: 'LB', x: 24, y: 18 },
+      { number: 38, name: 'R. Gravenberch', pos: 'CDM', x: 40, y: 62 },
+      { number: 10, name: 'A. Mac Allister', pos: 'CM', x: 42, y: 38 },
+      { number: 11, name: 'M. Salah', pos: 'RW', x: 66, y: 80 },
+      { number: 8, name: 'D. Szoboszlai', pos: 'CAM', x: 60, y: 50 },
+      { number: 7, name: 'L. Díaz', pos: 'LW', x: 66, y: 20 },
+      { number: 9, name: 'D. Núñez', pos: 'ST', x: 78, y: 50 },
+    ];
+  } else if (lower.includes('juventus')) {
+    formation = '4-2-3-1';
+    manager = 'Thiago Motta';
+    rawStarters = [
+      { number: 29, name: 'M. Di Gregorio', pos: 'GK', x: 8, y: 50 },
+      { number: 37, name: 'N. Savona', pos: 'RB', x: 24, y: 82 },
+      { number: 4, name: 'F. Gatti', pos: 'CB', x: 22, y: 62 },
+      { number: 15, name: 'P. Kalulu', pos: 'CB', x: 22, y: 38 },
+      { number: 27, name: 'A. Cambiaso', pos: 'LB', x: 24, y: 18 },
+      { number: 5, name: 'M. Locatelli', pos: 'CDM', x: 40, y: 62 },
+      { number: 19, name: 'K. Thuram', pos: 'CDM', x: 40, y: 38 },
+      { number: 7, name: 'F. Conceição', pos: 'RW', x: 64, y: 80 },
+      { number: 8, name: 'T. Koopmeiners', pos: 'CAM', x: 60, y: 50 },
+      { number: 10, name: 'K. Yıldız', pos: 'LW', x: 64, y: 20 },
+      { number: 9, name: 'D. Vlahović', pos: 'ST', x: 78, y: 50 },
+    ];
+  } else if (lower.includes('dortmund')) {
+    formation = '4-2-3-1';
+    manager = 'Nuri Şahin';
+    rawStarters = [
+      { number: 1, name: 'G. Kobel', pos: 'GK', x: 8, y: 50 },
+      { number: 26, name: 'J. Ryerson', pos: 'RB', x: 24, y: 82 },
+      { number: 3, name: 'W. Anton', pos: 'CB', x: 22, y: 62 },
+      { number: 4, name: 'N. Schlotterbeck', pos: 'CB', x: 22, y: 38 },
+      { number: 5, name: 'R. Bensebaini', pos: 'LB', x: 24, y: 18 },
+      { number: 23, name: 'E. Can', pos: 'CDM', x: 40, y: 62 },
+      { number: 13, name: 'P. Groß', pos: 'CM', x: 42, y: 38 },
+      { number: 21, name: 'D. Malen', pos: 'RW', x: 64, y: 80 },
+      { number: 10, name: 'J. Brandt', pos: 'CAM', x: 60, y: 50 },
+      { number: 43, name: 'J. Gittens', pos: 'LW', x: 64, y: 20 },
+      { number: 9, name: 'S. Guirassy', pos: 'ST', x: 78, y: 50 },
+    ];
   } else {
     const shortClub = teamName.split(' ')[0];
     rawStarters = [
-      { number: 1, name: `${shortClub} GK`, pos: 'GK', x: 8, y: 50 },
-      { number: 2, name: `${shortClub} RB`, pos: 'RB', x: 24, y: 82 },
-      { number: 4, name: `${shortClub} CB`, pos: 'CB', x: 22, y: 62 },
-      { number: 5, name: `${shortClub} CB`, pos: 'CB', x: 22, y: 38 },
-      { number: 3, name: `${shortClub} LB`, pos: 'LB', x: 24, y: 18 },
-      { number: 6, name: `${shortClub} CDM`, pos: 'CDM', x: 42, y: 50 },
-      { number: 8, name: `${shortClub} CM`, pos: 'CM', x: 52, y: 70 },
-      { number: 10, name: `${shortClub} CAM`, pos: 'CAM', x: 54, y: 30 },
-      { number: 7, name: `${shortClub} RW`, pos: 'RW', x: 74, y: 80 },
-      { number: 9, name: `${shortClub} ST`, pos: 'ST', x: 78, y: 50 },
-      { number: 11, name: `${shortClub} LW`, pos: 'LW', x: 74, y: 20 },
+      { number: 1, name: `${shortClub} #1 (GK)`, pos: 'GK', x: 8, y: 50 },
+      { number: 2, name: `${shortClub} #2 (RB)`, pos: 'RB', x: 24, y: 82 },
+      { number: 4, name: `${shortClub} #4 (CB)`, pos: 'CB', x: 22, y: 62 },
+      { number: 5, name: `${shortClub} #5 (CB)`, pos: 'CB', x: 22, y: 38 },
+      { number: 3, name: `${shortClub} #3 (LB)`, pos: 'LB', x: 24, y: 18 },
+      { number: 6, name: `${shortClub} #6 (CDM)`, pos: 'CDM', x: 42, y: 50 },
+      { number: 8, name: `${shortClub} #8 (CM)`, pos: 'CM', x: 52, y: 70 },
+      { number: 10, name: `${shortClub} #10 (CAM)`, pos: 'CAM', x: 54, y: 30 },
+      { number: 7, name: `${shortClub} #7 (RW)`, pos: 'RW', x: 74, y: 80 },
+      { number: 9, name: `${shortClub} #9 (ST)`, pos: 'ST', x: 78, y: 50 },
+      { number: 11, name: `${shortClub} #11 (LW)`, pos: 'LW', x: 74, y: 20 },
     ];
   }
 
@@ -346,18 +444,70 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
   const nextGoalHomeOdds = Number(Math.max(1.45, (homeOdds * 0.92)).toFixed(2));
   const nextGoalAwayOdds = Number(Math.max(1.85, (awayOdds * 0.78)).toFixed(2));
 
+  const [espnSummary, setEspnSummary] = useState<RealMatchSummary | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setEspnSummary(null);
+    fetchDeepMatchSummary(String(match.id), match.league)
+      .then((res) => {
+        if (mounted && res) {
+          setEspnSummary(res);
+        }
+      })
+      .catch(() => {
+        // fallback to preset
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [match.id, match.league]);
+
   const seed = useMemo(() => {
     const s = String(match.id || 'match');
     return (s.charCodeAt(0) || 7) + (s.charCodeAt(s.length - 1) || 13);
   }, [match.id]);
 
+  const overlayEspnRoster = (
+    preset: ReturnType<typeof getClubLineupPreset>,
+    roster?: RealTeamRoster
+  ) => {
+    if (!roster || !Array.isArray(roster.starters) || roster.starters.length < 7) {
+      return preset;
+    }
+    const mergedStarters = preset.starters.map((slot, idx) => {
+      const realPlayer = roster.starters[idx];
+      if (!realPlayer) return slot;
+      const parsedJersey = parseInt(String(realPlayer.jersey || ''), 10);
+      return {
+        ...slot,
+        number: !isNaN(parsedJersey) && parsedJersey > 0 ? parsedJersey : slot.number,
+        name: realPlayer.name || slot.name,
+        pos: realPlayer.position || slot.pos,
+      };
+    });
+    return {
+      ...preset,
+      formation: roster.formation || preset.formation,
+      starters: mergedStarters,
+    };
+  };
+
   const homeLineup = useMemo(
-    () => getClubLineupPreset(match.home_team, true, match.home_score ?? 0, stats.events, seed),
-    [match.home_team, match.home_score, stats.events, seed]
+    () =>
+      overlayEspnRoster(
+        getClubLineupPreset(match.home_team, true, match.home_score ?? 0, stats.events, seed),
+        espnSummary?.homeRoster
+      ),
+    [match.home_team, match.home_score, stats.events, seed, espnSummary?.homeRoster]
   );
   const awayLineup = useMemo(
-    () => getClubLineupPreset(match.away_team, false, match.away_score ?? 0, stats.events, seed + 5),
-    [match.away_team, match.away_score, stats.events, seed]
+    () =>
+      overlayEspnRoster(
+        getClubLineupPreset(match.away_team, false, match.away_score ?? 0, stats.events, seed + 5),
+        espnSummary?.awayRoster
+      ),
+    [match.away_team, match.away_score, stats.events, seed, espnSummary?.awayRoster]
   );
 
   // Full 12-Metric Opta / FotMob Comparison Rows

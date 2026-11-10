@@ -672,7 +672,10 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 
     const homeTeam = (homeComp?.team as Record<string, string>)?.displayName || (homeComp?.team as Record<string, string>)?.name;
     const awayTeam = (awayComp?.team as Record<string, string>)?.displayName || (awayComp?.team as Record<string, string>)?.name;
-    if (!homeTeam || !awayTeam) continue;
+    if (!homeTeam || !awayTeam || /\btbd\b/i.test(homeTeam) || /\btbd\b/i.test(awayTeam)) continue;
+    const evUid = String(ev.uid || '');
+    const evSlug = String((ev.season as Record<string, unknown>)?.slug || '');
+    if (evUid.includes('~l:5487~') || evUid.includes('~l:5499~') || /ncaa/i.test(evSlug)) continue;
 
     const homeLogo = (homeComp?.team as Record<string, string>)?.logo || null;
     const awayLogo = (awayComp?.team as Record<string, string>)?.logo || null;
@@ -996,7 +999,10 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
 
     const homeTeam = (homeComp?.team as Record<string, string>)?.displayName || (homeComp?.team as Record<string, string>)?.name;
     const awayTeam = (awayComp?.team as Record<string, string>)?.displayName || (awayComp?.team as Record<string, string>)?.name;
-    if (!homeTeam || !awayTeam) continue;
+    if (!homeTeam || !awayTeam || /\btbd\b/i.test(homeTeam) || /\btbd\b/i.test(awayTeam)) continue;
+    const evUid = String(ev.uid || '');
+    const evSlug = String((ev.season as Record<string, unknown>)?.slug || '');
+    if (evUid.includes('~l:5487~') || evUid.includes('~l:5499~') || /ncaa/i.test(evSlug)) continue;
 
     const homeLogo = (homeComp?.team as Record<string, string>)?.logo || null;
     const awayLogo = (awayComp?.team as Record<string, string>)?.logo || null;

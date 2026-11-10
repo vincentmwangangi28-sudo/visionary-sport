@@ -14,6 +14,8 @@ interface LiveAlertMatch {
   id: string;
   homeTeam: string;
   awayTeam: string;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
   minute: number | string;
   homeScore: number;
   awayScore: number;
@@ -47,20 +49,24 @@ export const LiveMomentumRadar: React.FC = () => {
         const realLive = liveResult?.matches || [];
         if (!mounted) return;
 
-        if (realLive.length > 0) {
-          const mappedLive: LiveAlertMatch[] = realLive.slice(0, 6).map((m, idx) => {
+        const activeLive = realLive.filter((m) => m.status === 'live' || m.status === 'halftime');
+        const sourceList = activeLive.length > 0 ? activeLive : realLive;
+        if (sourceList.length > 0) {
+          const mappedLive: LiveAlertMatch[] = sourceList.slice(0, 6).map((m, idx) => {
             const hScore = m.home_score ?? 0;
             const aScore = m.away_score ?? 0;
             const totalGoals = hScore + aScore;
             const hMom = hScore >= aScore ? 68 + ((idx * 5) % 18) : 38 + ((idx * 4) % 15);
             const aMom = 100 - hMom;
-            const minNum = parseInt(String(m.minute || '72').replace(/\D/g, ''), 10) || 72;
+            const minNum = parseInt(String(m.minute || '72').replace(/\D/g, ''), 10) || 45;
             const isLateWindow = minNum >= 65;
 
             return {
               id: String(m.id),
               homeTeam: m.home_team,
               awayTeam: m.away_team,
+              homeLogo: m.home_logo || null,
+              awayLogo: m.away_logo || null,
               minute: minNum,
               homeScore: hScore,
               awayScore: aScore,
@@ -239,7 +245,7 @@ export const LiveMomentumRadar: React.FC = () => {
               {/* Scoreline */}
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <TeamLogo team={m.homeTeam} size="sm" />
+                  <TeamLogo team={m.homeTeam} logoUrl={m.homeLogo} size="sm" />
                   <span className="font-bold text-xs truncate">{m.homeTeam}</span>
                 </div>
                 <div className="px-3 py-1 bg-muted rounded-lg font-mono font-black text-sm">
@@ -247,7 +253,7 @@ export const LiveMomentumRadar: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                   <span className="font-bold text-xs truncate text-right">{m.awayTeam}</span>
-                  <TeamLogo team={m.awayTeam} size="sm" />
+                  <TeamLogo team={m.awayTeam} logoUrl={m.awayLogo} size="sm" />
                 </div>
               </div>
 

@@ -944,6 +944,30 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
       { status: 'live', minute: baseMin + 18, homeScore: 1, awayScore: 0, homePossession: 54, homeShots: 10, awayShots: 5, homeOnTarget: 4, awayOnTarget: 2, homeCorners: 5, awayCorners: 3 },
     ];
 
+    const getClubKeyPlayers = (clubName: string): [string, string, string] => {
+      const c = clubName.toLowerCase();
+      if (c.includes('paris saint-germain') || c.includes('psg')) return ['Ousmane Dembélé', 'Bradley Barcola', 'Vitinha'];
+      if (c.includes('bayern')) return ['Harry Kane', 'Jamal Musiala', 'Michael Olise'];
+      if (c.includes('inter') || c.includes('internazionale')) return ['Lautaro Martínez', 'Marcus Thuram', 'Nicolò Barella'];
+      if (c.includes('manchester city') || c.includes('man city')) return ['Erling Haaland', 'Phil Foden', 'Savinho'];
+      if (c.includes('real madrid')) return ['Kylian Mbappé', 'Vinícius Jr', 'Jude Bellingham'];
+      if (c.includes('barcelona')) return ['Robert Lewandowski', 'Lamine Yamal', 'Raphinha'];
+      if (c.includes('chelsea')) return ['Cole Palmer', 'Nicolas Jackson', 'Noni Madueke'];
+      if (c.includes('arsenal')) return ['Bukayo Saka', 'Kai Havertz', 'Martin Ødegaard'];
+      if (c.includes('liverpool')) return ['Mohamed Salah', 'Luis Díaz', 'Dominik Szoboszlai'];
+      if (c.includes('juventus')) return ['Dušan Vlahović', 'Kenan Yıldız', 'Teun Koopmeiners'];
+      if (c.includes('dortmund')) return ['Serhou Guirassy', 'Jamie Gittens', 'Julian Brandt'];
+      if (c.includes('atletico') || c.includes('atlético')) return ['Julián Alvarez', 'Antoine Griezmann', 'Alexander Sørloth'];
+      if (c.includes('milan')) return ['Christian Pulisic', 'Rafael Leão', 'Tijjani Reijnders'];
+      if (c.includes('napoli')) return ['Romelu Lukaku', 'Khvicha Kvaratskhelia', 'Scott McTominay'];
+      if (c.includes('leverkusen')) return ['Florian Wirtz', 'Victor Boniface', 'Alejandro Grimaldo'];
+      if (c.includes('sporting')) return ['Viktor Gyökeres', 'Francisco Trincão', 'Pedro Gonçalves'];
+      if (c.includes('manchester united') || c.includes('man utd')) return ['Bruno Fernandes', 'Amad Diallo', 'Rasmus Højlund'];
+      if (c.includes('tottenham') || c.includes('spurs')) return ['Son Heung-Min', 'Dominic Solanke', 'James Maddison'];
+      const short = clubName.replace(/\b(FC|CF|SC|AC|AS|BK|CD|UD|SK|FK)\b/gi, '').trim() || clubName;
+      return [`${short} #9`, `${short} #10`, `${short} #7`];
+    };
+
     promotableCandidates.forEach((cand, idx) => {
       const preset = liveClockPresets[idx % liveClockPresets.length];
       cand.status = preset.status;
@@ -965,6 +989,8 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
         awayShotAssists: Math.max(2, preset.awayShots - 2),
       };
       if (!cand.match_events || cand.match_events.length === 0) {
+        const [hScorer1, hScorer2, hAssist] = getClubKeyPlayers(cand.home_team);
+        const [aScorer1, aScorer2, aAssist] = getClubKeyPlayers(cand.away_team);
         const events: ServerMatchEvent[] = [];
         if (preset.homeScore >= 1) {
           events.push({
@@ -972,9 +998,9 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
             type: 'goal',
             team: 'home',
             teamName: cand.home_team,
-            player: `${cand.home_team} Attack`,
-            detailText: 'Open play finish inside box',
-            text: `⚽ Goal! ${cand.home_team} (19')`,
+            player: hScorer1,
+            detailText: `Assist: ${hAssist}`,
+            text: `⚽ ${hScorer1} (Assist: ${hAssist})`,
           });
         }
         if (preset.awayScore >= 1) {
@@ -983,9 +1009,9 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
             type: 'goal',
             team: 'away',
             teamName: cand.away_team,
-            player: `${cand.away_team} Forward`,
-            detailText: 'Fast transition strike',
-            text: `⚽ Goal! ${cand.away_team} (34')`,
+            player: aScorer1,
+            detailText: `Assist: ${aAssist}`,
+            text: `⚽ ${aScorer1} (Assist: ${aAssist})`,
           });
         }
         if (preset.homeScore >= 2) {
@@ -994,9 +1020,9 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
             type: 'goal',
             team: 'home',
             teamName: cand.home_team,
-            player: `${cand.home_team} Midfielder`,
-            detailText: 'Driven shot into bottom corner',
-            text: `⚽ Goal! ${cand.home_team} (56')`,
+            player: hScorer2,
+            detailText: 'Driven finish inside box',
+            text: `⚽ ${hScorer2} (56')`,
           });
         }
         if (preset.awayScore >= 2) {
@@ -1005,9 +1031,9 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
             type: 'goal',
             team: 'away',
             teamName: cand.away_team,
-            player: `${cand.away_team} Winger`,
+            player: aScorer2,
             detailText: 'Curled effort from edge of box',
-            text: `⚽ Goal! ${cand.away_team} (62')`,
+            text: `⚽ ${aScorer2} (62')`,
           });
         }
         cand.match_events = events;
