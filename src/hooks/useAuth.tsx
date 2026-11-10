@@ -38,24 +38,41 @@ function hasStoredAuthSession(): boolean {
   return false;
 }
 
-/** Sync Google avatar + display name into our profiles table on first OAuth login */
-async function syncOAuthProfile(user: User) {
-  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
-  const fullName = (user.user_metadata?.full_name ?? user.user_metadata?.name) as string | undefined;
+/**
+ * Sync user metadata (Google avatar + display name) and stamp `updated_at` (Last Seen)
+ * in `public.profiles` on sign-up, sign-in, and active session checks.
+ * Note: Only updates non-protected columns (`updated_at`, `full_name`, `avatar_url`)
+ * to comply with the `protect_profile_sensitive_fields` trigger.
+ */
+export async function syncUserProfileActivity(user: User) {
+  if (!user?.id) return;
+  try {
+    const supabase = await getSupabase();
+    const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+    const fullName = (user.user_metadata?.full_name ?? user.user_metadata?.name) as string | undefined;
+    const nowIso = new Date().toISOString();
 
-  if (!avatarUrl && !fullName) return;
+    const updatePayload: Record<string, string> = {
+      updated_at: nowIso,
+    };
+    if (avatarUrl) {
+      updatePayload.avatar_url = avatarUrl;
+    }
+    if (fullName && fullName.trim()) {
+      updatePayload.full_name = fullName.trim();
+    }
 
-  const supabase = await getSupabase();
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-      ...(fullName ? { full_name: fullName } : {}),
-    })
-    .eq('id', user.id)
-    .is('avatar_url', null);
+    const { error } = await supabase
+      .from('profiles')
+      .update(updatePayload)
+      .eq('id', user.id);
 
-  if (error) console.error('Profile sync error:', error);
+    if (error) {
+      console.warn('[Auth] Profile activity sync warning:', error.message);
+    }
+  } catch (err) {
+    console.warn('[Auth] Failed to sync profile activity:', err);
+  }
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -73,19 +90,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (initialized || unsubscribed) return;
       initialized = true;
       try {
-        if (unsubscribed) return;
-        if (!hasStoredAuthSession()) {
-          setLoading(false);
-          return;
-        }
         const supabase = await getSupabase();
         if (unsubscribed) return;
-        const { data: { session: activeSession } } = await supabase.auth.getSession();
-        if (unsubscribed) return;
-        setSession(activeSession);
-        setUser(activeSession?.user ?? null);
-        setLoading(false);
 
+        // CRITICAL: Always attach onAuthStateChange even if hasStoredAuthSession() is initially false,
+        // so that signing up or signing in on /auth immediately updates user & session across the app.
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, nextSession) => {
             if (unsubscribed) return;
@@ -93,20 +102,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(nextSession?.user ?? null);
             setLoading(false);
 
-            if (event === 'SIGNED_IN' && nextSession?.user) {
-              const provider = nextSession.user.app_metadata?.provider;
-              if (provider === 'google') {
-                await syncOAuthProfile(nextSession.user);
-              }
-              if (typeof window !== 'undefined' && (window as Window & { gtag?: (...a: unknown[]) => void }).gtag) {
-                (window as Window & { gtag?: (...a: unknown[]) => void }).gtag?.('event', 'login', {
-                  method: provider ?? 'email',
-                });
+            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') && nextSession?.user) {
+              await syncUserProfileActivity(nextSession.user);
+              if (event === 'SIGNED_IN') {
+                const provider = nextSession.user.app_metadata?.provider;
+                if (typeof window !== 'undefined' && (window as Window & { gtag?: (...a: unknown[]) => void }).gtag) {
+                  (window as Window & { gtag?: (...a: unknown[]) => void }).gtag?.('event', 'login', {
+                    method: provider ?? 'email',
+                  });
+                }
               }
             }
           }
         );
         authSub = subscription;
+
+        if (!hasStoredAuthSession()) {
+          setLoading(false);
+          return;
+        }
+
+        const { data: { session: activeSession } } = await supabase.auth.getSession();
+        if (unsubscribed) return;
+        setSession(activeSession);
+        setUser(activeSession?.user ?? null);
+        setLoading(false);
+
+        if (activeSession?.user) {
+          syncUserProfileActivity(activeSession.user).catch(() => {});
+        }
       } catch {
         if (!unsubscribed) setLoading(false);
       }
@@ -134,10 +158,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       throw error;
     }
-    if (data.session) {
-      setSession(data.session);
-      setUser(data.session.user);
+    if (!data?.session || !data?.user) {
+      const standbyErr = new Error('Unable to establish authentication session. Please check your connection and try again.');
+      notifyToast.error(standbyErr.message);
+      throw standbyErr;
     }
+    setSession(data.session);
+    setUser(data.session.user);
+    await syncUserProfileActivity(data.session.user);
     notifyToast.success('Welcome back!');
     navigate('/');
   }, [navigate]);
@@ -167,9 +195,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: cleanEmail,
           password: cleanPassword,
         });
-        if (!signInErr && signInData.session) {
+        if (!signInErr && signInData?.session) {
           setSession(signInData.session);
           setUser(signInData.session.user);
+          await syncUserProfileActivity(signInData.session.user);
           notifyToast.success('Welcome back! Signed you into your account. 🎉');
           navigate('/');
           return;
@@ -184,9 +213,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     }
 
-    if (data.session) {
+    // Ensure an explicit password sign-in is performed or session is active so Supabase auth.users.last_sign_in_at is always populated
+    if (data?.session) {
       setSession(data.session);
       setUser(data.session.user);
+      await syncUserProfileActivity(data.session.user);
       notifyToast.success('Account created! Welcome to PredictPro 🎉');
       navigate('/');
       return;
@@ -200,6 +231,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!signInErr && signInData?.session) {
         setSession(signInData.session);
         setUser(signInData.session.user);
+        await syncUserProfileActivity(signInData.session.user);
         notifyToast.success('Account created! Welcome to PredictPro 🎉');
         navigate('/');
         return;

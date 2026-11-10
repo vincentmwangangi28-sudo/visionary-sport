@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, syncUserProfileActivity } from '@/hooks/useAuth';
 import { SEO } from '@/components/SEO';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, Lock, Eye, EyeOff, Zap, ArrowLeft, Gift } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff, Zap, ArrowLeft, Gift, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 
@@ -26,6 +26,8 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const [googleAccountDetected, setGoogleAccountDetected] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => { if (user) navigate('/'); }, [user, navigate]);
@@ -39,6 +41,28 @@ export default function Auth() {
   const isGmailAddress = (addr: string) => {
     const lower = addr.trim().toLowerCase();
     return lower.endsWith('@gmail.com') || lower.endsWith('@googlemail.com');
+  };
+
+  const handleResendVerification = async () => {
+    const targetEmail = (pendingVerificationEmail || email).trim().toLowerCase();
+    if (!targetEmail) return;
+    setResendingEmail(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: targetEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) throw error;
+      toast.success(`Verification email resent to ${targetEmail}. Please check your inbox and spam folder.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to resend verification email';
+      toast.error(msg);
+    } finally {
+      setResendingEmail(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -103,6 +127,7 @@ export default function Auth() {
             });
 
             if (!directSignInErr && directSignIn?.session) {
+              await syncUserProfileActivity(directSignIn.session.user);
               toast.success('Account found! Welcome back 🎉');
               navigate('/');
               return;
@@ -121,38 +146,69 @@ export default function Auth() {
           throw signUpErr;
         }
 
-        if (refCode && signUpData.user) {
+        // Detect obfuscated duplicate signup (Supabase returns identities: [] when email already exists and Confirm Email is enabled)
+        const isExistingObfuscatedUser =
+          Array.isArray(signUpData?.user?.identities) && signUpData.user.identities.length === 0;
+
+        if (refCode && signUpData?.user && !isExistingObfuscatedUser) {
           callEdgeFn('apply-referral-on-signup', {
             referral_code: refCode,
             new_user_id: signUpData.user.id,
           }).catch(() => {});
         }
 
-        // If a session was returned immediately (auto-confirmation enabled in Supabase)
-        if (signUpData.session) {
-          toast.success('Account created successfully! Welcome to PredictPro 🎉');
-          navigate('/');
-          return;
-        }
-
-        // Auto-signin fallback
+        // Always attempt signInWithPassword after signUp so that:
+        // 1. Supabase `auth.users.last_sign_in_at` ("Last Sign In" in backend) is guaranteed to be stamped immediately.
+        // 2. If the user already had an account with this password, they are signed right in.
+        // 3. `public.profiles.updated_at` ("Last Seen") is immediately synced.
         const { data: autoLogin, error: autoLoginErr } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password: cleanPassword,
         });
 
         if (!autoLoginErr && autoLogin?.session) {
+          await syncUserProfileActivity(autoLogin.session.user);
           toast.success('Account created successfully! Welcome to PredictPro 🎉');
           navigate('/');
           return;
         }
 
-        toast.success('Account created! Check your email to verify if needed.');
-        navigate('/');
-        return;
+        // If signUp already returned an active session directly
+        if (signUpData?.session && signUpData?.user) {
+          await syncUserProfileActivity(signUpData.user);
+          toast.success('Account created successfully! Welcome to PredictPro 🎉');
+          navigate('/');
+          return;
+        }
+
+        if (isExistingObfuscatedUser) {
+          if (isGmailAddress(cleanEmail)) {
+            setGoogleAccountDetected(true);
+            toast.info('This Gmail is already registered! Click "Continue with Google" above or sign in.');
+          } else {
+            toast.error('An account with this email already exists. Please sign in or reset your password.');
+          }
+          setMode('login');
+          return;
+        }
+
+        const autoErrText = (autoLoginErr?.message || '').toLowerCase();
+        if (autoErrText.includes('email not confirmed') || !signUpData?.session) {
+          setPendingVerificationEmail(cleanEmail);
+          setMode('login');
+          toast.success('Account created! Please click the verification link sent to your email to complete your first sign-in.');
+          return;
+        }
+
+        throw autoLoginErr || new Error('Account created, please sign in below.');
       }
 
       // LOGIN MODE
+      if (!cleanPassword) {
+        toast.error('Please enter your password');
+        return;
+      }
+
       const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password: cleanPassword,
@@ -165,19 +221,27 @@ export default function Auth() {
           toast.error('Invalid credentials. If you created this account with Google, click "Continue with Google" above.');
           return;
         }
+        if (msg.toLowerCase().includes('email not confirmed')) {
+          setPendingVerificationEmail(cleanEmail);
+        }
         throw loginErr;
       }
 
-      if (loginData?.session) {
-        toast.success('Welcome back! 🎉');
-        navigate('/');
+      if (!loginData?.session || !loginData?.user) {
+        throw new Error('Unable to establish a login session. Please check your internet connection and try again.');
       }
+
+      setPendingVerificationEmail(null);
+      await syncUserProfileActivity(loginData.session.user);
+      toast.success('Welcome back! 🎉');
+      navigate('/');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Authentication failed';
       if (msg.includes('Invalid login')) {
         toast.error('Wrong email or password.');
-      } else if (msg.includes('Email not confirmed')) {
-        toast.error('Please verify your email first.');
+      } else if (msg.toLowerCase().includes('email not confirmed')) {
+        setPendingVerificationEmail(cleanEmail);
+        toast.error('Please verify your email first. You can resend the confirmation link below.');
       } else if (msg.includes('already registered')) {
         toast.error('Account already exists. Please sign in.');
         setMode('login');
@@ -308,6 +372,28 @@ export default function Auth() {
                     <div className="mt-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-foreground space-y-1">
                       <p className="font-semibold text-primary">Google Account Detected</p>
                       <p>This email is linked to Google sign-in. Click the highlighted <b>"Sign In with Google"</b> button above to log in instantly.</p>
+                    </div>
+                  )}
+                  {pendingVerificationEmail && (
+                    <div className="mt-2.5 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-foreground space-y-2">
+                      <div className="flex items-center gap-1.5 font-semibold text-emerald-500">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        <span>Email Verification Pending</span>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        We sent a confirmation link to <b className="text-foreground">{pendingVerificationEmail}</b>. Click the link in your email to activate your session and record your first sign-in.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={resendingEmail}
+                        onClick={handleResendVerification}
+                        className="w-full h-8 text-xs gap-1.5 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${resendingEmail ? 'animate-spin' : ''}`} />
+                        {resendingEmail ? 'Sending Confirmation Link...' : 'Resend Verification Email'}
+                      </Button>
                     </div>
                   )}
                 </div>

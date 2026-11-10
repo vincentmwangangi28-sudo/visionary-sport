@@ -112,9 +112,27 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
         ? input.toString()
         : (input as Request)?.url || '';
 
+  const isAuthEndpoint = urlStr.includes('/auth/v1/');
   const isHead = init?.method?.toUpperCase() === 'HEAD';
   const restMatch = urlStr.match(/\/rest\/v1\/([a-zA-Z0-9_]+)/);
   const isRestTable = Boolean(restMatch);
+
+  // CRITICAL: Never intercept or return synthetic standby responses for Supabase Auth endpoints (/auth/v1/*).
+  // Auth sign-up, sign-in, session refresh, and password recovery must always reach Supabase Auth directly
+  // with a generous timeout so account creation and last_sign_in_at updates never silently fail.
+  if (isAuthEndpoint) {
+    const authController =
+      !init?.signal && typeof AbortController !== 'undefined'
+        ? new AbortController()
+        : null;
+    const authTimeoutId = authController ? setTimeout(() => authController.abort(), 15000) : null;
+    try {
+      const fetchInit = authController ? { ...init, signal: authController.signal } : init;
+      return await fetch(input, fetchInit);
+    } finally {
+      if (authTimeoutId) clearTimeout(authTimeoutId);
+    }
+  }
 
   if (restMatch && UNPROVISIONED_FALLBACK_TABLES.has(restMatch[1])) {
     return createSyntheticStandbyResponse(isHead, true);
@@ -130,7 +148,7 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
     !init?.signal && typeof AbortController !== 'undefined'
       ? new AbortController()
       : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 4500) : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 6500) : null;
 
   try {
     const fetchInit = controller ? { ...init, signal: controller.signal } : init;
@@ -139,47 +157,31 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
       if (res.status === 404) {
         UNPROVISIONED_FALLBACK_TABLES.add(restMatch[1]);
       } else {
-        supabaseNetworkCooldownUntil = Date.now() + 5 * 60 * 1000;
+        supabaseNetworkCooldownUntil = Date.now() + 60 * 1000;
       }
       return createSyntheticStandbyResponse(isHead, true);
     }
     return res;
   } catch {
-    // Activate 5-minute circuit breaker so @supabase/supabase-js never loops 4x retries on network/DNS drops
-    supabaseNetworkCooldownUntil = Date.now() + 5 * 60 * 1000;
+    // Activate 60-second circuit breaker for non-auth REST tables only
+    supabaseNetworkCooldownUntil = Date.now() + 60 * 1000;
     return createSyntheticStandbyResponse(isHead, isRestTable);
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
   }
 };
 
-function hasStoredAuthSession(): boolean {
-  if (typeof window === 'undefined' || !window.localStorage) return false;
-  try {
-    for (let i = 0; i < window.localStorage.length; i++) {
-      const k = window.localStorage.key(i);
-      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
-        return true;
-      }
-    }
-  } catch {
-    return false;
-  }
-  return false;
-}
-
 /**
  * Creates an instance of the Supabase client given resolved credentials
  */
 function createClientInstance(url: string, key: string): SupabaseClient<Database> {
   try {
-    const hasSession = hasStoredAuthSession();
     return createClient<Database>(url, key, {
       auth: {
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
         persistSession: true,
-        autoRefreshToken: hasSession,
-        detectSessionInUrl: typeof window !== 'undefined' && window.location.search.includes('code='),
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
         flowType: 'pkce',
       },
       global: {

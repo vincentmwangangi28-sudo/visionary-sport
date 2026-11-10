@@ -257,14 +257,15 @@ export function AdminUsersTab() {
                 variant="outline" 
                 size="sm" 
                 onClick={() => {
-                  const headers = ['User ID', 'Full Name', 'Email', 'Plan', 'Coin Balance', 'Created At'];
+                  const headers = ['User ID', 'Full Name', 'Email', 'Plan', 'Coin Balance', 'Created At', 'Last Seen / Active'];
                   const rows = filtered.map(u => [
                     `"${u.id}"`,
                     `"${(u.full_name || '').replace(/"/g, '""')}"`,
                     `"${u.email}"`,
                     `"${u.subscriptionPlan || 'free'}"`,
                     `"${u.coins}"`,
-                    `"${u.created_at}"`
+                    `"${u.created_at}"`,
+                    `"${u.updated_at || u.created_at}"`
                   ]);
                   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
                   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -309,20 +310,21 @@ export function AdminUsersTab() {
                     <th className="px-4 py-3">Subscription</th>
                     <th className="px-4 py-3">Coin Balance</th>
                     <th className="px-4 py-3">Registered</th>
+                    <th className="px-4 py-3">Last Seen / Sign In</th>
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      <td colSpan={7} className="py-12 text-center text-muted-foreground">
                         <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-primary" />
                         Loading user accounts...
                       </td>
                     </tr>
                   ) : filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      <td colSpan={7} className="py-12 text-center text-muted-foreground">
                         No user profiles matched your query.
                       </td>
                     </tr>
@@ -330,6 +332,10 @@ export function AdminUsersTab() {
                     filtered.map((user) => {
                       const isVincent = isPrimaryAdminUser(user.email);
                       const isUserAdmin = isVincent || adminRoles[user.id] === 'admin' || adminRoles[user.email.toLowerCase()] === 'admin';
+                      const lastSeenIso = user.updated_at || user.created_at;
+                      const lastSeenDate = lastSeenIso ? new Date(lastSeenIso) : null;
+                      const diffMinutes = lastSeenDate ? Math.floor((Date.now() - lastSeenDate.getTime()) / 60000) : null;
+                      const isRecentlyActive = diffMinutes !== null && diffMinutes < 60 * 24;
 
                       return (
                         <tr key={user.id} className="hover:bg-muted/30 transition-colors">
@@ -388,6 +394,32 @@ export function AdminUsersTab() {
                               day: 'numeric',
                               year: 'numeric'
                             })}
+                          </td>
+                          <td className="px-4 py-3">
+                            {lastSeenDate ? (
+                              <div className="flex flex-col">
+                                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                                  <span
+                                    className={`h-2 w-2 rounded-full ${
+                                      isRecentlyActive ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+                                    }`}
+                                  />
+                                  {lastSeenDate.toLocaleDateString(undefined, {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground font-mono pl-3.5">
+                                  {lastSeenDate.toLocaleTimeString(undefined, {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground italic">Pending confirmation</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">

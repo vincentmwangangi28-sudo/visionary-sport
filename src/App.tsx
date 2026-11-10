@@ -484,18 +484,18 @@ const DeferredGlobalOverlays = () => {
           </Suspense>
         </ErrorBoundary>
       )}
+      <ErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <FirstVisitSignupModal />
+        </Suspense>
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <GuestAccountPrompt />
+        </Suspense>
+      </ErrorBoundary>
       {ready && (
         <>
-          <ErrorBoundary fallback={null}>
-            <Suspense fallback={null}>
-              <GuestAccountPrompt />
-            </Suspense>
-          </ErrorBoundary>
-          <ErrorBoundary fallback={null}>
-            <Suspense fallback={null}>
-              <FirstVisitSignupModal />
-            </Suspense>
-          </ErrorBoundary>
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>
               <DeferredBackgroundHooks />
