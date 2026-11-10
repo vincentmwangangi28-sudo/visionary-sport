@@ -6,6 +6,7 @@ import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 import {
@@ -265,13 +266,22 @@ export const PlayerPropsLabPage: React.FC = () => {
                       className={isSelected ? 'bg-primary/5' : 'hover:bg-muted/30 transition-colors'}
                     >
                       <td className="py-3.5 px-4">
-                        <p className="font-bold text-foreground">
-                          {row.playerName}{' '}
-                          <span className="text-muted-foreground font-normal">({row.position})</span>
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {row.team} · {row.league}
-                        </p>
+                        <div className="flex items-center gap-2.5">
+                          <PlayerAvatar
+                            name={row.playerName}
+                            team={row.team}
+                            size="sm"
+                          />
+                          <div>
+                            <p className="font-bold text-foreground">
+                              {row.playerName}{' '}
+                              <span className="text-muted-foreground font-normal">({row.position})</span>
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {row.team} · {row.league}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <p className="font-semibold text-foreground">vs {row.opponent}</p>
@@ -371,9 +381,17 @@ export const PlayerPropsLabPage: React.FC = () => {
                   Custom Player Prop Poisson Calculator
                 </h2>
               </div>
-              <span className="text-xs text-muted-foreground truncate max-w-[130px]">
-                {playerName}
-              </span>
+              <div className="flex items-center gap-2">
+                <PlayerAvatar
+                  name={playerName}
+                  team={activePlayer.team}
+                  size="xs"
+                  showClubBadge={false}
+                />
+                <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
+                  {playerName}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3.5">
@@ -567,7 +585,15 @@ export const PlayerPropsLabPage: React.FC = () => {
                   <tbody className="divide-y divide-border font-mono tabular-nums">
                     <tr>
                       <td className="py-3.5 px-4 font-sans font-bold text-foreground">
-                        {playerName} — 1+ Shot on Target
+                        <div className="flex items-center gap-2">
+                          <PlayerAvatar
+                            name={playerName}
+                            team={activePlayer.team}
+                            size="xs"
+                            showClubBadge={false}
+                          />
+                          <span>{playerName} — 1+ Shot on Target</span>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-foreground">
                         {propCalc.prob1PlusSotPct.toFixed(1)}%
@@ -608,7 +634,15 @@ export const PlayerPropsLabPage: React.FC = () => {
 
                     <tr>
                       <td className="py-3.5 px-4 font-sans font-bold text-foreground">
-                        {playerName} — 2+ Shots on Target
+                        <div className="flex items-center gap-2">
+                          <PlayerAvatar
+                            name={playerName}
+                            team={activePlayer.team}
+                            size="xs"
+                            showClubBadge={false}
+                          />
+                          <span>{playerName} — 2+ Shots on Target</span>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-foreground">
                         {propCalc.prob2PlusSotPct.toFixed(1)}%
@@ -648,7 +682,15 @@ export const PlayerPropsLabPage: React.FC = () => {
 
                     <tr>
                       <td className="py-3.5 px-4 font-sans font-bold text-foreground">
-                        {playerName} — Anytime Goalscorer
+                        <div className="flex items-center gap-2">
+                          <PlayerAvatar
+                            name={playerName}
+                            team={activePlayer.team}
+                            size="xs"
+                            showClubBadge={false}
+                          />
+                          <span>{playerName} — Anytime Goalscorer</span>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-foreground">
                         {propCalc.probAnytimeGoalPct.toFixed(1)}%

@@ -42,6 +42,7 @@ export interface ServerRosterPlayer {
   jersey: string;
   position: string;
   starter: boolean;
+  photoUrl?: string;
   subbedIn?: boolean;
   subbedOut?: boolean;
   goals?: number;
@@ -1620,12 +1621,19 @@ export async function fetchServerMatchSummary(
         const substitutes: ServerRosterPlayer[] = [];
 
         for (const p of rawRoster) {
+          const headshotHref =
+            typeof p.athlete?.headshot?.href === 'string'
+              ? p.athlete.headshot.href
+              : typeof p.jerseyImages?.[0]?.href === 'string'
+              ? p.jerseyImages[0].href
+              : undefined;
           const playerObj: ServerRosterPlayer = {
             id: String(p.athlete?.id || p.jersey || Math.random()),
             name: String(p.athlete?.displayName || p.athlete?.fullName || 'Player'),
             jersey: String(p.jersey || '-'),
             position: String(p.position?.abbreviation || p.position?.displayName || 'M'),
             starter: Boolean(p.starter),
+            photoUrl: headshotHref,
             subbedIn: Boolean(p.subbedIn),
             subbedOut: Boolean(p.subbedOut),
           };

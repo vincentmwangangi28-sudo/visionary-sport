@@ -29,6 +29,7 @@ export interface MatchRosterPlayer {
   jersey: string;
   position: string;
   starter: boolean;
+  photoUrl?: string;
   subbedIn?: boolean;
   subbedOut?: boolean;
   goals?: number;
@@ -42,6 +43,8 @@ export interface MatchTeamRoster {
   starters: MatchRosterPlayer[];
   substitutes: MatchRosterPlayer[];
 }
+
+export type RealTeamRoster = MatchTeamRoster;
 
 export interface MatchSummaryCommentary {
   minute: string;

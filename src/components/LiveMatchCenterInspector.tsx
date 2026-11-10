@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { TeamLogo } from '@/components/TeamLogo';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { LivePitchVisualizer } from '@/components/LivePitchVisualizer';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
 import { fetchDeepMatchSummary } from '@/services/autoSettlementService';
@@ -78,6 +79,7 @@ interface RatedLineupPlayer {
   assists: number;
   yellowCard: boolean;
   redCard: boolean;
+  photoUrl?: string;
   subbedOut?: string;
   isMotm?: boolean;
 }
@@ -484,6 +486,7 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
         number: !isNaN(parsedJersey) && parsedJersey > 0 ? parsedJersey : slot.number,
         name: realPlayer.name || slot.name,
         pos: realPlayer.position || slot.pos,
+        photoUrl: realPlayer.photoUrl || slot.photoUrl,
       };
     });
     return {
@@ -822,12 +825,16 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                 short: matchReferee.primaryCardLine,
                 odds: matchReferee.primaryCardOdds,
                 conf: matchReferee.primaryCardConfidence,
+                playerName: undefined as string | undefined,
+                team: undefined as string | undefined,
               },
-              ...matchPlayerProps.slice(0, 2).map((p) => ({
+              ...matchPlayerProps.slice(0, 2).map((p, idx) => ({
                 label: p.marketLabel,
                 short: p.shortLabel,
                 odds: p.odds,
                 conf: p.confidence,
+                playerName: p.playerName,
+                team: idx === 0 ? match.home_team : match.away_team,
               })),
             ].map((item) => {
               const selected = isInSlip(matchLabel, item.label);
@@ -836,13 +843,23 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                   key={item.short}
                   type="button"
                   onClick={() => handleAddLiveBet(item.label, item.odds, item.conf)}
-                  className={`px-2 py-1 rounded-md border text-[10px] font-mono flex items-center justify-between gap-1 transition-all cursor-pointer ${
+                  className={`px-2 py-1 rounded-md border text-[10px] font-mono flex items-center justify-between gap-1.5 transition-all cursor-pointer ${
                     selected
                       ? 'border-primary bg-primary/15 text-primary font-bold'
                       : 'border-border/70 bg-background/70 hover:border-primary/40 text-foreground'
                   }`}
                 >
-                  <span className="truncate text-muted-foreground">{item.short}</span>
+                  <span className="flex items-center gap-1.5 min-w-0 truncate text-muted-foreground">
+                    {item.playerName && (
+                      <PlayerAvatar
+                        name={item.playerName}
+                        team={item.team}
+                        size="xs"
+                        showClubBadge={false}
+                      />
+                    )}
+                    <span className="truncate">{item.short}</span>
+                  </span>
                   <span className="font-bold tabular-nums text-primary shrink-0">{item.odds.toFixed(2)}</span>
                 </button>
               );
@@ -926,6 +943,13 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                     const isHomeEvent = ev.team === 'home';
                     const isGoal = ev.type === 'goal' || ev.type === 'penalty' || ev.type === 'own_goal';
                     const isRed = ev.type === 'red_card';
+                    const eventClub = isHomeEvent ? match.home_team : match.away_team;
+                    const cleanedEventPlayer =
+                      ev.player ||
+                      ev.text
+                        .replace(/^(?:⚽|🟨|🟥|🔄)+\s*(?:\((?:OG|PEN)\)\s*)?/iu, '')
+                        .replace(/\s*\(.*?\)\s*$/g, '')
+                        .trim();
                     return (
                       <div
                         key={idx}
@@ -941,12 +965,18 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                           <span className="font-mono text-xs font-black px-2 py-0.5 rounded bg-muted text-foreground tabular-nums shrink-0">
                             {ev.minute}
                           </span>
+                          <PlayerAvatar
+                            name={cleanedEventPlayer}
+                            team={eventClub}
+                            size="sm"
+                            showClubBadge={false}
+                          />
                           <div className="min-w-0">
                             <div className="text-xs font-bold text-foreground truncate">
                               {ev.text}
                             </div>
                             <div className="text-[10px] text-muted-foreground">
-                              {isHomeEvent ? match.home_team : match.away_team}
+                              {eventClub}
                               {isGoal ? ' · Official Goal Verified' : ''}
                             </div>
                           </div>
@@ -1111,11 +1141,21 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                       className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group"
                     >
                       <div className="relative">
-                        <div className="w-6 h-6 rounded-full bg-emerald-600 border-2 border-white text-white text-[10px] font-mono font-black flex items-center justify-center shadow">
-                          {p.number}
+                        <div className="rounded-full ring-2 ring-emerald-400 shadow">
+                          <PlayerAvatar
+                            name={p.name}
+                            team={match.home_team}
+                            photoUrl={p.photoUrl}
+                            jerseyNumber={p.number}
+                            size="xs"
+                            showClubBadge={false}
+                          />
                         </div>
+                        <span className="absolute -bottom-1 -right-2 px-1 rounded-full bg-emerald-700 text-white text-[8px] font-mono font-black border border-white/60 leading-tight z-20">
+                          {p.number}
+                        </span>
                         <span
-                          className={`absolute -top-2 -right-3 px-1 rounded text-[9px] font-mono font-black border ${getRatingBadgeClass(
+                          className={`absolute -top-2 -right-3 px-1 rounded text-[9px] font-mono font-black border z-20 ${getRatingBadgeClass(
                             p.rating
                           )}`}
                         >
@@ -1123,12 +1163,12 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                           {p.isMotm ? '★' : ''}
                         </span>
                         {p.goals > 0 && (
-                          <span className="absolute -bottom-1 -left-2 text-[10px]" title={`${p.goals} Goal(s)`}>
+                          <span className="absolute -bottom-1 -left-2 text-[10px] z-20" title={`${p.goals} Goal(s)`}>
                             ⚽
                           </span>
                         )}
                       </div>
-                      <span className="mt-0.5 px-1 rounded bg-slate-950/80 text-white text-[9px] font-semibold whitespace-nowrap max-w-[68px] truncate">
+                      <span className="mt-1 px-1 rounded bg-slate-950/85 text-white text-[9px] font-semibold whitespace-nowrap max-w-[68px] truncate">
                         {p.name}
                       </span>
                     </div>
@@ -1146,11 +1186,21 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                       className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
                     >
                       <div className="relative">
-                        <div className="w-6 h-6 rounded-full bg-sky-600 border-2 border-white text-white text-[10px] font-mono font-black flex items-center justify-center shadow">
-                          {p.number}
+                        <div className="rounded-full ring-2 ring-sky-400 shadow">
+                          <PlayerAvatar
+                            name={p.name}
+                            team={match.away_team}
+                            photoUrl={p.photoUrl}
+                            jerseyNumber={p.number}
+                            size="xs"
+                            showClubBadge={false}
+                          />
                         </div>
+                        <span className="absolute -bottom-1 -right-2 px-1 rounded-full bg-sky-700 text-white text-[8px] font-mono font-black border border-white/60 leading-tight z-20">
+                          {p.number}
+                        </span>
                         <span
-                          className={`absolute -top-2 -right-3 px-1 rounded text-[9px] font-mono font-black border ${getRatingBadgeClass(
+                          className={`absolute -top-2 -right-3 px-1 rounded text-[9px] font-mono font-black border z-20 ${getRatingBadgeClass(
                             p.rating
                           )}`}
                         >
@@ -1158,12 +1208,12 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                           {p.isMotm ? '★' : ''}
                         </span>
                         {p.goals > 0 && (
-                          <span className="absolute -bottom-1 -left-2 text-[10px]" title={`${p.goals} Goal(s)`}>
+                          <span className="absolute -bottom-1 -left-2 text-[10px] z-20" title={`${p.goals} Goal(s)`}>
                             ⚽
                           </span>
                         )}
                       </div>
-                      <span className="mt-0.5 px-1 rounded bg-slate-950/80 text-white text-[9px] font-semibold whitespace-nowrap max-w-[68px] truncate">
+                      <span className="mt-1 px-1 rounded bg-slate-950/85 text-white text-[9px] font-semibold whitespace-nowrap max-w-[68px] truncate">
                         {p.name}
                       </span>
                     </div>
@@ -1188,7 +1238,15 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                     {side.data.starters.map((p) => (
                       <div key={p.number} className="flex items-center justify-between text-[11px] py-0.5">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="font-mono text-[10px] text-muted-foreground w-4">{p.number}</span>
+                          <PlayerAvatar
+                            name={p.name}
+                            team={side.club}
+                            photoUrl={p.photoUrl}
+                            jerseyNumber={p.number}
+                            size="xs"
+                            showClubBadge={false}
+                          />
+                          <span className="font-mono text-[10px] text-muted-foreground w-4">#{p.number}</span>
                           <span className="font-semibold text-foreground truncate">{p.name}</span>
                           <span className="text-[9px] font-mono text-muted-foreground">({p.pos})</span>
                           {p.goals > 0 && <span>⚽</span>}

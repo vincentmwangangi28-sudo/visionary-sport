@@ -4,6 +4,7 @@ import {
   fetchDeepMatchSummary,
   evaluateMarketOutcome,
 } from '@/services/autoSettlementService';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { Users, MessageSquareText, TrendingDown, CheckCircle2, XCircle, ShieldCheck, Activity } from 'lucide-react';
 
 interface MatchDeepSummaryPanelProps {
@@ -181,6 +182,14 @@ export const MatchDeepSummaryPanel: React.FC<MatchDeepSummaryPanelProps> = ({
                             className="flex items-center justify-between py-0.5 px-1.5 rounded hover:bg-muted/40"
                           >
                             <div className="flex items-center gap-2 min-w-0">
+                              <PlayerAvatar
+                                name={p.name}
+                                team={roster.teamName}
+                                photoUrl={p.photoUrl}
+                                jerseyNumber={Number(p.jersey) || undefined}
+                                size="xs"
+                                showClubBadge={false}
+                              />
                               <span className="w-5 text-muted-foreground font-bold">#{p.jersey}</span>
                               <span className="font-sans font-medium text-foreground truncate">
                                 {p.name}
@@ -193,15 +202,28 @@ export const MatchDeepSummaryPanel: React.FC<MatchDeepSummaryPanelProps> = ({
                     </div>
                     {roster.substitutes.length > 0 && (
                       <div className="pt-1.5 border-t border-border/40">
-                        <p className="text-[10px] text-muted-foreground mb-1">
-                          Bench ({roster.substitutes.length}):{' '}
-                          <span className="text-foreground/80">
-                            {roster.substitutes
-                              .slice(0, 7)
-                              .map((s) => `#${s.jersey} ${s.name}`)
-                              .join(' · ')}
-                          </span>
+                        <p className="text-[10px] text-muted-foreground mb-1.5">
+                          Bench ({roster.substitutes.length}):
                         </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {roster.substitutes.slice(0, 7).map((s) => (
+                            <span
+                              key={s.id}
+                              className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-background/70 border border-border/50 text-[10px] text-foreground/90"
+                            >
+                              <PlayerAvatar
+                                name={s.name}
+                                team={roster.teamName}
+                                photoUrl={s.photoUrl}
+                                jerseyNumber={Number(s.jersey) || undefined}
+                                size="xs"
+                                showClubBadge={false}
+                              />
+                              <span className="font-mono text-muted-foreground">#{s.jersey}</span>
+                              <span className="truncate max-w-[90px]">{s.name}</span>
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

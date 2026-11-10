@@ -62,6 +62,62 @@ function getClubLiveStars(clubName: string, isHome: boolean): Array<{ playerName
       { playerName: 'Alessandro Bastoni', role: 'CB', number: 95 },
     ];
   }
+  if (lower.includes('paris') || lower.includes('psg')) {
+    return [
+      { playerName: 'Ousmane Dembélé', role: 'RW', number: 10 },
+      { playerName: 'Bradley Barcola', role: 'LW', number: 29 },
+      { playerName: 'Vitinha', role: 'CM', number: 17 },
+    ];
+  }
+  if (lower.includes('juventus')) {
+    return [
+      { playerName: 'Dušan Vlahović', role: 'ST', number: 9 },
+      { playerName: 'Kenan Yıldız', role: 'LW', number: 10 },
+      { playerName: 'Teun Koopmeiners', role: 'CAM', number: 8 },
+    ];
+  }
+  if (lower.includes('dortmund')) {
+    return [
+      { playerName: 'Serhou Guirassy', role: 'ST', number: 9 },
+      { playerName: 'Julian Brandt', role: 'CAM', number: 10 },
+      { playerName: 'Gregor Kobel', role: 'GK', number: 1 },
+    ];
+  }
+  if (lower.includes('sporting')) {
+    return [
+      { playerName: 'Viktor Gyökeres', role: 'ST', number: 9 },
+      { playerName: 'Pedro Gonçalves', role: 'CAM', number: 8 },
+      { playerName: 'Morten Hjulmand', role: 'CDM', number: 42 },
+    ];
+  }
+  if (lower.includes('milan')) {
+    return [
+      { playerName: 'Christian Pulisic', role: 'RW', number: 11 },
+      { playerName: 'Rafael Leão', role: 'LW', number: 10 },
+      { playerName: 'Mike Maignan', role: 'GK', number: 16 },
+    ];
+  }
+  if (lower.includes('napoli')) {
+    return [
+      { playerName: 'Romelu Lukaku', role: 'ST', number: 11 },
+      { playerName: 'Khvicha Kvaratskhelia', role: 'LW', number: 77 },
+      { playerName: 'Scott McTominay', role: 'CM', number: 8 },
+    ];
+  }
+  if (lower.includes('atletico') || lower.includes('atlético')) {
+    return [
+      { playerName: 'Julián Alvarez', role: 'ST', number: 19 },
+      { playerName: 'Antoine Griezmann', role: 'CF', number: 7 },
+      { playerName: 'Rodrigo De Paul', role: 'CM', number: 5 },
+    ];
+  }
+  if (lower.includes('leverkusen')) {
+    return [
+      { playerName: 'Florian Wirtz', role: 'CAM', number: 10 },
+      { playerName: 'Victor Boniface', role: 'ST', number: 22 },
+      { playerName: 'Granit Xhaka', role: 'CDM', number: 34 },
+    ];
+  }
   if (lower.includes('gor mahia')) {
     return [
       { playerName: 'Austin Odhiambo', role: 'CAM', number: 10 },
@@ -147,6 +203,9 @@ export function computeTacticalPitchData(props: LivePitchVisualizerProps) {
   const homeAttackZone = Math.round((remaining * homeTilt) / 100);
   const awayAttackZone = remaining - homeAttackZone;
 
+  const homeStars = getClubLiveStars(safeHome, true);
+  const awayStars = getClubLiveStars(safeAway, false);
+
   // Deterministic Shot Map Points
   const shots: ShotEventPoint[] = [];
   const totalHomeShots = Math.max(props.homeScore + 2, ((seed % 5) + 3));
@@ -167,7 +226,7 @@ export function computeTacticalPitchData(props: LivePitchVisualizerProps) {
       y: 24 + ((i * 17 + seed) % 52),
       xg,
       outcome: isGoal ? 'goal' : isOnTarget ? 'on_target' : 'blocked',
-      player: `${safeHome.split(' ')[0]} #${9 + (i % 4)}`,
+      player: homeStars[i % homeStars.length].playerName,
     });
   }
 
@@ -186,7 +245,7 @@ export function computeTacticalPitchData(props: LivePitchVisualizerProps) {
       y: 25 + ((i * 19 + seed) % 50),
       xg,
       outcome: isGoal ? 'goal' : isOnTarget ? 'on_target' : 'blocked',
-      player: `${safeAway.split(' ')[0]} #${7 + (i % 5)}`,
+      player: awayStars[i % awayStars.length].playerName,
     });
   }
 
@@ -309,9 +368,6 @@ export function computeTacticalPitchData(props: LivePitchVisualizerProps) {
 
   const homeMvpRating = Number(Math.min(9.6, 7.2 + props.homeScore * 0.65 + props.homeXG * 0.35).toFixed(1));
   const awayMvpRating = Number(Math.min(9.5, 7.0 + props.awayScore * 0.65 + props.awayXG * 0.35).toFixed(1));
-
-  const homeStars = getClubLiveStars(safeHome, true);
-  const awayStars = getClubLiveStars(safeAway, false);
 
   const playerRatings = {
     homeFormation: seed % 2 === 0 ? '4-3-3 High Press' : '4-2-3-1 Vertical',
@@ -545,6 +601,12 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
                 <Badge variant="outline" className="text-[10px] font-mono">
                   {selectedShot.minute}&apos;
                 </Badge>
+                <PlayerAvatar
+                  name={selectedShot.player}
+                  team={selectedShot.team === 'home' ? props.homeTeam : props.awayTeam}
+                  size="xs"
+                  showClubBadge={false}
+                />
                 <span className="font-bold text-foreground">{selectedShot.player}</span>
                 <span className="text-muted-foreground">
                   ({selectedShot.outcome === 'goal' ? '⚽ Goal' : selectedShot.outcome === 'on_target' ? 'Shot on Target' : 'Blocked / Off-Target'})
