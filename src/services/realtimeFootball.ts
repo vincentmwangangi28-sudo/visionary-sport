@@ -362,10 +362,11 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
       };
     }
 
-    // 0. Query internal proxy /api/football?type=live first
+    // 0. Query internal proxy /api/football?type=live first (if hosted with serverless backend)
     try {
       const apiRes = await fetch('/api/football?type=live');
-      if (apiRes.ok) {
+      const ct = apiRes.headers.get('content-type') || '';
+      if (apiRes.ok && ct.includes('application/json')) {
         const json = await apiRes.json();
         if (json.success && Array.isArray(json.matches) && json.matches.length > 0) {
           const liveCount = json.matches.filter((m: NormalizedMatch) => m.status === 'live' || m.status === 'halftime').length;
@@ -378,14 +379,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
         }
       }
     } catch {
-      // Network drop on same-origin proxy: place ESPN host in cooldown to prevent 22-request storm
-      setHostCooldown('site.api.espn.com');
-      return {
-        matches: [],
-        source: 'offline_standby',
-        liveCount: 0,
-        lastUpdated: new Date().toISOString(),
-      };
+      // Static host or proxy unavailable — continue to direct ESPN pipeline below
     }
 
     const matches: NormalizedMatch[] = [];
@@ -895,11 +889,12 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
       return getOfflineOrFallbackList();
     }
 
-    // 0. Query internal proxy /api/football endpoint first (instant official matches, bypasses client browser CORS/Akamai blocks)
+    // 0. Query internal proxy /api/football endpoint first (if hosted with serverless backend)
     try {
       const q = leagueFilter && leagueFilter !== 'All' ? `?type=upcoming&league=${encodeURIComponent(leagueFilter)}` : '?type=upcoming';
       const apiRes = await fetch(`/api/football${q}`);
-      if (apiRes.ok) {
+      const ct = apiRes.headers.get('content-type') || '';
+      if (apiRes.ok && ct.includes('application/json')) {
         const json = await apiRes.json();
         if (json.success && Array.isArray(json.fixtures) && json.fixtures.length > 0) {
           const nowMs = Date.now();
@@ -913,9 +908,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
         }
       }
     } catch {
-      // Network/DNS drop on same-origin /api/football: do not storm 45 ESPN URLs while offline
-      setHostCooldown('site.api.espn.com');
-      return getOfflineOrFallbackList();
+      // Static host or proxy unavailable — continue to direct ESPN pipeline below
     }
 
   let selectedLeagues = LEAGUES_LIST;

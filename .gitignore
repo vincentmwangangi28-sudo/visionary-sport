@@ -34,3 +34,7 @@ dist-ssr
 .env
 .env.local
 .data/
+bun.lock
+bun.lockb
+.wrangler/
+

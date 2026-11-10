@@ -230,19 +230,34 @@ export const usePredictions = (
 
       if (!isBrowserOffline) {
         try {
-          const url =
-            league && league !== 'All'
-              ? `/api/football?type=upcoming&league=${encodeURIComponent(league)}`
-              : '/api/football?type=upcoming';
-          const res = await fetch(url, {
-            headers: { Accept: 'application/json' },
-          });
-          if (res.ok) {
-            const json = await res.json();
-            if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
-              for (const item of json.fixtures as Prediction[]) {
-                pushIfValidUpcoming(item);
-              }
+          let json: any = null;
+          try {
+            const url =
+              league && league !== 'All'
+                ? `/api/football?type=upcoming&league=${encodeURIComponent(league)}`
+                : '/api/football?type=upcoming';
+            const res = await fetch(url, {
+              headers: { Accept: 'application/json' },
+            });
+            const ct = res.headers.get('content-type') || '';
+            if (res.ok && ct.includes('application/json')) {
+              json = await res.json();
+            }
+          } catch {
+            // Static host — invoke handleFootballRequest directly
+          }
+
+          if (!json) {
+            const { handleFootballRequest } = await import('@/server/footballHandler');
+            json = await handleFootballRequest({
+              type: 'upcoming',
+              league: league && league !== 'All' ? league : undefined,
+            });
+          }
+
+          if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
+            for (const item of json.fixtures as Prediction[]) {
+              pushIfValidUpcoming(item);
             }
           }
         } catch {

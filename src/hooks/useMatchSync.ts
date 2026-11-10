@@ -264,11 +264,11 @@ export function useMatchSync() {
     let updatedCount = 0;
 
     try {
-      // 1. Primary path: trigger the daily predictions cron API endpoint + direct jackpot cron
+      // 1. Primary path: trigger the daily predictions cron API endpoint ONLY when explicitly forced
       let cronSuccess = false;
       let serverNetworkFailed = false;
 
-      if (Date.now() >= cronApiCooldownUntil) {
+      if (forced && Date.now() >= cronApiCooldownUntil) {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 4500);

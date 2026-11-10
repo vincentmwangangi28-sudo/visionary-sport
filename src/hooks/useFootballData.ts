@@ -369,59 +369,71 @@ async function fetchLiveFixturesQuery(leagueId?: number | string): Promise<ApiFo
     }
   }
 
-  // 3. Primary server-side real-time ESPN scoreboard + match events + statistics (/api/football?type=live)
+  // 3. Primary real-time ESPN scoreboard + match events + statistics (/api/football?type=live or direct handleFootballRequest on static hosts like Render)
   try {
-    const res = await fetch('/api/football?type=live', {
-      headers: { Accept: 'application/json' },
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (Array.isArray(json?.matches) && json.matches.length > 0) {
-        let serverList = json.matches as Array<Record<string, any>>;
-        if (leagueId && leagueId !== 'all') {
-          const foundLeague = LEAGUES_LIST.find(
-            (l) => l.apiFootballId === Number(leagueId) || l.name.toLowerCase() === String(leagueId).toLowerCase()
-          );
-          const filterStr = foundLeague ? foundLeague.name.toLowerCase() : String(leagueId).toLowerCase();
-          const filtered = serverList.filter((m) => String(m.league || '').toLowerCase().includes(filterStr));
-          if (filtered.length > 0) {
-            serverList = filtered;
-          }
-        }
-        return serverList.map((m) => ({
-          id: String(m.id),
-          home_team: String(m.home_team),
-          away_team: String(m.away_team),
-          home_score: m.home_score ?? null,
-          away_score: m.away_score ?? null,
-          status: m.status || 'upcoming',
-          minute: m.minute ?? null,
-          league: String(m.league || 'International'),
-          match_date: String(m.match_date || new Date().toISOString()),
-          home_logo: m.home_logo ?? null,
-          away_logo: m.away_logo ?? null,
-          prediction: m.prediction,
-          confidence: m.confidence,
-          home_odds: m.home_odds,
-          draw_odds: m.draw_odds,
-          away_odds: m.away_odds,
-          home_odds_open: m.home_odds_open,
-          draw_odds_open: m.draw_odds_open,
-          away_odds_open: m.away_odds_open,
-          odds_movement_pct: m.odds_movement_pct,
-          clv_edge_pct: m.clv_edge_pct,
-          home_form: m.home_form,
-          away_form: m.away_form,
-          home_record: m.home_record,
-          away_record: m.away_record,
-          over_under_line: m.over_under_line,
-          sportsbook_line: m.sportsbook_line,
-          match_events: Array.isArray(m.match_events) ? m.match_events : [],
-          match_stats: m.match_stats,
-          venue: m.venue,
-          is_realtime: true,
-        }));
+    let json: any = null;
+    try {
+      const res = await fetch('/api/football?type=live', {
+        headers: { Accept: 'application/json' },
+      });
+      const ct = res.headers.get('content-type') || '';
+      if (res.ok && ct.includes('application/json')) {
+        json = await res.json();
       }
+    } catch {
+      // Static host or proxy unavailable — use direct handleFootballRequest below
+    }
+
+    if (!json) {
+      const { handleFootballRequest } = await import('@/server/footballHandler');
+      json = await handleFootballRequest({ type: 'live' });
+    }
+
+    if (Array.isArray(json?.matches) && json.matches.length > 0) {
+      let serverList = json.matches as Array<Record<string, any>>;
+      if (leagueId && leagueId !== 'all') {
+        const foundLeague = LEAGUES_LIST.find(
+          (l) => l.apiFootballId === Number(leagueId) || l.name.toLowerCase() === String(leagueId).toLowerCase()
+        );
+        const filterStr = foundLeague ? foundLeague.name.toLowerCase() : String(leagueId).toLowerCase();
+        const filtered = serverList.filter((m) => String(m.league || '').toLowerCase().includes(filterStr));
+        if (filtered.length > 0) {
+          serverList = filtered;
+        }
+      }
+      return serverList.map((m) => ({
+        id: String(m.id),
+        home_team: String(m.home_team),
+        away_team: String(m.away_team),
+        home_score: m.home_score ?? null,
+        away_score: m.away_score ?? null,
+        status: m.status || 'upcoming',
+        minute: m.minute ?? null,
+        league: String(m.league || 'International'),
+        match_date: String(m.match_date || new Date().toISOString()),
+        home_logo: m.home_logo ?? null,
+        away_logo: m.away_logo ?? null,
+        prediction: m.prediction,
+        confidence: m.confidence,
+        home_odds: m.home_odds,
+        draw_odds: m.draw_odds,
+        away_odds: m.away_odds,
+        home_odds_open: m.home_odds_open,
+        draw_odds_open: m.draw_odds_open,
+        away_odds_open: m.away_odds_open,
+        odds_movement_pct: m.odds_movement_pct,
+        clv_edge_pct: m.clv_edge_pct,
+        home_form: m.home_form,
+        away_form: m.away_form,
+        home_record: m.home_record,
+        away_record: m.away_record,
+        over_under_line: m.over_under_line,
+        sportsbook_line: m.sportsbook_line,
+        match_events: Array.isArray(m.match_events) ? m.match_events : [],
+        match_stats: m.match_stats,
+        venue: m.venue,
+        is_realtime: true,
+      }));
     }
   } catch {
     // Fallback to client-side pipeline below

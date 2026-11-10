@@ -125,18 +125,30 @@ export const useUpcomingMatches = () => {
     try {
       const combined: UpcomingMatch[] = [];
 
-      // 1. Primary: Server-side ESPN real-time upcoming fixtures with live DraftKings odds & team form
+      // 1. Primary: Real-time ESPN upcoming fixtures with live DraftKings odds & team form
       try {
-        const res = await fetch('/api/football?type=upcoming', {
-          headers: { Accept: 'application/json' },
-        });
-        if (res.ok) {
-          const json = await res.json();
-          if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
-            for (const f of json.fixtures as Prediction[]) {
-              const m = toUpcomingMatch(f, true);
-              if (m) combined.push(m);
-            }
+        let json: any = null;
+        try {
+          const res = await fetch('/api/football?type=upcoming', {
+            headers: { Accept: 'application/json' },
+          });
+          const ct = res.headers.get('content-type') || '';
+          if (res.ok && ct.includes('application/json')) {
+            json = await res.json();
+          }
+        } catch {
+          // Static host — use direct handleFootballRequest below
+        }
+
+        if (!json) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          json = await handleFootballRequest({ type: 'upcoming' });
+        }
+
+        if (Array.isArray(json?.fixtures) && json.fixtures.length > 0) {
+          for (const f of json.fixtures as Prediction[]) {
+            const m = toUpcomingMatch(f, true);
+            if (m) combined.push(m);
           }
         }
       } catch {

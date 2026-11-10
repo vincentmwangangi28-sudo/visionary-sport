@@ -44,11 +44,13 @@ else
   info "Remote added: $REPO_URL"
 fi
 
-# ── 4. Verify .env is gitignored ─────────────────────────────
+# ── 4. Verify .env and stale bun.lock are removed from git tracking ──
 if git ls-files --error-unmatch .env &>/dev/null 2>&1; then
   info "Removing .env from git tracking..."
   git rm --cached .env
 fi
+rm -f bun.lock bun.lockb
+git rm --cached bun.lock bun.lockb &>/dev/null 2>&1 || true
 
 # ── 5. Stage and commit ──────────────────────────────────────
 info "Staging all changes..."
@@ -58,26 +60,11 @@ git add -A
 if git diff --cached --quiet; then
   ok "Nothing new to commit — already up to date."
 else
-  git commit -m "feat: Google OAuth, ErrorBoundary, paginated predictions, DB indexes, secured cron/webhooks, tests
+  git commit -m "fix: remove stale bun.lock for CI/CD and add Worker assets config
 
-- Google OAuth login/signup via Supabase (signInWithGoogle in useAuth)
-- OAuth profile sync: avatar + display name saved to profiles table
-- Updated handle_new_user trigger to support Google metadata
-- ErrorBoundary wrapping entire app
-- Centralized queryKeys (src/lib/queryKeys.ts)
-- useLiveMatches: React Query with 30s staleTime/refetchInterval
-- usePredictions: paginated (10/page), prefetches next page
-- PredictionCard: radial SVG confidence gauge (🟢🟡🔴)
-- useFreeTierLimit hook: 3 free predictions/day for non-premium
-- SEO component with Open Graph tags for WhatsApp sharing
-- New edge function: update-prediction-results (closes result loop)
-- mpesa-webhook: HMAC-SHA256 signature verification
-- cron functions: CRON_SECRET header guard
-- DB indexes: predictions, user_predictions, transactions
-- Vitest setup with 3 unit test files
-- GA4 funnel events: prediction_unlocked, payment_success, free_limit_hit
-- TypeScript strict mode enabled
-- .env removed from git, .env.example added"
+- Remove stale bun.lock that caused bun install --frozen-lockfile failure
+- Add src/worker.ts and wrangler.toml [assets] config for npx wrangler deploy
+- Maintain full Vercel, Render, and Cloudflare Pages compatibility"
   ok "Committed"
 fi
 

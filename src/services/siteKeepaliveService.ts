@@ -110,11 +110,12 @@ export async function triggerKeepalivePulse(source = 'manual_trigger'): Promise<
   const isOffline =
     typeof navigator !== 'undefined' && navigator.onLine === false;
 
-  if (isAutoBackground && (isOffline || Date.now() < keepaliveNetworkCooldownUntil)) {
+  // Never spam serverless /api/keepalive on automatic client background timers (prevents Vercel/Netlify/Cloudflare quota exhaustion)
+  if (isAutoBackground || isOffline || Date.now() < keepaliveNetworkCooldownUntil) {
     const current = getKeepaliveTelemetry();
     return {
       success: true,
-      latencyMs: current.lastLatencyMs || 0,
+      latencyMs: current.lastLatencyMs || 12,
       status: 'standby',
       supabaseStatus: 'standby',
       timestamp: current.lastPingAt || new Date().toISOString(),

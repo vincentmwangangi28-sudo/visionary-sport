@@ -93,16 +93,28 @@ export async function fetchOfficialFinishedResults(force = false): Promise<Offic
   }
 
   try {
-    const res = await fetch('/api/football?type=results', {
-      headers: { Accept: 'application/json' },
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (Array.isArray(json?.results) && json.results.length > 0) {
-        const list = json.results as OfficialFinishedMatch[];
-        cachedFinishedMatches = { timestamp: now, data: list };
-        return list;
+    let json: any = null;
+    try {
+      const res = await fetch('/api/football?type=results', {
+        headers: { Accept: 'application/json' },
+      });
+      const ct = res.headers.get('content-type') || '';
+      if (res.ok && ct.includes('application/json')) {
+        json = await res.json();
       }
+    } catch {
+      // Static host — invoke handleFootballRequest directly below
+    }
+
+    if (!json) {
+      const { handleFootballRequest } = await import('@/server/footballHandler');
+      json = await handleFootballRequest({ type: 'results' });
+    }
+
+    if (Array.isArray(json?.results) && json.results.length > 0) {
+      const list = json.results as OfficialFinishedMatch[];
+      cachedFinishedMatches = { timestamp: now, data: list };
+      return list;
     }
   } catch {
     // ignore network error
@@ -200,17 +212,34 @@ export async function fetchDeepMatchSummary(
   }
 
   try {
-    const qs = new URLSearchParams({
-      type: 'summary',
-      eventId: cleanKey,
-    });
-    if (league) qs.set('league', league);
+    let json: any = null;
+    try {
+      const qs = new URLSearchParams({
+        type: 'summary',
+        eventId: cleanKey,
+      });
+      if (league) qs.set('league', league);
 
-    const res = await fetch(`/api/football?${qs.toString()}`, {
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
+      const res = await fetch(`/api/football?${qs.toString()}`, {
+        headers: { Accept: 'application/json' },
+      });
+      const ct = res.headers.get('content-type') || '';
+      if (res.ok && ct.includes('application/json')) {
+        json = await res.json();
+      }
+    } catch {
+      // Static host — invoke handleFootballRequest directly below
+    }
+
+    if (!json) {
+      const { handleFootballRequest } = await import('@/server/footballHandler');
+      json = await handleFootballRequest({
+        type: 'summary',
+        eventId: cleanKey,
+        league,
+      });
+    }
+
     if (json?.success && json.summary) {
       const summary = json.summary as RealMatchSummary;
       summaryMemoryCache.set(cleanKey, { timestamp: now, data: summary });

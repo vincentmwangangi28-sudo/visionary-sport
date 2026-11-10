@@ -2,11 +2,14 @@
 // Fetches 100% real official matches, DraftKings opening/closing moneyline odds, team form, statistics,
 // starting lineups, formations, H2H, commentary, and live match events directly from ESPN APIs.
 
-const CHROME_HEADERS: Record<string, string> = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-  Accept: 'application/json',
-};
+const CHROME_HEADERS: Record<string, string> =
+  typeof window !== 'undefined'
+    ? { Accept: 'application/json' }
+    : {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        Accept: 'application/json',
+      };
 
 export interface ServerMatchEvent {
   minute: string;
