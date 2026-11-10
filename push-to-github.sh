@@ -60,11 +60,13 @@ git add -A
 if git diff --cached --quiet; then
   ok "Nothing new to commit — already up to date."
 else
-  git commit -m "fix: remove stale bun.lock for CI/CD and add Worker assets config
+  git commit -m "feat(phase-17): live audio commentary, prop scanners, booking hub & static host API bridge
 
-- Remove stale bun.lock that caused bun install --frozen-lockfile failure
-- Add src/worker.ts and wrangler.toml [assets] config for npx wrangler deploy
-- Maintain full Vercel, Render, and Cloudflare Pages compatibility"
+- Add Web Speech API play-by-play commentary & browser goal push alerts
+- Add Referee Discipline & Player Shot-on-Target (SoT) prop scanners
+- Upgrade 1-click regional bookmaker booking codes & deep-link slip launcher
+- Connect Live Jackpot pools to real-time ESPN auto-settlement & DC survivorship
+- Add safe staticHostApiBridge for Render Static Sites (predictpro.guru)"
   ok "Committed"
 fi
 

@@ -133,7 +133,10 @@ export default function JackpotPredictions() {
 
         const combinedFeed = [
           ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
+          ...(Array.isArray(liveRes?.matches) ? liveRes.matches : []),
           ...(Array.isArray(resultsRes?.predictions) ? resultsRes.predictions : []),
+          ...(Array.isArray(resultsRes?.results) ? resultsRes.results : []),
+          ...(Array.isArray(resultsRes?.matches) ? resultsRes.matches : []),
         ];
         if (combinedFeed.length > 0) {
           setRealFeedMatches(combinedFeed);

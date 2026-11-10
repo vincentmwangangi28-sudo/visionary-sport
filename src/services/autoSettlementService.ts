@@ -29,6 +29,9 @@ export interface OfficialFinishedMatch {
 
 export interface GradedSelectionStatus {
   status: 'Won' | 'Lost' | 'Live' | 'Pending';
+  outcome?: 'WON' | 'LOST' | 'PENDING';
+  homeScore?: number | null;
+  awayScore?: number | null;
   actualScore?: string;
   minute?: string;
   closingOdds?: number;
@@ -175,6 +178,9 @@ export function gradeSelectionAgainstFeed(
     const effectiveClosing = closingOdds ? Number(Math.max(1.18, closingOdds - 0.05).toFixed(2)) : Number((userOdds - 0.06).toFixed(2));
     return {
       status: result,
+      outcome: result === 'Won' ? 'WON' : 'LOST',
+      homeScore: hScore,
+      awayScore: aScore,
       actualScore,
       minute: 'FT',
       closingOdds: effectiveClosing,
@@ -186,12 +192,15 @@ export function gradeSelectionAgainstFeed(
   if (matched.status === 'live' || matched.status === 'halftime') {
     return {
       status: 'Live',
+      outcome: 'PENDING',
+      homeScore: hScore,
+      awayScore: aScore,
       actualScore,
       minute: matched.minute ? String(matched.minute) : matched.status === 'halftime' ? 'HT' : 'LIVE',
     };
   }
 
-  return { status: 'Pending' };
+  return { status: 'Pending', outcome: 'PENDING', homeScore: null, awayScore: null };
 }
 
 /**

@@ -25,9 +25,14 @@ import {
   ArrowDownRight,
   Check,
   X,
+  Volume2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  getMatchRefereeAndPlayerProps,
+  speakMatchCommentary,
+} from '@/services/liveCommentaryPushService';
 
 export interface ComputedLiveStats {
   homePossession: number;
@@ -413,6 +418,35 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
 
   const matchLabel = `${match.home_team} vs ${match.away_team}`;
 
+  const { referee: matchReferee, playerProps: matchPlayerProps } = useMemo(
+    () =>
+      getMatchRefereeAndPlayerProps({
+        matchId: String(match.id),
+        homeTeam: match.home_team,
+        awayTeam: match.away_team,
+        league: match.league,
+      }),
+    [match.id, match.home_team, match.away_team, match.league]
+  );
+
+  const handleSpeakLiveBrief = () => {
+    const hScore = match.home_score ?? 0;
+    const aScore = match.away_score ?? 0;
+    const summaryText = `${match.league} update: ${match.home_team} ${hScore}, ${match.away_team} ${aScore} at ${formattedLiveClock}. Expected goals stand at ${stats.homeXG.toFixed(2)} to ${stats.awayXG.toFixed(2)}. ${stats.momentumLabel}. Top prop edge: ${matchPlayerProps[0]?.shortLabel || 'Over 2.5 Goals'} at ${matchPlayerProps[0]?.odds.toFixed(2) || '1.85'} odds.`;
+    speakMatchCommentary(
+      {
+        matchLabel,
+        minute: formattedLiveClock,
+        category: 'summary',
+        text: summaryText,
+      },
+      { forceSpeak: true }
+    );
+    toast.success(`Live Audio Commentary: ${matchLabel}`, {
+      description: summaryText,
+    });
+  };
+
   return (
     <div className="rounded-2xl border border-border/90 bg-card shadow-lg overflow-hidden flex flex-col">
       {/* 1. Dark Broadcast Scoreboard Header */}
@@ -449,6 +483,15 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
               title={isPinned ? 'Unpin from Watchlist' : 'Pin to Multi-Match Watchlist'}
             >
               <Star className={`h-3.5 w-3.5 ${isPinned ? 'fill-amber-400' : ''}`} />
+            </button>
+            <button
+              type="button"
+              onClick={handleSpeakLiveBrief}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-700 bg-slate-900/90 hover:bg-slate-800 text-sky-400 text-[11px] font-bold transition-colors cursor-pointer"
+              title="Listen to Live Audio Play-by-Play Brief"
+            >
+              <Volume2 className="h-3 w-3" />
+              <span className="hidden sm:inline">Audio Brief</span>
             </button>
             <button
               type="button"
@@ -610,6 +653,51 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
               </button>
             );
           })}
+        </div>
+
+        {/* Referee Cards & Player Shot-on-Target (SoT) 1-Click Prop Strip */}
+        <div className="pt-1.5 border-t border-border/60 space-y-1.5">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+            <span>
+              Ref: <strong className="text-foreground">{matchReferee.refereeName}</strong> ({matchReferee.avgYellowCards.toFixed(1)} YC/gm · {matchReferee.strictnessTier})
+            </span>
+            <Link to="/player-props-lab" className="text-primary hover:underline font-semibold">
+              Props Lab →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+            {[
+              {
+                label: matchReferee.primaryCardLine,
+                short: matchReferee.primaryCardLine,
+                odds: matchReferee.primaryCardOdds,
+                conf: matchReferee.primaryCardConfidence,
+              },
+              ...matchPlayerProps.slice(0, 2).map((p) => ({
+                label: p.marketLabel,
+                short: p.shortLabel,
+                odds: p.odds,
+                conf: p.confidence,
+              })),
+            ].map((item) => {
+              const selected = isInSlip(matchLabel, item.label);
+              return (
+                <button
+                  key={item.short}
+                  type="button"
+                  onClick={() => handleAddLiveBet(item.label, item.odds, item.conf)}
+                  className={`px-2 py-1 rounded-md border text-[10px] font-mono flex items-center justify-between gap-1 transition-all cursor-pointer ${
+                    selected
+                      ? 'border-primary bg-primary/15 text-primary font-bold'
+                      : 'border-border/70 bg-background/70 hover:border-primary/40 text-foreground'
+                  }`}
+                >
+                  <span className="truncate text-muted-foreground">{item.short}</span>
+                  <span className="font-bold tabular-nums text-primary shrink-0">{item.odds.toFixed(2)}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

@@ -160,10 +160,10 @@ export const BetSlipDrawer = () => {
           liveAndFinishedFeed
         )
       );
-      const anyLost = gradedLegs.some((g) => g.status === 'FINISHED' && g.outcome === 'LOST');
+      const anyLost = gradedLegs.some((g) => g.status === 'Lost' || g.outcome === 'LOST');
       const allWon =
         gradedLegs.length > 0 &&
-        gradedLegs.every((g) => g.status === 'FINISHED' && g.outcome === 'WON');
+        gradedLegs.every((g) => g.status === 'Won' || g.outcome === 'WON');
 
       if (anyLost) {
         changed = true;
@@ -687,30 +687,32 @@ export const BetSlipDrawer = () => {
                               #{idx + 1}
                             </span>
                             <span className="text-xs text-muted-foreground truncate max-w-[140px]">{s.league}</span>
-                            {legGrade.status === 'LIVE' && (
+                            {legGrade.status === 'Live' && (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-black animate-pulse">
                                 <Radio className="h-2.5 w-2.5" />
                                 {legGrade.minute || 'LIVE'}
                               </span>
                             )}
-                            {legGrade.status === 'FINISHED' && legGrade.outcome !== 'PENDING' && (
+                            {(legGrade.status === 'Won' || legGrade.status === 'Lost') && (
                               <span
                                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-mono text-[10px] font-black ${
-                                  legGrade.outcome === 'WON'
+                                  legGrade.status === 'Won'
                                     ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
                                     : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30'
                                 }`}
                               >
-                                FT · {legGrade.outcome}
+                                FT · {legGrade.outcome || legGrade.status.toUpperCase()}
                               </span>
                             )}
                           </div>
                           <div className="flex items-center gap-1.5 text-sm font-bold leading-snug">
                             <TeamLogo team={s.homeTeam} size="xs" />
                             <span className="truncate">{s.homeTeam}</span>
-                            {(legGrade.status === 'LIVE' || legGrade.status === 'FINISHED') &&
+                            {(legGrade.status === 'Live' || legGrade.status === 'Won' || legGrade.status === 'Lost') &&
                             legGrade.homeScore !== null &&
-                            legGrade.awayScore !== null ? (
+                            legGrade.homeScore !== undefined &&
+                            legGrade.awayScore !== null &&
+                            legGrade.awayScore !== undefined ? (
                               <span className="px-1.5 py-0.5 rounded bg-slate-900 text-emerald-400 font-mono tabular-nums text-xs font-black shrink-0">
                                 {legGrade.homeScore}-{legGrade.awayScore}
                               </span>
@@ -847,65 +849,69 @@ export const BetSlipDrawer = () => {
                     })}
                   </div>
 
-                  {generatedCode && (
-                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 space-y-2 mt-2 animate-in fade-in">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
-                            <span aria-hidden="true">{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
-                          </p>
-                          <p className="font-mono font-bold text-sm tracking-wider text-primary">{generatedCode}</p>
+                  {(() => {
+                    const effectiveCode =
+                      generatedCode || generateRegionalBookingCode(activeBookmaker.id, selections.length);
+                    return (
+                      <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 space-y-2 mt-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
+                              <span aria-hidden="true">{activeBookmaker.flag}</span> {activeBookmaker.name} Slip Code
+                            </p>
+                            <p className="font-mono font-bold text-sm tracking-wider text-primary">{effectiveCode}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleCopyCode(effectiveCode)}
+                              title={`Copy ${activeBookmaker.name} slip code: ${effectiveCode}`}
+                              className="h-8 gap-1 text-xs font-semibold"
+                            >
+                              {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                              {copied ? t('slip.copied', 'Copied') : 'Copy'}
+                            </Button>
+                            <a
+                              href={getBookmakerDeepLinkUrl(activeBookmaker.id, effectiveCode, selections.length)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => handleCopyCode(effectiveCode)}
+                              aria-label={`Load slip ${effectiveCode} on ${activeBookmaker.name}`}
+                              className="inline-flex items-center justify-center gap-1 rounded-md text-xs font-semibold border border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-2.5 whitespace-nowrap"
+                            >
+                              <span>Load on {activeBookmaker.name}</span>
+                              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                            </a>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleCopyCode(generatedCode)}
-                            title={`Copy ${activeBookmaker.name} slip code: ${generatedCode}`}
-                            className="h-8 gap-1 text-xs font-semibold"
-                          >
-                            {copied ? <CheckCheck className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-                            {copied ? t('slip.copied', 'Copied') : 'Copy'}
-                          </Button>
-                          <a
-                            href={getBookmakerDeepLinkUrl(activeBookmaker.id, generatedCode, selections.length)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => handleCopyCode(generatedCode)}
-                            aria-label={`Load slip ${generatedCode} on ${activeBookmaker.name}`}
-                            className="inline-flex items-center justify-center gap-1 rounded-md text-xs font-semibold border border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-2.5 whitespace-nowrap"
-                          >
-                            <span>Load on {activeBookmaker.name}</span>
-                            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                          </a>
-                        </div>
-                      </div>
 
-                      {/* Exact Bookmaker Market & 4-Digit Game ID Checklist */}
-                      <div className="pt-2 border-t border-primary/15 space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          {activeBookmaker.name} Fast-Entry Coupon Checklist
-                        </p>
-                        <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
-                          {selections.map((s) => {
-                            const gameId = generateMatchGameId(s.homeTeam, s.awayTeam, activeBookmaker.id);
-                            const translated = translateMarketForBookmaker(s.market, activeBookmaker.id);
-                            return (
-                              <div key={s.id} className="flex items-center justify-between text-[11px] bg-background/70 px-2 py-1 rounded border border-border/50">
-                                <span className="truncate max-w-[160px] font-medium">
-                                  <strong className="font-mono text-primary mr-1">#{gameId}</strong>
-                                  {s.homeTeam} v {s.awayTeam}
-                                </span>
-                                <span className="font-mono font-bold text-foreground shrink-0 ml-1">
-                                  {translated}
-                                </span>
-                              </div>
-                            );
-                          })}
+                        {/* Exact Bookmaker Market & 4-Digit Game ID Checklist */}
+                        <div className="pt-2 border-t border-primary/15 space-y-1">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            {activeBookmaker.name} Fast-Entry Coupon Checklist
+                          </p>
+                          <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
+                            {selections.map((s) => {
+                              const gameId = generateMatchGameId(s.homeTeam, s.awayTeam, activeBookmaker.id);
+                              const translated = translateMarketForBookmaker(s.market, activeBookmaker.id);
+                              return (
+                                <div key={s.id} className="flex items-center justify-between text-[11px] bg-background/70 px-2 py-1 rounded border border-border/50">
+                                  <span className="truncate max-w-[160px] font-medium">
+                                    <strong className="font-mono text-primary mr-1">#{gameId}</strong>
+                                    {s.homeTeam} v {s.awayTeam}
+                                  </span>
+                                  <span className="font-mono font-bold text-foreground shrink-0 ml-1">
+                                    {translated}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
 

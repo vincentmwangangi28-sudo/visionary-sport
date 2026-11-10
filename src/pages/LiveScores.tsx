@@ -49,6 +49,14 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { evaluateLiveMomentumWithGemini, GeminiLiveMomentumResult } from '@/services/geminiTasksService';
 import { useTelegramAlerts } from '@/hooks/useTelegramAlerts';
+import {
+  speakMatchCommentary,
+  stopSpeechCommentary,
+  requestGoalPushPermission,
+  getGoalPushPermissionState,
+  dispatchGoalOrSettlementPush,
+} from '@/services/liveCommentaryPushService';
+import { Bell, Radio } from 'lucide-react';
 
 const PINNED_STORAGE_KEY = 'predictpro_pinned_live_matches';
 
@@ -105,6 +113,10 @@ export default function LiveScores() {
   });
   const [recentGoalIds, setRecentGoalIds] = useState<Record<string, number>>({});
   const [audioChimeEnabled, setAudioChimeEnabled] = useState<boolean>(true);
+  const [voiceCommentaryEnabled, setVoiceCommentaryEnabled] = useState<boolean>(false);
+  const [pushAlertsEnabled, setPushAlertsEnabled] = useState<boolean>(() => {
+    return getGoalPushPermissionState() === 'granted';
+  });
 
   const dateRibbonOptions = useMemo(() => buildDateRibbonOptions(), []);
   const { regionId, prioritizedLeagues, sortLiveFixtures, getLeagueBadge } = useGeoRegion();
@@ -446,17 +458,45 @@ export default function LiveScores() {
         if (audioChimeEnabled) {
           playLiveEventChime('goal');
         }
-        toast.success(`⚽ GOAL ALERT: ${scoredMatchLabel}`);
+        if (voiceCommentaryEnabled) {
+          speakMatchCommentary({
+            matchLabel: scoredMatchLabel,
+            minute: 'LIVE',
+            category: 'goal',
+            text: `Goal Alert! ${scoredMatchLabel}`,
+          });
+        }
+        if (pushAlertsEnabled) {
+          dispatchGoalOrSettlementPush({
+            title: 'PredictPro Live Goal Alert',
+            body: scoredMatchLabel,
+          });
+        }
+        toast.success(`GOAL ALERT: ${scoredMatchLabel}`);
       }
 
       if (redCardLabel) {
         if (audioChimeEnabled) {
           playLiveEventChime('red_card');
         }
-        toast.error(`🟥 RED CARD ALERT: ${redCardLabel}`);
+        if (voiceCommentaryEnabled) {
+          speakMatchCommentary({
+            matchLabel: redCardLabel,
+            minute: 'LIVE',
+            category: 'red_card',
+            text: `Red Card Alert! ${redCardLabel}`,
+          });
+        }
+        if (pushAlertsEnabled) {
+          dispatchGoalOrSettlementPush({
+            title: 'PredictPro Red Card Alert',
+            body: redCardLabel,
+          });
+        }
+        toast.error(`RED CARD ALERT: ${redCardLabel}`);
       }
     }
-  }, [matches, audioChimeEnabled]);
+  }, [matches, audioChimeEnabled, voiceCommentaryEnabled, pushAlertsEnabled]);
 
   // Filter matches based on league, status tab, date offset, goal threat radar, free stream filter, and search query
   const filteredMatches = useMemo(() => {
@@ -740,6 +780,70 @@ export default function LiveScores() {
                 <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
               )}
               <span className="hidden sm:inline">{audioChimeEnabled ? 'Goal Audio' : 'Muted'}</span>
+            </Button>
+
+            <Button
+              variant={voiceCommentaryEnabled ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                const next = !voiceCommentaryEnabled;
+                setVoiceCommentaryEnabled(next);
+                if (next) {
+                  const target = activeInspectedMatch || matches[0];
+                  const intro = target
+                    ? `Live Radio Commentary active. Currently tracking ${target.home_team} ${target.home_score ?? 0}, ${target.away_team} ${target.away_score ?? 0} in the ${target.league}.`
+                    : 'PredictPro Live Radio Commentary is now active for all in-play matches.';
+                  speakMatchCommentary(
+                    {
+                      matchLabel: target ? `${target.home_team} vs ${target.away_team}` : 'Live Slate',
+                      minute: 'LIVE',
+                      category: 'summary',
+                      text: intro,
+                    },
+                    { forceSpeak: true }
+                  );
+                  toast.success('Live Voice Play-by-Play Commentary ON');
+                } else {
+                  stopSpeechCommentary();
+                  toast.info('Live Voice Commentary Paused');
+                }
+              }}
+              className={`text-xs h-9 gap-1.5 font-semibold ${
+                voiceCommentaryEnabled ? 'bg-sky-600 hover:bg-sky-700 text-white border-sky-600' : ''
+              }`}
+              title="Toggle Web Speech API live play-by-play voice commentary"
+            >
+              <Radio className={`h-3.5 w-3.5 ${voiceCommentaryEnabled ? 'text-white' : 'text-sky-500'}`} />
+              <span className="hidden sm:inline">{voiceCommentaryEnabled ? 'Voice Radio ON' : 'Voice Radio'}</span>
+            </Button>
+
+            <Button
+              variant={pushAlertsEnabled ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={async () => {
+                if (pushAlertsEnabled) {
+                  setPushAlertsEnabled(false);
+                  toast.info('Browser goal push notifications paused');
+                  return;
+                }
+                const perm = await requestGoalPushPermission();
+                if (perm === 'granted') {
+                  setPushAlertsEnabled(true);
+                  dispatchGoalOrSettlementPush({
+                    title: 'PredictPro Goal Push Active',
+                    body: 'You will receive instant browser notifications for live goals and red cards.',
+                  });
+                  toast.success('Browser Goal Push Notifications Enabled');
+                } else {
+                  setPushAlertsEnabled(true);
+                  toast.success('In-App Live Goal & Settlement Alerts Enabled');
+                }
+              }}
+              className="text-xs h-9 gap-1.5 font-semibold"
+              title="Enable Browser Push Notifications for live goals"
+            >
+              <Bell className={`h-3.5 w-3.5 ${pushAlertsEnabled ? 'text-amber-500 fill-amber-500/20' : 'text-muted-foreground'}`} />
+              <span className="hidden sm:inline">{pushAlertsEnabled ? 'Push ON' : 'Push Alerts'}</span>
             </Button>
 
             <div className="flex items-center gap-1.5 px-2.5 h-9 rounded-md border border-border bg-card text-xs font-semibold">

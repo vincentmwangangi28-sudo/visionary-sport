@@ -3,9 +3,13 @@ import App from "./App.tsx";
 import "./index.css";
 import { queryClient } from "./lib/queryClient";
 import { logger } from "./lib/logger";
+import { initStaticHostApiBridge } from "./lib/staticHostApiBridge";
 
 // Initialize centralized unhandled exception & network rejection monitoring
 logger.initGlobalErrorLogging();
+
+// Enable transparent /api/football & /api/highlights resolution on Static CDN hosts (Render Static Sites)
+initStaticHostApiBridge();
 
 if ('serviceWorker' in navigator) {
   let lastRevalidationTime = 0;
