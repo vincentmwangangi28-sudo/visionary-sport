@@ -129,8 +129,11 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
       .replace(/[^a-z0-9]/g, '')
       .trim();
 
-  // 1. Fetch Betika Official Jackpots Direct (https://api.betika.com/v1/jackpot/events)
+  const isBrowserRuntime = typeof window !== 'undefined';
+
+  // 1. Fetch Betika Official Jackpots Direct (Server-only: api.betika.com blocks browser CORS)
   const betikaTask = (async () => {
+    if (isBrowserRuntime) return;
     try {
       const evRes = await fetchWithTimeout('https://api.betika.com/v1/jackpot/events', 6000);
       if (!evRes.ok) return;
@@ -193,8 +196,9 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
     }
   })();
 
-  // 2. Fetch SportPesa Official Direct API (/api/jackpots/multi & /api/jackpots & /api/jackpots/events)
+  // 2. Fetch SportPesa Official Direct API (Server-only: ke.sportpesa.com blocks browser CORS)
   const sportpesaDirectTask = (async () => {
+    if (isBrowserRuntime) return;
     try {
       const [multiRes, jpMetaRes, jpEventsRes] = await Promise.all([
         fetchWithTimeout('https://www.ke.sportpesa.com/api/jackpots/multi', 6000).catch(() => null),
@@ -272,8 +276,9 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
     }
   })();
 
-  // 3. Fetch SportPesa Mega 17, Betika Midweek 15 & Mozzart Super Grand 20 official fixture lists
+  // 3. Fetch SportPesa Mega 17, Betika Midweek 15 & Mozzart Super Grand 20 official fixture lists (Server-only)
   const syndicateTask = (async () => {
+    if (isBrowserRuntime) return;
     const [spMegaRaw, mozzartRaw, bkMidweekRaw] = await Promise.all([
       extractSokapediaJackpotPool('sportpesa-mega-jackpot-predictions'),
       extractSokapediaJackpotPool('mozzart-super-grand-jackpot-predictions'),

@@ -1,13 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth, syncUserProfileActivity } from '@/hooks/useAuth';
+import { useAuth, syncUserProfileActivity, getCanonicalSiteOrigin } from '@/hooks/useAuth';
 import { SEO } from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, Lock, Eye, EyeOff, Zap, ArrowLeft, Gift, CheckCircle2, RefreshCw } from 'lucide-react';
+import {
+  Loader2,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Zap,
+  ArrowLeft,
+  Gift,
+  CheckCircle2,
+  RefreshCw,
+  Wrench,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 
@@ -16,7 +32,7 @@ type Mode = 'login' | 'register' | 'forgot';
 export default function Auth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { user, signInWithGoogle } = useAuth();
+  const { user, signInWithGoogle, exchangeOAuthCode } = useAuth();
   const [mode, setMode] = useState<Mode>((params.get('mode') as Mode) || 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,13 +45,51 @@ export default function Auth() {
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
   const [resendingEmail, setResendingEmail] = useState(false);
 
+  // Recovery helper for users redirected to typo domain `https://predicpro.guru/?code=...`
+  const [showRedirectRecovery, setShowRedirectRecovery] = useState(false);
+  const [recoveryInput, setRecoveryInput] = useState('');
+  const [exchangingCode, setExchangingCode] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
   // Redirect if already logged in
   useEffect(() => { if (user) navigate('/'); }, [user, navigate]);
+
+  // Auto-exchange if ?code= was passed directly to /auth?code=...
+  useEffect(() => {
+    const codeParam = params.get('code');
+    if (codeParam && !user) {
+      setExchangingCode(true);
+      exchangeOAuthCode(codeParam).finally(() => setExchangingCode(false));
+    }
+  }, [params, user, exchangeOAuthCode]);
 
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try { await signInWithGoogle(); }
     catch { setGoogleLoading(false); }
+  };
+
+  const handleCompleteRecoveryCode = async () => {
+    if (!recoveryInput.trim()) {
+      toast.error('Paste the predicpro.guru/?code=... URL or code first');
+      return;
+    }
+    setExchangingCode(true);
+    try {
+      await exchangeOAuthCode(recoveryInput);
+    } finally {
+      setExchangingCode(false);
+    }
+  };
+
+  const handleCopyConfigValue = (label: string, val: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(val).then(() => {
+        setCopiedField(label);
+        toast.success(`Copied ${label} to clipboard`);
+        setTimeout(() => setCopiedField(null), 2000);
+      }).catch(() => {});
+    }
   };
 
   const isGmailAddress = (addr: string) => {
@@ -48,11 +102,12 @@ export default function Auth() {
     if (!targetEmail) return;
     setResendingEmail(true);
     try {
+      const redirectOrigin = getCanonicalSiteOrigin();
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: targetEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${redirectOrigin}/`,
         },
       });
       if (error) throw error;
@@ -85,9 +140,10 @@ export default function Auth() {
     setGoogleAccountDetected(false);
 
     try {
+      const redirectOrigin = getCanonicalSiteOrigin();
       if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: `${window.location.origin}/auth?mode=reset`,
+          redirectTo: `${redirectOrigin}/auth?mode=reset`,
         });
         if (error) throw error;
         toast.success('Password reset link sent! Check your email inbox.');
@@ -112,7 +168,7 @@ export default function Auth() {
               full_name: displayName,
               referral_code: refCode || undefined,
             },
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${redirectOrigin}/`,
           },
         });
 
@@ -308,6 +364,90 @@ export default function Auth() {
                   )}
                   {googleAccountDetected ? 'Sign In with Google (Detected)' : 'Continue with Google'}
                 </Button>
+
+                {/* Recovery helper for Supabase Site URL typo (predicpro.guru/?code=...) */}
+                <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setShowRedirectRecovery((prev) => !prev)}
+                    className="w-full flex items-center justify-between gap-2 text-left font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Wrench className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>Redirected to <code className="text-amber-500 font-mono">predicpro.guru/?code=...</code>? Complete login here</span>
+                    </span>
+                    {showRedirectRecovery ? (
+                      <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                    )}
+                  </button>
+
+                  {showRedirectRecovery && (
+                    <div className="mt-2.5 pt-2.5 border-t border-border/60 space-y-2.5">
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        If Google sign-in redirected to <b className="text-foreground">predicpro.guru/?code=...</b> (missing the &ldquo;t&rdquo;), paste that full URL or code below to finish logging in immediately:
+                      </p>
+                      <div className="flex gap-1.5">
+                        <Input
+                          type="text"
+                          value={recoveryInput}
+                          onChange={(e) => setRecoveryInput(e.target.value)}
+                          placeholder="Paste https://predicpro.guru/?code=... here"
+                          className="h-8 text-xs font-mono"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={exchangingCode}
+                          onClick={handleCompleteRecoveryCode}
+                          className="h-8 px-3 text-xs font-semibold shrink-0"
+                        >
+                          {exchangingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Complete Login'}
+                        </Button>
+                      </div>
+
+                      <div className="rounded-lg bg-background/80 border border-border/60 p-2.5 space-y-1.5 text-[11px]">
+                        <p className="font-semibold text-foreground">
+                          Permanent 10-Second Fix in Supabase Dashboard (Authentication → URL Configuration):
+                        </p>
+                        <div className="flex items-center justify-between gap-2 bg-muted/40 rounded px-2 py-1">
+                          <span className="truncate">
+                            <span className="text-muted-foreground">Site URL: </span>
+                            <code className="text-emerald-500 font-mono font-semibold">https://www.predictpro.guru</code>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyConfigValue('Site URL', 'https://www.predictpro.guru')}
+                            className="inline-flex items-center gap-1 text-[10px] font-medium text-primary hover:underline shrink-0"
+                          >
+                            {copiedField === 'Site URL' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            Copy
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 bg-muted/40 rounded px-2 py-1">
+                          <span className="truncate">
+                            <span className="text-muted-foreground">Redirect URLs: </span>
+                            <code className="text-primary font-mono">https://www.predictpro.guru/**</code>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopyConfigValue(
+                                'Redirect URLs',
+                                'https://www.predictpro.guru/**, https://predictpro.guru/**, https://ais-dev-utwwxl5ytt22cwj5s4o4rd-937574102702.europe-west2.run.app/**, https://ais-pre-utwwxl5ytt22cwj5s4o4rd-937574102702.europe-west2.run.app/**'
+                              )
+                            }
+                            className="inline-flex items-center gap-1 text-[10px] font-medium text-primary hover:underline shrink-0"
+                          >
+                            {copiedField === 'Redirect URLs' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            Copy All
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border"/></div>

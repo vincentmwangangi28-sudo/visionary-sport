@@ -39,9 +39,9 @@ ok ".gitignore updated"
 # ── 2. .env.example ─────────────────────────────────────────
 info "Creating .env.example..."
 cat > .env.example << 'EOF'
-VITE_SUPABASE_PROJECT_ID="your-project-id"
-VITE_SUPABASE_PUBLISHABLE_KEY="your-anon-key"
-VITE_SUPABASE_URL="https://your-project-id.supabase.co"
+VITE_SUPABASE_PROJECT_ID="bhgjlhgevyggkhyytulv"
+VITE_SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ"
+VITE_SUPABASE_URL="https://bhgjlhgevyggkhyytulv.supabase.co"
 EOF
 ok ".env.example created"
 

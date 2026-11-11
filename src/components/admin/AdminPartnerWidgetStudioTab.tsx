@@ -296,7 +296,7 @@ export const AdminPartnerWidgetStudioTab: React.FC = () => {
                           <span className="text-[10px] opacity-70 block">{bc.bookmaker}</span>
                           <span className="font-black text-emerald-400">{bc.code}</span>
                         </div>
-                        <span className="font-bold text-xs">{bc.totalOdds.toFixed(2)}x</span>
+                        <span className="font-bold text-xs">{Number(bc.totalOdds || 0).toFixed(2)}x</span>
                       </div>
                     ))}
                   </div>

@@ -27,7 +27,7 @@
     },
     {
       "platform": "webapp",
-      "url": "https://predictpro.guru/manifest.json"
+      "url": "https://www.predictpro.guru/manifest.json"
     }
   ],
   "launch_handler": {

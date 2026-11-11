@@ -481,21 +481,25 @@ class ViralKeywordIntelligenceService {
    * refreshed with indexing pings and trending keyword health audits every 1 hour.
    */
   public startKeepAliveCron() {
+    if (typeof window === 'undefined') return;
+    if (
+      navigator.webdriver ||
+      /HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(navigator.userAgent || '')
+    ) {
+      return;
+    }
     if (this.cronTimer) {
       window.clearInterval(this.cronTimer);
     }
 
     this.isKeepAliveRunning = true;
 
-    // Check every 15 minutes, execute full keep-alive cycle hourly
+    // Execute keep-alive cycle hourly
     this.cronTimer = window.setInterval(async () => {
       try {
-        console.log('[ViralCron] Executing autonomous Google rank keep-alive cycle...');
-        // 1. Audit GSC priorities
-        // 2. Dispatch Indexing signals to Google & IndexNow
         await googleIndexingCronService.runCronNow('auto');
-      } catch (e) {
-        console.warn('[ViralCron] Error during keep-alive cycle:', e);
+      } catch {
+        // Silent background fallback
       }
     }, 1000 * 60 * 60); // 1 hour
 

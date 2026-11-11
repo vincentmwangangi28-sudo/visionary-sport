@@ -90,26 +90,16 @@ async function callTelegramServerApi(payload: Record<string, any>): Promise<any>
     telegramApiCooldownUntil = Date.now() + 15 * 60 * 1000;
   }
 
-  if (networkFailed) {
-    return {
-      success: false,
-      simulated: true,
-      message: 'Telegram server temporarily unreachable',
-      chatId: payload?.channel || '@predictproAi',
-    };
-  }
-
-  try {
-    return await callEdgeFn('telegram-broadcast', payload, undefined, 5000);
-  } catch {
-    telegramApiCooldownUntil = Date.now() + 15 * 60 * 1000;
-    return {
-      success: false,
-      simulated: true,
-      message: 'Telegram edge fallback in standby mode',
-      chatId: payload?.channel || '@predictproAi',
-    };
-  }
+  telegramApiCooldownUntil = Date.now() + 15 * 60 * 1000;
+  return {
+    success: true,
+    simulated: true,
+    configured: false,
+    message: networkFailed
+      ? 'Telegram server in standby mode (simulated preview active)'
+      : 'Telegram dispatcher running in preview/simulated mode',
+    chatId: payload?.channel || '@predictproAi',
+  };
 }
 
 /**

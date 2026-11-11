@@ -830,11 +830,18 @@ SELECT cron.schedule(
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-border/50">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveTgConfig();
+            }}
+            className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-border/50"
+          >
             <div className="sm:col-span-5 space-y-1">
               <label className="text-[11px] font-medium text-muted-foreground">Bot Token (BotFather)</label>
               <Input
                 type="password"
+                autoComplete="new-password"
                 placeholder={tgConfig?.botTokenMasked || 'Enter Telegram Bot Token...'}
                 value={botTokenInput}
                 onChange={(e) => setBotTokenInput(e.target.value)}
@@ -854,15 +861,16 @@ SELECT cron.schedule(
 
             <div className="sm:col-span-3 flex items-end gap-2">
               <Button
+                type="submit"
                 variant="outline"
                 size="sm"
-                onClick={handleSaveTgConfig}
                 disabled={isSavingTg}
                 className="h-8 text-xs flex-1"
               >
                 {isSavingTg ? 'Saving...' : 'Save Config'}
               </Button>
               <Button
+                type="button"
                 size="sm"
                 onClick={handleSendTestBanker}
                 disabled={isSendingTestAlert}
@@ -872,7 +880,7 @@ SELECT cron.schedule(
                 {isSendingTestAlert ? 'Sending...' : 'Test Send'}
               </Button>
             </div>
-          </div>
+          </form>
         </CardContent>
       </Card>
 

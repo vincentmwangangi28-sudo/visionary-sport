@@ -59,7 +59,7 @@ export const AdminSocialProofStudioTab: React.FC = () => {
         rows: (latest?.legs || []).map((l) => ({
           label: l.match,
           sublabel: `${l.market}  ·  Final Score: ${l.finalScore}`,
-          badgeText: `WON @${l.odds.toFixed(2)} ✓`,
+          badgeText: `WON @${Number(l.odds || 0).toFixed(2)} ✓`,
           status: 'won',
         })),
       };
@@ -367,15 +367,15 @@ export const AdminSocialProofStudioTab: React.FC = () => {
                   </div>
                   <div className="text-sm font-bold truncate">{p.title}</div>
                   <div className="text-[11px] text-muted-foreground truncate">
-                    {p.legs.map((l) => `${l.match} (${l.finalScore})`).join(' · ')}
+                    {(p.legs || []).map((l) => `${l.match} (${l.finalScore})`).join(' · ')}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="font-mono font-bold text-sm text-emerald-500 tabular-nums">
-                    {p.totalOdds.toFixed(2)}x
+                    {Number(p.totalOdds || 0).toFixed(2)}x
                   </div>
                   <div className="text-[10px] font-mono text-muted-foreground">
-                    +{p.profitUnits.toFixed(2)}u
+                    +{Number(p.profitUnits || 0).toFixed(2)}u
                   </div>
                 </div>
               </div>

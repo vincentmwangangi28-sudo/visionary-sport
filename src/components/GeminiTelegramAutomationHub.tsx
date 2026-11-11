@@ -350,24 +350,31 @@ export const GeminiTelegramAutomationHub = () => {
 
           {/* Expandable Bot Token Config Box */}
           {showTokenConfig && (
-            <div className="mt-3 p-3 bg-muted/40 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveBotToken();
+              }}
+              className="mt-3 p-3 bg-muted/40 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs"
+            >
               <span className="font-medium text-foreground whitespace-nowrap">Bot Token:</span>
               <Input
                 type="password"
+                autoComplete="new-password"
                 placeholder="Paste Bot Token (from @BotFather)..."
                 value={botTokenInput}
                 onChange={(e) => setBotTokenInput(e.target.value)}
                 className="h-8 text-xs font-mono flex-1"
               />
               <Button
+                type="submit"
                 size="sm"
-                onClick={handleSaveBotToken}
                 disabled={savingToken || !botTokenInput.trim()}
                 className="h-8 text-xs bg-sky-600 hover:bg-sky-700 text-white shrink-0"
               >
                 {savingToken ? 'Saving...' : 'Save & Verify'}
               </Button>
-            </div>
+            </form>
           )}
 
           {/* Bot Connection Pill Indicator */}

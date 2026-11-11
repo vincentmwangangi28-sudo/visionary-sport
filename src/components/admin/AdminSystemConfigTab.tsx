@@ -326,7 +326,10 @@ export const AdminSystemConfigTab: React.FC = () => {
             </div>
 
             {config.telegramAutoBroadcast && (
-              <div className="rounded-lg border border-sky-500/30 bg-sky-500/5 p-3 space-y-3">
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="rounded-lg border border-sky-500/30 bg-sky-500/5 p-3 space-y-3"
+              >
                 <div className="space-y-1">
                   <Label className="text-xs font-medium text-foreground">Telegram Channel / Chat ID</Label>
                   <Input
@@ -344,6 +347,7 @@ export const AdminSystemConfigTab: React.FC = () => {
                   <Label className="text-xs font-medium text-foreground">Telegram Bot Token (Optional if set in server env)</Label>
                   <Input
                     type="password"
+                    autoComplete="new-password"
                     placeholder="Enter Telegram bot token from @BotFather..."
                     value={config.telegramBotToken || ''}
                     onChange={(e) => handleChange('telegramBotToken', e.target.value)}
@@ -353,7 +357,7 @@ export const AdminSystemConfigTab: React.FC = () => {
                     Overrides or supplements <code>process.env.TELEGRAM_BOT_TOKEN</code> without needing server rebuilds.
                   </p>
                 </div>
-              </div>
+              </form>
             )}
 
             <div className="flex items-center justify-between rounded-lg border border-border/60 p-3 bg-muted/30">

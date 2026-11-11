@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { useAuth, syncUserProfileActivity } from '@/hooks/useAuth';
+import { useAuth, syncUserProfileActivity, getCanonicalSiteOrigin } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -255,11 +255,12 @@ export const FirstVisitSignupModal: React.FC = () => {
     setResendingEmail(true);
     try {
       const supabase = await getSupabase();
+      const redirectOrigin = getCanonicalSiteOrigin();
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: targetEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${redirectOrigin}/`,
         },
       });
       if (error) throw error;
@@ -290,9 +291,10 @@ export const FirstVisitSignupModal: React.FC = () => {
     setSubmitting(true);
     try {
       const supabase = await getSupabase();
+      const redirectOrigin = getCanonicalSiteOrigin();
       if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: `${window.location.origin}/auth?mode=reset`,
+          redirectTo: `${redirectOrigin}/auth?mode=reset`,
         });
         if (error) throw error;
         toast.success('Password reset link sent! Check your email inbox.');
@@ -312,7 +314,7 @@ export const FirstVisitSignupModal: React.FC = () => {
           password: cleanPassword,
           options: {
             data: { full_name: displayName },
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${redirectOrigin}/`,
           },
         });
 

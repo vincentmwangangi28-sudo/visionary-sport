@@ -19,24 +19,95 @@ export interface SupabaseConfigStatus {
   source: 'session' | 'env' | 'fallback';
 }
 
+const INVALID_URL_PATTERNS = [
+  'your-project-id',
+  'your_project_id',
+  '<project-ref>',
+  'project-ref',
+  'example.supabase.co',
+  'placeholder',
+  'predicpro.guru',
+];
+
+const INVALID_KEY_PATTERNS = [
+  'your-anon-key',
+  'your_anon_key',
+  'your-publishable-key',
+  '<anon-key>',
+  'placeholder',
+  'example',
+];
+
+/**
+ * Validates that a candidate Supabase URL is a real HTTP/HTTPS endpoint and not a placeholder
+ * like "https://your-project-id.supabase.co" or the typo domain "predicpro.guru".
+ */
+export function isValidSupabaseUrl(rawUrl?: string | null): rawUrl is string {
+  if (!rawUrl || typeof rawUrl !== 'string') return false;
+  const trimmed = rawUrl.trim();
+  if (!trimmed || trimmed === 'undefined' || trimmed === 'null') return false;
+  const lower = trimmed.toLowerCase();
+  if (INVALID_URL_PATTERNS.some((pattern) => lower.includes(pattern))) {
+    return false;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    if (!parsed.hostname || parsed.hostname.startsWith('your-')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validates that a candidate Supabase anon/publishable key is a real key and not "your-anon-key".
+ */
+export function isValidSupabaseAnonKey(rawKey?: string | null): rawKey is string {
+  if (!rawKey || typeof rawKey !== 'string') return false;
+  const trimmed = rawKey.trim();
+  if (!trimmed || trimmed.length < 30 || trimmed === 'undefined' || trimmed === 'null') return false;
+  const lower = trimmed.toLowerCase();
+  if (INVALID_KEY_PATTERNS.some((pattern) => lower.includes(pattern))) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Returns the active configuration status of Supabase in the current environment
  */
 export function getSupabaseConfigStatus(): SupabaseConfigStatus {
-  const sessionUrl =
+  const rawSessionUrl =
     typeof window !== 'undefined'
       ? window.sessionStorage.getItem(SESSION_STORAGE_SUPABASE_URL_KEY)?.trim()
       : undefined;
-  const sessionKey =
+  const rawSessionKey =
     typeof window !== 'undefined'
       ? window.sessionStorage.getItem(SESSION_STORAGE_SUPABASE_KEY_KEY)?.trim()
       : undefined;
 
-  const rawEnvUrl = (import.meta.env?.VITE_SUPABASE_URL as string | undefined)?.trim();
-  const rawEnvKey = (
+  const sessionUrl = isValidSupabaseUrl(rawSessionUrl) ? rawSessionUrl.replace(/\/$/, '') : undefined;
+  const sessionKey = isValidSupabaseAnonKey(rawSessionKey) ? rawSessionKey : undefined;
+
+  // Auto-clean poisoned/placeholder sessionStorage values if present
+  if (typeof window !== 'undefined' && (rawSessionUrl || rawSessionKey) && (!sessionUrl || !sessionKey)) {
+    try {
+      window.sessionStorage.removeItem(SESSION_STORAGE_SUPABASE_URL_KEY);
+      window.sessionStorage.removeItem(SESSION_STORAGE_SUPABASE_KEY_KEY);
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  const candidateEnvUrl = (import.meta.env?.VITE_SUPABASE_URL as string | undefined)?.trim();
+  const candidateEnvKey = (
     (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
     (import.meta.env?.VITE_SUPABASE_ANON_KEY as string | undefined)
   )?.trim();
+
+  const rawEnvUrl = isValidSupabaseUrl(candidateEnvUrl) ? candidateEnvUrl.replace(/\/$/, '') : undefined;
+  const rawEnvKey = isValidSupabaseAnonKey(candidateEnvKey) ? candidateEnvKey : undefined;
 
   // If env variables are equal to default fallback, we flag them so users know custom keys aren't set
   const hasEnvUrl = !!rawEnvUrl && rawEnvUrl !== DEFAULT_SUPABASE_URL;
@@ -53,7 +124,7 @@ export function getSupabaseConfigStatus(): SupabaseConfigStatus {
     };
   }
 
-  if (hasEnvUrl && hasEnvKey) {
+  if (hasEnvUrl && hasEnvKey && rawEnvUrl) {
     return {
       hasEnvUrl: true,
       hasEnvKey: true,
@@ -80,6 +151,14 @@ const UNPROVISIONED_FALLBACK_TABLES = new Set([
   'admins',
   'matches',
   'coin_packages',
+  'profiles',
+  'transactions',
+  'predictions',
+  'subscriptions',
+  'user_roles',
+  'user_coins',
+  'coin_transactions',
+  'referrals',
 ]);
 
 let supabaseNetworkCooldownUntil = 0;
@@ -101,16 +180,25 @@ function createSyntheticStandbyResponse(isHead: boolean, isRestTable: boolean): 
 }
 
 /**
- * Custom fetch wrapper for Supabase that prevents browser console 404/401/network retry noise
+ * Custom fetch wrapper for Supabase that prevents browser console 404/401/403/network retry noise
  * when optional tables are unprovisioned or when client connectivity / DNS is temporarily offline.
  */
 const resilientSupabaseFetch: typeof fetch = async (input, init) => {
-  const urlStr =
+  const rawUrlStr =
     typeof input === 'string'
       ? input
       : input instanceof URL
         ? input.toString()
         : (input as Request)?.url || '';
+
+  // Safeguard: If any request ever targets a placeholder host like your-project-id.supabase.co,
+  // automatically rewrite it to DEFAULT_SUPABASE_URL so DNS resolution never fails with ERR_NAME_NOT_RESOLVED.
+  const urlStr = rawUrlStr.replace(
+    /https?:\/\/your-project-id\.supabase\.co/gi,
+    DEFAULT_SUPABASE_URL
+  );
+  const effectiveInput: RequestInfo | URL =
+    urlStr !== rawUrlStr && typeof input === 'string' ? urlStr : input;
 
   const isAuthEndpoint = urlStr.includes('/auth/v1/');
   const isHead = init?.method?.toUpperCase() === 'HEAD';
@@ -128,7 +216,7 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
     const authTimeoutId = authController ? setTimeout(() => authController.abort(), 15000) : null;
     try {
       const fetchInit = authController ? { ...init, signal: authController.signal } : init;
-      return await fetch(input, fetchInit);
+      return await fetch(effectiveInput, fetchInit);
     } finally {
       if (authTimeoutId) clearTimeout(authTimeoutId);
     }
@@ -152,9 +240,17 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
 
   try {
     const fetchInit = controller ? { ...init, signal: controller.signal } : init;
-    const res = await fetch(input, fetchInit);
-    if (restMatch && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 504)) {
-      if (res.status === 404) {
+    const res = await fetch(effectiveInput, fetchInit);
+    if (
+      restMatch &&
+      (res.status === 401 ||
+        res.status === 403 ||
+        res.status === 404 ||
+        res.status === 502 ||
+        res.status === 503 ||
+        res.status === 504)
+    ) {
+      if (res.status === 401 || res.status === 403 || res.status === 404) {
         UNPROVISIONED_FALLBACK_TABLES.add(restMatch[1]);
       } else {
         supabaseNetworkCooldownUntil = Date.now() + 60 * 1000;
@@ -175,8 +271,10 @@ const resilientSupabaseFetch: typeof fetch = async (input, init) => {
  * Creates an instance of the Supabase client given resolved credentials
  */
 function createClientInstance(url: string, key: string): SupabaseClient<Database> {
+  const safeUrl = isValidSupabaseUrl(url) ? url.replace(/\/$/, '') : DEFAULT_SUPABASE_URL;
+  const safeKey = isValidSupabaseAnonKey(key) ? key : DEFAULT_SUPABASE_ANON_KEY;
   try {
-    return createClient<Database>(url, key, {
+    return createClient<Database>(safeUrl, safeKey, {
       auth: {
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
         persistSession: true,
@@ -204,28 +302,47 @@ function createClientInstance(url: string, key: string): SupabaseClient<Database
 
 /**
  * Resolves current URL & Key according to hierarchy:
- * 1. Session Storage (user-injected for current session)
- * 2. Environment Variables (.env)
- * 3. Default Fallback
+ * 1. Session Storage (user-injected for current session, validated against placeholders)
+ * 2. Environment Variables (.env, validated against placeholders like your-project-id.supabase.co)
+ * 3. Default Production Fallback (https://bhgjlhgevyggkhyytulv.supabase.co)
  */
-function resolveCurrentCredentials(): { url: string; key: string } {
-  if (typeof window !== 'undefined') {
-    const sessionUrl = window.sessionStorage.getItem(SESSION_STORAGE_SUPABASE_URL_KEY)?.trim();
-    const sessionKey = window.sessionStorage.getItem(SESSION_STORAGE_SUPABASE_KEY_KEY)?.trim();
-    if (sessionUrl && sessionKey) {
-      return { url: sessionUrl, key: sessionKey };
+export function resolveCurrentCredentials(
+  overrideEnv?: { url?: string; key?: string }
+): { url: string; key: string } {
+  if (typeof window !== 'undefined' && !overrideEnv) {
+    const rawSessionUrl = window.sessionStorage.getItem(SESSION_STORAGE_SUPABASE_URL_KEY)?.trim();
+    const rawSessionKey = window.sessionStorage.getItem(SESSION_STORAGE_SUPABASE_KEY_KEY)?.trim();
+    if (isValidSupabaseUrl(rawSessionUrl) && isValidSupabaseAnonKey(rawSessionKey)) {
+      return { url: rawSessionUrl.replace(/\/$/, ''), key: rawSessionKey };
+    }
+    if (rawSessionUrl || rawSessionKey) {
+      try {
+        window.sessionStorage.removeItem(SESSION_STORAGE_SUPABASE_URL_KEY);
+        window.sessionStorage.removeItem(SESSION_STORAGE_SUPABASE_KEY_KEY);
+      } catch {
+        // ignore storage errors
+      }
     }
   }
 
-  const envUrl = (import.meta.env?.VITE_SUPABASE_URL as string | undefined)?.trim();
-  const envKey = (
-    (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
-    (import.meta.env?.VITE_SUPABASE_ANON_KEY as string | undefined)
-  )?.trim();
+  const candidateEnvUrl =
+    overrideEnv?.url !== undefined
+      ? overrideEnv.url?.trim()
+      : (import.meta.env?.VITE_SUPABASE_URL as string | undefined)?.trim();
+  const candidateEnvKey =
+    overrideEnv?.key !== undefined
+      ? overrideEnv.key?.trim()
+      : (
+          (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+          (import.meta.env?.VITE_SUPABASE_ANON_KEY as string | undefined)
+        )?.trim();
+
+  const validEnvUrl = isValidSupabaseUrl(candidateEnvUrl) ? candidateEnvUrl.replace(/\/$/, '') : undefined;
+  const validEnvKey = isValidSupabaseAnonKey(candidateEnvKey) ? candidateEnvKey : undefined;
 
   return {
-    url: envUrl || DEFAULT_SUPABASE_URL,
-    key: envKey || DEFAULT_SUPABASE_ANON_KEY,
+    url: validEnvUrl && validEnvKey ? validEnvUrl : DEFAULT_SUPABASE_URL,
+    key: validEnvUrl && validEnvKey ? validEnvKey : DEFAULT_SUPABASE_ANON_KEY,
   };
 }
 
@@ -248,14 +365,21 @@ export async function testSupabaseConnection(
     return { success: false, latencyMs: 0, error: 'Both Supabase URL and Key are required.' };
   }
 
-  // Basic format check
-  try {
-    const parsed = new URL(cleanUrl);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return { success: false, latencyMs: 0, error: 'Invalid URL protocol. Must start with https://' };
-    }
-  } catch {
-    return { success: false, latencyMs: 0, error: 'Malformed Supabase URL format.' };
+  if (!isValidSupabaseUrl(cleanUrl)) {
+    return {
+      success: false,
+      latencyMs: 0,
+      error:
+        'Invalid or placeholder Supabase URL (e.g. your-project-id.supabase.co). Use https://<your-real-ref>.supabase.co.',
+    };
+  }
+
+  if (!isValidSupabaseAnonKey(cleanKey)) {
+    return {
+      success: false,
+      latencyMs: 0,
+      error: 'Invalid or placeholder Supabase anon/publishable key.',
+    };
   }
 
   const startTime = performance.now();
@@ -315,10 +439,18 @@ export function injectSessionSupabaseConfig(url: string, key: string): { success
     return { success: false, error: 'Both URL and Key are required.' };
   }
 
-  try {
-    new URL(cleanUrl);
-  } catch {
-    return { success: false, error: 'Invalid Supabase URL.' };
+  if (!isValidSupabaseUrl(cleanUrl)) {
+    return {
+      success: false,
+      error: 'Invalid or placeholder Supabase URL. Do not use your-project-id.supabase.co or predicpro.guru.',
+    };
+  }
+
+  if (!isValidSupabaseAnonKey(cleanKey)) {
+    return {
+      success: false,
+      error: 'Invalid or placeholder Supabase anon key.',
+    };
   }
 
   if (typeof window !== 'undefined') {

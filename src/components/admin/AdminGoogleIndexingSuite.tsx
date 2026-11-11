@@ -328,17 +328,29 @@ export function AdminGoogleIndexingSuite() {
               {logs.length === 0 ? (
                 <p className="text-zinc-500">No indexing dispatches recorded yet.</p>
               ) : (
-                logs.slice(0, 15).map((log) => (
-                  <div key={log.id} className="flex items-start justify-between gap-2 border-b border-zinc-800/60 pb-1">
-                    <span className="text-zinc-500 shrink-0">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                    <span className="truncate flex-1">
-                      [{log.trigger.toUpperCase()}] Pushed {log.urlsPushed} URLs to {log.endpointsPushed.join(', ')}
-                    </span>
-                    <span className={log.status === 'success' ? 'text-emerald-400 font-bold shrink-0' : 'text-amber-400 font-bold shrink-0'}>
-                      {log.status.toUpperCase()}
-                    </span>
-                  </div>
-                ))
+                logs.slice(0, 15).map((log) => {
+                  const rawLog = log as unknown as Record<string, unknown>;
+                  const urlsCount =
+                    typeof rawLog.urlsPushed === 'number'
+                      ? rawLog.urlsPushed
+                      : typeof log.urlCount === 'number'
+                      ? log.urlCount
+                      : 0;
+                  const endpointsLabel = Array.isArray(rawLog.endpointsPushed)
+                    ? rawLog.endpointsPushed.join(', ')
+                    : log.endpoint || 'IndexNow / Google Indexing';
+                  return (
+                    <div key={log.id} className="flex items-start justify-between gap-2 border-b border-zinc-800/60 pb-1">
+                      <span className="text-zinc-500 shrink-0">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className="truncate flex-1">
+                        [{String(log.trigger || 'auto').toUpperCase()}] Pushed {urlsCount} URLs to {endpointsLabel}
+                      </span>
+                      <span className={log.status === 'success' ? 'text-emerald-400 font-bold shrink-0' : 'text-amber-400 font-bold shrink-0'}>
+                        {String(log.status || 'success').toUpperCase()}
+                      </span>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>

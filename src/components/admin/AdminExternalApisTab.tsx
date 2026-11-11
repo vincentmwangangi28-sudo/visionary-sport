@@ -749,7 +749,7 @@ export const AdminExternalApisTab: React.FC = () => {
                   </div>
 
                   <div className="text-[11px] text-muted-foreground font-mono truncate">
-                    Verified fields: {provider.integrity.checkedFields.join(', ')}
+                    Verified fields: {(provider.integrity?.checkedFields || []).join(', ')}
                   </div>
 
                   {provider.integrity.sampleFixture && isSampleExpanded && (

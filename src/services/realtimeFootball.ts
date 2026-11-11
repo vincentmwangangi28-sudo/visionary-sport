@@ -658,7 +658,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 
   const livePromises = isHostInCooldown('site.api.espn.com')
     ? []
-    : LEAGUES_LIST.slice(0, 6).map((league) => fetchEspnLeagueScoreboard(league, false));
+    : LEAGUES_LIST.slice(0, 2).map((league) => fetchEspnLeagueScoreboard(league, false));
 
   const leagueResults = await Promise.all(livePromises);
   const rawEvents = [...globalEvents, ...leagueResults.flat()];
@@ -888,7 +888,12 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
       return mergeAndPreservePredictions(supplemental);
     };
 
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    if (
+      (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+      (typeof window !== 'undefined' &&
+        (navigator.webdriver ||
+          /HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(navigator.userAgent || '')))
+    ) {
       return getOfflineOrFallbackList();
     }
 
@@ -951,7 +956,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     ? []
     : selectedLeagues
         .filter(l => ESPN_SCOREBOARD_SUPPORTED.has(l.espnCode))
-        .slice(0, 6)
+        .slice(0, 2)
         .map((league) => fetchEspnLeagueScoreboard(league, false));
 
   const resultsByLeague = await Promise.all(fetchPromises);

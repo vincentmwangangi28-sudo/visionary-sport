@@ -505,12 +505,19 @@ jobs:
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5 text-xs">
-            <div className="space-y-1">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveConfig();
+              }}
+              className="space-y-1"
+            >
               <label className="font-semibold text-foreground block">
                 Telegram Bot Token (@BotFather)
               </label>
               <input
                 type="password"
+                autoComplete="new-password"
                 placeholder="e.g. 719283746:AAHfi92837465_xyz..."
                 value={config.telegramBotToken}
                 onChange={(e) =>
@@ -518,7 +525,7 @@ jobs:
                 }
                 className="w-full h-9 px-3 rounded-lg bg-muted/50 border border-border font-mono text-xs text-foreground"
               />
-            </div>
+            </form>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">

@@ -1,0 +1,306 @@
+Access to manifest at 'https://predictpro.guru/manifest.json' (redirected from 'https://www.predictpro.guru/manifest.json') from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+predictpro.guru/manifest.json:1  Failed to load resource: net::ERR_FAILED
+chext_driver.js:578 Initialized driver at: Wed Nov 11 2026 10:03:40 GMT+0300 (East Africa Time)
+/?code=040d60cd-3329-4681-8827-eeb1d27e408f:1 Access to manifest at 'https://predictpro.guru/manifest.json' (redirected from 'https://www.predictpro.guru/manifest.json') from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+predictpro.guru/manifest.json:1  Failed to load resource: net::ERR_FAILED
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?id=eq.653b28cf-b2fc-44ca-a569-e4209e29e7f3:1  Failed to load resource: the server responded with a status of 403 ()
+vendor-framework-C_L11Lcq.js:9 [Auth] Profile activity sync warning: permission denied for function has_role
+fa @ vendor-framework-C_L11Lcq.js:9
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?id=eq.653b28cf-b2fc-44ca-a569-e4209e29e7f3:1  Failed to load resource: the server responded with a status of 403 ()
+vendor-framework-C_L11Lcq.js:9 [Auth] Profile activity sync warning: permission denied for function has_role
+fa @ vendor-framework-C_L11Lcq.js:9
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?id=eq.653b28cf-b2fc-44ca-a569-e4209e29e7f3:1  Failed to load resource: the server responded with a status of 403 ()
+vendor-framework-C_L11Lcq.js:9 [Auth] Profile activity sync warning: permission denied for function has_role
+fa @ vendor-framework-C_L11Lcq.js:9
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?id=eq.653b28cf-b2fc-44ca-a569-e4209e29e7f3:1  Failed to load resource: the server responded with a status of 403 ()
+vendor-framework-C_L11Lcq.js:9 [Auth] Profile activity sync warning: permission denied for function has_role
+fa @ vendor-framework-C_L11Lcq.js:9
+/api/football?type=live:1  Failed to load resource: the server responded with a status of 404 ()
+/api/football?type=results:1  Failed to load resource: the server responded with a status of 404 ()
+analytics.ahrefs.com/analytics.js:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENT
+content.js:45 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+live:1 Access to fetch at 'https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/telegram-broadcast' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+bhgjlhgevyggkhyytulv.supabase.co/functions/v1/telegram-broadcast:1  Failed to load resource: net::ERR_FAILED
+/admin:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) null
+vendor-framework-C_L11Lcq.js:9 TypeError: e.totalOdds.toFixed is not a function
+    at AdminDashboard-B4SJV9Y4.js:231:7608
+    at Array.map (<anonymous>)
+    at Ci (AdminDashboard-B4SJV9Y4.js:231:7214)
+    at Mo (vendor-framework-C_L11Lcq.js:7:16849)
+    at Vs (vendor-framework-C_L11Lcq.js:9:3138)
+    at Gl (vendor-framework-C_L11Lcq.js:9:44491)
+    at Pl (vendor-framework-C_L11Lcq.js:9:39507)
+    at Ml (vendor-framework-C_L11Lcq.js:9:39435)
+    at jl (vendor-framework-C_L11Lcq.js:9:39290)
+    at yl (vendor-framework-C_L11Lcq.js:9:35697)
+Es @ vendor-framework-C_L11Lcq.js:9
+index-DNyll95E.js:2 [PredictPro ErrorBoundary caught an exception]: TypeError: e.totalOdds.toFixed is not a function
+    at AdminDashboard-B4SJV9Y4.js:231:7608
+    at Array.map (<anonymous>)
+    at Ci (AdminDashboard-B4SJV9Y4.js:231:7214)
+    at Mo (vendor-framework-C_L11Lcq.js:7:16849)
+    at Vs (vendor-framework-C_L11Lcq.js:9:3138)
+    at Gl (vendor-framework-C_L11Lcq.js:9:44491)
+    at Pl (vendor-framework-C_L11Lcq.js:9:39507)
+    at Ml (vendor-framework-C_L11Lcq.js:9:39435)
+    at jl (vendor-framework-C_L11Lcq.js:9:39290)
+    at yl (vendor-framework-C_L11Lcq.js:9:35697) Object
+componentDidCatch @ index-DNyll95E.js:2
+vendor-framework-C_L11Lcq.js:10 [PredictPro Logger][REACT_BOUNDARY] e.totalOdds.toFixed is not a function Object
+log @ vendor-framework-C_L11Lcq.js:10
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/transactions?select=amount%2Ccreated_at%2Ctype&status=eq.completed:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=id%2Cmatch_date%2Cresult%2Ccreated_at&created_at=gte.2026-10-12T07%3A08%3A53.536Z:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?select=*:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/subscriptions?select=plan%2Cprice_kes&status=eq.active:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?select=*&updated_at=gte.2026-10-12T07%3A08%3A56.553Z:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=*:1  Failed to load resource: the server responded with a status of 403 ()
+a.espncdn.com/i/teamlogos/soccer/500/2506.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/6367.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/19244.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/519.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/557.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/3019.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/21540.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/138.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/2722.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/21926.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/7834.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/3039.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/4405.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/22163.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/8221.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/8219.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/6907.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/7017.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/21005.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+a.espncdn.com/i/teamlogos/soccer/500/12587.png:1  Failed to load resource: net::ERR_CONNECTION_RESET
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=id%2Cmatch_date%2Cresult%2Ccreated_at&created_at=gte.2026-10-12T07%3A09%3A59.712Z:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?select=*:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/user_roles?select=user_id%2Crole&role=eq.admin:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cfull_name%2Ccreated_at&order=created_at.desc&limit=150:1  Failed to load resource: the server responded with a status of 403 ()
+/admin:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) null
+/api/telegram-config:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/admin:1 Access to fetch at 'https://api.betika.com/v1/jackpot/events' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.betika.com/v1/jackpot/events:1  Failed to load resource: net::ERR_FAILED
+/admin:1 Access to fetch at 'https://www.ke.sportpesa.com/api/jackpots' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.ke.sportpesa.com/api/jackpots:1  Failed to load resource: net::ERR_FAILED
+/admin:1 Access to fetch at 'https://www.ke.sportpesa.com/api/jackpots/multi' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.ke.sportpesa.com/api/jackpots/multi:1  Failed to load resource: net::ERR_FAILED
+/admin:1 Access to fetch at 'https://sokapedia.com/jackpots/mozzart-super-grand-jackpot-predictions' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sokapedia.com/jackpots/mozzart-super-grand-jackpot-predictions:1  Failed to load resource: net::ERR_FAILED
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/admin:1 Access to fetch at 'https://sokapedia.com/jackpots/sportpesa-mega-jackpot-predictions' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sokapedia.com/jackpots/sportpesa-mega-jackpot-predictions:1  Failed to load resource: net::ERR_FAILED
+/admin:1 Access to fetch at 'https://sokapedia.com/jackpots/betika-midweek-jackpot-predictions' from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sokapedia.com/jackpots/betika-midweek-jackpot-predictions:1  Failed to load resource: net::ERR_FAILED
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/api/cron-status:1  Failed to load resource: the server responded with a status of 404 ()
+/admin:1 [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) null
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=id&limit=1:1  Failed to load resource: the server responded with a status of 403 ()
+vendor-framework-C_L11Lcq.js:9 TypeError: Cannot read properties of undefined (reading 'join')
+    at AdminDashboard-B4SJV9Y4.js:62:60929
+    at Array.map (<anonymous>)
+    at hi (AdminDashboard-B4SJV9Y4.js:62:60563)
+    at Mo (vendor-framework-C_L11Lcq.js:7:16849)
+    at Gl (vendor-framework-C_L11Lcq.js:9:43725)
+    at Pl (vendor-framework-C_L11Lcq.js:9:39507)
+    at Ml (vendor-framework-C_L11Lcq.js:9:39435)
+    at jl (vendor-framework-C_L11Lcq.js:9:39290)
+    at yl (vendor-framework-C_L11Lcq.js:9:35697)
+    at Cl (vendor-framework-C_L11Lcq.js:9:36499)
+Es @ vendor-framework-C_L11Lcq.js:9
+index-DNyll95E.js:2 [PredictPro ErrorBoundary caught an exception]: TypeError: Cannot read properties of undefined (reading 'join')
+    at AdminDashboard-B4SJV9Y4.js:62:60929
+    at Array.map (<anonymous>)
+    at hi (AdminDashboard-B4SJV9Y4.js:62:60563)
+    at Mo (vendor-framework-C_L11Lcq.js:7:16849)
+    at Gl (vendor-framework-C_L11Lcq.js:9:43725)
+    at Pl (vendor-framework-C_L11Lcq.js:9:39507)
+    at Ml (vendor-framework-C_L11Lcq.js:9:39435)
+    at jl (vendor-framework-C_L11Lcq.js:9:39290)
+    at yl (vendor-framework-C_L11Lcq.js:9:35697)
+    at Cl (vendor-framework-C_L11Lcq.js:9:36499) Object
+componentDidCatch @ index-DNyll95E.js:2
+vendor-framework-C_L11Lcq.js:10 [PredictPro Logger][REACT_BOUNDARY] Cannot read properties of undefined (reading 'join') Object
+log @ vendor-framework-C_L11Lcq.js:10
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/transactions?select=amount%2Ccreated_at%2Ctype&status=eq.completed:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=id%2Cmatch_date%2Cresult%2Ccreated_at&created_at=gte.2026-10-12T07%3A16%3A45.670Z:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/subscriptions?select=plan%2Cprice_kes&status=eq.active:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?select=*:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/profiles?select=*&updated_at=gte.2026-10-12T07%3A16%3A46.521Z:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=*:1  Failed to load resource: the server responded with a status of 403 ()
+bhgjlhgevyggkhyytulv.supabase.co/rest/v1/predictions?select=id%2Chome_team%2Caway_team%2Cleague%2Cmatch_date%2Cconfidence%2Cprediction&limit=15:1  Failed to load resource: the server responded with a status of 403 ()
+/api/ahrefs-analytics?from=2026-10-12T00%3A00%3A00Z&project_id=10277130&to=2026-11-10T23%3A59%3A59Z:1  Failed to load resource: the server responded with a status of 404 ()
+/api/pagespeed-insights?strategy=mobile:1  Failed to load resource: the server responded with a status of 404 ()
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+/api/gemini-tasks:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+/api/indexing-cron?task=indexing:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+PageSpeedInsightsPanel-B8YXEIyW.js:1 [ViralCron] Executing autonomous Google rank keep-alive cycle...
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261113:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa.conf/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa.conf/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.nations/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.nations/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/caf.nations_qual/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/caf.nations_qual/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/caf.champions/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/caf.champions/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261111:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261110:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261109:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261112:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard?dates=20261113:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+scoreboard:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+/api/telegram-broadcast:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+4151.png:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+4152.png:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+/api/indexing-cron?task=indexing:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+PageSpeedInsightsPanel-B8YXEIyW.js:1 [ViralCron] Executing autonomous Google rank keep-alive cycle...
+/api/gemini-tasks:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+PageSpeedInsightsPanel-B8YXEIyW.js:1 [ViralCron] Executing autonomous Google rank keep-alive cycle...
+/api/indexing-cron?task=indexing:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+live:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news:1  Failed to load resource: net::ERR_NETWORK_CHANGED
+PageSpeedInsightsPanel-B8YXEIyW.js:1 [ViralCron] Executing autonomous Google rank keep-alive cycle...
+/api/indexing-cron?task=indexing:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+4152.png:1  Failed to load resource: the server responded with a status of 404 ()
+10256.png:1  Failed to load resource: the server responded with a status of 404 ()
+4151.png:1  Failed to load resource: the server responded with a status of 404 ()
+82Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+5[Violation] 'setTimeout' handler took <N>ms
+live:1 Access to internal resource at 'https://predictpro.guru/manifest.json' (redirected from 'https://www.predictpro.guru/manifest.json') from origin 'https://www.predictpro.guru' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+25live:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+ajaxRequestInterceptor.ps.js:1 Fetch failed loading: POST "https://www.predictpro.guru/api/gemini-tasks"
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+n @ index-DNyll95E.js:2
+generateDailyDigest @ geminiDailyCron-CKOj3VMf.js:1
+executeCronCycle @ geminiDailyCron-CKOj3VMf.js:4
+t @ geminiDailyCron-CKOj3VMf.js:4
+site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/caf.nations_qual/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.nations/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.nations/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa.conf/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa.conf/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard?dates=20261109:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard?dates=20261110:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/caf.champions/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/caf.champions/scoreboard?dates=20261111:1  Failed to load resource: net::ERR_CONNECTION_RESET
+site.api.espn.com/apis/site/v2/sports/soccer/caf.nations_qual/scoreboard?dates=20261112:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard?dates=20261113:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+scoreboard:1  Failed to load resource: net::ERR_CONNECTION_RESET
+5[Violation] 'message' handler took <N>ms
+ajaxRequestInterceptor.ps.js:1 Fetch failed loading: POST "https://www.predictpro.guru/api/telegram-broadcast"
+19Fetch finished loading: GET "<URL>"
+[Violation] 'click' handler took 179ms
+bubble_compiled.js:4889 [Violation] 'mousedown' handler took 197ms
+[Violation] Forced reflow while executing JavaScript took 197ms
+[Violation] Forced reflow while executing JavaScript took 191ms
+64www.predictpro.guru/:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+2www.predictpro.guru/:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+66www.predictpro.guru/:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.

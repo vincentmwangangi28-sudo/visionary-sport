@@ -8,11 +8,10 @@
  * - Provides an instant offline HTML fallback ONLY when the browser is actually offline.
  */
 
-const CACHE_VERSION = 'predictpro-v6';
+const CACHE_VERSION = 'predictpro-v7';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const PRECACHE_ASSETS = [
-  '/manifest.json',
   '/favicon.svg',
 ];
 
