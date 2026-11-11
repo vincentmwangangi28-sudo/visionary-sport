@@ -113,14 +113,253 @@ function cleanOAuthParamsFromWindowUrl(): void {
   }
 }
 
+const PERSISTED_MEMBER_SESSION_KEY = 'predictpro_member_session_v1';
+const KNOWN_ACCOUNT_STORAGE_KEY = 'predictpro_known_account_v1';
+const EXPLICIT_SIGNOUT_KEY = 'predictpro_explicit_signout_v1';
+const SIGNUP_POPUP_COMPLETED_KEY = 'predictpro_signup_popup_completed_v1';
+const GUEST_GATE_LOCKED_KEY = 'predictpro_guest_gate_locked_v3';
+const MEMBER_COOKIE_NAME = 'predictpro_member_v1';
+const KNOWN_ACCOUNT_COOKIE_NAME = 'predictpro_has_account';
+
+export interface KnownAccountInfo {
+  id: string;
+  email: string;
+  fullName?: string;
+  avatarUrl?: string;
+  provider?: string;
+  updatedAt: string;
+}
+
+function getCookieDomainAttribute(): string {
+  if (typeof window === 'undefined') return '';
+  const host = window.location.hostname.toLowerCase();
+  if (host === 'predictpro.guru' || host.endsWith('.predictpro.guru')) {
+    return '; domain=.predictpro.guru';
+  }
+  return '';
+}
+
+function setCrossSubdomainCookie(name: string, value: string, maxAgeSeconds = 31536000): void {
+  if (typeof document === 'undefined') return;
+  try {
+    const encoded = encodeURIComponent(value);
+    const domainAttr = getCookieDomainAttribute();
+    const secureAttr =
+      typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${name}=${encoded}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax${domainAttr}${secureAttr}`;
+  } catch {
+    // ignore cookie write errors
+  }
+}
+
+function readCookieValue(name: string): string | null {
+  if (typeof document === 'undefined' || !document.cookie) return null;
+  try {
+    const prefix = `${name}=`;
+    const parts = document.cookie.split(';');
+    for (const part of parts) {
+      const trimmed = part.trim();
+      if (trimmed.startsWith(prefix)) {
+        return decodeURIComponent(trimmed.slice(prefix.length));
+      }
+    }
+  } catch {
+    // ignore cookie read errors
+  }
+  return null;
+}
+
 function unlockGuestPreviewGate(): void {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem('predictpro_signup_popup_completed_v1', 'true');
-    window.localStorage.removeItem('predictpro_guest_gate_locked_v3');
+    window.localStorage.setItem(SIGNUP_POPUP_COMPLETED_KEY, 'true');
+    window.localStorage.removeItem(GUEST_GATE_LOCKED_KEY);
+    setCrossSubdomainCookie(KNOWN_ACCOUNT_COOKIE_NAME, '1');
   } catch {
     // ignore storage errors
   }
+}
+
+/**
+ * Persists the authenticated user identity across localStorage and first-party cookies
+ * (.predictpro.guru) so returning users are automatically logged in on every visit
+ * without having to re-authenticate.
+ */
+export function savePersistedMemberUser(user: User | null | undefined): void {
+  if (typeof window === 'undefined' || !user?.id) return;
+  try {
+    const fullName =
+      (user.user_metadata?.full_name as string | undefined) ||
+      (user.user_metadata?.name as string | undefined) ||
+      user.email?.split('@')[0] ||
+      'PredictPro Member';
+    const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+    const provider = (user.app_metadata?.provider as string | undefined) || 'email';
+
+    const knownInfo: KnownAccountInfo = {
+      id: user.id,
+      email: user.email || '',
+      fullName,
+      avatarUrl,
+      provider,
+      updatedAt: new Date().toISOString(),
+    };
+
+    window.localStorage.setItem(
+      PERSISTED_MEMBER_SESSION_KEY,
+      JSON.stringify({ user, savedAt: Date.now() })
+    );
+    window.localStorage.setItem(KNOWN_ACCOUNT_STORAGE_KEY, JSON.stringify(knownInfo));
+    window.localStorage.removeItem(EXPLICIT_SIGNOUT_KEY);
+    unlockGuestPreviewGate();
+
+    setCrossSubdomainCookie(MEMBER_COOKIE_NAME, JSON.stringify(knownInfo));
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
+function buildUserFromKnownAccount(info: KnownAccountInfo): User {
+  return {
+    id: info.id,
+    aud: 'authenticated',
+    role: 'authenticated',
+    email: info.email,
+    email_confirmed_at: info.updatedAt,
+    app_metadata: { provider: info.provider || 'email', providers: [info.provider || 'email'] },
+    user_metadata: {
+      full_name: info.fullName || info.email?.split('@')[0] || 'PredictPro Member',
+      avatar_url: info.avatarUrl,
+    },
+    identities: [],
+    created_at: info.updatedAt,
+    updated_at: info.updatedAt,
+  } as User;
+}
+
+/**
+ * Synchronously inspects localStorage, Supabase token keys, and cross-subdomain cookies
+ * to auto-detect and restore an authenticated member session immediately on page load.
+ */
+export function getPersistedMemberUser(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const explicitlySignedOut = window.localStorage.getItem(EXPLICIT_SIGNOUT_KEY) === 'true';
+
+    // 1. Check active Supabase sb-*-auth-token in localStorage first
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+        const raw = window.localStorage.getItem(k);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const sbUser = (parsed?.user || parsed?.currentSession?.user) as User | undefined;
+          if (sbUser?.id) {
+            savePersistedMemberUser(sbUser);
+            return sbUser;
+          }
+        }
+      }
+    }
+
+    if (explicitlySignedOut) {
+      return null;
+    }
+
+    // 2. Check persisted PredictPro member session in localStorage
+    const savedSessionRaw = window.localStorage.getItem(PERSISTED_MEMBER_SESSION_KEY);
+    if (savedSessionRaw) {
+      const parsed = JSON.parse(savedSessionRaw);
+      if (parsed?.user?.id) {
+        unlockGuestPreviewGate();
+        return parsed.user as User;
+      }
+    }
+
+    // 3. Check known account info in localStorage (auto-restore unless user explicitly signed out)
+    const knownRaw = window.localStorage.getItem(KNOWN_ACCOUNT_STORAGE_KEY);
+    if (knownRaw) {
+      const knownInfo = JSON.parse(knownRaw) as KnownAccountInfo;
+      if (knownInfo?.id && knownInfo?.email) {
+        const restored = buildUserFromKnownAccount(knownInfo);
+        unlockGuestPreviewGate();
+        return restored;
+      }
+    }
+
+    // 4. Check cross-subdomain cookie (.predictpro.guru) so switching between predictpro.guru and www.predictpro.guru stays logged in
+    const cookieRaw = readCookieValue(MEMBER_COOKIE_NAME);
+    if (cookieRaw) {
+      const cookieInfo = JSON.parse(cookieRaw) as KnownAccountInfo;
+      if (cookieInfo?.id && cookieInfo?.email) {
+        const restored = buildUserFromKnownAccount(cookieInfo);
+        savePersistedMemberUser(restored);
+        return restored;
+      }
+    }
+  } catch {
+    // ignore storage/parse errors
+  }
+  return null;
+}
+
+/**
+ * Smart detection of whether this browser/device belongs to a user who already has an account
+ * (even if they explicitly signed out), or has existing member activity, so we never annoy them
+ * with the "Create Account" popup.
+ */
+export function hasKnownAccountOnDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (getPersistedMemberUser() !== null) return true;
+    if (window.localStorage.getItem(KNOWN_ACCOUNT_STORAGE_KEY) !== null) return true;
+    if (window.localStorage.getItem(SIGNUP_POPUP_COMPLETED_KEY) === 'true') return true;
+    if (window.localStorage.getItem('predictpro_popup_dismissed_v1') === 'true') return true;
+    if (readCookieValue(KNOWN_ACCOUNT_COOKIE_NAME) === '1') return true;
+    if (readCookieValue(MEMBER_COOKIE_NAME) !== null) return true;
+
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+        return true;
+      }
+    }
+
+    // Also check if the user has saved member data on this device
+    if (
+      window.localStorage.getItem('predictpro_custom_admins') !== null ||
+      window.localStorage.getItem('predictpro_bet_tracker_entries_v1') !== null ||
+      window.localStorage.getItem('predictpro_pinned_favorites_v1') !== null
+    ) {
+      return true;
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return false;
+}
+
+export function getKnownAccountEmail(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const persisted = getPersistedMemberUser();
+    if (persisted?.email) return persisted.email;
+
+    const knownRaw = window.localStorage.getItem(KNOWN_ACCOUNT_STORAGE_KEY);
+    if (knownRaw) {
+      const parsed = JSON.parse(knownRaw) as KnownAccountInfo;
+      if (parsed?.email) return parsed.email;
+    }
+
+    const cookieRaw = readCookieValue(MEMBER_COOKIE_NAME);
+    if (cookieRaw) {
+      const parsed = JSON.parse(cookieRaw) as KnownAccountInfo;
+      if (parsed?.email) return parsed.email;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 function hasStoredAuthSession(): boolean {
@@ -131,6 +370,9 @@ function hasStoredAuthSession(): boolean {
       window.location.search.includes('code=') ||
       window.location.search.includes('error_description=')
     ) {
+      return true;
+    }
+    if (getPersistedMemberUser() !== null) {
       return true;
     }
     for (let i = 0; i < window.localStorage.length; i++) {
@@ -153,6 +395,7 @@ function hasStoredAuthSession(): boolean {
  */
 export async function syncUserProfileActivity(user: User) {
   if (!user?.id) return;
+  savePersistedMemberUser(user);
   try {
     const supabase = await getSupabase();
     const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
@@ -179,9 +422,9 @@ export async function syncUserProfileActivity(user: User) {
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => getPersistedMemberUser());
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(() => hasStoredAuthSession());
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -196,13 +439,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const supabase = await getSupabase();
         if (unsubscribed) return;
 
-        // CRITICAL: Always attach onAuthStateChange even if hasStoredAuthSession() is initially false,
-        // so that signing up or signing in on /auth immediately updates user & session across the app.
+        // CRITICAL: Always attach onAuthStateChange so signing up or signing in immediately updates user & session.
+        // If a background token refresh fails or returns null, preserve the persisted member user unless explicitly signed out.
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, nextSession) => {
             if (unsubscribed) return;
-            setSession(nextSession);
-            setUser(nextSession?.user ?? null);
+            if (nextSession?.user) {
+              savePersistedMemberUser(nextSession.user);
+              setSession(nextSession);
+              setUser(nextSession.user);
+            } else if (event === 'SIGNED_OUT') {
+              const explicitlySignedOut =
+                typeof window !== 'undefined' &&
+                window.localStorage.getItem(EXPLICIT_SIGNOUT_KEY) === 'true';
+              if (explicitlySignedOut) {
+                setSession(null);
+                setUser(null);
+              } else {
+                const fallbackUser = getPersistedMemberUser();
+                if (fallbackUser) {
+                  setUser(fallbackUser);
+                }
+              }
+            }
             setLoading(false);
 
             if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') && nextSession?.user) {
@@ -262,8 +521,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (unsubscribed) return;
-        setSession(activeSession);
-        setUser(activeSession?.user ?? null);
+        if (activeSession?.user) {
+          savePersistedMemberUser(activeSession.user);
+          setSession(activeSession);
+          setUser(activeSession.user);
+        } else {
+          // Preserve auto-detected returning member user so they never have to re-login on every visit
+          const persistedUser = getPersistedMemberUser();
+          if (persistedUser) {
+            setUser(persistedUser);
+          }
+        }
         setLoading(false);
 
         if (activeSession?.user) {
@@ -328,6 +596,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       notifyToast.error(standbyErr.message);
       throw standbyErr;
     }
+    savePersistedMemberUser(data.session.user);
     setSession(data.session);
     setUser(data.session.user);
     unlockGuestPreviewGate();
@@ -383,6 +652,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Ensure an explicit password sign-in is performed or session is active so Supabase auth.users.last_sign_in_at is always populated
     if (data?.session) {
+      savePersistedMemberUser(data.session.user);
       setSession(data.session);
       setUser(data.session.user);
       unlockGuestPreviewGate();
@@ -398,6 +668,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password: cleanPassword,
       });
       if (!signInErr && signInData?.session) {
+        savePersistedMemberUser(signInData.session.user);
         setSession(signInData.session);
         setUser(signInData.session.user);
         unlockGuestPreviewGate();
@@ -410,6 +681,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // ignore
     }
 
+    unlockGuestPreviewGate();
     notifyToast.success('Account created! Please check your email to verify.');
   }, [navigate]);
 
@@ -422,7 +694,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         redirectTo: `${redirectOrigin}/`,
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent',
+          prompt: 'select_account',
         },
       },
     });
@@ -445,6 +717,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Check if session was already established
       const { data: current } = await supabase.auth.getSession();
       if (current?.session) {
+        savePersistedMemberUser(current.session.user);
         setSession(current.session);
         setUser(current.session.user);
         unlockGuestPreviewGate();
@@ -462,6 +735,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (data?.session) {
+      savePersistedMemberUser(data.session.user);
       setSession(data.session);
       setUser(data.session.user);
       unlockGuestPreviewGate();
@@ -476,9 +750,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   const signOut = useCallback(async () => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(EXPLICIT_SIGNOUT_KEY, 'true');
+        window.localStorage.removeItem(PERSISTED_MEMBER_SESSION_KEY);
+        // Keep KNOWN_ACCOUNT_STORAGE_KEY and SIGNUP_POPUP_COMPLETED_KEY intact so we know
+        // this user already has an account and never show the Create Account popup!
+        unlockGuestPreviewGate();
+      } catch {
+        // ignore
+      }
+    }
     const supabase = await getSupabase();
-    const { error } = await supabase.auth.signOut();
-    if (error) { notifyToast.error(error.message || 'Failed to sign out'); return; }
+    await supabase.auth.signOut().catch(() => {});
     setSession(null);
     setUser(null);
     notifyToast.success('Signed out successfully');

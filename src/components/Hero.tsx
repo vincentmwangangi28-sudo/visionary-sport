@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ChevronRight, Tv, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, Tv, SlidersHorizontal, Download } from "lucide-react";
+import { usePWAInstall, triggerPWAInstallFlow } from "@/hooks/usePWAInstall";
+import { toast } from "sonner";
 
 interface LiveStats {
   predictions: number;
@@ -11,12 +13,24 @@ interface LiveStats {
 }
 
 export const Hero = () => {
+  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const [stats, setStats] = useState<LiveStats>({
     predictions: 500,
     accuracy: 87,
     users: 12000,
     leagues: 40,
   });
+
+  const handleHeroDownloadApp = async () => {
+    if (isInstallable) {
+      const accepted = await install();
+      if (accepted) {
+        toast.success("PredictPro App added to your Home Screen!");
+        return;
+      }
+    }
+    triggerPWAInstallFlow();
+  };
 
   useEffect(() => {
     if (
@@ -99,9 +113,23 @@ export const Hero = () => {
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               </Button>
             </Link>
+            {!isInstalled && (
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                onClick={handleHeroDownloadApp}
+                data-testid="hero-download-app-btn"
+                className="h-10 px-4 text-xs font-bold gap-1.5 whitespace-nowrap shrink-0 border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{isIOS ? "Add to Home Screen" : "Download App"}</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
     </section>
   );
 };
+

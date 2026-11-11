@@ -6,7 +6,15 @@ import {
   isValidSupabaseAnonKey,
   resolveCurrentCredentials,
 } from '@/integrations/supabase/client';
-import { getCanonicalSiteOrigin, extractOAuthCodeFromInput } from '@/hooks/useAuth';
+import {
+  getCanonicalSiteOrigin,
+  extractOAuthCodeFromInput,
+  savePersistedMemberUser,
+  getPersistedMemberUser,
+  hasKnownAccountOnDevice,
+  getKnownAccountEmail,
+} from '@/hooks/useAuth';
+import type { User } from '@supabase/supabase-js';
 
 describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
   it('rejects placeholder URLs like https://your-project-id.supabase.co and typo domains', () => {
@@ -54,4 +62,50 @@ describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
     expect(extractOAuthCodeFromInput(sampleCode)).toBe(sampleCode);
     expect(extractOAuthCodeFromInput('   ')).toBeNull();
   });
+
+  it('persists and auto-restores authenticated member session across visits without requiring re-login', () => {
+    localStorage.clear();
+    const mockUser = {
+      id: 'user-123-abc',
+      email: 'vipmember@predictpro.guru',
+      aud: 'authenticated',
+      role: 'authenticated',
+      created_at: new Date().toISOString(),
+      app_metadata: { provider: 'email' },
+      user_metadata: { full_name: 'VIP Member' },
+    } as User;
+
+    savePersistedMemberUser(mockUser);
+
+    const restored = getPersistedMemberUser();
+    expect(restored).not.toBeNull();
+    expect(restored?.id).toBe('user-123-abc');
+    expect(restored?.email).toBe('vipmember@predictpro.guru');
+    expect(hasKnownAccountOnDevice()).toBe(true);
+    expect(getKnownAccountEmail()).toBe('vipmember@predictpro.guru');
+  });
+
+  it('still remembers the user has an account even after explicit sign-out so Create Account popup is avoided', () => {
+    localStorage.clear();
+    const mockUser = {
+      id: 'user-999-xyz',
+      email: 'returning@predictpro.guru',
+      aud: 'authenticated',
+      role: 'authenticated',
+      created_at: new Date().toISOString(),
+      app_metadata: { provider: 'email' },
+      user_metadata: {},
+    } as User;
+
+    savePersistedMemberUser(mockUser);
+    // Simulate explicit sign out
+    localStorage.setItem('predictpro_explicit_signout_v1', 'true');
+    localStorage.removeItem('predictpro_member_session_v1');
+
+    // Should not auto-login after explicit sign-out, but MUST remember they already have an account
+    expect(getPersistedMemberUser()).toBeNull();
+    expect(hasKnownAccountOnDevice()).toBe(true);
+    expect(getKnownAccountEmail()).toBe('returning@predictpro.guru');
+  });
 });
+

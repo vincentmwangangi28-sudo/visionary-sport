@@ -1,6 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { useAuth, syncUserProfileActivity, getCanonicalSiteOrigin } from '@/hooks/useAuth';
+import {
+  useAuth,
+  syncUserProfileActivity,
+  getCanonicalSiteOrigin,
+  hasKnownAccountOnDevice,
+  getKnownAccountEmail,
+} from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +22,6 @@ import {
   Bell,
   BookmarkCheck,
   ShieldCheck,
-  Clock,
-  Sparkles,
   RefreshCw,
   X,
 } from 'lucide-react';
@@ -31,21 +35,13 @@ const STORAGE_ENGAGED_SECONDS_KEY = 'predictpro_guest_preview_seconds_v3';
 const STORAGE_PAGE_VIEWS_KEY = 'predictpro_guest_page_views_v3';
 const STORAGE_GATE_LOCKED_KEY = 'predictpro_guest_gate_locked_v3';
 const STORAGE_COMPLETED_KEY = 'predictpro_signup_popup_completed_v1';
-
-// Give new unauthenticated visitors 3 full minutes (180 seconds) of active site usage
-// before locking access with the mandatory account creation modal.
-const GUEST_PREVIEW_LIMIT_SECONDS = 180;
-// Only show the subtle bottom countdown reminder during the final 30 seconds of free preview
-const COUNTDOWN_WARNING_WINDOW_SECONDS = 30;
-// Minimum seconds before page-view count can trigger the gate (so clicking around quickly on first visit never locks early)
-const MIN_SECONDS_BEFORE_VIEW_LOCK = 120;
-const MAX_FREE_PAGE_VIEWS = 8;
+const STORAGE_DISMISSED_KEY = 'predictpro_popup_dismissed_v1';
 
 function isAutomatedCrawler(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
   return Boolean(
     navigator.webdriver ||
-      /Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(
+      /Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(
         navigator.userAgent || ''
       )
   );
@@ -67,11 +63,13 @@ export const FirstVisitSignupModal: React.FC = () => {
 
   const [open, setOpen] = useState(false);
   const [isGateLocked, setIsGateLocked] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [knownAccount, setKnownAccount] = useState<boolean>(() => hasKnownAccountOnDevice());
 
-  const [mode, setMode] = useState<'register' | 'login' | 'forgot'>('register');
+  const [mode, setMode] = useState<'register' | 'login' | 'forgot'>(() =>
+    hasKnownAccountOnDevice() ? 'login' : 'register'
+  );
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => getKnownAccountEmail() || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -79,82 +77,46 @@ export const FirstVisitSignupModal: React.FC = () => {
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
   const [resendingEmail, setResendingEmail] = useState(false);
 
-  const elapsedRef = useRef<number>(0);
-  const lastActivityRef = useRef<number>(Date.now());
   const isExempt = isExemptPublicRoute(location.pathname);
 
-  // Hydrate initial persisted preview time & clear legacy v1/v2 keys so visitors get their full preview window
+  // Clean up any legacy guest gate locks so returning users or visitors are never trapped by a mandatory popup
   useEffect(() => {
     if (isAutomatedCrawler()) return;
     try {
-      // Clean up legacy v1/v2 keys that caused immediate locking from older sessions
       localStorage.removeItem('predictpro_visitor_engaged_seconds_v1');
       localStorage.removeItem('predictpro_visitor_page_views_v1');
       localStorage.removeItem('predictpro_guest_gate_locked_v2');
+      localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
+      localStorage.removeItem(STORAGE_ENGAGED_SECONDS_KEY);
+      localStorage.removeItem(STORAGE_PAGE_VIEWS_KEY);
 
-      const locked = localStorage.getItem(STORAGE_GATE_LOCKED_KEY) === 'true';
-      const savedSeconds = parseInt(localStorage.getItem(STORAGE_ENGAGED_SECONDS_KEY) || '0', 10);
-      const validSeconds = !Number.isNaN(savedSeconds) && savedSeconds > 0 ? savedSeconds : 0;
-
-      elapsedRef.current = validSeconds;
-      setElapsedSeconds(validSeconds);
-
-      if (locked || validSeconds >= GUEST_PREVIEW_LIMIT_SECONDS) {
-        setIsGateLocked(true);
-        setOpen(true);
+      if (hasKnownAccountOnDevice()) {
+        setKnownAccount(true);
+        setOpen(false);
+        setIsGateLocked(false);
+        const savedEmail = getKnownAccountEmail();
+        if (savedEmail) {
+          setEmail(savedEmail);
+          setMode('login');
+        }
       }
     } catch {
       // Ignore storage read errors
     }
-  }, []);
+  }, [user]);
 
-  // Track user interactions so the timer only counts active browsing time
-  useEffect(() => {
-    if (authLoading || user || isExempt || isGateLocked || isAutomatedCrawler()) return;
-
-    const handleActivity = () => {
-      lastActivityRef.current = Date.now();
-    };
-
-    window.addEventListener('scroll', handleActivity, { passive: true });
-    window.addEventListener('pointerdown', handleActivity, { passive: true });
-    window.addEventListener('mousemove', handleActivity, { passive: true });
-    window.addEventListener('keydown', handleActivity, { passive: true });
-    window.addEventListener('touchstart', handleActivity, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleActivity);
-      window.removeEventListener('pointerdown', handleActivity);
-      window.removeEventListener('mousemove', handleActivity);
-      window.removeEventListener('keydown', handleActivity);
-      window.removeEventListener('touchstart', handleActivity);
-    };
-  }, [authLoading, user, isExempt, isGateLocked]);
-
-  // Track route navigations for unauthenticated visitors; only lock after both sufficient views AND minimum usage time
-  useEffect(() => {
-    if (authLoading || user || isExempt || isAutomatedCrawler()) return;
-    try {
-      lastActivityRef.current = Date.now();
-      const prevViews = parseInt(localStorage.getItem(STORAGE_PAGE_VIEWS_KEY) || '0', 10);
-      const nextViews = prevViews + 1;
-      localStorage.setItem(STORAGE_PAGE_VIEWS_KEY, String(nextViews));
-
-      if (nextViews > MAX_FREE_PAGE_VIEWS && elapsedRef.current >= MIN_SECONDS_BEFORE_VIEW_LOCK) {
-        localStorage.setItem(STORAGE_GATE_LOCKED_KEY, 'true');
-        setIsGateLocked(true);
-        setOpen(true);
-      }
-    } catch {
-      // Ignore storage errors
-    }
-  }, [location.pathname, user, authLoading, isExempt]);
-
-  // Listen for manual open events (e.g. from any CTA or guest button)
+  // Listen ONLY for explicit manual open events (never auto-popup or lock the screen for users)
   useEffect(() => {
     const handleCustomOpen = () => {
       if (!user) {
-        setMode('register');
+        const savedEmail = getKnownAccountEmail();
+        if (savedEmail || hasKnownAccountOnDevice()) {
+          if (savedEmail) setEmail(savedEmail);
+          setMode('login');
+        } else {
+          setMode('register');
+        }
+        setIsGateLocked(false);
         setOpen(true);
       }
     };
@@ -171,6 +133,7 @@ export const FirstVisitSignupModal: React.FC = () => {
     if (user) {
       setOpen(false);
       setIsGateLocked(false);
+      setKnownAccount(true);
       try {
         localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
         localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
@@ -180,65 +143,17 @@ export const FirstVisitSignupModal: React.FC = () => {
     }
   }, [user]);
 
-  // Lock document scroll whenever the modal/gate is open on non-exempt routes
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const shouldLockScroll = (open || isGateLocked) && !user && !authLoading && !isExempt;
-    if (shouldLockScroll) {
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prevOverflow;
-      };
-    }
-  }, [open, isGateLocked, user, authLoading, isExempt]);
-
-  // 1-second active engagement timer for guest preview session
-  useEffect(() => {
-    if (authLoading || user || isExempt || isGateLocked || isAutomatedCrawler()) return;
-
-    const interval = setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
-        return;
-      }
-
-      // Only count time when the user has been active in the last 45 seconds (or during the first 60s of reading)
-      const idleMs = Date.now() - lastActivityRef.current;
-      if (idleMs > 45000 && elapsedRef.current >= 60) {
-        return;
-      }
-
-      const next = elapsedRef.current + 1;
-      elapsedRef.current = next;
-      setElapsedSeconds(next);
-
-      try {
-        localStorage.setItem(STORAGE_ENGAGED_SECONDS_KEY, String(next));
-      } catch {
-        // Ignore storage errors
-      }
-
-      if (next >= GUEST_PREVIEW_LIMIT_SECONDS) {
-        try {
-          localStorage.setItem(STORAGE_GATE_LOCKED_KEY, 'true');
-        } catch {
-          // Ignore
-        }
-        setIsGateLocked(true);
-        setOpen(true);
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [authLoading, user, isExempt, isGateLocked]);
-
   const handleClosePreviewModal = useCallback(() => {
-    // Only allow closing if the guest preview timer has NOT expired yet
-    if (!isGateLocked) {
-      setOpen(false);
+    setOpen(false);
+    setIsGateLocked(false);
+    try {
+      localStorage.setItem(STORAGE_DISMISSED_KEY, 'true');
+      localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
+      localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
+    } catch {
+      // Ignore
     }
-  }, [isGateLocked]);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setGoogleSubmitting(true);
@@ -453,62 +368,13 @@ export const FirstVisitSignupModal: React.FC = () => {
   };
 
   if (authLoading || user || isExempt || isAutomatedCrawler()) return null;
+  if (!open && knownAccount) return null;
 
-  const remainingSeconds = Math.max(0, GUEST_PREVIEW_LIMIT_SECONDS - elapsedSeconds);
-  const showModal = open || isGateLocked;
+  const showModal = open;
 
   return (
     <>
-      {/* Live Guest Preview Countdown Bar (shown only during the final 30 seconds before locking) */}
-      {!showModal && remainingSeconds > 0 && remainingSeconds <= COUNTDOWN_WARNING_WINDOW_SECONDS && (
-        <div
-          role="region"
-          aria-label="Free guest preview countdown"
-          className="fixed bottom-16 md:bottom-4 left-1/2 -translate-x-1/2 z-40 w-[94vw] max-w-xl rounded-2xl border border-primary/40 bg-card/95 backdrop-blur-md px-4 py-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3 duration-300"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0">
-              <Clock className="h-4 w-4 animate-pulse" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                <span>Free Guest Preview:</span>
-                <span className="font-mono text-primary">{remainingSeconds}s remaining</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground truncate">
-                Create a free account to unlock unlimited AI predictions, live xG &amp; 50 bonus coins.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setMode('login');
-                setOpen(true);
-              }}
-              className="h-8 px-2.5 text-xs font-semibold"
-            >
-              Sign In
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setMode('register');
-                setOpen(true);
-              }}
-              className="h-8 px-3 text-xs font-bold gap-1"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Create Free Account
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Mandatory Full-Screen Account Gate Modal */}
+      {/* Account Modal (Opened only on explicit user action) */}
       {showModal && (
         <div
           role="dialog"
@@ -517,17 +383,14 @@ export const FirstVisitSignupModal: React.FC = () => {
           className="fixed inset-0 z-[9990] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
         >
           <div className="w-full max-w-[460px] rounded-2xl border border-border/80 bg-background shadow-2xl overflow-hidden my-auto relative">
-            {/* Close button ONLY available if guest preview time has not expired yet */}
-            {!isGateLocked && (
-              <button
-                type="button"
-                onClick={handleClosePreviewModal}
-                aria-label="Return to preview"
-                className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleClosePreviewModal}
+              aria-label="Close dialog"
+              className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
+            >
+              <X className="h-4 w-4" />
+            </button>
 
             {/* Top Accent Header */}
             <div className="bg-card border-b border-border/60 px-6 pt-6 pb-5">
@@ -790,20 +653,13 @@ export const FirstVisitSignupModal: React.FC = () => {
                   </button>
                 </span>
 
-                {!isGateLocked ? (
-                  <button
-                    type="button"
-                    onClick={handleClosePreviewModal}
-                    className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
-                  >
-                    Continue preview ({remainingSeconds}s)
-                  </button>
-                ) : (
-                  <span className="text-[11px] text-amber-500 font-semibold flex items-center gap-1">
-                    <Lock className="h-3 w-3" />
-                    Account required
-                  </span>
-                )}
+                <button
+                  type="button"
+                  onClick={handleClosePreviewModal}
+                  className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                >
+                  Continue browsing
+                </button>
               </div>
 
               <p className="text-center text-[11px] text-muted-foreground pt-1">

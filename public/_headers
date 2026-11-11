@@ -10,6 +10,12 @@
   Content-Type: image/png
   X-Robots-Tag: all
 
+/manifest.json
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: application/manifest+json; charset=utf-8
+  X-Robots-Tag: all
+
 /apple-touch-icon.png
   Cache-Control: public, max-age=86400
   Access-Control-Allow-Origin: *

@@ -19,6 +19,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences, OddsFormat } from '@/hooks/useUserPreferences';
 import { UnifiedSearchTrigger } from '@/components/UnifiedSearchTrigger';
+import { PWAInstallButton } from '@/components/PWAInstallButton';
 
 const MAJOR_COMPETITIONS = [
   { to: '/premier-league-predictions', label: 'Premier League', country: 'England' },
@@ -292,9 +293,10 @@ export const Navbar = () => {
           </nav>
         </div>
 
-        {/* Zone 2: Interactive Bet Slip Button, Rewards, Odds Toggle & Auth */}
+        {/* Zone 2: Interactive Bet Slip Button, Download App, Rewards, Odds Toggle & Auth */}
         <div className="flex items-center gap-2 shrink-0">
           <UnifiedSearchTrigger variant="compact" />
+          <PWAInstallButton />
 
           {/* Interactive Bet Slip & Booking Code Trigger */}
           <button

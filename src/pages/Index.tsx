@@ -8,6 +8,8 @@ import { PredictionsDashboard } from '@/components/PredictionsDashboard';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
+import { HomeDownloadAppBanner } from '@/components/PWAInstallButton';
+import { triggerPWAInstallFlow } from '@/hooks/usePWAInstall';
 import {
   Flame,
   Ticket,
@@ -24,6 +26,7 @@ import {
   Bell,
   Gift,
   Wallet,
+  Download,
 } from 'lucide-react';
 
 const FooterFAQ = lazyWithRetry(() =>
@@ -359,9 +362,21 @@ const Index = () => {
                 <Gift className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Invite &amp; Earn Coins</span>
               </Link>
+              <button
+                type="button"
+                onClick={triggerPWAInstallFlow}
+                data-testid="home-quickstrip-download-app-btn"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/15 hover:bg-primary/25 text-foreground text-xs font-bold transition-colors shrink-0 cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>Download App</span>
+              </button>
             </div>
           </div>
         </section>
+
+        {/* Home Screen Download App Banner */}
+        <HomeDownloadAppBanner />
 
         {/* Primary Matchday Predictions Workspace */}
         {(activeMode === 'predictions' || activeMode === 'all') && (

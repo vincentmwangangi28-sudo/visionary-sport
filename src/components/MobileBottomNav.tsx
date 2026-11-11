@@ -7,10 +7,12 @@ import {
   Ticket,
   Flame,
   X,
+  Download,
 } from 'lucide-react';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { UnifiedSearchTrigger } from '@/components/UnifiedSearchTrigger';
+import { triggerPWAInstallFlow } from '@/hooks/usePWAInstall';
 
 export const MobileBottomNav = () => {
   const { pathname } = useLocation();
@@ -152,6 +154,19 @@ export const MobileBottomNav = () => {
             </div>
 
             <div className="py-4 space-y-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setSheetOpen(false);
+                  triggerPWAInstallFlow();
+                }}
+                data-testid="mobile-drawer-download-app-btn"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-xs transition-colors"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                <span>Download PredictPro App to Home Screen</span>
+              </button>
+
               <div>
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Betting Tools &amp; Markets</p>
                 <div className="grid grid-cols-2 gap-1.5 text-xs">
