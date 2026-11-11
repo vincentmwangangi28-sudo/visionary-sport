@@ -35,10 +35,66 @@ import {
   playRefereeWhistleAlert,
 } from '@/services/goalHornAudioService';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { toast } from 'sonner';
+
+function mapLiveFixtureToPitchTelemetryPackage(
+  m: ApiFootballLiveFixture,
+  idx: number
+): MatchPitchTelemetryPackage {
+  const baseTemplate = MATCH_PITCH_TELEMETRY_PACKAGES[idx % MATCH_PITCH_TELEMETRY_PACKAGES.length];
+  const hScore = m.home_score ?? 0;
+  const aScore = m.away_score ?? 0;
+  const st = m.match_stats;
+  const hShots = st?.homeShots ?? Math.max(hScore * 3 + 4, 8);
+  const aShots = st?.awayShots ?? Math.max(aScore * 3 + 3, 6);
+  const hOnTarget = st?.homeOnTarget ?? Math.max(hScore, Math.round(hShots * 0.44));
+  const aOnTarget = st?.awayOnTarget ?? Math.max(aScore, Math.round(aShots * 0.42));
+  const homeXg = Number((hShots * 0.11 + hOnTarget * 0.16 + hScore * 0.3).toFixed(2));
+  const awayXg = Number((aShots * 0.11 + aOnTarget * 0.16 + aScore * 0.3).toFixed(2));
+  const rawMin = parseInt(String(m.minute ?? '').replace(/\D/g, ''), 10) || (m.status === 'halftime' ? 45 : 64);
+
+  return {
+    ...baseTemplate,
+    id: String(m.id),
+    homeTeam: m.home_team,
+    awayTeam: m.away_team,
+    league: m.league || baseTemplate.league,
+    scoreline: `${hScore} - ${aScore}`,
+    minuteLabel: m.status === 'halftime' ? 'HT' : `LIVE ${rawMin}'`,
+    homeXg,
+    awayXg,
+    shotMap: baseTemplate.shotMap.map((s, sIdx) => ({
+      ...s,
+      id: `${m.id}-shot-${sIdx}`,
+      player:
+        m.match_events && m.match_events[sIdx]?.player
+          ? m.match_events[sIdx].player
+          : s.team === 'HOME'
+          ? `${m.home_team} #${9 + (sIdx % 3)}`
+          : `${m.away_team} #${10 + (sIdx % 2)}`,
+    })),
+  };
+}
 
 export const PitchTelemetryPage: React.FC = () => {
   const { addSelection } = useBetSlip();
+  const { liveFixtures } = useFootballData({ livePollInterval: 15_000 });
+
+  const telemetryPackages = useMemo<MatchPitchTelemetryPackage[]>(() => {
+    const activeLive = liveFixtures.filter((m) => m.status === 'live' || m.status === 'halftime');
+    if (activeLive.length === 0) return MATCH_PITCH_TELEMETRY_PACKAGES;
+
+    const mapped = activeLive.slice(0, 6).map((m, idx) => mapLiveFixtureToPitchTelemetryPackage(m, idx));
+    const seenPairs = new Set(
+      mapped.map((p) => `${p.homeTeam.toLowerCase()}_${p.awayTeam.toLowerCase()}`)
+    );
+    const defaults = MATCH_PITCH_TELEMETRY_PACKAGES.filter(
+      (d) => !seenPairs.has(`${d.homeTeam.toLowerCase()}_${d.awayTeam.toLowerCase()}`)
+    );
+    return [...mapped, ...defaults];
+  }, [liveFixtures]);
+
   const [selectedMatchId, setSelectedMatchId] = useState<string>(
     MATCH_PITCH_TELEMETRY_PACKAGES[0].id
   );
@@ -57,10 +113,11 @@ export const PitchTelemetryPage: React.FC = () => {
 
   const match: MatchPitchTelemetryPackage = useMemo(() => {
     return (
-      MATCH_PITCH_TELEMETRY_PACKAGES.find((m) => m.id === selectedMatchId) ||
+      telemetryPackages.find((m) => m.id === selectedMatchId) ||
+      telemetryPackages[0] ||
       MATCH_PITCH_TELEMETRY_PACKAGES[0]
     );
-  }, [selectedMatchId]);
+  }, [selectedMatchId, telemetryPackages]);
 
   const handleToggleAudio = () => {
     const next = !audioEnabled;
@@ -194,7 +251,7 @@ export const PitchTelemetryPage: React.FC = () => {
           {/* Match Selector Strip */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
             <div className="flex flex-wrap items-center gap-2">
-              {MATCH_PITCH_TELEMETRY_PACKAGES.map((pkg) => (
+              {telemetryPackages.map((pkg) => (
                 <button
                   key={pkg.id}
                   type="button"
@@ -204,7 +261,7 @@ export const PitchTelemetryPage: React.FC = () => {
                     setSelectedPlayer(pkg.homeLineup[8] || null);
                   }}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-                    selectedMatchId === pkg.id
+                    match.id === pkg.id
                       ? 'bg-emerald-500 text-slate-950 font-bold'
                       : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
                   }`}

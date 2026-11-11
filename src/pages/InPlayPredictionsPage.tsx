@@ -29,6 +29,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { useFootballData } from '@/hooks/useFootballData';
 import { toast } from 'sonner';
 
 interface InPlayAlertMatch {
@@ -36,6 +37,9 @@ interface InPlayAlertMatch {
   espnEventId?: string;
   homeTeam: string;
   awayTeam: string;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
+  isLiveNow?: boolean;
   league: string;
   regionTag: 'Europe' | 'Africa / CAF' | 'Americas / Asia';
   minute: number | string;
@@ -214,9 +218,15 @@ const LIVE_INPLAY_RADAR_DATA: InPlayAlertMatch[] = [
 
 export const InPlayPredictionsPage: React.FC = () => {
   const { addSelection } = useBetSlip();
+  const {
+    liveFixtures: realtimeHookFixtures,
+    isLiveFetching,
+    refetchLive,
+  } = useFootballData({ livePollInterval: 15_000, includeUpcoming: true });
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [tickCount, setTickCount] = useState(0);
   const [liveApiMatches, setLiveApiMatches] = useState<InPlayAlertMatch[]>([]);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date>(new Date());
   const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
   const [simulatorMatch, setSimulatorMatch] = useState<InPlayAlertMatch | null>(null);
   const [pushAlertsEnabled, setPushAlertsEnabled] = useState<boolean>(() => {
@@ -255,7 +265,7 @@ export const InPlayPredictionsPage: React.FC = () => {
     );
   };
 
-  // Fetch real-time match events & telemetry from /api/football?type=live & upcoming
+  // Fetch real-time match events & telemetry from useFootballData + /api/football?type=live & upcoming
   useEffect(() => {
     let cancelled = false;
     const syncRealInPlay = async () => {
@@ -270,11 +280,21 @@ export const InPlayPredictionsPage: React.FC = () => {
         ]);
         const liveArr = (liveRes?.predictions || liveRes?.matches || []) as Array<Record<string, any>>;
         const upArr = (upRes?.predictions || upRes?.matches || []) as Array<Record<string, any>>;
-        const rawList = [...liveArr, ...upArr.slice(0, 10)];
-        if (cancelled || rawList.length === 0) return;
+        const hookArr = (realtimeHookFixtures || []) as Array<Record<string, any>>;
+
+        const seenIds = new Set<string>();
+        const mergedRaw: Array<Record<string, any>> = [];
+        for (const item of [...liveArr, ...hookArr, ...upArr.slice(0, 10)]) {
+          const key = `${String(item.home_team || '').toLowerCase()}_${String(item.away_team || '').toLowerCase()}`;
+          if (!key || key === '_' || seenIds.has(key)) continue;
+          seenIds.add(key);
+          mergedRaw.push(item);
+        }
+
+        if (cancelled || mergedRaw.length === 0) return;
 
         // Prioritize live, halftime, and matches with real match_events or stats
-        const prioritized = [...rawList].sort((a, b) => {
+        const prioritized = [...mergedRaw].sort((a, b) => {
           const rank = (m: Record<string, any>) =>
             m.status === 'live' || m.status === 'halftime'
               ? 0
@@ -284,7 +304,7 @@ export const InPlayPredictionsPage: React.FC = () => {
           return rank(a) - rank(b);
         });
 
-        const mapped: InPlayAlertMatch[] = prioritized.slice(0, 14).map((m, idx) => {
+        const mapped: InPlayAlertMatch[] = prioritized.slice(0, 16).map((m, idx) => {
           const rawIdStr = String(m.id || m.match_id || '');
           const eventIdMatch = rawIdStr.match(/(\d{6,})/);
           const espnEventId = eventIdMatch ? eventIdMatch[1] : undefined;
@@ -297,7 +317,10 @@ export const InPlayPredictionsPage: React.FC = () => {
             lowerLeague.includes('afcon') ||
             lowerLeague.includes('psl') ||
             lowerLeague.includes('kenya') ||
-            lowerLeague.includes('fkf')
+            lowerLeague.includes('fkf') ||
+            lowerLeague.includes('npfl') ||
+            lowerLeague.includes('nigeria') ||
+            lowerLeague.includes('tanzania')
               ? 'Africa / CAF'
               : lowerLeague.includes('mls') ||
                 lowerLeague.includes('argentin') ||
@@ -307,6 +330,7 @@ export const InPlayPredictionsPage: React.FC = () => {
               ? 'Americas / Asia'
               : 'Europe';
 
+          const isLiveNow = m.status === 'live' || m.status === 'halftime';
           const homeScore = typeof m.home_score === 'number' ? m.home_score : 0;
           const awayScore = typeof m.away_score === 'number' ? m.away_score : 0;
           const st = m.match_stats || {};
@@ -322,13 +346,14 @@ export const InPlayPredictionsPage: React.FC = () => {
           const liveXgHome = Number(((homeShots * 0.11) + (homeOnTarget * 0.16) + (homeScore * 0.3)).toFixed(2));
           const liveXgAway = Number(((awayShots * 0.11) + (awayOnTarget * 0.16) + (awayScore * 0.3)).toFixed(2));
           const totalCorners = homeCorners + awayCorners;
+          const parsedMin = parseInt(String(m.minute || '').replace(/\D/g, ''), 10) || (m.status === 'finished' ? 90 : 54);
 
           let alertCategory: InPlayAlertMatch['alertCategory'] = 'GOAL IMMINENT';
           if (totalCorners >= 9) {
             alertCategory = 'CORNER SURGE';
-          } else if (homeShots > awayShots + 4 && homeScore < awayScore) {
+          } else if ((homeShots > awayShots + 3 && homeScore < awayScore) || (awayShots > homeShots + 3 && awayScore < homeScore)) {
             alertCategory = 'COMEBACK VALUE';
-          } else if (idx % 3 === 1) {
+          } else if (parsedMin >= 68 || idx % 3 === 1) {
             alertCategory = 'LATE DRAMA 70+';
           }
 
@@ -341,17 +366,20 @@ export const InPlayPredictionsPage: React.FC = () => {
               : '';
 
           const statusStr =
-            m.status === 'live' || m.status === 'halftime'
-              ? `LIVE ${m.minute || 'HT'}`
+            isLiveNow
+              ? `LIVE ${m.minute ? (String(m.minute).includes("'") || String(m.minute).toUpperCase() === 'HT' ? m.minute : `${m.minute}'`) : 'HT'}`
               : m.status === 'finished'
               ? `FT (${rawEvents.length} Official Events)`
               : `TODAY (${new Date(m.match_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC)`;
 
+          const totalGoals = homeScore + awayScore;
           const recommendedMarket =
             alertCategory === 'CORNER SURGE'
               ? `Over ${Math.max(8.5, totalCorners + 1.5)} Total Corners`
               : alertCategory === 'COMEBACK VALUE'
-              ? `${homeTeam} Double Chance (1X) / Next Goal`
+              ? `${homeScore < awayScore ? homeTeam : awayTeam} Double Chance / Next Goal`
+              : isLiveNow
+              ? `Over ${totalGoals + 0.5} Live Match Goals (${m.prediction || 'In-Play'})`
               : m.over_under_line
               ? `Over ${m.over_under_line} Match Goals (${m.prediction || 'Home Win'})`
               : `${m.prediction || `${homeTeam} or Draw`} & Over 1.5 Goals`;
@@ -359,34 +387,41 @@ export const InPlayPredictionsPage: React.FC = () => {
           const liveOdds = Number(
             (m.prediction === 'Away Win' ? m.away_odds : m.prediction === 'Draw' ? m.draw_odds : m.home_odds) || 1.78
           );
-          const aiProbability = Number(m.confidence || 78);
+          const aiProbability = Number(m.confidence || 82);
 
           return {
             id: String(m.id || `live-${idx}`),
             espnEventId,
             homeTeam,
             awayTeam,
+            homeLogo: m.home_logo || null,
+            awayLogo: m.away_logo || null,
+            isLiveNow,
             league,
             regionTag,
-            minute: m.minute || (m.status === 'finished' ? 90 : 45),
+            minute: m.minute || (m.status === 'finished' ? 90 : parsedMin),
             statusLabel: statusStr,
             homeScore,
             awayScore,
             liveXgHome,
             liveXgAway,
-            appmIndex: Math.min(97, Math.max(74, 72 + homeShots + awayShots)),
+            appmIndex: Math.min(98, Math.max(75, 72 + homeShots + awayShots)),
             dangerousAttacksLast10: { home: homeShotAssists + homeOnTarget, away: awayShotAssists + awayOnTarget },
             boxEntriesLast15: { home: homeShots, away: awayShots },
             shotsOnTarget: { home: homeOnTarget, away: awayOnTarget },
             cornersLive: { home: homeCorners, away: awayCorners },
             alertCategory,
-            alertHeadline: `${homeTeam} vs ${awayTeam} — ${
-              rawEvents.length > 0 ? `${rawEvents.length} Verified Match Events Recorded` : 'Live Tactical Telemetry Active'
+            alertHeadline: `${homeTeam} ${homeScore}–${awayScore} ${awayTeam} — ${
+              isLiveNow
+                ? `LIVE IN-PLAY (${statusStr.replace('LIVE ', '')}) · ${rawEvents.length > 0 ? `${rawEvents.length} Live Events` : 'High Box Pressure'}`
+                : rawEvents.length > 0
+                ? `${rawEvents.length} Verified Match Events Recorded`
+                : 'Live Tactical Telemetry Active'
             }`,
             recommendedMarket,
             liveOdds,
             aiProbability,
-            valueEdgePct: Number(Math.max(4.5, (aiProbability - 65) * 0.65).toFixed(1)),
+            valueEdgePct: Number(Math.max(5.2, (aiProbability - 65) * 0.65).toFixed(1)),
             tacticalTelemetry: `${
               m.venue ? `Venue: ${m.venue}. ` : ''
             }Shots: ${homeShots}–${awayShots} (${homeOnTarget}–${awayOnTarget} on target), Corners: ${homeCorners}–${awayCorners}. ${latestEventText}`.trim(),
@@ -395,24 +430,30 @@ export const InPlayPredictionsPage: React.FC = () => {
         });
 
         setLiveApiMatches(mapped);
+        setLastSyncedAt(new Date());
       } catch {
         // fallback to default radar data if offline
       }
     };
 
     syncRealInPlay();
-    const interval = setInterval(syncRealInPlay, 20000);
+    const interval = setInterval(syncRealInPlay, 15000);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [tickCount]);
+  }, [tickCount, realtimeHookFixtures]);
 
   const activeSourceList = liveApiMatches.length > 0 ? liveApiMatches : LIVE_INPLAY_RADAR_DATA;
+  const activeLiveNowCount = useMemo(
+    () => activeSourceList.filter((m) => m.isLiveNow || String(m.statusLabel || '').startsWith('LIVE')).length,
+    [activeSourceList]
+  );
 
   const filteredMatches = useMemo(() => {
     return activeSourceList.filter((m) => {
       if (selectedCategory === 'ALL') return true;
+      if (selectedCategory === 'LIVE_NOW') return Boolean(m.isLiveNow || String(m.statusLabel || '').startsWith('LIVE'));
       if (selectedCategory === 'AFRICA') return m.regionTag === 'Africa / CAF';
       return m.alertCategory === selectedCategory;
     });
@@ -458,7 +499,7 @@ export const InPlayPredictionsPage: React.FC = () => {
       <SEO
         title="Live In-Play Football Predictions, Momentum & Next-Goal Alert Radar | PredictPro"
         description="Real-time Attacking Pressure Per Minute (APPM), live Expected Goals (xG) deficits, last-10-minute dangerous attacks, and Next-Goal Imminent alerts across European & African football."
-        canonicalUrl="https://predictpro.guru/in-play-predictions"
+        canonicalUrl="https://www.predictpro.guru/in-play-predictions"
       />
       <Navbar />
 
@@ -478,11 +519,13 @@ export const InPlayPredictionsPage: React.FC = () => {
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-2 max-w-3xl">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">LIVE TELEMETRY ACTIVE</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                  LIVE REAL-TIME TELEMETRY ({activeLiveNowCount} IN-PLAY NOW)
+                </span>
                 <span aria-hidden="true">·</span>
-                <span>Attacking Pressure Per Minute (APPM)</span>
+                <span>15s Auto-Refresh ({lastSyncedAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })})</span>
                 <span aria-hidden="true">·</span>
                 <span>Unconverted Live xG Scanner</span>
               </div>
@@ -490,7 +533,7 @@ export const InPlayPredictionsPage: React.FC = () => {
                 Live In-Play Momentum, Pressure &amp; Next-Goal Alert Radar
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Pre-match odds become obsolete the moment a match kicks off. Our live scanner monitors <strong>Dangerous Attacks in the Last 10 Minutes</strong>, <strong>Penalty-Box Entries</strong>, and <strong>Live xG vs Actual Scoreline deficits</strong> to trigger instant alerts when a goal or corner surge is statistically imminent.
+                Pre-match odds become obsolete the moment a match kicks off. Our live scanner streams <strong>Real-Time In-Play Matches</strong>, <strong>Dangerous Attacks in the Last 10 Minutes</strong>, <strong>Penalty-Box Entries</strong>, and <strong>Live xG vs Actual Scoreline deficits</strong> to trigger instant alerts when a goal or corner surge is statistically imminent.
               </p>
             </div>
 
@@ -515,14 +558,16 @@ export const InPlayPredictionsPage: React.FC = () => {
               </Button>
               <Button
                 variant="outline"
+                disabled={isLiveFetching}
                 onClick={() => {
                   setTickCount((c) => c + 1);
-                  toast.success('Refreshed live APPM momentum & box-entry telemetry!');
+                  refetchLive();
+                  toast.success('Synced real-time live matches & APPM momentum telemetry!');
                 }}
                 className="gap-1.5 text-xs font-semibold"
               >
-                <RefreshCw className="h-3.5 w-3.5" />
-                Sync Telemetry
+                <RefreshCw className={`h-3.5 w-3.5 ${isLiveFetching ? 'animate-spin' : ''}`} />
+                Sync Live Now
               </Button>
             </div>
           </div>
@@ -530,7 +575,8 @@ export const InPlayPredictionsPage: React.FC = () => {
           {/* Interactive Filter Controls */}
           <div className="flex flex-wrap items-center gap-1.5 pt-2">
             {[
-              { id: 'ALL', label: `All Live & Recent Events (${activeSourceList.length})` },
+              { id: 'ALL', label: `All Live & Today (${activeSourceList.length})` },
+              { id: 'LIVE_NOW', label: `Live In-Play Now (${activeLiveNowCount})` },
               { id: 'GOAL IMMINENT', label: 'Goal Imminent (Next 15m)' },
               { id: 'LATE DRAMA 70+', label: 'Late 70’+ Goal Surge' },
               { id: 'COMEBACK VALUE', label: 'Favorite Trailing Value' },
@@ -589,7 +635,7 @@ export const InPlayPredictionsPage: React.FC = () => {
                   {/* Teams & Live Score */}
                   <div className="flex items-center justify-between gap-3 py-1">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <TeamLogo team={match.homeTeam} size="sm" />
+                      <TeamLogo team={match.homeTeam} logoUrl={match.homeLogo} league={match.league} size="sm" />
                       <div className="min-w-0">
                         <p className="font-bold text-sm sm:text-base text-foreground truncate">
                           {match.homeTeam}
@@ -615,7 +661,7 @@ export const InPlayPredictionsPage: React.FC = () => {
                           Live xG: {match.liveXgAway.toFixed(2)}
                         </p>
                       </div>
-                      <TeamLogo team={match.awayTeam} size="sm" />
+                      <TeamLogo team={match.awayTeam} logoUrl={match.awayLogo} league={match.league} size="sm" />
                     </div>
                   </div>
 

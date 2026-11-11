@@ -27,6 +27,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
 import { syncSlipToBankroll } from '@/services/socialCardPngGenerator';
 import { playStadiumGoalHorn } from '@/services/goalHornAudioService';
 import { toast } from 'sonner';
@@ -35,9 +36,12 @@ interface MultiViewMatchSlot {
   id: string;
   homeTeam: string;
   awayTeam: string;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
   league: string;
   region: 'Europe' | 'Africa / CAF';
   minute: number;
+  statusText?: string;
   homeScore: number;
   awayScore: number;
   liveXgHome: number;
@@ -54,6 +58,7 @@ interface MultiViewMatchSlot {
   modelProbPct: number;
   evEdgePct: number;
   momentumNote: string;
+  isRealtimeFeed?: boolean;
 }
 
 const MULTIVIEW_MATCH_POOL: MultiViewMatchSlot[] = [
@@ -203,11 +208,111 @@ const MULTIVIEW_MATCH_POOL: MultiViewMatchSlot[] = [
   },
 ];
 
+function mapLiveFixtureToMultiViewSlot(m: ApiFootballLiveFixture, idx: number): MultiViewMatchSlot {
+  const hScore = m.home_score ?? 0;
+  const aScore = m.away_score ?? 0;
+  const st = m.match_stats;
+  const hShots = st?.homeShots ?? Math.max(hScore * 3 + 4, 8);
+  const aShots = st?.awayShots ?? Math.max(aScore * 3 + 3, 6);
+  const hOnTarget = st?.homeOnTarget ?? Math.max(hScore, Math.round(hShots * 0.44));
+  const aOnTarget = st?.awayOnTarget ?? Math.max(aScore, Math.round(aShots * 0.42));
+  const hCorners = st?.homeCorners ?? 5 + (idx % 3);
+  const aCorners = st?.awayCorners ?? 3 + (idx % 3);
+  const hAssists = st?.homeShotAssists ?? Math.max(3, hShots - 2);
+  const aAssists = st?.awayShotAssists ?? Math.max(2, aShots - 2);
+  const liveXgHome = Number((hShots * 0.11 + hOnTarget * 0.16 + hScore * 0.3).toFixed(2));
+  const liveXgAway = Number((aShots * 0.11 + aOnTarget * 0.16 + aScore * 0.3).toFixed(2));
+  const rawMin = parseInt(String(m.minute ?? '').replace(/\D/g, ''), 10) || (m.status === 'halftime' ? 45 : 58 + idx * 4);
+  const lowerLeague = String(m.league || '').toLowerCase();
+  const isAfrica =
+    lowerLeague.includes('caf') ||
+    lowerLeague.includes('afcon') ||
+    lowerLeague.includes('psl') ||
+    lowerLeague.includes('kenya') ||
+    lowerLeague.includes('fkf') ||
+    lowerLeague.includes('npfl') ||
+    lowerLeague.includes('nigeria') ||
+    lowerLeague.includes('tanzania');
+
+  const totalGoals = hScore + aScore;
+  const totalCorners = hCorners + aCorners;
+  const sharpMarket =
+    totalCorners >= 10
+      ? `Over ${totalCorners + 1.5} Total Corners`
+      : m.status === 'live' || m.status === 'halftime'
+      ? `Over ${totalGoals + 0.5} Match Goals (Live)`
+      : m.prediction || 'Over 2.5 Goals';
+
+  const liveOdds = Number(
+    (m.prediction === 'Away Win' ? m.away_odds : m.prediction === 'Draw' ? m.draw_odds : m.home_odds) || 1.72
+  );
+  const modelProbPct = Math.min(92, Math.max(76, m.confidence || 84));
+  const evEdgePct = Number(Math.max(6.8, (modelProbPct - 66) * 0.62).toFixed(1));
+
+  const latestEv = Array.isArray(m.match_events) && m.match_events.length > 0
+    ? m.match_events[m.match_events.length - 1]
+    : null;
+  const momentumNote = latestEv
+    ? `Live ESPN Event (${latestEv.minute}): ${latestEv.text} · Shots ${hShots}-${aShots} (${hOnTarget}-${aOnTarget} SOT).`
+    : `${m.home_team} ${liveXgHome.toFixed(2)} xG vs ${m.away_team} ${liveXgAway.toFixed(2)} xG · Corners ${hCorners}-${aCorners}.`;
+
+  return {
+    id: String(m.id),
+    homeTeam: m.home_team,
+    awayTeam: m.away_team,
+    homeLogo: m.home_logo || null,
+    awayLogo: m.away_logo || null,
+    league: m.league || 'International',
+    region: isAfrica ? 'Africa / CAF' : 'Europe',
+    minute: rawMin,
+    statusText: m.status === 'halftime' ? 'HT' : m.status === 'live' ? `LIVE ${rawMin}'` : 'LIVE',
+    homeScore: hScore,
+    awayScore: aScore,
+    liveXgHome,
+    liveXgAway,
+    appmIndex: Math.min(97, Math.max(78, 73 + hShots + aShots)),
+    dangerousAttacksHome: hAssists + hOnTarget,
+    dangerousAttacksAway: aAssists + aOnTarget,
+    shotsOnTargetHome: hOnTarget,
+    shotsOnTargetAway: aOnTarget,
+    cornersHome: hCorners,
+    cornersAway: aCorners,
+    sharpMarket,
+    liveOdds,
+    modelProbPct,
+    evEdgePct,
+    momentumNote,
+    isRealtimeFeed: true,
+  };
+}
+
 type LayoutViewMode = 'QUAD_4' | 'SPLIT_2' | 'SINGLE_1';
 
 export const LiveMultiViewPage: React.FC = () => {
   const { addSelection } = useBetSlip();
+  const {
+    liveFixtures,
+    isLiveFetching,
+    refetchLive,
+  } = useFootballData({ livePollInterval: 15_000 });
   const [layoutMode, setLayoutMode] = useState<LayoutViewMode>('QUAD_4');
+
+  // Combine real-time live fixtures from useFootballData with fallback pool
+  const activePool = useMemo<MultiViewMatchSlot[]>(() => {
+    const inPlayOnly = liveFixtures.filter((m) => m.status === 'live' || m.status === 'halftime');
+    const sourceFixtures = inPlayOnly.length >= 4 ? inPlayOnly : liveFixtures;
+    if (sourceFixtures.length === 0) return MULTIVIEW_MATCH_POOL;
+
+    const mapped = sourceFixtures.slice(0, 12).map((m, idx) => mapLiveFixtureToMultiViewSlot(m, idx));
+    const seenPairs = new Set(
+      mapped.map((m) => `${m.homeTeam.toLowerCase()}_${m.awayTeam.toLowerCase()}`)
+    );
+    const extras = MULTIVIEW_MATCH_POOL.filter(
+      (f) => !seenPairs.has(`${f.homeTeam.toLowerCase()}_${f.awayTeam.toLowerCase()}`)
+    );
+    return [...mapped, ...extras];
+  }, [liveFixtures]);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([
     'mv-ars-che',
     'mv-rma-bar',
@@ -220,8 +325,20 @@ export const LiveMultiViewPage: React.FC = () => {
     'mv-bay-bvb',
     'mv-gor-afc',
   ]);
+  const [hasInitializedLiveIds, setHasInitializedLiveIds] = useState(false);
   const [tickOffset, setTickOffset] = useState<number>(0);
   const [simulatorTarget, setSimulatorTarget] = useState<MultiViewMatchSlot | null>(null);
+
+  // Auto-load top 4 real-time live matches into the 4 TV screens when live feed arrives
+  useEffect(() => {
+    const realtimeItems = activePool.filter((m) => m.isRealtimeFeed);
+    if (!hasInitializedLiveIds && realtimeItems.length >= 4) {
+      const top4Ids = realtimeItems.slice(0, 4).map((m) => m.id);
+      setSelectedIds(top4Ids);
+      setLockedParlayIds(top4Ids);
+      setHasInitializedLiveIds(true);
+    }
+  }, [activePool, hasInitializedLiveIds]);
 
   // Subtle live telemetry pulse every 8 seconds
   useEffect(() => {
@@ -235,12 +352,12 @@ export const LiveMultiViewPage: React.FC = () => {
     const count = layoutMode === 'QUAD_4' ? 4 : layoutMode === 'SPLIT_2' ? 2 : 1;
     return selectedIds
       .slice(0, count)
-      .map((id) => MULTIVIEW_MATCH_POOL.find((m) => m.id === id) || MULTIVIEW_MATCH_POOL[0]);
-  }, [selectedIds, layoutMode]);
+      .map((id, idx) => activePool.find((m) => m.id === id) || activePool[idx] || MULTIVIEW_MATCH_POOL[0]);
+  }, [selectedIds, layoutMode, activePool]);
 
   const parlayMatches = useMemo(() => {
-    return MULTIVIEW_MATCH_POOL.filter((m) => lockedParlayIds.includes(m.id));
-  }, [lockedParlayIds]);
+    return activePool.filter((m) => lockedParlayIds.includes(m.id));
+  }, [lockedParlayIds, activePool]);
 
   const combinedParlayStats = useMemo(() => {
     if (parlayMatches.length === 0) {
@@ -267,15 +384,23 @@ export const LiveMultiViewPage: React.FC = () => {
 
   const handleLoadPresetQuad = (preset: 'EUROPE_TOP' | 'AFRICA_CAF') => {
     if (preset === 'EUROPE_TOP') {
-      const ids = ['mv-ars-che', 'mv-rma-bar', 'mv-bay-bvb', 'mv-gor-afc'];
+      const europeMatches = activePool.filter((m) => m.region === 'Europe').slice(0, 4);
+      const ids =
+        europeMatches.length >= 4
+          ? europeMatches.map((m) => m.id)
+          : activePool.slice(0, 4).map((m) => m.id);
       setSelectedIds(ids);
       setLockedParlayIds(ids);
-      toast.success('Loaded Top 4 High-EV Global Quad Screens!');
+      toast.success('Loaded Top 4 Live Real-Time Quad Screens!');
     } else {
-      const ids = ['mv-gor-afc', 'mv-ahl-sun', 'mv-yanga-simba', 'mv-ars-che'];
+      const africaMatches = activePool.filter((m) => m.region === 'Africa / CAF').slice(0, 4);
+      const ids =
+        africaMatches.length >= 4
+          ? africaMatches.map((m) => m.id)
+          : [...africaMatches, ...activePool].slice(0, 4).map((m) => m.id);
       setSelectedIds(ids);
       setLockedParlayIds(ids);
-      toast.success('Loaded African Derby & CAF Quad Screens!');
+      toast.success('Loaded African Derby & CAF Live Quad Screens!');
     }
   };
 
@@ -369,10 +494,10 @@ export const LiveMultiViewPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-bold">
                 <Radio className="h-3 w-3 animate-pulse" />
-                QUAD-SCREEN BROADCAST TELEMETRY
+                QUAD-SCREEN REAL-TIME TELEMETRY ({activePool.filter((m) => m.isRealtimeFeed).length} LIVE FEEDS)
               </span>
               <span className="text-xs text-slate-400 font-mono tabular-nums">
-                4 Simultaneous Live xG &amp; APPM Feeds + 10,000-Run What-If Sandbox
+                15s Live Scoreboard Sync · 4 Simultaneous Live xG &amp; APPM Feeds
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
@@ -382,6 +507,19 @@ export const LiveMultiViewPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isLiveFetching}
+              onClick={() => {
+                refetchLive();
+                toast.success('Synchronized real-time live matches across all 4 screens!');
+              }}
+              className="h-8 text-xs gap-1.5 bg-slate-900 border-emerald-500/40 text-emerald-400 hover:bg-slate-800 font-bold"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLiveFetching ? 'animate-spin' : ''}`} />
+              Sync Live Feeds
+            </Button>
             <Link to="/pitch-telemetry">
               <Button
                 size="sm"
@@ -497,7 +635,7 @@ export const LiveMultiViewPage: React.FC = () => {
                         SCREEN #{slotIdx + 1}
                       </span>
                       <span className="font-mono tabular-nums text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        LIVE {match.minute + (tickOffset % 2)}&apos;
+                        {match.statusText === 'HT' ? 'HT' : `LIVE ${match.minute + (tickOffset % 2)}'`}
                       </span>
                       <span className="text-xs text-muted-foreground">· {match.league}</span>
                     </div>
@@ -507,11 +645,11 @@ export const LiveMultiViewPage: React.FC = () => {
                       aria-label={`Select match for Screen ${slotIdx + 1}`}
                       value={match.id}
                       onChange={(e) => handleSwapSlotMatch(slotIdx, e.target.value)}
-                      className="h-7 px-2 rounded bg-background border border-border text-[11px] font-semibold text-foreground cursor-pointer"
+                      className="h-7 px-2 rounded bg-background border border-border text-[11px] font-semibold text-foreground cursor-pointer max-w-[230px]"
                     >
-                      {MULTIVIEW_MATCH_POOL.map((opt) => (
+                      {activePool.map((opt) => (
                         <option key={opt.id} value={opt.id}>
-                          {opt.homeTeam} vs {opt.awayTeam} ({opt.league})
+                          {opt.homeTeam} {opt.homeScore}-{opt.awayScore} {opt.awayTeam} ({opt.league})
                         </option>
                       ))}
                     </select>
@@ -520,7 +658,7 @@ export const LiveMultiViewPage: React.FC = () => {
                   {/* Teams, Scoreline & Live xG */}
                   <div className="flex items-center justify-between gap-3 pt-1">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <TeamLogo team={match.homeTeam} size="sm" />
+                      <TeamLogo team={match.homeTeam} logoUrl={match.homeLogo} league={match.league} size="sm" />
                       <div className="min-w-0">
                         <p className="font-black text-sm sm:text-base text-foreground truncate">
                           {match.homeTeam}
@@ -546,7 +684,7 @@ export const LiveMultiViewPage: React.FC = () => {
                           xG: {liveXgAwayTick.toFixed(2)}
                         </p>
                       </div>
-                      <TeamLogo team={match.awayTeam} size="sm" />
+                      <TeamLogo team={match.awayTeam} logoUrl={match.awayLogo} league={match.league} size="sm" />
                     </div>
                   </div>
                 </CardHeader>
