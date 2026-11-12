@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth, syncUserProfileActivity, getCanonicalSiteOrigin } from '@/hooks/useAuth';
+import {
+  useAuth,
+  syncUserProfileActivity,
+  getCanonicalSiteOrigin,
+  hasKnownAccountOnDevice,
+  getKnownAccountEmail,
+  savePersistedMemberUser,
+} from '@/hooks/useAuth';
+import { triggerPWAInstallFlow, usePWAInstall } from '@/hooks/usePWAInstall';
 import { SEO } from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +31,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
@@ -33,8 +42,15 @@ export default function Auth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user, signInWithGoogle, exchangeOAuthCode } = useAuth();
-  const [mode, setMode] = useState<Mode>((params.get('mode') as Mode) || 'login');
-  const [email, setEmail] = useState('');
+  const { isInstalled } = usePWAInstall();
+  const knownAccount = hasKnownAccountOnDevice();
+  const requestedMode = params.get('mode') as Mode | null;
+  const [mode, setMode] = useState<Mode>(() => {
+    if (requestedMode === 'forgot') return 'forgot';
+    if (knownAccount) return 'login';
+    return requestedMode || 'login';
+  });
+  const [email, setEmail] = useState(() => getKnownAccountEmail());
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -183,6 +199,7 @@ export default function Auth() {
             });
 
             if (!directSignInErr && directSignIn?.session) {
+              savePersistedMemberUser(directSignIn.session.user);
               await syncUserProfileActivity(directSignIn.session.user);
               toast.success('Account found! Welcome back 🎉');
               navigate('/');
@@ -223,6 +240,7 @@ export default function Auth() {
         });
 
         if (!autoLoginErr && autoLogin?.session) {
+          savePersistedMemberUser(autoLogin.session.user);
           await syncUserProfileActivity(autoLogin.session.user);
           toast.success('Account created successfully! Welcome to PredictPro 🎉');
           navigate('/');
@@ -231,6 +249,7 @@ export default function Auth() {
 
         // If signUp already returned an active session directly
         if (signUpData?.session && signUpData?.user) {
+          savePersistedMemberUser(signUpData.user);
           await syncUserProfileActivity(signUpData.user);
           toast.success('Account created successfully! Welcome to PredictPro 🎉');
           navigate('/');
@@ -288,6 +307,7 @@ export default function Auth() {
       }
 
       setPendingVerificationEmail(null);
+      savePersistedMemberUser(loginData.session.user);
       await syncUserProfileActivity(loginData.session.user);
       toast.success('Welcome back! 🎉');
       navigate('/');
@@ -608,6 +628,19 @@ export default function Auth() {
             </div>
           </CardContent>
         </Card>
+
+        {!isInstalled && (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => triggerPWAInstallFlow()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 text-xs font-bold transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Download PredictPro App to Home Screen</span>
+            </button>
+          </div>
+        )}
 
         <p className="text-center text-xs text-muted-foreground mt-4">
           By continuing you agree to our{' '}

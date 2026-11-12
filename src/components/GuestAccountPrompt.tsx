@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, getKnownAccountEmail, hasKnownAccountOnDevice } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +27,7 @@ export const GuestAccountPrompt: React.FC = () => {
   const [expandedModal, setExpandedModal] = useState(false);
   const [authMode, setAuthMode] = useState<'register' | 'login'>('login');
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => getKnownAccountEmail());
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
@@ -38,6 +38,9 @@ export const GuestAccountPrompt: React.FC = () => {
   useEffect(() => {
     const handleCustomOpen = () => {
       if (!user) {
+        const knownEmail = getKnownAccountEmail();
+        if (knownEmail) setEmail(knownEmail);
+        if (hasKnownAccountOnDevice()) setAuthMode('login');
         setExpandedModal(true);
       }
     };

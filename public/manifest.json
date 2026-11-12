@@ -9,27 +9,13 @@
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#060A12",
   "theme_color": "#10B981",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "lang": "en",
   "dir": "ltr",
   "categories": ["sports", "news", "utilities"],
   "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=guru.predictpro.twa",
-      "id": "guru.predictpro.twa"
-    },
-    {
-      "platform": "itunes",
-      "url": "https://apps.apple.com/app/predictpro-football-xg/id6738291045"
-    },
-    {
-      "platform": "webapp",
-      "url": "https://www.predictpro.guru/manifest.json"
-    }
-  ],
+  "related_applications": [],
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },

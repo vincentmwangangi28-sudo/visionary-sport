@@ -61,29 +61,35 @@ if ('serviceWorker' in navigator) {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => !k.startsWith('predictpro-v5'))
+            .filter((k) => !k.startsWith('predictpro-v7'))
             .map((k) => caches.delete(k).catch(() => false))
         )
       )
       .catch(() => {});
   }
 
-  window.addEventListener('load', () => {
+  const registerServiceWorker = () => {
     if (
       navigator.webdriver ||
       /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '')
     ) {
       return;
     }
-    setTimeout(() => {
-      navigator.serviceWorker
-        .register('/sw.js', { scope: '/' })
-        .then((reg) => {
-          reg.update().catch(() => {});
-        })
-        .catch(() => {});
-    }, 3500);
-  });
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then((reg) => {
+        reg.update().catch(() => {});
+      })
+      .catch(() => {});
+  };
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(registerServiceWorker, 150);
+  } else {
+    window.addEventListener('DOMContentLoaded', () => setTimeout(registerServiceWorker, 150), {
+      once: true,
+    });
+  }
 }
 
 // Automatic recovery from stale chunks or MIME type mismatches across new deployments

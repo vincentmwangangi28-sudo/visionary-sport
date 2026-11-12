@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { usePWAInstall, triggerPWAInstallFlow } from '@/hooks/usePWAInstall';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -7,22 +7,25 @@ import {
   Smartphone, 
   Share, 
   PlusSquare, 
-  Check, 
   X, 
   Zap, 
   WifiOff, 
   Sparkles, 
-  ShieldCheck,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Monitor
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const PWAInstallPrompt: React.FC = () => {
   const { 
     isInstallable, 
     isInstalled, 
     isIOS, 
+    isDesktop,
+    platform,
     install, 
+    downloadPlatformInstaller,
     visitCount, 
     shouldShowPrompt, 
     dismissPrompt 
@@ -51,12 +54,24 @@ export const PWAInstallPrompt: React.FC = () => {
       const success = await install();
       setIsInstalling(false);
       if (success) {
+        toast.success('PredictPro App installed successfully!');
         dismissPrompt(8760); // 1 year
+        return;
       }
-    } else if (isIOS) {
+    }
+    if (isIOS) {
       setShowIOSSteps((prev) => !prev);
+      const { filename } = downloadPlatformInstaller('ios');
+      toast.success(`Downloaded iOS App Profile (${filename})`);
+    } else if (isDesktop) {
+      const targetOs = platform === 'mac' ? 'mac' : platform === 'linux' ? 'linux' : 'windows';
+      const { filename } = downloadPlatformInstaller(targetOs);
+      toast.success(`Downloaded Desktop App (${filename})`);
+      triggerPWAInstallFlow();
     } else {
-      setShowIOSSteps((prev) => !prev);
+      const { filename } = downloadPlatformInstaller('android');
+      toast.success(`Downloaded Android App Launcher (${filename})`);
+      triggerPWAInstallFlow();
     }
   };
 
@@ -189,13 +204,19 @@ export const PWAInstallPrompt: React.FC = () => {
               size="sm"
               onClick={handleInstallClick}
               disabled={isInstalling}
-              className="flex-1 gap-1.5 font-black text-xs shadow-md bg-primary hover:bg-primary/90 text-primary-foreground h-9"
+              className="flex-1 gap-1.5 font-black text-xs shadow-md bg-primary hover:bg-primary/90 text-primary-foreground h-9 cursor-pointer"
               id="pwa-prompt-install-btn"
             >
               {isInstallable ? (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{isInstalling ? 'Installing...' : 'Add to Home Screen'}</span>
+                  <span>
+                    {isInstalling
+                      ? 'Installing...'
+                      : isDesktop
+                      ? 'Install Desktop App'
+                      : 'Add to Home Screen'}
+                  </span>
                 </>
               ) : isIOS ? (
                 <>
@@ -203,11 +224,15 @@ export const PWAInstallPrompt: React.FC = () => {
                   <span>{showIOSSteps ? 'Hide Instructions' : 'Install on iPhone / iPad'}</span>
                   {showIOSSteps ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </>
+              ) : isDesktop ? (
+                <>
+                  <Monitor className="w-4 h-4" />
+                  <span>Download Desktop App</span>
+                </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>{showIOSSteps ? 'Hide Instructions' : 'How to Install'}</span>
-                  {showIOSSteps ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  <span>Download Android App</span>
                 </>
               )}
             </Button>

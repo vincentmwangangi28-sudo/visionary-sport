@@ -1,7 +1,8 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity } from 'lucide-react';
+import { Activity, Download } from 'lucide-react';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
+import { triggerPWAInstallFlow } from '@/hooks/usePWAInstall';
 
 const SEOInternalLinkMesh = lazyWithRetry(() =>
   import('@/components/SEOInternalLinkMesh').then((m) => ({ default: m.SEOInternalLinkMesh }))
@@ -59,6 +60,17 @@ export const Footer = () => {
             <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
               Independent football statistics, live scores, Expected Goals (xG) telemetry, bivariate Poisson match models, and league standings across 40+ global competitions.
             </p>
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => triggerPWAInstallFlow()}
+                data-testid="footer-download-app-btn"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-emerald-500/40 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition-colors cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>Download App (Android · iOS · Desktop)</span>
+              </button>
+            </div>
             <div className="text-[11px] text-muted-foreground space-y-0.5 pt-1">
               <p className="font-semibold text-foreground">Editorial &amp; Data Desk</p>
               <p>

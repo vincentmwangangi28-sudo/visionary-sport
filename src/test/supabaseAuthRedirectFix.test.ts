@@ -14,6 +14,11 @@ import {
   hasKnownAccountOnDevice,
   getKnownAccountEmail,
 } from '@/hooks/useAuth';
+import {
+  detectDevicePlatform,
+  downloadPlatformInstaller,
+  getAndroidChromeIntentUrl,
+} from '@/hooks/usePWAInstall';
 import type { User } from '@supabase/supabase-js';
 
 describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
@@ -107,5 +112,45 @@ describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
     expect(hasKnownAccountOnDevice()).toBe(true);
     expect(getKnownAccountEmail()).toBe('returning@predictpro.guru');
   });
+
+  it('accurately detects Mobile (Android, iOS) and Desktop (Windows, macOS, Linux) platforms and generates OS installers', () => {
+    const androidUa =
+      'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36';
+    const iosUa =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+    const winUa =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0';
+    const macUa =
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15';
+
+    const androidInfo = detectDevicePlatform(androidUa);
+    expect(androidInfo.platform).toBe('android');
+    expect(androidInfo.isAndroid).toBe(true);
+    expect(androidInfo.isMobile).toBe(true);
+    expect(androidInfo.isDesktop).toBe(false);
+
+    const iosInfo = detectDevicePlatform(iosUa);
+    expect(iosInfo.platform).toBe('ios');
+    expect(iosInfo.isIOS).toBe(true);
+    expect(iosInfo.isMobile).toBe(true);
+
+    const winInfo = detectDevicePlatform(winUa);
+    expect(winInfo.platform).toBe('windows');
+    expect(winInfo.browser).toBe('edge');
+    expect(winInfo.isDesktop).toBe(true);
+
+    const macInfo = detectDevicePlatform(macUa);
+    expect(macInfo.platform).toBe('mac');
+    expect(macInfo.browser).toBe('safari');
+    expect(macInfo.isDesktop).toBe(true);
+
+    expect(downloadPlatformInstaller('windows').filename).toBe('PredictPro-Windows-App.bat');
+    expect(downloadPlatformInstaller('mac').filename).toBe('PredictPro-Mac-App.webloc');
+    expect(downloadPlatformInstaller('linux').filename).toBe('PredictPro.desktop');
+    expect(downloadPlatformInstaller('ios').filename).toBe('PredictPro-iOS.mobileconfig');
+    expect(downloadPlatformInstaller('android').filename).toBe('PredictPro-App-Launcher.html');
+    expect(getAndroidChromeIntentUrl()).toContain('intent://');
+  });
 });
+
 
