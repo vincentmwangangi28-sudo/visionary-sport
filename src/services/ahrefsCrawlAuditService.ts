@@ -741,6 +741,8 @@ export interface SiteAuditProjectOverview {
   projectId: number;
   crawlDate: string;
   previousCrawlDate: string;
+  endpointUrl: string;
+  curlCommand: string;
   totalIssuesBefore: number;
   totalIssuesAfter: number;
   healthScoreBefore: number;
@@ -751,13 +753,24 @@ export interface SiteAuditProjectOverview {
 export const SITE_AUDIT_16_ISSUES_OVERVIEW: SiteAuditProjectOverview = {
   project: 'Predictpro (https://www.predictpro.guru/)',
   projectId: 10277130,
-  crawlDate: '2026-11-10T23:59:59Z',
-  previousCrawlDate: '2026-11-04T09:34:45Z',
+  crawlDate: '2026-11-13T05:54:27Z',
+  previousCrawlDate: '2026-11-12T06:16:53Z',
+  endpointUrl:
+    'https://api.ahrefs.com/v3/site-audit/issues?project_id=10277130&date=2026-11-13T05%3A54%3A27Z&date_compared=2026-11-12T06%3A16%3A53Z',
+  curlCommand: `curl --request GET \\
+  --header "Authorization: Bearer YOUR_API_KEY" \\
+  --header "Content-Type: application/json" \\
+  --url "https://api.ahrefs.com/v3/site-audit/issues" \\
+  --get \\
+  --data-urlencode 'project_id=10277130' \\
+  --data-urlencode 'date=2026-11-13T05:54:27Z' \\
+  --data-urlencode 'date_compared=2026-11-12T06:16:53Z'`,
   totalIssuesBefore: 16,
   totalIssuesAfter: 0,
   healthScoreBefore: 2,
   healthScoreAfter: 100,
   issues: [
+
     {
       id: 'issue-orphan-pages',
       issue: 'Orphan page (has no incoming internal links)',

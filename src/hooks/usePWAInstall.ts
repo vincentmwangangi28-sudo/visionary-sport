@@ -14,9 +14,91 @@ declare global {
   }
 }
 
-const PWA_DISMISS_UNTIL_KEY = 'predictpro_pwa_dismiss_until_v1';
-const PWA_VISIT_COUNT_KEY = 'predictpro_pwa_visit_count_v1';
-const PWA_INSTALLED_FLAG_KEY = 'predictpro_pwa_installed_v1';
+export const PWA_DISMISS_UNTIL_KEY = 'predictpro_pwa_dismiss_until_v1';
+export const PWA_VISIT_COUNT_KEY = 'predictpro_pwa_visit_count_v1';
+export const PWA_INSTALLED_FLAG_KEY = 'predictpro_pwa_installed_v1';
+export const PWA_TOAST_SHOWN_SESSION_KEY = 'predictpro_pwa_toast_shown_session_v1';
+
+let lastTrackedPathname = '';
+
+export function getPageVisitCount(): number {
+  if (typeof window === 'undefined') return 1;
+  try {
+    const raw = window.localStorage.getItem(PWA_VISIT_COUNT_KEY);
+    if (!raw) return 0;
+    const visits = parseInt(raw, 10);
+    return !Number.isNaN(visits) && visits > 0 ? visits : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function recordPageVisit(pathname?: string): number {
+  if (typeof window === 'undefined') return 1;
+  const currentPath =
+    pathname ||
+    (typeof window !== 'undefined' && window.location ? window.location.pathname : '/');
+
+  try {
+    const sessionKey = 'predictpro_last_counted_page_v1';
+    const lastSessionPage = window.sessionStorage?.getItem(sessionKey);
+
+    // If already counted for this page in this session and memory, do not increment repeatedly
+    if (lastSessionPage === currentPath && lastTrackedPathname === currentPath) {
+      const current = getPageVisitCount();
+      return current > 0 ? current : 1;
+    }
+
+    lastTrackedPathname = currentPath;
+    window.sessionStorage?.setItem(sessionKey, currentPath);
+
+    const prevVisits = getPageVisitCount();
+    const nextVisits = prevVisits + 1;
+    window.localStorage.setItem(PWA_VISIT_COUNT_KEY, String(nextVisits));
+    return nextVisits;
+  } catch {
+    return 1;
+  }
+}
+
+export function isPromptDismissed(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const dismissUntil = parseInt(
+      window.localStorage.getItem(PWA_DISMISS_UNTIL_KEY) || '0',
+      10
+    );
+    return !Number.isNaN(dismissUntil) && dismissUntil > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+export function dismissPWAInstallPrompt(hours = 72): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      PWA_DISMISS_UNTIL_KEY,
+      String(Date.now() + hours * 3600 * 1000)
+    );
+  } catch {
+    // ignore
+  }
+}
+
+export function isPWAInstalled(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const standalone =
+      window.matchMedia?.('(display-mode: standalone)')?.matches ||
+      window.matchMedia?.('(display-mode: window-controls-overlay)')?.matches ||
+      (window.navigator as unknown as { standalone?: boolean })?.standalone === true ||
+      window.localStorage.getItem(PWA_INSTALLED_FLAG_KEY) === 'true';
+    return Boolean(standalone);
+  } catch {
+    return false;
+  }
+}
 
 let globalDeferredPrompt: BeforeInstallPromptEvent | null =
   typeof window !== 'undefined' && window.__predictproDeferredPrompt
@@ -338,34 +420,21 @@ export function usePWAInstall() {
       globalDeferredPrompt ||
       (typeof window !== 'undefined' ? window.__predictproDeferredPrompt || null : null)
   );
-  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const standalone =
-        window.matchMedia?.('(display-mode: standalone)')?.matches ||
-        window.matchMedia?.('(display-mode: window-controls-overlay)')?.matches ||
-        (window.navigator as unknown as { standalone?: boolean })?.standalone === true ||
-        window.localStorage.getItem(PWA_INSTALLED_FLAG_KEY) === 'true';
-      return Boolean(standalone);
-    } catch {
-      return false;
-    }
-  });
+  const [isInstalled, setIsInstalled] = useState<boolean>(() => isPWAInstalled());
 
   const [deviceInfo, setDeviceInfo] = useState(() => detectDevicePlatform());
-  const [visitCount, setVisitCount] = useState(1);
-  const [shouldShowPrompt, setShouldShowPrompt] = useState(true);
+  const [visitCount, setVisitCount] = useState(() => {
+    const v = getPageVisitCount();
+    return v > 0 ? v : 1;
+  });
+  const [shouldShowPrompt, setShouldShowPrompt] = useState(() => !isPromptDismissed());
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     setDeviceInfo(detectDevicePlatform());
 
-    const isStandalone =
-      window.matchMedia?.('(display-mode: standalone)')?.matches ||
-      window.matchMedia?.('(display-mode: window-controls-overlay)')?.matches ||
-      (window.navigator as unknown as { standalone?: boolean })?.standalone === true;
-    if (isStandalone) {
+    if (isPWAInstalled()) {
       setIsInstalled(true);
     }
 
@@ -373,18 +442,11 @@ export function usePWAInstall() {
       syncGlobalPrompt(window.__predictproDeferredPrompt);
     }
 
-    try {
-      const prevVisits = parseInt(window.localStorage.getItem(PWA_VISIT_COUNT_KEY) || '0', 10);
-      const nextVisits = (!Number.isNaN(prevVisits) && prevVisits > 0 ? prevVisits : 0) + 1;
-      window.localStorage.setItem(PWA_VISIT_COUNT_KEY, String(nextVisits));
-      setVisitCount(nextVisits);
+    const currentVisits = recordPageVisit();
+    setVisitCount(currentVisits);
 
-      const dismissUntil = parseInt(window.localStorage.getItem(PWA_DISMISS_UNTIL_KEY) || '0', 10);
-      if (!Number.isNaN(dismissUntil) && dismissUntil > Date.now()) {
-        setShouldShowPrompt(false);
-      }
-    } catch {
-      // ignore storage errors
+    if (isPromptDismissed()) {
+      setShouldShowPrompt(false);
     }
 
     // If navigated with ?install=1 (e.g., from Android Chrome intent or QR code), auto-open install modal

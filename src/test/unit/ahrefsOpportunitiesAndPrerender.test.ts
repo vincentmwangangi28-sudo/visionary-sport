@@ -314,5 +314,31 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     const { AI_CITED_RESPONSES_MATRIX } = await import('@/services/aiBrandRadarService');
     expect(AI_CITED_RESPONSES_MATRIX.every((c) => !c.citedUrlPath.startsWith('/match-prediction/'))).toBe(true);
     expect(AI_CITED_RESPONSES_MATRIX.every((c) => c.citedUrlPath !== '/banker-of-the-day')).toBe(true);
+
+    const {
+      handleAhrefsSiteAuditIssuesRequest,
+      DEFAULT_SITE_AUDIT_DATE,
+      DEFAULT_SITE_AUDIT_DATE_COMPARED,
+      CANONICAL_SITE_AUDIT_ISSUES_URL,
+    } = await import('@/server/ahrefsAnalyticsHandler');
+    expect(DEFAULT_SITE_AUDIT_DATE).toBe('2026-11-13T05:54:27Z');
+    expect(DEFAULT_SITE_AUDIT_DATE_COMPARED).toBe('2026-11-12T06:16:53Z');
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.crawlDate).toBe('2026-11-13T05:54:27Z');
+    expect(SITE_AUDIT_16_ISSUES_OVERVIEW.previousCrawlDate).toBe('2026-11-12T06:16:53Z');
+
+    const auditIssues = await handleAhrefsSiteAuditIssuesRequest({
+      project_id: 10277130,
+      date: '2026-11-13T05:54:27Z',
+      date_compared: '2026-11-12T06:16:53Z',
+    });
+    expect(auditIssues.success).toBe(true);
+    expect(auditIssues.projectId).toBe(10277130);
+    expect(auditIssues.date).toBe('2026-11-13T05:54:27Z');
+    expect(auditIssues.dateCompared).toBe('2026-11-12T06:16:53Z');
+    expect(auditIssues.endpointUrl).toBe(CANONICAL_SITE_AUDIT_ISSUES_URL);
+    expect(auditIssues.healthScore.current).toBe(100);
+    expect(auditIssues.summary.totalIssuesCurrent).toBe(0);
+    expect(auditIssues.issues).toHaveLength(16);
+    expect(auditIssues.issues.every((i) => i.urls_date === 0)).toBe(true);
   });
 });

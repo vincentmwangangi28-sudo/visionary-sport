@@ -18,6 +18,10 @@ import {
   detectDevicePlatform,
   downloadPlatformInstaller,
   getAndroidChromeIntentUrl,
+  getPageVisitCount,
+  recordPageVisit,
+  isPromptDismissed,
+  dismissPWAInstallPrompt,
 } from '@/hooks/usePWAInstall';
 import type { User } from '@supabase/supabase-js';
 
@@ -150,6 +154,42 @@ describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
     expect(downloadPlatformInstaller('ios').filename).toBe('PredictPro-iOS.mobileconfig');
     expect(downloadPlatformInstaller('android').filename).toBe('PredictPro-App-Launcher.html');
     expect(getAndroidChromeIntentUrl()).toContain('intent://');
+  });
+
+  it('accurately tracks page visits and triggers the Get App prompt on or after the 3rd page visit', () => {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Initial state
+    expect(getPageVisitCount()).toBe(0);
+
+    // 1st visit on home page
+    const visit1 = recordPageVisit('/');
+    expect(visit1).toBe(1);
+    expect(getPageVisitCount()).toBe(1);
+    expect(visit1 >= 3).toBe(false);
+
+    // Re-mount / duplicate components on the same page should NOT inflate visit count
+    const visit1Repeat = recordPageVisit('/');
+    expect(visit1Repeat).toBe(1);
+    expect(getPageVisitCount()).toBe(1);
+
+    // 2nd visit: user navigates to /live
+    const visit2 = recordPageVisit('/live');
+    expect(visit2).toBe(2);
+    expect(getPageVisitCount()).toBe(2);
+    expect(visit2 >= 3).toBe(false);
+
+    // 3rd visit: user navigates to /match/123
+    const visit3 = recordPageVisit('/match/123');
+    expect(visit3).toBe(3);
+    expect(getPageVisitCount()).toBe(3);
+    expect(visit3 >= 3).toBe(true);
+
+    // Prompt dismissal behavior
+    expect(isPromptDismissed()).toBe(false);
+    dismissPWAInstallPrompt(72);
+    expect(isPromptDismissed()).toBe(true);
   });
 });
 

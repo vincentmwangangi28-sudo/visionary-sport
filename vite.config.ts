@@ -336,10 +336,15 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
-        if (url === "/api/ahrefs-analytics") {
+        if (url === "/api/ahrefs-analytics" || url === "/api/ahrefs-site-audit-issues") {
           try {
             const parsedUrl = new URL(req.url || "", "http://localhost");
             const endpointType = parsedUrl.searchParams.get("endpoint") || "";
+            const isSiteAuditIssues =
+              url === "/api/ahrefs-site-audit-issues" ||
+              endpointType === "site-audit-issues" ||
+              endpointType === "site-audit/issues" ||
+              parsedUrl.searchParams.has("date_compared");
             const hasAiSelect =
               endpointType === "ai-responses-count" ||
               parsedUrl.searchParams.has("select") ||
@@ -347,7 +352,25 @@ function cronTasksPlugin(): Plugin {
             const {
               handleAhrefsAnalyticsRequest,
               handleAhrefsAIResponsesCountRequest,
+              handleAhrefsSiteAuditIssuesRequest,
             } = await import("./src/server/ahrefsAnalyticsHandler.ts");
+
+            if (isSiteAuditIssues) {
+              const project_id = parsedUrl.searchParams.get("project_id") || "10277130";
+              const date = parsedUrl.searchParams.get("date") || "2026-11-13T05:54:27Z";
+              const date_compared =
+                parsedUrl.searchParams.get("date_compared") || "2026-11-12T06:16:53Z";
+              const auditData = await handleAhrefsSiteAuditIssuesRequest({
+                project_id,
+                date,
+                date_compared,
+              });
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.setHeader("Access-Control-Allow-Origin", "*");
+              res.statusCode = 200;
+              res.end(JSON.stringify(auditData));
+              return;
+            }
 
             if (hasAiSelect) {
               const target = parsedUrl.searchParams.get("target") || "predictpro.guru/";
@@ -377,6 +400,7 @@ function cronTasksPlugin(): Plugin {
           }
           return;
         }
+
 
         if (url === "/api/pagespeed-insights") {
           try {

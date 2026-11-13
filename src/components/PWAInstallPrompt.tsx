@@ -252,3 +252,6 @@ export const PWAInstallPrompt: React.FC = () => {
       </aside>
   );
 };
+
+export { PWAInstallToast } from '@/components/PWAInstallToast';
+export default PWAInstallPrompt;

@@ -1,11 +1,14 @@
 import {
   handleAhrefsAnalyticsRequest,
   handleAhrefsAIResponsesCountRequest,
+  handleAhrefsSiteAuditIssuesRequest,
   DEFAULT_AHREFS_PROJECT_ID,
   DEFAULT_AHREFS_FROM,
   DEFAULT_AHREFS_TO,
   DEFAULT_AI_RESPONSES_SELECT,
   DEFAULT_AI_RESPONSES_TARGET,
+  DEFAULT_SITE_AUDIT_DATE,
+  DEFAULT_SITE_AUDIT_DATE_COMPARED,
 } from '../src/server/ahrefsAnalyticsHandler';
 
 export default async function handler(request: Request) {
@@ -23,6 +26,31 @@ export default async function handler(request: Request) {
   try {
     const url = new URL(request.url);
     const endpointType = url.searchParams.get('endpoint') || '';
+    const isSiteAuditIssues =
+      endpointType === 'site-audit-issues' ||
+      endpointType === 'site-audit/issues' ||
+      url.searchParams.has('date_compared');
+
+    if (isSiteAuditIssues) {
+      const project_id = url.searchParams.get('project_id') || DEFAULT_AHREFS_PROJECT_ID;
+      const date = url.searchParams.get('date') || DEFAULT_SITE_AUDIT_DATE;
+      const date_compared =
+        url.searchParams.get('date_compared') || DEFAULT_SITE_AUDIT_DATE_COMPARED;
+      const auditData = await handleAhrefsSiteAuditIssuesRequest({
+        project_id,
+        date,
+        date_compared,
+      });
+      return new Response(JSON.stringify(auditData), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+        },
+      });
+    }
+
     const hasAiSelect =
       endpointType === 'ai-responses-count' ||
       url.searchParams.has('select') ||
@@ -49,6 +77,24 @@ export default async function handler(request: Request) {
 
     if (request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
+      if (
+        body.endpoint === 'site-audit-issues' ||
+        body.endpoint === 'site-audit/issues' ||
+        body.date_compared
+      ) {
+        const auditData = await handleAhrefsSiteAuditIssuesRequest({
+          project_id: body.project_id || DEFAULT_AHREFS_PROJECT_ID,
+          date: body.date || DEFAULT_SITE_AUDIT_DATE,
+          date_compared: body.date_compared || DEFAULT_SITE_AUDIT_DATE_COMPARED,
+        });
+        return new Response(JSON.stringify(auditData), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+      }
       if (body.endpoint === 'ai-responses-count' || body.select || body.target) {
         const aiData = await handleAhrefsAIResponsesCountRequest({
           target: body.target || DEFAULT_AI_RESPONSES_TARGET,
@@ -76,6 +122,7 @@ export default async function handler(request: Request) {
         'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
       },
     });
+
   } catch (err: any) {
     return new Response(
       JSON.stringify({

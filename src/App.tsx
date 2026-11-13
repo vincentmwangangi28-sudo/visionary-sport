@@ -41,6 +41,9 @@ const BetSlipDrawer = lazyWithRetry(() =>
 const FirstVisitSignupModal = lazyWithRetry(() =>
   import("@/components/FirstVisitSignupModal").then((m) => ({ default: m.FirstVisitSignupModal }))
 );
+const PWAInstallToast = lazyWithRetry(() =>
+  import("@/components/PWAInstallToast").then((m) => ({ default: m.PWAInstallToast }))
+);
 
 import Index from "./pages/Index";
 const PersonalizedDashboard = lazyWithRetry(() => import("./pages/PersonalizedDashboard"));
@@ -475,6 +478,11 @@ const DeferredGlobalOverlays = () => {
     <>
       <ErrorBoundary fallback={null}>
         <Sonner />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <PWAInstallToast />
+        </Suspense>
       </ErrorBoundary>
       {(ready || betSlipOpen || selections.length > 0) && (
         <ErrorBoundary fallback={null}>
