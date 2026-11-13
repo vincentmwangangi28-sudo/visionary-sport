@@ -63,12 +63,10 @@ export const SEO = (props: SEOProps) => {
       mounted = true;
       setRuntimeReady(true);
     };
-    const timer = setTimeout(enable, 8000);
     window.addEventListener('scroll', enable, { passive: true, once: true });
     window.addEventListener('pointerdown', enable, { passive: true, once: true });
     window.addEventListener('touchstart', enable, { passive: true, once: true });
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('scroll', enable);
       window.removeEventListener('pointerdown', enable);
       window.removeEventListener('touchstart', enable);

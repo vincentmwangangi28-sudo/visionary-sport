@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Default SEO (Strictly <=60 char Title & <=155 char Description for Ahrefs Site Audit) -->
@@ -335,31 +336,8 @@
           } catch (e) {}
         }
         stripNetlifyWatermark();
-        document.addEventListener('DOMContentLoaded', stripNetlifyWatermark);
-        window.addEventListener('load', stripNetlifyWatermark);
-        if (typeof MutationObserver !== 'undefined' && document.documentElement) {
-          var hudObserver = new MutationObserver(function(mutations) {
-            for (var m = 0; m < mutations.length; m++) {
-              var added = mutations[m].addedNodes;
-              for (var n = 0; n < added.length; n++) {
-                var el = added[n];
-                if (!el || el.nodeType !== 1) continue;
-                var tag = (el.tagName || '').toLowerCase();
-                var id = (el.id || '').toLowerCase();
-                var src = (el.getAttribute && (el.getAttribute('src') || '')) || '';
-                if (
-                  tag.indexOf('netlify-') === 0 ||
-                  id.indexOf('netlify-') === 0 ||
-                  src.indexOf('/.netlify/scripts/') !== -1 ||
-                  src.indexOf('app.netlify.com') !== -1
-                ) {
-                  if (el.parentNode) el.parentNode.removeChild(el);
-                }
-              }
-            }
-          });
-          hudObserver.observe(document.documentElement, { childList: true, subtree: true });
-        }
+        document.addEventListener('DOMContentLoaded', stripNetlifyWatermark, { once: true });
+        window.addEventListener('load', stripNetlifyWatermark, { once: true });
       })();
     </script>
 
@@ -384,14 +362,57 @@
           "@type": "WebPage",
           "@id": "https://www.predictpro.guru/#webpage",
           "url": "https://www.predictpro.guru/",
-          "name": "PredictPro — AI Football Predictions Today, xG Statistics & Match Analytics",
-          "description": "Independent AI-powered football predictions today with 87% accuracy. Daily Expected Goals (xG) statistics, Bivariate Poisson match probabilities, and H2H analytics across 40+ leagues worldwide. 18+ Informational only.",
+          "name": "PredictPro — Football Match Statistics, Live Scores & xG",
+          "description": "Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.",
           "isPartOf": {
             "@type": "WebSite",
             "@id": "https://www.predictpro.guru/#website"
           },
           "breadcrumb": {
             "@id": "https://www.predictpro.guru/#breadcrumb"
+          },
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": ["h1", "[data-speakable='true']", "[data-ai-citation-block='true']"]
+          },
+          "inLanguage": "en"
+        },
+        {
+          "@type": "Article",
+          "@id": "https://www.predictpro.guru/#article",
+          "isPartOf": {
+            "@id": "https://www.predictpro.guru/#webpage"
+          },
+          "headline": "PredictPro — Football Match Statistics, Live Scores & xG",
+          "name": "PredictPro — Football Match Statistics, Live Scores & xG",
+          "description": "Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.",
+          "image": ["https://www.predictpro.guru/og-image.jpg"],
+          "datePublished": "2026-01-15T00:00:00+00:00",
+          "dateModified": "2026-11-13T06:00:00+00:00",
+          "author": {
+            "@type": "Organization",
+            "@id": "https://www.predictpro.guru/#organization",
+            "name": "PredictPro Quantitative Football Intelligence",
+            "url": "https://www.predictpro.guru"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "@id": "https://www.predictpro.guru/#organization",
+            "name": "PredictPro",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://www.predictpro.guru/favicon-120x120.png",
+              "width": 120,
+              "height": 120
+            }
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://www.predictpro.guru/#webpage"
+          },
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": ["h1", "[data-speakable='true']"]
           },
           "inLanguage": "en"
         },
@@ -485,7 +506,7 @@
         },
         {
           "@type": "FAQPage",
-          "@id": "https://predictpro.guru/#faq",
+          "@id": "https://www.predictpro.guru/#faq",
           "mainEntity": [
             {
               "@type": "Question",
@@ -539,15 +560,15 @@
             <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
               Independent Quantitative Football Statistics &amp; Match Telemetry Publication
             </p>
-            <h1 style="font-size: clamp(1.85rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.15; margin: 0 0 14px 0;">
-              PredictPro — Expected Goals (xG) Football Analytics, Live Scores &amp; Bivariate Poisson Match Previews
+            <h1 data-speakable="true" style="font-size: clamp(1.85rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.15; margin: 0 0 14px 0;">
+              PredictPro — Football Match Statistics, Live Scores &amp; xG
             </h1>
-            <p style="font-size: 15px; max-width: 720px; margin: 0 auto;">
+            <p data-speakable="true" style="font-size: 15px; max-width: 720px; margin: 0 auto;">
               PredictPro publishes daily statistical match previews, Expected Goals (xG) and Expected Goals Conceded (xGA) club profiles, Bivariate Poisson scoreline distributions, and live in-play pressure metrics across more than 40 domestic and international football competitions.
             </p>
           </header>
 
-          <section style="margin-bottom: 28px;">
+          <section style="margin-bottom: 28px; content-visibility: auto; contain-intrinsic-size: 1px 160px;">
             <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">
               1. How Quantitative Expected Goals (xG) &amp; Bivariate Poisson Models Work
             </h2>
@@ -559,7 +580,7 @@
             </p>
           </section>
 
-          <section style="margin-bottom: 28px;">
+          <section style="margin-bottom: 28px; content-visibility: auto; contain-intrinsic-size: 1px 120px;">
             <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">
               2. Global League Coverage, Referee Discipline &amp; Tactical Match Previews
             </h2>
@@ -568,7 +589,7 @@
             </p>
           </section>
 
-          <section style="margin-bottom: 28px;">
+          <section style="margin-bottom: 28px; content-visibility: auto; contain-intrinsic-size: 1px 400px;">
             <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">
               3. Global League &amp; Competition Analysis Hubs
             </h2>

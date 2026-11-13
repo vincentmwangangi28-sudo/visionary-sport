@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+const getSupabase = () => import('@/integrations/supabase/client').then((m) => m.supabase);
 import {
   getSportmonksApiKey,
   saveSportmonksApiKey,
@@ -637,6 +637,7 @@ export async function probeSingleApiProvider(
   // 2. Supabase Database & PostgREST
   if (provider.id === 'supabase_db') {
     try {
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from('predictions')
         .select('id, home_team, away_team, league, match_date, confidence, prediction')

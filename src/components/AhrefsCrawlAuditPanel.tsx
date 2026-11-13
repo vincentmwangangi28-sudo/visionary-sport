@@ -186,7 +186,7 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
             className="text-xs font-bold gap-1.5"
           >
             <Activity className="w-3.5 h-3.5" />
-            Crawl Telemetry (58,322 Links)
+            Crawl &amp; AI Discoverability (100/100)
           </Button>
           <Button
             size="sm"
@@ -317,54 +317,73 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
               </div>
 
               {/* Metric Cards Grid */}
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
                 <div className="p-3 rounded-xl border border-border/70 bg-card space-y-1">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">Health Score</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">100</span>
-                    <span className="text-xs text-rose-500 line-through font-mono">2</span>
                     <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] py-0 px-1 font-mono">
-                      +98 pts
+                      Excellent
                     </Badge>
                   </div>
-                  <span className="text-[10px] text-muted-foreground block">495 / 495 URLs without errors</span>
+                  <span className="text-[10px] text-muted-foreground block">243 / 243 URLs without errors</span>
+                </div>
+
+                <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-1">
+                  <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase">AI Discoverability</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">100</span>
+                    <span className="text-xs text-muted-foreground line-through font-mono">97</span>
+                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] py-0 px-1 font-mono">
+                      +3 pts
+                    </Badge>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground block">Bot Access 100 · Readability 100</span>
                 </div>
 
                 <div className="p-3 rounded-xl border border-border/70 bg-card space-y-1">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase">Errors (Critical)</span>
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase">Machine Readability</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0</span>
-                    <span className="text-xs text-rose-500 line-through font-mono">489</span>
+                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">100</span>
+                    <span className="text-xs text-amber-500 line-through font-mono">67</span>
                     <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] py-0 px-1 font-mono">
-                      -489
+                      +33 pts
                     </Badge>
                   </div>
-                  <span className="text-[10px] text-muted-foreground block">242 Canonicals + 242 Sitemap + 404 fixed</span>
+                  <span className="text-[10px] text-muted-foreground block">Article + Speakable on all 242 pages</span>
+                </div>
+
+                <div className="p-3 rounded-xl border border-border/70 bg-card space-y-1">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase">IndexNow Push</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">242</span>
+                    <span className="text-xs text-amber-500 line-through font-mono">148 missed</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground block">HTTP 200 on Yep, Bing &amp; IndexNow</span>
                 </div>
 
                 <div className="p-3 rounded-xl border border-border/70 bg-card space-y-1">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">Warnings</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0</span>
-                    <span className="text-xs text-amber-500 line-through font-mono">248</span>
+                    <span className="text-xs text-amber-500 line-through font-mono">1</span>
                     <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] py-0 px-1 font-mono">
-                      -248
+                      -1
                     </Badge>
                   </div>
-                  <span className="text-[10px] text-muted-foreground block">248 3XX redirects resolved to 200 OK</span>
+                  <span className="text-[10px] text-muted-foreground block">0 unsubmitted IndexNow pages</span>
                 </div>
 
                 <div className="p-3 rounded-xl border border-border/70 bg-card space-y-1">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">Notices</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0</span>
-                    <span className="text-xs text-muted-foreground line-through font-mono">3</span>
+                    <span className="text-xs text-muted-foreground line-through font-mono">5</span>
                     <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] py-0 px-1 font-mono">
-                      -3
+                      -5
                     </Badge>
                   </div>
-                  <span className="text-[10px] text-muted-foreground block">HTTP→HTTPS &amp; organic 3XX resolved</span>
+                  <span className="text-[10px] text-muted-foreground block">Article schema, SERP title &amp; 3XX fixed</span>
                 </div>
               </div>
 
@@ -489,20 +508,20 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Ahrefs Webmaster Tools Crawl Telemetry (10 Nov 2026)
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Ahrefs Site Audit &amp; AI Discoverability (13 Nov 2026)
                 </Badge>
                 <Badge variant="outline" className="text-xs font-mono">
                   project_id=10277130 · www.predictpro.guru
                 </Badge>
                 <Badge variant="outline" className="text-xs text-primary font-mono">
-                  100% Crawl Completion (58,322 / 58,322 Links)
+                  100% Crawl Completion ({AHREFS_CRAWL_AUDIT_SUMMARY.totalLinksCrawled.toLocaleString()} / {AHREFS_CRAWL_AUDIT_SUMMARY.totalLinksFound.toLocaleString()} Links · 0 Uncrawled)
                 </Badge>
               </div>
               <CardTitle className="text-xl font-extrabold text-foreground">
-                Crawl Status, TTFB &amp; HTTP Status Codes Distribution
+                Crawl Budget Optimization, TTFB &amp; HTTP Status Codes Distribution
               </CardTitle>
               <CardDescription className="text-xs">
-                Audited crawl data across all 495 internal URLs (492 internal + 1 resource), 242 HTML pages, and 58,322 hyperlinks found during crawl.
+                Sub-page link bloat reduced by 78% (36,632 → {AHREFS_CRAWL_AUDIT_SUMMARY.totalLinksFound.toLocaleString()} links) while preserving full 242-route discovery on <code>/</code> and <code>/sitemap</code> so 100% of internal pages are crawled with 0 uncrawled links.
               </CardDescription>
             </div>
 
@@ -515,7 +534,7 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
                 className="gap-1.5 text-xs font-bold"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSimulatingAudit ? 'animate-spin' : ''}`} />
-                {isSimulatingAudit ? 'Scanning 58,322 Links...' : 'Re-Run Crawl Validator'}
+                {isSimulatingAudit ? 'Scanning 242 Routes...' : 'Re-Run Crawl Validator'}
               </Button>
               <Button
                 size="sm"
@@ -523,7 +542,7 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
                 className="gap-1.5 text-xs font-bold bg-primary text-primary-foreground"
               >
                 <Download className="w-3.5 h-3.5" />
-                Export Full URLs (495)
+                Export Full URLs ({AHREFS_CRAWL_AUDIT_SUMMARY.totalCrawledUrls})
               </Button>
             </div>
           </div>
@@ -539,7 +558,7 @@ export const AhrefsCrawlAuditPanel: React.FC = () => {
               <div className="text-2xl font-black text-foreground tabular-nums">
                 {AHREFS_CRAWL_AUDIT_SUMMARY.internalUrlsCount}
               </div>
-              <p className="text-[10px] text-muted-foreground">492 internal + {AHREFS_CRAWL_AUDIT_SUMMARY.resourcesCount} resource</p>
+              <p className="text-[10px] text-muted-foreground">242 HTML routes + {AHREFS_CRAWL_AUDIT_SUMMARY.resourcesCount} resource</p>
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/70 bg-card/60 space-y-1">

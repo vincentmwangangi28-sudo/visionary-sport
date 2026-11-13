@@ -84,4 +84,29 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
     expect(betSlipCode).toContain('id="betslip-stake-input"');
     expect(betSlipCode).toContain('name="betslip-stake"');
   });
+
+  it('synchronizes homepage title, preserves prerendered Article schema, reduces sub-page link bloat, and submits canonical URLs to IndexNow', () => {
+    const indexHtml = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+    const indexTsx = fs.readFileSync(path.resolve(process.cwd(), 'src/pages/Index.tsx'), 'utf-8');
+    const seoManagerTs = fs.readFileSync(path.resolve(process.cwd(), 'src/hooks/useSEOManager.ts'), 'utf-8');
+    const prerenderMjs = fs.readFileSync(path.resolve(process.cwd(), 'scripts/prerender-seo-routes.mjs'), 'utf-8');
+
+    // 1. Page and SERP titles match 100% across index.html, Index.tsx, and useSEOManager.ts
+    expect(indexHtml).toContain('<title>PredictPro — Football Match Statistics, Live Scores &amp; xG</title>');
+    expect(indexTsx).toContain('title="PredictPro — Football Match Statistics, Live Scores & xG"');
+    expect(seoManagerTs).toContain("title: 'PredictPro — Football Match Statistics, Live Scores & xG'");
+
+    // 2. Article schema + SpeakableSpecification present in index.html and preserved by useSEOManager.ts
+    expect(indexHtml).toContain('"@type": "Article"');
+    expect(indexHtml).toContain('"@id": "https://www.predictpro.guru/#article"');
+    expect(indexHtml).toContain('"@id": "https://www.predictpro.guru/#faq"');
+    expect(seoManagerTs).toContain("'prerender-route-jsonld'");
+    expect(seoManagerTs).toContain("'server-prerender-jsonld'");
+
+    // 3. Sub-page link bloat reduction + IndexNow batch submission in prerender-seo-routes.mjs
+    expect(prerenderMjs).toContain('compactSubpageHubDirectoryHtml');
+    expect(prerenderMjs).toContain('submitPrerenderedUrlsToIndexNow');
+    expect(prerenderMjs).toContain('indexnow-submission-manifest.json');
+  });
 });
+

@@ -216,16 +216,22 @@ export default function AhrefsOpportunitiesPage() {
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-1 col-span-2 md:col-span-1">
+          <div
+            onClick={() => setActiveTab('crawl')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('crawl')}
+            className="bg-slate-900/90 border border-emerald-500/30 hover:border-emerald-500/60 transition-colors cursor-pointer rounded-xl p-3.5 space-y-1 col-span-2 md:col-span-1"
+          >
             <div className="text-xs text-slate-400 font-medium flex items-center justify-between">
-              <span>Audit Site Health</span>
+              <span>Audit Site Health (v3)</span>
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             </div>
             <div className="text-2xl font-black font-mono text-emerald-400 tabular-nums">
               100<span className="text-xs text-slate-400">/100</span>
             </div>
             <div className="text-[11px] text-emerald-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> 0 Critical Errors
+              <CheckCircle2 className="w-3 h-3" /> 13 Nov vs 12 Nov · 0 Issues
             </div>
           </div>
         </div>
@@ -259,8 +265,9 @@ export default function AhrefsOpportunitiesPage() {
                 }`}
               >
                 <Activity className="w-3.5 h-3.5" />
-                Crawl Audit &amp; Bulk Exports (6,356)
+                Site Audit v3 Issues &amp; Exports (58,322)
               </button>
+
               <button
                 onClick={() => setActiveTab('keywords')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${

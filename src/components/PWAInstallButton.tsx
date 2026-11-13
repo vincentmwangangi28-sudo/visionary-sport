@@ -119,7 +119,7 @@ export const PWAInstallButton: React.FC = () => {
           onClick={() => handleNativeOrModalInstall()}
           data-testid="navbar-download-app-btn"
           title="Download PredictPro App for Mobile (Android/iOS) or Desktop (Windows/Mac)"
-          className="inline-flex h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold items-center gap-1.5 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 transition-colors cursor-pointer shrink-0"
+          className="inline-flex h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white dark:bg-emerald-800 dark:hover:bg-emerald-700 dark:text-white border border-emerald-900 dark:border-emerald-600 transition-colors cursor-pointer shrink-0"
         >
           <Download className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="inline sm:hidden">App</span>
@@ -166,10 +166,10 @@ export const PWAInstallButton: React.FC = () => {
             {isInstallable && (
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                  <span className="text-xs font-extrabold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
                     <Zap className="w-4 h-4" /> Instant 1-Click Native Installation Ready
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-900/15 text-emerald-950 dark:bg-emerald-500/20 dark:text-emerald-200">
                     {isDesktop ? 'Desktop App' : 'Mobile App'}
                   </span>
                 </div>
@@ -178,7 +178,7 @@ export const PWAInstallButton: React.FC = () => {
                   disabled={installing}
                   onClick={() => handleNativeOrModalInstall()}
                   data-testid="modal-native-oneclick-install-btn"
-                  className="w-full h-10 font-bold text-xs sm:text-sm gap-2 bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
+                  className="w-full h-10 font-bold text-xs sm:text-sm gap-2 bg-emerald-800 hover:bg-emerald-900 text-white cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   <span>
@@ -239,7 +239,7 @@ export const PWAInstallButton: React.FC = () => {
                       <span>Android Phone &amp; Tablet</span>
                     </div>
                     {isAndroid && (
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-900/15 text-emerald-950 dark:bg-emerald-500/20 dark:text-emerald-200">
                         Detected Device
                       </span>
                     )}
@@ -251,7 +251,7 @@ export const PWAInstallButton: React.FC = () => {
                         type="button"
                         size="sm"
                         onClick={() => handleNativeOrModalInstall('mobile')}
-                        className="h-9 text-xs font-bold gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white"
+                        className="h-9 text-xs font-bold gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Install Android App (1-Click)</span>
@@ -563,7 +563,7 @@ export const HomeDownloadAppBanner: React.FC = () => {
     >
       <div className="rounded-xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 via-card to-primary/10 p-3.5 sm:p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 shadow-2xs">
         <div className="flex items-start sm:items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0 shadow-xs">
+          <div className="h-10 w-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center shrink-0 shadow-xs">
             {isDesktop ? (
               <Monitor className="h-5 w-5" aria-hidden="true" />
             ) : (
@@ -575,7 +575,7 @@ export const HomeDownloadAppBanner: React.FC = () => {
               <span className="text-xs sm:text-sm font-extrabold text-foreground">
                 Download PredictPro App — Mobile &amp; Desktop
               </span>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-900/15 text-emerald-950 dark:bg-emerald-500/20 dark:text-emerald-200">
                 Android · iOS · Windows · Mac
               </span>
             </div>

@@ -220,16 +220,16 @@ const HOME_SCHEMA = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'PredictPro AI Football Predictions & xG Analytics',
+    name: 'PredictPro — Football Match Statistics, Live Scores & xG',
     alternateName: ['PredictPro', 'PredictPro Football Tips'],
-    url: 'https://predictpro.guru',
+    url: 'https://www.predictpro.guru',
     description:
-      'Daily AI football predictions, banker picks, SportyBet/Betika/SportPesa booking codes, Expected Goals (xG) match previews, personal bet tracking, and live scores across 40+ leagues.',
+      'Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://predictpro.guru/screener?q={search_term_string}',
+        urlTemplate: 'https://www.predictpro.guru/screener?q={search_term_string}',
       },
       'query-input': 'required name=search_term_string',
     },
@@ -238,7 +238,7 @@ const HOME_SCHEMA = [
     '@context': 'https://schema.org',
     '@type': 'SportsOrganization',
     name: 'PredictPro Football Intelligence',
-    url: 'https://predictpro.guru',
+    url: 'https://www.predictpro.guru',
     sport: 'Association Football',
     description:
       'AI-powered football predictions, Expected Goals (xG) telemetry, bivariate Poisson score distributions, live scores, personal bet tracking, and multi-bookmaker booking tools.',
@@ -251,8 +251,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="AI Football Predictions Today, xG & Live Odds | PredictPro"
-        description="Free daily AI football predictions, 80%+ banker tips, Expected Goals (xG) models, SportyBet/Betika booking codes, and live scores across 40+ leagues."
+        title="PredictPro — Football Match Statistics, Live Scores & xG"
+        description="Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues."
         keywords="football predictions today, sure banker tips today, sportybet booking codes, betika jackpot predictions, expected goals xG, bet tracker, in-play momentum radar"
         canonical="/"
         schema={HOME_SCHEMA}

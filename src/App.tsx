@@ -419,11 +419,15 @@ const SEOManagerInitializer: React.FC = () => {
       mounted = true;
       startTransition(() => setReady(true));
     };
-    const timer = setTimeout(enable, 4500);
     window.addEventListener("scroll", enable, { passive: true, once: true });
+    window.addEventListener("pointerdown", enable, { passive: true, once: true });
+    window.addEventListener("touchstart", enable, { passive: true, once: true });
+    window.addEventListener("keydown", enable, { passive: true, once: true });
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("scroll", enable);
+      window.removeEventListener("pointerdown", enable);
+      window.removeEventListener("touchstart", enable);
+      window.removeEventListener("keydown", enable);
     };
   }, [ready]);
 
@@ -460,13 +464,11 @@ const DeferredGlobalOverlays = () => {
       mounted = true;
       startTransition(() => setReady(true));
     };
-    const timer = setTimeout(enable, 6000);
     window.addEventListener("scroll", enable, { passive: true, once: true });
     window.addEventListener("pointerdown", enable, { passive: true, once: true });
     window.addEventListener("touchstart", enable, { passive: true, once: true });
     window.addEventListener("keydown", enable, { passive: true, once: true });
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("scroll", enable);
       window.removeEventListener("pointerdown", enable);
       window.removeEventListener("touchstart", enable);
@@ -478,11 +480,6 @@ const DeferredGlobalOverlays = () => {
     <>
       <ErrorBoundary fallback={null}>
         <Sonner />
-      </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
-        <Suspense fallback={null}>
-          <PWAInstallToast />
-        </Suspense>
       </ErrorBoundary>
       {(ready || betSlipOpen || selections.length > 0) && (
         <ErrorBoundary fallback={null}>
@@ -500,6 +497,11 @@ const DeferredGlobalOverlays = () => {
       )}
       {ready && (
         <>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <PWAInstallToast />
+            </Suspense>
+          </ErrorBoundary>
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>
               <FirstVisitSignupModal />

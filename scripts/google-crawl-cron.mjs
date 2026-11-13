@@ -11,8 +11,11 @@
  * 5. Logs detailed diagnostics for Google Search Console and crawler monitoring
  */
 
+import fs from 'fs';
+import path from 'path';
+
 const BASE_URL = process.env.SITE_URL || 'https://www.predictpro.guru';
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
 const SUPABASE_PING_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines';
 
 const PRIORITY_CRAWL_URLS = [
@@ -135,8 +138,24 @@ const PRIORITY_CRAWL_URLS = [
   `${BASE_URL}/sitemap-yandex.xml`
 ];
 
-// Submit only clean, self-canonicalized URLs (never ?lang= query parameter variants that canonicalize back to root)
-const ALL_SUBMISSION_URLS = [...PRIORITY_CRAWL_URLS];
+function getAllSitemapCanonicalUrls() {
+  try {
+    const sitemapPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+      const xml = fs.readFileSync(sitemapPath, 'utf-8');
+      const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
+      if (locs.length > 0) {
+        return Array.from(new Set([...locs, ...PRIORITY_CRAWL_URLS]));
+      }
+    }
+  } catch {
+    // fallback to priority list
+  }
+  return [...PRIORITY_CRAWL_URLS];
+}
+
+// Submit all 242 clean, self-canonicalized URLs from sitemap.xml so 0 changed pages remain unsubmitted to IndexNow
+const ALL_SUBMISSION_URLS = getAllSitemapCanonicalUrls();
 
 async function runGoogleCrawlCron() {
   const startTime = Date.now();
@@ -214,12 +233,17 @@ async function runGoogleCrawlCron() {
       urlList: ALL_SUBMISSION_URLS.slice(0, 500)
     });
 
-    const [indexNowRes, yandexRes] = await Promise.all([
+    const [indexNowRes, yepRes, yandexRes] = await Promise.all([
       fetch('https://api.indexnow.org/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: indexNowPayload
       }),
+      fetch('https://indexnow.yep.com/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: indexNowPayload
+      }).catch(() => null),
       fetch('https://yandex.com/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -227,7 +251,7 @@ async function runGoogleCrawlCron() {
       }).catch(() => null)
     ]);
 
-    console.log(`📡 IndexNow response: HTTP ${indexNowRes.status} (${indexNowRes.ok ? 'Accepted' : 'Notice'})`);
+    console.log(`📡 IndexNow response: HTTP ${indexNowRes.status} (${indexNowRes.ok ? 'Accepted' : 'Notice'}), Yep/Ahrefs: HTTP ${yepRes?.status ?? 'n/a'}`);
     results.indexNowStatus = `http_${indexNowRes.status}`;
     results.yandexIndexNowStatus = yandexRes ? `http_${yandexRes.status}` : 'network_notice';
   } catch (err) {

@@ -549,8 +549,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    const hasOAuthUrlParams =
+      typeof window !== 'undefined' &&
+      (window.location.hash.includes('access_token=') ||
+        window.location.search.includes('code=') ||
+        window.location.search.includes('error_description='));
+
     if (
-      hasStoredAuthSession() ||
+      hasOAuthUrlParams ||
       (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth'))
     ) {
       initAuth();
@@ -564,12 +570,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const onInteract = () => {
       initAuth();
     };
+    window.addEventListener('scroll', onInteract, { passive: true, once: true });
     window.addEventListener('pointerdown', onInteract, { passive: true, once: true });
     window.addEventListener('touchstart', onInteract, { passive: true, once: true });
     window.addEventListener('keydown', onInteract, { passive: true, once: true });
 
     return () => {
       unsubscribed = true;
+      window.removeEventListener('scroll', onInteract);
       window.removeEventListener('pointerdown', onInteract);
       window.removeEventListener('touchstart', onInteract);
       window.removeEventListener('keydown', onInteract);

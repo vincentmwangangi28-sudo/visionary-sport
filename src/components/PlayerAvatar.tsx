@@ -367,13 +367,10 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = memo(
     const [imgLoaded, setImgLoaded] = useState(false);
 
     const normalizedName = (name || '').trim().toLowerCase();
-    const resolvedPhotoUrl =
-      resolveKnownPlayerHeadshot(name) ||
-      photoUrl ||
-      KNOWN_PLAYER_HEADSHOTS[normalizedName] ||
-      (playerId && playerId < 9000
-        ? `https://media.api-sports.io/football/players/${playerId}.png`
-        : null);
+    const isLocalPhoto = Boolean(
+      photoUrl && (photoUrl.startsWith('/') || photoUrl.startsWith('data:'))
+    );
+    const resolvedPhotoUrl = isLocalPhoto ? photoUrl : null;
 
     const kit = getClubKitPalette(team);
     const sizeCfg = SIZE_CLASSES[size] || SIZE_CLASSES.lg;

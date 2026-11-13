@@ -615,6 +615,9 @@ function cronTasksPlugin(): Plugin {
     transformIndexHtml: {
       order: "pre",
       async handler(html, ctx) {
+        if (!ctx.server) {
+          return html;
+        }
         try {
           const reqPath = (ctx.originalUrl || ctx.path || "/").split("?")[0] || "/";
           return await injectServerSeoIntoHtml(html, reqPath);

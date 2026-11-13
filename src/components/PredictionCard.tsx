@@ -242,7 +242,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
           {/* Column 1: Kickoff Time & Date */}
           <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-2 sm:gap-0.5 font-mono tabular-nums sm:border-r sm:border-border/60 sm:pr-3">
             {relativeKickoff.status === 'live' ? (
-              <span className="text-xs font-bold text-rose-700 dark:text-rose-400 animate-pulse">
+              <span className="text-xs font-bold text-rose-900 dark:text-rose-300 animate-pulse">
                 LIVE
               </span>
             ) : (

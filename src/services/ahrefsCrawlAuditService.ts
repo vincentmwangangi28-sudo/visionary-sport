@@ -61,31 +61,39 @@ export interface CrawlAuditSummary {
   };
   remediatedRedirectsCount: number;
   healthScore: number;
+  aiDiscoverabilityScore: number;
+  botAccessScore: number;
+  machineReadabilityScore: number;
+  indexNowSubmittedUrlsCount: number;
 }
 
 export const AHREFS_CRAWL_AUDIT_SUMMARY: CrawlAuditSummary = {
-  internalUrlsCount: 495,
+  internalUrlsCount: 242,
   resourcesCount: 1,
-  totalCrawledUrls: 495,
-  totalLinksFound: 58322,
-  totalLinksCrawled: 58322,
+  totalCrawledUrls: 243,
+  totalLinksFound: 8156,
+  totalLinksCrawled: 8156,
   uncrawledLinks: 0,
-  http2xxSuccessCount: 246,
-  http3xxRedirectCount: 248,
+  http2xxSuccessCount: 243,
+  http3xxRedirectCount: 0,
   http4xxClientErrorsCount: 0,
   missingImageAltTextsCount: 0,
   blockedByRobotsTxtCount: 0,
   contentTypes: {
     html: 242,
     other: 1,
-    javascript: 1,
+    javascript: 0,
   },
   depthLevels: {
     depth0: 1,
-    depth1: 494,
+    depth1: 242,
   },
   remediatedRedirectsCount: 248,
   healthScore: 100,
+  aiDiscoverabilityScore: 100,
+  botAccessScore: 100,
+  machineReadabilityScore: 100,
+  indexNowSubmittedUrlsCount: 242,
 };
 
 /**

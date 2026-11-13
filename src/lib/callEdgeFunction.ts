@@ -1,7 +1,8 @@
-import { supabase, DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY } from '@/integrations/supabase/client';
+export const SUPABASE_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co';
+export const SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
 
-export const SUPABASE_URL = DEFAULT_SUPABASE_URL;
-export const SUPABASE_ANON_KEY = DEFAULT_SUPABASE_ANON_KEY;
+const getSupabase = () => import('@/integrations/supabase/client').then((m) => m.supabase);
 
 // Track functions that failed CORS/network preflight in this session to avoid repeated console errors
 const edgeFunctionCooldowns = new Map<string, number>();
@@ -75,6 +76,7 @@ export async function callEdgeFn(name: string, body?: unknown, userToken?: strin
       headers.Authorization = `Bearer ${userToken}`;
     }
 
+    const supabase = await getSupabase();
     const invokePromise = supabase.functions.invoke(name, {
       body,
       headers: Object.keys(headers).length > 0 ? headers : undefined,

@@ -700,7 +700,90 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
-function runPrerender() {
+async function submitPrerenderedUrlsToIndexNow(canonicalUrls) {
+  const primaryKey = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+  const allKeys = [
+    'f7qprb5m24wrvjdmkspy56hhvjmhkcn5',
+    'ccf4ef0c532c4444b096f02474b4320a',
+    'k1rdcw8qawe1jjeeezgcndj1njk3yr2g',
+    'h2u74xmxq17qqj7na6p7g5w29zwrhhq7',
+  ];
+
+  const endpoints = [
+    'https://api.indexnow.org/indexnow',
+    'https://www.bing.com/indexnow',
+    'https://indexnow.yep.com/indexnow',
+    'https://yandex.com/indexnow',
+    'https://search.seznam.cz/indexnow',
+  ];
+
+  const manifestPath = path.join(DIST_DIR, 'indexnow-submission-manifest.json');
+  fs.writeFileSync(
+    manifestPath,
+    JSON.stringify(
+      {
+        host: 'www.predictpro.guru',
+        key: primaryKey,
+        backupKeys: allKeys,
+        keyLocation: `${BASE_URL}/${primaryKey}.txt`,
+        submittedAt: new Date().toISOString(),
+        totalUrls: canonicalUrls.length,
+        endpoints,
+        urlList: canonicalUrls,
+      },
+      null,
+      2
+    ),
+    'utf-8'
+  );
+
+  if (process.env.VITEST || process.env.NODE_ENV === 'test') {
+    return;
+  }
+
+  // Submit all 242 canonical URLs with primary key to all 5 participating IndexNow search engines
+  // and also submit with the 3 project verification keys to api.indexnow.org and indexnow.yep.com (Ahrefs)
+  const submissions = [];
+  for (const endpoint of endpoints) {
+    submissions.push({ endpoint, key: primaryKey });
+  }
+  for (const extraKey of allKeys.slice(1)) {
+    submissions.push({ endpoint: 'https://indexnow.yep.com/indexnow', key: extraKey });
+    submissions.push({ endpoint: 'https://api.indexnow.org/indexnow', key: extraKey });
+  }
+
+  await Promise.allSettled(
+    submissions.map(async ({ endpoint, key }) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4500);
+      try {
+        const payload = {
+          host: 'www.predictpro.guru',
+          key,
+          keyLocation: `${BASE_URL}/${key}.txt`,
+          urlList: canonicalUrls,
+        };
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        if (key === primaryKey) {
+          console.log(
+            `📡 [IndexNow] Submitted ${canonicalUrls.length} canonical URLs (${key.slice(0, 8)}…) to ${endpoint} -> HTTP ${res.status}`
+          );
+        }
+      } catch {
+        // Non-blocking in restricted build sandboxes; manifest is persisted in dist/
+      } finally {
+        clearTimeout(timer);
+      }
+    })
+  );
+}
+
+async function runPrerender() {
   const indexHtmlPath = path.join(DIST_DIR, 'index.html');
   if (!fs.existsSync(indexHtmlPath) || !fs.existsSync(SITEMAP_PATH)) {
     console.log('[prerender-seo-routes] Skipping: dist/index.html or public/sitemap.xml not found.');
@@ -710,19 +793,41 @@ function runPrerender() {
   const templateHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
   const sitemapXml = fs.readFileSync(SITEMAP_PATH, 'utf-8');
 
-  // Inline all built CSS files into <head> to eliminate render-blocking stylesheet requests
-  let baseHtml = templateHtml;
-  const cssLinkMatches = [...baseHtml.matchAll(/<link rel="stylesheet"[^>]*href="\/?(assets\/[^"]+\.css)"[^>]*>/g)];
-  for (const match of cssLinkMatches) {
-    const cssFilePath = path.join(DIST_DIR, match[1]);
-    if (fs.existsSync(cssFilePath)) {
-      const cssContent = fs.readFileSync(cssFilePath, 'utf-8');
-      baseHtml = baseHtml.replace(match[0], `<style data-inlined-css="true">${cssContent}</style>`);
-    }
-  }
+  const baseHtml = templateHtml.replace(
+    /\s*<script id="server-prerender-jsonld" type="application\/ld\+json">[\s\S]*?<\/script>/g,
+    ''
+  );
 
   const locMatches = [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
   let generatedCount = 0;
+  const submittedCanonicalUrls = [];
+
+  const compactSubpageHubDirectoryHtml = `<section data-prerendered-hub-links="true" style="margin-bottom: 28px; content-visibility: auto; contain-intrinsic-size: 1px 180px;">
+            <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">
+              3. Core Football Analytics Hubs &amp; Complete Site Directory
+            </h2>
+            <p style="font-size: 14px; margin-bottom: 12px;">
+              Navigate directly to our primary quantitative football prediction hubs, mathematical calculators, or the complete 242-page HTML Sitemap directory:
+            </p>
+            <ul style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 16px; padding-left: 18px; margin-bottom: 16px;">
+              <li><a href="/">PredictPro Home &amp; Daily Match Feed</a></li>
+              <li><a href="/today-predictions">Today&apos;s Complete Football Predictions Slate</a></li>
+              <li><a href="/best-bets">High-Consensus Banker Forecasts (75%+ Conf)</a></li>
+              <li><a href="/value-bets">Positive Expected Value (+EV) Scanner</a></li>
+              <li><a href="/btts">Both Teams to Score (BTTS) Probabilities</a></li>
+              <li><a href="/correct-score">Exact Scoreline Poisson Heatmaps</a></li>
+              <li><a href="/accumulator">Smart Multi-Match Accumulator Builder</a></li>
+              <li><a href="/jackpot-predictions">17-Game Mega Jackpot Permutation Engine</a></li>
+              <li><a href="/poisson-calculator">Bivariate Poisson &amp; Dixon-Coles Calculator</a></li>
+              <li><a href="/premier-league-predictions">English Premier League xG &amp; Predictions</a></li>
+              <li><a href="/champions-league-predictions">UEFA Champions League Tactical Analytics</a></li>
+              <li><a href="/kpl-predictions">FKF Kenya Premier League &amp; CAF Hub</a></li>
+              <li><a href="/teams">Club Expected Goals (xG) Database</a></li>
+              <li><a href="/players">Player Expected Goals (xG) Leaderboards</a></li>
+              <li><a href="/blog">Editorial Strategy &amp; Quantitative Research Blog</a></li>
+              <li><a href="/sitemap">Complete HTML Sitemap &amp; All 242 Analytical Pages</a></li>
+            </ul>
+          </section>`;
 
   for (const fullUrl of locMatches) {
     let routePath = '/';
@@ -734,6 +839,7 @@ function runPrerender() {
     }
 
     const canonicalUrl = routePath === '/' ? `${BASE_URL}/` : `${BASE_URL}${routePath}`;
+    submittedCanonicalUrls.push(canonicalUrl);
     const { title, description } = deriveMetaForPath(routePath);
     const escapedTitle = escapeHtml(title);
     const escapedDesc = escapeHtml(description);
@@ -784,17 +890,28 @@ function runPrerender() {
         `"@id": "${canonicalUrl}#webpage",\n          "url": "${canonicalUrl}",\n          "name": "${escapedTitle}",\n          "description": "${escapedDesc}"`
       )
       .replace(
+        /"@id": "https:\/\/(?:www\.)?predictpro\.guru\/#article",\s*"isPartOf": \{\s*"@id": "https:\/\/(?:www\.)?predictpro\.guru\/#webpage"\s*\},\s*"headline": "[^"]*",\s*"name": "[^"]*",\s*"description": "[^"]*"/,
+        `"@id": "${canonicalUrl}#article",\n          "isPartOf": {\n            "@id": "${canonicalUrl}#webpage"\n          },\n          "headline": "${escapedTitle}",\n          "name": "${escapedTitle}",\n          "description": "${escapedDesc}"`
+      )
+      .replace(
         '</head>',
         `  <link rel="alternate" type="text/markdown" href="${canonicalUrl}?format=md" title="Markdown Twin for AI Search & LLMs" />\n  ${routeJsonLdScript}\n  </head>`
       )
       .replace(
         /<h1[^>]*>[\s\S]*?<\/h1>\s*<p[^>]*>[\s\S]*?<\/p>/,
-        `<h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 12px 0;">${escapedTitle}</h1>\n        <p class="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed" style="font-size: 15px; line-height: 1.6; max-width: 672px; margin: 0 auto 24px auto;">${escapedDesc}</p>\n        ${richSectionHtml}`
+        `<h1 data-speakable="true" style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 12px 0;">${escapedTitle}</h1>\n        <p data-speakable="true" class="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed" style="font-size: 15px; line-height: 1.6; max-width: 672px; margin: 0 auto 24px auto;">${escapedDesc}</p>\n        ${richSectionHtml}`
       )
       .replace(
         /<noscript>[\s\S]*?<h1[^>]*>([\s\S]*?)<\/h1>/g,
         '<noscript><p style="font-size: 20px; font-weight: 800; margin: 0 0 12px 0;">$1</p>'
       );
+
+    if (routePath !== '/' && routePath !== '/sitemap') {
+      routeHtml = routeHtml.replace(
+        /<section style="margin-bottom: 28px; content-visibility: auto; contain-intrinsic-size: 1px 400px;">[\s\S]*?<\/section>/,
+        compactSubpageHubDirectoryHtml
+      );
+    }
 
     if (routePath === '/') {
       fs.writeFileSync(indexHtmlPath, routeHtml, 'utf-8');
@@ -803,8 +920,6 @@ function runPrerender() {
       const relPath = routePath.replace(/^\/+/, '');
       const targetDir = path.join(DIST_DIR, relPath);
       fs.mkdirSync(targetDir, { recursive: true });
-      // Write BOTH dist/<relPath>/index.html AND dist/<relPath>.html so Vercel cleanUrls:true + trailingSlash:false
-      // serves the exact route-specific pre-rendered HTML without falling through to /index.html
       fs.writeFileSync(path.join(targetDir, 'index.html'), routeHtml, 'utf-8');
       const flatHtmlPath = `${targetDir}.html`;
       fs.mkdirSync(path.dirname(flatHtmlPath), { recursive: true });
@@ -813,7 +928,8 @@ function runPrerender() {
     }
   }
 
-  console.log(`✅ [prerender-seo-routes] Generated ${generatedCount} self-canonicalized static HTML routes (.html + /index.html) in dist/`);
+  await submitPrerenderedUrlsToIndexNow(submittedCanonicalUrls);
+  console.log(`✅ [prerender-seo-routes] Generated ${generatedCount} self-canonicalized static HTML routes (.html + /index.html) in dist/ and prepared IndexNow batch (${submittedCanonicalUrls.length} URLs).`);
 }
 
 function buildRouteSpecificJsonLd(routePath, canonicalUrl, title, description) {
@@ -1030,47 +1146,45 @@ function buildRouteSpecificJsonLd(routePath, canonicalUrl, title, description) {
     });
   }
 
-  // 3. Article / BlogPosting Schema (115 content & match preview pages)
-  const isArticlePage =
-    (routePath.startsWith('/blog/') && routePath !== '/blog') ||
-    (routePath.startsWith('/predict/') && routePath !== '/predict') ||
-    routePath.endsWith('-predictions') ||
-    routePath === '/news' ||
-    routePath === '/methodology' ||
-    routePath === '/bet-of-the-day' ||
-    routePath.startsWith('/teams/') ||
-    routePath.startsWith('/players/');
-
-  if (isArticlePage) {
-    const isBlog = routePath.startsWith('/blog/');
-    graph.push({
-      '@type': isBlog ? 'BlogPosting' : 'Article',
-      '@id': `${canonicalUrl}#article`,
-      headline: title.replace(/\s*\|\s*PredictPro.*$/i, '').trim(),
-      description: description,
-      url: canonicalUrl,
-      mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': canonicalUrl,
+  // 3. Universal Article / BlogPosting + SpeakableSpecification Schema (all 242 pages contain <article> editorial content)
+  const isBlog = routePath.startsWith('/blog/') && routePath !== '/blog';
+  const cleanHeadline = title.replace(/\s*\|\s*PredictPro.*$/i, '').trim() || title;
+  graph.push({
+    '@type': isBlog ? 'BlogPosting' : 'Article',
+    '@id': `${canonicalUrl}#route-article`,
+    headline: cleanHeadline,
+    name: title,
+    description: description,
+    url: canonicalUrl,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+    },
+    datePublished: '2025-01-15T08:00:00+00:00',
+    dateModified: '2026-11-13T06:00:00+00:00',
+    author: {
+      '@type': 'Organization',
+      name: isBlog ? 'PredictPro Quantitative Research Desk' : 'PredictPro Data Science Desk',
+      url: BASE_URL,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'PredictPro',
+      url: BASE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${BASE_URL}/favicon-120x120.png`,
+        width: 120,
+        height: 120,
       },
-      datePublished: '2025-01-15T08:00:00+00:00',
-      dateModified: '2026-11-04T09:00:00+00:00',
-      author: {
-        '@type': 'Organization',
-        name: isBlog ? 'PredictPro Quantitative Research Desk' : 'PredictPro Data Science Desk',
-        url: BASE_URL,
-      },
-      publisher: {
-        '@type': 'Organization',
-        name: 'PredictPro',
-        logo: {
-          '@type': 'ImageObject',
-          url: `${BASE_URL}/icon-512.png`,
-        },
-      },
-      image: `${BASE_URL}/og-image.jpg`,
-    });
-  }
+    },
+    image: [`${BASE_URL}/og-image.jpg`],
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', '[data-speakable="true"]', '[data-ai-citation-block="true"]'],
+    },
+    inLanguage: 'en',
+  });
 
   return `<script type="application/ld+json" id="prerender-route-jsonld">${JSON.stringify({
     '@context': 'https://schema.org',

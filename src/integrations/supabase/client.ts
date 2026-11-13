@@ -346,10 +346,15 @@ export function resolveCurrentCredentials(
   };
 }
 
-let activeClientInstance: SupabaseClient<Database> = (() => {
-  const { url, key } = resolveCurrentCredentials();
-  return createClientInstance(url, key);
-})();
+let activeClientInstance: SupabaseClient<Database> | null = null;
+
+function getActiveClientInstance(): SupabaseClient<Database> {
+  if (!activeClientInstance) {
+    const { url, key } = resolveCurrentCredentials();
+    activeClientInstance = createClientInstance(url, key);
+  }
+  return activeClientInstance;
+}
 
 /**
  * Tests connection to a Supabase project with provided credentials
@@ -492,9 +497,10 @@ export function clearSessionSupabaseConfig(): void {
  */
 export const supabase = new Proxy({} as SupabaseClient<Database>, {
   get(_target, prop) {
-    const val = (activeClientInstance as any)[prop];
+    const client = getActiveClientInstance();
+    const val = (client as any)[prop];
     if (typeof val === 'function') {
-      return val.bind(activeClientInstance);
+      return val.bind(client);
     }
     return val;
   },

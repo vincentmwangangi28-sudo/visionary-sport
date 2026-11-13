@@ -94,9 +94,9 @@ interface RouteSEOConfig {
  */
 const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/': {
-    title: 'AI Pro Tips Today: Football Predictions & xG Stats (87% Verified)',
+    title: 'PredictPro — Football Match Statistics, Live Scores & xG',
     description:
-      'Daily AI pro tips today and verified football predictions with 87% accuracy. Expected Goals (xG), Poisson probabilities, and banker picks across 40+ leagues.',
+      'Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.',
     keywords:
       'aipro tips today, aiprotips prediction today, ai pro tips today football prediction, ai football predictions today, soccer predictions, banker bets today, expected goals xg',
     canonicalPath: '/',
@@ -3089,20 +3089,19 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
           )
         : [];
 
-    // Build official Schema.org Article / BlogPosting structured data for articles, blog posts, and prediction pages
+    // Build official Schema.org Article / BlogPosting structured data for all indexable pages
+    // so every page containing <article> has complete Article & SpeakableSpecification machine readability.
     let articleSchema: Record<string, unknown> | null = null;
     const isBlogRoute = canonicalPath.startsWith('/blog/');
-    const isPredictionRoute = canonicalPath.startsWith('/predict/') || Boolean(matchSeo);
-    const shouldGenerateArticle =
-      type === 'article' || Boolean(options.article) || isBlogRoute || isPredictionRoute;
+    const shouldGenerateArticle = !noIndex;
 
     if (shouldGenerateArticle) {
       const artOpt = options.article;
       const pubDate =
         artOpt?.publishedTime ||
         matchSeo?.publishedTime ||
-        (isBlogRoute ? '2026-09-30T00:00:00Z' : new Date().toISOString());
-      const modDate = artOpt?.modifiedTime || matchSeo?.modifiedTime || pubDate;
+        (isBlogRoute ? '2026-09-30T00:00:00Z' : '2026-01-15T00:00:00Z');
+      const modDate = artOpt?.modifiedTime || matchSeo?.modifiedTime || '2026-11-13T06:00:00Z';
       const authorName =
         artOpt?.authorName ||
         (matchSeo
@@ -3117,6 +3116,7 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
         '@id': `${canonicalUrl}#article`,
         isPartOf: { '@id': `${canonicalUrl}#webpage` },
         headline,
+        name: headline,
         description: webPageDescription,
         image: {
           '@type': 'ImageObject',
@@ -3145,6 +3145,10 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
             width: 512,
             height: 512,
           },
+        },
+        speakable: {
+          '@type': 'SpeakableSpecification',
+          cssSelector: ['h1', '[data-speakable="true"]', '[data-ai-citation-block="true"]'],
         },
         inLanguage: userLocale.locale || userLocale.lang,
         ...(artOpt?.section || matchSeo?.league
@@ -3422,11 +3426,16 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       upsertMetaTag('name', 'twitter:image:alt', imageAlt);
 
       const scriptId = 'predictpro-dynamic-seo-jsonld';
+      const preservedIds = new Set([
+        scriptId,
+        'prerender-route-jsonld',
+        'server-prerender-jsonld',
+      ]);
       const allJsonLdScripts = Array.from(
         document.head.querySelectorAll('script[type="application/ld+json"]')
       ) as HTMLScriptElement[];
       for (const s of allJsonLdScripts) {
-        if (s.id !== scriptId) {
+        if (!preservedIds.has(s.id)) {
           s.remove();
         }
       }

@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+const getSupabase = () => import('@/integrations/supabase/client').then((m) => m.supabase);
 import { logAdminAction } from './adminAuditService';
 
 export const PRIMARY_ADMIN_EMAIL = 'vincentmwangangi28@gmail.com';
@@ -176,6 +176,7 @@ export async function isUserAuthorizedAdminAsync(
 export async function checkAdminsTableStatus(): Promise<AdminsTableStatus> {
   const start = performance.now();
   try {
+    const supabase = await getSupabase();
     const queryPromise = supabase
       .from('admins')
       .select('id, email')
@@ -235,6 +236,7 @@ export async function fetchAdminsFromSupabase(): Promise<{
   let queryError: string | null = null;
 
   try {
+    const supabase = await getSupabase();
     const queryPromise = supabase
       .from('admins')
       .select('*')
@@ -295,6 +297,7 @@ export async function addAdminToSupabase({
   let persistedToDb = false;
 
   try {
+    const supabase = await getSupabase();
     const upsertPromise = supabase
       .from('admins')
       .upsert(

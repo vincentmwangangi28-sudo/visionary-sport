@@ -55,25 +55,27 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  if ('caches' in window) {
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((k) => !k.startsWith('predictpro-v7'))
-            .map((k) => caches.delete(k).catch(() => false))
-        )
-      )
-      .catch(() => {});
-  }
-
+  let swRegistered = false;
   const registerServiceWorker = () => {
+    if (swRegistered) return;
+    swRegistered = true;
     if (
       navigator.webdriver ||
       /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '')
     ) {
       return;
+    }
+    if ('caches' in window) {
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter((k) => !k.startsWith('predictpro-v7'))
+              .map((k) => caches.delete(k).catch(() => false))
+          )
+        )
+        .catch(() => {});
     }
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
@@ -83,13 +85,10 @@ if ('serviceWorker' in navigator) {
       .catch(() => {});
   };
 
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(registerServiceWorker, 150);
-  } else {
-    window.addEventListener('DOMContentLoaded', () => setTimeout(registerServiceWorker, 150), {
-      once: true,
-    });
-  }
+  window.addEventListener('scroll', registerServiceWorker, { once: true, passive: true });
+  window.addEventListener('pointerdown', registerServiceWorker, { once: true, passive: true });
+  window.addEventListener('touchstart', registerServiceWorker, { once: true, passive: true });
+  window.addEventListener('keydown', registerServiceWorker, { once: true, passive: true });
 }
 
 // Automatic recovery from stale chunks or MIME type mismatches across new deployments

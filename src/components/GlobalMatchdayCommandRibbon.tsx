@@ -178,17 +178,17 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         });
     };
 
-    const timer = setTimeout(loadLiveRibbon, 8000);
     window.addEventListener('scroll', loadLiveRibbon, { passive: true, once: true });
     window.addEventListener('pointerdown', loadLiveRibbon, { passive: true, once: true });
     window.addEventListener('touchstart', loadLiveRibbon, { passive: true, once: true });
+    window.addEventListener('keydown', loadLiveRibbon, { passive: true, once: true });
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
       window.removeEventListener('scroll', loadLiveRibbon);
       window.removeEventListener('pointerdown', loadLiveRibbon);
       window.removeEventListener('touchstart', loadLiveRibbon);
+      window.removeEventListener('keydown', loadLiveRibbon);
     };
   }, []);
 
@@ -267,13 +267,13 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                   className="shrink-0 flex items-center gap-2 px-2.5 py-1 rounded-md border border-rose-500/30 bg-rose-500/[0.04] hover:border-rose-500/60 transition-colors text-xs"
                   title={`${m.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.awayTeam} (${m.minute})`}
                 >
-                  <span className="font-mono tabular-nums text-[10px] font-black text-rose-600 dark:text-rose-400">
+                  <span className="font-mono tabular-nums text-[10px] font-black text-rose-900 dark:text-rose-200">
                     {m.minute}
                   </span>
                   <div className="flex items-center gap-1.5 font-medium text-foreground">
                     <TeamLogo team={m.homeTeam} size="xs" badgeOnly />
                     <span className="max-w-[75px] truncate font-bold">{m.homeTeam}</span>
-                    <span className="font-mono tabular-nums font-black px-1 rounded bg-rose-600 text-white text-[10px]">
+                    <span className="font-mono tabular-nums font-black px-1 rounded bg-rose-800 text-white text-[10px]">
                       {m.homeScore}-{m.awayScore}
                     </span>
                     <TeamLogo team={m.awayTeam} size="xs" badgeOnly />
@@ -301,7 +301,7 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
                     title={`${item.home_team} vs ${item.away_team} (${getPrediction(item)} - ${conf}%)`}
                   >
                     {liveInfo?.isLive ? (
-                      <span className="font-mono tabular-nums text-[10px] font-bold text-rose-700 dark:text-rose-400">
+                      <span className="font-mono tabular-nums text-[10px] font-bold text-rose-900 dark:text-rose-200">
                         {liveInfo.minute}
                       </span>
                     ) : filterMode === 'tv' ? (
@@ -340,21 +340,21 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         <div className="hidden lg:flex items-center gap-1.5 shrink-0 pl-2 border-l border-border">
           <Link
             to="/live"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold text-rose-900 dark:text-rose-200 hover:bg-rose-500/10 transition-colors"
           >
             <Radio className="h-3 w-3 animate-pulse" aria-hidden="true" />
             <span>2D Live Center</span>
           </Link>
           <Link
             to="/community-slips"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-emerald-950 dark:text-emerald-200 hover:bg-emerald-500/10 transition-colors"
           >
             <Users className="h-3 w-3" aria-hidden="true" />
             <span>Copy Slips</span>
           </Link>
           <Link
             to="/pick-em-challenge"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-amber-900 dark:text-amber-300 hover:bg-amber-500/10 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-amber-950 dark:text-amber-200 hover:bg-amber-500/10 transition-colors"
           >
             <Trophy className="h-3 w-3" aria-hidden="true" />
             <span>Pick&apos;em</span>

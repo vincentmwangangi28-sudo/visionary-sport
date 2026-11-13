@@ -141,9 +141,12 @@ export const TeamLogo: React.FC<TeamLogoProps> = memo(({
   const [loaded, setLoaded] = useState(false);
 
   const identity = resolveTeamIdentity(team, leagueId ?? league, logoUrl);
+  const isLocalAsset = Boolean(
+    logoUrl && (logoUrl.startsWith('/') || logoUrl.startsWith('data:'))
+  );
   const resolvedUrl =
-    !badgeOnly && variant === 'crest' && !imageError && identity.logoUrl
-      ? sanitizeLogoCdnUrl(identity.logoUrl)
+    !badgeOnly && variant === 'crest' && !imageError && isLocalAsset && logoUrl
+      ? sanitizeLogoCdnUrl(logoUrl)
       : null;
 
   const sizeConfig = typeof size === 'number'

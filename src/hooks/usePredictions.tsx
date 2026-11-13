@@ -354,11 +354,15 @@ export const usePredictions = (
       triggered = true;
       query.refetch();
     };
-    const timer = setTimeout(triggerRefetch, 25000);
     window.addEventListener('scroll', triggerRefetch, { passive: true, once: true });
+    window.addEventListener('pointerdown', triggerRefetch, { passive: true, once: true });
+    window.addEventListener('touchstart', triggerRefetch, { passive: true, once: true });
+    window.addEventListener('keydown', triggerRefetch, { passive: true, once: true });
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('scroll', triggerRefetch);
+      window.removeEventListener('pointerdown', triggerRefetch);
+      window.removeEventListener('touchstart', triggerRefetch);
+      window.removeEventListener('keydown', triggerRefetch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [league]);

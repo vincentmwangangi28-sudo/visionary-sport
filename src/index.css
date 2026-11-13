@@ -119,8 +119,8 @@
 
 @keyframes fadeIn {
   from {
-    opacity: 0;
-    transform: translateY(2px);
+    opacity: 1;
+    transform: translateY(0);
   }
   to {
     opacity: 1;
@@ -130,8 +130,8 @@
 
 @keyframes cardReveal {
   from {
-    opacity: 0;
-    transform: translateY(4px) scale(0.99);
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 1;
@@ -149,11 +149,11 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.18s ease-out forwards;
+  opacity: 1;
 }
 
 .animate-card-reveal {
-  animation: cardReveal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 1;
 }
 
 .skeleton-shimmer {

@@ -418,18 +418,22 @@ export async function resolveRouteSeoPayload(
   const matchedEntry = allEntries.find((e) => e.path === cleanPath);
   const routeIntegration = getContextualPageIntegration(cleanPath);
 
-  const rawRouteTitle = matchedEntry
-    ? `${matchedEntry.title} | PredictPro`
-    : cleanPath === '/'
-    ? 'PredictPro — AI Football Predictions, xG & Jackpots'
-    : `${routeIntegration.currentHub.label} — AI Football & xG | PredictPro`;
+  const rawRouteTitle =
+    cleanPath === '/'
+      ? 'PredictPro — Football Match Statistics, Live Scores & xG'
+      : matchedEntry
+      ? `${matchedEntry.title} | PredictPro`
+      : `${routeIntegration.currentHub.label} — AI Football & xG | PredictPro`;
   const routeTitle = clampSeoTitle(rawRouteTitle);
 
-  const rawRouteDescription = cleanPath.includes('jackpot')
-    ? 'Mathematical 17-game Mega & 13/15-game Midweek Jackpot generator for SportPesa, Betika, Mozzart & SportyBet with Bivariate Poisson & Banker locks.'
-    : cleanPath.includes('corners') || cleanPath.includes('cards') || cleanPath.includes('set-piece')
-    ? 'Quantitative football prop analytics: wing attack corner totals, referee card strictness models, penalty takers & aerial set-piece threat ratings.'
-    : 'Free daily AI football predictions, Expected Goals (xG), 6×6 Dixon-Coles Poisson matrices, H2H stats & 17-game Jackpot models across 40+ leagues.';
+  const rawRouteDescription =
+    cleanPath === '/'
+      ? 'Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.'
+      : cleanPath.includes('jackpot')
+      ? 'Mathematical 17-game Mega & 13/15-game Midweek Jackpot generator for SportPesa, Betika, Mozzart & SportyBet with Bivariate Poisson & Banker locks.'
+      : cleanPath.includes('corners') || cleanPath.includes('cards') || cleanPath.includes('set-piece')
+      ? 'Quantitative football prop analytics: wing attack corner totals, referee card strictness models, penalty takers & aerial set-piece threat ratings.'
+      : 'Free daily AI football predictions, Expected Goals (xG), 6×6 Dixon-Coles Poisson matrices, H2H stats & 17-game Jackpot models across 40+ leagues.';
   const routeDescription = clampSeoDescription(rawRouteDescription);
 
   const ogParams = new URLSearchParams({
@@ -461,6 +465,42 @@ export async function resolveRouteSeoPayload(
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'USD',
+    },
+  };
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': cleanPath.startsWith('/blog/') ? 'BlogPosting' : 'Article',
+    '@id': `${canonicalUrl}#article`,
+    headline: routeTitle,
+    name: routeTitle,
+    description: routeDescription,
+    image: [ogImageUrl],
+    datePublished: '2026-05-15T00:00:00Z',
+    dateModified: `${ahrefsBundle.lastModifiedIso}T06:00:00Z`,
+    author: {
+      '@type': 'Organization',
+      name: 'PredictPro Quantitative Football Intelligence',
+      url: baseUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'PredictPro',
+      url: baseUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/favicon-120x120.png`,
+        width: 120,
+        height: 120,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+    },
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', '[data-speakable="true"]', '[data-ai-citation-block="true"]'],
     },
   };
 
@@ -511,7 +551,7 @@ export async function resolveRouteSeoPayload(
     ogImageUrl,
     ogType: 'website',
     routeCategory: cleanPath.includes('jackpot') ? 'jackpot' : cleanPath.includes('predictions') ? 'league' : 'core',
-    jsonLdSchemas: [webAppSchema, faqSchema, baseOrganizationSchema],
+    jsonLdSchemas: [webAppSchema, articleSchema, faqSchema, baseOrganizationSchema],
   };
 }
 

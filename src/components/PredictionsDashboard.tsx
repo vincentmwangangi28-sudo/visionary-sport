@@ -170,16 +170,16 @@ export const PredictionsDashboard = ({
         // silent fallback
       }
     };
-    const t = setTimeout(loadLiveOverlay, 8000);
     window.addEventListener('scroll', loadLiveOverlay, { passive: true, once: true });
     window.addEventListener('pointerdown', loadLiveOverlay, { passive: true, once: true });
     window.addEventListener('touchstart', loadLiveOverlay, { passive: true, once: true });
+    window.addEventListener('keydown', loadLiveOverlay, { passive: true, once: true });
     return () => {
       cancelled = true;
-      clearTimeout(t);
       window.removeEventListener('scroll', loadLiveOverlay);
       window.removeEventListener('pointerdown', loadLiveOverlay);
       window.removeEventListener('touchstart', loadLiveOverlay);
+      window.removeEventListener('keydown', loadLiveOverlay);
     };
   }, []);
 
@@ -216,16 +216,16 @@ export const PredictionsDashboard = ({
       };
     }
 
-    const timer = setTimeout(loadStandings, 8500);
     window.addEventListener('scroll', loadStandings, { passive: true, once: true });
     window.addEventListener('pointerdown', loadStandings, { passive: true, once: true });
     window.addEventListener('touchstart', loadStandings, { passive: true, once: true });
+    window.addEventListener('keydown', loadStandings, { passive: true, once: true });
     return () => {
       cancelled = true;
-      clearTimeout(timer);
       window.removeEventListener('scroll', loadStandings);
       window.removeEventListener('pointerdown', loadStandings);
       window.removeEventListener('touchstart', loadStandings);
+      window.removeEventListener('keydown', loadStandings);
     };
   }, [standingsTab]);
 
@@ -963,13 +963,13 @@ export const PredictionsDashboard = ({
 
                 {/* Match Rows */}
                 {viewMode === 'card' ? (
-                  <div className={`p-4 grid gap-4 sm:grid-cols-2 transition-opacity duration-300 ${isFetching ? 'opacity-65 pointer-events-none' : 'opacity-100'}`}>
+                  <div className="p-4 grid gap-4 sm:grid-cols-2">
                     {group.matches.map((p) => (
                       <PredictionCard key={p.id} prediction={p} viewMode="card" />
                     ))}
                   </div>
                 ) : (
-                  <div className={`divide-y divide-border/60 transition-opacity duration-300 ${isFetching ? 'opacity-65 pointer-events-none' : 'opacity-100'}`}>
+                  <div className="divide-y divide-border/60">
                     {group.matches.map((p) => (
                       <PredictionCard
                         key={p.id}

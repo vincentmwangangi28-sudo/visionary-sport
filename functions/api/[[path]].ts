@@ -40,6 +40,7 @@ const ROUTE_MAP: Record<string, ApiHandler> = {
   'status': healthHandler,
   'gemini-tasks': geminiTasksHandler,
   'ahrefs-analytics': ahrefsHandler,
+  'ahrefs-site-audit-issues': ahrefsHandler,
   'pagespeed-insights': pagespeedHandler,
   'og': ogHandler,
   'mcp': mcpHandler,

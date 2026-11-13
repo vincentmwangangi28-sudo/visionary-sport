@@ -194,17 +194,23 @@ export default async function handler(request: Request) {
   let yandexStatus = 'skipped';
   let supabaseStatus = 'skipped';
 
+  const indexNowKey = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
   const indexNowPayload = JSON.stringify({
-    host: 'predictpro.guru',
-    key: INDEXNOW_KEY,
-    keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
+    host: 'www.predictpro.guru',
+    key: indexNowKey,
+    keyLocation: `${BASE_URL}/${indexNowKey}.txt`,
     urlList: PRIORITY_URLS,
   });
 
-  // 1. Submit to IndexNow (Bing, Seznam, Naver) & Yandex IndexNow in parallel
+  // 1. Submit to IndexNow (Bing, Seznam, Naver), Ahrefs Yep IndexNow, & Yandex IndexNow in parallel
   try {
-    const [indexNowRes, yandexRes] = await Promise.all([
+    const [indexNowRes, yepRes, yandexRes] = await Promise.all([
       fetch('https://api.indexnow.org/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: indexNowPayload,
+      }).catch(() => null),
+      fetch('https://indexnow.yep.com/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: indexNowPayload,
@@ -215,7 +221,11 @@ export default async function handler(request: Request) {
         body: indexNowPayload,
       }).catch(() => null),
     ]);
-    indexNowStatus = indexNowRes ? `http_${indexNowRes.status}` : 'network_notice';
+    indexNowStatus = indexNowRes
+      ? `http_${indexNowRes.status}`
+      : yepRes
+      ? `http_${yepRes.status}`
+      : 'network_notice';
     yandexStatus = yandexRes ? `http_${yandexRes.status}` : 'network_notice';
   } catch (err) {
     indexNowStatus = err instanceof Error ? err.message : 'error';
