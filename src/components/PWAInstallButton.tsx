@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Smartphone,
   Download,
@@ -48,6 +49,17 @@ export const PWAInstallButton: React.FC = () => {
   useEffect(() => {
     setActiveTab(isDesktop ? 'desktop' : 'mobile');
   }, [isDesktop]);
+
+  useEffect(() => {
+    if (!showModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showModal]);
 
   const handleNativeOrModalInstall = useCallback(
     async (preferredTab?: 'mobile' | 'desktop') => {
@@ -111,148 +123,145 @@ export const PWAInstallButton: React.FC = () => {
     }
   };
 
-  return (
-    <>
-      {!isInstalled && (
-        <button
-          type="button"
-          onClick={() => handleNativeOrModalInstall()}
-          data-testid="navbar-download-app-btn"
-          title="Download PredictPro App for Mobile (Android/iOS) or Desktop (Windows/Mac)"
-          className="inline-flex h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white dark:bg-emerald-800 dark:hover:bg-emerald-700 dark:text-white border border-emerald-900 dark:border-emerald-600 transition-colors cursor-pointer shrink-0"
-        >
-          <Download className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="inline sm:hidden">App</span>
-          <span className="hidden sm:inline">Download App</span>
-        </button>
-      )}
+  const modalContent = showModal ? (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pwa-install-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          setShowModal(false);
+        }
+      }}
+      className="fixed inset-0 z-[9995] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150"
+    >
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 sm:p-6 text-foreground shadow-2xl space-y-4 my-auto">
+        {/* Modal Header */}
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
+          <div className="flex items-center gap-3">
+            <img
+              src="/icon-192.png"
+              alt="PredictPro App Icon"
+              className="h-12 w-12 rounded-xl border border-border object-cover bg-primary/10 shrink-0"
+            />
+            <div>
+              <h3 id="pwa-install-modal-title" className="text-base sm:text-lg font-extrabold text-foreground">
+                Download PredictPro App
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Official Standalone App for Mobile (Android &amp; iOS) &amp; Desktop (Windows, Mac &amp; Linux)
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowModal(false)}
+            aria-label="Close download app dialog"
+            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
+          >
+            <X className="w-4 h-4" aria-hidden="true" />
+          </button>
+        </div>
 
-      {showModal && (
+        {/* 1-Click Native Browser Install Banner (When supported by Chrome/Edge/Android/Desktop) */}
+        {isInstallable && (
+          <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-extrabold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                <Zap className="w-4 h-4" aria-hidden="true" /> Instant 1-Click Native Installation Ready
+              </span>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-900/15 text-emerald-950 dark:bg-emerald-500/20 dark:text-emerald-200">
+                {isDesktop ? 'Desktop App' : 'Mobile App'}
+              </span>
+            </div>
+            <Button
+              type="button"
+              disabled={installing}
+              onClick={() => handleNativeOrModalInstall()}
+              data-testid="modal-native-oneclick-install-btn"
+              className="w-full h-10 font-bold text-xs sm:text-sm gap-2 bg-emerald-800 hover:bg-emerald-900 text-white cursor-pointer"
+            >
+              <Download className="w-4 h-4" aria-hidden="true" />
+              <span>
+                {installing
+                  ? 'Installing PredictPro App...'
+                  : isDesktop
+                  ? 'Install PredictPro Desktop App Now (1-Click)'
+                  : 'Install PredictPro to Home Screen Now (1-Click)'}
+              </span>
+            </Button>
+          </div>
+        )}
+
+        {/* Platform Switcher Tabs: Mobile vs Desktop */}
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="pwa-install-modal-title"
-          className="fixed inset-0 z-[9995] flex items-center justify-center bg-black/75 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto"
+          role="tablist"
+          aria-label="Choose device platform"
+          className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-muted border border-border"
         >
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 sm:p-6 text-foreground shadow-2xl space-y-4 my-auto">
-            {/* Modal Header */}
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
-              <div className="flex items-center gap-3">
-                <img
-                  src="/icon-192.png"
-                  alt="PredictPro App Icon"
-                  className="h-12 w-12 rounded-xl border border-border object-cover bg-primary/10 shrink-0"
-                />
-                <div>
-                  <h3 id="pwa-install-modal-title" className="text-base sm:text-lg font-extrabold text-foreground">
-                    Download PredictPro App
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Official Standalone App for Mobile (Android &amp; iOS) &amp; Desktop (Windows, Mac &amp; Linux)
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                aria-label="Close download app dialog"
-                className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'mobile'}
+            onClick={() => setActiveTab('mobile')}
+            data-testid="download-tab-mobile"
+            className={`py-2 px-3 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+              activeTab === 'mobile'
+                ? 'bg-card text-foreground shadow-xs border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+            <span>Mobile (Android &amp; iOS)</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'desktop'}
+            onClick={() => setActiveTab('desktop')}
+            data-testid="download-tab-desktop"
+            className={`py-2 px-3 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+              activeTab === 'desktop'
+                ? 'bg-card text-foreground shadow-xs border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Monitor className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+            <span>Desktop (Win / Mac / Linux)</span>
+          </button>
+        </div>
 
-            {/* 1-Click Native Browser Install Banner (When supported by Chrome/Edge/Android/Desktop) */}
-            {isInstallable && (
-              <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-extrabold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
-                    <Zap className="w-4 h-4" /> Instant 1-Click Native Installation Ready
-                  </span>
+        {/* TAB 1: MOBILE (ANDROID & iOS) */}
+        {activeTab === 'mobile' && (
+          <div className="space-y-3 text-xs">
+            {/* Android Section */}
+            <div
+              className={`rounded-xl border p-3.5 space-y-2.5 ${
+                isAndroid
+                  ? 'border-emerald-500/40 bg-emerald-500/10'
+                  : 'border-border bg-muted/30'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-extrabold text-foreground flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4 text-emerald-500" aria-hidden="true" />
+                  <span>Android Phone &amp; Tablet</span>
+                </div>
+                {isAndroid && (
                   <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-900/15 text-emerald-950 dark:bg-emerald-500/20 dark:text-emerald-200">
-                    {isDesktop ? 'Desktop App' : 'Mobile App'}
+                    Detected Device
                   </span>
-                </div>
-                <Button
-                  type="button"
-                  disabled={installing}
-                  onClick={() => handleNativeOrModalInstall()}
-                  data-testid="modal-native-oneclick-install-btn"
-                  className="w-full h-10 font-bold text-xs sm:text-sm gap-2 bg-emerald-800 hover:bg-emerald-900 text-white cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>
-                    {installing
-                      ? 'Installing PredictPro App...'
-                      : isDesktop
-                      ? 'Install PredictPro Desktop App Now (1-Click)'
-                      : 'Install PredictPro to Home Screen Now (1-Click)'}
-                  </span>
-                </Button>
+                )}
               </div>
-            )}
 
-            {/* Platform Switcher Tabs: Mobile vs Desktop */}
-            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-muted border border-border">
-              <button
-                type="button"
-                onClick={() => setActiveTab('mobile')}
-                data-testid="download-tab-mobile"
-                className={`py-2 px-3 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeTab === 'mobile'
-                    ? 'bg-card text-foreground shadow-xs border border-border'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Mobile (Android &amp; iOS)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('desktop')}
-                data-testid="download-tab-desktop"
-                className={`py-2 px-3 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeTab === 'desktop'
-                    ? 'bg-card text-foreground shadow-xs border border-border'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Monitor className="w-3.5 h-3.5 text-primary" />
-                <span>Desktop (Win / Mac / Linux)</span>
-              </button>
-            </div>
-
-            {/* TAB 1: MOBILE (ANDROID & iOS) */}
-            {activeTab === 'mobile' && (
-              <div className="space-y-3 text-xs">
-                {/* Android Section */}
-                <div
-                  className={`rounded-xl border p-3.5 space-y-2.5 ${
-                    isAndroid
-                      ? 'border-emerald-500/40 bg-emerald-500/10'
-                      : 'border-border bg-muted/30'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="font-extrabold text-foreground flex items-center gap-1.5">
-                      <Smartphone className="w-4 h-4 text-emerald-500" />
-                      <span>Android Phone &amp; Tablet</span>
-                    </div>
-                    {isAndroid && (
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-900/15 text-emerald-950 dark:bg-emerald-500/20 dark:text-emerald-200">
-                        Detected Device
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {isInstallable ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleNativeOrModalInstall('mobile')}
-                        className="h-9 text-xs font-bold gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white"
-                      >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {isInstallable ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleNativeOrModalInstall('mobile')}
+                    className="h-9 text-xs font-bold gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white"
+                  >
                         <Download className="w-3.5 h-3.5" />
                         <span>Install Android App (1-Click)</span>
                       </Button>
@@ -508,7 +517,30 @@ export const PWAInstallButton: React.FC = () => {
             </div>
           </div>
         </div>
+  ) : null;
+
+  return (
+    <>
+      {!isInstalled && (
+        <button
+          type="button"
+          onClick={() => handleNativeOrModalInstall()}
+          data-testid="navbar-download-app-btn"
+          aria-haspopup="dialog"
+          aria-expanded={showModal}
+          aria-label="Download PredictPro App for Mobile (Android/iOS) or Desktop (Windows/Mac)"
+          title="Download PredictPro App for Mobile (Android/iOS) or Desktop (Windows/Mac)"
+          className="inline-flex h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold items-center justify-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white dark:bg-emerald-800 dark:hover:bg-emerald-700 dark:text-white border border-emerald-900 dark:border-emerald-600 transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer select-none whitespace-nowrap shrink-0"
+        >
+          <Download className="h-3.5 w-3.5 shrink-0 pointer-events-none" aria-hidden="true" />
+          <span className="inline sm:hidden leading-none pointer-events-none">App</span>
+          <span className="hidden sm:inline leading-none pointer-events-none">Download App</span>
+        </button>
       )}
+
+      {modalContent && typeof document !== 'undefined'
+        ? createPortal(modalContent, document.body)
+        : modalContent}
     </>
   );
 };
@@ -631,7 +663,7 @@ export const HomeDownloadAppBanner: React.FC = () => {
             onClick={() => dismissPrompt(72)}
             aria-label="Hide app download banner"
             title="Dismiss"
-            className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

@@ -22,8 +22,10 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
       <button
         type="button"
         onClick={() => openSearch()}
+        aria-haspopup="dialog"
+        aria-label="Search matches, leagues, teams"
         className={cn(
-          'h-8 px-3 rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-100 inline-flex items-center gap-2 transition-colors cursor-pointer shrink-0',
+          'h-8 px-3 rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-100 inline-flex items-center gap-2 transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none shrink-0',
           className
         )}
         title="Search matches, leagues, teams (⌘K)"
@@ -46,11 +48,12 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
         variant="outline"
         size="icon"
         onClick={() => openSearch()}
+        aria-haspopup="dialog"
         className={cn('h-10 w-10 min-h-[42px] min-w-[42px] shrink-0 relative border-border/80 hover:bg-muted/70', className)}
         title="Search (⌘K)"
         aria-label="Open Unified Search"
       >
-        <Search className="h-4 w-4 text-foreground/80" />
+        <Search className="h-4 w-4 text-foreground/80" aria-hidden="true" />
       </Button>
     );
   }
@@ -60,17 +63,19 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
       <button
         type="button"
         onClick={() => openSearch()}
+        aria-haspopup="dialog"
+        aria-label="Search predictions, matches, teams, and leagues"
         className={cn(
-          'inline-flex items-center gap-2 h-9 min-h-[36px] min-w-[36px] shrink-0 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/80 text-xs text-muted-foreground transition-all cursor-pointer select-none whitespace-nowrap',
+          'inline-flex items-center gap-2 h-9 min-h-[36px] min-w-[36px] shrink-0 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/80 text-xs text-muted-foreground transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none whitespace-nowrap',
           className
         )}
         title="Search predictions, matches, teams, and leagues (⌘K or /)"
       >
-        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span>Search...</span>
+        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground pointer-events-none" aria-hidden="true" />
+        <span className="pointer-events-none">Search...</span>
         <kbd
           aria-hidden="true"
-          className="hidden sm:inline-flex h-4.5 select-none items-center gap-0.5 rounded border bg-background px-1 font-mono text-[9px] font-medium text-muted-foreground"
+          className="hidden sm:inline-flex h-4.5 select-none items-center gap-0.5 rounded border bg-background px-1 font-mono text-[9px] font-medium text-muted-foreground pointer-events-none"
         >
           ⌘K
         </kbd>
@@ -82,19 +87,21 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
     <button
       type="button"
       onClick={() => openSearch()}
+      aria-haspopup="dialog"
+      aria-label="Search matches, leagues, teams, and blog"
       className={cn(
-        'group flex items-center justify-between gap-3 w-full max-w-xs md:max-w-sm lg:max-w-md px-3 py-1.5 h-9 rounded-lg border border-border/70 bg-muted/30 hover:bg-muted/60 hover:border-primary/40 text-xs text-muted-foreground transition-all shadow-xs',
+        'group flex items-center justify-between gap-3 w-full max-w-xs md:max-w-sm lg:max-w-md px-3 py-1.5 h-9 rounded-lg border border-border/70 bg-muted/30 hover:bg-muted/60 hover:border-primary/40 text-xs text-muted-foreground transition-all duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none shadow-xs',
         className
       )}
       title="Search matches, leagues, teams, blog (⌘K or /)"
     >
-      <div className="flex items-center gap-2 truncate">
-        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+      <div className="flex items-center gap-2 truncate pointer-events-none">
+        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
         <span className="truncate text-left text-foreground/75 group-hover:text-foreground">
           {placeholder}
         </span>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 pointer-events-none">
         <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border/60 bg-background/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground shadow-2xs">
           <span className="text-[11px]">⌘</span>K
         </kbd>

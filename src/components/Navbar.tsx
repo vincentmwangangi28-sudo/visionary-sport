@@ -107,8 +107,18 @@ export const Navbar = () => {
         setToolsOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLeaguesOpen(false);
+        setToolsOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const cycleOddsFormat = () => {
@@ -138,7 +148,11 @@ export const Navbar = () => {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Zone 1: Brand Identity + Primary Navigation */}
         <div className="flex items-center gap-4 min-w-0">
-          <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="PredictPro Home">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label="PredictPro Home"
+          >
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
               <Activity className="h-4 w-4" aria-hidden="true" />
             </div>
@@ -153,7 +167,7 @@ export const Navbar = () => {
                 key={item.to}
                 to={item.to}
                 aria-current={item.active ? 'page' : undefined}
-                className={`py-1 text-sm font-medium transition-colors items-center gap-1.5 border-b-2 whitespace-nowrap shrink-0 ${
+                className={`py-1 px-1 rounded-sm text-sm font-medium transition-colors items-center gap-1.5 border-b-2 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   item.desktopOnly2xl ? 'hidden 2xl:flex' : 'flex'
                 } ${
                   item.active
@@ -180,8 +194,9 @@ export const Navbar = () => {
                   setToolsOpen(false);
                 }}
                 aria-expanded={leaguesOpen}
-                aria-haspopup="true"
-                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                aria-haspopup="menu"
+                aria-controls="navbar-leagues-menu"
+                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center gap-1 cursor-pointer select-none whitespace-nowrap"
               >
                 <span>Leagues</span>
                 <ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${leaguesOpen ? 'rotate-180' : ''}`} />
@@ -189,7 +204,9 @@ export const Navbar = () => {
 
               {leaguesOpen && (
                 <div
+                  id="navbar-leagues-menu"
                   role="menu"
+                  aria-label="Major Competitions"
                   className="absolute left-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg p-2 z-50"
                 >
                   <div className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -202,7 +219,7 @@ export const Navbar = () => {
                         to={comp.to}
                         role="menuitem"
                         onClick={() => setLeaguesOpen(false)}
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:bg-muted transition-colors"
                       >
                         <span className="truncate">{comp.label}</span>
                         <span className="text-[11px] text-muted-foreground">{comp.country}</span>
@@ -213,14 +230,14 @@ export const Navbar = () => {
                     <Link
                       to="/tournaments"
                       onClick={() => setLeaguesOpen(false)}
-                      className="text-xs font-semibold text-primary hover:underline"
+                      className="text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:underline"
                     >
                       All 40+ Leagues →
                     </Link>
                     <Link
                       to="/blog"
                       onClick={() => setLeaguesOpen(false)}
-                      className="text-xs text-muted-foreground hover:text-foreground"
+                      className="text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:underline"
                     >
                       Guides
                     </Link>
@@ -238,8 +255,9 @@ export const Navbar = () => {
                   setLeaguesOpen(false);
                 }}
                 aria-expanded={toolsOpen}
-                aria-haspopup="true"
-                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                aria-haspopup="menu"
+                aria-controls="navbar-tools-menu"
+                className="h-9 px-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center gap-1 cursor-pointer select-none whitespace-nowrap"
               >
                 <Calculator aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
                 <span>Markets &amp; Tools</span>
@@ -248,7 +266,9 @@ export const Navbar = () => {
 
               {toolsOpen && (
                 <div
+                  id="navbar-tools-menu"
                   role="menu"
+                  aria-label="Betting Markets and Pro Tools"
                   className="absolute left-0 top-full mt-2 w-80 max-h-[75vh] overflow-y-auto rounded-xl border border-border bg-card shadow-lg p-2 z-50"
                 >
                   <div className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
@@ -262,7 +282,7 @@ export const Navbar = () => {
                         to={tool.to}
                         role="menuitem"
                         onClick={() => setToolsOpen(false)}
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors gap-2"
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:bg-muted transition-colors gap-2"
                       >
                         <span className="truncate">{tool.label}</span>
                         <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold shrink-0">
@@ -275,14 +295,14 @@ export const Navbar = () => {
                     <Link
                       to="/sitemap"
                       onClick={() => setToolsOpen(false)}
-                      className="text-xs font-semibold text-primary hover:underline"
+                      className="text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:underline"
                     >
                       All 153 Integrated Hubs →
                     </Link>
                     <Link
                       to="/booking-codes"
                       onClick={() => setToolsOpen(false)}
-                      className="text-xs text-muted-foreground hover:text-foreground"
+                      className="text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:underline"
                     >
                       Booking Codes
                     </Link>
@@ -303,17 +323,23 @@ export const Navbar = () => {
             type="button"
             onClick={() => setIsOpen(true)}
             data-testid="navbar-betslip-trigger"
-            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+            aria-label={
+              selections.length > 0
+                ? `Open Bet Slip (${selections.length} selections at ${totalOdds.toFixed(2)} odds)`
+                : 'Open Bet Slip and Booking Code Generator'
+            }
+            aria-haspopup="dialog"
+            className={`inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none whitespace-nowrap shrink-0 ${
               selections.length > 0
                 ? 'bg-emerald-800 hover:bg-emerald-900 text-white border-emerald-800 shadow-sm'
                 : 'bg-background hover:bg-muted text-foreground border-border'
             }`}
             title="Open Bet Slip & Booking Code Generator"
           >
-            <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">Bet Slip</span>
+            <Ticket className="h-3.5 w-3.5 shrink-0 pointer-events-none" aria-hidden="true" />
+            <span className="hidden sm:inline leading-none pointer-events-none">Bet Slip</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+              className={`px-1.5 py-0.5 rounded text-[10px] font-mono leading-none pointer-events-none ${
                 selections.length > 0
                   ? 'bg-emerald-950/60 text-white font-black'
                   : 'bg-muted text-muted-foreground'
@@ -322,7 +348,7 @@ export const Navbar = () => {
               {selections.length}
             </span>
             {selections.length > 0 && (
-              <span className="hidden md:inline font-mono text-[11px] text-white">
+              <span className="hidden md:inline font-mono text-[11px] text-white leading-none pointer-events-none">
                 @{totalOdds.toFixed(2)}
               </span>
             )}
@@ -331,7 +357,8 @@ export const Navbar = () => {
           {/* Daily Spin & Rewards */}
           <Link
             to="/rewards"
-            className="hidden 2xl:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-300 text-xs font-bold transition-colors shrink-0"
+            aria-label="Daily Spin Wheel and Rewards"
+            className="hidden 2xl:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-300 text-xs font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 select-none shrink-0"
             title="Daily Spin Wheel & Free Coins"
           >
             <Coins className="h-3.5 w-3.5" aria-hidden="true" />
@@ -343,8 +370,8 @@ export const Navbar = () => {
             type="button"
             onClick={cycleOddsFormat}
             title="Switch display format (Decimal Odds / % Probability)"
-            aria-label={`Display format: ${oddsLabel[preferences.oddsFormat]}`}
-            className="hidden sm:inline-flex items-center justify-center h-9 px-2.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-mono font-medium text-foreground transition-colors cursor-pointer"
+            aria-label={`Display format: ${oddsLabel[preferences.oddsFormat]}. Activate to switch odds format.`}
+            className="hidden sm:inline-flex items-center justify-center h-9 px-2.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-mono font-medium text-foreground transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none shrink-0"
           >
             {oddsLabel[preferences.oddsFormat]}
           </button>
@@ -355,15 +382,15 @@ export const Navbar = () => {
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
             title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none shrink-0"
           >
-            {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
+            {isDark ? <Sun className="h-4 w-4 text-amber-400" aria-hidden="true" /> : <Moon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
           </button>
 
           {isAdmin && (
             <Button asChild variant="outline" size="sm" className="hidden lg:inline-flex h-9 px-3 text-xs gap-1.5">
               <Link to="/admin">
-                <Shield className="h-3.5 w-3.5 text-primary" />
+                <Shield className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Admin</span>
               </Link>
             </Button>
@@ -373,7 +400,7 @@ export const Navbar = () => {
             <div className="flex items-center gap-1.5">
               <Button asChild variant="ghost" size="sm" className="h-9 px-3 text-xs font-medium gap-1.5">
                 <Link to="/dashboard" title="Saved Matches & Preferences">
-                  <User className="h-3.5 w-3.5 text-primary" />
+                  <User className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                   <span className="hidden sm:inline">Dashboard</span>
                 </Link>
               </Button>
@@ -385,7 +412,7 @@ export const Navbar = () => {
                 title="Sign Out"
                 aria-label="Sign Out"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           ) : (
