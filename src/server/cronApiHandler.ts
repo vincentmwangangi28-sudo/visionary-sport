@@ -52,7 +52,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'google-crawl':
       case 'indexing': {
         const baseUrl = process.env.SITE_URL || 'https://predictpro.guru';
-        const indexNowKey = process.env.INDEXNOW_KEY || 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
+        const indexNowKey = process.env.INDEXNOW_KEY || '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
         const { resolveLiveMatchSlugs } = await import('./seoPrerenderService.ts');
         const liveMatches = await resolveLiveMatchSlugs(baseUrl);
 

@@ -38,7 +38,7 @@ serve(async (req) => {
     // default
   }
 
-  const defaultKey = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
+  const defaultKey = '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
   const indexNowKey = Deno.env.get('INDEXNOW_KEY') || defaultKey;
 
   const defaultUrls = [

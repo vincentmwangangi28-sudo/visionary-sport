@@ -15,7 +15,7 @@ import fs from 'fs';
 import path from 'path';
 
 const BASE_URL = process.env.SITE_URL || 'https://www.predictpro.guru';
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
 const SUPABASE_PING_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co/functions/v1/ping-search-engines';
 
 const PRIORITY_CRAWL_URLS = [

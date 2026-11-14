@@ -1466,18 +1466,18 @@ export default function SEOIndexingPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-medium">Root UTF-8 Key File:</span>
                         <a
-                          href="/h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt"
+                          href="/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt"
                           target="_blank"
                           rel="noreferrer"
                           className="text-emerald-700 dark:text-emerald-300 font-mono font-bold underline flex items-center gap-1"
                         >
-                          /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt <ExternalLink className="w-2.5 h-2.5" />
+                          /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt <ExternalLink className="w-2.5 h-2.5" />
                         </a>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-medium">Canonical Key URL:</span>
                         <span className="font-mono text-[10px] text-foreground">
-                          https://predictpro.guru/h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
+                          https://www.predictpro.guru/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -1548,8 +1548,8 @@ export default function SEOIndexingPage() {
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="text-muted-foreground">IndexNow Key Endpoint:</span>
-                        <a href="/h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt" target="_blank" rel="noreferrer" className="text-emerald-600 dark:text-emerald-400 underline font-sans font-semibold">
-                          /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
+                        <a href="/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt" target="_blank" rel="noreferrer" className="text-emerald-600 dark:text-emerald-400 underline font-sans font-semibold">
+                          /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
                         </a>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">

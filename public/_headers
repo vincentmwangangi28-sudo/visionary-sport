@@ -144,6 +144,12 @@
   Access-Control-Allow-Origin: *
   Content-Type: text/html; charset=UTF-8
 
+/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+  X-Robots-Tag: all
+
 /k1rdcw8qawe1jjeeezgcndj1njk3yr2g.txt
   Cache-Control: public, max-age=3600
   Access-Control-Allow-Origin: *

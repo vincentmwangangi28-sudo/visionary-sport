@@ -132,7 +132,7 @@
       "destination": "/api/markdown?path=/$1"
     },
     {
-      "source": "/((?!api/|mcp|assets/|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|h2u74xmxq17qqj7na6p7g5w29zwrhhq7\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|rss\\.xml|feed\\.xml|feed-predictions\\.xml|robots\\.txt|ads\\.txt|app-ads\\.txt|manifest\\.json|sw\\.js|.*\\.js|.*\\.mjs|.*\\.css|.*\\.woff2|.*\\.json|.*\\.md|.*\\.txt|.*\\.xml|.*\\.html|.*\\.png|.*\\.jpg|.*\\.webp|.*\\.svg|.*\\.ico).*)",
+      "source": "/((?!api/|mcp|assets/|\\.well-known/|auth\\.md|openapi\\.json|llms\\.txt|llms-full\\.txt|3qcm1kxwka5aghtkzahsphxgca1cyc6s\\.txt|h2u74xmxq17qqj7na6p7g5w29zwrhhq7\\.txt|f7qprb5m24wrvjdmkspy56hhvjmhkcn5\\.txt|ccf4ef0c532c4444b096f02474b4320a\\.txt|sitemap\\.xml|sitemap-yandex\\.xml|rss\\.xml|feed\\.xml|feed-predictions\\.xml|robots\\.txt|ads\\.txt|app-ads\\.txt|manifest\\.json|sw\\.js|.*\\.js|.*\\.mjs|.*\\.css|.*\\.woff2|.*\\.json|.*\\.md|.*\\.txt|.*\\.xml|.*\\.html|.*\\.png|.*\\.jpg|.*\\.webp|.*\\.svg|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],
@@ -341,6 +341,27 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
+      ]
+    },
+    {
+      "source": "/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
         },
         {
           "key": "Access-Control-Allow-Origin",

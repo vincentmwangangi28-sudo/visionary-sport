@@ -701,8 +701,9 @@ function escapeHtml(str) {
 }
 
 async function submitPrerenderedUrlsToIndexNow(canonicalUrls) {
-  const primaryKey = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+  const primaryKey = '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
   const allKeys = [
+    '3qcm1kxwka5aghtkzahsphxgca1cyc6s',
     'f7qprb5m24wrvjdmkspy56hhvjmhkcn5',
     'ccf4ef0c532c4444b096f02474b4320a',
     'k1rdcw8qawe1jjeeezgcndj1njk3yr2g',

@@ -505,6 +505,15 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt") {
+          res.setHeader("Content-Type", "text/plain; charset=utf-8");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.setHeader("Cache-Control", "public, max-age=3600");
+          res.setHeader("X-Robots-Tag", "all");
+          res.statusCode = 200;
+          res.end("3qcm1kxwka5aghtkzahsphxgca1cyc6s");
+          return;
+        }
         if (url === "/h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt") {
           res.setHeader("Content-Type", "text/plain; charset=utf-8");
           res.setHeader("Access-Control-Allow-Origin", "*");

@@ -1,6 +1,6 @@
 # PredictPro Robots.txt — Search Engine & AI Crawler Directives
 # Canonical Domain: https://www.predictpro.guru
-# IndexNow Key File: https://www.predictpro.guru/h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
+# IndexNow Key File: https://www.predictpro.guru/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
 
 User-agent: *
 Content-Signal: ai-train=yes, search=yes, ai-input=yes
@@ -32,6 +32,7 @@ Allow: /feed.xml
 Allow: /feed-predictions.xml
 Allow: /ads.txt
 Allow: /app-ads.txt
+Allow: /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 Disallow: /_vercel/
@@ -78,6 +79,7 @@ Allow: /favicon-32x32.png
 Allow: /favicon-16x16.png
 Allow: /sitemap.xml
 Allow: /sitemap-yandex.xml
+Allow: /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 Disallow: /_vercel/
@@ -115,16 +117,19 @@ Allow: /
 
 User-agent: Bingbot
 Allow: /
+Allow: /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
 User-agent: AhrefsBot
 Allow: /
+Allow: /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 
 User-agent: AhrefsSiteAudit
 Allow: /
+Allow: /3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt
 Allow: /h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt
 Allow: /f7qprb5m24wrvjdmkspy56hhvjmhkcn5.txt
 

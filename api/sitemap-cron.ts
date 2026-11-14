@@ -18,7 +18,7 @@ export default async function handler(request: Request) {
   }
 
   // Notify search engines via IndexNow & Yandex IndexNow
-  const indexNowKey = process.env.INDEXNOW_KEY || 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
+  const indexNowKey = process.env.INDEXNOW_KEY || '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
   let indexNowPing = 'skipped';
   let yandexPing = 'skipped';
 

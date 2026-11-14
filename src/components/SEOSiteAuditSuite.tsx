@@ -1244,7 +1244,7 @@ export const SEOSiteAuditSuite: React.FC<{ onTriggerIndexNow?: () => void }> = (
               title: 'IndexNow Key Alignment & AhrefsBot UTF-8 Verification',
               status: 'Verified (HTTP 200)',
               detail:
-                'Hosted UTF-8 key file at https://predictpro.guru/h2u74xmxq17qqj7na6p7g5w29zwrhhq7.txt with key content h2u74xmxq17qqj7na6p7g5w29zwrhhq7, explicit Yandex & AhrefsBot allow rules, and unified across Edge Functions & cron handlers.',
+                'Hosted UTF-8 key file at https://www.predictpro.guru/3qcm1kxwka5aghtkzahsphxgca1cyc6s.txt with key content 3qcm1kxwka5aghtkzahsphxgca1cyc6s, explicit Yandex & AhrefsBot allow rules, and unified across Edge Functions & cron handlers.',
             },
             {
               title: 'Supabase Edge Function CORS Preflight & Static Guard',

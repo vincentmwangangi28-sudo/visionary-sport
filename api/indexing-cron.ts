@@ -2,7 +2,7 @@
 // Invoked on schedule: "0 */6 * * *"
 
 const BASE_URL = 'https://www.predictpro.guru';
-const INDEXNOW_KEY = 'h2u74xmxq17qqj7na6p7g5w29zwrhhq7';
+const INDEXNOW_KEY = '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
 
 const PRIORITY_URLS = [
   `${BASE_URL}/`,
@@ -194,7 +194,7 @@ export default async function handler(request: Request) {
   let yandexStatus = 'skipped';
   let supabaseStatus = 'skipped';
 
-  const indexNowKey = 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5';
+  const indexNowKey = '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
   const indexNowPayload = JSON.stringify({
     host: 'www.predictpro.guru',
     key: indexNowKey,
