@@ -7,10 +7,38 @@
 
 import { handleFootballRequest } from './footballHandler.ts';
 import { getAllSitemapEntries, CLUB_ANALYTICS_HUBS, BLOG_POSTS_METADATA, GLOBAL_HREFLANGS } from '../services/sitemapGenerator.ts';
+import { getUpdatedDefaultPredictions } from '../data/mockPredictions.ts';
 import { getContextualPageIntegration } from '../services/seoKeywords.ts';
 import { getRouteAhrefsOptimizationBundle } from '../services/ahrefsOpportunitiesService.ts';
 
 export const SITE_BASE_URL = process.env.SITE_URL || 'https://predictpro.guru';
+
+const DEFAULT_SUPABASE_URL = 'https://bhgjlhgevyggkhyytulv.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
+
+/**
+ * 301-redirected match slugs mapped to their canonical destination slugs
+ * (synchronized with public/_redirects so sitemaps never emit 3XX URLs).
+ */
+export const CANONICAL_MATCH_SLUG_REDIRECTS: Record<string, string> = {
+  'manchester-united-vs-tottenham-hotspur': 'manchester-united-vs-tottenham',
+  'young-africans-vs-simba-sc': 'simba-sc-vs-young-africans',
+  'newcastle-united-vs-aston-villa': 'arsenal-vs-chelsea',
+  'ajax-vs-psv-eindhoven': 'ajax-vs-feyenoord',
+  'benfica-vs-porto': 'benfica-vs-sporting-cp',
+  'inter-miami-vs-la-galaxy': 'inter-miami-vs-new-york-red-bulls',
+};
+
+export function canonicalizeMatchSlug(rawSlug: string): string {
+  const cleaned = String(rawSlug || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^\/predict\//, '')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return CANONICAL_MATCH_SLUG_REDIRECTS[cleaned] || cleaned;
+}
 
 export interface LiveSeoMatchRecord {
   slug: string;
@@ -28,7 +56,7 @@ export interface LiveSeoMatchRecord {
   ogImageUrl: string;
   homeTeamSlug: string;
   awayTeamSlug: string;
-  source: 'espn_live' | 'curated_derby';
+  source: 'supabase_active' | 'espn_live' | 'curated_derby';
 }
 
 export interface RouteSeoPayload {
@@ -44,7 +72,7 @@ export interface RouteSeoPayload {
   matchRecord?: LiveSeoMatchRecord;
 }
 
-let cachedLiveMatches: { timestamp: number; records: LiveSeoMatchRecord[] } | null = null;
+let cachedLiveMatches: { timestamp: number; records: LiveSeoMatchRecord[]; crawledSupabase: boolean } | null = null;
 const LIVE_MATCH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 export function slugifySegment(value: string): string {
@@ -104,11 +132,111 @@ function clampSeoDescription(rawDescription: string): string {
 }
 
 /**
- * Harvests all active and upcoming ESPN fixtures and converts them into canonical SEO match records.
+ * Crawls active match rows from Supabase REST (`predictions` and `matches` tables)
+ * with a fast timeout and converts them into raw match objects.
  */
-export async function resolveLiveMatchSlugs(baseUrl: string = SITE_BASE_URL): Promise<LiveSeoMatchRecord[]> {
-  if (cachedLiveMatches && Date.now() - cachedLiveMatches.timestamp < LIVE_MATCH_CACHE_TTL_MS) {
-    return cachedLiveMatches.records;
+export async function fetchActiveMatchesFromSupabaseRest(): Promise<
+  Array<{
+    home_team: string;
+    away_team: string;
+    league?: string;
+    match_date?: string;
+    prediction?: string;
+    predicted_outcome?: string;
+    confidence?: number;
+    confidence_score?: number;
+    home_win_probability?: number;
+    away_win_probability?: number;
+    status?: string;
+  }>
+> {
+  const rawUrl = (
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    DEFAULT_SUPABASE_URL
+  )
+    .trim()
+    .replace(/\/$/, '');
+  const rawKey = (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    DEFAULT_SUPABASE_ANON_KEY
+  ).trim();
+
+  if (!rawUrl || !rawKey || rawUrl.includes('your-project-id')) {
+    return [];
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2500);
+  const headers: Record<string, string> = {
+    apikey: rawKey,
+    Authorization: `Bearer ${rawKey}`,
+    Accept: 'application/json',
+  };
+
+  try {
+    // Crawl active/recent fixtures from both `predictions` and `matches` tables in parallel
+    const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const [predsRes, matchesRes] = await Promise.all([
+      fetch(
+        `${rawUrl}/rest/v1/predictions?select=home_team,away_team,league,match_date,prediction,predicted_outcome,confidence,confidence_score,home_win_probability,away_win_probability,status&match_date=gte.${cutoffDate}&order=match_date.desc&limit=250`,
+        { method: 'GET', headers, signal: controller.signal }
+      ).catch(() => null),
+      fetch(
+        `${rawUrl}/rest/v1/matches?select=home_team,away_team,league,match_date,status&match_date=gte.${cutoffDate}&order=match_date.desc&limit=250`,
+        { method: 'GET', headers, signal: controller.signal }
+      ).catch(() => null),
+    ]);
+
+    const rows: Array<any> = [];
+    if (predsRes && predsRes.ok) {
+      const data = await predsRes.json().catch(() => []);
+      if (Array.isArray(data)) rows.push(...data);
+    }
+    if (matchesRes && matchesRes.ok) {
+      const data = await matchesRes.json().catch(() => []);
+      if (Array.isArray(data)) rows.push(...data);
+    }
+    return rows.filter(
+      (r) =>
+        r &&
+        typeof r.home_team === 'string' &&
+        r.home_team.trim().length > 0 &&
+        typeof r.away_team === 'string' &&
+        r.away_team.trim().length > 0 &&
+        r.status !== 'archived' &&
+        r.status !== 'cancelled'
+    );
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * Harvests all active match slugs from Supabase (`predictions` and `matches`), active matchday fixtures,
+ * and flagship derbies, converting them into deduplicated canonical SEO match records.
+ */
+export async function resolveLiveMatchSlugs(
+  baseUrl: string = SITE_BASE_URL,
+  options?: { forceRefresh?: boolean; crawlSupabase?: boolean }
+): Promise<LiveSeoMatchRecord[]> {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+  const shouldCrawlSupabase = Boolean(options?.crawlSupabase);
+
+  if (
+    !options?.forceRefresh &&
+    cachedLiveMatches &&
+    Date.now() - cachedLiveMatches.timestamp < LIVE_MATCH_CACHE_TTL_MS &&
+    (!shouldCrawlSupabase || cachedLiveMatches.crawledSupabase)
+  ) {
+    return cachedLiveMatches.records.map((r) => ({
+      ...r,
+      url: `${normalizedBaseUrl}${r.path}`,
+    }));
   }
 
   const seenSlugs = new Set<string>();
@@ -125,14 +253,19 @@ export async function resolveLiveMatchSlugs(baseUrl: string = SITE_BASE_URL): Pr
     homeXgNum: number,
     awayXgNum: number,
     projectedScore: string,
-    source: 'espn_live' | 'curated_derby'
+    source: 'supabase_active' | 'espn_live' | 'curated_derby'
   ) => {
     const hSlug = slugifySegment(homeTeam);
     const aSlug = slugifySegment(awayTeam);
     if (!hSlug || !aSlug) return;
-    const slug = `${hSlug}-vs-${aSlug}`;
-    if (seenSlugs.has(slug)) return;
+    const rawSlug = `${hSlug}-vs-${aSlug}`;
+    const slug = canonicalizeMatchSlug(rawSlug);
+    if (!slug || seenSlugs.has(slug)) return;
     seenSlugs.add(slug);
+
+    const canonicalParts = slug.split('-vs-');
+    const canonicalHomeSlug = canonicalParts[0] || hSlug;
+    const canonicalAwaySlug = canonicalParts[1] || aSlug;
 
     const homeXg = homeXgNum.toFixed(2);
     const awayXg = awayXgNum.toFixed(2);
@@ -149,7 +282,7 @@ export async function resolveLiveMatchSlugs(baseUrl: string = SITE_BASE_URL): Pr
     records.push({
       slug,
       path: `/predict/${slug}`,
-      url: `${baseUrl}/predict/${slug}`,
+      url: `${normalizedBaseUrl}/predict/${slug}`,
       homeTeam,
       awayTeam,
       league,
@@ -159,37 +292,109 @@ export async function resolveLiveMatchSlugs(baseUrl: string = SITE_BASE_URL): Pr
       homeXg,
       awayXg,
       projectedScore,
-      ogImageUrl: `${baseUrl}/api/og?${ogParams.toString()}`,
-      homeTeamSlug: hSlug,
-      awayTeamSlug: aSlug,
+      ogImageUrl: `${normalizedBaseUrl}/api/og?${ogParams.toString()}`,
+      homeTeamSlug: canonicalHomeSlug,
+      awayTeamSlug: canonicalAwaySlug,
       source,
     });
   };
 
-  // Serve high-search-volume global & African flagship fixtures synchronously (<1ms)
-  // so HTML SSR / transformIndexHtml never blocks on external API timeouts during page loads.
+  // 1. If crawlSupabase is requested, dynamically crawl active match rows from Supabase REST
+  if (shouldCrawlSupabase) {
+    const supabaseRows = await fetchActiveMatchesFromSupabaseRest();
+    for (const row of supabaseRows) {
+      const pred = row.predicted_outcome || row.prediction || 'Home Win';
+      const conf = Number(row.confidence_score ?? row.confidence ?? 80);
+      const hProb = Number(row.home_win_probability ?? (pred.includes('Home') ? 56 : 42));
+      const aProb = Number(row.away_win_probability ?? (pred.includes('Away') ? 54 : 30));
+      const hXg = Math.max(0.75, Math.min(2.85, (hProb / 100) * 3.1));
+      const aXg = Math.max(0.55, Math.min(2.45, (aProb / 100) * 2.8));
+      const score = `${Math.round(hXg)}-${Math.round(aXg)}`;
+      addMatchRecord(
+        row.home_team,
+        row.away_team,
+        row.league || 'Global Football',
+        row.match_date || todayIso,
+        pred,
+        conf,
+        hXg,
+        aXg,
+        score,
+        'supabase_active'
+      );
+    }
+  }
+
+  // 2. Crawl active matchday predictions from the active prediction store
+  try {
+    const activePredictions = getUpdatedDefaultPredictions();
+    for (const p of activePredictions) {
+      const pred = p.predicted_outcome || p.prediction || 'Home Win';
+      const conf = Number(p.confidence_score ?? p.confidence ?? 80);
+      const hProb = Number(p.home_win_probability ?? 52);
+      const aProb = Number(p.away_win_probability ?? 26);
+      const hXg = Math.max(0.8, Math.min(2.75, (hProb / 100) * 3.0));
+      const aXg = Math.max(0.6, Math.min(2.35, (aProb / 100) * 2.7));
+      const score = `${Math.round(hXg)}-${Math.round(aXg)}`;
+      addMatchRecord(
+        p.home_team,
+        p.away_team,
+        p.league || 'Global Football',
+        p.match_date || todayIso,
+        pred,
+        conf,
+        hXg,
+        aXg,
+        score,
+        'supabase_active'
+      );
+    }
+  } catch {
+    // fallback to flagship fixtures
+  }
+
+  // 3. Ensure flagship global & African derbies are always present
   const flagshipFixtures = [
     { home: 'Arsenal', away: 'Chelsea', league: 'Premier League', pred: 'Home Win', conf: 82, hXg: 1.94, aXg: 0.98, score: '2-1' },
     { home: 'Liverpool', away: 'Manchester City', league: 'Premier League', pred: 'BTTS & Over 2.5', conf: 85, hXg: 1.88, aXg: 1.64, score: '2-2' },
     { home: 'Real Madrid', away: 'Barcelona', league: 'La Liga', pred: 'Home Win', conf: 79, hXg: 2.05, aXg: 1.32, score: '2-1' },
     { home: 'Bayern Munich', away: 'Borussia Dortmund', league: 'Bundesliga', pred: 'Over 2.5 Goals', conf: 88, hXg: 2.42, aXg: 1.38, score: '3-1' },
     { home: 'Inter Milan', away: 'AC Milan', league: 'Serie A', pred: 'Home Win', conf: 81, hXg: 1.78, aXg: 0.94, score: '2-0' },
+    { home: 'Manchester United', away: 'Tottenham', league: 'Premier League', pred: 'BTTS & Over 2.5', conf: 80, hXg: 1.72, aXg: 1.48, score: '2-1' },
     { home: 'PSG', away: 'Marseille', league: 'Ligue 1', pred: 'Home Win', conf: 84, hXg: 2.18, aXg: 0.92, score: '2-1' },
     { home: 'Gor Mahia', away: 'AFC Leopards', league: 'FKF Kenya Premier League', pred: 'Home Win', conf: 83, hXg: 1.68, aXg: 0.74, score: '2-0' },
     { home: 'Al Ahly', away: 'Mamelodi Sundowns', league: 'CAF Champions League', pred: 'Under 2.5 Goals', conf: 80, hXg: 1.34, aXg: 0.96, score: '1-0' },
     { home: 'Simba SC', away: 'Young Africans', league: 'Tanzania NBC Premier League', pred: 'Double Chance 1X', conf: 79, hXg: 1.48, aXg: 1.12, score: '1-1' },
     { home: 'Kaizer Chiefs', away: 'Orlando Pirates', league: 'South Africa Betway Premiership', pred: 'BTTS Yes', conf: 77, hXg: 1.36, aXg: 1.42, score: '1-1' },
+    { home: 'Mamelodi Sundowns', away: 'Orlando Pirates', league: 'South Africa Betway Premiership', pred: 'Home Win', conf: 82, hXg: 1.76, aXg: 0.88, score: '2-0' },
     { home: 'Enyimba', away: 'Rangers International', league: 'Nigeria NPFL', pred: 'Home Win', conf: 81, hXg: 1.62, aXg: 0.68, score: '2-0' },
+    { home: 'Hearts of Oak', away: 'Asante Kotoko', league: 'Ghana Premier League', pred: 'Under 2.5 Goals', conf: 78, hXg: 1.22, aXg: 1.05, score: '1-0' },
+    { home: 'Al Ahly', away: 'Zamalek', league: 'Egyptian Premier League', pred: 'Home Win', conf: 83, hXg: 1.84, aXg: 0.92, score: '2-1' },
     { home: 'Wydad AC', away: 'Raja Casablanca', league: 'Morocco Botola Pro', pred: 'Under 2.5 Goals', conf: 82, hXg: 1.18, aXg: 1.04, score: '1-1' },
+    { home: 'TP Mazembe', away: 'AS Vita Club', league: 'DR Congo Linafoot', pred: 'Home Win', conf: 84, hXg: 1.79, aXg: 0.76, score: '2-0' },
+    { home: 'Juventus', away: 'Napoli', league: 'Serie A', pred: 'Under 2.5 Goals', conf: 79, hXg: 1.32, aXg: 1.14, score: '1-1' },
+    { home: 'Atletico Madrid', away: 'Sevilla', league: 'La Liga', pred: 'Home Win', conf: 82, hXg: 1.82, aXg: 0.84, score: '2-0' },
+    { home: 'LA Galaxy', away: 'LAFC', league: 'Major League Soccer', pred: 'BTTS & Over 2.5', conf: 83, hXg: 1.86, aXg: 1.74, score: '2-2' },
+    { home: 'Inter Miami', away: 'New York Red Bulls', league: 'Major League Soccer', pred: 'Home Win', conf: 85, hXg: 2.12, aXg: 1.08, score: '3-1' },
+    { home: 'Celtic', away: 'Rangers', league: 'Scottish Premiership', pred: 'Over 2.5 Goals', conf: 84, hXg: 1.98, aXg: 1.42, score: '2-1' },
+    { home: 'Boca Juniors', away: 'River Plate', league: 'Argentina Primera', pred: 'Under 2.5 Goals', conf: 80, hXg: 1.24, aXg: 1.18, score: '1-1' },
+    { home: 'Benfica', away: 'Sporting CP', league: 'Primeira Liga', pred: 'BTTS Yes', conf: 82, hXg: 1.68, aXg: 1.54, score: '2-1' },
+    { home: 'Galatasaray', away: 'Fenerbahce', league: 'Turkish Super Lig', pred: 'Over 2.5 Goals', conf: 83, hXg: 1.88, aXg: 1.56, score: '2-1' },
+    { home: 'Ajax', away: 'Feyenoord', league: 'Eredivisie', pred: 'Over 2.5 Goals', conf: 84, hXg: 1.92, aXg: 1.66, score: '2-2' },
+    { home: 'Club America', away: 'Chivas', league: 'Liga MX', pred: 'Home Win', conf: 81, hXg: 1.76, aXg: 0.98, score: '2-1' },
     { home: 'Al-Hilal', away: 'Al-Nassr', league: 'Saudi Pro League', pred: 'Over 2.5 Goals', conf: 86, hXg: 2.15, aXg: 1.54, score: '2-1' },
-    { home: 'Inter Miami', away: 'LAFC', league: 'Major League Soccer', pred: 'BTTS & Over 2.5', conf: 84, hXg: 1.96, aXg: 1.44, score: '2-1' },
+    { home: 'Flamengo', away: 'Palmeiras', league: 'Brasileirao Serie A', pred: 'BTTS Yes', conf: 80, hXg: 1.64, aXg: 1.38, score: '2-1' },
   ];
 
   for (const f of flagshipFixtures) {
     addMatchRecord(f.home, f.away, f.league, todayIso, f.pred, f.conf, f.hXg, f.aXg, f.score, 'curated_derby');
   }
 
-  cachedLiveMatches = { timestamp: Date.now(), records };
+  cachedLiveMatches = {
+    timestamp: Date.now(),
+    records,
+    crawledSupabase: shouldCrawlSupabase || Boolean(cachedLiveMatches?.crawledSupabase),
+  };
   return records;
 }
 
@@ -624,10 +829,18 @@ export async function injectServerSeoIntoHtml(
 }
 
 /**
- * Generates dynamic /sitemap-matches.xml populated with all live & upcoming ESPN match slugs + club hubs.
+ * Generates dynamic /sitemap-matches.xml populated with all active Supabase match slugs,
+ * upcoming fixtures, and club xG hubs. Optionally persists the output to public/sitemap-matches.xml.
  */
-export async function buildDynamicMatchesSitemapXml(baseUrl: string = SITE_BASE_URL): Promise<string> {
-  const liveMatches = await resolveLiveMatchSlugs(baseUrl);
+export async function buildDynamicMatchesSitemapXml(
+  baseUrl: string = 'https://www.predictpro.guru',
+  options?: { forceRefresh?: boolean; persistToPublic?: boolean }
+): Promise<string> {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+  const liveMatches = await resolveLiveMatchSlugs(normalizedBaseUrl, {
+    forceRefresh: options?.forceRefresh,
+    crawlSupabase: true,
+  });
   const today = new Date().toISOString().split('T')[0];
 
   const matchNodes = liveMatches.map((m) => {
@@ -636,8 +849,10 @@ export async function buildDynamicMatchesSitemapXml(baseUrl: string = SITE_BASE_
     return `  <url>
     <loc>${escapeXml(m.url)}</loc>
     <lastmod>${escapeXml(lastMod)}</lastmod>
-    <changefreq>hourly</changefreq>
-    <priority>0.90</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(m.url)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(m.url)}" />
     <image:image>
       <image:loc>${escapeXml(m.ogImageUrl)}</image:loc>
       <image:title>${escapeXml(title)}</image:title>
@@ -647,25 +862,42 @@ export async function buildDynamicMatchesSitemapXml(baseUrl: string = SITE_BASE_
 
   const clubSlugs = new Set<string>(CLUB_ANALYTICS_HUBS.map((c) => c.slug));
   for (const m of liveMatches) {
-    clubSlugs.add(m.homeTeamSlug);
-    clubSlugs.add(m.awayTeamSlug);
+    if (m.homeTeamSlug) clubSlugs.add(m.homeTeamSlug);
+    if (m.awayTeamSlug) clubSlugs.add(m.awayTeamSlug);
   }
 
   const clubNodes = Array.from(clubSlugs).map((slug) => {
-    const clubUrl = `${baseUrl}/teams/${slug}`;
-    const clubTitle = `${formatTitleCaseFromSlug(slug)} Expected Goals (xG) & Fixture Difficulty (FDR) Hub`;
+    const clubUrl = `${normalizedBaseUrl}/teams/${slug}`;
     return `  <url>
     <loc>${escapeXml(clubUrl)}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(clubUrl)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(clubUrl)}" />
   </url>`;
   });
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${[...matchNodes, ...clubNodes].join('\n')}
-</urlset>`;
+</urlset>
+`;
+
+  if (options?.persistToPublic && typeof process !== 'undefined' && process.versions?.node) {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const targetPath = path.resolve(process.cwd(), 'public', 'sitemap-matches.xml');
+      fs.writeFileSync(targetPath, xml, 'utf-8');
+    } catch {
+      // Ignore read-only filesystem errors in serverless edge environments
+    }
+  }
+
+  return xml;
 }
 
 /**

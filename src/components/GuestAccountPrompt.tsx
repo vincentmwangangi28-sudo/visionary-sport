@@ -21,20 +21,24 @@ export function triggerGuestAccountInvite() {
 }
 
 export const GuestAccountPrompt: React.FC = () => {
+  // FirstVisitSignupModal handles both 'predictpro:open-account-invite' and the 1-minute mandatory account gate
+  return null;
+};
+
+export const LegacyGuestAccountPrompt: React.FC = () => {
   const { user, loading: authLoading, signUp, signIn, signInWithGoogle } = useAuth();
   const location = useLocation();
 
   const [expandedModal, setExpandedModal] = useState(false);
   const [authMode, setAuthMode] = useState<'register' | 'login'>('login');
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState(() => getKnownAccountEmail());
+  const [email, setEmail] = useState(() => getKnownAccountEmail() || '');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
   const isAuthRoute = location.pathname.startsWith('/auth');
 
-  // Only open when explicitly triggered by the user (never auto-popup on scroll or timer)
   useEffect(() => {
     const handleCustomOpen = () => {
       if (!user) {
@@ -44,8 +48,8 @@ export const GuestAccountPrompt: React.FC = () => {
         setExpandedModal(true);
       }
     };
-    window.addEventListener('predictpro:open-account-invite', handleCustomOpen);
-    return () => window.removeEventListener('predictpro:open-account-invite', handleCustomOpen);
+    window.addEventListener('predictpro:open-account-invite-legacy', handleCustomOpen);
+    return () => window.removeEventListener('predictpro:open-account-invite-legacy', handleCustomOpen);
   }, [user]);
 
   const handleDismiss = () => {

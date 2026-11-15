@@ -37,16 +37,20 @@ export const HomeViewTabs: React.FC<HomeViewTabsProps> = ({
           return (
             <button
               key={tab.id}
+              id={`home-tab-${tab.id}`}
+              type="button"
               role="tab"
               aria-selected={isActive}
+              aria-controls="main-content"
+              aria-label={`View ${tab.label}`}
               onClick={() => onModeChange(tab.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 shrink-0 ${
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 shrink-0 select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
                 isActive
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
               <span>{tab.label}</span>
             </button>
           );

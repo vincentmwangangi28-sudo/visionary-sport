@@ -34,6 +34,22 @@ export const AIChatbot = () => {
     const isRecommendationQuery = lower.includes('recommend') || lower.includes('banker') || lower.includes('value bet') || lower.includes('best bet');
 
     try {
+      // First query local server-side /api/gemini-tasks (grounded with live Brave Search API)
+      const groundedRes = await callEdgeFn('gemini-tasks', {
+        task: 'ai_chat',
+        payload: { message: text, history: msgs.slice(-8) },
+      }).catch(() => null);
+
+      const groundedReply =
+        typeof groundedRes?.result === 'string'
+          ? groundedRes.result
+          : groundedRes?.result?.reply;
+
+      if (groundedReply) {
+        setMsgs(m => [...m, { role: 'assistant', content: groundedReply }]);
+        return;
+      }
+
       const data = await callEdgeFn('ai-chat', { message: text, history: msgs.slice(-8) }) as { reply?: string };
       if (data?.reply) {
         setMsgs(m => [...m, { role: 'assistant', content: data.reply }]);
@@ -61,11 +77,12 @@ export const AIChatbot = () => {
     <>
       {/* Toggle button */}
       <button
+        type="button"
         onClick={() => setOpen(o => !o)}
         aria-label={open ? 'Close AI chat' : 'Open AI football predictions chat'}
         aria-expanded={open}
         aria-controls="ai-chatbot-panel"
-        className="fixed bottom-20 right-4 md:bottom-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform flex items-center justify-center"
+        className="fixed bottom-20 right-4 md:bottom-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-transform flex items-center justify-center select-none cursor-pointer"
       >
         {open
           ? <X className="h-6 w-6" aria-hidden="true" />
@@ -104,9 +121,10 @@ export const AIChatbot = () => {
                 <Sparkles className="h-3 w-3" /> Hub
               </Link>
               <button
+                type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close chat"
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none cursor-pointer"
               >
                 <ChevronDown className="h-5 w-5" aria-hidden="true" />
               </button>
@@ -149,9 +167,10 @@ export const AIChatbot = () => {
             {['⭐ AI Briefing', '🛡️ Top 3 Consensus', '💎 High EV Value', '⚽ Goal Machines', 'Tactical Analysis'].map(q => (
               <button
                 key={q}
+                type="button"
                 onClick={() => { setInput(q); }}
                 aria-label={`Ask: ${q}`}
-                className="text-xs whitespace-nowrap px-2.5 py-1 bg-muted hover:bg-muted/70 rounded-full border border-border transition-colors flex-shrink-0"
+                className="text-xs whitespace-nowrap px-2.5 py-1 bg-muted hover:bg-muted/70 rounded-full border border-border transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex-shrink-0 select-none cursor-pointer"
               >
                 {q}
               </button>
@@ -172,10 +191,11 @@ export const AIChatbot = () => {
               aria-label="Type your message"
             />
             <button
+              type="button"
               onClick={send}
               disabled={loading || !input.trim()}
               aria-label="Send message"
-              className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 disabled:opacity-50 hover:bg-primary/90 transition-colors mt-0.5"
+              className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 disabled:opacity-50 hover:bg-primary/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all mt-0.5 select-none cursor-pointer"
             >
               <Send className="h-4 w-4" aria-hidden="true" />
             </button>

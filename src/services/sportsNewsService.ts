@@ -165,6 +165,86 @@ class SportsNewsService {
   }
 
   /**
+   * Fetch live football news & injury wire from our server-side Brave Search proxy (/api/brave-search)
+   */
+  public async fetchBraveNews(query?: string, force = false): Promise<SportsArticle[]> {
+    if (typeof window === 'undefined' || typeof fetch !== 'function') {
+      return [];
+    }
+    const q = (
+      query ||
+      'Premier League Champions League La Liga football injury news starting lineups transfers'
+    ).trim();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const params = new URLSearchParams({
+        q,
+        type: 'match_intel',
+        count: '10',
+      });
+      if (force) params.set('force', 'true');
+
+      const res = await fetch(`/api/brave-search?${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (!res.ok) return [];
+      const data = await res.json();
+      const newsList = Array.isArray(data?.newsResults) ? data.newsResults : [];
+      const webList = Array.isArray(data?.webResults) ? data.webResults : [];
+
+      const mapped: SportsArticle[] = [];
+      for (const n of newsList) {
+        if (!n?.title || !n?.url) continue;
+        mapped.push({
+          title: n.title,
+          description: n.description || 'Breaking football coverage via Brave Search.',
+          link: n.url,
+          pubDate: n.publishedAt || new Date().toISOString(),
+          source: `${n.source || 'Brave Search'} (Brave Wire)`,
+          region: 'Global',
+          imageUrl:
+            n.thumbnail ||
+            'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
+          category: n.category || 'Tactical Wire',
+          bettingImpact:
+            n.bettingImpact ||
+            'Indexed via Brave Search API; cross-referenced with Expected Goals (xG) & Poisson probabilities.',
+          isGeminiCurated: false,
+        });
+      }
+
+      if (mapped.length === 0) {
+        for (const w of webList.slice(0, 6)) {
+          if (!w?.title || !w?.url) continue;
+          mapped.push({
+            title: w.title,
+            description: w.description || 'Football analysis indexed via Brave Search.',
+            link: w.url,
+            pubDate: new Date().toISOString(),
+            source: `${w.source || 'Brave Search'} (Brave Wire)`,
+            region: 'Global',
+            imageUrl:
+              w.thumbnail ||
+              'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=80',
+            category: 'Tactical Wire',
+            bettingImpact:
+              'Indexed via Brave Search API; cross-referenced with Expected Goals (xG) & Poisson probabilities.',
+            isGeminiCurated: false,
+          });
+        }
+      }
+
+      return mapped;
+    } catch {
+      clearTimeout(timeout);
+      return [];
+    }
+  }
+
+  /**
    * Get cached articles synchronously with zero waiting time (0ms)
    */
   public getCachedArticles(): SportsArticle[] {
@@ -206,41 +286,41 @@ class SportsNewsService {
   }
 
   /**
-   * Automated download and fetch from backend edge function with fast caching and direct live fallback
+   * Automated download and fetch from Brave Search API + ESPN with Free-Tier-aware caching
    */
   public async fetchAndCacheNews(forceRefresh = false): Promise<SportsArticle[]> {
+    // Free Subscription Guard: if not forced and local cache is < 15 minutes old with Brave Wire items, reuse immediately
+    if (!forceRefresh) {
+      const lastSyncIso = this.getLastSyncTime();
+      if (lastSyncIso) {
+        const ageMs = Date.now() - new Date(lastSyncIso).getTime();
+        if (ageMs >= 0 && ageMs < 15 * 60 * 1000) {
+          const cached = this.getCachedArticles();
+          if (cached.some((a) => a.source.includes('Brave Wire'))) {
+            return cached;
+          }
+        }
+      }
+    }
+
     if (this.inFlightPromise) {
       return this.inFlightPromise;
     }
 
     this.inFlightPromise = (async () => {
-      // 1. Only invoke backend edge function on explicit manual refresh when not in cooldown
-      if (forceRefresh && Date.now() > this.edgeUnavailableUntil) {
-        try {
-          const urlParam = { refresh: 'true' };
-          const res: NewsResponseData = await callEdgeFn('fetch-sports-news', urlParam, undefined, 5000);
-
-          if (res?.success && Array.isArray(res.articles) && res.articles.length > 0) {
-            this.saveToCache(res.articles);
-            this.notifyListeners(res.articles);
-            return res.articles;
-          }
-        } catch {
-          // Set 30-minute cooldown to prevent repetitive aborted calls
-          this.edgeUnavailableUntil = Date.now() + 30 * 60 * 1000;
-        }
-      }
-
-      // 2. Direct high-speed download via open ESPN endpoints (~200ms, zero rate limits)
+      // 1. Fetch live Brave Search football news + ESPN feeds in parallel
       try {
-        const liveArticles = await this.fetchDirectESPNNews();
+        const [braveArticles, espnArticles] = await Promise.all([
+          this.fetchBraveNews(undefined, forceRefresh),
+          this.fetchDirectESPNNews(),
+        ]);
+
+        const liveArticles = [...braveArticles, ...espnArticles];
         if (liveArticles.length > 0) {
           const existing = this.getCachedArticles();
-          // Keep Gemini curated analysis articles at the front
           const geminiPicks = existing.filter((a) => a.isGeminiCurated);
           const combined = [...geminiPicks, ...liveArticles];
 
-          // Deduplicate by title
           const seen = new Set<string>();
           const deduped = combined.filter((item) => {
             const key = item.title.trim().toLowerCase();
@@ -255,6 +335,22 @@ class SportsNewsService {
         }
       } catch {
         // Ignore fallback errors
+      }
+
+      // 2. Optional edge function fallback if forced
+      if (forceRefresh && Date.now() > this.edgeUnavailableUntil) {
+        try {
+          const urlParam = { refresh: 'true' };
+          const res: NewsResponseData = await callEdgeFn('fetch-sports-news', urlParam, undefined, 5000);
+
+          if (res?.success && Array.isArray(res.articles) && res.articles.length > 0) {
+            this.saveToCache(res.articles);
+            this.notifyListeners(res.articles);
+            return res.articles;
+          }
+        } catch {
+          this.edgeUnavailableUntil = Date.now() + 30 * 60 * 1000;
+        }
       }
 
       // 3. If live network was completely offline, return existing fast cache

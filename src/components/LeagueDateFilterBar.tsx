@@ -87,14 +87,15 @@ export const LeagueDateFilterBar: React.FC<LeagueDateFilterBarProps> = ({
               type="button"
               role="tab"
               aria-selected={isSelected}
+              aria-controls="section-predictions"
               id={`league-filter-${chip.id}`}
               onClick={() => {
                 hapticService.selection();
                 onFilterChange(chip.id);
               }}
-              className={`group relative shrink-0 flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 snap-start select-none outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+              className={`group relative shrink-0 flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-full text-xs font-bold transition-all duration-150 snap-start select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 isSelected
-                  ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-zinc-950 shadow-md shadow-primary/25 scale-[1.02] border-transparent'
+                  ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-zinc-950 shadow-md shadow-primary/25 border-transparent'
                   : 'bg-card hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/70 hover:border-border'
               }`}
             >

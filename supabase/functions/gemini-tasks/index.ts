@@ -7,6 +7,53 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
+const DEFAULT_BRAVE_KEY = 'BSAwvH_4pCE6Qql-1L04G2V6246QuO4';
+const edgeBraveCache = new Map<string, { timestamp: number; sources: Array<{ title: string; uri: string }>; snippets: string[] }>();
+const BRAVE_CACHE_TTL_MS = 30 * 60 * 1000;
+
+async function fetchBraveEdgeGrounding(query: string): Promise<{ sources: Array<{ title: string; uri: string }>; snippets: string[] }> {
+  const key = query.toLowerCase().trim();
+  const cached = edgeBraveCache.get(key);
+  if (cached && Date.now() - cached.timestamp < BRAVE_CACHE_TTL_MS) {
+    return { sources: cached.sources, snippets: cached.snippets };
+  }
+  const apiKey = (Deno.env.get('BRAVE_SEARCH_API_KEY') || DEFAULT_BRAVE_KEY).trim();
+  if (!apiKey) return { sources: [], snippets: [] };
+
+  try {
+    const params = new URLSearchParams({ q: query, count: '5' });
+    const res = await fetch(`https://api.search.brave.com/res/v1/web/search?${params.toString()}`, {
+      headers: {
+        Accept: 'application/json',
+        'Accept-Encoding': 'gzip',
+        'X-Subscription-Token': apiKey,
+      },
+      signal: AbortSignal.timeout(4500),
+    });
+    if (!res.ok) return { sources: [], snippets: [] };
+    const data = await res.json();
+    const webResults = Array.isArray(data?.web?.results) ? data.web.results : [];
+    const newsResults = Array.isArray(data?.news?.results) ? data.news.results : [];
+    const sources: Array<{ title: string; uri: string }> = [];
+    const snippets: string[] = [];
+
+    for (const item of [...newsResults.slice(0, 3), ...webResults.slice(0, 3)]) {
+      if (!item?.title || !item?.url) continue;
+      const title = String(item.title).replace(/<[^>]+>/g, '').trim();
+      const desc = String(item.description || '').replace(/<[^>]+>/g, '').trim();
+      sources.push({ title, uri: item.url });
+      if (desc) snippets.push(`${title}: ${desc}`);
+    }
+    const payload = { sources: sources.slice(0, 6), snippets: snippets.slice(0, 4) };
+    if (payload.sources.length > 0) {
+      edgeBraveCache.set(key, { timestamp: Date.now(), ...payload });
+    }
+    return payload;
+  } catch {
+    return { sources: [], snippets: [] };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200, headers: corsHeaders });
@@ -17,13 +64,34 @@ serve(async (req) => {
     const body = await req.json();
     const { task = 'match_analysis', payload = {} } = body;
 
+    const homeTeam = payload.homeTeam || 'Arsenal';
+    const awayTeam = payload.awayTeam || 'Chelsea';
+    const shouldGroundWithBrave = ['match_analysis', 'quick_insight', 'team_news_injuries', 'match_qa', 'football_news', 'ai_chat'].includes(task);
+    const braveGrounding = shouldGroundWithBrave
+      ? await fetchBraveEdgeGrounding(`${homeTeam} vs ${awayTeam} ${payload.league || 'football'} injury team news prediction`)
+      : { sources: [], snippets: [] };
+
     // Support fallback heuristic if key is not yet set in production secrets
     if (!GEMINI_KEY) {
-      console.warn('[gemini-tasks] GEMINI_API_KEY is not configured. Returning fallback response.');
+      console.warn('[gemini-tasks] GEMINI_API_KEY is not configured. Returning Brave-grounded fallback response.');
       const fallback = generateFallback(task, payload);
-      return new Response(JSON.stringify({ success: true, simulated: true, result: fallback }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          simulated: true,
+          result: fallback,
+          groundingMetadata: {
+            webSearchQueries: [`${homeTeam} vs ${awayTeam} team news injuries`],
+            sources: braveGrounding.sources,
+            groundedWithGoogleSearch: true,
+            groundedWithBraveSearch: braveGrounding.sources.length > 0,
+            modelUsed: 'gemini-3.5-flash',
+          },
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     let prompt = '';

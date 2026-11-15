@@ -201,8 +201,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                 <button
                   type="button"
                   key={key}
+                  aria-pressed={inSlip}
+                  aria-label={`${inSlip ? 'Remove' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)}) ${inSlip ? 'from' : 'to'} Bet Slip`}
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
-                  className={`py-1 rounded text-center text-[11px] border transition-colors cursor-pointer ${
+                  className={`py-1 rounded text-center text-[11px] border transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                     inSlip
                       ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                       : favored
@@ -337,8 +339,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                 <button
                   type="button"
                   key={key}
+                  aria-pressed={inSlip}
+                  aria-label={`${inSlip ? 'In Bet Slip:' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
-                  className={`h-9 rounded-md text-xs border flex flex-col items-center justify-center transition-colors cursor-pointer ${
+                  className={`h-9 rounded-md text-xs border flex flex-col items-center justify-center transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                     inSlip
                       ? 'bg-emerald-700 text-white border-emerald-700 font-bold shadow-sm'
                       : isFavored
@@ -396,14 +400,15 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
+                aria-pressed={isLeaguePinned(p.league)}
                 onClick={() => {
                   hapticService.selection();
                   togglePinLeague(p.league);
                 }}
-                className="h-7 w-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center"
+                className="h-7 w-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all inline-flex items-center justify-center select-none cursor-pointer active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={isLeaguePinned(p.league) ? `Unpin ${p.league} from My Dashboard` : `Pin ${p.league} to My Dashboard`}
               >
-                <Pin className={`h-3.5 w-3.5 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} />
+                <Pin className={`h-3.5 w-3.5 ${isLeaguePinned(p.league) ? 'fill-primary text-primary' : ''}`} aria-hidden="true" />
               </button>
               <Suspense fallback={null}>
                 <NotifyMeButton
@@ -507,8 +512,10 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                 <button
                   type="button"
                   key={label}
+                  aria-pressed={inSlip}
+                  aria-label={`${inSlip ? 'In Bet Slip:' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
-                  className={`min-h-[36px] py-1 px-2.5 rounded-md border text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                  className={`min-h-[36px] py-1 px-2.5 rounded-md border text-xs flex items-center justify-between transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                     inSlip
                       ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
                       : favored
@@ -536,14 +543,16 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
+                aria-pressed={recommendedInSlip}
+                aria-label={`${recommendedInSlip ? 'Added to Bet Slip:' : 'Add recommended pick'} ${p.home_team} vs ${p.away_team} (${outcome})`}
                 onClick={(e) => handleAddMarketToSlip(e, outcome, recommendedOdds)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                   recommendedInSlip
                     ? 'bg-emerald-700 text-white'
                     : 'bg-primary/10 hover:bg-primary/20 text-primary'
                 }`}
               >
-                {recommendedInSlip ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                {recommendedInSlip ? <Check className="h-3 w-3" aria-hidden="true" /> : <Plus className="h-3 w-3" aria-hidden="true" />}
                 <span>{recommendedInSlip ? 'In Slip' : '+ Bet Slip'}</span>
               </button>
               <Link

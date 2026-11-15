@@ -96,29 +96,36 @@ export const Hero = () => {
 
           {/* Right Column: Focused Action Controls */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <Link to="/live">
-              <Button size="default" className="h-10 px-4 text-xs font-semibold gap-2 whitespace-nowrap shrink-0">
+            <Button
+              asChild
+              size="default"
+              className="h-10 px-4 text-xs font-semibold gap-2 whitespace-nowrap shrink-0"
+            >
+              <Link to="/live" aria-label="Open Live Center and Broadcast Schedules">
                 <Tv className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Live Center &amp; Broadcasts</span>
-              </Button>
-            </Link>
-            <Link to="/screener">
-              <Button
-                variant="outline"
-                size="default"
-                className="h-10 px-4 text-xs font-semibold gap-1.5 whitespace-nowrap shrink-0"
-              >
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="default"
+              className="h-10 px-4 text-xs font-semibold gap-1.5 whitespace-nowrap shrink-0"
+            >
+              <Link to="/screener" aria-label="Open Quantitative Match Screener">
                 <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Match Screener</span>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             {!isInstalled && (
               <Button
                 type="button"
                 variant="outline"
                 size="default"
                 onClick={handleHeroDownloadApp}
+                aria-haspopup="dialog"
+                aria-label={isIOS ? "Add PredictPro App to Home Screen" : "Download PredictPro App"}
                 data-testid="hero-download-app-btn"
                 className="h-10 px-4 text-xs font-bold gap-1.5 whitespace-nowrap shrink-0 border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 cursor-pointer"
               >

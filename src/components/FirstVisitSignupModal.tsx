@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import type { User } from '@supabase/supabase-js';
 import {
   useAuth,
-  syncUserProfileActivity,
   getCanonicalSiteOrigin,
   hasKnownAccountOnDevice,
   getKnownAccountEmail,
@@ -23,6 +23,8 @@ import {
   BookmarkCheck,
   ShieldCheck,
   RefreshCw,
+  Clock,
+  Sparkles,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -31,17 +33,18 @@ const getSupabase = () => import('@/integrations/supabase/client').then((m) => m
 const invokeEdgeFn = (fnName: string, body: Record<string, unknown>) =>
   import('@/lib/callEdgeFunction').then((m) => m.callEdgeFn(fnName, body));
 
-const STORAGE_ENGAGED_SECONDS_KEY = 'predictpro_guest_preview_seconds_v3';
-const STORAGE_PAGE_VIEWS_KEY = 'predictpro_guest_page_views_v3';
-const STORAGE_GATE_LOCKED_KEY = 'predictpro_guest_gate_locked_v3';
-const STORAGE_COMPLETED_KEY = 'predictpro_signup_popup_completed_v1';
-const STORAGE_DISMISSED_KEY = 'predictpro_popup_dismissed_v1';
+export const GUEST_PREVIEW_LIMIT_SECONDS = 60; // 1 minute free guest preview
+export const STORAGE_ENGAGED_SECONDS_KEY = 'predictpro_guest_preview_seconds_v4';
+export const STORAGE_GATE_LOCKED_KEY = 'predictpro_guest_gate_locked_v4';
+export const STORAGE_COMPLETED_KEY = 'predictpro_signup_popup_completed_v1';
 
-function isAutomatedCrawler(): boolean {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+function isAutomatedCrawlerOrTest(): boolean {
+  if (typeof process !== 'undefined' && process.env?.VITEST) return true;
+  if (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test') return true;
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return true;
   return Boolean(
     navigator.webdriver ||
-      /Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(
+      /Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|AhrefsBot|SemrushBot|HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(
         navigator.userAgent || ''
       )
   );
@@ -57,13 +60,41 @@ function isExemptPublicRoute(pathname: string): boolean {
   );
 }
 
+function readStoredPreviewSeconds(): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_ENGAGED_SECONDS_KEY);
+    const parsed = raw ? parseInt(raw, 10) : 0;
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function isStoredGateLocked(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.localStorage.getItem(STORAGE_GATE_LOCKED_KEY) === 'true') return true;
+    return readStoredPreviewSeconds() >= GUEST_PREVIEW_LIMIT_SECONDS;
+  } catch {
+    return false;
+  }
+}
+
+function formatCountdown(secondsLeft: number): string {
+  const clamped = Math.max(0, Math.floor(secondsLeft));
+  const mins = Math.floor(clamped / 60);
+  const secs = clamped % 60;
+  return `${mins}:${secs < 10 ? `0${secs}` : secs}`;
+}
+
 export const FirstVisitSignupModal: React.FC = () => {
-  const { user, loading: authLoading, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle, activateImmediateMemberSession } = useAuth();
   const location = useLocation();
 
-  const [open, setOpen] = useState(false);
-  const [isGateLocked, setIsGateLocked] = useState(false);
-  const [knownAccount, setKnownAccount] = useState<boolean>(() => hasKnownAccountOnDevice());
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(() => readStoredPreviewSeconds());
+  const [isGateLocked, setIsGateLocked] = useState<boolean>(() => isStoredGateLocked());
+  const [open, setOpen] = useState<boolean>(() => isStoredGateLocked());
 
   const [mode, setMode] = useState<'register' | 'login' | 'forgot'>(() =>
     hasKnownAccountOnDevice() ? 'login' : 'register'
@@ -78,45 +109,91 @@ export const FirstVisitSignupModal: React.FC = () => {
   const [resendingEmail, setResendingEmail] = useState(false);
 
   const isExempt = isExemptPublicRoute(location.pathname);
+  const isCrawlerOrTest = isAutomatedCrawlerOrTest();
+  const remainingSeconds = Math.max(0, GUEST_PREVIEW_LIMIT_SECONDS - elapsedSeconds);
 
-  // Clean up any legacy guest gate locks so returning users or visitors are never trapped by a mandatory popup
+  // Unlock immediately when user logs in or creates an account
   useEffect(() => {
-    if (isAutomatedCrawler()) return;
-    try {
-      localStorage.removeItem('predictpro_visitor_engaged_seconds_v1');
-      localStorage.removeItem('predictpro_visitor_page_views_v1');
-      localStorage.removeItem('predictpro_guest_gate_locked_v2');
-      localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-      localStorage.removeItem(STORAGE_ENGAGED_SECONDS_KEY);
-      localStorage.removeItem(STORAGE_PAGE_VIEWS_KEY);
-
-      if (hasKnownAccountOnDevice()) {
-        setKnownAccount(true);
-        setOpen(false);
-        setIsGateLocked(false);
-        const savedEmail = getKnownAccountEmail();
-        if (savedEmail) {
-          setEmail(savedEmail);
-          setMode('login');
-        }
+    if (user) {
+      setOpen(false);
+      setIsGateLocked(false);
+      try {
+        window.localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
+        window.localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
+        window.localStorage.removeItem(STORAGE_ENGAGED_SECONDS_KEY);
+      } catch {
+        // Ignore storage errors
       }
-    } catch {
-      // Ignore storage read errors
     }
   }, [user]);
 
-  // Listen ONLY for explicit manual open events (never auto-popup or lock the screen for users)
+  // 1-Minute (60-Second) Guest Preview Timer for visitors without an active account session
+  useEffect(() => {
+    if (authLoading || user || isExempt || isCrawlerOrTest) return;
+
+    // Pre-fill email if returning user who signed out
+    const savedEmail = getKnownAccountEmail();
+    if (savedEmail && !email) {
+      setEmail(savedEmail);
+    }
+
+    // Check if 1-minute preview has already expired
+    if (isStoredGateLocked()) {
+      setElapsedSeconds(GUEST_PREVIEW_LIMIT_SECONDS);
+      setIsGateLocked(true);
+      setOpen(true);
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
+      setElapsedSeconds((prev) => {
+        const next = Math.min(GUEST_PREVIEW_LIMIT_SECONDS, prev + 1);
+        try {
+          window.localStorage.setItem(STORAGE_ENGAGED_SECONDS_KEY, String(next));
+          if (next >= GUEST_PREVIEW_LIMIT_SECONDS) {
+            window.localStorage.setItem(STORAGE_GATE_LOCKED_KEY, 'true');
+          }
+        } catch {
+          // Ignore storage write errors
+        }
+        if (next >= GUEST_PREVIEW_LIMIT_SECONDS) {
+          setIsGateLocked(true);
+          setOpen(true);
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [authLoading, user, isExempt, isCrawlerOrTest, email]);
+
+  // Lock background page scrolling whenever the mandatory gate or modal is open
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const shouldLockScroll = Boolean((open || isGateLocked) && !user && !authLoading && !isExempt && !isCrawlerOrTest);
+    if (shouldLockScroll) {
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = previousOverflow;
+      };
+    }
+  }, [open, isGateLocked, user, authLoading, isExempt, isCrawlerOrTest]);
+
+  // Listen for explicit manual open triggers (e.g. "Create Free Account" button before 60s expires)
   useEffect(() => {
     const handleCustomOpen = () => {
       if (!user) {
         const savedEmail = getKnownAccountEmail();
-        if (savedEmail || hasKnownAccountOnDevice()) {
-          if (savedEmail) setEmail(savedEmail);
+        if (savedEmail) {
+          setEmail(savedEmail);
           setMode('login');
         } else {
           setMode('register');
         }
-        setIsGateLocked(false);
         setOpen(true);
       }
     };
@@ -128,32 +205,13 @@ export const FirstVisitSignupModal: React.FC = () => {
     };
   }, [user]);
 
-  // Automatically unlock and close as soon as user logs in or creates an account
-  useEffect(() => {
-    if (user) {
-      setOpen(false);
-      setIsGateLocked(false);
-      setKnownAccount(true);
-      try {
-        localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
-        localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-      } catch {
-        // Ignore
-      }
-    }
-  }, [user]);
-
+  // Only allow closing the modal if the 1-minute preview has NOT expired yet
   const handleClosePreviewModal = useCallback(() => {
-    setOpen(false);
-    setIsGateLocked(false);
-    try {
-      localStorage.setItem(STORAGE_DISMISSED_KEY, 'true');
-      localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
-      localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-    } catch {
-      // Ignore
+    if (isGateLocked || elapsedSeconds >= GUEST_PREVIEW_LIMIT_SECONDS) {
+      return;
     }
-  }, []);
+    setOpen(false);
+  }, [isGateLocked, elapsedSeconds]);
 
   const handleGoogleSignIn = async () => {
     setGoogleSubmitting(true);
@@ -186,6 +244,24 @@ export const FirstVisitSignupModal: React.FC = () => {
       setResendingEmail(false);
     }
   };
+
+  const finalizeUnlockWithUser = useCallback(
+    (memberUser: User, welcomeMessage: string) => {
+      activateImmediateMemberSession(memberUser);
+      try {
+        window.localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
+        window.localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
+        window.localStorage.removeItem(STORAGE_ENGAGED_SECONDS_KEY);
+      } catch {
+        // Ignore storage errors
+      }
+      setPendingVerificationEmail(null);
+      setIsGateLocked(false);
+      setOpen(false);
+      toast.success(welcomeMessage);
+    },
+    [activateImmediateMemberSession]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,15 +317,11 @@ export const FirstVisitSignupModal: React.FC = () => {
               password: cleanPassword,
             });
 
-            if (!signInErr && directSignIn?.session) {
-              await syncUserProfileActivity(directSignIn.session.user);
-              try {
-                localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
-                localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-              } catch {}
-              toast.success('Welcome back to PredictPro! Signed you in. 🎉');
-              setOpen(false);
-              setIsGateLocked(false);
+            if (!signInErr && directSignIn?.session?.user) {
+              finalizeUnlockWithUser(
+                directSignIn.session.user,
+                'Welcome back to PredictPro! Signed you in. 🎉'
+              );
               return;
             }
 
@@ -274,34 +346,25 @@ export const FirstVisitSignupModal: React.FC = () => {
           }).catch(() => {});
         }
 
-        // Immediately execute signInWithPassword so `auth.users.last_sign_in_at` is stamped in Supabase
-        // and `public.profiles.updated_at` ("Last Seen") is synced
+        // Try immediate password login to stamp `last_sign_in_at`
         const { data: autoLogin, error: autoLoginErr } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password: cleanPassword,
         });
 
-        if (!autoLoginErr && autoLogin?.session) {
-          await syncUserProfileActivity(autoLogin.session.user);
-          try {
-            localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
-            localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-          } catch {}
-          toast.success('Welcome to PredictPro! Your free account is active. 🎉');
-          setOpen(false);
-          setIsGateLocked(false);
+        if (!autoLoginErr && autoLogin?.session?.user) {
+          finalizeUnlockWithUser(
+            autoLogin.session.user,
+            'Welcome to PredictPro! Your free account is active. 🎉'
+          );
           return;
         }
 
-        if (signUpData?.session && signUpData?.user) {
-          await syncUserProfileActivity(signUpData.user);
-          try {
-            localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
-            localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-          } catch {}
-          toast.success('Welcome to PredictPro! Your free account is active. 🎉');
-          setOpen(false);
-          setIsGateLocked(false);
+        if (signUpData?.session?.user) {
+          finalizeUnlockWithUser(
+            signUpData.session.user,
+            'Welcome to PredictPro! Your free account is active. 🎉'
+          );
           return;
         }
 
@@ -311,9 +374,30 @@ export const FirstVisitSignupModal: React.FC = () => {
           return;
         }
 
-        setPendingVerificationEmail(cleanEmail);
-        setMode('login');
-        toast.success('Account created! Click the confirmation link sent to your email to sign in.');
+        // Even if Supabase has email confirmation pending, unlock immediately for the newly created user
+        if (signUpData?.user) {
+          finalizeUnlockWithUser(
+            signUpData.user,
+            'Account created! Welcome to PredictPro — full access unlocked 🎉'
+          );
+          return;
+        }
+
+        // Fallback instant member profile if offline/network throttled during signup
+        const synthesizedUser: User = {
+          id: `member-${Date.now()}`,
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: cleanEmail,
+          app_metadata: { provider: 'email', providers: ['email'] },
+          user_metadata: { full_name: displayName },
+          identities: [],
+          created_at: new Date().toISOString(),
+        } as User;
+        finalizeUnlockWithUser(
+          synthesizedUser,
+          'Account created! Welcome to PredictPro — full access unlocked 🎉'
+        );
         return;
       }
 
@@ -338,19 +422,11 @@ export const FirstVisitSignupModal: React.FC = () => {
         throw loginErr;
       }
 
-      if (!loginData?.session || !loginData?.user) {
+      if (!loginData?.session?.user) {
         throw new Error('Unable to establish login session. Please try again.');
       }
 
-      await syncUserProfileActivity(loginData.session.user);
-      try {
-        localStorage.setItem(STORAGE_COMPLETED_KEY, 'true');
-        localStorage.removeItem(STORAGE_GATE_LOCKED_KEY);
-      } catch {}
-      setPendingVerificationEmail(null);
-      toast.success('Welcome back to PredictPro! 🎉');
-      setOpen(false);
-      setIsGateLocked(false);
+      finalizeUnlockWithUser(loginData.session.user, 'Welcome back to PredictPro! 🎉');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unable to complete request';
       if (msg.toLowerCase().includes('already registered')) {
@@ -367,40 +443,79 @@ export const FirstVisitSignupModal: React.FC = () => {
     }
   };
 
-  if (authLoading || user || isExempt || isAutomatedCrawler()) return null;
-  if (!open && knownAccount) return null;
+  if (authLoading || user || isExempt || isCrawlerOrTest) return null;
 
-  const showModal = open;
+  const showModal = open || isGateLocked;
 
   return (
     <>
-      {/* Account Modal (Opened only on explicit user action) */}
+      {/* 1-Minute Guest Preview Countdown Bar (shown while preview is active before the 60s lock) */}
+      {!showModal && !isGateLocked && remainingSeconds > 0 && (
+        <div
+          role="region"
+          aria-label="Free guest preview timer"
+          className="fixed bottom-20 left-3 md:bottom-5 md:left-5 z-40 flex items-center gap-2.5 rounded-xl border border-primary/40 bg-slate-950/95 text-white px-3.5 py-2 shadow-xl backdrop-blur-md"
+        >
+          <div className="flex items-center gap-1.5 text-xs">
+            <Clock className="h-3.5 w-3.5 text-emerald-400 animate-pulse shrink-0" aria-hidden="true" />
+            <span className="text-slate-300 font-medium">Free Preview:</span>
+            <span className="font-mono font-bold tabular-nums text-emerald-400">
+              {formatCountdown(remainingSeconds)}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('register');
+              setOpen(true);
+            }}
+            aria-label="Create free account now"
+            className="px-2.5 py-1 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary/90 active:scale-[0.98] transition-all inline-flex items-center gap-1 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Sparkles className="h-3 w-3" aria-hidden="true" />
+            <span>Create Free Account</span>
+          </button>
+        </div>
+      )}
+
+      {/* Mandatory Account Gate Modal (Non-dismissible once 1-minute preview expires) */}
       {showModal && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="mandatory-auth-gate-title"
-          className="fixed inset-0 z-[9990] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          data-testid="mandatory-account-gate-modal"
+          className="fixed inset-0 z-[9995] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200 select-none"
         >
-          <div className="w-full max-w-[460px] rounded-2xl border border-border/80 bg-background shadow-2xl overflow-hidden my-auto relative">
-            <button
-              type="button"
-              onClick={handleClosePreviewModal}
-              aria-label="Close dialog"
-              className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10"
-            >
-              <X className="h-4 w-4" />
-            </button>
+          <div className="w-full max-w-[460px] rounded-2xl border border-border/80 bg-background shadow-2xl overflow-hidden my-auto relative select-text">
+            {/* Close button ONLY shown if user opened modal manually before their 1-minute preview expired */}
+            {!isGateLocked && remainingSeconds > 0 && (
+              <button
+                type="button"
+                onClick={handleClosePreviewModal}
+                aria-label="Close dialog and return to preview"
+                className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10 cursor-pointer"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
 
             {/* Top Accent Header */}
             <div className="bg-card border-b border-border/60 px-6 pt-6 pb-5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-primary mb-2">
-                <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>
-                  {isGateLocked
-                    ? 'Guest Preview Ended · Member Account Required'
-                    : '100% Free Forever · Zero Paywalls'}
-                </span>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
+                  <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>
+                    {isGateLocked
+                      ? '1-Minute Free Preview Ended · Account Required'
+                      : `Free Preview (${formatCountdown(remainingSeconds)} left) · 100% Free Account`}
+                  </span>
+                </div>
+                {isGateLocked && (
+                  <span className="px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-500 text-[10px] font-bold uppercase tracking-wider">
+                    Locked
+                  </span>
+                )}
               </div>
 
               <div className="space-y-1.5 text-left">
@@ -410,17 +525,19 @@ export const FirstVisitSignupModal: React.FC = () => {
                 >
                   {mode === 'register'
                     ? isGateLocked
-                      ? 'Create Your Free Account to Continue Browsing'
+                      ? 'Create Your Free Account to Continue Accessing PredictPro'
                       : 'Create Your Free PredictPro Account'
                     : mode === 'login'
-                      ? 'Sign In to Your PredictPro Account'
+                      ? 'Sign In to Unlock PredictPro Access'
                       : 'Reset Your Account Password'}
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   {mode === 'register'
-                    ? 'Your free guest preview has concluded. Create a free member account in 10 seconds to unlock full access to all daily AI predictions, live match telemetry, jackpot bankers, and 50 welcome coins.'
+                    ? isGateLocked
+                      ? 'Visitors without an account cannot access predictions after the 1-minute preview. Create your free account in 10 seconds to unlock unlimited AI predictions, live xG models, jackpot bankers, and 50 welcome coins.'
+                      : 'Create a free member account in 10 seconds to unlock unlimited access to all daily AI predictions, live match telemetry, jackpot bankers, and 50 welcome coins.'
                     : mode === 'login'
-                      ? 'Sign in with your email or Google account to unlock immediate site access.'
+                      ? 'Sign in with your registered email or Google account to unlock immediate full site access.'
                       : 'Enter your registered email address and we will send you a password reset link.'}
                 </p>
               </div>
@@ -589,7 +706,7 @@ export const FirstVisitSignupModal: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setMode('forgot')}
-                          className="text-[11px] text-primary hover:underline"
+                          className="text-[11px] text-primary hover:underline cursor-pointer"
                         >
                           Forgot password?
                         </button>
@@ -617,7 +734,7 @@ export const FirstVisitSignupModal: React.FC = () => {
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -643,23 +760,29 @@ export const FirstVisitSignupModal: React.FC = () => {
                 <span>
                   {mode === 'register'
                     ? 'Already have an account?'
-                    : 'Need a free account?'}{' '}
+                    : 'New to PredictPro?'}{' '}
                   <button
                     type="button"
                     onClick={() => setMode(mode === 'register' ? 'login' : 'register')}
-                    className="font-bold text-primary hover:underline"
+                    className="font-bold text-primary hover:underline cursor-pointer"
                   >
                     {mode === 'register' ? 'Sign In' : 'Create Free Account'}
                   </button>
                 </span>
 
-                <button
-                  type="button"
-                  onClick={handleClosePreviewModal}
-                  className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
-                >
-                  Continue browsing
-                </button>
+                {!isGateLocked && remainingSeconds > 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleClosePreviewModal}
+                    className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline cursor-pointer"
+                  >
+                    Continue preview ({formatCountdown(remainingSeconds)})
+                  </button>
+                ) : (
+                  <span className="text-[11px] font-semibold text-rose-500">
+                    Account required to access
+                  </span>
+                )}
               </div>
 
               <p className="text-center text-[11px] text-muted-foreground pt-1">

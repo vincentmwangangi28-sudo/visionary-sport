@@ -41,7 +41,7 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, haptic, onClick, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, haptic, type, onClick, ...props }, ref) => {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (haptic !== false) {
         if (typeof haptic === 'string') {
@@ -60,7 +60,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} onClick={handleClick} {...props} />;
+    const resolvedType = asChild ? type : (type ?? "button");
+    return (
+      <Comp
+        type={resolvedType}
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        onClick={handleClick}
+        {...props}
+      />
+    );
   },
 );
 Button.displayName = "Button";

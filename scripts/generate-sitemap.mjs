@@ -247,6 +247,39 @@ const CLUB_ANALYTICS_SLUGS = [
   'simba-sc',
 ];
 
+// Canonical redirect map synchronized with public/_redirects so no 301-source slug is ever emitted
+const CANONICAL_MATCH_SLUG_REDIRECTS = {
+  'man-utd-vs-arsenal': 'arsenal-vs-chelsea',
+  'man-city-vs-liverpool': 'liverpool-vs-manchester-city',
+  'barca-vs-real-madrid': 'real-madrid-vs-barcelona',
+  'manchester-united-vs-tottenham-hotspur': 'manchester-united-vs-tottenham',
+  'young-africans-vs-simba-sc': 'simba-sc-vs-young-africans',
+  'newcastle-united-vs-aston-villa': 'arsenal-vs-chelsea',
+  'ajax-vs-psv-eindhoven': 'ajax-vs-feyenoord',
+  'benfica-vs-porto': 'benfica-vs-sporting-cp',
+  'inter-miami-vs-la-galaxy': 'inter-miami-vs-new-york-red-bulls',
+};
+
+export function sanitizeTeamSlug(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+export function canonicalizeMatchSlug(rawSlug) {
+  const cleaned = String(rawSlug || '')
+    .toLowerCase()
+    .replace(/^\/predict\//, '')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return CANONICAL_MATCH_SLUG_REDIRECTS[cleaned] || cleaned;
+}
+
+export function formatMatchSlug(homeTeam, awayTeam) {
+  return canonicalizeMatchSlug(`${sanitizeTeamSlug(homeTeam)}-vs-${sanitizeTeamSlug(awayTeam)}`);
+}
+
 // Key Featured Match Slugs
 const FEATURED_MATCH_SLUGS = [
   'arsenal-vs-chelsea',
@@ -279,6 +312,156 @@ const FEATURED_MATCH_SLUGS = [
   'flamengo-vs-palmeiras',
 ];
 
+function extractLocalActiveMatchSlugs() {
+  const discovered = [];
+  try {
+    const mockPredsPath = path.join(ROOT_DIR, 'src', 'data', 'mockPredictions.ts');
+    if (fs.existsSync(mockPredsPath)) {
+      const content = fs.readFileSync(mockPredsPath, 'utf8');
+      const blockRegex = /home_team:\s*['"]([^'"]+)['"][\s\S]*?away_team:\s*['"]([^'"]+)['"](?:[\s\S]*?league:\s*['"]([^'"]+)['"])?/g;
+      let match;
+      while ((match = blockRegex.exec(content)) !== null) {
+        const homeTeam = match[1].trim();
+        const awayTeam = match[2].trim();
+        const league = (match[3] || 'Football').trim();
+        const slug = formatMatchSlug(homeTeam, awayTeam);
+        if (slug && slug.includes('-vs-')) {
+          discovered.push({
+            slug,
+            homeTeam,
+            awayTeam,
+            league,
+            lastmod: TODAY,
+          });
+        }
+      }
+    }
+  } catch {
+    // ignore read error
+  }
+  return discovered;
+}
+
+export async function crawlActiveMatchSlugsFromSupabase() {
+  const supabaseUrl =
+    process.env.VITE_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    'https://bhgjlhgevyggkhyytulv.supabase.co';
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZ2psaGdldnlnZ2toeXl0dWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NzYzNzksImV4cCI6MjA5MzI1MjM3OX0.2Ol0F5WXfWD-T3rqeWwHQ4VCFaqKyaGXIfU3urNn5nQ';
+
+  const crawled = [];
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+  try {
+    const headers = {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      Accept: 'application/json',
+    };
+
+    const [predsRes, matchesRes] = await Promise.all([
+      fetch(
+        `${supabaseUrl}/rest/v1/predictions?select=home_team,away_team,league,match_date,status&order=match_date.desc&limit=200`,
+        { method: 'GET', headers, signal: controller.signal }
+      ).catch(() => null),
+      fetch(
+        `${supabaseUrl}/rest/v1/matches?select=home_team,away_team,league,match_date,kickoff_time,status&order=match_date.desc&limit=200`,
+        { method: 'GET', headers, signal: controller.signal }
+      ).catch(() => null),
+    ]);
+
+    if (predsRes && predsRes.ok) {
+      const rows = await predsRes.json().catch(() => []);
+      if (Array.isArray(rows)) {
+        for (const r of rows) {
+          const home = String(r?.home_team || '').trim();
+          const away = String(r?.away_team || '').trim();
+          const status = String(r?.status || 'active').toLowerCase();
+          if (home && away && status !== 'archived' && status !== 'cancelled') {
+            crawled.push({
+              slug: formatMatchSlug(home, away),
+              homeTeam: home,
+              awayTeam: away,
+              league: String(r?.league || 'Football'),
+              lastmod: String(r?.match_date || TODAY).split('T')[0] || TODAY,
+            });
+          }
+        }
+      }
+    }
+
+    if (matchesRes && matchesRes.ok) {
+      const rows = await matchesRes.json().catch(() => []);
+      if (Array.isArray(rows)) {
+        for (const r of rows) {
+          const home = String(r?.home_team || '').trim();
+          const away = String(r?.away_team || '').trim();
+          const status = String(r?.status || 'active').toLowerCase();
+          if (home && away && status !== 'archived' && status !== 'cancelled') {
+            crawled.push({
+              slug: formatMatchSlug(home, away),
+              homeTeam: home,
+              awayTeam: away,
+              league: String(r?.league || 'Football'),
+              lastmod: String(r?.match_date || r?.kickoff_time || TODAY).split('T')[0] || TODAY,
+            });
+          }
+        }
+      }
+    }
+  } catch {
+    // Non-blocking fallback when offline
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  // Merge Supabase crawled matches + local active fixtures + featured canonical derbies
+  const mergedMap = new Map();
+  for (const item of [...crawled, ...extractLocalActiveMatchSlugs()]) {
+    const canonicalSlug = canonicalizeMatchSlug(item.slug);
+    if (canonicalSlug && canonicalSlug.includes('-vs-') && !mergedMap.has(canonicalSlug)) {
+      const [canonHomeSlug, canonAwaySlug] = canonicalSlug.split('-vs-');
+      const isRedirected = canonicalSlug !== item.slug;
+      const homeLabel = isRedirected
+        ? canonHomeSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        : item.homeTeam;
+      const awayLabel = isRedirected
+        ? canonAwaySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        : item.awayTeam;
+      mergedMap.set(canonicalSlug, {
+        slug: canonicalSlug,
+        homeTeam: homeLabel,
+        awayTeam: awayLabel,
+        league: item.league || 'Football',
+        lastmod: item.lastmod || TODAY,
+      });
+    }
+  }
+
+  for (const rawFeatured of FEATURED_MATCH_SLUGS) {
+    const canonicalSlug = canonicalizeMatchSlug(rawFeatured);
+    if (canonicalSlug && !mergedMap.has(canonicalSlug)) {
+      const [hSlug, aSlug] = canonicalSlug.split('-vs-');
+      const homeLabel = (hSlug || '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const awayLabel = (aSlug || '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      mergedMap.set(canonicalSlug, {
+        slug: canonicalSlug,
+        homeTeam: homeLabel,
+        awayTeam: awayLabel,
+        league: 'Global Football',
+        lastmod: TODAY,
+      });
+    }
+  }
+
+  return Array.from(mergedMap.values());
+}
+
 function escapeXml(unsafe) {
   return String(unsafe)
     .replace(/&/g, '&amp;')
@@ -288,8 +471,21 @@ function escapeXml(unsafe) {
     .replace(/'/g, '&apos;');
 }
 
-export function buildSitemapXml() {
+export function buildSitemapXml(crawledMatches = null) {
   const urlEntries = [];
+  const activeMatches = Array.isArray(crawledMatches) && crawledMatches.length > 0
+    ? crawledMatches
+    : FEATURED_MATCH_SLUGS.map(slug => {
+        const canonicalSlug = canonicalizeMatchSlug(slug);
+        const [h, a] = canonicalSlug.split('-vs-');
+        return {
+          slug: canonicalSlug,
+          homeTeam: (h || '').replace(/-/g, ' ').toUpperCase(),
+          awayTeam: (a || '').replace(/-/g, ' ').toUpperCase(),
+          league: 'Football',
+          lastmod: TODAY,
+        };
+      });
 
   // Core pages
   for (const page of CORE_PAGES) {
@@ -348,14 +544,14 @@ export function buildSitemapXml() {
     });
   }
 
-  // Match pages (Evergreen canonical slugs so internal links never drift across days)
-  for (const slug of FEATURED_MATCH_SLUGS) {
+  // Match pages (Dynamically crawled from Supabase + active matchday slate)
+  for (const m of activeMatches) {
     urlEntries.push({
-      loc: `${BASE_URL}/predict/${slug}`,
-      lastmod: TODAY,
+      loc: `${BASE_URL}/predict/${m.slug}`,
+      lastmod: m.lastmod || TODAY,
       changefreq: 'daily',
-      priority: '0.80',
-      title: `${slug.split('-vs-').map(s => s.replace(/-/g, ' ')).join(' vs ').toUpperCase()} AI Prediction & Match Odds`,
+      priority: '0.85',
+      title: `${m.homeTeam} vs ${m.awayTeam} AI Prediction, 6x6 Poisson Matrix & Match Odds`,
     });
   }
 
@@ -384,8 +580,71 @@ ${xmlNodes}
 `;
 }
 
-export function buildYandexSitemapXml() {
-  const fullXml = buildSitemapXml();
+export function buildMatchesSitemapXml(crawledMatches = []) {
+  const activeMatches = Array.isArray(crawledMatches) && crawledMatches.length > 0
+    ? crawledMatches
+    : FEATURED_MATCH_SLUGS.map(slug => {
+        const canonicalSlug = canonicalizeMatchSlug(slug);
+        const [h, a] = canonicalSlug.split('-vs-');
+        return {
+          slug: canonicalSlug,
+          homeTeam: (h || '').replace(/-/g, ' ').toUpperCase(),
+          awayTeam: (a || '').replace(/-/g, ' ').toUpperCase(),
+          league: 'Football',
+          lastmod: TODAY,
+        };
+      });
+
+  const matchNodes = activeMatches.map(m => {
+    const loc = `${BASE_URL}/predict/${m.slug}`;
+    const title = `${m.homeTeam} vs ${m.awayTeam} Prediction, Expected Goals (xG) & 6x6 Score Matrix (${m.league || 'Football'})`;
+    const ogImg = `${BASE_URL}/api/og?home=${encodeURIComponent(m.homeTeam)}&away=${encodeURIComponent(m.awayTeam)}&league=${encodeURIComponent(m.league || 'Football')}`;
+    return `  <url>
+    <loc>${escapeXml(loc)}</loc>
+    <lastmod>${m.lastmod || TODAY}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(loc)}" />
+    <image:image>
+      <image:loc>${escapeXml(ogImg)}</image:loc>
+      <image:title>${escapeXml(title)}</image:title>
+    </image:image>
+  </url>`;
+  });
+
+  const clubNodes = CLUB_ANALYTICS_SLUGS.map(clubSlug => {
+    const loc = `${BASE_URL}/teams/${clubSlug}`;
+    const clubLabel = clubSlug
+      .split('-')
+      .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+      .join(' ');
+    const title = `${clubLabel} xG Stats, Poisson Ratings & Fixture Difficulty (FDR)`;
+    return `  <url>
+    <loc>${escapeXml(loc)}</loc>
+    <lastmod>${TODAY}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(loc)}" />
+    <image:image>
+      <image:loc>${escapeXml(`${BASE_URL}/og-image.jpg`)}</image:loc>
+      <image:title>${escapeXml(title)}</image:title>
+    </image:image>
+  </url>`;
+  });
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${[...matchNodes, ...clubNodes].join('\n')}
+</urlset>
+`;
+}
+
+export function buildYandexSitemapXml(crawledMatches = null) {
+  const fullXml = buildSitemapXml(crawledMatches);
   return fullXml
     .replace(/\s*xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/, '')
     .replace(/\s*xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/, '')
@@ -409,7 +668,15 @@ ${nodes}
 `;
 }
 
-export function buildDiscoverNewsSitemapXml() {
+export function buildDiscoverNewsSitemapXml(crawledMatches = null) {
+  const activeMatches = Array.isArray(crawledMatches) && crawledMatches.length > 0
+    ? crawledMatches.slice(0, 20)
+    : FEATURED_MATCH_SLUGS.slice(0, 12).map(slug => ({
+        slug: canonicalizeMatchSlug(slug),
+        homeTeam: slug.split('-vs-')[0].replace(/-/g, ' ').toUpperCase(),
+        awayTeam: (slug.split('-vs-')[1] || '').replace(/-/g, ' ').toUpperCase(),
+      }));
+
   const discoverEntries = [
     ...BLOG_POSTS.map(post => ({
       loc: `${BASE_URL}/blog/${post.slug}`,
@@ -429,9 +696,9 @@ export function buildDiscoverNewsSitemapXml() {
       priority: '0.95',
       freq: 'daily',
     },
-    ...FEATURED_MATCH_SLUGS.slice(0, 12).map(slug => ({
-      loc: `${BASE_URL}/predict/${slug}`,
-      title: `${slug.split('-vs-').map(s => s.replace(/-/g, ' ')).join(' vs ').toUpperCase()} AI Prediction, Expected Goals (xG) & Score Matrix`,
+    ...activeMatches.map(m => ({
+      loc: `${BASE_URL}/predict/${m.slug}`,
+      title: `${m.homeTeam} vs ${m.awayTeam} AI Prediction, Expected Goals (xG) & Score Matrix`,
       priority: '0.85',
       freq: 'daily',
     })),
@@ -487,60 +754,58 @@ ${nodes}
 `;
 }
 
-// Write master sitemaps
-const xml = buildSitemapXml();
-const yandexXml = buildYandexSitemapXml();
-const discoverXml = buildDiscoverNewsSitemapXml();
-fs.writeFileSync(SITEMAP_PATH, xml, 'utf8');
-fs.writeFileSync(YANDEX_SITEMAP_PATH, yandexXml, 'utf8');
-fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-discover-news.xml'), discoverXml, 'utf8');
+async function runSitemapGenerator() {
+  const crawledMatches = await crawlActiveMatchSlugsFromSupabase();
 
-// Write category sub-sitemaps & sitemap-index.xml
-const coreEntries = CORE_PAGES.map(page => ({
-  loc: `${BASE_URL}${page.path}`,
-  lastmod: TODAY,
-  changefreq: page.freq,
-  priority: page.priority.toFixed(2),
-}));
-const leagueEntries = LEAGUE_PAGES.map(page => ({
-  loc: `${BASE_URL}${page.path}`,
-  lastmod: TODAY,
-  changefreq: page.freq,
-  priority: page.priority.toFixed(2),
-}));
-const matchEntries = [
-  ...FEATURED_MATCH_SLUGS.map(slug => ({
-    loc: `${BASE_URL}/predict/${slug}`,
-    lastmod: TODAY,
-    changefreq: 'daily',
-    priority: '0.80',
-  })),
-  ...CLUB_ANALYTICS_SLUGS.map(clubSlug => ({
-    loc: `${BASE_URL}/teams/${clubSlug}`,
-    lastmod: TODAY,
-    changefreq: 'daily',
-    priority: '0.85',
-  })),
-];
-const blogEntries = [
-  { loc: `${BASE_URL}/blog`, lastmod: TODAY, changefreq: 'daily', priority: '0.85' },
-  ...BLOG_POSTS.map(post => ({
-    loc: `${BASE_URL}/blog/${post.slug}`,
-    lastmod: TODAY,
-    changefreq: 'weekly',
-    priority: post.priority.toFixed(2),
-  })),
-];
+  // Write master sitemaps
+  const xml = buildSitemapXml(crawledMatches);
+  const yandexXml = buildYandexSitemapXml(crawledMatches);
+  const discoverXml = buildDiscoverNewsSitemapXml(crawledMatches);
+  const matchesXml = buildMatchesSitemapXml(crawledMatches);
 
-fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-core.xml'), buildUrlsetFromEntries(coreEntries), 'utf8');
-fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-leagues.xml'), buildUrlsetFromEntries(leagueEntries), 'utf8');
-fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-matches.xml'), buildUrlsetFromEntries(matchEntries), 'utf8');
-fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-blog.xml'), buildUrlsetFromEntries(blogEntries), 'utf8');
-fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-index.xml'), buildSitemapIndexXml(), 'utf8');
+  fs.writeFileSync(SITEMAP_PATH, xml, 'utf8');
+  fs.writeFileSync(YANDEX_SITEMAP_PATH, yandexXml, 'utf8');
+  fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-discover-news.xml'), discoverXml, 'utf8');
+  fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-matches.xml'), matchesXml, 'utf8');
 
-const urlCount = (xml.match(/<loc>/g) || []).length;
-console.log(`✅ [Sitemap Generator] Wrote ${urlCount} indexed URLs to ${SITEMAP_PATH}, ${YANDEX_SITEMAP_PATH}, sitemap-discover-news.xml, and sitemap-index.xml`);
-console.log(`📅 Generated date: ${TODAY}`);
-console.log(`🌐 Base URL: ${BASE_URL}`);
+  // Write category sub-sitemaps & sitemap-index.xml
+  const coreEntries = CORE_PAGES.map(page => ({
+    loc: `${BASE_URL}${page.path}`,
+    lastmod: TODAY,
+    changefreq: page.freq,
+    priority: page.priority.toFixed(2),
+  }));
+  const leagueEntries = LEAGUE_PAGES.map(page => ({
+    loc: `${BASE_URL}${page.path}`,
+    lastmod: TODAY,
+    changefreq: page.freq,
+    priority: page.priority.toFixed(2),
+  }));
+  const blogEntries = [
+    { loc: `${BASE_URL}/blog`, lastmod: TODAY, changefreq: 'daily', priority: '0.85' },
+    ...BLOG_POSTS.map(post => ({
+      loc: `${BASE_URL}/blog/${post.slug}`,
+      lastmod: TODAY,
+      changefreq: 'weekly',
+      priority: post.priority.toFixed(2),
+    })),
+  ];
+
+  fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-core.xml'), buildUrlsetFromEntries(coreEntries), 'utf8');
+  fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-leagues.xml'), buildUrlsetFromEntries(leagueEntries), 'utf8');
+  fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-blog.xml'), buildUrlsetFromEntries(blogEntries), 'utf8');
+  fs.writeFileSync(path.join(ROOT_DIR, 'public', 'sitemap-index.xml'), buildSitemapIndexXml(), 'utf8');
+
+  const urlCount = (xml.match(/<loc>/g) || []).length;
+  const matchUrlCount = (matchesXml.match(/<loc>/g) || []).length;
+  console.log(`✅ [Sitemap Generator] Crawled ${crawledMatches.length} active match slugs from Supabase & matchday slate`);
+  console.log(`✅ [Sitemap Generator] Published ${matchUrlCount} match/club URLs to public/sitemap-matches.xml`);
+  console.log(`✅ [Sitemap Generator] Wrote ${urlCount} total indexed URLs to ${SITEMAP_PATH}, ${YANDEX_SITEMAP_PATH}, sitemap-discover-news.xml, and sitemap-index.xml`);
+  console.log(`📅 Generated date: ${TODAY}`);
+  console.log(`🌐 Base URL: ${BASE_URL}`);
+}
+
+await runSitemapGenerator();
+
 
 

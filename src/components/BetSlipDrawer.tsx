@@ -386,12 +386,14 @@ export const BetSlipDrawer = () => {
       {(selections.length > 0 || savedSlips.length > 0) && !isOpen && (
         <div className="fixed bottom-20 md:bottom-6 right-4 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Button
+            type="button"
             onClick={() => {
               triggerHaptic('selection');
               setIsOpen(true);
             }}
+            aria-haspopup="dialog"
             aria-label={`Open Acca Bet Slip with ${selections.length} selections, total odds ${totalOdds.toFixed(2)}`}
-            className="h-13 px-4 py-3 bg-primary text-primary-foreground shadow-2xl rounded-full flex items-center gap-3 border-2 border-primary-foreground/20 hover:scale-105 transition-all group"
+            className="h-13 px-4 py-3 bg-primary text-primary-foreground shadow-2xl rounded-full flex items-center gap-3 border-2 border-primary-foreground/20 active:scale-[0.98] transition-all group cursor-pointer"
           >
             <div className="relative">
               <Ticket className="h-5 w-5 group-hover:rotate-12 transition-transform" aria-hidden="true" />
@@ -448,29 +450,37 @@ export const BetSlipDrawer = () => {
             </div>
 
             {/* 2-Tab Switcher: Active Slip vs Saved Slips ROI Tracker */}
-            <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg">
+            <div
+              className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg"
+              role="tablist"
+              aria-label="Bet Slip Views"
+            >
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'active'}
                 onClick={() => setActiveTab('active')}
-                className={`py-1.5 px-3 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-1.5 px-3 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   activeTab === 'active'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Ticket className="h-3.5 w-3.5" />
+                <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Active Slip ({selections.length})</span>
               </button>
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'saved'}
                 onClick={() => setActiveTab('saved')}
-                className={`py-1.5 px-3 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-1.5 px-3 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   activeTab === 'saved'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <History className="h-3.5 w-3.5" />
+                <History className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>My Saved Slips ({savedSlips.length})</span>
               </button>
             </div>
@@ -603,39 +613,45 @@ export const BetSlipDrawer = () => {
 
                       {/* Settlement Status Buttons + Reload */}
                       <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1" role="group" aria-label={`Settlement status for slip ${slip.bookingCode}`}>
                           <button
                             type="button"
+                            aria-pressed={slip.status === 'WON'}
+                            aria-label={`Mark slip ${slip.bookingCode} as Won`}
                             onClick={() => handleUpdateSavedStatus(slip.id, 'WON')}
-                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 select-none cursor-pointer transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               slip.status === 'WON'
                                 ? 'bg-emerald-600 text-white'
                                 : 'bg-muted text-muted-foreground hover:text-foreground'
                             }`}
                           >
-                            <CheckCircle2 className="h-3 w-3" /> Won
+                            <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> Won
                           </button>
                           <button
                             type="button"
+                            aria-pressed={slip.status === 'LOST'}
+                            aria-label={`Mark slip ${slip.bookingCode} as Lost`}
                             onClick={() => handleUpdateSavedStatus(slip.id, 'LOST')}
-                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 select-none cursor-pointer transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               slip.status === 'LOST'
                                 ? 'bg-destructive text-destructive-foreground'
                                 : 'bg-muted text-muted-foreground hover:text-foreground'
                             }`}
                           >
-                            <XCircle className="h-3 w-3" /> Lost
+                            <XCircle className="h-3 w-3" aria-hidden="true" /> Lost
                           </button>
                           <button
                             type="button"
+                            aria-pressed={slip.status === 'PENDING'}
+                            aria-label={`Mark slip ${slip.bookingCode} as Pending`}
                             onClick={() => handleUpdateSavedStatus(slip.id, 'PENDING')}
-                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                            className={`px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1 select-none cursor-pointer transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               slip.status === 'PENDING'
                                 ? 'bg-amber-500 text-slate-950'
                                 : 'bg-muted text-muted-foreground hover:text-foreground'
                             }`}
                           >
-                            <Clock className="h-3 w-3" /> Pending
+                            <Clock className="h-3 w-3" aria-hidden="true" /> Pending
                           </button>
                         </div>
 
@@ -947,21 +963,30 @@ export const BetSlipDrawer = () => {
                         AI Stake: {currency} {aiRecommendedStake}
                       </button>
                       <div className="flex gap-1" role="group" aria-label="Select currency">
-                        {Array.from(new Set([currentConfig.code, 'USD', 'EUR', 'GBP', 'KES', 'NGN'])).slice(0, 4).map((c) => (
-                          <button
-                            type="button"
-                            key={c}
-                            onClick={() => {
-                              triggerHaptic('selection');
-                              setCurrency(c);
-                              setGlobalCurrency(c as any);
-                            }}
-                            title={`Set currency to ${c}`}
-                            className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-colors ${currency === c || currentConfig.code === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-                          >
-                            {c}
-                          </button>
-                        ))}
+                        {Array.from(new Set([currentConfig.code, 'USD', 'EUR', 'GBP', 'KES', 'NGN'])).slice(0, 4).map((c) => {
+                          const isSelectedCurrency = currency === c || currentConfig.code === c;
+                          return (
+                            <button
+                              type="button"
+                              key={c}
+                              aria-pressed={isSelectedCurrency}
+                              aria-label={`Set stake currency to ${c}`}
+                              onClick={() => {
+                                triggerHaptic('selection');
+                                setCurrency(c);
+                                setGlobalCurrency(c as any);
+                              }}
+                              title={`Set currency to ${c}`}
+                              className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                isSelectedCurrency
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                              }`}
+                            >
+                              {c}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

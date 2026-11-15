@@ -365,8 +365,10 @@ const Index = () => {
               <button
                 type="button"
                 onClick={triggerPWAInstallFlow}
+                aria-haspopup="dialog"
+                aria-label="Download PredictPro App"
                 data-testid="home-quickstrip-download-app-btn"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/15 hover:bg-primary/25 text-foreground text-xs font-bold transition-colors shrink-0 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/15 hover:bg-primary/25 text-foreground text-xs font-bold transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 select-none shrink-0 cursor-pointer"
               >
                 <Download className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 <span>Download App</span>

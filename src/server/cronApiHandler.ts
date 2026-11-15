@@ -142,10 +142,20 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         };
       }
 
-      case 'sitemap': {
+      case 'sitemap':
+      case 'sitemap-matches': {
         const rootDir = process.cwd();
         const scriptPath = path.join(rootDir, 'scripts', 'generate-sitemap.mjs');
         const { stdout } = await execAsync(`node "${scriptPath}"`);
+        const { buildDynamicMatchesSitemapXml, resolveLiveMatchSlugs } = await import('./seoPrerenderService.ts');
+        const [liveMatches] = await Promise.all([
+          resolveLiveMatchSlugs('https://www.predictpro.guru', { forceRefresh: true, crawlSupabase: true }),
+          buildDynamicMatchesSitemapXml('https://www.predictpro.guru', {
+            forceRefresh: true,
+            crawlSupabase: true,
+            persistToPublic: true,
+          }),
+        ]);
         return {
           success: true,
           job: 'sitemap-generator',
@@ -153,7 +163,12 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           status: 'success',
           executedAt,
           durationMs: Date.now() - start,
-          data: { output: stdout.trim() },
+          data: {
+            output: stdout.trim(),
+            sitemapMatchesUrl: 'https://www.predictpro.guru/sitemap-matches.xml',
+            crawledMatchSlugsCount: liveMatches.length,
+            sampleMatchUrls: liveMatches.slice(0, 10).map((m) => m.url),
+          },
         };
       }
 

@@ -1434,8 +1434,69 @@ export function buildBaselineTeamNewsReport(match: {
 }
 
 /**
+ * Pull live Brave Search match & injury wire via /api/brave-search (Free-Tier 30m cached)
+ */
+async function fetchLiveBraveMatchWire(
+  homeTeam: string,
+  awayTeam: string,
+  league: string
+): Promise<LiveWireNewsItem[]> {
+  if (typeof window === 'undefined' || typeof fetch !== 'function') {
+    return [];
+  }
+  if (typeof process !== 'undefined' && process.env.VITEST) {
+    return [];
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const params = new URLSearchParams({
+      q: `${homeTeam} vs ${awayTeam} ${league} injury team news lineup`,
+      type: 'match_intel',
+      count: '5',
+    });
+    const res = await fetch(`/api/brave-search?${params.toString()}`, {
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const newsList = Array.isArray(data?.newsResults) ? data.newsResults : [];
+    const items: LiveWireNewsItem[] = [];
+
+    for (const n of newsList.slice(0, 3)) {
+      if (!n?.title || !n?.url) continue;
+      const textLower = `${n.title} ${n.description || ''}`.toLowerCase();
+      let category: LiveWireNewsItem['category'] = 'Projected XI';
+      if (textLower.includes('injur') || textLower.includes('fitness') || textLower.includes('out')) {
+        category = 'Medical Bulletin';
+      } else if (textLower.includes('manager') || textLower.includes('press') || textLower.includes('boss')) {
+        category = 'Press Conference';
+      } else if (textLower.includes('tactic') || textLower.includes('lineup') || textLower.includes('xi')) {
+        category = 'Tactical Shift';
+      }
+      items.push({
+        id: `brave-wire-${items.length}-${n.url.slice(-12)}`,
+        headline: n.title,
+        summary: n.description || `${homeTeam} vs ${awayTeam} squad and lineup intelligence via Brave Search.`,
+        source: `${n.source || 'Brave Search'} (Brave Wire)`,
+        publishedAt: n.publishedAt || new Date().toISOString(),
+        url: n.url,
+        category,
+      });
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Fetches real-time injury and lineup news for a featured match, combining
- * server-side Gemini Google Search grounding, live ESPN wire feeds, and verified club rosters.
+ * server-side Brave Search & Gemini grounding, live ESPN wire feeds, and verified club rosters.
  */
 export async function fetchMatchTeamNewsAndInjuries(
   match: {
@@ -1470,7 +1531,8 @@ export async function fetchMatchTeamNewsAndInjuries(
     return baseline;
   }
 
-  const [espnWireResult, geminiTaskResult] = await Promise.allSettled([
+  const [braveWireResult, espnWireResult, geminiTaskResult] = await Promise.allSettled([
+    fetchLiveBraveMatchWire(baseline.homeTeam, baseline.awayTeam, baseline.league),
     fetchLiveEspnMatchWire(baseline.homeTeam, baseline.awayTeam, baseline.league),
     callEdgeFn(
       'gemini-tasks',
@@ -1493,10 +1555,18 @@ export async function fetchMatchTeamNewsAndInjuries(
     lastSyncedAt: new Date().toISOString(),
   };
 
+  const combinedLiveWire: LiveWireNewsItem[] = [];
+  if (braveWireResult.status === 'fulfilled' && braveWireResult.value.length > 0) {
+    combinedLiveWire.push(...braveWireResult.value);
+  }
   if (espnWireResult.status === 'fulfilled' && espnWireResult.value.length > 0) {
+    combinedLiveWire.push(...espnWireResult.value);
+  }
+
+  if (combinedLiveWire.length > 0) {
     mergedReport = {
       ...mergedReport,
-      liveWireItems: [...espnWireResult.value, ...baseline.liveWireItems].slice(0, 4),
+      liveWireItems: [...combinedLiveWire, ...baseline.liveWireItems].slice(0, 4),
       dataSource: 'espn_live_wire',
     };
   }

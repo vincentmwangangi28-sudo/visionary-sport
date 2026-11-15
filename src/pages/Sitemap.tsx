@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -13,9 +13,12 @@ import {
   getAllSitemapEntries, 
   downloadSitemapXml, 
   downloadDiscoverSitemapXml,
+  downloadMatchesSitemapXml,
   generateSitemapXml, 
   generateSitemapIndexXml,
   generateGoogleDiscoverNewsSitemapXml,
+  generateMatchesSitemapXml,
+  crawlActiveMatchSlugsFromSupabase,
   SitemapEntry 
 } from '@/services/sitemapGenerator';
 import { googleIndexingCronService } from '@/services/googleIndexingCron';
@@ -45,10 +48,31 @@ export default function Sitemap() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [copied, setCopied] = useState(false);
   const [showRawXml, setShowRawXml] = useState(false);
-  const [xmlMode, setXmlMode] = useState<'standard' | 'discover'>('standard');
+  const [xmlMode, setXmlMode] = useState<'standard' | 'discover' | 'matches'>('standard');
   const [isPinging, setIsPinging] = useState(false);
+  const [crawledMatchEntries, setCrawledMatchEntries] = useState<SitemapEntry[]>([]);
 
-  const allEntries = useMemo(() => getAllSitemapEntries(), []);
+  useEffect(() => {
+    let mounted = true;
+    crawlActiveMatchSlugsFromSupabase()
+      .then((entries) => {
+        if (mounted && Array.isArray(entries) && entries.length > 0) {
+          setCrawledMatchEntries(entries);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const allEntries = useMemo(() => {
+    const base = getAllSitemapEntries();
+    if (crawledMatchEntries.length === 0) return base;
+    const seenPaths = new Set(base.map((e) => e.path));
+    const extras = crawledMatchEntries.filter((m) => !seenPaths.has(m.path));
+    return [...base, ...extras];
+  }, [crawledMatchEntries]);
 
   const filteredEntries = useMemo(() => {
     return allEntries.filter((entry) => {
@@ -70,10 +94,23 @@ export default function Sitemap() {
   }, [allEntries]);
 
   const handleCopyXml = () => {
-    const xml = xmlMode === 'discover' ? generateGoogleDiscoverNewsSitemapXml() : generateSitemapXml();
+    const xml =
+      xmlMode === 'discover'
+        ? generateGoogleDiscoverNewsSitemapXml()
+        : xmlMode === 'matches'
+          ? generateMatchesSitemapXml(undefined, crawledMatchEntries)
+          : generateSitemapXml();
     navigator.clipboard.writeText(xml);
     setCopied(true);
-    toast.success(`${xmlMode === 'discover' ? 'Google Discover & News XML' : 'Sitemap XML'} copied to clipboard`);
+    toast.success(
+      `${
+        xmlMode === 'discover'
+          ? 'Google Discover & News XML'
+          : xmlMode === 'matches'
+            ? 'Matches Sitemap XML (/sitemap-matches.xml)'
+            : 'Sitemap XML'
+      } copied to clipboard`
+    );
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -192,6 +229,14 @@ export default function Sitemap() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => downloadMatchesSitemapXml(undefined, crawledMatchEntries)}
+              className="gap-1.5 text-xs font-semibold border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+            >
+              <Download className="h-3.5 w-3.5" /> sitemap-matches.xml
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => downloadDiscoverSitemapXml()}
               className="gap-1.5 text-xs font-semibold border-primary/40 text-primary"
             >
@@ -248,13 +293,17 @@ export default function Sitemap() {
               <div>
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <FileCode2 className="h-4 w-4 text-primary" />
-                  {xmlMode === 'discover' ? 'Google Discover & News XML Preview' : 'Master Sitemap XML Preview (with <image:image> & hreflang)'}
+                  {xmlMode === 'discover'
+                    ? 'Google Discover & News XML Preview'
+                    : xmlMode === 'matches'
+                      ? 'Dynamic Matches Sitemap XML Preview (/sitemap-matches.xml)'
+                      : 'Master Sitemap XML Preview (with <image:image> & hreflang)'}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Available live at <code className="text-primary font-mono">/sitemap.xml</code> and <code className="text-primary font-mono">/sitemap-index.xml</code>
+                  Available live at <code className="text-primary font-mono">/sitemap.xml</code>, <code className="text-primary font-mono">/sitemap-matches.xml</code>, and <code className="text-primary font-mono">/sitemap-index.xml</code>
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   size="sm"
                   variant={xmlMode === 'standard' ? 'default' : 'outline'}
@@ -262,6 +311,14 @@ export default function Sitemap() {
                   className="text-xs h-7"
                 >
                   Standard + Image XML
+                </Button>
+                <Button
+                  size="sm"
+                  variant={xmlMode === 'matches' ? 'default' : 'outline'}
+                  onClick={() => setXmlMode('matches')}
+                  className="text-xs h-7"
+                >
+                  Matches XML (/sitemap-matches.xml)
                 </Button>
                 <Button
                   size="sm"
@@ -278,7 +335,11 @@ export default function Sitemap() {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <pre className="p-4 rounded-lg bg-background/90 border font-mono text-xs max-h-72 overflow-y-auto leading-relaxed text-muted-foreground">
-                {xmlMode === 'discover' ? generateGoogleDiscoverNewsSitemapXml() : generateSitemapXml()}
+                {xmlMode === 'discover'
+                  ? generateGoogleDiscoverNewsSitemapXml()
+                  : xmlMode === 'matches'
+                    ? generateMatchesSitemapXml(undefined, crawledMatchEntries)
+                    : generateSitemapXml()}
               </pre>
             </CardContent>
           </Card>

@@ -475,7 +475,11 @@ export const PredictionsDashboard = ({
             </Link>
           </div>
 
-          <div className="grid grid-cols-4 border-b border-border bg-muted/20 text-xs font-medium">
+          <div
+            className="grid grid-cols-4 border-b border-border bg-muted/20 text-xs font-medium"
+            role="tablist"
+            aria-label="Standings league table selector"
+          >
             {(
               [
                 { id: 'EPL', label: 'EPL' },
@@ -487,8 +491,11 @@ export const PredictionsDashboard = ({
               <button
                 key={tab.id}
                 type="button"
+                role="tab"
+                aria-selected={standingsTab === tab.id}
+                aria-label={`View ${tab.label} standings`}
                 onClick={() => startTransition(() => setStandingsTab(tab.id))}
-                className={`py-2 min-h-[32px] text-center border-b-2 transition-colors cursor-pointer ${
+                className={`py-2 min-h-[32px] text-center border-b-2 transition-all select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
                   standingsTab === tab.id
                     ? 'border-primary text-primary font-bold bg-card'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -641,7 +648,11 @@ export const PredictionsDashboard = ({
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Date Tabs + Model Filter */}
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg overflow-x-auto no-scrollbar">
+              <div
+                className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg overflow-x-auto no-scrollbar"
+                role="tablist"
+                aria-label="Filter fixtures by date"
+              >
                 {(
                   [
                     { id: 'all', label: 'All Dates', count: dateCounts.all },
@@ -653,6 +664,9 @@ export const PredictionsDashboard = ({
                   <button
                     key={d.id}
                     type="button"
+                    role="tab"
+                    aria-selected={dateFilter === d.id}
+                    aria-label={`${d.label} (${d.count} matches)`}
                     onClick={() => {
                       hapticService.selection();
                       startTransition(() => {
@@ -660,7 +674,7 @@ export const PredictionsDashboard = ({
                         setPage(1);
                       });
                     }}
-                    className={`px-3 py-1.5 rounded-md text-xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-md text-xs transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       dateFilter === d.id
                         ? 'bg-card text-foreground font-semibold shadow-sm'
                         : 'text-muted-foreground hover:text-foreground font-medium'
@@ -827,20 +841,25 @@ export const PredictionsDashboard = ({
           </div>
 
           {/* Mobile Competition Strip */}
-          <div className="flex lg:hidden gap-1.5 overflow-x-auto no-scrollbar pt-1">
+          <div
+            className="flex lg:hidden gap-1.5 overflow-x-auto no-scrollbar pt-1"
+            role="group"
+            aria-label="Filter fixtures by competition"
+          >
             {dynamicLeagueTabs.map((l) => {
               const isSelected = league === l.id || (l.id === 'All' && !league) || league === l.name;
               return (
                 <button
                   key={l.id}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => {
                     startTransition(() => {
                       setLeague(l.id === 'All' ? undefined : l.id);
                       setPage(1);
                     });
                   }}
-                  className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap shrink-0 border transition-colors ${
+                  className={`px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap shrink-0 border transition-all select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     isSelected
                       ? 'bg-primary text-primary-foreground border-primary font-semibold'
                       : 'bg-background text-muted-foreground border-border'
@@ -856,17 +875,22 @@ export const PredictionsDashboard = ({
             <div className="pt-2.5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-medium text-muted-foreground">Model Threshold:</span>
-                <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
+                <div
+                  className="flex items-center gap-1 bg-muted p-1 rounded-md"
+                  role="group"
+                  aria-label="Model confidence risk profile"
+                >
                   {(['conservative', 'balanced', 'aggressive'] as RiskProfile[]).map((profile) => (
                     <button
                       key={profile}
                       type="button"
+                      aria-pressed={preferences.riskProfile === profile}
                       onClick={() => {
                         hapticService.selection();
                         setRiskProfile(profile);
                         setPage(1);
                       }}
-                      className={`px-2.5 py-0.5 text-xs font-medium rounded capitalize transition-colors ${
+                      className={`px-2.5 py-0.5 text-xs font-medium rounded capitalize transition-all select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         preferences.riskProfile === profile
                           ? 'bg-card text-foreground shadow-sm font-semibold'
                           : 'text-muted-foreground hover:text-foreground'

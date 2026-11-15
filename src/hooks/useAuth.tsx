@@ -16,6 +16,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string, referralCode?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   exchangeOAuthCode: (rawUrlOrCode: string) => Promise<boolean>;
+  activateImmediateMemberSession: (memberUser: User) => void;
   signOut: () => Promise<void>;
 }
 
@@ -314,7 +315,6 @@ export function hasKnownAccountOnDevice(): boolean {
     if (getPersistedMemberUser() !== null) return true;
     if (window.localStorage.getItem(KNOWN_ACCOUNT_STORAGE_KEY) !== null) return true;
     if (window.localStorage.getItem(SIGNUP_POPUP_COMPLETED_KEY) === 'true') return true;
-    if (window.localStorage.getItem('predictpro_popup_dismissed_v1') === 'true') return true;
     if (readCookieValue(KNOWN_ACCOUNT_COOKIE_NAME) === '1') return true;
     if (readCookieValue(MEMBER_COOKIE_NAME) !== null) return true;
 
@@ -323,15 +323,6 @@ export function hasKnownAccountOnDevice(): boolean {
       if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
         return true;
       }
-    }
-
-    // Also check if the user has saved member data on this device
-    if (
-      window.localStorage.getItem('predictpro_custom_admins') !== null ||
-      window.localStorage.getItem('predictpro_bet_tracker_entries_v1') !== null ||
-      window.localStorage.getItem('predictpro_pinned_favorites_v1') !== null
-    ) {
-      return true;
     }
   } catch {
     // ignore storage errors
@@ -689,9 +680,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // ignore
     }
 
+    if (data?.user) {
+      savePersistedMemberUser(data.user);
+      setUser(data.user);
+      unlockGuestPreviewGate();
+      await syncUserProfileActivity(data.user);
+      notifyToast.success('Account created! Welcome to PredictPro 🎉');
+      navigate('/');
+      return;
+    }
+
     unlockGuestPreviewGate();
-    notifyToast.success('Account created! Please check your email to verify.');
+    notifyToast.success('Account created! Welcome to PredictPro 🎉');
   }, [navigate]);
+
+  const activateImmediateMemberSession = useCallback((memberUser: User) => {
+    savePersistedMemberUser(memberUser);
+    setUser(memberUser);
+    unlockGuestPreviewGate();
+    syncUserProfileActivity(memberUser).catch(() => {});
+  }, []);
 
   const signInWithGoogle = useCallback(async () => {
     const supabase = await getSupabase();
@@ -762,8 +770,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         window.localStorage.setItem(EXPLICIT_SIGNOUT_KEY, 'true');
         window.localStorage.removeItem(PERSISTED_MEMBER_SESSION_KEY);
-        // Keep KNOWN_ACCOUNT_STORAGE_KEY and SIGNUP_POPUP_COMPLETED_KEY intact so we know
-        // this user already has an account and never show the Create Account popup!
         unlockGuestPreviewGate();
       } catch {
         // ignore
@@ -778,7 +784,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithGoogle, exchangeOAuthCode, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithGoogle, exchangeOAuthCode, activateImmediateMemberSession, signOut }}>
       {children}
     </AuthContext.Provider>
   );

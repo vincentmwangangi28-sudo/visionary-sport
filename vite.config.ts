@@ -336,6 +336,32 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
+        if (url === "/api/brave-search") {
+          try {
+            const parsedUrl = new URL(req.url || "/api/brave-search", "http://localhost");
+            const q = parsedUrl.searchParams.get("q") || parsedUrl.searchParams.get("query") || undefined;
+            const type = parsedUrl.searchParams.get("type") || "all";
+            const count = parsedUrl.searchParams.get("count") || "8";
+            const freshness = parsedUrl.searchParams.get("freshness") || undefined;
+            const force =
+              parsedUrl.searchParams.get("force") === "true" ||
+              parsedUrl.searchParams.get("refresh") === "true";
+
+            const { handleBraveSearchRequest } = await import("./src/server/braveSearchHandler.ts");
+            const data = await handleBraveSearchRequest({ q, type, count, freshness, force });
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Cache-Control", "public, max-age=120");
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.statusCode = 200;
+            res.end(JSON.stringify(data));
+          } catch (err: any) {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.statusCode = 500;
+            res.end(JSON.stringify({ success: false, error: err?.message || "Brave Search API failed" }));
+          }
+          return;
+        }
+
         if (url === "/api/ahrefs-analytics" || url === "/api/ahrefs-site-audit-issues") {
           try {
             const parsedUrl = new URL(req.url || "", "http://localhost");
@@ -558,12 +584,45 @@ function cronTasksPlugin(): Plugin {
           return;
         }
 
-        if (url === "/sitemap-matches.xml") {
+        if (url === "/sitemap-matches.xml" || url === "/api/sitemap-matches") {
           try {
-            const xml = await buildDynamicMatchesSitemapXml();
+            const parsedUrl = new URL(req.url || "/sitemap-matches.xml", "http://localhost");
+            const forceRefresh =
+              parsedUrl.searchParams.get("refresh") === "true" ||
+              parsedUrl.searchParams.get("force") === "true" ||
+              parsedUrl.searchParams.get("force") === "1";
+            const format = (parsedUrl.searchParams.get("format") || "xml").toLowerCase();
+
+            if (format === "json") {
+              const liveMatches = await resolveLiveMatchSlugs("https://www.predictpro.guru", {
+                forceRefresh,
+                crawlSupabase: true,
+              });
+              res.setHeader("Content-Type", "application/json; charset=utf-8");
+              res.setHeader("Cache-Control", "public, max-age=300");
+              res.setHeader("Access-Control-Allow-Origin", "*");
+              res.statusCode = 200;
+              res.end(
+                JSON.stringify({
+                  success: true,
+                  endpoint: "/sitemap-matches.xml",
+                  generatedAt: new Date().toISOString(),
+                  totalActiveMatchSlugs: liveMatches.length,
+                  matches: liveMatches,
+                })
+              );
+              return;
+            }
+
+            const xml = await buildDynamicMatchesSitemapXml("https://www.predictpro.guru", {
+              forceRefresh,
+              crawlSupabase: true,
+              persistToPublic: true,
+            });
             res.setHeader("Content-Type", "application/xml; charset=utf-8");
             res.setHeader("Cache-Control", "public, max-age=900");
             res.setHeader("Access-Control-Allow-Origin", "*");
+            res.setHeader("X-Robots-Tag", "all");
             res.statusCode = 200;
             res.end(xml);
           } catch (err: any) {

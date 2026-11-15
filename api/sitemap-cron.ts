@@ -1,6 +1,11 @@
 // Vercel Serverless / Edge Function: Dynamic Sitemap Generator Cron
 // Invoked on schedule: "0 3 * * *" (Daily at 03:00 UTC)
 
+import {
+  buildDynamicMatchesSitemapXml,
+  resolveLiveMatchSlugs,
+} from '../src/server/seoPrerenderService.ts';
+
 const BASE_URL = process.env.SITE_URL || 'https://www.predictpro.guru';
 
 export default async function handler(request: Request) {
@@ -17,56 +22,66 @@ export default async function handler(request: Request) {
     });
   }
 
+  // Dynamically crawl active match slugs from Supabase and publish to /sitemap-matches.xml
+  const [liveMatches] = await Promise.all([
+    resolveLiveMatchSlugs(BASE_URL, { forceRefresh: true, crawlSupabase: true }),
+    buildDynamicMatchesSitemapXml(BASE_URL, {
+      forceRefresh: true,
+      crawlSupabase: true,
+      persistToPublic: true,
+    }),
+  ]);
+
   // Notify search engines via IndexNow & Yandex IndexNow
   const indexNowKey = process.env.INDEXNOW_KEY || '3qcm1kxwka5aghtkzahsphxgca1cyc6s';
   let indexNowPing = 'skipped';
   let yandexPing = 'skipped';
 
+  const coreUrls = [
+    `${BASE_URL}/`,
+    `${BASE_URL}/favicon.ico`,
+    `${BASE_URL}/favicon.svg`,
+    `${BASE_URL}/favicon-120x120.png`,
+    `${BASE_URL}/sitemap.xml`,
+    `${BASE_URL}/sitemap-matches.xml`,
+    `${BASE_URL}/sitemap-yandex.xml`,
+    `${BASE_URL}/predict`,
+    `${BASE_URL}/upcoming`,
+    `${BASE_URL}/live`,
+    `${BASE_URL}/best-bets`,
+    `${BASE_URL}/sure-win-predictions`,
+    `${BASE_URL}/today-predictions`,
+    `${BASE_URL}/tomorrow-predictions`,
+    `${BASE_URL}/weekend-predictions`,
+    `${BASE_URL}/daily-2-odds-predictions`,
+    `${BASE_URL}/5-odds-predictions`,
+    `${BASE_URL}/over-under-predictions`,
+    `${BASE_URL}/btts`,
+    `${BASE_URL}/correct-score`,
+    `${BASE_URL}/draw-no-bet-predictions`,
+    `${BASE_URL}/double-chance-predictions`,
+    `${BASE_URL}/accumulator`,
+    `${BASE_URL}/screener`,
+    `${BASE_URL}/dropping-odds`,
+    `${BASE_URL}/jackpot-predictions`,
+    `${BASE_URL}/midweek-jackpot-predictions`,
+    `${BASE_URL}/afcon-predictions`,
+    `${BASE_URL}/kpl-predictions`,
+    `${BASE_URL}/premier-league-predictions`,
+    `${BASE_URL}/champions-league-predictions`,
+    `${BASE_URL}/la-liga-predictions`,
+    `${BASE_URL}/serie-a-predictions`,
+    `${BASE_URL}/bundesliga-predictions`,
+  ];
+
+  const crawledMatchUrls = liveMatches.map((m) => m.url);
+  const urlList = Array.from(new Set([...coreUrls, ...crawledMatchUrls]));
+
   const payload = JSON.stringify({
     host: new URL(BASE_URL).hostname,
     key: indexNowKey,
     keyLocation: `${BASE_URL}/${indexNowKey}.txt`,
-    urlList: [
-      `${BASE_URL}/`,
-      `${BASE_URL}/favicon.ico`,
-      `${BASE_URL}/favicon.svg`,
-      `${BASE_URL}/favicon-120x120.png`,
-      `${BASE_URL}/sitemap.xml`,
-      `${BASE_URL}/sitemap-yandex.xml`,
-      `${BASE_URL}/predict`,
-      `${BASE_URL}/upcoming`,
-      `${BASE_URL}/live`,
-      `${BASE_URL}/best-bets`,
-      `${BASE_URL}/sure-win-predictions`,
-      `${BASE_URL}/today-predictions`,
-      `${BASE_URL}/tomorrow-predictions`,
-      `${BASE_URL}/weekend-predictions`,
-      `${BASE_URL}/daily-2-odds-predictions`,
-      `${BASE_URL}/5-odds-predictions`,
-      `${BASE_URL}/over-under-predictions`,
-      `${BASE_URL}/btts`,
-      `${BASE_URL}/correct-score`,
-      `${BASE_URL}/draw-no-bet-predictions`,
-      `${BASE_URL}/double-chance-predictions`,
-      `${BASE_URL}/accumulator`,
-      `${BASE_URL}/screener`,
-      `${BASE_URL}/dropping-odds`,
-      `${BASE_URL}/jackpot-predictions`,
-      `${BASE_URL}/midweek-jackpot-predictions`,
-      `${BASE_URL}/afcon-predictions`,
-      `${BASE_URL}/kpl-predictions`,
-      `${BASE_URL}/premier-league-predictions`,
-      `${BASE_URL}/champions-league-predictions`,
-      `${BASE_URL}/la-liga-predictions`,
-      `${BASE_URL}/serie-a-predictions`,
-      `${BASE_URL}/bundesliga-predictions`,
-      `${BASE_URL}/predict/gor-mahia-vs-afc-leopards`,
-      `${BASE_URL}/predict/simba-sc-vs-young-africans`,
-      `${BASE_URL}/predict/kaizer-chiefs-vs-orlando-pirates`,
-      `${BASE_URL}/predict/enyimba-vs-rangers-international`,
-      `${BASE_URL}/predict/al-ahly-vs-zamalek`,
-      `${BASE_URL}/predict/tp-mazembe-vs-as-vita-club`,
-    ],
+    urlList,
   });
 
   try {
@@ -94,11 +109,14 @@ export default async function handler(request: Request) {
       job: 'sitemap-refresh-cron',
       executedAt: now,
       sitemapUrl: `${BASE_URL}/sitemap.xml`,
+      matchesSitemapUrl: `${BASE_URL}/sitemap-matches.xml`,
       yandexSitemapUrl: `${BASE_URL}/sitemap-yandex.xml`,
+      crawledActiveMatchSlugs: liveMatches.length,
+      totalUrlsSubmittedToIndexNow: urlList.length,
       indexNowPing,
       yandexPing,
       googleDiscovery: 'robots_txt_verified',
-      message: 'Sitemap and favicon notifications dispatched via IndexNow, Yandex IndexNow, and robots.txt auto-discovery',
+      message: 'Active match slugs crawled from Supabase, published to /sitemap-matches.xml, and dispatched via IndexNow',
     }),
     {
       status: 200,
@@ -109,3 +127,4 @@ export default async function handler(request: Request) {
     }
   );
 }
+

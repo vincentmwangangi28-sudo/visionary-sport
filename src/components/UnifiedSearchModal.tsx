@@ -50,6 +50,10 @@ export const UnifiedSearchModal: React.FC = () => {
 
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [braveWebItems, setBraveWebItems] = useState<
+    Array<{ title: string; url: string; description: string; source: string; age?: string; category?: string }>
+  >([]);
+  const [isSearchingBrave, setIsSearchingBrave] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +73,46 @@ export const UnifiedSearchModal: React.FC = () => {
   const { results, counts } = useMemo(() => {
     return executeUnifiedSearch(query, activeCategory);
   }, [query, activeCategory]);
+
+  // Fetch live Brave Search intelligence when query has 3+ chars (550ms debounce for Free Tier 1-QPS protection)
+  useEffect(() => {
+    const q = query.trim();
+    if (!isOpen || q.length < 3) {
+      setBraveWebItems([]);
+      setIsSearchingBrave(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setIsSearchingBrave(true);
+      try {
+        const res = await fetch(
+          `/api/brave-search?q=${encodeURIComponent(`${q} football`)}&type=match_intel&count=4`,
+          {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal,
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const news = Array.isArray(data?.newsResults) ? data.newsResults : [];
+          const web = Array.isArray(data?.webResults) ? data.webResults : [];
+          const combined = [...news, ...web].slice(0, 4);
+          setBraveWebItems(combined);
+        }
+      } catch {
+        // ignore abort or offline
+      } finally {
+        setIsSearchingBrave(false);
+      }
+    }, 550);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, isOpen]);
 
   // Reset selected index when query or category changes
   useEffect(() => {
@@ -379,7 +423,7 @@ export const UnifiedSearchModal: React.FC = () => {
           )}
 
           {/* 2. NO RESULTS STATE */}
-          {query.trim() && results.length === 0 && (
+          {query.trim() && results.length === 0 && braveWebItems.length === 0 && !isSearchingBrave && (
             <div className="py-12 px-4 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
                 <Search className="h-6 w-6" />
@@ -703,13 +747,59 @@ export const UnifiedSearchModal: React.FC = () => {
               })}
             </div>
           )}
+
+          {/* 4. LIVE BRAVE WEB & NEWS INTELLIGENCE SECTION */}
+          {query.trim().length >= 3 && (braveWebItems.length > 0 || isSearchingBrave) && (
+            <div className="pt-3 mt-2 border-t border-border/60 space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5" />
+                  Live Web &amp; News Intelligence (Brave Search)
+                </span>
+                {isSearchingBrave && (
+                  <span className="text-[10px] text-muted-foreground font-mono">Syncing live wire...</span>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                {braveWebItems.map((bItem, bIdx) => (
+                  <a
+                    key={`${bItem.url}-${bIdx}`}
+                    href={bItem.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-start justify-between p-2.5 rounded-xl border border-border/60 bg-card/60 hover:bg-muted/50 hover:border-primary/40 transition-all gap-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                          {bItem.title}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-primary/30 text-primary">
+                          {bItem.source}
+                        </Badge>
+                        {bItem.age && (
+                          <span className="text-[10px] text-muted-foreground font-mono">{bItem.age}</span>
+                        )}
+                      </div>
+                      {bItem.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                          {bItem.description}
+                        </p>
+                      )}
+                    </div>
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 mt-1" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modal Footer Bar */}
         <div className="flex items-center justify-between px-4 py-2.5 bg-muted/30 border-t border-border/70 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 truncate">
             <span className="font-medium text-foreground">
-              {results.length} result{results.length !== 1 ? 's' : ''}
+              {results.length + braveWebItems.length} result{results.length + braveWebItems.length !== 1 ? 's' : ''}
             </span>
             {query && (
               <span className="text-muted-foreground truncate">

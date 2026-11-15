@@ -143,9 +143,39 @@ export default function News() {
       const fresh = await sportsNewsService.fetchAndCacheNews(true);
       setArticles(fresh);
       setLastSync(sportsNewsService.getLastSyncTime());
-      toast.success('News synchronized from backend!');
+      toast.success('Live news synchronized from Brave Search & ESPN feeds!');
     } catch {
       toast.error('Could not refresh news. Using cached feed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLiveBraveSearch = async (customQuery?: string) => {
+    const q = (customQuery ?? searchQuery).trim();
+    if (!q) {
+      await handleManualRefresh();
+      return;
+    }
+    setLoading(true);
+    try {
+      const braveItems = await sportsNewsService.fetchBraveNews(`${q} football`, true);
+      if (braveItems.length > 0) {
+        setArticles((prev) => {
+          const seen = new Set<string>();
+          return [...braveItems, ...prev].filter((item) => {
+            const key = item.title.trim().toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        });
+        toast.success(`Found ${braveItems.length} live articles for "${q}" via Brave Search`);
+      } else {
+        toast.info(`No new live wire items found for "${q}"`);
+      }
+    } catch {
+      toast.error('Failed to query live news wire.');
     } finally {
       setLoading(false);
     }
@@ -407,14 +437,34 @@ export default function News() {
               ))}
             </div>
 
-            <div className="relative w-full sm:w-64 shrink-0">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Search teams or topics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 text-xs h-8 rounded-lg"
-              />
+            <div className="flex items-center gap-1.5 w-full sm:w-80 shrink-0">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  id="news-topic-search-input"
+                  name="news-search"
+                  placeholder="Search clubs, injuries, or press Enter..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleLiveBraveSearch();
+                    }
+                  }}
+                  className="pl-8 text-xs h-8 rounded-lg"
+                />
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={loading}
+                onClick={() => handleLiveBraveSearch()}
+                className="h-8 px-2.5 text-xs font-semibold shrink-0"
+              >
+                Search Wire
+              </Button>
             </div>
           </div>
 

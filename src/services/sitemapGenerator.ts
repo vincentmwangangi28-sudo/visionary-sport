@@ -66,12 +66,33 @@ export const CLUB_ANALYTICS_HUBS = [
   { slug: 'enyimba', name: 'Enyimba FC', league: 'Nigeria NPFL' },
 ];
 
+export const CANONICAL_MATCH_SLUG_REDIRECTS: Record<string, string> = {
+  'man-utd-vs-arsenal': 'arsenal-vs-chelsea',
+  'man-city-vs-liverpool': 'liverpool-vs-manchester-city',
+  'barca-vs-real-madrid': 'real-madrid-vs-barcelona',
+  'manchester-united-vs-tottenham-hotspur': 'manchester-united-vs-tottenham',
+  'young-africans-vs-simba-sc': 'simba-sc-vs-young-africans',
+  'newcastle-united-vs-aston-villa': 'arsenal-vs-chelsea',
+  'ajax-vs-psv-eindhoven': 'ajax-vs-feyenoord',
+  'benfica-vs-porto': 'benfica-vs-sporting-cp',
+  'inter-miami-vs-la-galaxy': 'inter-miami-vs-new-york-red-bulls',
+};
+
+export function canonicalizeMatchSlug(rawSlug: string): string {
+  const cleaned = String(rawSlug || '')
+    .toLowerCase()
+    .replace(/^\/predict\//, '')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return CANONICAL_MATCH_SLUG_REDIRECTS[cleaned] || cleaned;
+}
+
 /**
- * Generate match prediction slugs from team names and date
+ * Generate canonical match prediction slugs from team names and date
  */
 export function formatMatchSlug(homeTeam: string, awayTeam: string, _matchDate?: string): string {
   const sanitize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  return `${sanitize(homeTeam)}-vs-${sanitize(awayTeam)}`;
+  return canonicalizeMatchSlug(`${sanitize(homeTeam)}-vs-${sanitize(awayTeam)}`);
 }
 
 /**
@@ -592,5 +613,163 @@ export function downloadDiscoverSitemapXml(baseUrl: string = BASE_URL) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Dynamically crawls active match rows from Supabase (predictions & matches tables)
+ * or the server-side /api/sitemap-matches endpoint and returns canonical SitemapEntry[] items.
+ */
+export async function crawlActiveMatchSlugsFromSupabase(baseUrl: string = BASE_URL): Promise<SitemapEntry[]> {
+  const today = new Date().toISOString().split('T')[0];
+  const entriesMap = new Map<string, SitemapEntry>();
+
+  // 1. Seed with existing local match entries first
+  for (const e of getAllSitemapEntries(baseUrl)) {
+    if (e.category === 'match') {
+      entriesMap.set(e.path, e);
+    }
+  }
+
+  // 2. Crawl via /api/sitemap-matches?format=json when running in browser
+  if (typeof window !== 'undefined' && typeof fetch === 'function') {
+    try {
+      const res = await fetch('/api/sitemap-matches?format=json', {
+        headers: { Accept: 'application/json' },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data?.matches)) {
+          for (const m of data.matches) {
+            const slug = canonicalizeMatchSlug(m.slug || formatMatchSlug(m.homeTeam || '', m.awayTeam || ''));
+            if (!slug || !slug.includes('-vs-')) continue;
+            const path = `/predict/${slug}`;
+            const home = m.homeTeam || slug.split('-vs-')[0];
+            const away = m.awayTeam || slug.split('-vs-')[1];
+            const league = m.league || 'Football';
+            entriesMap.set(path, {
+              url: `${baseUrl}${path}`,
+              path,
+              lastModified: (m.kickoff || today).toString().split('T')[0] || today,
+              changeFrequency: 'hourly',
+              priority: 0.85,
+              category: 'match',
+              title: `${home} vs ${away} Prediction, 6×6 Poisson Matrix & xG Odds (${league})`,
+              imageUrl: `${baseUrl}/api/og?home=${encodeURIComponent(home)}&away=${encodeURIComponent(away)}&league=${encodeURIComponent(league)}`,
+            });
+          }
+        }
+      }
+    } catch {
+      // Fallback to direct Supabase client below
+    }
+  }
+
+  // 3. Also query Supabase client directly for any real-time predictions/matches rows
+  try {
+    const { supabase } = await import('../integrations/supabase/client.ts');
+    const [{ data: preds }, { data: matches }] = await Promise.all([
+      supabase
+        .from('predictions')
+        .select('home_team, away_team, league, match_date')
+        .order('match_date', { ascending: false })
+        .limit(150),
+      supabase
+        .from('matches')
+        .select('home_team, away_team, league, match_date')
+        .order('match_date', { ascending: false })
+        .limit(150),
+    ]);
+
+    for (const row of [...(preds || []), ...(matches || [])] as any[]) {
+      if (!row?.home_team || !row?.away_team) continue;
+      const slug = formatMatchSlug(row.home_team, row.away_team, row.match_date);
+      if (!slug || !slug.includes('-vs-')) continue;
+      const path = `/predict/${slug}`;
+      if (!entriesMap.has(path)) {
+        const league = row.league || 'Football';
+        entriesMap.set(path, {
+          url: `${baseUrl}${path}`,
+          path,
+          lastModified: String(row.match_date || today).split('T')[0] || today,
+          changeFrequency: 'hourly',
+          priority: 0.85,
+          category: 'match',
+          title: `${row.home_team} vs ${row.away_team} Prediction, 6×6 Poisson Matrix & xG Odds (${league})`,
+          imageUrl: `${baseUrl}/api/og?home=${encodeURIComponent(row.home_team)}&away=${encodeURIComponent(row.away_team)}&league=${encodeURIComponent(league)}`,
+        });
+      }
+    }
+  } catch {
+    // Non-blocking fallback
+  }
+
+  return Array.from(entriesMap.values());
+}
+
+/**
+ * Generates the dedicated /sitemap-matches.xml string containing all active match slugs & club hubs
+ */
+export function generateMatchesSitemapXml(
+  baseUrl: string = BASE_URL,
+  dynamicMatchEntries?: SitemapEntry[]
+): string {
+  const allEntries = getAllSitemapEntries(baseUrl);
+  const matchMap = new Map<string, SitemapEntry>();
+
+  for (const e of allEntries) {
+    if (e.category === 'match' || e.category === 'team') {
+      matchMap.set(e.path, e);
+    }
+  }
+  if (Array.isArray(dynamicMatchEntries)) {
+    for (const dm of dynamicMatchEntries) {
+      matchMap.set(dm.path, dm);
+    }
+  }
+
+  const entries = Array.from(matchMap.values());
+  const xmlUrls = entries
+    .map((entry) => {
+      const imageBlock = entry.imageUrl
+        ? `\n    <image:image>\n      <image:loc>${escapeXml(entry.imageUrl)}</image:loc>\n      <image:title>${escapeXml(entry.title)}</image:title>\n    </image:image>`
+        : '';
+
+      return `  <url>
+    <loc>${escapeXml(entry.url)}</loc>
+    <lastmod>${entry.lastModified}</lastmod>
+    <changefreq>${entry.changeFrequency}</changefreq>
+    <priority>${entry.priority.toFixed(2)}</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(entry.url)}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(entry.url)}" />${imageBlock}
+  </url>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${xmlUrls}
+</urlset>`;
+}
+
+/**
+ * Helper to trigger client-side download of /sitemap-matches.xml
+ */
+export function downloadMatchesSitemapXml(
+  baseUrl: string = BASE_URL,
+  dynamicMatchEntries?: SitemapEntry[]
+) {
+  const xml = generateMatchesSitemapXml(baseUrl, dynamicMatchEntries);
+  const blob = new Blob([xml], { type: 'application/xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sitemap-matches.xml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 
 

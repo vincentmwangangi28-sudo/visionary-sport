@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Activity,
@@ -57,182 +58,196 @@ export const MobileBottomNav = () => {
     },
   ];
 
-  return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border md:hidden touch-manipulation select-none"
-      style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))' }}
-      aria-label="Mobile Bottom Navigation"
-    >
-      <div className="grid grid-cols-5 h-14 items-stretch">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={handleHaptic}
-              className={`relative flex flex-col items-center justify-center gap-1 transition-colors min-h-[48px] ${
-                item.isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
-              }`}
-              aria-current={item.isActive ? 'page' : undefined}
+  const drawerNode =
+    sheetOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div className="fixed inset-0 z-[100] flex flex-col justify-end md:hidden">
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs"
+              onClick={() => setSheetOpen(false)}
+              aria-hidden="true"
+            />
+            <div
+              id="mobile-more-navigation-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Betting Hub, Markets & Leagues"
+              className="relative z-10 bg-background border-t border-border rounded-t-xl max-h-[82vh] overflow-y-auto px-4 pb-8 pt-4 shadow-2xl"
             >
-              <div className="relative">
-                <Icon className="h-4 w-4" aria-hidden="true" />
-                {item.hasBeacon && (
-                  <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" aria-hidden="true" />
-                )}
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <h2 className="text-sm font-bold text-foreground">Betting Hub, Markets &amp; Leagues</h2>
+                <div className="flex items-center gap-1.5">
+                  <UnifiedSearchTrigger variant="icon" />
+                  <button
+                    type="button"
+                    onClick={() => setSheetOpen(false)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none cursor-pointer"
+                    aria-label="Close menu"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
-              <span className="text-[10px] leading-none">{item.label}</span>
-            </Link>
-          );
-        })}
 
-        {/* Interactive Bet Slip Drawer Button */}
-        <button
-          type="button"
-          onClick={() => {
-            handleHaptic();
-            setIsOpen(true);
-          }}
-          className={`relative flex flex-col items-center justify-center gap-1 transition-colors min-h-[48px] ${
-            selections.length > 0 ? 'text-emerald-800 dark:text-emerald-300 font-bold' : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <div className="relative">
-            <Ticket className="h-4 w-4" aria-hidden="true" />
-            {selections.length > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-700 text-white text-[9px] font-mono font-black flex items-center justify-center">
-                {selections.length}
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] leading-none">Bet Slip</span>
-        </button>
-
-        {/* More Sheet Menu Trigger */}
-        <button
-          type="button"
-          onClick={() => {
-            handleHaptic();
-            setSheetOpen(true);
-          }}
-          aria-expanded={sheetOpen}
-          className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors min-h-[48px]"
-        >
-          <Menu className="h-4 w-4" aria-hidden="true" />
-          <span className="text-[10px] leading-none">More</span>
-        </button>
-      </div>
-
-      {/* Lightweight Accessible Bottom Drawer */}
-      {sheetOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-xs"
-            onClick={() => setSheetOpen(false)}
-            aria-hidden="true"
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Betting Hub, Markets & Leagues"
-            className="relative z-50 bg-background border-t border-border rounded-t-xl max-h-[82vh] overflow-y-auto px-4 pb-8 pt-4 shadow-2xl"
-          >
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h2 className="text-sm font-bold text-foreground">Betting Hub, Markets &amp; Leagues</h2>
-              <div className="flex items-center gap-1.5">
-                <UnifiedSearchTrigger variant="icon" />
+              <div className="py-4 space-y-4">
                 <button
                   type="button"
-                  onClick={() => setSheetOpen(false)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground"
-                  aria-label="Close menu"
+                  onClick={() => {
+                    setSheetOpen(false);
+                    triggerPWAInstallFlow();
+                  }}
+                  aria-haspopup="dialog"
+                  aria-label="Download PredictPro App to Home Screen"
+                  data-testid="mobile-drawer-download-app-btn"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-xs transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 select-none cursor-pointer"
                 >
-                  <X className="h-4 w-4" aria-hidden="true" />
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  <span>Download PredictPro App to Home Screen</span>
                 </button>
+
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Betting Tools &amp; Markets</p>
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    {[
+                      { to: '/accumulator', label: 'AI Acca Builder' },
+                      { to: '/booking-code-converter', label: 'Booking Code Converter' },
+                      { to: '/jackpot-predictions', label: '17-Game Jackpot Hub' },
+                      { to: '/daily-2-odds-predictions', label: 'Daily 2.00+ Rollover' },
+                      { to: '/value-bets', label: '+EV Value Bets' },
+                      { to: '/btts', label: 'BTTS Predictions' },
+                      { to: '/correct-score', label: 'Correct Score Tips' },
+                      { to: '/rewards', label: 'Daily Spin & Coins' },
+                    ].map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setSheetOpen(false)}
+                        className="px-3 py-2 rounded-md border border-border bg-muted/30 hover:bg-muted font-medium text-foreground transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Standings, Teams &amp; Leagues</p>
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    {[
+                      { to: '/standings', label: 'Standings & xPTS' },
+                      { to: '/teams', label: 'Teams & xG Hub' },
+                      { to: '/players', label: 'Player Ratings' },
+                      { to: '/h2h', label: 'H2H Matchup Compare' },
+                      { to: '/premier-league-predictions', label: 'Premier League' },
+                      { to: '/champions-league-predictions', label: 'Champions League' },
+                      { to: '/la-liga-predictions', label: 'LaLiga' },
+                      { to: '/kpl-predictions', label: 'FKF Premier League' },
+                    ].map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setSheetOpen(false)}
+                        className="px-3 py-2 rounded-md border border-border bg-muted/30 hover:bg-muted font-medium text-foreground transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {isAdmin && (
+                  <div className="pt-2 border-t border-border">
+                    <Link
+                      to="/admin"
+                      onClick={() => setSheetOpen(false)}
+                      className="block px-3 py-2 rounded-md border border-border text-xs font-semibold text-center"
+                    >
+                      Admin Console
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
+          </div>,
+          document.body
+        )
+      : null;
 
-            <div className="py-4 space-y-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setSheetOpen(false);
-                  triggerPWAInstallFlow();
-                }}
-                data-testid="mobile-drawer-download-app-btn"
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-xs transition-colors"
+  return (
+    <>
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border md:hidden touch-manipulation select-none"
+        style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))' }}
+        aria-label="Mobile Bottom Navigation"
+      >
+        <div className="grid grid-cols-5 h-14 items-stretch">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={handleHaptic}
+                className={`relative flex flex-col items-center justify-center gap-1 transition-all min-h-[48px] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
+                  item.isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                aria-current={item.isActive ? 'page' : undefined}
               >
-                <Download className="h-4 w-4" aria-hidden="true" />
-                <span>Download PredictPro App to Home Screen</span>
-              </button>
-
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground mb-2">Betting Tools &amp; Markets</p>
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
-                  {[
-                    { to: '/accumulator', label: 'AI Acca Builder' },
-                    { to: '/booking-code-converter', label: 'Booking Code Converter' },
-                    { to: '/jackpot-predictions', label: '17-Game Jackpot Hub' },
-                    { to: '/daily-2-odds-predictions', label: 'Daily 2.00+ Rollover' },
-                    { to: '/value-bets', label: '+EV Value Bets' },
-                    { to: '/btts', label: 'BTTS Predictions' },
-                    { to: '/correct-score', label: 'Correct Score Tips' },
-                    { to: '/rewards', label: 'Daily Spin & Coins' },
-                  ].map((item) => (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setSheetOpen(false)}
-                      className="px-3 py-2 rounded-md border border-border bg-muted/30 font-medium text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                <div className="relative">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {item.hasBeacon && (
+                    <span className="absolute -top-0.5 -right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" aria-hidden="true" />
+                  )}
                 </div>
-              </div>
+                <span className="text-[10px] leading-none">{item.label}</span>
+              </Link>
+            );
+          })}
 
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground mb-2">Standings, Teams &amp; Leagues</p>
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
-                  {[
-                    { to: '/standings', label: 'Standings & xPTS' },
-                    { to: '/teams', label: 'Teams & xG Hub' },
-                    { to: '/players', label: 'Player Ratings' },
-                    { to: '/h2h', label: 'H2H Matchup Compare' },
-                    { to: '/premier-league-predictions', label: 'Premier League' },
-                    { to: '/champions-league-predictions', label: 'Champions League' },
-                    { to: '/la-liga-predictions', label: 'LaLiga' },
-                    { to: '/kpl-predictions', label: 'FKF Premier League' },
-                  ].map((item) => (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setSheetOpen(false)}
-                      className="px-3 py-2 rounded-md border border-border bg-muted/30 font-medium text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {isAdmin && (
-                <div className="pt-2 border-t border-border">
-                  <Link
-                    to="/admin"
-                    onClick={() => setSheetOpen(false)}
-                    className="block px-3 py-2 rounded-md border border-border text-xs font-semibold text-center"
-                  >
-                    Admin Console
-                  </Link>
-                </div>
+          {/* Interactive Bet Slip Drawer Button */}
+          <button
+            type="button"
+            onClick={() => {
+              handleHaptic();
+              setIsOpen(true);
+            }}
+            aria-haspopup="dialog"
+            aria-label={selections.length > 0 ? `Open Bet Slip (${selections.length} selections)` : 'Open Bet Slip'}
+            className={`relative flex flex-col items-center justify-center gap-1 transition-all min-h-[48px] select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
+              selections.length > 0 ? 'text-emerald-800 dark:text-emerald-300 font-bold' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <div className="relative">
+              <Ticket className="h-4 w-4" aria-hidden="true" />
+              {selections.length > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-700 text-white text-[9px] font-mono font-black flex items-center justify-center">
+                  {selections.length}
+                </span>
               )}
             </div>
-          </div>
+            <span className="text-[10px] leading-none">Bet Slip</span>
+          </button>
+
+          {/* More Sheet Menu Trigger */}
+          <button
+            type="button"
+            onClick={() => {
+              handleHaptic();
+              setSheetOpen(true);
+            }}
+            aria-expanded={sheetOpen}
+            aria-haspopup="dialog"
+            aria-controls="mobile-more-navigation-drawer"
+            aria-label="Open more navigation and betting tools menu"
+            className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-all min-h-[48px] select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          >
+            <Menu className="h-4 w-4" aria-hidden="true" />
+            <span className="text-[10px] leading-none">More</span>
+          </button>
         </div>
-      )}
-    </nav>
+      </nav>
+      {drawerNode}
+    </>
   );
 };
 

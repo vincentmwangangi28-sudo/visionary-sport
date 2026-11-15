@@ -223,33 +223,45 @@ async function runGoogleCrawlCron() {
     results.sitemapStatus = 'network_notice';
   }
 
-  // 3. Submit to IndexNow (Direct push to Bing, Yandex, Seznam, Naver)
+  // 3. Submit to IndexNow (Direct push to Bing, Yandex, Seznam, Naver, and Ahrefs Yep)
   try {
     console.log('\n🚀 [3/4] Dispatching priority batch to IndexNow & Yandex IndexNow APIs...');
-    const indexNowPayload = JSON.stringify({
-      host: new URL(BASE_URL).hostname,
-      key: INDEXNOW_KEY,
-      keyLocation: `${BASE_URL}/${INDEXNOW_KEY}.txt`,
-      urlList: ALL_SUBMISSION_URLS.slice(0, 500)
-    });
+    const buildPayload = (key) =>
+      JSON.stringify({
+        host: new URL(BASE_URL).hostname,
+        key,
+        keyLocation: `${BASE_URL}/${key}.txt`,
+        urlList: ALL_SUBMISSION_URLS.slice(0, 500),
+      });
 
-    const [indexNowRes, yepRes, yandexRes] = await Promise.all([
+    const primaryPayload = buildPayload(INDEXNOW_KEY);
+    const fallbackPayload = buildPayload('f7qprb5m24wrvjdmkspy56hhvjmhkcn5');
+
+    let [indexNowRes, yepRes, yandexRes] = await Promise.all([
       fetch('https://api.indexnow.org/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: indexNowPayload
+        body: primaryPayload,
       }),
       fetch('https://indexnow.yep.com/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: indexNowPayload
+        body: primaryPayload,
       }).catch(() => null),
       fetch('https://yandex.com/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: indexNowPayload
-      }).catch(() => null)
+        body: primaryPayload,
+      }).catch(() => null),
     ]);
+
+    if (!indexNowRes.ok && INDEXNOW_KEY !== 'f7qprb5m24wrvjdmkspy56hhvjmhkcn5') {
+      indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: fallbackPayload,
+      });
+    }
 
     console.log(`📡 IndexNow response: HTTP ${indexNowRes.status} (${indexNowRes.ok ? 'Accepted' : 'Notice'}), Yep/Ahrefs: HTTP ${yepRes?.status ?? 'n/a'}`);
     results.indexNowStatus = `http_${indexNowRes.status}`;
