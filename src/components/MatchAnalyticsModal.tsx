@@ -16,6 +16,7 @@ import { TacticalAnalyticsTab } from '@/components/TacticalAnalyticsTab';
 import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { MatchProAnalyticsWidget } from '@/components/MatchProAnalyticsWidget';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { toast } from 'sonner';
 import {
@@ -324,6 +325,9 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                   />
                 </div>
               </div>
+
+              {/* Opta 10k Simulation, SofaScore 90' Goal Timing, Understat xG Radar & FotMob Crowd Poll */}
+              <MatchProAnalyticsWidget prediction={p} compact />
 
               {analysis && (
                 <div className="bg-muted/30 rounded-xl p-4 border border-border space-y-2">

@@ -60,6 +60,7 @@ import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { QuickInsightCard } from '@/components/QuickInsightCard';
 import { LiveStreamHubModal } from '@/components/LiveStreamHubModal';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
+import { MatchProAnalyticsWidget } from '@/components/MatchProAnalyticsWidget';
 import { evaluateMarketOutcome } from '@/services/autoSettlementService';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
 import { Tv, Play, Radio, CheckCircle2, XCircle } from 'lucide-react';
@@ -751,6 +752,9 @@ export default function MatchPrediction() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Opta 10k Simulation, SofaScore 90' Goal Timing, Understat xG Radar & FotMob Crowd Poll */}
+            <MatchProAnalyticsWidget prediction={prediction} />
 
             {/* Secondary Statistical Goal Expectancy Matrix */}
             <Card className="border-border">

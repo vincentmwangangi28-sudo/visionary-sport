@@ -8,6 +8,7 @@ import { H2HWidget } from '@/components/H2HWidget';
 import { SharePrediction } from '@/components/SharePrediction';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
+import { MatchProAnalyticsWidget } from '@/components/MatchProAnalyticsWidget';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { Loader2, TrendingUp, Target } from 'lucide-react';
 
@@ -65,7 +66,7 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3 my-1">
             <TeamLogo team={p.home_team} size="md" />
@@ -97,6 +98,9 @@ export const PredictionDetailModal = ({ prediction: p, open, onClose }: Props) =
             </div>
             <SharePrediction prediction={{ ...p, predicted_outcome: outcome, confidence_score: confidence, status: p.status ?? 'pending', is_premium: p.is_premium, created_at: p.created_at }} />
           </div>
+
+          {/* Interactive 10k Sim, 90' Goal Timing, xG Radar & Crowd Poll */}
+          <MatchProAnalyticsWidget prediction={p} compact />
 
           {/* Win probabilities */}
           {metadata?.home_win_probability !== undefined && (

@@ -213,6 +213,36 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
     const envExample = fs.readFileSync(path.resolve(process.cwd(), '.env.example'), 'utf-8');
     expect(envExample).toContain('BRAVE_SEARCH_API_KEY=');
   });
+
+  it('computes Opta 10k simulation probabilities, SofaScore 90-minute goal timing intervals, Understat tactical radar, and FotMob crowd poll metrics', async () => {
+    const { computeProMatchAnalytics } = await import('@/components/MatchProAnalyticsWidget');
+    const pro = computeProMatchAnalytics({
+      id: 'test-arsenal-chelsea',
+      match_id: 'match-arsenal-chelsea',
+      home_team: 'Arsenal',
+      away_team: 'Chelsea',
+      league: 'Premier League',
+      match_date: new Date().toISOString(),
+      prediction: 'Home Win',
+      predicted_outcome: 'Home Win',
+      confidence: 82,
+      confidence_score: 82,
+      home_odds: 1.75,
+      draw_odds: 3.60,
+      away_odds: 4.50,
+      status: 'pending',
+      is_premium: false,
+      created_at: new Date().toISOString(),
+    });
+
+    expect(pro.homeWinProb + pro.drawProb + pro.awayWinProb).toBe(100);
+    expect(pro.bookieHomeImplied + pro.bookieDrawImplied + pro.bookieAwayImplied).toBe(100);
+    expect(pro.goalIntervals).toHaveLength(6);
+    expect(pro.goalIntervals.some((i) => i.isPeak)).toBe(true);
+    expect(pro.tacticalMetrics).toHaveLength(5);
+    expect(pro.bestValueEdgePct).toBeGreaterThan(0);
+    expect(pro.baseVoteCounts.home).toBeGreaterThan(pro.baseVoteCounts.away);
+  });
 });
 
 

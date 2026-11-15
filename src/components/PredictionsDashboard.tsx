@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo, startTransition } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
+import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
+import { TopSiteMatchdayCommandBar } from '@/components/TopSiteMatchdayCommandBar';
 import { DateFilterType } from '@/components/LeagueDateFilterBar';
 import { TeamLogo } from '@/components/TeamLogo';
 import { getPrediction, getConfidence } from '@/types/prediction';
@@ -40,7 +42,7 @@ interface PredictionsDashboardProps {
   initialDateFilter?: DateFilterType;
 }
 
-type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 'today';
+type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 'pinned' | 'today';
 
 const MINI_STANDINGS_DATA: Record<
   'EPL' | 'LALIGA' | 'SERIEA' | 'BUNDESLIGA',
@@ -239,6 +241,7 @@ export const PredictionsDashboard = ({
   });
 
   const { preferences, setRiskProfile } = useUserPreferences();
+  const { isLeaguePinned, isTeamPinned } = usePinnedFavorites();
   const { region, prioritizedLeagues, sortPredictions } = useGeoRegion();
   const { selections, totalOdds, addSelection, setIsOpen: setBetSlipOpen } = useBetSlip();
   const { predictions, data, isLoading, pageSize = 12, isFetching, refetch } = usePredictions(page, league);
@@ -342,6 +345,10 @@ export const PredictionsDashboard = ({
       } else if (quickFilter === 'value_bets') {
         const hasHighOdds = (p.home_odds && p.home_odds >= 1.85) || (p.away_odds && p.away_odds >= 1.85);
         if (!hasHighOdds || conf < 70) return false;
+      } else if (quickFilter === 'pinned') {
+        if (!isTeamPinned(p.home_team) && !isTeamPinned(p.away_team) && !isLeaguePinned(p.league)) {
+          return false;
+        }
       } else if (quickFilter === 'today') {
         if (!matchesDateFilter(p.match_date, 'today')) return false;
       }
@@ -363,6 +370,8 @@ export const PredictionsDashboard = ({
     enableRegionalSort,
     league,
     sortPredictions,
+    isTeamPinned,
+    isLeaguePinned,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(filteredPredictions.length / pageSize));
@@ -643,6 +652,10 @@ export const PredictionsDashboard = ({
             )}
           </div>
         </div>
+
+        {/* Top-Site Matchday Command Bar (+EV Value Drops, SofaScore Streaks, FotMob Fan Poll & Flashscore Odds Switcher) */}
+        <TopSiteMatchdayCommandBar predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool} />
+
         {/* Clean Matchday Control Bar */}
         <div className="p-3.5 rounded-xl border border-border bg-card space-y-3 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -699,6 +712,7 @@ export const PredictionsDashboard = ({
                     { id: 'recommended', label: 'Featured' },
                     { id: 'high_confidence', label: '80%+ Bankers' },
                     { id: 'value_bets', label: '+EV Value' },
+                    { id: 'pinned', label: 'Pinned ★' },
                   ] as const
                 ).map((tab) => (
                   <button

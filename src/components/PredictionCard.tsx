@@ -50,7 +50,7 @@ interface Props {
 
 export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoading = false }: Props) => {
   const { formatKickoff, getKickoffRelative, formatOdds, isProbabilitiesMode, t } = useUserPreferences();
-  const { isLeaguePinned, togglePinLeague } = usePinnedFavorites();
+  const { isLeaguePinned, togglePinLeague, isTeamPinned, togglePinTeam } = usePinnedFavorites();
   const { selections, addSelection } = useBetSlip();
   const [showAnalytics, setShowAnalytics] = useState(false);
 
@@ -241,17 +241,40 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
           }}
           className="px-4 py-3 bg-card hover:bg-muted/30 transition-all duration-200 ease-out hover:scale-[1.01] hover:shadow-xs animate-card-reveal cursor-pointer grid grid-cols-1 sm:grid-cols-[64px_1fr_130px_168px] items-center gap-3"
         >
-          {/* Column 1: Kickoff Time & Date */}
+          {/* Column 1: Kickoff Time, Date & 1-Click Pin */}
           <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-2 sm:gap-0.5 font-mono tabular-nums sm:border-r sm:border-border/60 sm:pr-3">
-            {relativeKickoff.status === 'live' ? (
-              <span className="text-xs font-bold text-rose-900 dark:text-rose-300 animate-pulse">
-                LIVE
-              </span>
-            ) : (
-              <>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                aria-pressed={isTeamPinned(p.home_team)}
+                aria-label={
+                  isTeamPinned(p.home_team)
+                    ? `Unpin ${p.home_team} from Pinned matches`
+                    : `Pin ${p.home_team} vs ${p.away_team} to Pinned matches`
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  hapticService.selection();
+                  togglePinTeam(p.home_team);
+                }}
+                className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                title={isTeamPinned(p.home_team) ? 'Unpin match' : 'Pin match to Pinned ★ filter'}
+              >
+                <Pin
+                  className={`h-3 w-3 ${isTeamPinned(p.home_team) ? 'fill-primary text-primary' : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
+              {relativeKickoff.status === 'live' ? (
+                <span className="text-xs font-bold text-rose-900 dark:text-rose-300 animate-pulse">
+                  LIVE
+                </span>
+              ) : (
                 <span className="text-xs font-semibold text-foreground">{formattedTime}</span>
-                <span className="text-[11px] text-muted-foreground">{formattedShortDate}</span>
-              </>
+              )}
+            </div>
+            {relativeKickoff.status !== 'live' && (
+              <span className="text-[11px] text-muted-foreground">{formattedShortDate}</span>
             )}
             <span className="sm:hidden text-xs font-semibold text-primary">
               {displayOutcome} · {confidence}%
