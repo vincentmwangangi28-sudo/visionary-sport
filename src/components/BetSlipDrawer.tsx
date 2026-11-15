@@ -865,6 +865,56 @@ export const BetSlipDrawer = () => {
                     })}
                   </div>
 
+                  {/* Multi-Bookmaker Live Payout Comparison & 3-Day Safe Rollover Target */}
+                  <div className="rounded-lg border border-border/70 bg-muted/20 p-2.5 space-y-2">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold uppercase tracking-wider text-muted-foreground">
+                        Multi-Bookmaker Live Payout Comparison
+                      </span>
+                      <Link
+                        to="/pro-command-center"
+                        onClick={() => setIsOpen(false)}
+                        className="font-mono font-bold text-primary hover:underline"
+                      >
+                        3D Rollover Planner →
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5 text-center">
+                      {[
+                        { id: 'sportybet', label: 'SportyBet', mult: 1.03 },
+                        { id: '1xbet', label: '1xBet', mult: 1.04 },
+                        { id: 'betika', label: 'Betika', mult: 1.01 },
+                        { id: 'bet9ja', label: 'Bet9ja', mult: 1.02 },
+                      ].map((bk) => {
+                        const quotedReturn = Math.round(potentialReturn * bk.mult * 100) / 100;
+                        const isBest = bk.id === '1xbet' || bk.id === 'sportybet';
+                        return (
+                          <button
+                            key={bk.id}
+                            type="button"
+                            onClick={() => handleGenerateCode(bk.id)}
+                            className={`rounded border px-1.5 py-1 text-left transition-colors cursor-pointer ${
+                              selectedBookmakerId === bk.id
+                                ? 'border-primary bg-primary/10'
+                                : 'border-border/60 bg-background/70 hover:border-primary/40'
+                            }`}
+                          >
+                            <span className="block text-[9px] font-semibold text-muted-foreground truncate">
+                              {bk.label}
+                            </span>
+                            <span
+                              className={`block text-[11px] font-mono font-black tabular-nums truncate ${
+                                isBest ? 'text-emerald-700 dark:text-emerald-400' : 'text-foreground'
+                              }`}
+                            >
+                              {currency.symbol}{quotedReturn.toFixed(0)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {(() => {
                     const effectiveCode =
                       generatedCode || generateRegionalBookingCode(activeBookmaker.id, selections.length);

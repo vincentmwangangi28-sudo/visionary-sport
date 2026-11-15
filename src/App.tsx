@@ -211,6 +211,7 @@ const CashOutEquityAuditorPage   = lazyWithRetry(() => import("./pages/CashOutEq
 const RefereeDisciplineMatrixPage = lazyWithRetry(() => import("./pages/RefereeDisciplineMatrixPage"));
 const PlayerPropsLabPage         = lazyWithRetry(() => import("./pages/PlayerPropsLabPage"));
 const SystemBetPermutationPage   = lazyWithRetry(() => import("./pages/SystemBetPermutationPage"));
+const ProCommandCenterPage       = lazyWithRetry(() => import("./pages/ProCommandCenterPage"));
 
 interface RouteLoadingFallbackProps {
   routePath?: string;
@@ -765,6 +766,8 @@ const App = () => (
                             <Route path="/shots-on-target-scanner"      element={<Navigate to="/player-props-lab" replace />} />
                             <Route path="/trixie-yankee-calculator"     element={<RouteBoundary component={SystemBetPermutationPage} />} />
                             <Route path="/system-bet-simulator"         element={<Navigate to="/trixie-yankee-calculator" replace />} />
+                            <Route path="/pro-command-center"           element={<RouteBoundary component={ProCommandCenterPage} />} />
+                            <Route path="/command-center"               element={<Navigate to="/pro-command-center" replace />} />
                             <Route path="/app-store-publish"            element={<Navigate to="/admin" replace />} />
                             <Route path="/mobile-app"                   element={<Navigate to="/admin" replace />} />
                             <Route path="/download-app"                 element={<Navigate to="/admin" replace />} />

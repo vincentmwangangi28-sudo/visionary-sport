@@ -47,6 +47,13 @@ const PastResultsArchive = lazyWithRetry(() =>
 
 const PRO_SPORTS_TOOLS = [
   {
+    to: '/pro-command-center',
+    title: 'Pro Matchday Command Center',
+    tag: 'All-in-One Pro',
+    desc: 'Unified Oddspedia steam curves, SofaScore Starting XI absence simulator, 75\'+ momentum alerts & rollover vault.',
+    icon: Activity,
+  },
+  {
     to: '/bet-tracker',
     title: 'Bet Tracker & ROI Ledger',
     tag: 'ESPN Auto-Grade',
@@ -281,6 +288,13 @@ const Index = () => {
               >
                 <Flame className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>80%+ Banker Picks</span>
+              </Link>
+              <Link
+                to="/pro-command-center"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-foreground text-xs font-bold transition-colors shrink-0"
+              >
+                <Activity className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>Pro Command Center</span>
               </Link>
               <Link
                 to="/bet-tracker"

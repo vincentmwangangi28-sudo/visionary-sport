@@ -215,7 +215,11 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
   });
 
   it('computes Opta 10k simulation probabilities, SofaScore 90-minute goal timing intervals, Understat tactical radar, and FotMob crowd poll metrics', async () => {
-    const { computeProMatchAnalytics } = await import('@/components/MatchProAnalyticsWidget');
+    const {
+      computeProMatchAnalytics,
+      toggleMomentumAlertSubscription,
+      readSubscribedMomentumAlerts,
+    } = await import('@/components/MatchProAnalyticsWidget');
     const pro = computeProMatchAnalytics({
       id: 'test-arsenal-chelsea',
       match_id: 'match-arsenal-chelsea',
@@ -242,6 +246,23 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
     expect(pro.tacticalMetrics).toHaveLength(5);
     expect(pro.bestValueEdgePct).toBeGreaterThan(0);
     expect(pro.baseVoteCounts.home).toBeGreaterThan(pro.baseVoteCounts.away);
+
+    // Oddspedia 6-point line movement & multi-bookmaker quotes
+    expect(pro.lineMovementSeries).toHaveLength(6);
+    expect(pro.bookmakerQuotes).toHaveLength(6);
+    expect(pro.bookmakerQuotes.some((b) => b.isTopValue)).toBe(true);
+
+    // SofaScore Starting XI ratings & xG impact
+    expect(pro.homeSquadRatings.length).toBeGreaterThanOrEqual(4);
+    expect(pro.awaySquadRatings.length).toBeGreaterThanOrEqual(4);
+    expect(pro.homeSquadRatings[0].rating).toBeGreaterThanOrEqual(6.4);
+
+    // 75'+ Momentum alert subscription toggle
+    const isNowSubbed = toggleMomentumAlertSubscription('test-arsenal-chelsea');
+    expect(isNowSubbed).toBe(true);
+    expect(readSubscribedMomentumAlerts().includes('test-arsenal-chelsea')).toBe(true);
+    const isAfterUnsub = toggleMomentumAlertSubscription('test-arsenal-chelsea');
+    expect(isAfterUnsub).toBe(false);
   });
 });
 
