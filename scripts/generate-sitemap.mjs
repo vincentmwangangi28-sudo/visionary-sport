@@ -318,7 +318,7 @@ function extractLocalActiveMatchSlugs() {
     const mockPredsPath = path.join(ROOT_DIR, 'src', 'data', 'mockPredictions.ts');
     if (fs.existsSync(mockPredsPath)) {
       const content = fs.readFileSync(mockPredsPath, 'utf8');
-      const blockRegex = /home_team:\s*['"]([^'"]+)['"][\s\S]*?away_team:\s*['"]([^'"]+)['"](?:[\s\S]*?league:\s*['"]([^'"]+)['"])?/g;
+      const blockRegex = /["']?home_team["']?:\s*['"]([^'"]+)['"][\s\S]*?["']?away_team["']?:\s*['"]([^'"]+)['"](?:[\s\S]*?["']?league["']?:\s*['"]([^'"]+)['"])?/g;
       let match;
       while ((match = blockRegex.exec(content)) !== null) {
         const homeTeam = match[1].trim();

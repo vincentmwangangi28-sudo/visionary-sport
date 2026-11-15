@@ -60,7 +60,7 @@ function isExemptPublicRoute(pathname: string): boolean {
   );
 }
 
-function readStoredPreviewSeconds(): number {
+export function readStoredPreviewSeconds(): number {
   if (typeof window === 'undefined') return 0;
   try {
     const raw = window.localStorage.getItem(STORAGE_ENGAGED_SECONDS_KEY);
@@ -71,7 +71,7 @@ function readStoredPreviewSeconds(): number {
   }
 }
 
-function isStoredGateLocked(): boolean {
+export function isStoredGateLocked(): boolean {
   if (typeof window === 'undefined') return false;
   try {
     if (window.localStorage.getItem(STORAGE_GATE_LOCKED_KEY) === 'true') return true;

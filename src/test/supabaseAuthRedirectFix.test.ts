@@ -23,6 +23,13 @@ import {
   isPromptDismissed,
   dismissPWAInstallPrompt,
 } from '@/hooks/usePWAInstall';
+import {
+  GUEST_PREVIEW_LIMIT_SECONDS,
+  STORAGE_ENGAGED_SECONDS_KEY,
+  STORAGE_GATE_LOCKED_KEY,
+  readStoredPreviewSeconds,
+  isStoredGateLocked,
+} from '@/components/FirstVisitSignupModal';
 import type { User } from '@supabase/supabase-js';
 
 describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
@@ -115,6 +122,27 @@ describe('Supabase Placeholder & OAuth Redirect Typo Safeguards', () => {
     expect(getPersistedMemberUser()).toBeNull();
     expect(hasKnownAccountOnDevice()).toBe(true);
     expect(getKnownAccountEmail()).toBe('returning@predictpro.guru');
+  });
+
+  it('enforces a 60-second (1-minute) guest preview before locking site access for visitors without an account', () => {
+    localStorage.clear();
+    document.cookie = 'predictpro_has_account=; path=/; max-age=0';
+    document.cookie = 'predictpro_member_v1=; path=/; max-age=0';
+    expect(GUEST_PREVIEW_LIMIT_SECONDS).toBe(60);
+    expect(readStoredPreviewSeconds()).toBe(0);
+    expect(isStoredGateLocked()).toBe(false);
+    expect(hasKnownAccountOnDevice()).toBe(false);
+
+    // At 45 seconds of browsing, guest preview is still active
+    localStorage.setItem(STORAGE_ENGAGED_SECONDS_KEY, '45');
+    expect(readStoredPreviewSeconds()).toBe(45);
+    expect(isStoredGateLocked()).toBe(false);
+
+    // At 60 seconds (1 minute), mandatory account gate locks access
+    localStorage.setItem(STORAGE_ENGAGED_SECONDS_KEY, '60');
+    localStorage.setItem(STORAGE_GATE_LOCKED_KEY, 'true');
+    expect(readStoredPreviewSeconds()).toBe(60);
+    expect(isStoredGateLocked()).toBe(true);
   });
 
   it('accurately detects Mobile (Android, iOS) and Desktop (Windows, macOS, Linux) platforms and generates OS installers', () => {

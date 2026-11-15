@@ -118,7 +118,8 @@ const PERSISTED_MEMBER_SESSION_KEY = 'predictpro_member_session_v1';
 const KNOWN_ACCOUNT_STORAGE_KEY = 'predictpro_known_account_v1';
 const EXPLICIT_SIGNOUT_KEY = 'predictpro_explicit_signout_v1';
 const SIGNUP_POPUP_COMPLETED_KEY = 'predictpro_signup_popup_completed_v1';
-const GUEST_GATE_LOCKED_KEY = 'predictpro_guest_gate_locked_v3';
+const GUEST_GATE_LOCKED_KEY = 'predictpro_guest_gate_locked_v4';
+const GUEST_PREVIEW_SECONDS_KEY = 'predictpro_guest_preview_seconds_v4';
 const MEMBER_COOKIE_NAME = 'predictpro_member_v1';
 const KNOWN_ACCOUNT_COOKIE_NAME = 'predictpro_has_account';
 
@@ -175,6 +176,7 @@ function unlockGuestPreviewGate(): void {
   try {
     window.localStorage.setItem(SIGNUP_POPUP_COMPLETED_KEY, 'true');
     window.localStorage.removeItem(GUEST_GATE_LOCKED_KEY);
+    window.localStorage.removeItem(GUEST_PREVIEW_SECONDS_KEY);
     setCrossSubdomainCookie(KNOWN_ACCOUNT_COOKIE_NAME, '1');
   } catch {
     // ignore storage errors
