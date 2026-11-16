@@ -40,6 +40,17 @@
   Content-Type: image/png
   X-Robots-Tag: all
 
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+  Access-Control-Allow-Origin: *
+  Content-Type: application/javascript; charset=utf-8
+
+/widgets/*.json
+  Cache-Control: public, max-age=900
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+
 /*.js
   Cache-Control: public, max-age=31536000, immutable
 

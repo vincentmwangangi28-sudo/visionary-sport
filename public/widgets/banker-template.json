@@ -1,0 +1,45 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "${title}",
+      "weight": "Bolder",
+      "size": "Medium",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "${subtitle}",
+      "size": "Small",
+      "isSubtle": true,
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Featured Match:",
+          "value": "${featuredMatch}"
+        },
+        {
+          "title": "AI Pick:",
+          "value": "${prediction}"
+        },
+        {
+          "title": "Confidence:",
+          "value": "${confidence}"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Open PredictPro xG",
+      "url": "https://www.predictpro.guru/best-bets"
+    }
+  ]
+}

@@ -59,10 +59,7 @@ if ('serviceWorker' in navigator) {
   const registerServiceWorker = () => {
     if (swRegistered) return;
     swRegistered = true;
-    if (
-      navigator.webdriver ||
-      /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '')
-    ) {
+    if (/Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '')) {
       return;
     }
     if ('caches' in window) {
@@ -71,7 +68,7 @@ if ('serviceWorker' in navigator) {
         .then((keys) =>
           Promise.all(
             keys
-              .filter((k) => !k.startsWith('predictpro-v7'))
+              .filter((k) => !k.startsWith('predictpro-v8'))
               .map((k) => caches.delete(k).catch(() => false))
           )
         )
@@ -81,10 +78,27 @@ if ('serviceWorker' in navigator) {
       .register('/sw.js', { scope: '/' })
       .then((reg) => {
         reg.update().catch(() => {});
+        try {
+          const anyReg = reg as ServiceWorkerRegistration & {
+            sync?: { register: (tag: string) => Promise<void> };
+            periodicSync?: { register: (tag: string, opts: { minInterval: number }) => Promise<void> };
+          };
+          anyReg.sync?.register('predictpro-sync-predictions').catch(() => {});
+          anyReg.periodicSync
+            ?.register('predictpro-periodic-live-scores', { minInterval: 15 * 60 * 1000 })
+            .catch(() => {});
+        } catch {
+          // Non-blocking sync registration
+        }
       })
       .catch(() => {});
   };
 
+  if (document.readyState === 'complete') {
+    registerServiceWorker();
+  } else {
+    window.addEventListener('load', registerServiceWorker, { once: true });
+  }
   window.addEventListener('scroll', registerServiceWorker, { once: true, passive: true });
   window.addEventListener('pointerdown', registerServiceWorker, { once: true, passive: true });
   window.addEventListener('touchstart', registerServiceWorker, { once: true, passive: true });

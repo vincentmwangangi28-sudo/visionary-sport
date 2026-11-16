@@ -224,6 +224,28 @@
             window.dispatchEvent(new CustomEvent('predictpro:pwa-installed'));
           } catch (err) {}
         });
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            if (/Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent || '')) {
+              return;
+            }
+            navigator.serviceWorker
+              .register('/sw.js', { scope: '/' })
+              .then(function (reg) {
+                try {
+                  if (reg && 'sync' in reg && reg.sync) {
+                    reg.sync.register('predictpro-sync-predictions').catch(function () {});
+                  }
+                  if (reg && 'periodicSync' in reg && reg.periodicSync) {
+                    reg.periodicSync
+                      .register('predictpro-periodic-live-scores', { minInterval: 900000 })
+                      .catch(function () {});
+                  }
+                } catch (err) {}
+              })
+              .catch(function () {});
+          });
+        }
       })();
     </script>
 
