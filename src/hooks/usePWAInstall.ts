@@ -483,26 +483,30 @@ export function downloadPlatformInstaller(targetPlatform?: DevicePlatform): {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#10B981" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#060A12" />
   <title>PredictPro App</title>
   <link rel="icon" href="https://www.predictpro.guru/icon-192.png" />
   <link rel="apple-touch-icon" href="https://www.predictpro.guru/apple-touch-icon.png" />
-  <meta http-equiv="refresh" content="0; url=${appUrl}" />
   <style>
-    body { margin: 0; background: #060A12; color: #F8FAFC; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 24px; }
-    .logo { width: 64px; height: 64px; border-radius: 16px; background: #10B981; color: #060A12; font-weight: 900; font-size: 28px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-    .btn { margin-top: 16px; display: inline-block; padding: 12px 24px; border-radius: 10px; background: #10B981; color: #060A12; font-weight: 800; text-decoration: none; font-size: 14px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100dvh; overflow: hidden; background: #060A12; color: #F8FAFC; font-family: system-ui, -apple-system, sans-serif; }
+    .app-shell { display: flex; flex-direction: column; width: 100%; height: 100dvh; }
+    .app-frame { flex: 1; width: 100%; height: 100%; border: 0; background: #060A12; }
   </style>
 </head>
 <body>
-  <div class="logo">PP</div>
-  <h1 style="font-size: 20px; margin: 0 0 8px;">Launching PredictPro App...</h1>
-  <p style="font-size: 13px; color: #94A3B8; margin: 0;">Live Football Scores, Expected Goals (xG) &amp; Daily AI Predictions</p>
-  <a class="btn" href="${appUrl}">Open PredictPro Now</a>
-  <script>window.location.replace(${JSON.stringify(appUrl)});</script>
+  <div class="app-shell">
+    <iframe
+      class="app-frame"
+      src="${appUrl}"
+      title="PredictPro Standalone Mobile App"
+      allow="fullscreen; clipboard-write; autoplay"
+    ></iframe>
+  </div>
 </body>
 </html>`;
   }

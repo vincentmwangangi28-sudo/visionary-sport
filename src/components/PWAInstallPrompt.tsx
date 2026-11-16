@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePWAInstall, triggerPWAInstallFlow } from '@/hooks/usePWAInstall';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -67,11 +67,11 @@ export const PWAInstallPrompt: React.FC = () => {
       const targetOs = platform === 'mac' ? 'mac' : platform === 'linux' ? 'linux' : 'windows';
       const { filename } = downloadPlatformInstaller(targetOs);
       toast.success(`Downloaded Desktop App (${filename})`);
-      triggerPWAInstallFlow();
+      dismissPrompt(168);
     } else {
       const { filename } = downloadPlatformInstaller('android');
-      toast.success(`Downloaded Android App Launcher (${filename})`);
-      triggerPWAInstallFlow();
+      toast.success(`Downloaded PredictPro Mobile App (${filename})`);
+      dismissPrompt(168);
     }
   };
 

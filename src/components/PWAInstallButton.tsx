@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import {
   usePWAInstall,
-  triggerPWAInstallFlow,
   DevicePlatform,
 } from '@/hooks/usePWAInstall';
 import { Button } from '@/components/ui/button';
@@ -31,12 +30,10 @@ export const PWAInstallButton: React.FC = () => {
     isIOS,
     isAndroid,
     isDesktop,
-    isInAppWebView,
     isInIframe,
     platform,
     install,
     downloadPlatformInstaller,
-    getAndroidChromeIntentUrl,
   } = usePWAInstall();
 
   const [showModal, setShowModal] = useState(false);
@@ -61,6 +58,32 @@ export const PWAInstallButton: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showModal]);
 
+  const triggerDirectPlatformDownload = useCallback(
+    (overridePlatform?: DevicePlatform) => {
+      const targetPlatform: DevicePlatform =
+        overridePlatform ||
+        (isIOS
+          ? 'ios'
+          : isDesktop
+          ? platform === 'mac'
+            ? 'mac'
+            : platform === 'linux'
+            ? 'linux'
+            : 'windows'
+          : 'android');
+      const { filename } = downloadPlatformInstaller(targetPlatform);
+      toast.success(`Downloading PredictPro App (${filename})`, {
+        description:
+          targetPlatform === 'ios'
+            ? 'Open the downloaded iOS profile or tap Share → Add to Home Screen.'
+            : targetPlatform === 'android'
+            ? 'PredictPro Mobile App downloaded directly to your device.'
+            : 'Open the downloaded file to launch PredictPro in standalone app mode.',
+      });
+    },
+    [downloadPlatformInstaller, isDesktop, isIOS, platform]
+  );
+
   const handleNativeOrModalInstall = useCallback(
     async (preferredTab?: 'mobile' | 'desktop') => {
       if (preferredTab) {
@@ -76,9 +99,13 @@ export const PWAInstallButton: React.FC = () => {
           return;
         }
       }
+      // Directly download the app immediately instead of sending to Chrome
+      triggerDirectPlatformDownload(
+        preferredTab === 'mobile' ? (isIOS ? 'ios' : 'android') : undefined
+      );
       setShowModal(true);
     },
-    [isInstallable, install]
+    [isInstallable, install, isIOS, triggerDirectPlatformDownload]
   );
 
   useEffect(() => {
@@ -92,11 +119,12 @@ export const PWAInstallButton: React.FC = () => {
           return;
         }
       }
+      triggerDirectPlatformDownload();
       setShowModal(true);
     };
     window.addEventListener('predictpro:open-pwa-install-modal', onOpenModal);
     return () => window.removeEventListener('predictpro:open-pwa-install-modal', onOpenModal);
-  }, [isInstallable, install]);
+  }, [isInstallable, install, triggerDirectPlatformDownload]);
 
   const handleDirectOsDownload = (targetPlatform: DevicePlatform, label: string) => {
     const { filename } = downloadPlatformInstaller(targetPlatform);
@@ -254,61 +282,43 @@ export const PWAInstallButton: React.FC = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 {isInstallable ? (
                   <Button
                     type="button"
                     size="sm"
                     onClick={() => handleNativeOrModalInstall('mobile')}
-                    className="h-9 text-xs font-bold gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white"
+                    className="h-9 text-xs font-bold gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white cursor-pointer"
                   >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Install Android App (1-Click)</span>
-                      </Button>
-                    ) : isAndroid && isInAppWebView ? (
-                      <a
-                        href={getAndroidChromeIntentUrl()}
-                        className="inline-flex items-center justify-center h-9 px-3 rounded-lg text-xs font-bold gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Open in Chrome to Install</span>
-                      </a>
-                    ) : (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleDirectOsDownload('android', 'Android App Launcher')}
-                        data-testid="download-android-launcher-btn"
-                        className="h-9 text-xs font-bold gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download Android App</span>
-                      </Button>
-                    )}
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Install Android App Now (1-Click)</span>
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleDirectOsDownload('android', 'Android Mobile App')}
+                    data-testid="download-android-launcher-btn"
+                    className="h-9 text-xs font-bold gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Android App Directly</span>
+                  </Button>
+                )}
+              </div>
 
-                    {isAndroid && !isInAppWebView && (
-                      <a
-                        href={getAndroidChromeIntentUrl()}
-                        className="inline-flex items-center justify-center h-9 px-3 rounded-lg text-xs font-bold gap-1.5 border border-border bg-card hover:bg-muted text-foreground"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 text-primary" />
-                        <span>Launch Chrome Installer</span>
-                      </a>
-                    )}
-                  </div>
-
-                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-[11px] pt-1">
-                    <li>
-                      Tap <strong className="text-foreground">Download Android App</strong> above, or tap the browser menu (<strong className="text-foreground">⋮</strong> in Chrome / Samsung Internet).
-                    </li>
-                    <li>
-                      Select <strong className="text-foreground">Install App</strong> or <strong className="text-foreground">Add to Home screen</strong>.
-                    </li>
-                    <li>
-                      Tap <strong className="text-foreground">Install</strong> to add the standalone PredictPro app icon to your phone.
-                    </li>
-                  </ol>
-                </div>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-[11px] pt-1">
+                <li>
+                  Tap <strong className="text-foreground">Download Android App Directly</strong> above to save the standalone PredictPro app right to your phone.
+                </li>
+                <li>
+                  Open the downloaded app file from your Notifications or Downloads to launch PredictPro in full-screen standalone mode.
+                </li>
+                <li>
+                  You can also tap your browser menu (<strong className="text-foreground">⋮</strong>) and select <strong className="text-foreground">Add to Home screen</strong>.
+                </li>
+              </ol>
+            </div>
 
                 {/* iPhone / iPad (iOS) Section */}
                 <div
@@ -566,13 +576,20 @@ export const HomeDownloadAppBanner: React.FC = () => {
         return;
       }
     }
-    triggerPWAInstallFlow();
+    const targetMobilePlatform: DevicePlatform = isIOS ? 'ios' : 'android';
+    const { filename } = downloadPlatformInstaller(targetMobilePlatform);
+    toast.success(`Downloading PredictPro Mobile App (${filename})`, {
+      description: 'Open the downloaded file to launch PredictPro directly on your phone.',
+    });
   };
 
-  const handleDesktopQuickDownload = () => {
+  const handleDesktopQuickDownload = async () => {
     if (isInstallable && isDesktop) {
-      handlePrimaryInstall();
-      return;
+      const accepted = await install();
+      if (accepted) {
+        toast.success('PredictPro App installed successfully!');
+        return;
+      }
     }
     const targetOs: DevicePlatform =
       platform === 'mac' ? 'mac' : platform === 'linux' ? 'linux' : 'windows';
@@ -580,7 +597,6 @@ export const HomeDownloadAppBanner: React.FC = () => {
     toast.success(`Downloaded Desktop App Launcher (${filename})`, {
       description: 'Open the file to launch PredictPro in standalone desktop window mode.',
     });
-    triggerPWAInstallFlow();
   };
 
   if (isInstalled || !shouldShowPrompt) {
