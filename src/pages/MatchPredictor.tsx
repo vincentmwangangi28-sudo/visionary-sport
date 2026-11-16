@@ -19,6 +19,7 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { analyzeMatchWithGemini, GeminiMatchAnalysis } from '@/services/geminiTasksService';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { LeagueNavigationStrip } from '@/components/LeagueNavigationStrip';
+import { FiveGamePacksAndWeeklyLongBet } from '@/components/FiveGamePacksAndWeeklyLongBet';
 import { hapticService } from '@/services/hapticService';
 
 const LEAGUES = ['Premier League','La Liga','Champions League','Bundesliga','Serie A','Ligue 1','KPL','AFCON Qualifier','MLS','Europa League'];
@@ -572,6 +573,9 @@ export default function MatchPredictor() {
             </CardContent>
           </Card>
         )}
+
+        {/* 5-Game High-Chance Packs & Top Weekly Long Bet */}
+        <FiveGamePacksAndWeeklyLongBet />
 
         <LeagueNavigationStrip className="mt-8" />
 

@@ -72,18 +72,27 @@ export const BetSlipDrawer = () => {
     selections,
     isOpen,
     setIsOpen,
+    slipMode,
+    setSlipMode,
+    isSafetyCushionActive,
+    toggleSafetyCushion,
     stake,
     setStake,
     currency,
     setCurrency,
     addSelection,
+    groupIntoWeeklyLongBet,
     removeSelection,
     clearSlip,
     totalOdds,
     bonusMultiplier,
+    bonusAmount,
     potentialReturn,
     boostedReturn,
+    netProfit,
     combinedConfidence,
+    legProgression,
+    nextBonusTier,
     getShareableSlipUrl,
     triggerHaptic,
   } = useBetSlip();
@@ -224,6 +233,49 @@ export const BetSlipDrawer = () => {
       boostPercent,
     };
   }, [selections, predictions, totalOdds]);
+
+  // Helper to top-up and group multiple predictions into a single 'Weekly Long Bet' accumulation slip
+  const handleGroupAndTopUpWeeklyLongBet = (targetCount: number) => {
+    const needed = Math.max(0, targetCount - selections.length);
+    if (needed === 0) {
+      groupIntoWeeklyLongBet();
+      return;
+    }
+
+    const existingKeys = new Set(
+      selections.map((s) => `${s.homeTeam.toLowerCase()}|${s.awayTeam.toLowerCase()}`)
+    );
+
+    const candidates = [...predictions]
+      .sort(
+        (a, b) =>
+          (b.confidence_score ?? b.confidence ?? 70) - (a.confidence_score ?? a.confidence ?? 70)
+      )
+      .filter((p) => !existingKeys.has(`${p.home_team.toLowerCase()}|${p.away_team.toLowerCase()}`))
+      .slice(0, needed)
+      .map((p) => {
+        const outcome = p.predicted_outcome || p.prediction || 'Home Win';
+        const odds =
+          outcome === 'Away Win'
+            ? p.away_odds ?? 2.25
+            : outcome === 'Draw'
+              ? p.draw_odds ?? 3.20
+              : p.home_odds ?? 1.62;
+        return {
+          matchId: p.id,
+          match: `${p.home_team} vs ${p.away_team}`,
+          homeTeam: p.home_team,
+          awayTeam: p.away_team,
+          league: p.league,
+          matchDate: p.match_date,
+          market: outcome,
+          odds,
+          confidence: p.confidence_score ?? p.confidence ?? 78,
+        };
+      });
+
+    groupIntoWeeklyLongBet(candidates);
+  };
 
   // AI Recommended Stake based on fractional Kelly Criterion & currency tier
   const aiRecommendedStake = useMemo(() => {
@@ -467,7 +519,9 @@ export const BetSlipDrawer = () => {
                 }`}
               >
                 <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Active Slip ({selections.length})</span>
+                <span>
+                  {slipMode === 'weekly_long_bet' ? 'Weekly Long Bet' : 'Active Slip'} ({selections.length})
+                </span>
               </button>
               <button
                 type="button"
@@ -484,6 +538,51 @@ export const BetSlipDrawer = () => {
                 <span>My Saved Slips ({savedSlips.length})</span>
               </button>
             </div>
+
+            {/* Accumulation Mode Switcher: Standard Multi-Bet vs Weekly Long Bet Accumulation Slip */}
+            {activeTab === 'active' && (
+              <div className="pt-1 flex items-center justify-between gap-2 text-xs">
+                <div className="inline-flex rounded-md border border-border bg-muted/50 p-0.5 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setSlipMode('standard')}
+                    className={`flex-1 py-1 px-2 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                      slipMode === 'standard'
+                        ? 'bg-card text-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Standard Acca (3–5 Games)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => groupIntoWeeklyLongBet()}
+                    className={`flex-1 py-1 px-2 rounded text-[11px] font-bold transition-colors cursor-pointer ${
+                      slipMode === 'weekly_long_bet'
+                        ? 'bg-primary text-primary-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Weekly Long Bet Slip
+                  </button>
+                </div>
+
+                {selections.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleSafetyCushion}
+                    className={`px-2.5 py-1 rounded border text-[11px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                      isSafetyCushionActive
+                        ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                        : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                    }`}
+                    title="Convert legs to Double Chance (1X/X2) & Over 1.5 Goals for safer Weekly Long Bet accumulation"
+                  >
+                    {isSafetyCushionActive ? '1X Cushion: ON' : '1X Cushion: OFF'}
+                  </button>
+                )}
+              </div>
+            )}
           </SheetHeader>
 
           {activeTab === 'saved' ? (
@@ -675,18 +774,105 @@ export const BetSlipDrawer = () => {
                 <Ticket className="h-8 w-8 opacity-40" />
               </div>
               <h3 className="font-bold text-foreground text-base mb-1">Your Bet Slip is Empty</h3>
-              <p className="text-sm max-w-xs mb-6">
-                Click on any odds button (Home, Draw, Away) on match cards to add selections to your multi-bet slip.
+              <p className="text-sm max-w-xs mb-5">
+                Click any match odds button to build your slip, or instantly group top weekly predictions into a single Weekly Long Bet below:
               </p>
-              <Button variant="outline" size="sm" onClick={() => setIsOpen(false)}>
-                Explore Matches
+              <div className="flex flex-col w-full max-w-xs gap-2 mb-4">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => handleGroupAndTopUpWeeklyLongBet(5)}
+                  className="text-xs font-bold cursor-pointer"
+                >
+                  Build 5-Game High-Chance Pack
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleGroupAndTopUpWeeklyLongBet(12)}
+                  className="text-xs font-bold cursor-pointer"
+                >
+                  Build 12-Game Weekly Long Bet
+                </Button>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-xs">
+                Explore All Matches
               </Button>
             </div>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Selections List */}
+              {/* Weekly Long Bet Accumulation Header & Quick Top-Up Strip */}
+              <div className="px-4 py-2.5 border-b border-border bg-muted/30 space-y-2">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <div className="min-w-0">
+                    <span className="font-bold text-foreground">
+                      {slipMode === 'weekly_long_bet'
+                        ? `Weekly Long Bet Slip (${selections.length} Grouped Games)`
+                        : `Active Multi-Game Slip (${selections.length} Games)`}
+                    </span>
+                    <span className="text-muted-foreground ml-1.5 font-mono tabular-nums">
+                      · {formatOdds(totalOdds)}x
+                    </span>
+                  </div>
+                  {slipMode !== 'weekly_long_bet' && (
+                    <button
+                      type="button"
+                      onClick={() => groupIntoWeeklyLongBet()}
+                      className="text-[11px] font-bold text-primary hover:underline cursor-pointer shrink-0"
+                    >
+                      Group as Weekly Long Bet →
+                    </button>
+                  )}
+                </div>
+
+                {/* 1-Click Top-Up Buttons to expand into 5-Game Pack or 10/12/15-Game Weekly Long Bet */}
+                {selections.length < 15 && (
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className="text-muted-foreground">Top up slip:</span>
+                    {selections.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => handleGroupAndTopUpWeeklyLongBet(5)}
+                        className="px-2 py-0.5 rounded border border-border bg-background hover:bg-muted font-semibold text-foreground cursor-pointer"
+                      >
+                        + 5-Game Pack
+                      </button>
+                    )}
+                    {selections.length < 10 && (
+                      <button
+                        type="button"
+                        onClick={() => handleGroupAndTopUpWeeklyLongBet(10)}
+                        className="px-2 py-0.5 rounded border border-border bg-background hover:bg-muted font-semibold text-foreground cursor-pointer"
+                      >
+                        + 10-Game Long Bet
+                      </button>
+                    )}
+                    {selections.length < 12 && (
+                      <button
+                        type="button"
+                        onClick={() => handleGroupAndTopUpWeeklyLongBet(12)}
+                        className="px-2 py-0.5 rounded border border-primary/40 bg-primary/10 text-primary font-bold cursor-pointer"
+                      >
+                        + 12-Game Weekly Long Bet
+                      </button>
+                    )}
+                    {selections.length < 15 && (
+                      <button
+                        type="button"
+                        onClick={() => handleGroupAndTopUpWeeklyLongBet(15)}
+                        className="px-2 py-0.5 rounded border border-border bg-background hover:bg-muted font-semibold text-foreground cursor-pointer"
+                      >
+                        + 15-Game Mega Long Bet
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Selections List with Cumulative Odds & Running Return Visualization */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {selections.map((s, idx) => {
+                {legProgression.map(({ selection: s, legNumber, dayGroup, cumulativeOdds, cumulativeReturn }, idx) => {
                   const legGrade = gradeSelectionAgainstFeed(
                     { homeTeam: s.homeTeam, awayTeam: s.awayTeam, market: s.market },
                     liveAndFinishedFeed
@@ -698,11 +884,18 @@ export const BetSlipDrawer = () => {
                     >
                       <div className="flex items-start justify-between gap-2 pr-6">
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center flex-wrap gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded">
-                              #{idx + 1}
+                          <div className="flex items-center flex-wrap gap-1.5 mb-1 text-[11px] text-muted-foreground">
+                            <span className="font-mono font-bold text-primary">
+                              Leg #{legNumber < 10 ? `0${legNumber}` : legNumber}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[140px]">{s.league}</span>
+                            <span aria-hidden="true">·</span>
+                            <span className="truncate max-w-[120px]">{s.league}</span>
+                            {dayGroup && (
+                              <>
+                                <span aria-hidden="true">·</span>
+                                <span className="font-medium text-foreground/80">{dayGroup}</span>
+                              </>
+                            )}
                             {legGrade.status === 'Live' && (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-black animate-pulse">
                                 <Radio className="h-2.5 w-2.5" />
@@ -751,36 +944,63 @@ export const BetSlipDrawer = () => {
                       </div>
 
                       <div className="mt-2 pt-2 border-t flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-background font-semibold text-primary">
-                            {s.market}
-                          </Badge>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-semibold text-primary truncate">{s.market}</span>
                           {s.confidence ? (
                             <ConfidenceMeter confidence={s.confidence} variant="compact" />
                           ) : null}
                         </div>
-                        <div className="font-mono tabular-nums font-black text-sm text-foreground">
+                        <div className="font-mono tabular-nums font-black text-sm text-foreground shrink-0">
                           @ {formatOdds(s.odds)}
                         </div>
                       </div>
+
+                      {/* Step-by-Step Cumulative Odds & Return Multiplier Trail */}
+                      {selections.length > 1 && (
+                        <div className="mt-1.5 pt-1.5 border-t border-border/40 flex items-center justify-between text-[11px] font-mono tabular-nums text-muted-foreground">
+                          <span>
+                            After Leg #{idx + 1}: <strong className="text-foreground">{cumulativeOdds.toFixed(2)}x</strong>
+                          </span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Return: {currency} {cumulativeReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
 
-                {/* Multi-Leg Bonus Notification */}
-                {bonusMultiplier > 0 && (
-                  <div className="bg-gradient-to-r from-amber-500/10 via-primary/10 to-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-2.5">
-                    <Flame className="h-5 w-5 text-amber-500 flex-shrink-0 animate-bounce" />
-                    <div>
-                      <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                        +{(bonusMultiplier * 100).toFixed(0)}% {t('slip.acca_boost', 'Accumulator Payout Boost Active!')}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {selections.length >= 8 ? 'Master Booster tier applied' : 'Add more legs for up to 50% extra bonus'}
-                      </p>
+                {/* Multi-Leg Bonus Progress & Active Tier Notification */}
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Flame className="h-4 w-4 text-amber-500 shrink-0" />
+                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                        {bonusMultiplier > 0
+                          ? `+${(bonusMultiplier * 100).toFixed(0)}% Weekly Long Bet Bonus Active`
+                          : 'Accumulator Win Bonus Ladder'}
+                      </span>
                     </div>
+                    {nextBonusTier && (
+                      <span className="text-[11px] font-mono text-muted-foreground">
+                        +{nextBonusTier.legsNeeded} leg{nextBonusTier.legsNeeded > 1 ? 's' : ''} for +{nextBonusTier.nextBonusPct}%
+                      </span>
+                    )}
                   </div>
-                )}
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-amber-500 transition-all duration-300"
+                      style={{ width: `${Math.min(100, Math.round((selections.length / 15) * 100))}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                    <span>3G (+5%)</span>
+                    <span>5G (+15%)</span>
+                    <span>8G (+30%)</span>
+                    <span>12G (+50%)</span>
+                    <span>15G (+60%)</span>
+                  </div>
+                </div>
 
                 {/* AI Recommended Acca Enhancer */}
                 {recommendedEnhancer && (
@@ -1002,14 +1222,22 @@ export const BetSlipDrawer = () => {
 
               {/* Summary and Calculation Footer */}
               <div className="p-4 border-t bg-card/90 backdrop-blur space-y-3">
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-muted/40 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[11px]">{t('slip.total_odds', 'Combined Odds')}</span>
-                    <span className="text-base font-black text-foreground">{formatOdds(totalOdds)}</span>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="bg-muted/40 p-2 rounded-lg border border-border/60">
+                    <span className="text-muted-foreground block text-[10px]">Grouped Legs</span>
+                    <span className="text-sm font-mono tabular-nums font-black text-foreground">
+                      {selections.length} {selections.length === 1 ? 'Game' : 'Games'}
+                    </span>
                   </div>
-                  <div className="bg-muted/40 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[11px]">{t('slip.ai_probability', 'AI Probability')}</span>
-                    <span className={`text-base font-black ${combinedConfidence > 40 ? 'text-green-600' : 'text-amber-600'}`}>
+                  <div className="bg-muted/40 p-2 rounded-lg border border-border/60">
+                    <span className="text-muted-foreground block text-[10px]">{t('slip.total_odds', 'Combined Odds')}</span>
+                    <span className="text-sm font-mono tabular-nums font-black text-primary">
+                      {formatOdds(totalOdds)}x
+                    </span>
+                  </div>
+                  <div className="bg-muted/40 p-2 rounded-lg border border-border/60">
+                    <span className="text-muted-foreground block text-[10px]">{t('slip.ai_probability', 'AI Hit Rate')}</span>
+                    <span className={`text-sm font-mono tabular-nums font-black ${combinedConfidence > 40 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600'}`}>
                       {combinedConfidence}%
                     </span>
                   </div>
@@ -1068,29 +1296,44 @@ export const BetSlipDrawer = () => {
                       step="10"
                       value={stake || ''}
                       onChange={(e) => setStake(parseFloat(e.target.value) || 0)}
-                      className="font-bold text-base pr-16"
+                      className="font-bold font-mono tabular-nums text-base pr-16"
                       aria-label="Stake amount"
                     />
                     <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-bold">{currency}</span>
                   </div>
                 </div>
 
-                {/* Payout Calculation */}
-                <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground font-medium">{t('slip.est_return', 'Estimated Return')}</span>
-                    <span className="text-sm font-bold">
+                {/* Clear Visualization of Combined Odds & Total Potential Returns */}
+                <div className="bg-primary/10 border border-primary/25 rounded-xl p-3 space-y-1.5 font-mono tabular-nums">
+                  <div className="flex items-center justify-between text-xs font-sans">
+                    <span className="text-muted-foreground font-medium">
+                      Base Return ({currency} {(stake || 0).toLocaleString()} × {totalOdds.toFixed(2)}x)
+                    </span>
+                    <span className="font-mono font-bold text-foreground">
                       {currency} {potentialReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                   {bonusMultiplier > 0 && (
-                    <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                      <span>+{(bonusMultiplier * 100).toFixed(0)}% Boosted Total</span>
-                      <span className="font-black text-sm">
-                        {currency} {boostedReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    <div className="flex items-center justify-between text-xs font-sans text-amber-600 dark:text-amber-400">
+                      <span>+{(bonusMultiplier * 100).toFixed(0)}% Acca Bonus Boost</span>
+                      <span className="font-mono font-bold">
+                        +{currency} {bonusAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                       </span>
                     </div>
                   )}
+                  <div className="pt-1.5 border-t border-primary/20 flex items-center justify-between">
+                    <div className="font-sans">
+                      <span className="text-xs font-bold text-foreground block">
+                        Total Potential Return
+                      </span>
+                      <span className="text-[10px] text-muted-foreground block">
+                        Net Profit: +{currency} {netProfit.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                    <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">
+                      {currency} {(bonusMultiplier > 0 ? boostedReturn : potentialReturn).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Save & Track Slip Button */}

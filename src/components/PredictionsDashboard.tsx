@@ -8,6 +8,7 @@ import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
 import { TopSiteMatchdayCommandBar } from '@/components/TopSiteMatchdayCommandBar';
+import { FiveGamePacksAndWeeklyLongBet } from '@/components/FiveGamePacksAndWeeklyLongBet';
 import { DateFilterType } from '@/components/LeagueDateFilterBar';
 import { TeamLogo } from '@/components/TeamLogo';
 import { getPrediction, getConfidence } from '@/types/prediction';
@@ -604,15 +605,15 @@ export const PredictionsDashboard = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button
               size="sm"
               variant="outline"
               onClick={() => {
-                const top3 = [...filteredPredictions]
+                const top5 = [...filteredPredictions]
                   .sort((a, b) => getConfidence(b) - getConfidence(a))
-                  .slice(0, 3);
-                top3.forEach((m) => {
+                  .slice(0, 5);
+                top5.forEach((m) => {
                   const pick = getPrediction(m);
                   const odds =
                     pick === 'Away Win'
@@ -633,25 +634,30 @@ export const PredictionsDashboard = ({
                   });
                 });
                 setBetSlipOpen(true);
-                toast.success('Loaded Top 3 AI Banker Picks into Bet Slip!');
+                toast.success('Loaded 5-Game High-Chance Banker Pack into Bet Slip!');
               }}
-              className="h-8 text-xs font-bold gap-1.5 border-emerald-500/40 bg-background hover:bg-emerald-500/10"
+              className="h-8 text-xs font-bold gap-1.5 border-emerald-500/40 bg-background hover:bg-emerald-500/10 cursor-pointer"
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-              <span>Load 3-Leg Banker</span>
+              <span>Load 5-Game Pack</span>
             </Button>
 
             {selections.length > 0 && (
               <Button
                 size="sm"
                 onClick={() => setBetSlipOpen(true)}
-                className="h-8 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white"
+                className="h-8 text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white cursor-pointer"
               >
                 Open Slip ({selections.length})
               </Button>
             )}
           </div>
         </div>
+
+        {/* 5-Game Multi-Pack Predictions & Top Weekly Long Bet */}
+        <FiveGamePacksAndWeeklyLongBet
+          predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool}
+        />
 
         {/* Top-Site Matchday Command Bar (+EV Value Drops, SofaScore Streaks, FotMob Fan Poll & Flashscore Odds Switcher) */}
         <TopSiteMatchdayCommandBar predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool} />
