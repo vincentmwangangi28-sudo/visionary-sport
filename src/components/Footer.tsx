@@ -74,10 +74,10 @@ export const Footer = () => {
             <div className="text-[11px] text-muted-foreground space-y-0.5 pt-1">
               <p className="font-semibold text-foreground">Editorial &amp; Data Desk</p>
               <p>
-                Email:{' '}
-                <a href="mailto:vincentmwangangiz@gmail.com" className="text-primary hover:underline">
-                  vincentmwangangiz@gmail.com
-                </a>
+                Contact:{' '}
+                <Link to="/contact" className="text-primary hover:underline">
+                  editorial@predictpro.guru
+                </Link>
               </p>
             </div>
           </div>
@@ -163,9 +163,8 @@ export const Footer = () => {
                 <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
                 <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
-                <li><Link to="/ahrefs-opportunities" className="hover:text-foreground transition-colors font-semibold text-primary">Ahrefs 12-Pillar Organic Growth Hub</Link></li>
-                <li><Link to="/seo-indexing" className="hover:text-foreground transition-colors">SEO &amp; Indexing Center</Link></li>
                 <li><Link to="/sitemap" className="hover:text-foreground transition-colors font-semibold text-primary">HTML Sitemap &amp; SEO Directory</Link></li>
+                <li><Link to="/admin" className="hover:text-foreground transition-colors text-muted-foreground/80">Admin Operations Console</Link></li>
               </ul>
             </div>
           </div>

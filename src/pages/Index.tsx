@@ -204,7 +204,7 @@ const PRO_SPORTS_TOOLS = [
     to: '/h2h',
     title: 'Dynamic Team H2H & Matchup Hub',
     tag: '10-Match H2H',
-    desc: 'Compare head-to-head form, xG differential, BTTS %, and Poisson score grids with 1-click IndexNow push.',
+    desc: 'Compare head-to-head form, xG differential, BTTS %, and Poisson score grids across 10 historical meetings.',
     icon: Users,
   },
   {
@@ -213,13 +213,6 @@ const PRO_SPORTS_TOOLS = [
     tag: 'RLM Scanner',
     desc: 'Track ticket % vs money handle %, reverse line movement (RLM), and institutional sharp steam across 40+ leagues.',
     icon: ArrowRightLeft,
-  },
-  {
-    to: '/ahrefs-opportunities',
-    title: 'Ahrefs 12-Pillar Organic Growth & AI Overviews Hub',
-    tag: 'Ahrefs 12P',
-    desc: 'Capture top-3 rankings, Google AI Overviews, 301 reclaimed backlinks, competitor content gaps & zero critical errors.',
-    icon: Activity,
   },
 ];
 
@@ -468,14 +461,6 @@ const Index = () => {
               <Link to="/pitch-telemetry" className="text-muted-foreground hover:text-foreground">
                 2D Shot Map &amp; xT →
               </Link>
-              <a
-                href="/sitemap-discover-news.xml"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground font-mono"
-              >
-                Discover XML Feed ↗
-              </a>
               <Link
                 to="/alert-center"
                 className="text-emerald-800 dark:text-emerald-300 font-bold hover:underline inline-flex items-center gap-1"

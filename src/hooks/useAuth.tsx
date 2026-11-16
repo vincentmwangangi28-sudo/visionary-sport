@@ -216,6 +216,46 @@ export function savePersistedMemberUser(user: User | null | undefined): void {
     window.localStorage.removeItem(EXPLICIT_SIGNOUT_KEY);
     unlockGuestPreviewGate();
 
+    // Sync per-user telemetry (visits, live status, app download state)
+    const emailKey = (user.email || '').trim().toLowerCase();
+    const idKey = user.id;
+    const primaryKey = emailKey || idKey;
+    if (primaryKey) {
+      const rawMap = window.localStorage.getItem('predictpro_user_telemetry_map_v1');
+      const map = rawMap ? JSON.parse(rawMap) : {};
+      const existing = map[primaryKey] || map[idKey] || {};
+      const deviceVisits = parseInt(
+        window.localStorage.getItem('predictpro_pwa_visit_count_v1') || '1',
+        10
+      );
+      const isInstalled =
+        window.localStorage.getItem('predictpro_pwa_installed_v1') === 'true' ||
+        Boolean(window.matchMedia?.('(display-mode: standalone)')?.matches);
+      const platform =
+        window.localStorage.getItem('predictpro_pwa_installed_platform_v1') ||
+        existing.downloadPlatform ||
+        undefined;
+      const nowIso = new Date().toISOString();
+      const entry = {
+        userId: idKey,
+        email: emailKey,
+        visitCount: Math.max(
+          existing.visitCount || 0,
+          !Number.isNaN(deviceVisits) && deviceVisits > 0 ? deviceVisits : 1
+        ),
+        lastActiveAt: nowIso,
+        firstSeenAt: existing.firstSeenAt || user.created_at || nowIso,
+        hasDownloadedApp: Boolean(existing.hasDownloadedApp || isInstalled),
+        downloadPlatform: platform,
+        downloadedAt: existing.downloadedAt || (isInstalled ? nowIso : undefined),
+      };
+      map[primaryKey] = entry;
+      if (idKey && idKey !== primaryKey) {
+        map[idKey] = entry;
+      }
+      window.localStorage.setItem('predictpro_user_telemetry_map_v1', JSON.stringify(map));
+    }
+
     setCrossSubdomainCookie(MEMBER_COOKIE_NAME, JSON.stringify(knownInfo));
   } catch {
     // ignore storage quota errors

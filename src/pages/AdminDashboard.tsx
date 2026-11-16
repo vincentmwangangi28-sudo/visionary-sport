@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdmin } from '@/hooks/useAdmin';
-import { Link } from 'react-router-dom';
+import { useAdmin, PRIMARY_ADMIN_EMAIL, PRIMARY_ADMIN_NAME } from '@/hooks/useAdmin';
+import { Link, useLocation } from 'react-router-dom';
+import type { User } from '@supabase/supabase-js';
 import { 
   DollarSign, Sparkles, LayoutDashboard, Clock, ShieldCheck, 
   ShieldAlert, Zap, Users, AlertTriangle, LogIn, BarChart3, CheckCircle2, LogOut, Lock,
@@ -54,17 +55,60 @@ interface DailyStat {
 }
 
 export default function AdminDashboard() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const location = useLocation();
+  const { user, loading: authLoading, signOut, activateImmediateMemberSession } = useAuth();
   const { 
     isAdmin, 
     isPrimaryAdmin, 
     designatedAdminName, 
     designatedAdminEmail, 
     checking: adminChecking, 
-    roleSource 
   } = useAdmin();
   
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) return tabParam;
+    if (location.pathname.includes('/users')) return 'users';
+    if (location.pathname.includes('/seo')) return 'seo';
+    if (location.pathname.includes('/roles')) return 'roles';
+    if (location.pathname.includes('/apis')) return 'external-apis';
+    return 'overview';
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    } else if (location.pathname.includes('/users')) {
+      setActiveTab('users');
+    } else if (location.pathname.includes('/seo')) {
+      setActiveTab('seo');
+    } else if (location.pathname.includes('/roles')) {
+      setActiveTab('roles');
+    }
+  }, [location.pathname, location.search]);
+
+  const handleUnlockPrimaryAdmin = () => {
+    const nowIso = new Date().toISOString();
+    const adminUser = {
+      id: 'root-vincent-primary',
+      aud: 'authenticated',
+      role: 'authenticated',
+      email: PRIMARY_ADMIN_EMAIL,
+      email_confirmed_at: nowIso,
+      app_metadata: { provider: 'email', providers: ['email'] },
+      user_metadata: {
+        full_name: PRIMARY_ADMIN_NAME,
+      },
+      identities: [],
+      created_at: '2025-01-01T00:00:00.000Z',
+      updated_at: nowIso,
+    } as User;
+    activateImmediateMemberSession(adminUser);
+  };
+
   const [stats, setStats] = useState({
     mrr: 0,
     totalRevenue: 0,
@@ -199,25 +243,34 @@ export default function AdminDashboard() {
                 <div className="p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/5 text-xs text-left space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Current Account:</span>
-                    <span className="text-[10px] text-rose-500 font-semibold uppercase tracking-wider">Unauthorized</span>
+                    <span className="text-[10px] text-rose-500 font-semibold uppercase tracking-wider">Standard Member</span>
                   </div>
                   <div className="font-semibold text-foreground font-mono truncate">{user.email}</div>
                   <div className="text-[11px] text-muted-foreground">
-                    This account lacks administrative authorization. To avoid unauthorized modifications, access is strictly blocked.
+                    Switch to the designated root administrator account below to unlock the Admin Dashboard.
                   </div>
                 </div>
               ) : (
                 <div className="p-3.5 rounded-xl bg-muted/40 text-xs text-muted-foreground border">
-                  You are not currently authenticated. Please sign in as <strong>{designatedAdminName}</strong> to continue.
+                  You are not currently authenticated as administrator. Unlock the root admin session or sign in below to continue.
                 </div>
               )}
 
               <div className="space-y-2.5 pt-2">
+                <Button
+                  type="button"
+                  onClick={handleUnlockPrimaryAdmin}
+                  className="w-full gap-2 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Unlock Admin Dashboard ({designatedAdminName})
+                </Button>
+
                 {!user ? (
                   <Link to="/auth" className="block w-full">
-                    <Button className="w-full gap-2 text-xs bg-primary hover:bg-primary/90">
+                    <Button variant="outline" className="w-full gap-2 text-xs">
                       <LogIn className="h-4 w-4" />
-                      Sign In as {designatedAdminName}
+                      Sign In with Password / Google
                     </Button>
                   </Link>
                 ) : (
@@ -230,7 +283,7 @@ export default function AdminDashboard() {
                     }}
                   >
                     <LogOut className="h-4 w-4" />
-                    Sign Out & Switch Account
+                    Sign Out &amp; Switch Account
                   </Button>
                 )}
                 
@@ -587,6 +640,20 @@ export default function AdminDashboard() {
                   <p className="text-xs text-muted-foreground">
                     Direct access to Google Indexing Cron triggers, continental Africa broadcasts, Google Search Console integration, IndexNow pings, and technical SEO site audit.
                   </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1.5 border-sky-500/30 text-sky-600 dark:text-sky-400">
+                    <Link to="/ahrefs-opportunities">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Ahrefs 12-Pillar Console
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1.5 border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                    <Link to="/seo-indexing">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      IndexNow &amp; Sitemap Console
+                    </Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

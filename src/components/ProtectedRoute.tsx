@@ -21,13 +21,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminO
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+  // Strict access control: only authorized administrators can access adminOnly routes
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/admin" state={{ from: location, unauthorized: true }} replace />;
   }
 
-  // Strict access control: only authorized administrators from the Supabase 'admins' table can access
-  if (adminOnly && !isAdmin) {
-    return <Navigate to="/auth" state={{ from: location, unauthorized: true }} replace />;
+  if (!user) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

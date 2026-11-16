@@ -65,7 +65,6 @@ const BETTING_HUB_TOOLS = [
   { to: '/pick-em-challenge', label: "Daily 5-Match Pick'em", tag: '+50 Coins' },
   { to: '/alert-center', label: 'Telegram & Push Alert Hub', tag: 'Live Alerts' },
   { to: '/referrals', label: 'Invite Friends & Earn Coins', tag: 'VIP Perks' },
-  { to: '/ahrefs-opportunities', label: 'Ahrefs 12-Pillar Organic Growth Hub', tag: 'Ahrefs 12P' },
 ];
 
 export const Navbar = () => {
@@ -388,10 +387,10 @@ export const Navbar = () => {
           </button>
 
           {isAdmin && (
-            <Button asChild variant="outline" size="sm" className="hidden lg:inline-flex h-9 px-3 text-xs gap-1.5">
-              <Link to="/admin">
+            <Button asChild variant="outline" size="sm" className="inline-flex h-9 px-2.5 sm:px-3 text-xs gap-1.5 border-primary/40">
+              <Link to="/admin" title="Admin Dashboard & Live Users">
                 <Shield className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                <span>Admin</span>
+                <span className="hidden sm:inline">Admin</span>
               </Link>
             </Button>
           )}

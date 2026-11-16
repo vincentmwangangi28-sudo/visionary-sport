@@ -17,7 +17,129 @@ declare global {
 export const PWA_DISMISS_UNTIL_KEY = 'predictpro_pwa_dismiss_until_v1';
 export const PWA_VISIT_COUNT_KEY = 'predictpro_pwa_visit_count_v1';
 export const PWA_INSTALLED_FLAG_KEY = 'predictpro_pwa_installed_v1';
+export const PWA_INSTALLED_PLATFORM_KEY = 'predictpro_pwa_installed_platform_v1';
+export const PWA_INSTALLED_AT_KEY = 'predictpro_pwa_installed_at_v1';
 export const PWA_TOAST_SHOWN_SESSION_KEY = 'predictpro_pwa_toast_shown_session_v1';
+export const USER_TELEMETRY_MAP_KEY = 'predictpro_user_telemetry_map_v1';
+
+export interface UserTelemetryRecord {
+  userId?: string;
+  email?: string;
+  visitCount: number;
+  lastActiveAt: string;
+  firstSeenAt: string;
+  hasDownloadedApp: boolean;
+  downloadPlatform?: DevicePlatform;
+  downloadedAt?: string;
+}
+
+function getActiveUserIdentity(): { id?: string; email?: string } {
+  if (typeof window === 'undefined') return {};
+  try {
+    const knownRaw = window.localStorage.getItem('predictpro_known_account_v1');
+    if (knownRaw) {
+      const parsed = JSON.parse(knownRaw);
+      if (parsed?.email || parsed?.id) {
+        return { id: parsed.id, email: String(parsed.email || '').toLowerCase() };
+      }
+    }
+    const sessionRaw = window.localStorage.getItem('predictpro_member_session_v1');
+    if (sessionRaw) {
+      const parsed = JSON.parse(sessionRaw);
+      if (parsed?.user?.email || parsed?.user?.id) {
+        return { id: parsed.user.id, email: String(parsed.user.email || '').toLowerCase() };
+      }
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return {};
+}
+
+export function getUserTelemetryMap(): Record<string, UserTelemetryRecord> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(USER_TELEMETRY_MAP_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function upsertUserTelemetry(
+  partial: Partial<UserTelemetryRecord> & { email?: string; userId?: string }
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const identity = getActiveUserIdentity();
+    const emailKey = (partial.email || identity.email || '').trim().toLowerCase();
+    const idKey = (partial.userId || identity.id || '').trim();
+    const primaryKey = emailKey || idKey;
+    if (!primaryKey) return;
+
+    const map = getUserTelemetryMap();
+    const existing = map[primaryKey] || (idKey ? map[idKey] : undefined);
+    const nowIso = new Date().toISOString();
+    const deviceVisits = getPageVisitCount();
+    const deviceInstalled = isPWAInstalled();
+    const storedPlatform =
+      (window.localStorage.getItem(PWA_INSTALLED_PLATFORM_KEY) as DevicePlatform | null) ||
+      undefined;
+    const storedInstalledAt = window.localStorage.getItem(PWA_INSTALLED_AT_KEY) || undefined;
+
+    const updated: UserTelemetryRecord = {
+      userId: idKey || existing?.userId,
+      email: emailKey || existing?.email,
+      visitCount: Math.max(
+        partial.visitCount ?? 0,
+        existing?.visitCount ?? 0,
+        deviceVisits > 0 ? deviceVisits : 1
+      ),
+      lastActiveAt: partial.lastActiveAt || nowIso,
+      firstSeenAt: existing?.firstSeenAt || nowIso,
+      hasDownloadedApp: Boolean(
+        partial.hasDownloadedApp || existing?.hasDownloadedApp || deviceInstalled
+      ),
+      downloadPlatform:
+        partial.downloadPlatform || existing?.downloadPlatform || storedPlatform,
+      downloadedAt:
+        partial.downloadedAt ||
+        existing?.downloadedAt ||
+        storedInstalledAt ||
+        (partial.hasDownloadedApp || deviceInstalled ? nowIso : undefined),
+    };
+
+    map[primaryKey] = updated;
+    if (idKey && idKey !== primaryKey) {
+      map[idKey] = updated;
+    }
+    window.localStorage.setItem(USER_TELEMETRY_MAP_KEY, JSON.stringify(map));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function markAppDownloadedTelemetry(platform?: DevicePlatform): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const detected = detectDevicePlatform();
+    const activePlatform = platform || detected.platform;
+    const nowIso = new Date().toISOString();
+    window.localStorage.setItem(PWA_INSTALLED_FLAG_KEY, 'true');
+    window.localStorage.setItem(PWA_INSTALLED_PLATFORM_KEY, activePlatform);
+    window.localStorage.setItem(PWA_INSTALLED_AT_KEY, nowIso);
+    upsertUserTelemetry({
+      hasDownloadedApp: true,
+      downloadPlatform: activePlatform,
+      downloadedAt: nowIso,
+      lastActiveAt: nowIso,
+    });
+  } catch {
+    // ignore
+  }
+}
 
 let lastTrackedPathname = '';
 
@@ -46,7 +168,9 @@ export function recordPageVisit(pathname?: string): number {
     // If already counted for this page in this session and memory, do not increment repeatedly
     if (lastSessionPage === currentPath && lastTrackedPathname === currentPath) {
       const current = getPageVisitCount();
-      return current > 0 ? current : 1;
+      const count = current > 0 ? current : 1;
+      upsertUserTelemetry({ visitCount: count, lastActiveAt: new Date().toISOString() });
+      return count;
     }
 
     lastTrackedPathname = currentPath;
@@ -55,6 +179,7 @@ export function recordPageVisit(pathname?: string): number {
     const prevVisits = getPageVisitCount();
     const nextVisits = prevVisits + 1;
     window.localStorage.setItem(PWA_VISIT_COUNT_KEY, String(nextVisits));
+    upsertUserTelemetry({ visitCount: nextVisits, lastActiveAt: new Date().toISOString() });
     return nextVisits;
   } catch {
     return 1;
@@ -133,11 +258,7 @@ if (typeof window !== 'undefined') {
 
   window.addEventListener('appinstalled', () => {
     syncGlobalPrompt(null);
-    try {
-      window.localStorage.setItem(PWA_INSTALLED_FLAG_KEY, 'true');
-    } catch {
-      // ignore
-    }
+    markAppDownloadedTelemetry();
   });
 }
 
@@ -405,6 +526,7 @@ export function downloadPlatformInstaller(targetPlatform?: DevicePlatform): {
     }, 1500);
   }
 
+  markAppDownloadedTelemetry(activePlatform);
   return { filename, platform: activePlatform };
 }
 
@@ -483,11 +605,7 @@ export function usePWAInstall() {
     const handleAppInstalled = () => {
       syncGlobalPrompt(null);
       setIsInstalled(true);
-      try {
-        window.localStorage.setItem(PWA_INSTALLED_FLAG_KEY, 'true');
-      } catch {
-        // ignore
-      }
+      markAppDownloadedTelemetry();
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -530,11 +648,7 @@ export function usePWAInstall() {
       if (outcome === 'accepted') {
         syncGlobalPrompt(null);
         setIsInstalled(true);
-        try {
-          window.localStorage.setItem(PWA_INSTALLED_FLAG_KEY, 'true');
-        } catch {
-          // ignore
-        }
+        markAppDownloadedTelemetry();
         return true;
       }
     } catch {

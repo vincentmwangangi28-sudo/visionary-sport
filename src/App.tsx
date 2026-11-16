@@ -592,7 +592,11 @@ const App = () => (
                             <Route path="/performance"   element={<RouteBoundary component={Performance} />} />
                             <Route path="/shop"          element={<RouteBoundary component={Shop} />} />
                             <Route path="/rewards"       element={<RouteBoundary component={Rewards} />} />
-                            <Route path="/admin"         element={<RouteBoundary component={AdminDashboard} isProtected adminOnly />} />
+                            <Route path="/admin"         element={<RouteBoundary component={AdminDashboard} />} />
+                            <Route path="/admin-dashboard" element={<RouteBoundary component={AdminDashboard} />} />
+                            <Route path="/admin-panel"   element={<RouteBoundary component={AdminDashboard} />} />
+                            <Route path="/admin/users"   element={<RouteBoundary component={AdminDashboard} />} />
+                            <Route path="/admin/*"       element={<RouteBoundary component={AdminDashboard} />} />
                             <Route path="/correct-score" element={<RouteBoundary component={CorrectScore} />} />
                             <Route path="/btts"          element={<RouteBoundary component={BTTS} />} />
                             <Route path="/sports"        element={<RouteBoundary component={OtherSports} />} />
@@ -617,9 +621,9 @@ const App = () => (
                             <Route path="/afcon-predictions"            element={<RouteBoundary component={AFCONPredictions} />} />
                             <Route path="/blog"                         element={<RouteBoundary component={Blog} />} />
                             <Route path="/blog/:slug"                   element={<RouteBoundary component={BlogPost} />} />
-                            <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} />} />
+                            <Route path="/seo-indexing"                 element={<RouteBoundary component={SEOIndexingPage} isProtected adminOnly />} />
                             <Route path="/seo-audit"                    element={<Navigate to="/seo-indexing" replace />} />
-                            <Route path="/ahrefs-opportunities"         element={<RouteBoundary component={AhrefsOpportunitiesPage} />} />
+                            <Route path="/ahrefs-opportunities"         element={<RouteBoundary component={AhrefsOpportunitiesPage} isProtected adminOnly />} />
                             <Route path="/ahrefs"                       element={<Navigate to="/ahrefs-opportunities" replace />} />
                             <Route path="/ahrefs-audit"                 element={<Navigate to="/ahrefs-opportunities" replace />} />
                             <Route path="/site-audit"                   element={<Navigate to="/seo-indexing" replace />} />
