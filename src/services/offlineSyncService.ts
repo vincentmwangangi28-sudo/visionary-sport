@@ -30,11 +30,11 @@ export interface CacheStorageBreakdown {
   lastSyncedAt: string | null;
 }
 
-const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v4';
-const CACHE_STATIC_NAME = 'predictpro-v4-static';
-const CACHE_IMAGES_NAME = 'predictpro-v4-images';
-const CACHE_DATA_NAME = 'predictpro-v4-dynamic';
-const CURRENT_ACTIVE_CACHES = [CACHE_STATIC_NAME, CACHE_DATA_NAME];
+const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v8';
+const CACHE_STATIC_NAME = 'predictpro-v8-static';
+const CACHE_IMAGES_NAME = 'predictpro-v8-images';
+const CACHE_DATA_NAME = 'predictpro-v8-data';
+const CURRENT_ACTIVE_CACHES = [CACHE_STATIC_NAME, CACHE_IMAGES_NAME, CACHE_DATA_NAME];
 
 /**
  * Format bytes to readable string (e.g. 14.2 MB)
@@ -85,6 +85,7 @@ export async function triggerMatchDataRevalidation(): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   try {
     localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+    sendSWMessage({ type: 'REVALIDATE_MATCH_DATA' });
   } catch {
     // non-blocking
   }
@@ -100,6 +101,8 @@ export async function prewarmOfflineCaches(): Promise<void> {
 
   try {
     localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+    const urls = getAllTeamLogoUrls().slice(0, 36);
+    sendSWMessage({ type: 'PREWARM_OFFLINE_CACHES', urls });
   } catch {
     // Ignore storage quota limits
   }
@@ -371,7 +374,7 @@ export async function clearCacheCategory(category: 'images' | 'data' | 'stale' |
   }
 }
 
-// Clean up legacy opaque image caches on idle
+// Clean up legacy cache versions on idle while preserving active predictpro-v8 stores
 if (typeof window !== 'undefined' && 'caches' in window) {
   window.addEventListener('load', () => {
     caches
@@ -379,7 +382,7 @@ if (typeof window !== 'undefined' && 'caches' in window) {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => !k.startsWith('predictpro-v4'))
+            .filter((k) => !k.startsWith('predictpro-v8'))
             .map((k) => caches.delete(k).catch(() => false))
         )
       )

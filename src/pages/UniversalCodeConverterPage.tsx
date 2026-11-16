@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -27,12 +27,62 @@ import {
 
 const CONVERSION_HISTORY_KEY = 'predictpro_phase13_code_history_v1';
 
+function extractSharedBookingCode(raw: string): { code: string; detectedBookie?: BookmakerId } | null {
+  const cleaned = decodeURIComponent(raw).replace(/^web\+predictpro:\/\/?/i, '').trim();
+  if (!cleaned) return null;
+
+  const tokenMatch = cleaned.match(/\b(SB|BTK|SP|B9J|1X|BW|MZ)-[A-Z0-9]{4,10}\b/i);
+  const candidate = (tokenMatch ? tokenMatch[0] : cleaned.split(/\s+/)[0])
+    .replace(/[^A-Za-z0-9-]/g, '')
+    .toUpperCase();
+  if (!candidate || candidate.length < 3) return null;
+
+  const prefixMap: Record<string, BookmakerId> = {
+    'SB-': 'sportybet',
+    'BTK-': 'betika',
+    'SP-': 'sportpesa',
+    'B9J-': 'bet9ja',
+    '1X-': '1xbet',
+    'BW-': 'betway',
+    'MZ-': 'mozzartbet',
+  };
+  const matchedPrefix = Object.keys(prefixMap).find((p) => candidate.startsWith(p));
+  return {
+    code: candidate,
+    detectedBookie: matchedPrefix ? prefixMap[matchedPrefix] : undefined,
+  };
+}
+
 export const UniversalCodeConverterPage: React.FC = () => {
   const { addSelections, setIsOpen } = useBetSlip();
+  const [searchParams] = useSearchParams();
 
   const [sourceBookie, setSourceBookie] = useState<BookmakerId>('sportybet');
   const [targetBookie, setTargetBookie] = useState<BookmakerId>('betika');
   const [bookingCodeInput, setBookingCodeInput] = useState<string>('SB-88492A');
+
+  useEffect(() => {
+    const sharedPayload =
+      searchParams.get('code') ||
+      searchParams.get('text') ||
+      searchParams.get('q') ||
+      searchParams.get('protocol') ||
+      searchParams.get('title') ||
+      searchParams.get('url');
+    if (!sharedPayload) return;
+
+    const parsed = extractSharedBookingCode(sharedPayload);
+    if (parsed) {
+      setBookingCodeInput(parsed.code);
+      if (parsed.detectedBookie) {
+        setSourceBookie(parsed.detectedBookie);
+        if (parsed.detectedBookie === targetBookie) {
+          setTargetBookie(parsed.detectedBookie === 'sportybet' ? 'betika' : 'sportybet');
+        }
+      }
+      toast.success(`Imported shared booking code: ${parsed.code}`);
+    }
+  }, [searchParams, targetBookie]);
 
   const [recentConversions, setRecentConversions] = useState<
     Array<{ sourceCode: string; targetCode: string; sourceName: string; targetName: string; totalOdds: number }>

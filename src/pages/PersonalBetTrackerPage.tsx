@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -16,6 +17,7 @@ import { toast } from 'sonner';
 import {
   RefreshCw,
   Download,
+  Upload,
   Plus,
   Trash2,
   CheckCircle2,
@@ -23,10 +25,23 @@ import {
   Clock,
 } from 'lucide-react';
 
+interface LaunchParams {
+  files?: Array<{
+    getFile: () => Promise<File>;
+  }>;
+}
+
+interface LaunchQueue {
+  setConsumer: (consumer: (launchParams: LaunchParams) => void | Promise<void>) => void;
+}
+
 export const PersonalBetTrackerPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [entries, setEntries] = useState<TrackedBetEntry[]>(() => getTrackedBets());
   const [statusFilter, setStatusFilter] = useState<'ALL' | BetSettlementStatus>('ALL');
   const [syncingEspn, setSyncingEspn] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const homeTeamInputRef = useRef<HTMLInputElement | null>(null);
 
   // New Bet Form State
   const [homeTeam, setHomeTeam] = useState('Liverpool');
@@ -37,11 +52,102 @@ export const PersonalBetTrackerPage: React.FC = () => {
   const [stake, setStake] = useState('50');
   const [bookmaker, setBookmaker] = useState('SportyBet');
 
+  const importLedgerFileText = useCallback((text: string, fileName: string) => {
+    try {
+      let importedCount = 0;
+      if (fileName.toLowerCase().endsWith('.json') || text.trim().startsWith('[') || text.trim().startsWith('{')) {
+        const parsed = JSON.parse(text);
+        const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.entries) ? parsed.entries : [parsed];
+        for (const item of list) {
+          if (!item || typeof item !== 'object') continue;
+          const h = String(item.homeTeam || item.home_team || 'Arsenal').trim();
+          const a = String(item.awayTeam || item.away_team || 'Chelsea').trim();
+          addTrackedBetEntry({
+            fixture: String(item.fixture || `${h} vs ${a}`),
+            homeTeam: h,
+            awayTeam: a,
+            league: String(item.league || 'Premier League'),
+            market: String(item.market || 'Over 2.5 Goals'),
+            odds: Math.max(1.05, Number(item.odds) || 1.85),
+            stake: Math.max(1, Number(item.stake) || 25),
+            bookmaker: String(item.bookmaker || 'SportyBet'),
+            status: (['PENDING', 'WON', 'LOST', 'VOID'].includes(String(item.status))
+              ? String(item.status)
+              : 'PENDING') as BetSettlementStatus,
+            clvEdgePct: Number(item.clvEdgePct) || 5.5,
+            notes: `Imported from ${fileName}`,
+          });
+          importedCount += 1;
+        }
+      } else {
+        const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+        const dataLines = lines.slice(1);
+        for (const line of dataLines) {
+          const cols = line.split(',').map((c) => c.replace(/^"|"$/g, '').trim());
+          if (cols.length < 6) continue;
+          const fixture = cols[1] || 'Arsenal vs Chelsea';
+          const parts = fixture.split(/\s+vs\s+/i);
+          addTrackedBetEntry({
+            fixture,
+            homeTeam: parts[0] || 'Arsenal',
+            awayTeam: parts[1] || 'Chelsea',
+            league: cols[2] || 'Premier League',
+            market: cols[3] || 'Over 2.5 Goals',
+            bookmaker: cols[4] || 'SportyBet',
+            odds: Math.max(1.05, Number(cols[5]) || 1.85),
+            stake: Math.max(1, Number(cols[6]) || 25),
+            status: (['PENDING', 'WON', 'LOST', 'VOID'].includes(cols[7])
+              ? cols[7]
+              : 'PENDING') as BetSettlementStatus,
+            clvEdgePct: parseFloat(cols[10] || '5.5') || 5.5,
+            notes: `Imported from ${fileName}`,
+          });
+          importedCount += 1;
+        }
+      }
+
+      if (importedCount > 0) {
+        setEntries(getTrackedBets());
+        toast.success(`Imported ${importedCount} bet slip entry(s) from ${fileName}`);
+      } else {
+        toast.info(`Processed ${fileName}`);
+      }
+    } catch {
+      toast.error(`Could not parse ${fileName}. Expected valid CSV or JSON bet ledger.`);
+    }
+  }, []);
+
   useEffect(() => {
     const syncHandler = () => setEntries(getTrackedBets());
     window.addEventListener('predictpro-bet-tracker-updated', syncHandler);
     return () => window.removeEventListener('predictpro-bet-tracker-updated', syncHandler);
   }, []);
+
+  // PWA Note-Taking action (?new=1 or ?action=new-note)
+  useEffect(() => {
+    if (searchParams.get('new') === '1' || searchParams.get('action') === 'new-note') {
+      homeTeamInputRef.current?.focus();
+    }
+  }, [searchParams]);
+
+  // PWA File Handling API consumer (window.launchQueue for .csv and .json files)
+  useEffect(() => {
+    const navWindow = window as unknown as { launchQueue?: LaunchQueue };
+    if (navWindow.launchQueue && typeof navWindow.launchQueue.setConsumer === 'function') {
+      navWindow.launchQueue.setConsumer(async (launchParams: LaunchParams) => {
+        if (!launchParams.files || launchParams.files.length === 0) return;
+        for (const handle of launchParams.files) {
+          try {
+            const file = await handle.getFile();
+            const text = await file.text();
+            importLedgerFileText(text, file.name);
+          } catch {
+            // ignore individual file read error
+          }
+        }
+      });
+    }
+  }, [importLedgerFileText]);
 
   const handleAddBet = (e: React.FormEvent) => {
     e.preventDefault();
@@ -260,6 +366,29 @@ export const PersonalBetTrackerPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.json,text/csv,application/json"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const text = await file.text();
+                importLedgerFileText(text, file.name);
+                e.target.value = '';
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-1.5 text-xs font-semibold cursor-pointer"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              <span>Import CSV / JSON</span>
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -488,6 +617,7 @@ export const PersonalBetTrackerPage: React.FC = () => {
                     Home Team
                   </label>
                   <input
+                    ref={homeTeamInputRef}
                     type="text"
                     value={homeTeam}
                     onChange={(e) => setHomeTeam(e.target.value)}
