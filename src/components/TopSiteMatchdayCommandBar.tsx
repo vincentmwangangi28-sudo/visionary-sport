@@ -1,14 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
+import { Prediction, getConfidence } from '@/types/prediction';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences, OddsFormat } from '@/hooks/useUserPreferences';
 import { TeamLogo } from '@/components/TeamLogo';
 import { Button } from '@/components/ui/button';
 import {
   computeProMatchAnalytics,
+  computeSgpCopulaQuote,
   readSubscribedMomentumAlerts,
   toggleMomentumAlertSubscription,
+  readLiveAudioEnabled,
+  toggleLiveAudioEnabled,
+  playLiveGoalChime,
 } from '@/components/MatchProAnalyticsWidget';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { toast } from 'sonner';
@@ -24,6 +28,10 @@ import {
   BellRing,
   Wallet,
   ShieldAlert,
+  Volume2,
+  VolumeX,
+  Scale,
+  Layers,
 } from 'lucide-react';
 
 export interface TopSiteMatchdayCommandBarProps {
@@ -34,6 +42,8 @@ type CommandTab =
   | 'ev_steam'
   | 'momentum_alerts'
   | 'xi_spotlight'
+  | 'referee_sgp'
+  | 'live_audio_slip'
   | 'rollover_planner'
   | 'fan_poll'
   | 'odds_settings';
@@ -42,13 +52,14 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
   predictions,
 }) => {
   const [activeTab, setActiveTab] = useState<CommandTab>('ev_steam');
-  const { addSelection, setIsOpen, stake } = useBetSlip();
+  const { addSelection, setIsOpen, stake, selections } = useBetSlip();
   const { oddsFormat, setOddsFormat, formatOdds, preferences, updatePreferences } =
     useUserPreferences();
 
   const [subscribedAlerts, setSubscribedAlerts] = useState<string[]>(() =>
     readSubscribedMomentumAlerts()
   );
+  const [liveAudioOn, setLiveAudioOn] = useState<boolean>(() => readLiveAudioEnabled());
 
   // Rollover planner interactive state
   const [rolloverDays, setRolloverDays] = useState<3 | 5 | 7>(3);
@@ -58,9 +69,23 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
     const enabled = toggleMomentumAlertSubscription(matchKey);
     setSubscribedAlerts(readSubscribedMomentumAlerts());
     if (enabled) {
+      if (readLiveAudioEnabled()) {
+        playLiveGoalChime('surge');
+      }
       toast.success(`75'+ Late-Goal & Momentum Alert enabled for ${title}!`);
     } else {
       toast.info(`Disabled momentum alert for ${title}.`);
+    }
+  }, []);
+
+  const handleToggleLiveAudio = useCallback(() => {
+    const next = toggleLiveAudioEnabled();
+    setLiveAudioOn(next);
+    if (next) {
+      playLiveGoalChime('goal');
+      toast.success('Live Goal & Momentum Audio Chimes enabled!');
+    } else {
+      toast.info('Live Goal Audio Chimes muted.');
     }
   }, []);
 
@@ -134,6 +159,27 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
     });
   }, [predictions]);
 
+  // Compute Top 3 Strict Referee Card & +EV Same-Game Parlay (SGP) fixtures
+  const refereeAndSgpFixtures = useMemo(() => {
+    const pool = predictions.slice(0, 16);
+    const items = pool.map((match) => {
+      const pro = computeProMatchAnalytics(match);
+      const slug = formatMatchSlug(match.home_team, match.away_team);
+      const sgpLegs = pro.sgpCandidateLegs.slice(0, 3);
+      const sgpQuote = computeSgpCopulaQuote(sgpLegs, pro.sgpCorrelationMatrix);
+      return {
+        match,
+        pro,
+        slug,
+        sgpLegs,
+        sgpQuote,
+      };
+    });
+    return items
+      .sort((a, b) => b.pro.refereeProfile.strictnessIndex - a.pro.refereeProfile.strictnessIndex)
+      .slice(0, 3);
+  }, [predictions]);
+
   // Multi-Bookmaker Compound Rollover Schedule
   const rolloverSchedule = useMemo(() => {
     const baseStake = stake && stake > 0 ? stake : 500;
@@ -193,7 +239,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
 
   return (
     <section
-      aria-label="Live +EV Value Scanner, Momentum Alerts, XI Ratings and Rollover Planner"
+      aria-label="Live +EV Value Scanner, Momentum Alerts, XI Ratings, Referee SGP and Rollover Planner"
       data-testid="top-site-matchday-command-bar"
       className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs"
     >
@@ -223,6 +269,8 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
               { id: 'ev_steam', label: '+EV & Steam Drops', icon: TrendingUp },
               { id: 'momentum_alerts', label: "Momentum & 75'+ Alerts", icon: Flame },
               { id: 'xi_spotlight', label: 'XI Ratings & Impact', icon: ShieldAlert },
+              { id: 'referee_sgp', label: 'Ref Cards & SGP', icon: Scale },
+              { id: 'live_audio_slip', label: 'Live Audio & Slip Radar', icon: Volume2 },
               { id: 'rollover_planner', label: 'Rollover & Bookies', icon: Wallet },
               { id: 'fan_poll', label: 'Crowd Poll', icon: Users },
               { id: 'odds_settings', label: `Odds (${oddsFormat.toUpperCase()})`, icon: SlidersHorizontal },
@@ -536,7 +584,189 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
         </div>
       )}
 
-      {/* Panel 4: Multi-Bookmaker 1-Click Bet Slip & Compound Rollover Planner */}
+      {/* Panel 4: Strict Referee Card Matrix & Same-Game Parlay (SGP) Scanner */}
+      {activeTab === 'referee_sgp' && (
+        <div className="p-3.5 grid grid-cols-1 md:grid-cols-3 gap-3">
+          {refereeAndSgpFixtures.map(({ match, pro, slug, sgpLegs, sgpQuote }) => (
+            <div
+              key={match.id}
+              className="p-3 rounded-lg border border-border/80 bg-muted/15 flex flex-col justify-between gap-2.5"
+            >
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-mono tabular-nums">
+                  <span className="text-muted-foreground truncate">
+                    Ref: <strong className="font-sans text-foreground">{pro.refereeProfile.name}</strong>
+                  </span>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">
+                    {pro.refereeProfile.yellowsPer90} Y/90 · VAR {pro.refereeProfile.varPenaltyPct}%
+                  </span>
+                </div>
+
+                <Link
+                  to={`/predict/${slug}`}
+                  className="flex items-center justify-between gap-2 group"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <TeamLogo team={match.home_team} size="xs" badgeOnly />
+                    <span className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                      {match.home_team} vs {match.away_team}
+                    </span>
+                  </div>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
+                </Link>
+
+                <p className="text-[11px] text-muted-foreground font-mono tabular-nums truncate">
+                  3-Leg SGP (ρ +{sgpQuote.avgCorrelationRho.toFixed(2)}):{' '}
+                  <strong className="text-emerald-600 dark:text-emerald-400">
+                    @{formatOdds(sgpQuote.bookieSgpOdds)}
+                  </strong>
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSelection({
+                      id: `${match.id}-cards-o35`,
+                      matchId: match.id,
+                      match: `${match.home_team} vs ${match.away_team}`,
+                      homeTeam: match.home_team,
+                      awayTeam: match.away_team,
+                      league: match.league,
+                      matchDate: match.match_date,
+                      market: 'Over 3.5 Total Cards',
+                      odds: pro.refereeProfile.over35CardsOdds,
+                      confidence: pro.refereeProfile.over35CardsProb,
+                    });
+                    setIsOpen(true);
+                    toast.success(
+                      `Added Over 3.5 Cards (${match.home_team} vs ${match.away_team}) to Bet Slip!`
+                    );
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border bg-background hover:border-primary/60 text-[11px] font-mono font-semibold cursor-pointer"
+                >
+                  <Plus className="h-3 w-3" aria-hidden="true" />
+                  <span>O3.5 Cards ({formatOdds(pro.refereeProfile.over35CardsOdds)})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSelection({
+                      id: `${match.id}-sgp-3leg`,
+                      matchId: match.id,
+                      match: `${match.home_team} vs ${match.away_team}`,
+                      homeTeam: match.home_team,
+                      awayTeam: match.away_team,
+                      league: match.league,
+                      matchDate: match.match_date,
+                      market: `SGP (${sgpLegs.map((l) => l.label).join(' + ')})`,
+                      odds: sgpQuote.bookieSgpOdds,
+                      confidence: Math.round(sgpQuote.correlatedProbPct),
+                    });
+                    setIsOpen(true);
+                    toast.success(`Added 3-Leg Correlated SGP to Bet Slip!`);
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-[11px] font-mono font-bold transition-colors cursor-pointer"
+                >
+                  <Layers className="h-3 w-3" aria-hidden="true" />
+                  <span>SGP ({formatOdds(sgpQuote.bookieSgpOdds)})</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Panel 5: Flashscore-Style Live Goal Audio Chimes & Active Slip Leg Tracker */}
+      {activeTab === 'live_audio_slip' && (
+        <div className="p-3.5 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-border/80 bg-muted/15">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                <span>Live Scoreboard Goal Audio &amp; 75&apos;+ Surge Synthesizer</span>
+                <span className="font-mono text-[11px] text-primary">
+                  · {subscribedAlerts.length} Alert(s) Subscribed
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Triggers instant Web Audio API stadium goal chimes and browser toast notifications when a subscribed or Bet Slip match hits a goal or 75&apos;+ pressure surge.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              <button
+                type="button"
+                aria-pressed={liveAudioOn}
+                onClick={handleToggleLiveAudio}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
+                  liveAudioOn
+                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {liveAudioOn ? (
+                  <>
+                    <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>Goal Audio ON</span>
+                  </>
+                ) : (
+                  <>
+                    <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>Audio Muted</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playLiveGoalChime('goal');
+                  toast.success(
+                    'GOAL ALERT TEST: Arsenal 2 - 1 Chelsea (78\' Bukayo Saka · 0.44 xG)'
+                  );
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-background hover:border-primary/60 text-xs font-semibold text-foreground cursor-pointer"
+              >
+                Test Goal Chime
+              </button>
+            </div>
+          </div>
+
+          {/* Active Bet Slip Live Leg Progress */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            {(selections.length > 0 ? selections.slice(0, 3) : topValueFixtures.map((f) => ({
+              id: f.match.id,
+              homeTeam: f.match.home_team,
+              awayTeam: f.match.away_team,
+              market: f.pro.bestValueSide,
+              odds: f.pro.bestValueOdds,
+              confidence: f.match.confidence,
+            }))).map((leg, idx) => (
+              <div
+                key={leg.id}
+                className="p-2.5 rounded-lg border border-border/70 bg-background/80 flex items-center justify-between gap-2 text-xs"
+              >
+                <div className="min-w-0">
+                  <span className="font-bold text-foreground block truncate">
+                    {leg.homeTeam} vs {leg.awayTeam}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                    Leg #{idx + 1}: <strong className="text-primary">{leg.market}</strong> @{' '}
+                    {formatOdds(leg.odds)}
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                  {selections.length > 0 ? 'Tracking' : 'Ready'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Panel 6: Multi-Bookmaker 1-Click Bet Slip & Compound Rollover Planner */}
       {activeTab === 'rollover_planner' && (
         <div className="p-3.5 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -657,7 +887,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
         </div>
       )}
 
-      {/* Panel 5: FotMob Featured Match Fan Poll */}
+      {/* Panel 7: FotMob Featured Match Fan Poll */}
       {activeTab === 'fan_poll' && featuredPollMatch && featuredPollAnalytics && (
         <div className="p-3.5 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -746,7 +976,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
         </div>
       )}
 
-      {/* Panel 6: Flashscore Instant Odds Format & Bookmaker Preferences */}
+      {/* Panel 8: Flashscore Instant Odds Format & Bookmaker Preferences */}
       {activeTab === 'odds_settings' && (
         <div className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">

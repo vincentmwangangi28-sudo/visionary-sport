@@ -28,6 +28,19 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.props.fallback === null) {
       return;
     }
+    const isStaleReactDispatcher =
+      error.message?.includes("Cannot read properties of null (reading 'use") ||
+      error.message?.includes('Invalid hook call');
+
+    if (isStaleReactDispatcher && typeof window !== 'undefined') {
+      const hasReloaded = sessionStorage.getItem('predictpro_react_dedupe_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('predictpro_react_dedupe_reload', '1');
+        window.location.reload();
+        return;
+      }
+    }
+
     const isChunkOrNetwork =
       error.name === 'ChunkLoadError' ||
       error.message?.includes('dynamically imported module') ||

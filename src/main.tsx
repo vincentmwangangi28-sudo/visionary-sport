@@ -99,7 +99,9 @@ if (typeof window !== 'undefined') {
       msg.includes('Failed to fetch dynamically imported module') ||
       msg.includes('Expected a JavaScript-or-Wasm module script') ||
       msg.includes('MIME type') ||
-      msg.includes('Missing Supabase configuration')
+      msg.includes('Missing Supabase configuration') ||
+      msg.includes("Cannot read properties of null (reading 'use") ||
+      msg.includes('Invalid hook call')
     ) {
       const hasReloaded = sessionStorage.getItem('predictpro_chunk_retry');
       if (!hasReloaded) {

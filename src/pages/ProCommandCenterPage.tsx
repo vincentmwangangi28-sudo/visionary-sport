@@ -102,26 +102,26 @@ export default function ProCommandCenterPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
               <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <TrendingDown className="h-3 w-3 text-emerald-600" /> Steam Scanner
+                  <TrendingDown className="h-3 w-3 text-emerald-600" /> Shot Map &amp; xT
                 </span>
                 <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  6-Point Odds Curve
+                  2D Pitch + 12 Zones
                 </p>
               </div>
               <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3 text-primary" /> Starting XI Lab
+                  <Users className="h-3 w-3 text-primary" /> Ref &amp; SGP Lab
                 </span>
                 <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  Live Absence xG Delta
+                  Cards + Copula SGP
                 </p>
               </div>
               <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Bell className="h-3 w-3 text-amber-500" /> 75&apos;+ Surge Alerts
+                  <Bell className="h-3 w-3 text-amber-500" /> 75&apos;+ Audio Alerts
                 </span>
                 <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  APm / 100 Pressure
+                  APm / Goal Chime
                 </p>
               </div>
               <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">

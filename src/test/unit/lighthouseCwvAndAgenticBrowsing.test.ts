@@ -217,8 +217,11 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
   it('computes Opta 10k simulation probabilities, SofaScore 90-minute goal timing intervals, Understat tactical radar, and FotMob crowd poll metrics', async () => {
     const {
       computeProMatchAnalytics,
+      computeSgpCopulaQuote,
       toggleMomentumAlertSubscription,
       readSubscribedMomentumAlerts,
+      readLiveAudioEnabled,
+      toggleLiveAudioEnabled,
     } = await import('@/components/MatchProAnalyticsWidget');
     const pro = computeProMatchAnalytics({
       id: 'test-arsenal-chelsea',
@@ -257,12 +260,37 @@ describe('Lighthouse 13.6 CWV, Accessibility Contrast, Form Attributes & Agentic
     expect(pro.awaySquadRatings.length).toBeGreaterThanOrEqual(4);
     expect(pro.homeSquadRatings[0].rating).toBeGreaterThanOrEqual(6.4);
 
-    // 75'+ Momentum alert subscription toggle
+    // Understat / FotMob 2D Pitch Shot Map & 12-Zone xT Matrix
+    expect(pro.shotMapEvents).toHaveLength(16);
+    expect(pro.xtZones).toHaveLength(12);
+    expect(pro.shotMapEvents[0].xg).toBeGreaterThan(0);
+
+    // Referee Discipline, VAR Penalty & Card Prop Matrix
+    expect(pro.refereeProfile.yellowsPer90).toBeGreaterThanOrEqual(3.0);
+    expect(pro.refereeProfile.varPenaltyPct).toBeGreaterThanOrEqual(15);
+    expect(pro.refereeProfile.cardRiskPlayers).toHaveLength(4);
+
+    // Same-Game Parlay (SGP) Gaussian Copula Correlation Pricer
+    expect(pro.sgpCandidateLegs).toHaveLength(6);
+    const sgpQuote = computeSgpCopulaQuote(
+      pro.sgpCandidateLegs.slice(0, 3),
+      pro.sgpCorrelationMatrix
+    );
+    expect(sgpQuote.avgCorrelationRho).toBeGreaterThan(0);
+    expect(sgpQuote.correlatedProbPct).toBeGreaterThan(sgpQuote.uncorrelatedProbPct);
+    expect(sgpQuote.bookieSgpOdds).toBeGreaterThan(1.2);
+
+    // 75'+ Momentum alert subscription & Live Goal Audio toggle
     const isNowSubbed = toggleMomentumAlertSubscription('test-arsenal-chelsea');
     expect(isNowSubbed).toBe(true);
     expect(readSubscribedMomentumAlerts().includes('test-arsenal-chelsea')).toBe(true);
     const isAfterUnsub = toggleMomentumAlertSubscription('test-arsenal-chelsea');
     expect(isAfterUnsub).toBe(false);
+
+    const initialAudio = readLiveAudioEnabled();
+    const toggledAudio = toggleLiveAudioEnabled();
+    expect(toggledAudio).toBe(!initialAudio);
+    toggleLiveAudioEnabled();
   });
 });
 

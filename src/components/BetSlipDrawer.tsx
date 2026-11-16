@@ -865,6 +865,25 @@ export const BetSlipDrawer = () => {
                     })}
                   </div>
 
+                  {/* Active Slip Live Leg Tracker & Fair Cash-Out Equity */}
+                  <div className="rounded-lg border border-border/70 bg-muted/20 p-2.5 space-y-2">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold uppercase tracking-wider text-muted-foreground">
+                        Active Slip Live Leg Tracker &amp; Fair Cash-Out
+                      </span>
+                      <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                        Fair Equity: {currency.symbol}
+                        {Math.round(
+                          (stake || 100) * Math.max(1.08, (combinedConfidence / 100) * totalOdds * 0.92)
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-muted-foreground">
+                      <span>{selections.length} Leg(s) Monitored</span>
+                      <span>75&apos;+ Goal Audio Chime Ready</span>
+                    </div>
+                  </div>
+
                   {/* Multi-Bookmaker Live Payout Comparison & 3-Day Safe Rollover Target */}
                   <div className="rounded-lg border border-border/70 bg-muted/20 p-2.5 space-y-2">
                     <div className="flex items-center justify-between text-[10px]">
