@@ -1,4 +1,5 @@
 import { callEdgeFn } from '@/lib/callEdgeFunction';
+import { safeFootballFetch, isHostInCooldown } from '@/services/footballDataCache';
 
 export interface SportsArticle {
   title: string;
@@ -94,7 +95,8 @@ class SportsNewsService {
   private async fetchDirectESPNNews(): Promise<SportsArticle[]> {
     if (
       (typeof navigator !== 'undefined' && navigator.onLine === false) ||
-      Date.now() < this.edgeUnavailableUntil
+      Date.now() < this.edgeUnavailableUntil ||
+      isHostInCooldown('site.api.espn.com')
     ) {
       return [];
     }
@@ -108,15 +110,12 @@ class SportsNewsService {
     const articles: SportsArticle[] = [];
 
     for (const { url, league } of feeds) {
-      if (Date.now() < this.edgeUnavailableUntil) break;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 4000);
+      if (Date.now() < this.edgeUnavailableUntil || isHostInCooldown('site.api.espn.com')) break;
       try {
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!res.ok) continue;
-        const json = await res.json();
-        const items = json.articles || [];
+        const res = await safeFootballFetch(url);
+        if (!res || !res.ok) continue;
+        const json = await res.json().catch(() => null);
+        const items = json?.articles || [];
         for (const item of items.slice(0, 4)) {
           const headline = item.headline || item.title;
           if (!headline) continue;

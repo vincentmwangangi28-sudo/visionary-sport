@@ -2,6 +2,7 @@ import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { Prediction } from '@/types/prediction';
 import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { GroundingMetadata } from '@/services/geminiTasksService';
+import { safeFootballFetch, isHostInCooldown } from '@/services/footballDataCache';
 
 export type PlayerAvailabilityStatus = 'Ruled Out' | 'Doubtful' | 'Suspended' | 'Returning';
 
@@ -1208,18 +1209,18 @@ async function fetchLiveEspnMatchWire(
   const espnCode =
     Object.entries(espnLeagueMap).find(([k]) => normalizedLeague.includes(k))?.[1] || 'eng.1';
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(
-      `https://site.api.espn.com/apis/site/v2/sports/soccer/${espnCode}/news`,
-      { signal: controller.signal }
-    );
-    clearTimeout(timeout);
-    if (!res.ok) return [];
+  if (isHostInCooldown('site.api.espn.com')) {
+    return [];
+  }
 
-    const json = await res.json();
-    const articles = Array.isArray(json.articles) ? json.articles : [];
+  try {
+    const res = await safeFootballFetch(
+      `https://site.api.espn.com/apis/site/v2/sports/soccer/${espnCode}/news`
+    );
+    if (!res || !res.ok) return [];
+
+    const json = await res.json().catch(() => null);
+    const articles = Array.isArray(json?.articles) ? json.articles : [];
     const items: LiveWireNewsItem[] = [];
 
     for (const art of articles.slice(0, 6)) {

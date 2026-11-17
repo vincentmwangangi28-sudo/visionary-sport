@@ -2856,6 +2856,7 @@ function upsertMultiMetaTagValues(attrName: 'name' | 'property', attrValue: stri
 }
 
 let activeComponentSEOOverrideCount = 0;
+let lastSyncedSecondaryHeadSignature = '';
 
 /**
  * Dynamically manages and synchronizes <title>, meta description, OpenGraph tags,
@@ -3362,11 +3363,20 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
     }
 
     // Defer secondary head tag mutations (35+ hreflang links, 20 og:locale:alternate tags, JSON-LD serialization)
-    // off the critical hydration frame to eliminate main-thread blocking (TBT / INP).
+    // off the critical hydration frame and skip redundant DOM queries when route metadata has not changed.
+    const nextSignature = `${domCanonicalUrl}|${resolved.fullTitle}|${resolved.description}|${resolved.detectedLocale.locale}|${resolved.noIndex}|${Boolean(resolved.matchSeo)}`;
+    if (lastSyncedSecondaryHeadSignature === nextSignature) {
+      return;
+    }
+
     const syncSecondaryHeadTags = () => {
       if (!isExplicitOverride && activeComponentSEOOverrideCount > 0) {
         return;
       }
+      if (lastSyncedSecondaryHeadSignature === nextSignature) {
+        return;
+      }
+      lastSyncedSecondaryHeadSignature = nextSignature;
 
       const robotsDirective = resolved.noIndex
         ? 'noindex,nofollow'
@@ -3468,20 +3478,11 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       }
     };
 
-    const win = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-
-    if (typeof win.requestIdleCallback === 'function') {
-      const idleId = win.requestIdleCallback(syncSecondaryHeadTags, { timeout: 1200 });
-      return () => win.cancelIdleCallback?.(idleId);
-    }
-
-    const timerId = window.setTimeout(syncSecondaryHeadTags, 50);
+    const timerId = window.setTimeout(syncSecondaryHeadTags, 60);
     return () => window.clearTimeout(timerId);
   }, [resolved, isExplicitOverride]);
 
   return resolved;
 }
+
 

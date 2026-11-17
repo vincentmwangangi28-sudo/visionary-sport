@@ -17,8 +17,8 @@
   "prefer_related_applications": false,
   "related_applications": [],
   "scope_extensions": [
-    { "origin": "https://predictpro.guru" },
-    { "origin": "https://www.predictpro.guru" }
+    { "type": "origin", "origin": "https://predictpro.guru" },
+    { "type": "origin", "origin": "https://www.predictpro.guru" }
   ],
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]

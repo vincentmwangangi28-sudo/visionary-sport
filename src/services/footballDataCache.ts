@@ -279,9 +279,47 @@ export async function fetchWithCacheAndDeduplication<T>(
   });
 }
 
+const hostActiveCounts = new Map<string, number>();
+const hostWaitQueues = new Map<string, Array<() => void>>();
+const urlJsonCache = new Map<string, { expiresAt: number; status: number; bodyText: string }>();
+const urlInFlightText = new Map<string, Promise<{ status: number; bodyText: string } | null>>();
+
+const MAX_CONCURRENT_PER_HOST = 2;
+
+async function acquireHostSlot(hostname: string): Promise<void> {
+  if (!hostname) return;
+  const current = hostActiveCounts.get(hostname) || 0;
+  if (current < MAX_CONCURRENT_PER_HOST) {
+    hostActiveCounts.set(hostname, current + 1);
+    return;
+  }
+  await new Promise<void>((resolve) => {
+    const q = hostWaitQueues.get(hostname) || [];
+    q.push(resolve);
+    hostWaitQueues.set(hostname, q);
+  });
+}
+
+function releaseHostSlot(hostname: string): void {
+  if (!hostname) return;
+  const q = hostWaitQueues.get(hostname);
+  if (q && q.length > 0) {
+    const next = q.shift()!;
+    next();
+    return;
+  }
+  const current = hostActiveCounts.get(hostname) || 1;
+  if (current <= 1) {
+    hostActiveCounts.delete(hostname);
+  } else {
+    hostActiveCounts.set(hostname, current - 1);
+  }
+}
+
 /**
- * Safe fetch wrapper that respects host cooldowns, catches 429/403 errors,
- * and activates circuit breaker cooldowns automatically.
+ * Safe fetch wrapper that respects host cooldowns, throttles concurrent HTTP/2 streams
+ * per host (preventing net::ERR_HTTP2_PROTOCOL_ERROR), deduplicates identical GET URLs,
+ * and activates circuit-breaker cooldowns automatically on 429/403 or network/protocol errors.
  */
 export async function safeFootballFetch(
   url: string,
@@ -289,6 +327,10 @@ export async function safeFootballFetch(
   customHost?: string
 ): Promise<Response | null> {
   try {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return null;
+    }
+
     let hostname = customHost;
     if (!hostname) {
       try {
@@ -302,24 +344,101 @@ export async function safeFootballFetch(
       return null;
     }
 
-    const res = await fetch(url, options);
-
-    if (res.status === 429) {
-      if (hostname) {
-        setHostCooldown(hostname, 300_000); // 5 min cooldown for 429
+    const isGet = !options?.method || options.method.toUpperCase() === 'GET';
+    if (isGet) {
+      const now = Date.now();
+      const cached = urlJsonCache.get(url);
+      if (cached && now < cached.expiresAt) {
+        return new Response(cached.bodyText, {
+          status: cached.status,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
-      return null;
+
+      const existingInFlight = urlInFlightText.get(url);
+      if (existingInFlight) {
+        const shared = await existingInFlight;
+        if (!shared) return null;
+        return new Response(shared.bodyText, {
+          status: shared.status,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    if (res.status === 403 || res.status === 401) {
-      if (hostname) {
-        setHostCooldown(hostname, 600_000); // 10 min cooldown for 403/401
+    const executeRequest = async (): Promise<{ status: number; bodyText: string } | null> => {
+      await acquireHostSlot(hostname || '');
+      try {
+        if (hostname && isHostInCooldown(hostname)) {
+          return null;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4200);
+        try {
+          const res = await fetch(url, {
+            ...options,
+            signal: options?.signal || controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          if (res.status === 429) {
+            if (hostname) setHostCooldown(hostname, 300_000);
+            return null;
+          }
+
+          if (res.status === 403 || res.status === 401) {
+            if (hostname) setHostCooldown(hostname, 600_000);
+            return null;
+          }
+
+          if (!res.ok) {
+            return null;
+          }
+
+          const bodyText = await res.text();
+          if (isGet && bodyText) {
+            urlJsonCache.set(url, {
+              expiresAt: Date.now() + 25_000,
+              status: res.status,
+              bodyText,
+            });
+          }
+          return { status: res.status, bodyText };
+        } catch {
+          clearTimeout(timeoutId);
+          // Immediately place host into 2-minute circuit-breaker cooldown on HTTP/2 protocol reset or extension block
+          if (hostname) {
+            setHostCooldown(hostname, 120_000);
+          }
+          return null;
+        }
+      } finally {
+        releaseHostSlot(hostname || '');
       }
-      return null;
+    };
+
+    if (isGet) {
+      const p = executeRequest().finally(() => {
+        urlInFlightText.delete(url);
+      });
+      urlInFlightText.set(url, p);
+      const result = await p;
+      if (!result) return null;
+      return new Response(result.bodyText, {
+        status: result.status,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    return res;
-  } catch (err) {
+    const directResult = await executeRequest();
+    if (!directResult) return null;
+    return new Response(directResult.bodyText, {
+      status: directResult.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch {
     return null;
   }
 }
+

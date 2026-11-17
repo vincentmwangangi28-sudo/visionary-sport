@@ -586,17 +586,126 @@ function isBrowserPerfAuditRuntime(): boolean {
   );
 }
 
+let espnCooldownUntil = 0;
+let espnActiveCount = 0;
+const espnWaitQueue: Array<() => void> = [];
+const espnInflightMap = new Map<string, Promise<{ ok: boolean; status: number; text: string }>>();
+const espnResponseCache = new Map<string, { expiresAt: number; status: number; text: string }>();
+
+async function acquireEspnSlot(): Promise<void> {
+  if (espnActiveCount < 2) {
+    espnActiveCount++;
+    return;
+  }
+  await new Promise<void>((resolve) => espnWaitQueue.push(resolve));
+}
+
+function releaseEspnSlot(): void {
+  if (espnWaitQueue.length > 0) {
+    const next = espnWaitQueue.shift()!;
+    next();
+    return;
+  }
+  espnActiveCount = Math.max(0, espnActiveCount - 1);
+}
+
+function isEspnInCooldown(): boolean {
+  if (Date.now() < espnCooldownUntil) return true;
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = sessionStorage.getItem('predictpro_host_cooldowns') || localStorage.getItem('predictpro_host_cooldowns');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed['site.api.espn.com'] === 'number' && parsed['site.api.espn.com'] > Date.now()) {
+          espnCooldownUntil = parsed['site.api.espn.com'];
+          return true;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return false;
+}
+
+function markEspnCooldown(durationMs = 120_000): void {
+  espnCooldownUntil = Date.now() + durationMs;
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = sessionStorage.getItem('predictpro_host_cooldowns') || '{}';
+      const parsed = JSON.parse(raw);
+      parsed['site.api.espn.com'] = espnCooldownUntil;
+      const str = JSON.stringify(parsed);
+      sessionStorage.setItem('predictpro_host_cooldowns', str);
+      localStorage.setItem('predictpro_host_cooldowns', str);
+    } catch {
+      // ignore
+    }
+  }
+}
+
 async function fetchWithBrowserSafeTimeout(url: string, timeoutMs = 4000): Promise<Response> {
-  if (typeof AbortController === 'undefined') {
-    return fetch(url, { headers: CHROME_HEADERS });
+  if (isEspnInCooldown()) {
+    return new Response('{}', { status: 503 });
   }
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { headers: CHROME_HEADERS, signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
+
+  const now = Date.now();
+  const cached = espnResponseCache.get(url);
+  if (cached && now < cached.expiresAt) {
+    return new Response(cached.text, {
+      status: cached.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
+
+  let pending = espnInflightMap.get(url);
+  if (!pending) {
+    pending = (async () => {
+      await acquireEspnSlot();
+      try {
+        if (isEspnInCooldown()) {
+          return { ok: false, status: 503, text: '{}' };
+        }
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+        try {
+          const res = await fetch(url, {
+            headers: CHROME_HEADERS,
+            ...(controller ? { signal: controller.signal } : {}),
+          });
+          if (timer) clearTimeout(timer);
+          if (!res.ok) {
+            if (res.status === 429 || res.status === 403) {
+              markEspnCooldown(180_000);
+            }
+            return { ok: false, status: res.status, text: '{}' };
+          }
+          const text = await res.text();
+          espnResponseCache.set(url, {
+            expiresAt: Date.now() + 25_000,
+            status: res.status,
+            text,
+          });
+          return { ok: true, status: res.status, text };
+        } catch {
+          if (timer) clearTimeout(timer);
+          markEspnCooldown(120_000);
+          return { ok: false, status: 503, text: '{}' };
+        }
+      } finally {
+        releaseEspnSlot();
+      }
+    })().finally(() => {
+      espnInflightMap.delete(url);
+    });
+    espnInflightMap.set(url, pending);
+  }
+
+  const result = await pending;
+  return new Response(result.text, {
+    status: result.status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promise<RawFootballFixture[]> {
@@ -1558,9 +1667,9 @@ export async function fetchServerFinishedResults(): Promise<RawFootballLiveMatch
   const seenIds = new Set(finishedOnly.map((m) => m.id));
 
   try {
-    const res = await fetch(
+    const res = await fetchWithBrowserSafeTimeout(
       `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${twoDaysAgoYmd}`,
-      { headers: CHROME_HEADERS }
+      4000
     );
     if (res.ok) {
       const json = await res.json();
@@ -1670,7 +1779,7 @@ export async function fetchServerMatchSummary(
   for (const code of candidateCodes.slice(0, 3)) {
     try {
       const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${code}/summary?event=${cleanId}`;
-      const res = await fetch(url, { headers: CHROME_HEADERS });
+      const res = await fetchWithBrowserSafeTimeout(url, 4000);
       if (!res.ok) continue;
       const json = await res.json();
       if (!json || (!json.rosters && !json.boxscore && !json.header)) continue;
@@ -1879,7 +1988,7 @@ export async function fetchServerStandings(leagueParam = 'EPL') {
 
   try {
     const url = `https://site.api.espn.com/apis/v2/sports/soccer/${espnCode}/standings`;
-    const res = await fetch(url, { headers: CHROME_HEADERS });
+    const res = await fetchWithBrowserSafeTimeout(url, 4000);
     if (!res.ok) return [];
     const json = await res.json();
     const entries = (json.children?.[0]?.standings?.entries as Array<Record<string, any>>) || [];
