@@ -202,7 +202,7 @@ export const ALL_PAGES_INTEGRATION_CLUSTERS: PageIntegrationCluster[] = [
       { path: '/tomorrow-predictions', label: "Tomorrow's Predictions", badge: 'Early Line', keywords: ['tomorrow football predictions', 'predictions for tomorrow', 'early opening odds'] },
       { path: '/weekend-predictions', label: 'Weekend Football Slate', badge: 'Sat/Sun', keywords: ['weekend football predictions', 'saturday football tips', 'sunday banker picks'] },
       { path: '/best-bets', label: "Today's Banker Picks (80%+)", badge: 'Hot', keywords: ['free guru tips today', 'banker bet of the day', 'best football bets today'] },
-      { path: '/sure-win-predictions', label: 'Sure Win Predictions (88%+)', badge: '88%+', keywords: ['sure wins today', '100 sure football predictions', 'high probability football picks'] },
+      { path: '/sure-win-predictions', label: 'High-Consensus Predictions (88%+)', badge: '88%+', keywords: ['high confidence predictions today', 'high consensus football predictions', 'high probability football picks'] },
       { path: '/bet-of-the-day', label: 'Match & Bet of the Day', badge: '#1 Pick', keywords: ['bet of the day', 'single banker tip today', 'tip of the day football'] },
       { path: '/value-bets', label: 'Daily Value Bets (+EV)', badge: '+EV Edge', keywords: ['daily value bets today (+ev)', 'positive expected value football', 'mispriced odds'] },
       { path: '/daily-2-odds-predictions', label: 'Sure 2, 3 & 5 Odds Slips', badge: '2.00x-5.00x', keywords: ['sure 2 odds predictions today', 'sure 3 odds tips', 'daily 2 odds banker'] },

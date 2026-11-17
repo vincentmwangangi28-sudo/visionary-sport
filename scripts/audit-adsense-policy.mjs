@@ -38,7 +38,8 @@ const PROHIBITED_PHRASES = [
   { pattern: /no-risk\s+arbitrage\s+calculator/i, label: 'no-risk arbitrage calculator' },
   { pattern: /anti-detection\s+(?:stake\s+)?rounding/i, label: 'anti-detection stake rounding' },
   { pattern: /instant\s+access\s+via\s+m-pesa\s+or\s+card/i, label: 'instant access via M-Pesa or card' },
-  { pattern: /\b100\s+sure\s+wins\b/i, label: '100 sure wins' },
+  { pattern: /\b100\s+sure\b/i, label: '100 sure' },
+  { pattern: /\bguaranteed\s+profit\b/i, label: 'guaranteed profit' },
   { pattern: /\b100%\s+guaranteed\s+win/i, label: '100% guaranteed win' },
   { pattern: /\bfixed\s+matches\s+today\b/i, label: 'fixed matches today' },
 ];
@@ -53,9 +54,13 @@ const FILES_TO_SCAN_FOR_PHRASES = [
   'src/pages/HedgeBetCalculator.tsx',
   'src/pages/ArbitrageSurebetMatrixPage.tsx',
   'src/pages/RolloverBetsPredictions.tsx',
+  'src/pages/RolloverLadderSimulatorPage.tsx',
+  'src/pages/FiveOddsPredictions.tsx',
   'src/pages/SureWinPredictions.tsx',
   'src/components/Footer.tsx',
   'src/components/DutchingCalculatorModal.tsx',
+  'src/services/ahrefsOpportunitiesService.ts',
+  'src/services/seoKeywords.ts',
 ];
 
 function readFileSafe(relPath) {

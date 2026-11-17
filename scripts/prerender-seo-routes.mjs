@@ -533,7 +533,7 @@ const ROUTE_META = {
   },
   '/cash-out-calculator': {
     title: 'Cash-Out Equity & Live Hedge Optimizer | PredictPro',
-    description: 'Expose hidden bookmaker Cash-Out margin haircuts and compute exact DIY opposite-outcome hedge stakes to lock in higher guaranteed profit.',
+    description: 'Expose hidden bookmaker Cash-Out margin haircuts and compute exact DIY opposite-outcome hedge stakes to retain higher mathematical ticket equity.',
   },
   '/referee-stats-scanner': {
     title: 'Referee Discipline, Yellow/Red Card & Booking Points Matrix',

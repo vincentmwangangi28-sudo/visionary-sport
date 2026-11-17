@@ -1,5 +1,5 @@
 {
-  "auditedAt": "2026-11-17T13:14:07.785Z",
+  "auditedAt": "2026-11-17T13:33:25.009Z",
   "publisherId": "ca-pub-1375386376692976",
   "domain": "https://www.predictpro.guru",
   "overallStatus": "COMPLIANT",
@@ -35,7 +35,7 @@
       "title": "Zero Prohibited Gambling & Misrepresentation Claims",
       "category": "Content Policy",
       "status": "PASS",
-      "detail": "Scanned 12 core route/template files: 0 instances of \"risk-free profit\", \"anti-detection\", \"100 sure wins\", or direct wagering solicitation."
+      "detail": "Scanned 16 core route/template files: 0 instances of \"risk-free profit\", \"anti-detection\", \"100 sure wins\", or direct wagering solicitation."
     },
     {
       "id": "editorial-depth-and-link-density",

@@ -476,7 +476,7 @@ export const AI_OVERVIEW_FEATURED_SNIPPETS: AiOverviewSnippetOpportunity[] = [
     currentPosition: 5,
     serpFeature: 'AI Overview',
     conciseAnswer:
-      'Reject a bookmaker’s cash-out offer whenever the Cash-Out Equity Haircut exceeds 5% of your ticket’s Fair Mathematical Value (Potential Payout ÷ Live No-Vig Remaining Odds). Instead, place a manual counter-bet (lay hedge) on the opposing market to lock in 8%–14% higher guaranteed profit.',
+      'Reject a bookmaker’s cash-out offer whenever the Cash-Out Equity Haircut exceeds 5% of your ticket’s Fair Mathematical Value (Potential Payout ÷ Live No-Vig Remaining Odds). Instead, place a manual counter-bet (lay hedge) on the opposing market to capture 8%–14% higher counter-hedged equity.',
     keyDataPoints: [
       'Fair Ticket Value = (Stake × Ticket Odds) / Current Live Remaining Odds',
       'Equal-Profit Hedge Stake = Potential Payout / Live Counter-Outcome Odds',

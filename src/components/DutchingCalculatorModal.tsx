@@ -270,13 +270,13 @@ export const DutchingCalculatorModal: React.FC<DutchingCalculatorModalProps> = (
               <span className="font-bold text-foreground font-mono">{format(calculations.computedTotalStake)}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Guaranteed Return (Any Win):</span>
+              <span className="text-muted-foreground">Equalized Return (Any Selected Hit):</span>
               <span className="font-bold text-primary font-mono">{format(calculations.avgReturn)}</span>
             </div>
             <div className="h-px bg-border/50 my-1" />
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold block">Net Guaranteed Profit:</span>
+                <span className="text-xs font-semibold block">Net Equalized Return:</span>
                 <span className="text-[11px] text-muted-foreground">Calculated after deducting all stakes</span>
               </div>
               <div className="text-right">

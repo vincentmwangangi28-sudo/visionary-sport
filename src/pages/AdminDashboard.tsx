@@ -20,6 +20,7 @@ import { AdminCronJobsManager } from '@/components/AdminCronJobsManager';
 import { GoogleSearchConsoleHub } from '@/components/GoogleSearchConsoleHub';
 import { SEOSiteAuditSuite } from '@/components/SEOSiteAuditSuite';
 import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
+import { AdSensePolicyAuditor } from '@/components/AdSensePolicyAuditor';
 import { SEO } from '@/components/SEO';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminOverviewTab } from '@/components/admin/AdminOverviewTab';
@@ -495,6 +496,7 @@ export default function AdminDashboard() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            <AdSensePolicyAuditor />
             <AdminOverviewTab 
               stats={stats} 
               onRefresh={loadStats} 
@@ -658,6 +660,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
+            <AdSensePolicyAuditor />
             <LiveServerSeoInspector />
             <AdminGoogleIndexingSuite />
             <GoogleSearchConsoleHub />

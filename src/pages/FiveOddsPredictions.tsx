@@ -89,10 +89,10 @@ export default function FiveOddsPredictions() {
               </Badge>
             </div>
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
-              Sure 5 Odds &amp; 10 Odds Football Predictions Today
+              5.00 &amp; 10.00 Combined Odds Football Predictions Today
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Built for bettors seeking 5x to 10x returns without the extreme variance of 20-leg tickets. Our algorithm selects 4 to 5 uncorrelated fixtures across different kickoff windows so you can hedge or cash out the final leg for guaranteed profit.
+              Built for analysts modeling 5x to 10x multi-match combinations without the high variance of 20-leg tickets. Our algorithm selects 4 to 5 uncorrelated fixtures across staggered kickoff windows so you can manage final-leg variance with counter-hedging.
             </p>
           </div>
         </section>
