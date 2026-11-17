@@ -103,6 +103,7 @@ const PrivacyPolicy          = lazyWithRetry(() => import("./pages/PrivacyPolicy
 const TermsOfService         = lazyWithRetry(() => import("./pages/TermsOfService"));
 const CookiePolicy           = lazyWithRetry(() => import("./pages/CookiePolicy"));
 const Contact                = lazyWithRetry(() => import("./pages/Contact"));
+const AdSensePolicyCheckerPage = lazyWithRetry(() => import("./pages/AdSensePolicyCheckerPage"));
 const Widgets                = lazyWithRetry(() => import("./pages/Widgets"));
 const EmbedWidget            = lazyWithRetry(() => import("./pages/EmbedWidget"));
 const BetOfTheDay            = lazyWithRetry(() => import("./pages/BetOfTheDay"));
@@ -635,6 +636,8 @@ const App = () => (
                             <Route path="/contact"                      element={<RouteBoundary component={Contact} />} />
                             <Route path="/contact-us"                   element={<Navigate to="/contact" replace />} />
                             <Route path="/responsible-gaming"           element={<RouteBoundary component={ResponsibleGaming} />} />
+                            <Route path="/adsense-policy-checker"       element={<RouteBoundary component={AdSensePolicyCheckerPage} />} />
+                            <Route path="/adsense-audit"                element={<Navigate to="/adsense-policy-checker" replace />} />
                             <Route path="/widgets"                      element={<RouteBoundary component={Widgets} />} />
                             <Route path="/embed/:type"                  element={<RouteBoundary component={EmbedWidget} />} />
                             <Route path="/bet-of-the-day"               element={<RouteBoundary component={BetOfTheDay} />} />

@@ -164,6 +164,7 @@ export const Footer = () => {
                 <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/cookies" className="hover:text-foreground transition-colors">Cookie Policy (AdSense &amp; GDPR)</Link></li>
                 <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link to="/adsense-policy-checker" className="hover:text-foreground transition-colors font-semibold text-emerald-600 dark:text-emerald-400">AdSense Policy Checker</Link></li>
                 <li><Link to="/sitemap" className="hover:text-foreground transition-colors font-semibold text-primary">HTML Sitemap &amp; SEO Directory</Link></li>
                 <li><Link to="/admin" className="hover:text-foreground transition-colors text-muted-foreground/80">Admin Operations Console</Link></li>
               </ul>

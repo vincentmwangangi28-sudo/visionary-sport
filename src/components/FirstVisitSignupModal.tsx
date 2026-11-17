@@ -44,7 +44,7 @@ function isAutomatedCrawlerOrTest(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return true;
   return Boolean(
     navigator.webdriver ||
-      /Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|AhrefsBot|SemrushBot|HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(
+      /Mediapartners-Google|AdsBot-Google|Google-Display-Ads-Bot|Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|AhrefsBot|SemrushBot|HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(
         navigator.userAgent || ''
       )
   );
@@ -56,6 +56,11 @@ function isExemptPublicRoute(pathname: string): boolean {
     pathname.startsWith('/privacy') ||
     pathname.startsWith('/terms') ||
     pathname.startsWith('/cookies') ||
+    pathname.startsWith('/responsible-gaming') ||
+    pathname.startsWith('/about') ||
+    pathname.startsWith('/contact') ||
+    pathname.startsWith('/methodology') ||
+    pathname.startsWith('/adsense-policy-checker') ||
     pathname.startsWith('/embed')
   );
 }
@@ -137,6 +142,15 @@ export const FirstVisitSignupModal: React.FC = () => {
       setEmail(savedEmail);
     }
 
+    // Check if user already dismissed popup in this session (AdSense Single-Popup & Non-Intrusive Policy)
+    try {
+      if (window.sessionStorage?.getItem('predictpro_adsense_popup_dismissed') === 'true') {
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
     // Check if 1-minute preview has already expired
     if (isStoredGateLocked()) {
       setElapsedSeconds(GUEST_PREVIEW_LIMIT_SECONDS);
@@ -147,6 +161,13 @@ export const FirstVisitSignupModal: React.FC = () => {
 
     const intervalId = window.setInterval(() => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
+      // Single-overlay mutex: pause countdown while Cookie Consent banner is actively displayed
+      if (
+        typeof document !== 'undefined' &&
+        document.querySelector('[aria-label="Cookie and Privacy Consent Notification"]')
+      ) {
         return;
       }
       setElapsedSeconds((prev) => {
@@ -205,13 +226,19 @@ export const FirstVisitSignupModal: React.FC = () => {
     };
   }, [user]);
 
-  // Only allow closing the modal if the 1-minute preview has NOT expired yet
+  // AdSense Better Ads & Interstitial Compliance: always allow dismissing the modal to continue reading content
   const handleClosePreviewModal = useCallback(() => {
-    if (isGateLocked || elapsedSeconds >= GUEST_PREVIEW_LIMIT_SECONDS) {
-      return;
+    try {
+      window.sessionStorage?.setItem('predictpro_adsense_popup_dismissed', 'true');
+      window.localStorage?.removeItem(STORAGE_GATE_LOCKED_KEY);
+      window.localStorage?.setItem(STORAGE_ENGAGED_SECONDS_KEY, '0');
+    } catch {
+      // ignore
     }
+    setElapsedSeconds(0);
+    setIsGateLocked(false);
     setOpen(false);
-  }, [isGateLocked, elapsedSeconds]);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setGoogleSubmitting(true);
@@ -488,17 +515,16 @@ export const FirstVisitSignupModal: React.FC = () => {
           className="fixed inset-0 z-[9995] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200 select-none"
         >
           <div className="w-full max-w-[460px] rounded-2xl border border-border/80 bg-background shadow-2xl overflow-hidden my-auto relative select-text">
-            {/* Close button ONLY shown if user opened modal manually before their 1-minute preview expired */}
-            {!isGateLocked && remainingSeconds > 0 && (
-              <button
-                type="button"
-                onClick={handleClosePreviewModal}
-                aria-label="Close dialog and return to preview"
-                className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10 cursor-pointer"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
+            {/* Always-dismissible close button (AdSense Better Ads & No-Inescapable-Interstitial Policy) */}
+            <button
+              type="button"
+              data-adsense-dismissible="true"
+              onClick={handleClosePreviewModal}
+              aria-label="Close dialog and return to preview"
+              className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10 cursor-pointer"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
 
             {/* Top Accent Header */}
             <div className="bg-card border-b border-border/60 px-6 pt-6 pb-5">

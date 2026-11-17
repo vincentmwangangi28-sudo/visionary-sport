@@ -3344,7 +3344,22 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       : resolved.canonicalUrl;
 
     upsertMetaTag('name', 'description', resolved.description);
+    upsertMetaTag('name', 'google-adsense-account', 'ca-pub-1375386376692976');
     upsertLinkTag('canonical', domCanonicalUrl);
+
+    if (
+      document.head &&
+      !document.head.querySelector(
+        'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+      )
+    ) {
+      const adsScript = document.createElement('script');
+      adsScript.async = true;
+      adsScript.src =
+        'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976';
+      adsScript.crossOrigin = 'anonymous';
+      document.head.appendChild(adsScript);
+    }
 
     // Defer secondary head tag mutations (35+ hreflang links, 20 og:locale:alternate tags, JSON-LD serialization)
     // off the critical hydration frame to eliminate main-thread blocking (TBT / INP).

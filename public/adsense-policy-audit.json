@@ -1,13 +1,71 @@
 {
-  "auditedAt": "2026-11-17T13:33:25.009Z",
+  "auditedAt": "2026-11-17T14:47:28.720Z",
   "publisherId": "ca-pub-1375386376692976",
   "domain": "https://www.predictpro.guru",
   "overallStatus": "COMPLIANT",
   "scorePercent": 100,
-  "passedChecks": 7,
-  "totalChecks": 7,
+  "passedChecks": 8,
+  "totalChecks": 8,
   "editorialWordCount": 780,
   "mainLinkCount": 38,
+  "prohibitedContentScan": {
+    "filesScanned": 497,
+    "patternsChecked": 12,
+    "violationsFound": 0
+  },
+  "adPlacementScan": {
+    "uiFilesScanned": 393,
+    "routesWithAds": 7,
+    "totalAdUnits": 7,
+    "maxAdsPerPageAllowed": 3,
+    "adsInsideModalsCount": 0,
+    "deceptiveLabelCount": 0,
+    "auditedRoutes": [
+      {
+        "file": "src/pages/BTTS.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      },
+      {
+        "file": "src/pages/BestBets.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      },
+      {
+        "file": "src/pages/BlogPost.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      },
+      {
+        "file": "src/pages/MatchPrediction.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      },
+      {
+        "file": "src/pages/MatchPredictor.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      },
+      {
+        "file": "src/pages/News.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      },
+      {
+        "file": "src/pages/TrackRecordPage.tsx",
+        "adCount": 1,
+        "maxAllowed": 3
+      }
+    ]
+  },
+  "popupAndInterstitialScan": {
+    "uiFilesScanned": 393,
+    "windowOpenOrAlertCount": 0,
+    "singleOverlayMutexActive": true,
+    "mediapartnersExempted": true,
+    "modalsDismissible": true,
+    "deferredUntilInteraction": true
+  },
   "checks": [
     {
       "id": "ads-txt-authorization",
@@ -18,10 +76,10 @@
     },
     {
       "id": "adsense-sdk-and-crawler-access",
-      "title": "AdSense Verification Meta Tag & adsbygoogle.js Crawler Execution",
+      "title": "AdSense <head> Auto Ads Script Tag & Verification Meta Tag",
       "category": "Technical Verification",
       "status": "PASS",
-      "detail": "Verified meta tag (ca-pub-1375386376692976), immediate adsbygoogle.js injection for Mediapartners-Google/AdsBot-Google, and interaction-deferred loading for Lighthouse CWV."
+      "detail": "Verified literal <script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976\" crossorigin=\"anonymous\"></script> and <meta name=\"google-adsense-account\"> inside <head></head> across all pages."
     },
     {
       "id": "robots-txt-mediapartners",
@@ -32,10 +90,10 @@
     },
     {
       "id": "prohibited-gambling-misrepresentation-phrases",
-      "title": "Zero Prohibited Gambling & Misrepresentation Claims",
-      "category": "Content Policy",
+      "title": "Prohibited Content & Unreliable Claims Codebase Scanner",
+      "category": "Prohibited Content",
       "status": "PASS",
-      "detail": "Scanned 16 core route/template files: 0 instances of \"risk-free profit\", \"anti-detection\", \"100 sure wins\", or direct wagering solicitation."
+      "detail": "Scanned 497 codebase files & templates across 12 prohibited content patterns: 0 violations found."
     },
     {
       "id": "editorial-depth-and-link-density",
@@ -49,14 +107,21 @@
       "title": "Mandatory E-E-A-T, GDPR Cookie Consent & 18+ Informational Governance",
       "category": "Trust & Transparency",
       "status": "PASS",
-      "detail": "Verified /about, /methodology, /contact, /privacy, /cookies, /terms, /responsible-gaming, and GDPR CookieConsent banner."
+      "detail": "Verified /about, /methodology, /contact, /privacy, /cookies, /terms, /responsible-gaming, and GDPR CookieConsentBanner."
     },
     {
       "id": "ad-placement-hygiene",
-      "title": "Ad Placement Hygiene & Unfilled Slot Collapse Protection",
+      "title": "Non-Compliant Ad Placements, Density & Overlay Audit",
       "category": "Ad Placement Policies",
       "status": "PASS",
-      "detail": "AdBanner enforces live slot validation, collapses unfilled ad containers via MutationObserver, and avoids deceptive labels."
+      "detail": "Audited 393 component/page files (7 routes with ads, max 3/page, 0 ads in modals/popovers, unfilled collapse active)."
+    },
+    {
+      "id": "excessive-popups-and-interstitials",
+      "title": "Excessive Pop-Ups, window.open & Intrusive Interstitial Scanner",
+      "category": "Pop-Up & Interstitial Policy",
+      "status": "PASS",
+      "detail": "Scanned 393 UI files: 0 window.open/alert pop-ups, single-overlay mutex enforced, Mediapartners-Google exempted, all modals dismissible."
     }
   ],
   "violations": []

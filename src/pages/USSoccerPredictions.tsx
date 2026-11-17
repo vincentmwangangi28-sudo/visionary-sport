@@ -250,16 +250,24 @@ export default function USSoccerPredictions() {
             </Button>
             <Button
               size="sm"
-              onClick={() => {
-                const text = `🇺🇸 *PredictPro US Soccer Moneyline Picks*\n\n` +
-                  US_MATCHES.map(m => `⚽ *${m.homeTeam} vs ${m.awayTeam}*\n👉 Pick: ${m.aiPick} (${m.moneylineHome})\n📺 ${m.broadcastUS} · ${m.kickoffEST}`).join('\n\n') +
-                  `\n\nFull picks: https://predictpro.guru/us-soccer-predictions`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-              }}
+              asChild
               className="h-8 text-xs gap-1.5 font-bold bg-green-600 hover:bg-green-700 text-white"
             >
-              <Share2 className="h-3.5 w-3.5" />
-              WhatsApp Share
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  `🇺🇸 *PredictPro US Soccer Moneyline Picks*\n\n` +
+                    US_MATCHES.map(
+                      (m) =>
+                        `⚽ *${m.homeTeam} vs ${m.awayTeam}*\n👉 Pick: ${m.aiPick} (${m.moneylineHome})\n📺 ${m.broadcastUS} · ${m.kickoffEST}`
+                    ).join('\n\n') +
+                    `\n\nFull picks: https://predictpro.guru/us-soccer-predictions`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                WhatsApp Share
+              </a>
             </Button>
           </div>
         </div>

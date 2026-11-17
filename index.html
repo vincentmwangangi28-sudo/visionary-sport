@@ -13,8 +13,10 @@
     <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
     <meta name="bingbot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
 
-    <!-- Google AdSense Official Site Verification (Auto Ads script deferred to interaction for 100 Mobile PageSpeed) -->
+    <!-- Google AdSense Official Site Verification & Auto Ads Script (Placed in <head> across all pages) -->
     <meta name="google-adsense-account" content="ca-pub-1375386376692976" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1375386376692976"
+     crossorigin="anonymous"></script>
     <style id="predictpro-critical-mobile-cwv">
       html { text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
       body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -302,7 +304,10 @@
 
         function injectAdSenseSdk() {
           if (adsenseInjected) return;
-          if (document.getElementById('predictpro-adsense-sdk')) {
+          if (
+            document.getElementById('predictpro-adsense-sdk') ||
+            document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')
+          ) {
             adsenseInjected = true;
             return;
           }

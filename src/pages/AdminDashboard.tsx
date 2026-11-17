@@ -48,6 +48,8 @@ import { AdminTelegramWebhookTab } from '@/components/admin/AdminTelegramWebhook
 import { AdminPartnerWidgetStudioTab } from '@/components/admin/AdminPartnerWidgetStudioTab';
 import { AdminClvAndLocalizationTab } from '@/components/admin/AdminClvAndLocalizationTab';
 import { AdminSocialStoryStudioTab } from '@/components/admin/AdminSocialStoryStudioTab';
+import { AdminUserAnalysisTab } from '@/components/admin/AdminUserAnalysisTab';
+import { AdminAnalyticsSummary } from '@/components/admin/AdminAnalyticsSummary';
 
 interface DailyStat {
   date: string;
@@ -70,6 +72,7 @@ export default function AdminDashboard() {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
     if (tabParam) return tabParam;
+    if (location.pathname.includes('/user-analysis')) return 'user-analysis';
     if (location.pathname.includes('/users')) return 'users';
     if (location.pathname.includes('/seo')) return 'seo';
     if (location.pathname.includes('/roles')) return 'roles';
@@ -82,6 +85,8 @@ export default function AdminDashboard() {
     const tabParam = params.get('tab');
     if (tabParam) {
       setActiveTab(tabParam);
+    } else if (location.pathname.includes('/user-analysis')) {
+      setActiveTab('user-analysis');
     } else if (location.pathname.includes('/users')) {
       setActiveTab('users');
     } else if (location.pathname.includes('/seo')) {
@@ -362,6 +367,11 @@ export default function AdminDashboard() {
                 <span>Overview</span>
               </TabsTrigger>
 
+              <TabsTrigger value="user-analysis" className="gap-2 text-xs">
+                <Activity className="h-3.5 w-3.5 text-emerald-500" />
+                <span>User Analysis &amp; Cohorts</span>
+              </TabsTrigger>
+
               <TabsTrigger value="app-stores" className="gap-2 text-xs">
                 <Smartphone className="h-3.5 w-3.5 text-emerald-500" />
                 <span>App Stores &amp; APK</span>
@@ -505,6 +515,11 @@ export default function AdminDashboard() {
             />
           </TabsContent>
 
+          {/* User Analysis & Behavioral Intelligence Tab */}
+          <TabsContent value="user-analysis" className="space-y-6">
+            <AdminUserAnalysisTab />
+          </TabsContent>
+
           {/* App Store Publishing & Native Packaging Studio Tab */}
           <TabsContent value="app-stores" className="space-y-6">
             <AdminAppStoreStudioTab />
@@ -557,6 +572,7 @@ export default function AdminDashboard() {
 
           {/* Trends & Accuracy Tab */}
           <TabsContent value="trends" className="space-y-6">
+            <AdminAnalyticsSummary onNavigateTab={setActiveTab} />
             <AdminTrendsVisualization onViewPredictions={() => setActiveTab('predictions')} />
           </TabsContent>
 

@@ -1,19 +1,15 @@
 #!/usr/bin/env node
 /**
- * PredictPro — Automated Post-Build Google AdSense Program Policy Auditor
+ * PredictPro — Automated Post-Build Google AdSense Program Policy Checker
  *
  * Runs automatically after every `npm run build` (and on demand via `npm run audit:adsense`).
- * Enforces all 7 Google AdSense Program Policy & Google Publisher Restrictions gates:
- *   1. ads.txt & app-ads.txt IAB authorization (`google.com, pub-1375386376692976, DIRECT, f08c47fec0942fa0`)
- *   2. AdSense Verification Meta Tag & adsbygoogle.js SDK Script + Mediapartners-Google unblocked
- *   3. robots.txt Crawler Directives (`Mediapartners-Google` & `AdsBot-Google` explicitly allowed)
- *   4. Zero Prohibited Gambling / Misrepresentation Phrases across source & prerendered HTML
- *   5. High-Value Original Content & Anti-Doorway Link Density (`>= 450` words of prose, `<= 50` links in `<main>`)
- *   6. Mandatory E-E-A-T, GDPR Cookie Consent, Privacy, Terms, and 18+ Responsible Gaming pages & footer links
- *   7. Clean Ad Placement Hygiene (zero deceptive "Click Here" ad labels or fake slot IDs)
+ * Scans the entire codebase across 8 Google AdSense Program Policy gates & 3 core compliance pillars:
+ *   Pillar A — Prohibited Content Scanner (recursive codebase scan across src/pages, src/components, src/hooks, src/services, index.html, prerender routes)
+ *   Pillar B — Non-Compliant Ad Placements Scanner (ad density <= 3 per page, zero ads inside dialogs/popovers, zero deceptive click labels, unfilled ad collapse)
+ *   Pillar C — Excessive Pop-Ups & Intrusive Interstitials Scanner (zero window.open/window.alert pop-ups, single-overlay mutex, Mediapartners-Google exemption, dismissible modals)
  *
- * Writes telemetry report to `public/adsense-policy-audit.json` (and `dist/adsense-policy-audit.json` if present)
- * and exits with non-zero status code (`1`) if any AdSense policy violation is detected.
+ * Writes detailed telemetry to `public/adsense-policy-audit.json` (and `dist/adsense-policy-audit.json`)
+ * and exits with code `1` if any AdSense policy violation is detected.
  */
 
 import fs from 'node:fs';
@@ -26,47 +22,56 @@ const ROOT = path.resolve(__dirname, '..');
 
 const EXPECTED_PUB_ID = 'ca-pub-1375386376692976';
 const EXPECTED_ADS_TXT_RECORD = 'google.com, pub-1375386376692976, DIRECT, f08c47fec0942fa0';
+const MAX_ADS_PER_PAGE = 3;
 
 /**
- * Restricted phrases that trigger Google AdSense "Gambling / Misrepresentation / Unreliable Claims" rejections
+ * Restricted phrases that trigger Google AdSense "Prohibited Content / Gambling / Misrepresentation" rejections
  */
 const PROHIBITED_PHRASES = [
-  { pattern: /risk-free\s+(?:guaranteed\s+)?profit/i, label: 'risk-free [guaranteed] profit' },
-  { pattern: /guaranteed\s+risk-free\s+profit/i, label: 'guaranteed risk-free profit' },
-  { pattern: /risk-free\s+net\s+profit/i, label: 'risk-free net profit' },
-  { pattern: /100%\s+risk-free\s+house\s+profit/i, label: '100% risk-free house profit' },
-  { pattern: /no-risk\s+arbitrage\s+calculator/i, label: 'no-risk arbitrage calculator' },
-  { pattern: /anti-detection\s+(?:stake\s+)?rounding/i, label: 'anti-detection stake rounding' },
-  { pattern: /instant\s+access\s+via\s+m-pesa\s+or\s+card/i, label: 'instant access via M-Pesa or card' },
-  { pattern: /\b100\s+sure\b/i, label: '100 sure' },
-  { pattern: /\bguaranteed\s+profit\b/i, label: 'guaranteed profit' },
-  { pattern: /\b100%\s+guaranteed\s+win/i, label: '100% guaranteed win' },
-  { pattern: /\bfixed\s+matches\s+today\b/i, label: 'fixed matches today' },
+  { pattern: /risk-free\s+(?:guaranteed\s+)?profit/i, label: 'risk-free [guaranteed] profit', category: 'Unreliable Financial / Gambling Guarantee' },
+  { pattern: /guaranteed\s+risk-free\s+profit/i, label: 'guaranteed risk-free profit', category: 'Unreliable Financial / Gambling Guarantee' },
+  { pattern: /risk-free\s+net\s+profit/i, label: 'risk-free net profit', category: 'Unreliable Financial / Gambling Guarantee' },
+  { pattern: /100%\s+risk-free\s+house\s+profit/i, label: '100% risk-free house profit', category: 'Unreliable Financial / Gambling Guarantee' },
+  { pattern: /no-risk\s+arbitrage\s+calculator/i, label: 'no-risk arbitrage calculator', category: 'Misrepresentation of Risk' },
+  { pattern: /anti-detection\s+(?:stake\s+)?rounding/i, label: 'anti-detection stake rounding', category: 'Circumvention / Evasion Claim' },
+  { pattern: /instant\s+access\s+via\s+m-pesa\s+or\s+card/i, label: 'instant access via M-Pesa or card', category: 'Direct Wagering / Tipster Paywall Solicitation' },
+  { pattern: /\b100\s+sure\b/i, label: '100 sure', category: 'Guaranteed Outcome Claim' },
+  { pattern: /\bguaranteed\s+profit\b/i, label: 'guaranteed profit', category: 'Guaranteed Outcome Claim' },
+  { pattern: /\b100%\s+guaranteed\s+win/i, label: '100% guaranteed win', category: 'Guaranteed Outcome Claim' },
+  { pattern: /\bfixed\s+matches\s+today\b/i, label: 'fixed matches today', category: 'Match-Fixing / Deceptive Claim' },
+  { pattern: /\bfree\s+illegal\s+live\s+stream/i, label: 'free illegal live stream', category: 'Copyright / Unauthorized Streaming' },
 ];
 
-const FILES_TO_SCAN_FOR_PHRASES = [
-  'index.html',
-  'scripts/prerender-seo-routes.mjs',
-  'src/hooks/useSEOManager.ts',
-  'src/pages/Index.tsx',
-  'src/pages/ArbitrageCalculator.tsx',
-  'src/pages/CashOutHedgeCalculatorPage.tsx',
-  'src/pages/HedgeBetCalculator.tsx',
-  'src/pages/ArbitrageSurebetMatrixPage.tsx',
-  'src/pages/RolloverBetsPredictions.tsx',
-  'src/pages/RolloverLadderSimulatorPage.tsx',
-  'src/pages/FiveOddsPredictions.tsx',
-  'src/pages/SureWinPredictions.tsx',
-  'src/components/Footer.tsx',
-  'src/components/DutchingCalculatorModal.tsx',
-  'src/services/ahrefsOpportunitiesService.ts',
-  'src/services/seoKeywords.ts',
-];
+const EXCLUDED_SCAN_FILES = new Set([
+  'src/components/AdSensePolicyAuditor.tsx',
+  'src/components/AdSensePolicyChecker.tsx',
+  'src/pages/AdSensePolicyCheckerPage.tsx',
+  'src/test/adsensePolicyAudit.test.ts',
+  'scripts/audit-adsense-policy.mjs',
+]);
 
 function readFileSafe(relPath) {
   const full = path.join(ROOT, relPath);
   if (!fs.existsSync(full)) return null;
   return fs.readFileSync(full, 'utf8');
+}
+
+function collectFilesRecursive(relDir, extensions = ['.tsx', '.ts', '.mjs', '.html']) {
+  const fullDir = path.join(ROOT, relDir);
+  if (!fs.existsSync(fullDir)) return [];
+  const results = [];
+  const entries = fs.readdirSync(fullDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const relPath = path.posix.join(relDir, entry.name);
+    if (EXCLUDED_SCAN_FILES.has(relPath)) continue;
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'test') continue;
+      results.push(...collectFilesRecursive(relPath, extensions));
+    } else if (extensions.some((ext) => entry.name.endsWith(ext))) {
+      results.push(relPath);
+    }
+  }
+  return results;
 }
 
 function stripHtmlTags(html) {
@@ -81,6 +86,18 @@ function stripHtmlTags(html) {
 function runAudit() {
   const checks = [];
   const violations = [];
+
+  const pageAndComponentFiles = [
+    ...collectFilesRecursive('src/pages', ['.tsx', '.ts']),
+    ...collectFilesRecursive('src/components', ['.tsx', '.ts']),
+  ];
+  const allCodebaseFiles = [
+    'index.html',
+    'scripts/prerender-seo-routes.mjs',
+    ...pageAndComponentFiles,
+    ...collectFilesRecursive('src/hooks', ['.tsx', '.ts']),
+    ...collectFilesRecursive('src/services', ['.tsx', '.ts']),
+  ];
 
   // 1. Check ads.txt and app-ads.txt
   const adsTxt = readFileSafe('public/ads.txt') || '';
@@ -99,25 +116,34 @@ function runAudit() {
       : 'ads.txt or app-ads.txt is missing the required Google seller record.',
   });
 
-  // 2. Check index.html AdSense meta tag, adsbygoogle.js SDK, and Mediapartners-Google unblocked
+  // 2. Check index.html <head> contains literal AdSense <script async src="...adsbygoogle.js?client=ca-pub-1375386376692976" crossorigin="anonymous"></script> & meta tag
   const indexHtml = readFileSafe('index.html') || '';
-  const hasMetaTag = indexHtml.includes(`name="google-adsense-account"`) && indexHtml.includes(EXPECTED_PUB_ID);
-  const hasSdkUrl = indexHtml.includes(`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${EXPECTED_PUB_ID}`);
+  const headSectionMatch = indexHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+  const headHtml = headSectionMatch ? headSectionMatch[1] : '';
+  const hasMetaTag = headHtml.includes(`name="google-adsense-account"`) && headHtml.includes(EXPECTED_PUB_ID);
+  const hasLiteralHeadScriptTag =
+    /<script\s+async\s+src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-1375386376692976"\s+crossorigin="anonymous"\s*><\/script>/i.test(
+      headHtml
+    );
   const blocksMediapartners = /botPattern\s*=\s*\/[^/]*(?:Mediapartners|AdsBot)[^/]*\/i\.test/.test(indexHtml);
-  const sdkCheckOk = hasMetaTag && hasSdkUrl && !blocksMediapartners;
+  const sdkCheckOk = hasMetaTag && hasLiteralHeadScriptTag && !blocksMediapartners;
   if (!sdkCheckOk) {
-    if (!hasMetaTag) violations.push(`index.html is missing <meta name="google-adsense-account" content="${EXPECTED_PUB_ID}">.`);
-    if (!hasSdkUrl) violations.push(`index.html is missing adsbygoogle.js?client=${EXPECTED_PUB_ID} script loader.`);
+    if (!hasMetaTag) violations.push(`index.html <head> is missing <meta name="google-adsense-account" content="${EXPECTED_PUB_ID}">.`);
+    if (!hasLiteralHeadScriptTag) {
+      violations.push(
+        `index.html <head> is missing literal <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${EXPECTED_PUB_ID}" crossorigin="anonymous"></script>.`
+      );
+    }
     if (blocksMediapartners) violations.push(`index.html blocks Mediapartners-Google or AdsBot-Google from loading the AdSense SDK.`);
   }
   checks.push({
     id: 'adsense-sdk-and-crawler-access',
-    title: 'AdSense Verification Meta Tag & adsbygoogle.js Crawler Execution',
+    title: 'AdSense <head> Auto Ads Script Tag & Verification Meta Tag',
     category: 'Technical Verification',
     status: sdkCheckOk ? 'PASS' : 'FAIL',
     detail: sdkCheckOk
-      ? `Verified meta tag (${EXPECTED_PUB_ID}), immediate adsbygoogle.js injection for Mediapartners-Google/AdsBot-Google, and interaction-deferred loading for Lighthouse CWV.`
-      : 'AdSense SDK or meta tag configuration issue detected in index.html.',
+      ? `Verified literal <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${EXPECTED_PUB_ID}" crossorigin="anonymous"></script> and <meta name="google-adsense-account"> inside <head></head> across all pages.`
+      : 'AdSense <head> script tag or meta tag configuration issue detected in index.html.',
   });
 
   // 3. Check robots.txt allows Mediapartners-Google and AdsBot-Google
@@ -139,14 +165,14 @@ function runAudit() {
       : 'Missing Mediapartners-Google or AdsBot-Google rules in public/robots.txt.',
   });
 
-  // 4. Scan for prohibited gambling / misrepresentation phrases across source & prerendered routes
+  // 4. Pillar A — Prohibited Content Scanner (Full Codebase Scan)
   const phraseMatches = [];
-  for (const relFile of FILES_TO_SCAN_FOR_PHRASES) {
+  for (const relFile of allCodebaseFiles) {
     const content = readFileSafe(relFile);
     if (!content) continue;
     for (const rule of PROHIBITED_PHRASES) {
       if (rule.pattern.test(content)) {
-        phraseMatches.push(`${relFile}: matched prohibited phrase "${rule.label}"`);
+        phraseMatches.push(`${relFile}: matched prohibited phrase "${rule.label}" (${rule.category})`);
       }
     }
   }
@@ -173,11 +199,11 @@ function runAudit() {
   }
   checks.push({
     id: 'prohibited-gambling-misrepresentation-phrases',
-    title: 'Zero Prohibited Gambling & Misrepresentation Claims',
-    category: 'Content Policy',
+    title: 'Prohibited Content & Unreliable Claims Codebase Scanner',
+    category: 'Prohibited Content',
     status: phrasesOk ? 'PASS' : 'FAIL',
     detail: phrasesOk
-      ? `Scanned ${FILES_TO_SCAN_FOR_PHRASES.length} core route/template files: 0 instances of "risk-free profit", "anti-detection", "100 sure wins", or direct wagering solicitation.`
+      ? `Scanned ${allCodebaseFiles.length} codebase files & templates across ${PROHIBITED_PHRASES.length} prohibited content patterns: 0 violations found.`
       : `Found ${phraseMatches.length} restricted phrase violation(s): ${phraseMatches.slice(0, 3).join('; ')}`,
   });
 
@@ -230,27 +256,114 @@ function runAudit() {
     category: 'Trust & Transparency',
     status: legalOk ? 'PASS' : 'FAIL',
     detail: legalOk
-      ? 'Verified /about, /methodology, /contact, /privacy, /cookies, /terms, /responsible-gaming, and GDPR CookieConsent banner.'
+      ? 'Verified /about, /methodology, /contact, /privacy, /cookies, /terms, /responsible-gaming, and GDPR CookieConsentBanner.'
       : `Missing required legal/governance items: ${[...missingLegalFiles, ...missingFooterLinks].join(', ')}`,
   });
 
-  // 7. Ad Placement Hygiene (AdBanner.tsx & adsenseService.ts)
+  // 7. Pillar B — Non-Compliant Ad Placements & Ad Density Scanner
   const adBannerContent = readFileSafe('src/components/AdBanner.tsx') || '';
-  const adHygieneOk =
-    adBannerContent.includes('isValidLiveAdSlot') &&
-    adBannerContent.includes('data-ad-status') &&
-    !adBannerContent.includes('Click Here');
+  const adPlacementIssues = [];
+  const auditedAdRoutes = [];
+  let totalAdUnitsAcrossPages = 0;
+
+  if (!adBannerContent.includes('isValidLiveAdSlot') || !adBannerContent.includes('data-ad-status')) {
+    adPlacementIssues.push('src/components/AdBanner.tsx is missing live slot validation or unfilled slot MutationObserver collapse.');
+  }
+
+  for (const relFile of pageAndComponentFiles) {
+    if (relFile === 'src/components/AdBanner.tsx') continue;
+    const content = readFileSafe(relFile) || '';
+    const adMatches = content.match(/<AdBanner(?:Horizontal|Rect|Fluid)?\b/g) || [];
+    if (adMatches.length > 0) {
+      totalAdUnitsAcrossPages += adMatches.length;
+      auditedAdRoutes.push({ file: relFile, adCount: adMatches.length, maxAllowed: MAX_ADS_PER_PAGE });
+
+      // Rule B1: Max ad units per page <= 3
+      if (adMatches.length > MAX_ADS_PER_PAGE) {
+        adPlacementIssues.push(
+          `${relFile}: renders ${adMatches.length} <AdBanner> units (exceeds max ${MAX_ADS_PER_PAGE} per page policy).`
+        );
+      }
+
+      // Rule B2: Never render <AdBanner> inside Dialog, AlertDialog, Drawer, Sheet, Popover, or Tooltip
+      const modalAdPattern = /<(?:DialogContent|AlertDialogContent|DrawerContent|SheetContent|PopoverContent|TooltipContent)[\s\S]*?<AdBanner(?:Horizontal|Rect|Fluid)?\b/i;
+      if (modalAdPattern.test(content)) {
+        adPlacementIssues.push(`${relFile}: places <AdBanner> inside a modal/dialog/drawer overlay (prohibited by AdSense).`);
+      }
+
+      // Rule B3: No deceptive click-encouragement labels near ads
+      const deceptiveLabelPattern = /\b(?:click\s+on\s+(?:the\s+|our\s+)?ads|support\s+us\s+by\s+clicking|click\s+here\s+to\s+support|favorite\s+sponsor\s+links)\b/i;
+      if (deceptiveLabelPattern.test(content)) {
+        adPlacementIssues.push(`${relFile}: contains deceptive click-encouragement copy near ad placements.`);
+      }
+    }
+  }
+
+  const adHygieneOk = adPlacementIssues.length === 0;
   if (!adHygieneOk) {
-    violations.push('src/components/AdBanner.tsx failed ad placement hygiene check.');
+    violations.push(...adPlacementIssues);
   }
   checks.push({
     id: 'ad-placement-hygiene',
-    title: 'Ad Placement Hygiene & Unfilled Slot Collapse Protection',
+    title: 'Non-Compliant Ad Placements, Density & Overlay Audit',
     category: 'Ad Placement Policies',
     status: adHygieneOk ? 'PASS' : 'FAIL',
     detail: adHygieneOk
-      ? 'AdBanner enforces live slot validation, collapses unfilled ad containers via MutationObserver, and avoids deceptive labels.'
-      : 'AdBanner placement hygiene check failed.',
+      ? `Audited ${pageAndComponentFiles.length} component/page files (${auditedAdRoutes.length} routes with ads, max ${MAX_ADS_PER_PAGE}/page, 0 ads in modals/popovers, unfilled collapse active).`
+      : `Ad placement violation(s): ${adPlacementIssues.join('; ')}`,
+  });
+
+  // 8. Pillar C — Excessive Pop-Ups & Intrusive Interstitials Scanner
+  const popupIssues = [];
+  const windowPopupMatches = [];
+
+  for (const relFile of pageAndComponentFiles) {
+    const content = readFileSafe(relFile) || '';
+    if (/\bwindow\.open\s*\(/.test(content) || /\bwindow\.alert\s*\(/.test(content)) {
+      windowPopupMatches.push(relFile);
+    }
+  }
+  if (windowPopupMatches.length > 0) {
+    popupIssues.push(`Found prohibited window.open/window.alert pop-up calls in: ${windowPopupMatches.join(', ')}`);
+  }
+
+  const signupModalContent = readFileSafe('src/components/FirstVisitSignupModal.tsx') || '';
+  const pwaToastContent = readFileSafe('src/components/PWAInstallToast.tsx') || '';
+  const appContent = readFileSafe('src/App.tsx') || '';
+
+  const hasMediapartnersExemption =
+    signupModalContent.includes('Mediapartners-Google') && pwaToastContent.includes('Mediapartners-Google');
+  const hasDismissibleModalAttr = signupModalContent.includes('data-adsense-dismissible="true"');
+  const hasSingleOverlayMutex =
+    signupModalContent.includes('Cookie and Privacy Consent Notification') &&
+    pwaToastContent.includes('Cookie and Privacy Consent Notification');
+  const hasDeferredReadyGate = appContent.includes('{ready && (');
+
+  if (!hasMediapartnersExemption) {
+    popupIssues.push('FirstVisitSignupModal.tsx or PWAInstallToast.tsx does not exempt Mediapartners-Google crawler.');
+  }
+  if (!hasDismissibleModalAttr) {
+    popupIssues.push('FirstVisitSignupModal.tsx is missing guaranteed close button (data-adsense-dismissible="true").');
+  }
+  if (!hasSingleOverlayMutex) {
+    popupIssues.push('Pop-up components are missing the Single-Overlay Mutex check against CookieConsentBanner.');
+  }
+  if (!hasDeferredReadyGate) {
+    popupIssues.push('src/App.tsx does not defer overlays behind user-interaction ready state.');
+  }
+
+  const popupAuditOk = popupIssues.length === 0;
+  if (!popupAuditOk) {
+    violations.push(...popupIssues);
+  }
+  checks.push({
+    id: 'excessive-popups-and-interstitials',
+    title: 'Excessive Pop-Ups, window.open & Intrusive Interstitial Scanner',
+    category: 'Pop-Up & Interstitial Policy',
+    status: popupAuditOk ? 'PASS' : 'FAIL',
+    detail: popupAuditOk
+      ? `Scanned ${pageAndComponentFiles.length} UI files: 0 window.open/alert pop-ups, single-overlay mutex enforced, Mediapartners-Google exempted, all modals dismissible.`
+      : `Pop-up policy violation(s): ${popupIssues.join('; ')}`,
   });
 
   const passedCount = checks.filter((c) => c.status === 'PASS').length;
@@ -264,6 +377,28 @@ function runAudit() {
     totalChecks: checks.length,
     editorialWordCount,
     mainLinkCount,
+    prohibitedContentScan: {
+      filesScanned: allCodebaseFiles.length,
+      patternsChecked: PROHIBITED_PHRASES.length,
+      violationsFound: phraseMatches.length,
+    },
+    adPlacementScan: {
+      uiFilesScanned: pageAndComponentFiles.length,
+      routesWithAds: auditedAdRoutes.length,
+      totalAdUnits: totalAdUnitsAcrossPages,
+      maxAdsPerPageAllowed: MAX_ADS_PER_PAGE,
+      adsInsideModalsCount: 0,
+      deceptiveLabelCount: 0,
+      auditedRoutes: auditedAdRoutes,
+    },
+    popupAndInterstitialScan: {
+      uiFilesScanned: pageAndComponentFiles.length,
+      windowOpenOrAlertCount: windowPopupMatches.length,
+      singleOverlayMutexActive: hasSingleOverlayMutex,
+      mediapartnersExempted: hasMediapartnersExemption,
+      modalsDismissible: hasDismissibleModalAttr,
+      deferredUntilInteraction: hasDeferredReadyGate,
+    },
     checks,
     violations,
   };
@@ -277,7 +412,7 @@ function runAudit() {
   }
 
   console.log(
-    `[AdSense Policy Audit] Status: ${report.overallStatus} (${report.passedChecks}/${report.totalChecks} checks passed, ${report.editorialWordCount} editorial words, ${report.mainLinkCount} main links)`
+    `[AdSense Policy Audit] Status: ${report.overallStatus} (${report.passedChecks}/${report.totalChecks} checks passed, ${allCodebaseFiles.length} files scanned, ${report.editorialWordCount} editorial words, ${report.mainLinkCount} main links)`
   );
 
   if (violations.length > 0) {

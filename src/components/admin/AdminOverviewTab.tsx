@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { triggerMatchDataRevalidation, prewarmOfflineCaches } from '@/services/offlineSyncService';
 import { AdminTrendsVisualization } from '@/components/admin/AdminTrendsVisualization';
+import { AdminAnalyticsSummary } from '@/components/admin/AdminAnalyticsSummary';
 import { toast } from 'sonner';
 
 interface OverviewProps {
@@ -92,7 +93,10 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
           </CardContent>
         </Card>
 
-        <Card className="hover:border-primary/50 transition-colors">
+        <Card
+          className="hover:border-primary/50 transition-colors cursor-pointer"
+          onClick={() => onNavigateTab('user-analysis')}
+        >
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Active Users</span>
@@ -102,7 +106,7 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
             </div>
             <div className="mt-3">
               <div className="text-xl font-bold">{stats.activeUsers.toLocaleString()}</div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Last 30-day activity</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Click for User Analysis &rarr;</p>
             </div>
           </CardContent>
         </Card>
@@ -152,6 +156,9 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
           </CardContent>
         </Card>
       </div>
+
+      {/* Analytics Summary: New User Registrations, Active Sessions & Popular Betting Trends */}
+      <AdminAnalyticsSummary onNavigateTab={onNavigateTab} />
 
       {/* 30-Day DAU & Prediction Accuracy Recharts Visualization */}
       <AdminTrendsVisualization onViewPredictions={() => onNavigateTab('predictions')} />
@@ -217,6 +224,9 @@ export function AdminOverviewTab({ stats, onRefresh, fetching, onNavigateTab }: 
                 <div className="text-xs text-muted-foreground">Jump directly to admin operations modules</div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => onNavigateTab('user-analysis')} className="text-xs h-8 font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
+                  User Analysis &amp; Cohorts &rarr;
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => onNavigateTab('app-stores')} className="text-xs h-8 font-bold text-emerald-800 dark:text-emerald-300 border-emerald-500/40 bg-emerald-500/10">
                   App Stores (.AAB / .IPA) &amp; OTA &rarr;
                 </Button>

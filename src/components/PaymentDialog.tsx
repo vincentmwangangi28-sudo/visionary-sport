@@ -56,7 +56,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
       ) as { url?: string; error?: string };
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.assign(data.url);
         handleClose();
       } else {
         throw new Error(data?.error ?? 'Payment failed');

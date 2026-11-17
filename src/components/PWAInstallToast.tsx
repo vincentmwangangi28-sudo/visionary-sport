@@ -28,6 +28,16 @@ export const PWAInstallToast: React.FC = () => {
   const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
+    if (
+      typeof navigator !== 'undefined' &&
+      (navigator.webdriver ||
+        /Mediapartners-Google|AdsBot-Google|Google-Display-Ads-Bot|Googlebot|HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(
+          navigator.userAgent || ''
+        ))
+    ) {
+      return;
+    }
+
     // Record page visit whenever pathname changes
     const visitNumber = recordPageVisit(location.pathname);
 
@@ -51,8 +61,15 @@ export const PWAInstallToast: React.FC = () => {
 
     if (hasTriggeredRef.current) return;
 
-    // Polite delay so the page view renders smoothly first
+    // Polite delay so the page view renders smoothly first; skip if any modal/banner overlay is open
     const timer = setTimeout(() => {
+      if (
+        typeof document !== 'undefined' &&
+        (document.querySelector('[role="dialog"]') ||
+          document.querySelector('[aria-label="Cookie and Privacy Consent Notification"]'))
+      ) {
+        return;
+      }
       hasTriggeredRef.current = true;
       try {
         window.sessionStorage?.setItem(PWA_TOAST_SHOWN_SESSION_KEY, 'true');
