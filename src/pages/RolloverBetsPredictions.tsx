@@ -291,8 +291,8 @@ export default function RolloverBetsPredictions() {
 
             <div className="p-3.5 rounded-xl bg-secondary/50 text-xs text-muted-foreground leading-relaxed">
               <ShieldCheck className="h-4 w-4 text-emerald-500 inline mr-1.5 -mt-0.5" />
-              <strong>Pro Risk Rule:</strong> On Day 4, withdraw your original starting stake ({currency}{' '}
-              {Number(startingBankroll || 1000).toLocaleString()}) so Days 4–{daysCount} run on 100% risk-free house profit.
+              <strong>Bankroll Protection Rule:</strong> On Day 4, set aside your original starting capital ({currency}{' '}
+              {Number(startingBankroll || 1000).toLocaleString()}) so Days 4–{daysCount} compound strictly on net bankroll surplus.
             </div>
           </Card>
 

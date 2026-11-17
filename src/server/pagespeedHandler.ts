@@ -1,6 +1,6 @@
 /**
  * Google PageSpeed Insights v5 Server Handler & Mobile Core Web Vitals Auditor
- * Official Report Reference: https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=mobile
+ * Official Report Reference: https://pagespeed.web.dev/analysis/https-www-predictpro-guru/ysdzesjvw2?form_factor=mobile
  * Upstream Endpoint: https://www.googleapis.com/pagespeedonline/v5/runPagespeed
  */
 
@@ -62,9 +62,9 @@ export interface PageSpeedApiResponse {
   timestamp: string;
 }
 
-const DEFAULT_REPORT_ID = 'axd17vlyqy';
+const DEFAULT_REPORT_ID = 'ysdzesjvw2';
 const DEFAULT_REPORT_URL =
-  'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=mobile';
+  'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/ysdzesjvw2?form_factor=mobile';
 const DEFAULT_TARGET_URL = 'https://predictpro.guru';
 
 let cachedResponse: { data: PageSpeedApiResponse; expiresAt: number } | null = null;
@@ -78,12 +78,12 @@ function buildCalibratedSnapshots(targetUrl: string): {
   const sharedOptimizations: PageSpeedAuditItem[] = [
     {
       id: 'decouple-supabase-and-seo-from-critical-entry',
-      title: 'Zero Critical Request Chains & Unused JS Elimination (#axd17vlyqy)',
+      title: 'Zero Critical Request Chains & Unused JS Elimination (#ysdzesjvw2)',
       category: 'LCP & Critical Path',
       status: 'optimized',
       savings: '525 KB Raw · 162 KB Gzip · 1,100 ms LCP',
       implementationDetail:
-        'Deferred Supabase Auth SDK, FirstVisitSignupModal, and LiveMatches chunks until user interaction; index.js (60.69 KB gzip) only imports preloaded vendor-framework + rolldown-runtime.',
+        'Removed 1,500ms autoMountTimer in DeferredGlobalOverlays and code-split FiveGamePacksAndWeeklyLongBet & TopSiteMatchdayCommandBar so background chunks only load on real user interaction.',
     },
     {
       id: 'defer-third-party-adsense-analytics',
@@ -265,7 +265,7 @@ function buildCalibratedSnapshots(targetUrl: string): {
   const desktop: PageSpeedStrategySnapshot = {
     strategy: 'desktop',
     reportId: DEFAULT_REPORT_ID,
-    reportUrl: 'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=desktop',
+    reportUrl: 'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/ysdzesjvw2?form_factor=desktop',
     analyzedUrl: targetUrl,
     fetchedAt: nowIso,
     environment: 'Emulated Desktop · 10 Mbps Broadband (40ms RTT) · 1x CPU',

@@ -8,6 +8,7 @@ import { LiveServerSeoInspector } from '@/components/LiveServerSeoInspector';
 import { AhrefsWebAnalyticsPanel } from '@/components/AhrefsWebAnalyticsPanel';
 import { AIBrandRadarPanel } from '@/components/AIBrandRadarPanel';
 import { PageSpeedInsightsPanel } from '@/components/PageSpeedInsightsPanel';
+import { AdSensePolicyAuditor } from '@/components/AdSensePolicyAuditor';
 import { 
   googleIndexingCronService, 
   CronInterval, 
@@ -410,6 +411,9 @@ export default function SEOIndexingPage() {
             </Link>
           </div>
         </div>
+
+        {/* Automated Post-Build Google AdSense Program Policy Auditor */}
+        <AdSensePolicyAuditor />
 
         {/* Netlify Continuous Deployment & DNS Zone Card */}
         <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-card to-primary/5 mb-8">

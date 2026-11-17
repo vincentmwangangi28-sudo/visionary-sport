@@ -61,11 +61,11 @@ export const Hero = () => {
       }
     };
 
-    const timer = setTimeout(fetchHeroStats, 8000);
     window.addEventListener("scroll", fetchHeroStats, { passive: true, once: true });
+    window.addEventListener("pointerdown", fetchHeroStats, { passive: true, once: true });
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("scroll", fetchHeroStats);
+      window.removeEventListener("pointerdown", fetchHeroStats);
     };
   }, []);
 
@@ -101,7 +101,7 @@ export const Hero = () => {
               size="default"
               className="h-10 px-4 text-xs font-semibold gap-2 whitespace-nowrap shrink-0"
             >
-              <Link to="/live" aria-label="Open Live Center and Broadcast Schedules">
+              <Link to="/live">
                 <Tv className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Live Center &amp; Broadcasts</span>
               </Link>
@@ -112,7 +112,7 @@ export const Hero = () => {
               size="default"
               className="h-10 px-4 text-xs font-semibold gap-1.5 whitespace-nowrap shrink-0"
             >
-              <Link to="/screener" aria-label="Open Quantitative Match Screener">
+              <Link to="/screener">
                 <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Match Screener</span>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
@@ -125,7 +125,7 @@ export const Hero = () => {
                 size="default"
                 onClick={handleHeroDownloadApp}
                 aria-haspopup="dialog"
-                aria-label={isIOS ? "Add PredictPro App to Home Screen" : "Download PredictPro App"}
+                aria-label={isIOS ? "Add to Home Screen — PredictPro App" : "Download App — PredictPro"}
                 data-testid="hero-download-app-btn"
                 className="h-10 px-4 text-xs font-bold gap-1.5 whitespace-nowrap shrink-0 border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 cursor-pointer"
               >

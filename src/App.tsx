@@ -465,13 +465,11 @@ const DeferredGlobalOverlays = () => {
       mounted = true;
       startTransition(() => setReady(true));
     };
-    const autoMountTimer = window.setTimeout(enable, 1500);
     window.addEventListener("scroll", enable, { passive: true, once: true });
     window.addEventListener("pointerdown", enable, { passive: true, once: true });
     window.addEventListener("touchstart", enable, { passive: true, once: true });
     window.addEventListener("keydown", enable, { passive: true, once: true });
     return () => {
-      window.clearTimeout(autoMountTimer);
       window.removeEventListener("scroll", enable);
       window.removeEventListener("pointerdown", enable);
       window.removeEventListener("touchstart", enable);

@@ -144,18 +144,18 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur border-b border-border">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <div className="container mx-auto max-w-7xl px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-3">
         {/* Zone 1: Brand Identity + Primary Navigation */}
-        <div className="flex items-center gap-4 min-w-0">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <Link
             to="/"
-            className="flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            aria-label="PredictPro Home"
+            className="flex items-center gap-2 sm:gap-2.5 min-h-[36px] py-1 pr-1 shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label="PredictPro — Home"
           >
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
               <Activity className="h-4 w-4" aria-hidden="true" />
             </div>
-            <span className="font-bold text-lg tracking-tight text-foreground">
+            <span className="font-bold text-base sm:text-lg tracking-tight text-foreground">
               Predict<span className="text-primary">Pro</span>
             </span>
           </Link>
@@ -313,7 +313,7 @@ export const Navbar = () => {
         </div>
 
         {/* Zone 2: Interactive Bet Slip Button, Download App, Rewards, Odds Toggle & Auth */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <UnifiedSearchTrigger variant="compact" />
           <PWAInstallButton />
 
@@ -324,11 +324,11 @@ export const Navbar = () => {
             data-testid="navbar-betslip-trigger"
             aria-label={
               selections.length > 0
-                ? `Open Bet Slip (${selections.length} selections at ${totalOdds.toFixed(2)} odds)`
-                : 'Open Bet Slip and Booking Code Generator'
+                ? `Bet Slip ${selections.length} @${totalOdds.toFixed(2)} — Open Bet Slip`
+                : `Bet Slip ${selections.length} — Open Bet Slip and Booking Code Generator`
             }
             aria-haspopup="dialog"
-            className={`inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none whitespace-nowrap shrink-0 ${
+            className={`inline-flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border text-xs font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none whitespace-nowrap shrink-0 ${
               selections.length > 0
                 ? 'bg-emerald-800 hover:bg-emerald-900 text-white border-emerald-800 shadow-sm'
                 : 'bg-background hover:bg-muted text-foreground border-border'

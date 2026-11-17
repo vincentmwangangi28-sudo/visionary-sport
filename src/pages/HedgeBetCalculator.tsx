@@ -48,7 +48,7 @@ export default function HedgeBetCalculator() {
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'All',
         description:
-          'Free sports betting Hedge Bet Calculator. Compare bookmaker Cash-Out offers against manual live hedging to lock in maximum guaranteed profit.',
+          'Free sports Hedge Stake Calculator. Compare bookmaker Cash-Out offers against manual counter-hedging to equalize net returns across outcomes.',
         url: 'https://predictpro.guru/hedge-bet-calculator',
       },
     ],
@@ -58,9 +58,9 @@ export default function HedgeBetCalculator() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool"
-        description="Free Hedge Bet & Cash-Out Calculator. Calculate the exact opposite stake needed on the final leg of your accumulator to lock in guaranteed risk-free profit."
-        keywords="hedge bet calculator, cash out vs hedge calculator, lock in profit betting calculator, how to hedge a parlay calculator, live hedge staking tool"
+        title="Hedge Stake Calculator: Counter-Stake Equity vs Cash-Out Tool"
+        description="Free Hedge Stake & Cash-Out Comparison Calculator. Calculate the exact opposite counter-stake on the final leg of your accumulator to balance outcome returns."
+        keywords="hedge bet calculator, cash out vs hedge calculator, counter stake calculator, how to hedge a parlay calculator, live hedge staking tool"
         canonicalPath="/hedge-bet-calculator"
         schema={schemas}
       />

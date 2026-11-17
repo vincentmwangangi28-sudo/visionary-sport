@@ -721,7 +721,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                 onClick={() => setUseSafetyCushion(true)}
                 className={`px-2.5 py-1 rounded text-xs font-semibold cursor-pointer transition-colors ${
                   useSafetyCushion
-                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    ? 'bg-emerald-800 text-white shadow-2xs'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -818,7 +818,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                       <span className="font-semibold text-primary">5 Games · {packCode}</span>
-                      <span className="font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="font-mono tabular-nums font-bold text-emerald-800 dark:text-emerald-400">
                         {pack.estimatedWinChancePct}% Hit Rate
                       </span>
                     </div>
@@ -837,7 +837,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                       <span className="text-[10px] text-muted-foreground block">
                         Est. Return (${stakePerTicket})
                       </span>
-                      <span className="font-mono tabular-nums text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                      <span className="font-mono tabular-nums text-sm font-extrabold text-emerald-800 dark:text-emerald-400">
                         ${potentialReturn.toFixed(0)}
                       </span>
                     </div>
@@ -856,7 +856,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                   <span aria-hidden="true">·</span>
                   <span>{activePack.strategyLabel}</span>
                   <span aria-hidden="true">·</span>
-                  <span className="font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="font-mono tabular-nums text-emerald-800 dark:text-emerald-400 font-semibold">
                     {activePack.estimatedWinChancePct}% Projected Strike Rate
                   </span>
                 </div>
@@ -932,7 +932,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                         <td className="py-3 px-3 font-mono tabular-nums text-muted-foreground">
                           {leg.xgSummary}
                         </td>
-                        <td className="py-3 px-3 font-semibold text-emerald-600 dark:text-emerald-400">
+                        <td className="py-3 px-3 font-semibold text-emerald-800 dark:text-emerald-400">
                           {market}
                         </td>
                         <td className="py-3 px-3 text-right font-mono tabular-nums font-semibold text-foreground">
@@ -961,7 +961,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
             {/* Split-Ticket Profit Guarantee Bar */}
             <div className="p-3.5 border-t border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                <ShieldCheck className="h-4 w-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
                 <span>
                   <strong className="text-foreground">Why 4 × 5-Game Packs Win More:</strong> Staking{' '}
                   <span className="font-mono tabular-nums font-semibold text-foreground">
@@ -972,7 +972,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                     ${stakePerTicket * 4}
                   </span>
                   ) means landing <strong>just 1 of the 4 packs</strong> already returns{' '}
-                  <span className="font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="font-mono tabular-nums font-bold text-emerald-800 dark:text-emerald-400">
                     ${(stakePerTicket * activePackOdds).toFixed(0)}+
                   </span>{' '}
                   in profit.
@@ -1074,7 +1074,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                 <span className="text-[10px] text-muted-foreground block">
                   Est. Payout (+{selectedBookmaker.longBetBonusPct}% Bonus)
                 </span>
-                <span className="font-mono tabular-nums text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+                <span className="font-mono tabular-nums text-lg font-extrabold text-emerald-800 dark:text-emerald-400">
                   ${weeklyLongBetPayout.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
@@ -1167,7 +1167,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                         <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">
                           {leg.kickoffLabel}
                         </td>
-                        <td className="py-2.5 px-3 font-semibold text-emerald-600 dark:text-emerald-400">
+                        <td className="py-2.5 px-3 font-semibold text-emerald-800 dark:text-emerald-400">
                           {market}
                         </td>
                         <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-foreground">

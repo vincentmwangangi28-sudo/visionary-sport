@@ -152,8 +152,8 @@ export const DutchingCalculatorModal: React.FC<DutchingCalculatorModalProps> = (
             <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-xs">
               <ShieldCheck className="h-5 w-5 flex-shrink-0 text-emerald-500" />
               <div>
-                <p className="font-semibold">Arbitrage Opportunity Detected! (Sum: {(calculations.sumInvOdds * 100).toFixed(1)}%)</p>
-                <p className="text-[11px] opacity-90">Risk-free guaranteed profit of {calculations.roi}% across selected markets.</p>
+                <p className="font-semibold">Sub-100% Implied Margin Detected! (Sum: {(calculations.sumInvOdds * 100).toFixed(1)}%)</p>
+                <p className="text-[11px] opacity-90">Proportional equalized return of {calculations.roi}% across selected markets.</p>
               </div>
             </div>
           ) : (

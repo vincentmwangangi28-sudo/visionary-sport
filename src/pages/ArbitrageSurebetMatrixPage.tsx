@@ -159,9 +159,9 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Multi-Bookmaker Arbitrage & Surebet Matrix | SportyBet, Betika, 1xBet | PredictPro"
-        description="Scan live 2-way and 3-way mathematical surebets across SportyBet, Betika, SportPesa, Bet9ja, 1xBet, and Pinnacle with anti-detection stake rounding."
-        keywords="arbitrage betting finder, surebet matrix football, sportybet 1xbet arbitrage, betika surebets today, risk free arbitrage stake splitter"
+        title="Cross-Bookmaker Implied Probability & Margin Matrix | PredictPro"
+        description="Compare live 2-way and 3-way implied probability margins across SportyBet, Betika, SportPesa, Bet9ja, 1xBet, and Pinnacle with proportional stake rounding."
+        keywords="implied probability finder, cross market margin matrix, sportybet 1xbet odds comparison, proportional stake splitter"
         canonical="/arbitrage-finder"
       />
 
@@ -171,7 +171,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
         <Breadcrumbs
           items={[
             { label: 'Home', href: '/' },
-            { label: 'Multi-Bookmaker Arbitrage & Surebet Matrix' },
+            { label: 'Cross-Bookmaker Implied Probability Matrix' },
           ]}
         />
 
@@ -184,13 +184,13 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
                 <span aria-hidden="true">·</span>
                 <span>Implied Book &lt; 100%</span>
                 <span aria-hidden="true">·</span>
-                <span>2-Way &amp; 3-Way Surebets</span>
+                <span>2-Way &amp; 3-Way Margin Audit</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                Multi-Bookmaker Arbitrage &amp; Surebet Matrix
+                Cross-Bookmaker Implied Probability &amp; Margin Matrix
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                When competing sportsbooks disagree on a fixture&apos;s true probability, the sum of implied probabilities drops below <strong className="text-foreground">100.0%</strong>. Use our stake splitter and <strong className="text-foreground">Anti-Detection Rounding</strong> to lock in mathematical profit regardless of the match result.
+                When competing sportsbooks price a fixture differently, the combined implied probability across outcomes can drop below <strong className="text-foreground">100.0%</strong>. Use our stake splitter and <strong className="text-foreground">Proportional Unit Rounding</strong> to model balanced outcome allocations.
               </p>
             </div>
 
@@ -423,10 +423,10 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-muted-foreground">
-                    Anti-Detection Stake Rounding
+                    Proportional Stake Rounding
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    Prevents odd-cent account flags
+                    Rounds stakes to clean currency increments
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">

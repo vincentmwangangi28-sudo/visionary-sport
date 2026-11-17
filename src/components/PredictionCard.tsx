@@ -197,12 +197,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             ].map(({ label, key, prob, odds }) => {
               const favored = outcome === label;
               const inSlip = isMarketInSlip(label);
+              const displayedVal = isProbabilitiesMode ? `${prob}%` : formatOdds(odds);
               return (
                 <button
                   type="button"
                   key={key}
                   aria-pressed={inSlip}
-                  aria-label={`${inSlip ? 'Remove' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)}) ${inSlip ? 'from' : 'to'} Bet Slip`}
+                  aria-label={`${displayedVal} — ${inSlip ? 'Remove' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
                   className={`py-1 rounded text-center text-[11px] border transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                     inSlip
@@ -213,7 +214,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                   }`}
                   title={`Click to add ${label} to Bet Slip`}
                 >
-                  {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
+                  {displayedVal}
                 </button>
               );
             })}
@@ -358,12 +359,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             ].map(({ label, key, prob, odds }) => {
               const isFavored = outcome === label;
               const inSlip = isMarketInSlip(label);
+              const displayedVal = isProbabilitiesMode ? `${prob}%` : formatOdds(odds);
               return (
                 <button
                   type="button"
                   key={key}
                   aria-pressed={inSlip}
-                  aria-label={`${inSlip ? 'In Bet Slip:' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
+                  aria-label={`${key} ${displayedVal} — ${inSlip ? 'In Bet Slip:' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
                   className={`h-9 rounded-md text-xs border flex flex-col items-center justify-center transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                     inSlip
@@ -378,7 +380,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                     {key}
                   </span>
                   <span className="text-[11px] leading-tight mt-0.5">
-                    {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
+                    {displayedVal}
                   </span>
                 </button>
               );
@@ -531,12 +533,13 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
             ].map(({ label, key, prob, odds }) => {
               const favored = outcome === label;
               const inSlip = isMarketInSlip(label);
+              const displayedVal = isProbabilitiesMode ? `${prob}%` : formatOdds(odds);
               return (
                 <button
                   type="button"
                   key={label}
                   aria-pressed={inSlip}
-                  aria-label={`${inSlip ? 'In Bet Slip:' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
+                  aria-label={`${key} ${displayedVal} — ${inSlip ? 'In Bet Slip:' : 'Add'} ${p.home_team} vs ${p.away_team} ${label} (@${Number(odds).toFixed(2)})`}
                   onClick={(e) => handleAddMarketToSlip(e, label, odds)}
                   className={`min-h-[36px] py-1 px-2.5 rounded-md border text-xs flex items-center justify-between transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                     inSlip
@@ -549,7 +552,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                 >
                   <span className={inSlip ? 'text-white' : 'text-muted-foreground'}>{key}</span>
                   <span className="font-semibold">
-                    {isProbabilitiesMode ? `${prob}%` : formatOdds(odds)}
+                    {displayedVal}
                   </span>
                 </button>
               );
@@ -567,7 +570,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
               <button
                 type="button"
                 aria-pressed={recommendedInSlip}
-                aria-label={`${recommendedInSlip ? 'Added to Bet Slip:' : 'Add recommended pick'} ${p.home_team} vs ${p.away_team} (${outcome})`}
+                aria-label={`${recommendedInSlip ? 'In Slip' : '+ Bet Slip'} — ${p.home_team} vs ${p.away_team} (${outcome})`}
                 onClick={(e) => handleAddMarketToSlip(e, outcome, recommendedOdds)}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all select-none cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
                   recommendedInSlip

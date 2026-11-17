@@ -538,8 +538,8 @@ export const PWAInstallButton: React.FC = () => {
           data-testid="navbar-download-app-btn"
           aria-haspopup="dialog"
           aria-expanded={showModal}
-          aria-label="Download PredictPro App for Mobile (Android/iOS) or Desktop (Windows/Mac)"
-          title="Download PredictPro App for Mobile (Android/iOS) or Desktop (Windows/Mac)"
+          aria-label="Download App — Install PredictPro for Mobile or Desktop"
+          title="Download App — Install PredictPro for Mobile (Android/iOS) or Desktop (Windows/Mac)"
           className="inline-flex h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold items-center justify-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white dark:bg-emerald-800 dark:hover:bg-emerald-700 dark:text-white border border-emerald-900 dark:border-emerald-600 transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer select-none whitespace-nowrap shrink-0"
         >
           <Download className="h-3.5 w-3.5 shrink-0 pointer-events-none" aria-hidden="true" />

@@ -311,7 +311,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
                     <span className="truncate">{match.league}</span>
-                    <span className="font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <span className="font-mono tabular-nums font-bold text-emerald-800 dark:text-emerald-400 shrink-0">
                       +{pro.bestValueEdgePct}% EV · {pro.steamDropSummary.openingOdds.toFixed(2)}→
                       {pro.steamDropSummary.currentOdds.toFixed(2)}
                     </span>
@@ -538,7 +538,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                 {topStar && (
                   <p className="text-[11px] text-muted-foreground truncate">
                     MVP Impact: <strong className="text-foreground">{topStar.name}</strong> (
-                    <span className="font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
+                    <span className="font-mono tabular-nums text-emerald-800 dark:text-emerald-400 font-bold">
                       {topStar.rating.toFixed(2)}
                     </span>{' '}
                     · +{topStar.xgContribution} xG)
@@ -597,7 +597,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                   <span className="text-muted-foreground truncate">
                     Ref: <strong className="font-sans text-foreground">{pro.refereeProfile.name}</strong>
                   </span>
-                  <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">
+                  <span className="text-amber-800 dark:text-amber-400 font-bold shrink-0">
                     {pro.refereeProfile.yellowsPer90} Y/90 · VAR {pro.refereeProfile.varPenaltyPct}%
                   </span>
                 </div>
@@ -617,7 +617,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
 
                 <p className="text-[11px] text-muted-foreground font-mono tabular-nums truncate">
                   3-Leg SGP (ρ +{sgpQuote.avgCorrelationRho.toFixed(2)}):{' '}
-                  <strong className="text-emerald-600 dark:text-emerald-400">
+                  <strong className="text-emerald-800 dark:text-emerald-400">
                     @{formatOdds(sgpQuote.bookieSgpOdds)}
                   </strong>
                 </p>
@@ -702,7 +702,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                 onClick={handleToggleLiveAudio}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
                   liveAudioOn
-                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    ? 'border-emerald-800 bg-emerald-800 text-white'
                     : 'border-border bg-background text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -757,7 +757,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                     {formatOdds(leg.odds)}
                   </span>
                 </div>
-                <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                <span className="font-mono text-[11px] font-bold text-emerald-800 dark:text-emerald-400 shrink-0">
                   {selections.length > 0 ? 'Tracking' : 'Ready'}
                 </span>
               </div>
@@ -837,7 +837,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                 </span>
                 <div className="text-foreground font-bold">{r.grossReturn.toLocaleString()}</div>
                 {r.skimmedVault > 0 && (
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block">
+                  <span className="text-[10px] text-emerald-800 dark:text-emerald-400 block">
                     Vault +{r.skimmedVault.toLocaleString()}
                   </span>
                 )}
@@ -849,7 +849,7 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
             <span className="font-mono tabular-nums text-muted-foreground">
               Start: <strong className="text-foreground">{rolloverSchedule.baseStake.toLocaleString()}</strong> ·
               Protected Vault:{' '}
-              <strong className="text-emerald-600 dark:text-emerald-400">
+              <strong className="text-emerald-800 dark:text-emerald-400">
                 +{rolloverSchedule.totalVaulted.toLocaleString()}
               </strong>{' '}
               · Total Target Equity:{' '}

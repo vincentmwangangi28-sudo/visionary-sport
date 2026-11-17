@@ -775,22 +775,6 @@ export default defineConfig(({ mode }) => ({
             id.includes("src/lib/lazyWithRetry") ||
             id.includes("src/lib/queryClient") ||
             id.includes("src/lib/logger") ||
-            id.includes("src/lib/dateFilterUtils") ||
-            id.includes("src/hooks/useAuth") ||
-            id.includes("src/hooks/useAdmin") ||
-            id.includes("src/hooks/useUserPreferences") ||
-            id.includes("src/hooks/useGeoRegion") ||
-            id.includes("src/hooks/useCurrency") ||
-            id.includes("src/hooks/useUnifiedSearch") ||
-            id.includes("src/hooks/useBetSlip") ||
-            id.includes("src/hooks/usePinnedFavorites") ||
-            id.includes("src/hooks/useSubscription") ||
-            id.includes("src/services/hapticService") ||
-            id.includes("src/services/geoRegionService") ||
-            id.includes("src/services/i18n") ||
-            id.includes("src/services/localeDetectionService") ||
-            id.includes("src/services/predictionStorage") ||
-            id.includes("src/services/adminOverrideSyncService") ||
             id.includes("src/components/ui/button") ||
             id.includes("src/components/ui/badge") ||
             id.includes("src/components/ui/skeleton") ||

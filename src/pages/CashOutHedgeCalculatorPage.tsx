@@ -182,9 +182,9 @@ export const CashOutHedgeCalculatorPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Acca Cash-Out & Live Hedge Calculator | Lock In Guaranteed Profit | PredictPro"
-        description="Audit bookmaker Cash-Out haircuts and calculate exact 2-way or 3-way counter-hedge stakes on the final leg of your accumulator to lock in guaranteed risk-free profit."
-        keywords="acca cash out calculator, live hedge bet calculator, double chance hedge calculator, sportybet cash out vs hedge, lock in parlay profit"
+        title="Acca Cash-Out & Live Counter-Hedge Calculator | PredictPro"
+        description="Audit bookmaker Cash-Out haircuts and calculate exact 2-way or 3-way counter-hedge stakes on the final leg of your accumulator to equalize net return."
+        keywords="acca cash out calculator, live hedge bet calculator, double chance hedge calculator, cash out vs hedge equity, parlay counter stake"
         canonical="/cashout-calculator"
       />
 
@@ -464,14 +464,14 @@ export const CashOutHedgeCalculatorPage: React.FC = () => {
               )}
             </div>
 
-            {/* Anti-Limit Stake Rounding */}
+            {/* Proportional Stake Rounding */}
             <div className="space-y-2 pt-2 border-t border-border/60">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  03. Anti-Detection Stake Rounding
+                  03. Proportional Stake Rounding
                 </label>
                 <span className="text-[11px] text-muted-foreground">
-                  Avoid bookmaker fractional-stake limits
+                  Round counter-stakes to whole currency units
                 </span>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">

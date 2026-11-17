@@ -262,41 +262,14 @@ export async function fetchDeepMatchSummary(
 }
 
 /**
- * Synthesizes a clean broadcast stadium chime using Web Audio API when a live goal or red card occurs.
+ * Synthesizes a clean Flashscore-style broadcast stadium chime using Web Audio API
+ * when a live goal, red card, or VAR check occurs.
  */
-export function playLiveEventChime(type: 'goal' | 'red_card') {
-  if (typeof window === 'undefined') return;
-  try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const now = ctx.currentTime;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    if (type === 'goal') {
-      // Uplifting 2-tone broadcast goal chime (C5 -> G5)
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, now);
-      osc.frequency.setValueAtTime(783.99, now + 0.14);
-      gain.gain.setValueAtTime(0.14, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-      osc.start(now);
-      osc.stop(now + 0.45);
-    } else {
-      // Sharp referee alert tone for Red Card
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.setValueAtTime(349.23, now + 0.15);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc.start(now);
-      osc.stop(now + 0.35);
-    }
-  } catch {
-    // Ignore audio context autoplay restrictions
-  }
+export function playLiveEventChime(type: 'goal' | 'red_card' | 'var_check') {
+  import('@/services/goalHornAudioService')
+    .then(({ triggerFlashscoreSlipAlert }) => {
+      triggerFlashscoreSlipAlert(type);
+    })
+    .catch(() => {});
 }
+

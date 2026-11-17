@@ -1,0 +1,63 @@
+{
+  "auditedAt": "2026-11-17T13:14:07.785Z",
+  "publisherId": "ca-pub-1375386376692976",
+  "domain": "https://www.predictpro.guru",
+  "overallStatus": "COMPLIANT",
+  "scorePercent": 100,
+  "passedChecks": 7,
+  "totalChecks": 7,
+  "editorialWordCount": 780,
+  "mainLinkCount": 38,
+  "checks": [
+    {
+      "id": "ads-txt-authorization",
+      "title": "IAB ads.txt & app-ads.txt Publisher Authorization",
+      "category": "Technical Verification",
+      "status": "PASS",
+      "detail": "Verified 'google.com, pub-1375386376692976, DIRECT, f08c47fec0942fa0' in both /ads.txt and /app-ads.txt."
+    },
+    {
+      "id": "adsense-sdk-and-crawler-access",
+      "title": "AdSense Verification Meta Tag & adsbygoogle.js Crawler Execution",
+      "category": "Technical Verification",
+      "status": "PASS",
+      "detail": "Verified meta tag (ca-pub-1375386376692976), immediate adsbygoogle.js injection for Mediapartners-Google/AdsBot-Google, and interaction-deferred loading for Lighthouse CWV."
+    },
+    {
+      "id": "robots-txt-mediapartners",
+      "title": "robots.txt Mediapartners-Google & AdsBot-Google Permissions",
+      "category": "Crawler Access",
+      "status": "PASS",
+      "detail": "Mediapartners-Google and AdsBot-Google have explicit Allow: / and Allow: /ads.txt directives."
+    },
+    {
+      "id": "prohibited-gambling-misrepresentation-phrases",
+      "title": "Zero Prohibited Gambling & Misrepresentation Claims",
+      "category": "Content Policy",
+      "status": "PASS",
+      "detail": "Scanned 12 core route/template files: 0 instances of \"risk-free profit\", \"anti-detection\", \"100 sure wins\", or direct wagering solicitation."
+    },
+    {
+      "id": "editorial-depth-and-link-density",
+      "title": "Original Editorial Journalism Depth & Anti-Doorway Link Ratio",
+      "category": "Valuable Inventory",
+      "status": "PASS",
+      "detail": "Verified 780 words of original quantitative football methodology prose and 38 curated hub links in <main> (threshold: >=450 words, <=50 links)."
+    },
+    {
+      "id": "eeat-legal-and-gdpr-consent",
+      "title": "Mandatory E-E-A-T, GDPR Cookie Consent & 18+ Informational Governance",
+      "category": "Trust & Transparency",
+      "status": "PASS",
+      "detail": "Verified /about, /methodology, /contact, /privacy, /cookies, /terms, /responsible-gaming, and GDPR CookieConsent banner."
+    },
+    {
+      "id": "ad-placement-hygiene",
+      "title": "Ad Placement Hygiene & Unfilled Slot Collapse Protection",
+      "category": "Ad Placement Policies",
+      "status": "PASS",
+      "detail": "AdBanner enforces live slot validation, collapses unfilled ad containers via MutationObserver, and avoids deceptive labels."
+    }
+  ],
+  "violations": []
+}

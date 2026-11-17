@@ -102,19 +102,19 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/',
   },
   '/best-bets': {
-    title: 'Free Guru Tips Today & Sure Banker Football Bets (75%+ AI Confidence)',
+    title: 'High-Confidence Football Predictions Today (75%+ AI Consensus)',
     description:
-      'Verified daily football banker predictions and sure 1X2 guru tips today with 75% to 92% AI confidence. Filter high-probability match winners and Double Chance locks.',
+      'Verified daily football match predictions and 1X2 statistical forecasts today with 75% to 92% AI confidence. Filter high-probability match winners and Double Chance models.',
     keywords:
-      'free guru tips today football prediction, best football bets today, sure bets today, banker bet of the day, high confidence football predictions',
+      'free guru tips today football prediction, best football predictions today, high confidence football predictions, statistical match forecasts',
     canonicalPath: '/best-bets',
   },
   '/value-bets': {
-    title: 'Daily Value Bets Today (+EV): Beat Bookmaker Odds with AI',
+    title: 'Daily Value Forecasts Today (+EV): Implied Probability vs Fair Odds',
     description:
-      'Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in edges.',
+      'Daily positive expected value (+EV) football probability models today. Compare AI Poisson probability vs market implied odds to detect statistical discrepancies.',
     keywords:
-      'daily value bets today (+ev), value bets today, positive expected value football, beating bookmakers, football betting edge, ai odds discrepancies',
+      'daily value bets today (+ev), value bets today, positive expected value football, implied probability analysis, football statistical edge, ai odds discrepancies',
     canonicalPath: '/value-bets',
   },
   '/btts': {
@@ -254,11 +254,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/serie-a-predictions',
   },
   '/kpl-predictions': {
-    title: 'FKF Kenya Premier League (KPL) Predictions & M-Pesa Betting Tips',
+    title: 'FKF Kenya Premier League (KPL) Predictions & xG Match Previews',
     description:
-      'Official FKF Kenya Premier League AI predictions covering Gor Mahia, AFC Leopards, Tusker FC, and Kenya Police FC with instant M-Pesa VIP access.',
+      'Official FKF Kenya Premier League AI predictions covering Gor Mahia, AFC Leopards, Tusker FC, and Kenya Police FC with Expected Goals (xG) and form telemetry.',
     keywords:
-      'kpl predictions, kenya premier league tips, gor mahia vs afc leopards prediction, sportpesa betika kpl tips',
+      'kpl predictions, kenya premier league tips, gor mahia vs afc leopards prediction, fkf premier league stats',
     canonicalPath: '/kpl-predictions',
   },
   '/jackpot-predictions': {
@@ -350,10 +350,10 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/widgets',
   },
   '/shop': {
-    title: 'PredictPro VIP Club: Premium AI Football Tips & Banker Passes',
+    title: 'PredictPro Pro Analytics Club: Quantitative xG & Poisson Models',
     description:
-      'Unlock VIP high-yield banker predictions, +EV value bets, and 17-game Mega Jackpot slips. Instant access via M-Pesa or card.',
-    keywords: 'predictpro vip, premium football tips, buy football predictions, mpesa betting tips',
+      'Access advanced quantitative football analytics, Expected Goals (xG) telemetry, and 17-game statistical combination models.',
+    keywords: 'predictpro pro analytics, quantitative football models, expected goals telemetry, football statistics',
     canonicalPath: '/shop',
   },
   '/about': {
@@ -469,10 +469,10 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/leaderboard',
   },
   '/bet-of-the-day': {
-    title: 'Bet of the Day: Daily AI Banker & High-Confidence Lock',
+    title: 'Match of the Day: Daily AI High-Confidence Statistical Forecast',
     description:
-      'Today’s single highest-conviction AI football bet. Verified Expected Goals (xG) advantage, Poisson win probability, fair decimal odds, and Kelly stake.',
-    keywords: 'bet of the day, banker bet of the day, nap of the day, sure win prediction today',
+      'Today’s single highest-conviction AI football match forecast. Verified Expected Goals (xG) advantage, Poisson win probability, fair decimal odds, and Kelly sizing.',
+    keywords: 'match of the day prediction, daily football forecast, high confidence football prediction today',
     canonicalPath: '/bet-of-the-day',
   },
   '/over-under-predictions': {
@@ -485,15 +485,15 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/double-chance-predictions': {
     title: 'Double Chance Predictions Today (1X / X2): 89% AI Strike Rate',
     description:
-      'Daily 1X, X2, and 12 Double Chance football predictions with 89% AI confidence. Low-risk accumulator builders and underdog hedging across 40+ leagues.',
-    keywords: 'double chance predictions today, 1x predictions today, x2 tips, double chance sure wins',
+      'Daily 1X, X2, and 12 Double Chance football predictions with 89% AI confidence. Low-variance multi-match builders and underdog coverage across 40+ leagues.',
+    keywords: 'double chance predictions today, 1x predictions today, x2 tips, double chance football forecasts',
     canonicalPath: '/double-chance-predictions',
   },
   '/draw-predictions': {
     title: 'Draw Predictions Today (X Tips): High-Odds Stalemate Picks',
     description:
       'Daily high-odds draw predictions (3.20 to 3.80 odds). Mathematical stalemate models detecting low-scoring defensive setups and equal Poisson expectations.',
-    keywords: 'draw predictions today, sure draw tips today, x tips today, football draw prediction',
+    keywords: 'draw predictions today, stalemate draw tips today, x tips today, football draw prediction',
     canonicalPath: '/draw-predictions',
   },
   '/halftime-fulltime-predictions': {
@@ -525,11 +525,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/poisson-calculator',
   },
   '/sure-win-predictions': {
-    title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets',
+    title: 'High-Confidence Football Predictions Today: 88%+ AI Consensus',
     description:
-      'Daily mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), acca anchors, and +EV odds.',
+      'Daily mathematical high-probability football predictions and statistical match analysis. Filter highest-confidence picks (88%+ model consensus) and xG trends.',
     keywords:
-      'sure win prediction today, 100 sure wins, banker predictions today, sure banker picks, high confidence football tips, best sure bets today',
+      'high confidence football predictions today, statistical match forecasts, banker predictions today, high probability football tips',
     canonicalPath: '/sure-win-predictions',
   },
   '/corners-predictions': {
@@ -607,17 +607,17 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/over-1-5-goals-predictions': {
     title: 'Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips',
     description:
-      'Daily Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy, 1st half goal frequency, and low-risk accumulator anchors.',
+      'Daily Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy, 1st half goal frequency, and low-variance accumulator anchors.',
     keywords:
-      'over 1.5 goals predictions today, over 1.5 tips today, over 1.5 goals sure wins, over 1.5 accumulator tips, over 1.5 match predictions',
+      'over 1.5 goals predictions today, over 1.5 tips today, over 1.5 goals forecasts, over 1.5 accumulator tips, over 1.5 match predictions',
     canonicalPath: '/over-1-5-goals-predictions',
   },
   '/tomorrow-predictions': {
     title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds",
     description:
-      "Free AI football predictions for tomorrow's fixtures. Beat dropping odds with early 1X2 banker picks, Over 2.5 goals, BTTS tips, and Expected Goals (xG) projections.",
+      "Free AI football predictions for tomorrow's fixtures. Track early 1X2 match forecasts, Over 2.5 goals, BTTS tips, and Expected Goals (xG) projections.",
     keywords:
-      'football predictions for tomorrow, tomorrow soccer predictions, tomorrow betting tips, early football odds tomorrow, sure wins tomorrow, btts tomorrow',
+      'football predictions for tomorrow, tomorrow soccer predictions, tomorrow betting tips, early football odds tomorrow, match forecasts tomorrow, btts tomorrow',
     canonicalPath: '/tomorrow-predictions',
   },
   '/weekend-predictions': {
@@ -631,7 +631,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
   '/asian-handicap-predictions': {
     title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips',
     description:
-      'Free Asian Handicap football predictions today. Beat bookmaker margins with expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines.',
+      'Free Asian Handicap football predictions today. Analyze expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines.',
     keywords:
       'asian handicap predictions today, asian handicap tips, -0.5 handicap football, -1.5 asian handicap predictions, sharp football handicap picks',
     canonicalPath: '/asian-handicap-predictions',
@@ -653,11 +653,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/win-to-nil-predictions',
   },
   '/arbitrage-calculator': {
-    title: 'Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool',
+    title: 'Implied Probability & 2-Way / 3-Way Margin Staking Calculator',
     description:
-      'Free 2-way and 3-way arbitrage betting calculator (Surebet & Dutching tool). Enter bookmaker odds to calculate exact stakes and lock in risk-free profit.',
+      'Free 2-way and 3-way implied probability and proportional staking calculator. Compare decimal odds across markets and compute balanced stake allocations.',
     keywords:
-      'arbitrage betting calculator, surebet calculator, 3 way arbitrage calculator, dutching calculator football, hedge bet calculator',
+      'implied probability calculator, 3 way margin calculator, dutching calculator football, proportional stake calculator',
     canonicalPath: '/arbitrage-calculator',
   },
   '/odds-converter': {
@@ -813,11 +813,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/system-bet-calculator',
   },
   '/hedge-bet-calculator': {
-    title: 'Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool',
+    title: 'Hedge Stake Calculator: Counter-Stake Equity vs Cash-Out Tool',
     description:
-      'Free Hedge Bet & Cash-Out Calculator. Calculate the exact opposite stake needed on the final leg of your accumulator to lock in guaranteed risk-free profit.',
+      'Free Hedge Stake & Cash-Out Comparison Calculator. Calculate the exact opposite counter-stake on the final leg of a multi-match slip to balance outcome returns.',
     keywords:
-      'hedge bet calculator, cash out vs hedge calculator, lock in profit betting calculator, how to hedge a parlay calculator, live hedge staking tool',
+      'hedge bet calculator, cash out vs hedge calculator, counter stake calculator, parlay hedge calculator, live hedge staking tool',
     canonicalPath: '/hedge-bet-calculator',
   },
   '/liga-mx-predictions': {
@@ -861,11 +861,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/rollover-bets-predictions',
   },
   '/daily-2-odds-predictions': {
-    title: 'Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips',
+    title: '2.00, 3.00 & 5.00 Combined Odds Predictions Today: Daily AI Slips',
     description:
-      'Free Sure 2 Odds, 3 Odds, and 5 Odds football predictions today. High-strike-rate daily doubles and trebles backed by Bivariate Poisson and xG models.',
+      'Free 2.00, 3.00, and 5.00 combined odds football predictions today. High-consensus daily doubles and trebles backed by Bivariate Poisson and xG models.',
     keywords:
-      'sure 2 odds predictions today, daily 2 odds tips, sure 3 odds predictions, 5 odds banker predictions today, free 2 odds daily football tips',
+      '2 odds predictions today, daily 2 odds tips, 3 odds predictions, 5 odds predictions today, free 2 odds daily football tips',
     canonicalPath: '/daily-2-odds-predictions',
   },
   '/bet-builder-predictions': {
@@ -885,11 +885,11 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/both-halves-predictions',
   },
   '/dutching-calculator': {
-    title: 'Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool',
+    title: 'Dutching Calculator: Equal-Return Multi-Outcome & Correct Score Tool',
     description:
-      'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to guarantee the exact same profit if any selection wins.',
+      'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to equalize net returns across selected outcomes.',
     keywords:
-      'dutching calculator, correct score dutching calculator, dutch betting calculator, split stake calculator football, equal profit betting tool',
+      'dutching calculator, correct score dutching calculator, dutch betting calculator, split stake calculator football, equal return staking tool',
     canonicalPath: '/dutching-calculator',
   },
   '/roi-yield-calculator': {
@@ -937,23 +937,23 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     description:
       "Free football predictions for today's fixtures. Verified Expected Goals (xG) models, 1X2 win probabilities, BTTS tips, and banker picks updated hourly.",
     keywords:
-      'todays football predictions, football predictions today, soccer tips today, sure wins today, match predictions today, banker bets today',
+      'todays football predictions, football predictions today, soccer tips today, high confidence forecasts today, match predictions today, banker bets today',
     canonicalPath: '/today-predictions',
   },
   '/2-odds-predictions': {
-    title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips',
+    title: '2.00 Combined Odds Predictions Today: Daily 2-Leg Statistical Tips',
     description:
-      'Free Sure 2 Odds and 3 Odds football predictions today. High-strike-rate 2-leg banker doubles and interactive 5-day rollover compounding calculator.',
+      'Free 2.00 and 3.00 combined odds football predictions today. High-consensus 2-leg doubles and interactive 5-day rollover compounding calculator.',
     keywords:
-      'sure 2 odds predictions today, 2 odds predictions, daily 2 odds rollover tips, sure 2 odds banker today',
+      '2 odds predictions today, 2 odds predictions, daily 2 odds rollover tips, 2 odds double today',
     canonicalPath: '/2-odds-predictions',
   },
   '/5-odds-predictions': {
-    title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips',
+    title: '5.00 & 10.00 Combined Odds Predictions Today: Daily Acca Slips',
     description:
-      'Free Sure 5 Odds and 10 Odds football accumulator predictions today. Curated 4-fold and 5-fold multi-bet tickets with high AI confidence.',
+      'Free 5.00 and 10.00 combined odds football accumulator predictions today. Curated 4-fold and 5-fold multi-match tickets with high AI consensus.',
     keywords:
-      'sure 5 odds predictions today, daily 5 odds tips, sure 10 odds predictions, 5 odds accumulator tips, 10 odds banker slip today',
+      '5 odds predictions today, daily 5 odds tips, 10 odds predictions, 5 odds accumulator tips, 10 odds slip today',
     canonicalPath: '/5-odds-predictions',
   },
   '/dashboard': {
@@ -1205,19 +1205,19 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/alert-center',
   },
   '/cashout-calculator': {
-    title: 'Acca Cash-Out & Final-Leg Live Hedge Stake Calculator',
+    title: 'Acca Cash-Out & Final-Leg Counter-Hedge Stake Calculator',
     description:
-      'Calculate the exact live hedge stake on the final leg of your accumulator to lock in equal guaranteed profit regardless of the match result.',
+      'Calculate the exact live counter-hedge stake on the final leg of your accumulator to equalize net return across outcomes.',
     keywords:
-      'acca cash out calculator, hedge final leg parlay calculator, lock in guaranteed profit betting',
+      'acca cash out calculator, hedge final leg parlay calculator, counter hedge stake calculator',
     canonicalPath: '/cashout-calculator',
   },
   '/arbitrage-finder': {
-    title: 'Multi-Bookie Arbitrage & Surebet Matrix (Nearest-100)',
+    title: 'Cross-Market Implied Probability & Margin Matrix',
     description:
-      'Scan 2-way and 3-way cross-bookmaker arbitrage surebets with anti-detection stake rounding (Nearest 1, 5, 10, 50, 100) for risk-free profit.',
+      'Compare 2-way and 3-way cross-market implied probability margins with proportional stake rounding (Nearest 1, 5, 10, 50, 100).',
     keywords:
-      'arbitrage betting finder, football surebets today, 3 way surebet calculator, anti detection stake rounding',
+      'implied probability finder, football margin matrix, 3 way odds comparison, proportional stake rounding',
     canonicalPath: '/arbitrage-finder',
   },
   '/player-props': {

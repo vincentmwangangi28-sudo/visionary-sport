@@ -597,7 +597,7 @@ export function exportAnchorTextsCsv() {
     ['Interactive 6×6 Bivariate Poisson & Dixon-Coles Simulator', 365, 'https://predictpro.guru/poisson-calculator', 'Poisson Football Matrix', 'A+ Descriptive'],
     ['Live Football Scores Today & Sub-15s Match Momentum Radar', 540, 'https://predictpro.guru/live', 'Live Scores Today', 'A+ Descriptive'],
     ['Universal Booking Code Converter (SportyBet, 1xBet, Bet9ja)', 380, 'https://predictpro.guru/code-converter', 'Bet Code Converter', 'A+ Descriptive'],
-    ['Multi-Bookmaker Arbitrage & Surebet Scanner (Anti-Detection)', 340, 'https://predictpro.guru/arbitrage-finder', 'Arbitrage Surebets', 'A+ Descriptive'],
+    ['Cross-Bookmaker Implied Probability & Margin Matrix', 340, 'https://predictpro.guru/arbitrage-finder', 'Implied Margin Matrix', 'A+ Descriptive'],
     ['Personal Bet Tracker, Bankroll Ledger & ESPN Auto-Settlement', 310, 'https://predictpro.guru/bet-tracker', 'Sports Bet Tracker', 'A+ Descriptive'],
     ['Expected Points (xPTS) Justice Standings & Regression Radar', 290, 'https://predictpro.guru/xpts-standings', 'xPTS Justice Table', 'A+ Descriptive'],
     ['Acca Cash-Out Equity Auditor & Live Lay Hedge Calculator', 275, 'https://predictpro.guru/cashout-calculator', 'Cash Out Calculator', 'A+ Descriptive'],

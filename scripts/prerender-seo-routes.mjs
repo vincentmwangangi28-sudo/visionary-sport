@@ -28,8 +28,8 @@ const ROUTE_META = {
     description: 'Football match statistics, live scores, league standings, Expected Goals (xG) models, and Bivariate Poisson probability analysis across 40+ global leagues.',
   },
   '/best-bets': {
-    title: 'Free Guru Tips Today & Sure Banker Bets | PredictPro',
-    description: 'Verified daily football banker predictions and sure 1X2 guru tips today with 75% to 92% AI confidence. Filter high-probability match winners and locks.',
+    title: 'High-Consensus Football Match Forecasts | PredictPro',
+    description: 'Verified daily football match forecasts and 1X2 statistical models with 75% to 92% AI confidence across 40+ global leagues.',
   },
   '/upcoming': {
     title: 'Upcoming Football Fixtures & 7-Day AI Odds | PredictPro',
@@ -44,8 +44,8 @@ const ROUTE_META = {
     description: 'Track real-time live football scores with sub-15s auto-refresh, minute-by-minute match momentum, in-play AI win probabilities, and live goal alerts.',
   },
   '/value-bets': {
-    title: 'Daily Value Bets Today (+EV): Beat Bookmaker Odds | PredictPro',
-    description: 'Daily positive expected value (+EV) football bets today. Compare AI Poisson probability vs bookmaker odds to detect market mispricings and lock in edges.',
+    title: 'Daily Value Bets Today (+EV): Poisson Fair Odds | PredictPro',
+    description: 'Daily positive expected value (+EV) football match analysis. Compare Bivariate Poisson probabilities against market implied odds across 40+ leagues.',
   },
   '/streaks': {
     title: 'Football Team Winning Streaks & Goal Trends Radar',
@@ -228,8 +228,8 @@ const ROUTE_META = {
     description: 'Embed live AI football match predictions, Poisson win probability bars, and banker of the day widgets on your sports blog, forum, or website for free.',
   },
   '/shop': {
-    title: 'PredictPro VIP Club: Premium AI Football Tips & Banker Passes',
-    description: 'Unlock VIP high-yield banker predictions, +EV value bets, and 17-game Mega Jackpot slips. Instant access via M-Pesa or card.',
+    title: 'PredictPro Open-Access Analytics & Community Pass',
+    description: 'Explore PredictPro 100% free open-access quantitative football statistics, Bivariate Poisson score matrices, and Expected Goals (xG) research tools.',
   },
   '/sports': {
     title: 'Basketball & Tennis AI Predictions: +EV Spreads & Moneylines',
@@ -272,8 +272,8 @@ const ROUTE_META = {
     description: 'Free Dixon-Coles Poisson football calculator. Enter home and away team expected goals (xG) to simulate 10,000 matches, exact scores, 1X2 odds, and BTTS.',
   },
   '/sure-win-predictions': {
-    title: 'Sure Win Predictions Today: 88%+ AI Confidence Banker Bets',
-    description: 'Daily mathematical sure win predictions and banker tips. Filter highest-confidence football picks (88%+ strike rate), acca anchors, and +EV odds.',
+    title: 'High-Probability Football Consensus Picks (88%+ Conf)',
+    description: 'Daily mathematical high-consensus football predictions. Filter highest-confidence match models (88%+ strike rate), xG differentials, and +EV odds.',
   },
   '/corners-predictions': {
     title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Match Corners Stats',
@@ -325,7 +325,7 @@ const ROUTE_META = {
   },
   '/asian-handicap-predictions': {
     title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips',
-    description: 'Free Asian Handicap football predictions today. Beat bookmaker margins with expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines.',
+    description: 'Free Asian Handicap football predictions today. Evaluate goal-line spreads with expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 lines.',
   },
   '/draw-no-bet-predictions': {
     title: 'Draw No Bet Predictions Today (DNB): Safe Football Refund Tips',
@@ -336,8 +336,8 @@ const ROUTE_META = {
     description: 'Free Win to Nil and Clean Sheet football predictions today. High-odds 2.25+ picks backed by Poisson zero-goal probability and defensive xGA metrics.',
   },
   '/arbitrage-calculator': {
-    title: 'Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool',
-    description: 'Free 2-way and 3-way arbitrage betting calculator (Surebet & Dutching tool). Enter bookmaker odds to calculate exact stakes and lock in risk-free profit.',
+    title: 'Arbitrage & Implied Margin Calculator: 2-Way & 3-Way Staking Tool',
+    description: 'Free 2-way and 3-way implied probability and dutching calculator. Enter decimal odds to compute proportional stake distributions and market margins.',
   },
   '/odds-converter': {
     title: 'Betting Odds Converter & Implied Probability Calculator (UK/US/EU)',
@@ -416,8 +416,8 @@ const ROUTE_META = {
     description: 'Free System Bet Calculator for football and sports betting. Calculate exact payouts for Trixie (4 bets), Patent (7), Yankee (11), and Lucky 15 (15) combinations.',
   },
   '/hedge-bet-calculator': {
-    title: 'Hedge Bet Calculator: Lock In Profit vs Bookmaker Cash-Out Tool',
-    description: 'Free Hedge Bet & Cash-Out Calculator. Calculate the exact opposite stake needed on the final leg of your accumulator to lock in guaranteed risk-free profit.',
+    title: 'Hedge Bet Calculator: Counter-Stake vs Cash-Out Equity Tool',
+    description: 'Free Hedge Bet & Cash-Out Equity Calculator. Calculate the exact opposite counter-stake on the final leg of a multi-match slip to balance outcomes.',
   },
   '/liga-mx-predictions': {
     title: 'Liga MX Predictions Today: Club América, Monterrey & Mexican Tips',
@@ -440,8 +440,8 @@ const ROUTE_META = {
     description: 'Free daily Rollover football predictions today. Join the 7-Day 1.50x & 2.00x Odds Rollover Challenge backed by 90%+ AI probability locks and compounding stakes.',
   },
   '/daily-2-odds-predictions': {
-    title: 'Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips',
-    description: 'Free Sure 2 Odds, 3 Odds, and 5 Odds football predictions today. High-strike-rate daily doubles and trebles backed by Bivariate Poisson and xG models.',
+    title: 'Daily 2.00x, 3.00x & 5.00x Odds Football Combos | PredictPro',
+    description: 'Free daily 2.00x, 3.00x, and 5.00x combined-odds football match analyses. High-consensus doubles and trebles backed by Bivariate Poisson and xG models.',
   },
   '/bet-builder-predictions': {
     title: 'Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips',
@@ -452,8 +452,8 @@ const ROUTE_META = {
     description: 'Free Team to Score in Both Halves (SBH) and Win Both Halves (WBH) football predictions today. Unlock 2.00+ value on heavy home favorites.',
   },
   '/dutching-calculator': {
-    title: 'Dutching Calculator: Equal-Profit Multi-Outcome & Correct Score Tool',
-    description: 'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to guarantee the exact same profit if any selection wins.',
+    title: 'Dutching Calculator: Equal-Return Multi-Outcome & Scoreline Tool',
+    description: 'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes for proportional return balancing.',
   },
   '/roi-yield-calculator': {
     title: 'Betting ROI & Yield Calculator: Break-Even Win Rate Tool',
@@ -480,12 +480,12 @@ const ROUTE_META = {
     description: "Free football predictions for today's fixtures. Verified Expected Goals (xG) models, 1X2 win probabilities, BTTS tips, and banker picks updated hourly.",
   },
   '/2-odds-predictions': {
-    title: 'Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips',
-    description: 'Free Sure 2 Odds and 3 Odds football predictions today. High-strike-rate 2-leg banker doubles and interactive 5-day rollover compounding calculator.',
+    title: 'Daily 2.00+ Combined Odds Predictions & Rollover Analysis',
+    description: 'Free daily 2.00+ combined-odds football match projections. High-consensus 2-leg statistical doubles and interactive 5-day compounding simulator.',
   },
   '/5-odds-predictions': {
-    title: 'Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips',
-    description: 'Free Sure 5 Odds and 10 Odds football accumulator predictions today. Curated 4-fold and 5-fold multi-bet tickets with high AI confidence.',
+    title: 'Daily 5.00x & 10.00x Combined Odds Multi-Match Slips',
+    description: 'Free daily 5.00x and 10.00x combined-odds football accumulator projections. Curated 4-fold and 5-fold multi-match models with high AI confidence.',
   },
   '/performance': {
     title: 'Personal Football Betting Performance & ROI Tracker | PredictPro',
@@ -504,12 +504,12 @@ const ROUTE_META = {
     description: 'Free universal football bet code converter. Instantly translate accumulator booking codes between SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
   },
   '/cashout-calculator': {
-    title: 'Acca Cash-Out & Live Hedge Calculator | Lock In Profit',
-    description: 'Audit bookmaker Cash-Out haircuts and calculate exact 2-way or 3-way counter-hedge stakes on the final leg of your accumulator to lock in guaranteed profit.',
+    title: 'Acca Cash-Out & Live Hedge Calculator | Equity Auditor',
+    description: 'Audit bookmaker Cash-Out margins and calculate exact 2-way or 3-way counter-hedge stakes on the final leg of your multi-match slip.',
   },
   '/arbitrage-finder': {
-    title: 'Multi-Bookmaker Arbitrage & Surebet Matrix | PredictPro',
-    description: 'Scan live 2-way and 3-way mathematical surebets across SportyBet, Betika, SportPesa, Bet9ja, 1xBet, and Pinnacle with anti-detection stake rounding.',
+    title: 'Multi-Bookmaker Pricing Discrepancy & Margin Matrix | PredictPro',
+    description: 'Compare 2-way and 3-way cross-market implied probability margins across major sportsbooks with proportional stake rounding.',
   },
   '/player-props': {
     title: 'Player Shots on Target (SOT) & Referee Cards Model | PredictPro',

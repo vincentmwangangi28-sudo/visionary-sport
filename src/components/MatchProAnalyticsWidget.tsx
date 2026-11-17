@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Prediction, getConfidence } from '@/types/prediction';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
@@ -978,6 +978,11 @@ export const MatchProAnalyticsWidget: React.FC<MatchProAnalyticsWidgetProps> = (
 
   const matchKey = `${prediction.home_team.toLowerCase()}-vs-${prediction.away_team.toLowerCase()}`;
   const [activeTab, setActiveTab] = useState<AnalyticsTab>(defaultTab);
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
+
   const [userVote, setUserVote] = useState<VoteChoice | null>(() => {
     const map = readStoredVotes();
     return map[matchKey] || null;

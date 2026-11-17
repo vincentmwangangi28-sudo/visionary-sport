@@ -169,7 +169,7 @@ export function computeCashOutEquityAudit(input: CashOutAuditInput): CashOutAudi
     optimalRecommendation = 'DIY_HEDGE';
     recommendationReason = `Manual DIY Hedge locks in +${diyAdvantageOverCashOut.toFixed(
       2
-    )} more risk-free profit than the bookmaker Cash-Out button by bypassing their ${bookieHaircutPct.toFixed(
+    )} more counter-hedged net return than the bookmaker Cash-Out button by bypassing their ${bookieHaircutPct.toFixed(
       1
     )}% haircut.`;
   } else {

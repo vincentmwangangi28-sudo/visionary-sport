@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, startTransition } from 'react';
+import { useState, useEffect, useMemo, startTransition, Suspense } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
@@ -7,12 +7,22 @@ import { useBetSlip } from '@/hooks/useBetSlip';
 import { GeoRegionSelector } from '@/components/GeoRegionSelector';
 import { PredictionCard } from '@/components/PredictionCard';
 import { PredictionListSkeleton } from '@/components/PredictionCardSkeleton';
-import { TopSiteMatchdayCommandBar } from '@/components/TopSiteMatchdayCommandBar';
-import { FiveGamePacksAndWeeklyLongBet } from '@/components/FiveGamePacksAndWeeklyLongBet';
 import { DateFilterType } from '@/components/LeagueDateFilterBar';
 import { TeamLogo } from '@/components/TeamLogo';
 import { getPrediction, getConfidence } from '@/types/prediction';
 import { hapticService } from '@/services/hapticService';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
+
+const TopSiteMatchdayCommandBar = lazyWithRetry(() =>
+  import('@/components/TopSiteMatchdayCommandBar').then((m) => ({
+    default: m.TopSiteMatchdayCommandBar,
+  }))
+);
+const FiveGamePacksAndWeeklyLongBet = lazyWithRetry(() =>
+  import('@/components/FiveGamePacksAndWeeklyLongBet').then((m) => ({
+    default: m.FiveGamePacksAndWeeklyLongBet,
+  }))
+);
 import {
   matchesDateFilter,
   calculateDateFilterCounts,
@@ -503,7 +513,7 @@ export const PredictionsDashboard = ({
                 type="button"
                 role="tab"
                 aria-selected={standingsTab === tab.id}
-                aria-label={`View ${tab.label} standings`}
+                aria-label={`${tab.label} standings`}
                 onClick={() => startTransition(() => setStandingsTab(tab.id))}
                 className={`py-2 min-h-[32px] text-center border-b-2 transition-all select-none cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
                   standingsTab === tab.id
@@ -654,14 +664,6 @@ export const PredictionsDashboard = ({
           </div>
         </div>
 
-        {/* 5-Game Multi-Pack Predictions & Top Weekly Long Bet */}
-        <FiveGamePacksAndWeeklyLongBet
-          predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool}
-        />
-
-        {/* Top-Site Matchday Command Bar (+EV Value Drops, SofaScore Streaks, FotMob Fan Poll & Flashscore Odds Switcher) */}
-        <TopSiteMatchdayCommandBar predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool} />
-
         {/* Clean Matchday Control Bar */}
         <div className="p-3.5 rounded-xl border border-border bg-card space-y-3 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -685,7 +687,7 @@ export const PredictionsDashboard = ({
                     type="button"
                     role="tab"
                     aria-selected={dateFilter === d.id}
-                    aria-label={`${d.label} (${d.count} matches)`}
+                    aria-label={`${d.label} ${d.count} matches`}
                     onClick={() => {
                       hapticService.selection();
                       startTransition(() => {
@@ -1064,6 +1066,24 @@ export const PredictionsDashboard = ({
             )}
           </div>
         )}
+
+        {/* 5-Game Multi-Pack Predictions & Top Weekly Long Bet */}
+        <div className="cv-auto">
+          <Suspense fallback={<div className="min-h-[240px]" aria-hidden="true" />}>
+            <FiveGamePacksAndWeeklyLongBet
+              predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool}
+            />
+          </Suspense>
+        </div>
+
+        {/* Top-Site Matchday Command Bar (+EV Value Drops, SofaScore Streaks, FotMob Fan Poll & Flashscore Odds Switcher) */}
+        <div className="cv-auto">
+          <Suspense fallback={<div className="min-h-[180px]" aria-hidden="true" />}>
+            <TopSiteMatchdayCommandBar
+              predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool}
+            />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

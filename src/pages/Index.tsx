@@ -118,9 +118,9 @@ const PRO_SPORTS_TOOLS = [
   },
   {
     to: '/arbitrage-finder',
-    title: 'Multi-Bookmaker Arbitrage & Surebet Matrix',
-    tag: 'Surebet ROI',
-    desc: 'Scan risk-free 2-way and 3-way surebets across SportyBet, Betika, Bet9ja, 1xBet, and Pinnacle.',
+    title: 'Cross-Bookmaker Implied Probability Matrix',
+    tag: 'Margin Audit',
+    desc: 'Compare 2-way and 3-way cross-market implied probability margins across SportyBet, Betika, Bet9ja, 1xBet, and Pinnacle.',
     icon: ArrowRightLeft,
   },
   {
@@ -373,7 +373,7 @@ const Index = () => {
                 type="button"
                 onClick={triggerPWAInstallFlow}
                 aria-haspopup="dialog"
-                aria-label="Download PredictPro App"
+                aria-label="Download App — Install PredictPro"
                 data-testid="home-quickstrip-download-app-btn"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/15 hover:bg-primary/25 text-foreground text-xs font-bold transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 select-none shrink-0 cursor-pointer"
               >

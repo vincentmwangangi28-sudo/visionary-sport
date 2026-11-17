@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useBetSlip, BetSelection } from '@/hooks/useBetSlip';
@@ -40,6 +40,8 @@ import {
   Clock,
   RotateCcw,
   Radio,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
@@ -48,6 +50,16 @@ import {
   gradeSelectionAgainstFeed,
   fetchOfficialFinishedResults,
 } from '@/services/autoSettlementService';
+import { normalizeTeamName } from '@/services/predictionStorage';
+import {
+  triggerFlashscoreSlipAlert,
+  isGoalHornAudioEnabled,
+  setGoalHornAudioEnabled,
+  getFlashscoreAudioVolume,
+  setFlashscoreAudioVolume,
+  type FlashscoreAlertType,
+  type BetSlipAudioEventRecord,
+} from '@/services/goalHornAudioService';
 import { Prediction } from '@/types/prediction';
 import { addTrackedBetEntry } from '@/services/phase11AnalyticsService';
 import { toast } from 'sonner';
@@ -156,6 +168,185 @@ export const BetSlipDrawer = () => {
       clearInterval(timer);
     };
   }, [isOpen]);
+
+  // Flashscore-style Web Audio Notification Engine state & live fixture diff monitor
+  const [audioEnabled, setAudioEnabled] = useState<boolean>(() => isGoalHornAudioEnabled());
+  const [audioVolume, setAudioVolume] = useState<number>(() => getFlashscoreAudioVolume());
+  const [audioEventLog, setAudioEventLog] = useState<BetSlipAudioEventRecord[]>([]);
+  const prevMatchSnapRef = useRef<
+    Record<
+      string,
+      {
+        homeScore: number;
+        awayScore: number;
+        redCards: number;
+        varChecks: number;
+      }
+    >
+  >({});
+
+  const handleToggleAudioMute = () => {
+    const next = !audioEnabled;
+    setAudioEnabled(next);
+    setGoalHornAudioEnabled(next);
+    toast.info(
+      next
+        ? 'Flashscore Audio Engine unmuted for active slip fixtures'
+        : 'Flashscore Audio Engine muted'
+    );
+  };
+
+  const handleAudioVolumeChange = (nextVol: number) => {
+    const clamped = Math.max(0.05, Math.min(1, nextVol));
+    setAudioVolume(clamped);
+    setFlashscoreAudioVolume(clamped);
+  };
+
+  const handleTriggerSlipAudioAlert = (type: FlashscoreAlertType) => {
+    if (!audioEnabled) {
+      setAudioEnabled(true);
+      setGoalHornAudioEnabled(true);
+    }
+    const trackedLeg = selections[0];
+    const fixtureLabel = trackedLeg
+      ? `${trackedLeg.homeTeam} vs ${trackedLeg.awayTeam}`
+      : 'Arsenal vs Real Madrid';
+    const graded = trackedLeg
+      ? gradeSelectionAgainstFeed(
+          { homeTeam: trackedLeg.homeTeam, awayTeam: trackedLeg.awayTeam, market: trackedLeg.market },
+          liveAndFinishedFeed
+        )
+      : null;
+
+    const scoreSummary =
+      graded?.homeScore !== null && graded?.homeScore !== undefined && graded?.awayScore !== null && graded?.awayScore !== undefined
+        ? `${graded.homeScore} - ${graded.awayScore}`
+        : type === 'goal'
+        ? '2 - 1'
+        : '1 - 1';
+
+    const detailMap: Record<FlashscoreAlertType, string> = {
+      goal: `GOAL! ${fixtureLabel} (${scoreSummary})`,
+      red_card: `RED CARD! Dismissal in ${fixtureLabel}`,
+      var_check: `VAR CHECK in progress — ${fixtureLabel}`,
+    };
+
+    const record = triggerFlashscoreSlipAlert(type, {
+      fixtureLabel,
+      minute: graded?.minute || "68'",
+      detail: detailMap[type],
+      scoreSummary,
+      forceUnmute: true,
+    });
+
+    setAudioEventLog((prev) => [record, ...prev].slice(0, 6));
+    triggerHaptic([30, 50, 30]);
+
+    if (type === 'goal') {
+      toast.success(`⚽ ${detailMap.goal}`, {
+        description: `Flashscore stadium bell chime triggered for your tracked bet slip leg.`,
+      });
+    } else if (type === 'red_card') {
+      toast.error(`🟥 ${detailMap.red_card}`, {
+        description: `Referee double-whistle & dismissal stinger triggered for your tracked slip leg.`,
+      });
+    } else {
+      toast.warning(`📺 ${detailMap.var_check}`, {
+        description: `Broadcast VAR review telemetry tone triggered for your tracked slip leg.`,
+      });
+    }
+  };
+
+  // Monitor live feed diffs for fixtures currently tracked in the active bet slip
+  useEffect(() => {
+    if (selections.length === 0 || liveAndFinishedFeed.length === 0) return;
+
+    const newRecords: BetSlipAudioEventRecord[] = [];
+
+    for (const sel of selections) {
+      const targetHome = normalizeTeamName(sel.homeTeam);
+      const targetAway = normalizeTeamName(sel.awayTeam);
+      const matched = liveAndFinishedFeed.find((m) => {
+        const mh = normalizeTeamName(m.home_team);
+        const ma = normalizeTeamName(m.away_team);
+        return (mh === targetHome && ma === targetAway) || (mh === targetAway && ma === targetHome);
+      });
+
+      if (!matched) continue;
+
+      const key = `${targetHome}__${targetAway}`;
+      const homeScore = typeof matched.home_score === 'number' ? matched.home_score : 0;
+      const awayScore = typeof matched.away_score === 'number' ? matched.away_score : 0;
+      const events = Array.isArray(matched.match_events) ? matched.match_events : [];
+      const redCards = events.filter((e) => e.type === 'red-card').length;
+      const varChecks = events.filter(
+        (e) =>
+          String(e.detail || '')
+            .toLowerCase()
+            .includes('var') ||
+          String(e.type || '')
+            .toLowerCase()
+            .includes('var')
+      ).length;
+
+      const prev = prevMatchSnapRef.current[key];
+      prevMatchSnapRef.current[key] = {
+        homeScore,
+        awayScore,
+        redCards,
+        varChecks,
+      };
+
+      if (!prev) continue;
+
+      const fixtureLabel = `${sel.homeTeam} vs ${sel.awayTeam}`;
+      const scoreSummary = `${homeScore} - ${awayScore}`;
+      const minuteLabel = matched.minute || 'LIVE';
+
+      if (homeScore + awayScore > prev.homeScore + prev.awayScore) {
+        const rec = triggerFlashscoreSlipAlert('goal', {
+          fixtureLabel,
+          minute: minuteLabel,
+          detail: `GOAL! ${fixtureLabel} (${scoreSummary})`,
+          scoreSummary,
+        });
+        newRecords.push(rec);
+        toast.success(`⚽ GOAL! ${fixtureLabel} (${scoreSummary})`, {
+          description: `Tracked bet slip leg updated at ${minuteLabel}`,
+        });
+      }
+
+      if (redCards > prev.redCards) {
+        const rec = triggerFlashscoreSlipAlert('red_card', {
+          fixtureLabel,
+          minute: minuteLabel,
+          detail: `RED CARD! ${fixtureLabel} (${scoreSummary})`,
+          scoreSummary,
+        });
+        newRecords.push(rec);
+        toast.error(`🟥 RED CARD! ${fixtureLabel}`, {
+          description: `Booking alert on tracked bet slip fixture (${minuteLabel})`,
+        });
+      }
+
+      if (varChecks > prev.varChecks) {
+        const rec = triggerFlashscoreSlipAlert('var_check', {
+          fixtureLabel,
+          minute: minuteLabel,
+          detail: `VAR CHECK — ${fixtureLabel} (${scoreSummary})`,
+          scoreSummary,
+        });
+        newRecords.push(rec);
+        toast.warning(`📺 VAR CHECK — ${fixtureLabel}`, {
+          description: `Video Assistant Referee review in progress (${minuteLabel})`,
+        });
+      }
+    }
+
+    if (newRecords.length > 0) {
+      setAudioEventLog((prev) => [...newRecords, ...prev].slice(0, 6));
+    }
+  }, [liveAndFinishedFeed, selections]);
 
   // Auto-settle any PENDING saved slip when its legs have finished in the ESPN feed
   useEffect(() => {
@@ -1085,11 +1276,12 @@ export const BetSlipDrawer = () => {
                     })}
                   </div>
 
-                  {/* Active Slip Live Leg Tracker & Fair Cash-Out Equity */}
+                  {/* Flashscore-Style Web Audio Notification Engine & Fair Cash-Out Equity */}
                   <div className="rounded-lg border border-border/70 bg-muted/20 p-2.5 space-y-2">
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold uppercase tracking-wider text-muted-foreground">
-                        Active Slip Live Leg Tracker &amp; Fair Cash-Out
+                      <span className="font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <Radio className="h-3 w-3 text-emerald-500 animate-pulse" />
+                        Flashscore Audio Engine &amp; Live Tracker
                       </span>
                       <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
                         Fair Equity: {currency.symbol}
@@ -1098,10 +1290,99 @@ export const BetSlipDrawer = () => {
                         ).toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-muted-foreground">
-                      <span>{selections.length} Leg(s) Monitored</span>
-                      <span>75&apos;+ Goal Audio Chime Ready</span>
+
+                    <div className="flex items-center justify-between gap-2 text-[11px] font-mono tabular-nums text-muted-foreground">
+                      <span>{selections.length} Tracked Fixture(s)</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleToggleAudioMute}
+                          className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold transition-colors cursor-pointer ${
+                            audioEnabled
+                              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                              : 'border-border bg-background text-muted-foreground'
+                          }`}
+                          title={audioEnabled ? 'Mute Web Audio Alerts' : 'Unmute Web Audio Alerts'}
+                        >
+                          {audioEnabled ? (
+                            <>
+                              <Volume2 className="h-3 w-3" />
+                              <span>Audio ON</span>
+                            </>
+                          ) : (
+                            <>
+                              <VolumeX className="h-3 w-3" />
+                              <span>Muted</span>
+                            </>
+                          )}
+                        </button>
+                        <input
+                          type="range"
+                          min={0.1}
+                          max={1}
+                          step={0.05}
+                          value={audioVolume}
+                          onChange={(e) => handleAudioVolumeChange(parseFloat(e.target.value))}
+                          aria-label="Flashscore Alert Volume"
+                          className="w-14 h-1 accent-emerald-500 cursor-pointer"
+                        />
+                      </div>
                     </div>
+
+                    {/* Distinct Web Audio API Synthesizer Triggers for Active Slip Fixtures */}
+                    <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleTriggerSlipAudioAlert('goal')}
+                        className="flex items-center justify-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 transition-colors cursor-pointer"
+                        title="Trigger Flashscore-style ascending stadium bell chime for a Goal"
+                      >
+                        <span aria-hidden="true">⚽</span>
+                        <span>Goal Alert</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTriggerSlipAudioAlert('red_card')}
+                        className="flex items-center justify-center gap-1 rounded border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-1 text-[10px] font-bold text-rose-700 dark:text-rose-300 transition-colors cursor-pointer"
+                        title="Trigger referee double-whistle & dismissal stinger for a Red Card"
+                      >
+                        <span aria-hidden="true">🟥</span>
+                        <span>Red Card</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTriggerSlipAudioAlert('var_check')}
+                        className="flex items-center justify-center gap-1 rounded border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-1 text-[10px] font-bold text-amber-700 dark:text-amber-300 transition-colors cursor-pointer"
+                        title="Trigger broadcast 3-pulse telemetry sonar tone for a VAR Check"
+                      >
+                        <span aria-hidden="true">📺</span>
+                        <span>VAR Check</span>
+                      </button>
+                    </div>
+
+                    {audioEventLog.length > 0 && (
+                      <div className="rounded border border-border/60 bg-background/80 p-1.5 space-y-1 max-h-24 overflow-y-auto">
+                        {audioEventLog.slice(0, 3).map((evt) => (
+                          <div
+                            key={evt.id}
+                            className="flex items-center justify-between gap-1.5 text-[10px] font-mono tabular-nums"
+                          >
+                            <span
+                              className={`font-bold truncate ${
+                                evt.type === 'goal'
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : evt.type === 'red_card'
+                                  ? 'text-rose-600 dark:text-rose-400'
+                                  : 'text-amber-600 dark:text-amber-400'
+                              }`}
+                            >
+                              {evt.type === 'goal' ? '⚽' : evt.type === 'red_card' ? '🟥' : '📺'} {evt.detail}
+                            </span>
+                            <span className="text-muted-foreground shrink-0">{evt.minute}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Multi-Bookmaker Live Payout Comparison & 3-Day Safe Rollover Target */}

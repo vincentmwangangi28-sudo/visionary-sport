@@ -111,7 +111,7 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     expect(rendered).toContain('daily value bets today (+ev)');
   });
 
-  it('verifies Mobile PageSpeed Insights report #axd17vlyqy snapshot and deferred critical-path chunks', async () => {
+  it('verifies Mobile PageSpeed Insights report #ysdzesjvw2 snapshot and deferred critical-path chunks', async () => {
     const psi = await handlePageSpeedInsightsRequest({
       url: 'https://predictpro.guru',
       strategy: 'mobile',
@@ -119,11 +119,12 @@ describe('Ahrefs 12-Pillar SEO Opportunities & Server Prerender Verification', (
     });
 
     expect(psi.success).toBe(true);
-    expect(psi.reportId).toBe('axd17vlyqy');
+    expect(psi.reportId).toBe('ysdzesjvw2');
     expect(psi.reportUrl).toBe(
-      'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/axd17vlyqy?form_factor=mobile'
+      'https://pagespeed.web.dev/analysis/https-www-predictpro-guru/ysdzesjvw2?form_factor=mobile'
     );
     expect(psi.mobile.scores.performance).toBeGreaterThanOrEqual(96);
+    expect(psi.mobile.scores.accessibility).toBe(100);
     expect(psi.mobile.scores.seo).toBe(100);
     expect(psi.mobile.metrics.every((m) => m.status === 'good')).toBe(true);
     expect(

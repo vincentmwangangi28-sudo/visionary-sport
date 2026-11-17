@@ -77,12 +77,12 @@ export default function ArbitrageCalculator() {
     () => ({
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
-      name: 'Arbitrage Betting Calculator (2-Way & 3-Way Surebet & Dutching Tool)',
+      name: 'Implied Probability & Proportional Staking Calculator (2-Way & 3-Way)',
       applicationCategory: 'SportsApplication',
       operatingSystem: 'All',
       url: 'https://predictpro.guru/arbitrage-calculator',
       description:
-        'Free 2-way and 3-way sports betting arbitrage (surebet) and dutching calculator. Calculate exact stakes across bookmakers to lock in risk-free guaranteed profit.',
+        'Free 2-way and 3-way implied probability and dutching calculator. Compare decimal odds across markets to calculate proportional stakes and equalized returns.',
       offers: {
         '@type': 'Offer',
         price: '0',
@@ -95,10 +95,10 @@ export default function ArbitrageCalculator() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Arbitrage Betting Calculator: 2-Way & 3-Way Surebet Staking Tool"
-        description="Free 2-way and 3-way arbitrage betting calculator (Surebet & Dutching tool). Enter bookmaker odds to calculate exact stakes and lock in risk-free profit."
+        title="Implied Probability & 2-Way / 3-Way Margin Staking Calculator"
+        description="Free 2-way and 3-way implied probability and proportional staking calculator. Enter decimal odds to calculate proportional stakes and equalized net returns."
         canonical="/arbitrage-calculator"
-        keywords="arbitrage betting calculator, surebet calculator, 3 way arbitrage calculator, dutching calculator football, hedge bet calculator, risk free betting calculator"
+        keywords="implied probability calculator, 3 way margin calculator, dutching calculator football, hedge stake calculator, proportional staking calculator"
         jsonLd={jsonLd}
       />
       <Navbar />
@@ -272,11 +272,11 @@ export default function ArbitrageCalculator() {
 
               <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-background border border-primary/30">
                 <div>
-                  <span className="text-xs text-muted-foreground block">Guaranteed Total Return</span>
+                  <span className="text-xs text-muted-foreground block">Equalized Total Return</span>
                   <span className="text-2xl font-black font-mono text-foreground">${calc.guaranteedPayout}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-muted-foreground block">Risk-Free Net Profit</span>
+                  <span className="text-xs text-muted-foreground block">Equalized Net Return</span>
                   <span
                     className={`text-2xl font-black font-mono ${
                       Number(calc.netProfit) >= 0 ? 'text-emerald-500' : 'text-rose-500'

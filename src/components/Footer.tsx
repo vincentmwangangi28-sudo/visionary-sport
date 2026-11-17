@@ -94,7 +94,7 @@ export const Footer = () => {
                 <li><Link to="/tomorrow-predictions" className="hover:text-foreground transition-colors">Tomorrow&apos;s Early Lines</Link></li>
                 <li><Link to="/weekend-predictions" className="hover:text-foreground transition-colors">Weekend Global Slate</Link></li>
                 <li><Link to="/cashout-calculator" className="hover:text-foreground transition-colors">Acca Cash-Out &amp; Hedge Calc</Link></li>
-                <li><Link to="/arbitrage-finder" className="hover:text-foreground transition-colors">Arbitrage &amp; Surebet Matrix</Link></li>
+                <li><Link to="/arbitrage-finder" className="hover:text-foreground transition-colors">Cross-Market Margin Matrix</Link></li>
                 <li><Link to="/code-converter" className="hover:text-foreground transition-colors">Universal Code Converter</Link></li>
                 <li><Link to="/tipsters" className="hover:text-foreground transition-colors">Verified Tipster Yield Hub</Link></li>
                 <li><Link to="/player-props" className="hover:text-foreground transition-colors">Player Shots &amp; Cards Model</Link></li>
@@ -162,6 +162,7 @@ export const Footer = () => {
                 <li><Link to="/responsible-gaming" className="hover:text-foreground transition-colors">Responsible Gaming (18+)</Link></li>
                 <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
                 <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/cookies" className="hover:text-foreground transition-colors">Cookie Policy (AdSense &amp; GDPR)</Link></li>
                 <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
                 <li><Link to="/sitemap" className="hover:text-foreground transition-colors font-semibold text-primary">HTML Sitemap &amp; SEO Directory</Link></li>
                 <li><Link to="/admin" className="hover:text-foreground transition-colors text-muted-foreground/80">Admin Operations Console</Link></li>

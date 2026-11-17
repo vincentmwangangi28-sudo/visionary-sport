@@ -6,21 +6,26 @@ import { SEO } from '@/components/SEO';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { TeamLogo } from '@/components/TeamLogo';
 import { TopSiteMatchdayCommandBar } from '@/components/TopSiteMatchdayCommandBar';
-import { MatchProAnalyticsWidget, computeProMatchAnalytics } from '@/components/MatchProAnalyticsWidget';
+import {
+  MatchProAnalyticsWidget,
+  computeProMatchAnalytics,
+  type AnalyticsTab,
+} from '@/components/MatchProAnalyticsWidget';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useCurrency } from '@/hooks/useCurrency';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
-  Activity,
   TrendingDown,
   Users,
-  Wallet,
   Bell,
   ArrowUpRight,
   Plus,
   Check,
   Filter,
+  Target,
+  Scale,
+  Layers,
 } from 'lucide-react';
 
 export default function ProCommandCenterPage() {
@@ -30,6 +35,7 @@ export default function ProCommandCenterPage() {
 
   const [selectedLeague, setSelectedLeague] = useState<string>('ALL');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<AnalyticsTab>('shot_map');
 
   const leagues = useMemo(() => {
     const counts = new Map<string, number>();
@@ -64,12 +70,44 @@ export default function ProCommandCenterPage() {
     [activePrediction]
   );
 
+  const quickJumpPresets: Array<{
+    id: AnalyticsTab;
+    badge: string;
+    title: string;
+    icon: typeof Target;
+  }> = [
+    {
+      id: 'shot_map',
+      badge: 'Shot Map & xT',
+      title: '2D Pitch + 12 Zones',
+      icon: Target,
+    },
+    {
+      id: 'referee_cards',
+      badge: 'Ref & Card Matrix',
+      title: 'VAR + Over 3.5 Cards',
+      icon: Scale,
+    },
+    {
+      id: 'sgp_builder',
+      badge: 'SGP Copula Lab',
+      title: 'Correlated Bet Builder',
+      icon: Layers,
+    },
+    {
+      id: 'momentum',
+      badge: "75'+ Audio Alerts",
+      title: 'APm / Goal Chime',
+      icon: Bell,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Pro Matchday Command Center — Live Momentum, Steam Moves & XI Ratings | PredictPro"
-        description="Unified football intelligence command center combining Opta 10k simulations, Oddspedia line-movement sparklines, SofaScore interactive Starting XI absence simulator, 75'+ late-goal alerts, and compound rollover planning."
-        keywords="pro matchday command center, football steam moves, starting XI impact calculator, live momentum radar, compound rollover planner, sportybet code optimizer"
+        title="Pro Matchday Command Center — 2D Shot Maps, Referee Cards & SGP Builder | PredictPro"
+        description="Unified football intelligence command center combining Understat 2D pitch shot maps & 12-zone xT, SofaScore referee card matrices, Action Network SGP Copula builders, Oddspedia line-movement sparklines, and 75'+ audio alerts."
+        keywords="pro matchday command center, 2d pitch shot map, expected threat xt matrix, referee card stats, same game parlay copula builder, football steam moves"
         canonical="/pro-command-center"
       />
 
@@ -94,52 +132,44 @@ export default function ProCommandCenterPage() {
                 Pro Matchday Command Center
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-3xl">
-                Real-time Oddspedia line-movement trajectories, SofaScore Starting XI absence simulator,
-                Flashscore 75&apos;+ late-goal momentum alerts, and multi-bookmaker compound rollover planning in one workspace.
+                Interactive 2D Pitch Shot Maps &amp; 12-Zone xT, SofaScore Referee Discipline &amp; Card Matrices,
+                Same-Game Parlay (SGP) Gaussian Copula Builder, Oddspedia Steam Curves, and Flashscore 75&apos;+ Live Goal Audio Alerts.
               </p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <TrendingDown className="h-3 w-3 text-emerald-600" /> Shot Map &amp; xT
-                </span>
-                <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  2D Pitch + 12 Zones
-                </p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3 text-primary" /> Ref &amp; SGP Lab
-                </span>
-                <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  Cards + Copula SGP
-                </p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Bell className="h-3 w-3 text-amber-500" /> 75&apos;+ Audio Alerts
-                </span>
-                <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  APm / Goal Chime
-                </p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Wallet className="h-3 w-3 text-emerald-600" /> Rollover Vault
-                </span>
-                <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
-                  3D / 5D / 7D + Skim
-                </p>
-              </div>
+              {quickJumpPresets.map((preset) => {
+                const Icon = preset.icon;
+                const isActive = activeWorkspaceTab === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => setActiveWorkspaceTab(preset.id)}
+                    aria-pressed={isActive}
+                    className={`text-left rounded-lg border px-3 py-2 transition-all cursor-pointer ${
+                      isActive
+                        ? 'border-primary bg-primary/10 shadow-2xs'
+                        : 'border-border/70 bg-muted/20 hover:border-primary/40 hover:bg-muted/40'
+                    }`}
+                  >
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <Icon className="h-3 w-3 text-primary" /> {preset.badge}
+                    </span>
+                    <p className="text-xs font-mono font-black tabular-nums text-foreground mt-0.5">
+                      {preset.title}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* Global Matchday Command Bar (All 4 Top-Site Suites Across Full Slate) */}
+        {/* Global Matchday Command Bar (All 6 Top-Site Suites Across Full Slate) */}
         <TopSiteMatchdayCommandBar predictions={predictions} />
 
-        {/* Deep-Dive Fixture Selector & Interactive 6-Tab MatchProAnalyticsWidget */}
+        {/* Deep-Dive Fixture Selector & Interactive 9-Tab MatchProAnalyticsWidget */}
         {activePrediction && activePro && (
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* Left Column: Fixture Selector List */}
@@ -151,7 +181,7 @@ export default function ProCommandCenterPage() {
                     Select Fixture to Inspect
                   </h2>
                   <p className="text-[11px] text-muted-foreground">
-                    Click any match to run its Starting XI Simulator &amp; Line-Movement Curve
+                    Click any match to run its 2D Shot Map, Referee Card Matrix &amp; SGP Copula Builder
                   </p>
                 </div>
                 <span className="text-[11px] font-mono font-bold tabular-nums text-muted-foreground">
@@ -206,8 +236,8 @@ export default function ProCommandCenterPage() {
                     >
                       <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground mb-1">
                         <span className="font-semibold truncate">{match.league}</span>
-                        <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
-                          +{matchAnalytics.bestValueEdgePct.toFixed(1)}% EV · APm {matchAnalytics.attackPressureIndex}
+                        <span className="font-mono font-bold tabular-nums text-emerald-800 dark:text-emerald-400">
+                          +{matchAnalytics.bestValueEdgePct.toFixed(1)}% EV · Ref {matchAnalytics.refereeProfile.yellowsPer90.toFixed(1)} YC
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
@@ -227,74 +257,111 @@ export default function ProCommandCenterPage() {
               </div>
             </div>
 
-            {/* Right Column: Active Fixture Header + Full 6-Tab MatchProAnalyticsWidget */}
+            {/* Right Column: Active Fixture Header + Full 9-Tab MatchProAnalyticsWidget */}
             <div className="lg:col-span-8 space-y-4">
-              <div className="rounded-xl border border-border bg-card p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <TeamLogo teamName={activePrediction.home_team} size="md" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-                      {activePrediction.league} · Deep Quantitative Inspection
-                    </p>
-                    <h2 className="text-base sm:text-lg font-extrabold text-foreground truncate">
-                      {activePrediction.home_team} vs {activePrediction.away_team}
-                    </h2>
-                    <p className="text-xs text-muted-foreground font-mono tabular-nums">
-                      Model Pick: <strong className="text-foreground">{activePrediction.prediction}</strong> ({activePrediction.confidence}% conf) · Peak Goal Window{' '}
-                      {activePro.goalIntervals.find((i) => i.isPeak)?.window || "76'–90+'"}
-                    </p>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-2xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <TeamLogo teamName={activePrediction.home_team} size="md" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+                        {activePrediction.league} · Ref: {activePro.refereeProfile.name} ({activePro.refereeProfile.yellowsPer90.toFixed(1)} YC/90)
+                      </p>
+                      <h2 className="text-base sm:text-lg font-extrabold text-foreground truncate">
+                        {activePrediction.home_team} vs {activePrediction.away_team}
+                      </h2>
+                      <p className="text-xs text-muted-foreground font-mono tabular-nums">
+                        Model Pick: <strong className="text-foreground">{activePrediction.prediction}</strong> ({activePrediction.confidence}% conf) · Peak Goal Window{' '}
+                        {activePro.goalIntervals.find((i) => i.isPeak)?.window || "76'–90+'"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        addSelection({
+                          match: `${activePrediction.home_team} vs ${activePrediction.away_team}`,
+                          homeTeam: activePrediction.home_team,
+                          awayTeam: activePrediction.away_team,
+                          league: activePrediction.league,
+                          matchDate: activePrediction.match_date,
+                          market: activePro.bestValueSide,
+                          odds: activePro.bestValueOdds,
+                          confidence: activePrediction.confidence,
+                        });
+                      }}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold font-mono tabular-nums transition-all cursor-pointer ${
+                        isInSlip(
+                          `${activePrediction.home_team} vs ${activePrediction.away_team}`,
+                          activePro.bestValueSide
+                        )
+                          ? 'bg-emerald-800 text-white'
+                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      }`}
+                    >
+                      {isInSlip(
+                        `${activePrediction.home_team} vs ${activePrediction.away_team}`,
+                        activePro.bestValueSide
+                      ) ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" /> Added ({activePro.bestValueSide})
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3.5 w-3.5" /> Add {activePro.bestValueSide} @{' '}
+                          {formatOdds(activePro.bestValueOdds)}
+                        </>
+                      )}
+                    </button>
+
+                    <Link
+                      to={`/predict/${formatMatchSlug(activePrediction.home_team, activePrediction.away_team)}`}
+                      className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/40 hover:bg-muted px-3 py-2 text-xs font-bold text-foreground transition-colors"
+                    >
+                      Full Match Page <ArrowUpRight className="h-3.5 w-3.5 text-primary" />
+                    </Link>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      addSelection({
-                        match: `${activePrediction.home_team} vs ${activePrediction.away_team}`,
-                        homeTeam: activePrediction.home_team,
-                        awayTeam: activePrediction.away_team,
-                        league: activePrediction.league,
-                        matchDate: activePrediction.match_date,
-                        market: activePro.bestValueSide,
-                        odds: activePro.bestValueOdds,
-                        confidence: activePrediction.confidence,
-                      });
-                    }}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold font-mono tabular-nums transition-all cursor-pointer ${
-                      isInSlip(
-                        `${activePrediction.home_team} vs ${activePrediction.away_team}`,
-                        activePro.bestValueSide
-                      )
-                        ? 'bg-emerald-700 text-white'
-                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    }`}
-                  >
-                    {isInSlip(
-                      `${activePrediction.home_team} vs ${activePrediction.away_team}`,
-                      activePro.bestValueSide
-                    ) ? (
-                      <>
-                        <Check className="h-3.5 w-3.5" /> Added ({activePro.bestValueSide})
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-3.5 w-3.5" /> Add {activePro.bestValueSide} @{' '}
-                        {formatOdds(activePro.bestValueOdds)}
-                      </>
-                    )}
-                  </button>
-
-                  <Link
-                    to={`/predict/${formatMatchSlug(activePrediction.home_team, activePrediction.away_team)}`}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/40 hover:bg-muted px-3 py-2 text-xs font-bold text-foreground transition-colors"
-                  >
-                    Full Match Page <ArrowUpRight className="h-3.5 w-3.5 text-primary" />
-                  </Link>
+                {/* Quick-Jump Suite Selector Strip */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-border/60">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold shrink-0 mr-1">
+                    Quick Suite:
+                  </span>
+                  {[
+                    { id: 'shot_map' as AnalyticsTab, label: '2D Pitch Shot Map & xT', icon: Target },
+                    { id: 'referee_cards' as AnalyticsTab, label: 'Referee & Card Matrix', icon: Scale },
+                    { id: 'sgp_builder' as AnalyticsTab, label: 'SGP Copula Builder', icon: Layers },
+                    { id: 'steam' as AnalyticsTab, label: 'Steam & Line Movement', icon: TrendingDown },
+                    { id: 'xi_impact' as AnalyticsTab, label: 'Starting XI Simulator', icon: Users },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const active = activeWorkspaceTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setActiveWorkspaceTab(item.id)}
+                        className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                          active
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted/50 text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <Icon className="h-3 w-3" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <MatchProAnalyticsWidget prediction={activePrediction} defaultTab="steam" />
+              <MatchProAnalyticsWidget
+                prediction={activePrediction}
+                defaultTab={activeWorkspaceTab}
+              />
             </div>
           </section>
         )}

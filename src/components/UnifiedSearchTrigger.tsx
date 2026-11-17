@@ -64,15 +64,15 @@ export const UnifiedSearchTrigger: React.FC<UnifiedSearchTriggerProps> = ({
         type="button"
         onClick={() => openSearch()}
         aria-haspopup="dialog"
-        aria-label="Search predictions, matches, teams, and leagues"
+        aria-label="Search... — Search predictions, matches, teams, and leagues"
         className={cn(
-          'inline-flex items-center gap-2 h-9 min-h-[36px] min-w-[36px] shrink-0 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/80 text-xs text-muted-foreground transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none whitespace-nowrap',
+          'inline-flex items-center justify-center gap-2 h-9 w-9 sm:w-auto min-h-[36px] min-w-[36px] shrink-0 px-0 sm:px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/80 text-xs text-muted-foreground transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer select-none whitespace-nowrap',
           className
         )}
         title="Search predictions, matches, teams, and leagues (⌘K or /)"
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground pointer-events-none" aria-hidden="true" />
-        <span className="pointer-events-none">Search...</span>
+        <span className="hidden sm:inline pointer-events-none">Search...</span>
         <kbd
           aria-hidden="true"
           className="hidden sm:inline-flex h-4.5 select-none items-center gap-0.5 rounded border bg-background px-1 font-mono text-[9px] font-medium text-muted-foreground pointer-events-none"
