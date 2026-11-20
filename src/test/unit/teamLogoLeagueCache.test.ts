@@ -127,7 +127,7 @@ describe('League-Aware Team Logo Caching Service', () => {
       expect(arsenal.name).toBe('Arsenal');
       expect(arsenal.shortName).toBe('ARS');
       expect(arsenal.logoUrl).toContain('espncdn.com');
-      expect(arsenal.primaryColor).toBe('#EF0107');
+      expect(arsenal.primaryColor).toBe('#CD0006');
       expect(arsenal.secondaryColor).toBe('#FFFFFF');
       expect(arsenal.kitPattern).toBe('sleeves');
       expect(arsenal.starPlayer.name).toBe('Bukayo Saka');

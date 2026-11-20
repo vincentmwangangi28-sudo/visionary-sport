@@ -26,6 +26,8 @@ vi.mock('@/hooks/usePinnedFavorites', () => ({
   usePinnedFavorites: () => ({
     isLeaguePinned: () => false,
     togglePinLeague: vi.fn(),
+    isTeamPinned: () => false,
+    togglePinTeam: vi.fn(),
   }),
 }));
 

@@ -27,13 +27,44 @@ import {
   Check,
   Search,
   RefreshCw,
+  TrendingUp,
+  BarChart2,
+  Compass,
+  Zap,
+  Volume2,
+  VolumeX,
+  ShieldAlert,
+  Flame,
+  LineChart,
+  Trash2,
 } from 'lucide-react';
+import {
+  computeDeservedPointsRegression,
+  buildPlayerPropLogs,
+  buildFixtureCongestionProfiles,
+  buildPressureSurgeFeed,
+  buildNoVigOddsScanner,
+  runStrategyBacktest,
+  buildExchangeSteamFeed,
+  auditBetSlipLegs,
+  type PropMarketType,
+  type BacktestOddsBand,
+  type BacktestMarketType,
+} from '@/services/topSiteIntelEngine';
 
 export type ApiSuiteTab =
   | 'leaders'
   | 'markets'
   | 'injuries'
   | 'momentum'
+  | 'xg_step'
+  | 'prop_logs'
+  | 'congestion'
+  | 'pressure_radar'
+  | 'no_vig'
+  | 'backtester'
+  | 'steam_liquidity'
+  | 'slip_auditor'
   | 'referees'
   | 'clubs'
   | 'brackets'
@@ -441,6 +472,8 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
   const [activeTab, setActiveTab] = useState<ApiSuiteTab>(initialTab);
   const [selectedLeague, setSelectedLeague] = useState<string>('EPL');
   const [leaders, setLeaders] = useState<LeaderRow[]>(BASELINE_LEADERS.EPL);
+  const [injuries, setInjuries] = useState<InjuryTrackerRow[]>(INJURY_SUSPENSION_DATA);
+  const [apiReferees, setApiReferees] = useState<RefereeAssignmentRow[]>([]);
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [newsCategoryFilter, setNewsCategoryFilter] = useState<string>('All');
   const [selectedClub, setSelectedClub] = useState<string>('Arsenal');
@@ -449,8 +482,27 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
   const [selectedMomentumIdx, setSelectedMomentumIdx] = useState<number>(0);
   const [syncing, setSyncing] = useState<boolean>(false);
 
+  // #3: Cumulative xG Step-Chart & Deserved Points state
+  const [selectedRegIdx, setSelectedRegIdx] = useState<number>(0);
+  // #4: Player Prop Hit-Rate Logs state
+  const [propMarketFilter, setPropMarketFilter] = useState<PropMarketType | 'All'>('All');
+  const [propWindow, setPropWindow] = useState<'L5' | 'L10'>('L5');
+  // #8: Live Pressure Surge Radar state
+  const [liveFeedMatches, setLiveFeedMatches] = useState<Array<Record<string, unknown>>>([]);
+  const [radarAudioAlerts, setRadarAudioAlerts] = useState<boolean>(false);
+  const [radarTick, setRadarTick] = useState<number>(0);
+
+  // #1: No-Vig Scanner filter
+  const [minEvFilter, setMinEvFilter] = useState<number>(0);
+  // #2: Strategy Backtester state
+  const [btMarket, setBtMarket] = useState<BacktestMarketType>('1X2');
+  const [btOddsBand, setBtOddsBand] = useState<BacktestOddsBand>('all');
+  const [btMinEdge, setBtMinEdge] = useState<number>(4);
+  // #6: Exchange Liquidity & Steam tick
+  const [steamTick, setSteamTick] = useState<number>(0);
+
   const { data: predictionsData } = usePredictions(1);
-  const { selections, addSelection } = useBetSlip();
+  const { selections, addSelection, removeSelection, stake } = useBetSlip();
 
   const upcomingMatches = useMemo(() => {
     const raw = predictionsData?.allPredictions ?? [];
@@ -461,23 +513,44 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     let cancelled = false;
     setLeaders(BASELINE_LEADERS[selectedLeague] || BASELINE_LEADERS.EPL);
 
+    const safeJson = async (res: Response | null) => {
+      if (!res || !res.ok) return null;
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) return null;
+      return res.json().catch(() => null);
+    };
+
     const loadLiveEndpoints = async () => {
       try {
-        const [leadersRes, newsRes] = await Promise.all([
-          fetch(`/api/football?type=leaders&league=${encodeURIComponent(selectedLeague)}`),
-          fetch(`/api/football?type=news&league=${encodeURIComponent(selectedLeague)}`),
+        const [leadersRes, newsRes, injuriesRes, refereesRes, liveRes] = await Promise.all([
+          fetch(`/api/football?type=leaders&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+          fetch(`/api/football?type=news&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+          fetch(`/api/football?type=injuries&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+          fetch(`/api/football?type=referees&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+          fetch(`/api/football?type=live`).catch(() => null),
         ]);
-        if (!cancelled && leadersRes.ok) {
-          const lJson = await leadersRes.json();
-          if (Array.isArray(lJson?.leaders) && lJson.leaders.length > 0) {
-            setLeaders(lJson.leaders);
-          }
+        const [lJson, nJson, iJson, rJson, liveJson] = await Promise.all([
+          safeJson(leadersRes),
+          safeJson(newsRes),
+          safeJson(injuriesRes),
+          safeJson(refereesRes),
+          safeJson(liveRes),
+        ]);
+        if (cancelled) return;
+        if (Array.isArray(lJson?.leaders) && lJson.leaders.length > 0) {
+          setLeaders(lJson.leaders);
         }
-        if (!cancelled && newsRes.ok) {
-          const nJson = await newsRes.json();
-          if (Array.isArray(nJson?.articles) && nJson.articles.length > 0) {
-            setNews(nJson.articles);
-          }
+        if (Array.isArray(nJson?.articles) && nJson.articles.length > 0) {
+          setNews(nJson.articles);
+        }
+        if (Array.isArray(iJson?.injuries) && iJson.injuries.length > 0) {
+          setInjuries(iJson.injuries);
+        }
+        if (Array.isArray(rJson?.referees) && rJson.referees.length > 0) {
+          setApiReferees(rJson.referees);
+        }
+        if (Array.isArray(liveJson?.matches)) {
+          setLiveFeedMatches(liveJson.matches);
         }
       } catch {
         // Baseline already active
@@ -493,22 +566,36 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
   const handleManualSync = async () => {
     hapticService.selection();
     setSyncing(true);
+    const safeJson = async (res: Response | null) => {
+      if (!res || !res.ok) return null;
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) return null;
+      return res.json().catch(() => null);
+    };
     try {
-      const [leadersRes, newsRes] = await Promise.all([
-        fetch(`/api/football?type=leaders&league=${encodeURIComponent(selectedLeague)}`),
-        fetch(`/api/football?type=news&league=${encodeURIComponent(selectedLeague)}`),
+      const [leadersRes, newsRes, injuriesRes, refereesRes] = await Promise.all([
+        fetch(`/api/football?type=leaders&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+        fetch(`/api/football?type=news&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+        fetch(`/api/football?type=injuries&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
+        fetch(`/api/football?type=referees&league=${encodeURIComponent(selectedLeague)}`).catch(() => null),
       ]);
-      if (leadersRes.ok) {
-        const lJson = await leadersRes.json();
-        if (Array.isArray(lJson?.leaders) && lJson.leaders.length > 0) {
-          setLeaders(lJson.leaders);
-        }
+      const [lJson, nJson, iJson, rJson] = await Promise.all([
+        safeJson(leadersRes),
+        safeJson(newsRes),
+        safeJson(injuriesRes),
+        safeJson(refereesRes),
+      ]);
+      if (Array.isArray(lJson?.leaders) && lJson.leaders.length > 0) {
+        setLeaders(lJson.leaders);
       }
-      if (newsRes.ok) {
-        const nJson = await newsRes.json();
-        if (Array.isArray(nJson?.articles) && nJson.articles.length > 0) {
-          setNews(nJson.articles);
-        }
+      if (Array.isArray(nJson?.articles) && nJson.articles.length > 0) {
+        setNews(nJson.articles);
+      }
+      if (Array.isArray(iJson?.injuries) && iJson.injuries.length > 0) {
+        setInjuries(iJson.injuries);
+      }
+      if (Array.isArray(rJson?.referees) && rJson.referees.length > 0) {
+        setApiReferees(rJson.referees);
       }
       toast.success(`Synchronized live ${selectedLeague} telemetry & sportsbook feeds`);
     } catch {
@@ -578,8 +665,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     });
   }, [upcomingMatches]);
 
-  // Referee Card & Penalty Tendency rows bound to upcoming matches
+  // Referee Card & Penalty Tendency rows bound to live API & upcoming matches
   const refereeRows = useMemo<RefereeAssignmentRow[]>(() => {
+    if (apiReferees.length > 0) {
+      return apiReferees;
+    }
     const officials = [
       { name: 'Michael Oliver', yellow: 4.42, red: 0.18, fouls: 23.4, pkPct: 31 },
       { name: 'Anthony Taylor', yellow: 4.68, red: 0.22, fouls: 24.1, pkPct: 34 },
@@ -611,7 +701,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
         recommendedOdds: ref.yellow >= 4.5 ? over45 : over35,
       };
     });
-  }, [upcomingMatches]);
+  }, [apiReferees, upcomingMatches]);
 
   // Live 90-Minute Win-Probability & Momentum Curve for selected fixture
   const activeMomentumMatch = useMemo(
@@ -721,12 +811,126 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     return source.filter((item) => item.category === newsCategoryFilter);
   }, [news, newsCategoryFilter, selectedLeague]);
 
+  const deservedRegressionList = useMemo(
+    () => computeDeservedPointsRegression(upcomingMatches),
+    [upcomingMatches]
+  );
+
+  const activeRegressionMatch = useMemo(
+    () => deservedRegressionList[selectedRegIdx] || deservedRegressionList[0],
+    [deservedRegressionList, selectedRegIdx]
+  );
+
+  const playerPropLogs = useMemo(
+    () => buildPlayerPropLogs(propMarketFilter, selectedLeague),
+    [propMarketFilter, selectedLeague]
+  );
+
+  const congestionProfiles = useMemo(
+    () => buildFixtureCongestionProfiles(upcomingMatches),
+    [upcomingMatches]
+  );
+
+  const pressureSurgeFeed = useMemo(
+    () => buildPressureSurgeFeed(liveFeedMatches, upcomingMatches, radarTick),
+    [liveFeedMatches, upcomingMatches, radarTick]
+  );
+
+  const noVigRows = useMemo(
+    () => buildNoVigOddsScanner(upcomingMatches, minEvFilter),
+    [upcomingMatches, minEvFilter]
+  );
+
+  const backtestResult = useMemo(
+    () =>
+      runStrategyBacktest({
+        league: selectedLeague,
+        minEdgePct: btMinEdge,
+        oddsBand: btOddsBand,
+        market: btMarket,
+        sampleSize: 120,
+      }),
+    [selectedLeague, btMinEdge, btOddsBand, btMarket]
+  );
+
+  const exchangeSteamRows = useMemo(
+    () => buildExchangeSteamFeed(upcomingMatches, steamTick),
+    [upcomingMatches, steamTick]
+  );
+
+  const auditTargetLegs = useMemo(() => {
+    if (selections.length > 0) return selections;
+    return [
+      {
+        id: 'sample-leg-1',
+        homeTeam: 'Arsenal',
+        awayTeam: 'Chelsea',
+        league: 'Premier League',
+        market: 'Arsenal Win',
+        odds: 1.85,
+        confidence: 82,
+      },
+      {
+        id: 'sample-leg-2',
+        homeTeam: 'Real Madrid',
+        awayTeam: 'Atletico Madrid',
+        league: 'La Liga',
+        market: 'Over 2.5 Goals',
+        odds: 1.94,
+        confidence: 74,
+      },
+      {
+        id: 'sample-leg-3',
+        homeTeam: 'Juventus',
+        awayTeam: 'AC Milan',
+        league: 'Serie A',
+        market: 'Juventus Win',
+        odds: 1.72,
+        confidence: 42,
+      },
+    ];
+  }, [selections]);
+
+  const slipAuditSummary = useMemo(
+    () => auditBetSlipLegs(auditTargetLegs, stake || 100),
+    [auditTargetLegs, stake]
+  );
+
+  const triggerSurgeAudioPing = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(784, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.26);
+    } catch {
+      // AudioContext unavailable in headless/test environment
+    }
+  };
+
   const suiteTabs: Array<{
     id: ApiSuiteTab;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
   }> = [
     { id: 'leaders', label: 'Scorers & Player Props', icon: Trophy },
+    { id: 'prop_logs', label: 'Prop Hit-Rate Logs (L5/L10)', icon: BarChart2 },
+    { id: 'xg_step', label: "0'–90' xG Step & Regression", icon: TrendingUp },
+    { id: 'no_vig', label: 'No-Vig True Odds Scanner', icon: Scale },
+    { id: 'backtester', label: 'Strategy Backtester', icon: LineChart },
+    { id: 'congestion', label: 'Elo, Fatigue & Travel Risk', icon: Compass },
+    { id: 'steam_liquidity', label: 'Exchange Steam & Liquidity', icon: Flame },
+    { id: 'slip_auditor', label: 'Slip Auditor & Smart Hedge', icon: ShieldAlert },
+    { id: 'pressure_radar', label: 'Live Pressure Surge Radar', icon: Zap },
     { id: 'markets', label: 'Extended Markets (AH / BTTS / Corners)', icon: Layers },
     { id: 'injuries', label: 'Injuries & Suspensions', icon: Users },
     { id: 'momentum', label: 'Win Probability & Momentum', icon: Activity },
@@ -903,7 +1107,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                             }`}
                           >
                             <span>@{row.anytimeScorerOdds.toFixed(2)}</span>
-                            <Plus className="h-3 w-3" />
+                            {isMarketSelected(matchTitle, scorerMarket) ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <Plus className="h-3 w-3" />
+                            )}
                           </button>
                         </td>
                         <td className="py-2.5 px-3 text-right">
@@ -1139,7 +1347,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {INJURY_SUSPENSION_DATA.map((item) => (
+              {injuries.map((item) => (
                 <div
                   key={item.id}
                   className="p-4 rounded-xl border border-border bg-background flex flex-col justify-between gap-3"
@@ -1786,6 +1994,998 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                   </div>
                 </article>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* 9. 0'–90' CUMULATIVE xG STEP-CHART & DESERVED POINTS REGRESSION (#3) */}
+        {activeTab === 'xg_step' && activeRegressionMatch && (
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  0&apos;–90&apos; Cumulative xG Step-Chart &amp; Deserved Points Regression Tracker
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Stepped minute-by-minute Expected Goals (xG) timeline paired with post-match xPTS luck variance to spot unlucky teams to back next week.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {deservedRegressionList.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setSelectedRegIdx(idx)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 border transition-colors cursor-pointer ${
+                      selectedRegIdx === idx
+                        ? 'border-primary bg-primary/10 text-foreground font-bold'
+                        : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {item.homeTeam} vs {item.awayTeam} ({item.actualScore})
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 p-4 rounded-xl border border-border bg-background space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="font-bold text-foreground">
+                    {activeRegressionMatch.homeTeam} ({activeRegressionMatch.homeXg.toFixed(2)} xG) vs{' '}
+                    {activeRegressionMatch.awayTeam} ({activeRegressionMatch.awayXg.toFixed(2)} xG)
+                  </div>
+                  <div className="flex items-center gap-3 font-mono tabular-nums text-[11px]">
+                    <span className="text-emerald-700 dark:text-emerald-400">
+                      Deserved W {activeRegressionMatch.deservedWinPct}%
+                    </span>
+                    <span className="text-amber-700 dark:text-amber-400">
+                      D {activeRegressionMatch.deservedDrawPct}%
+                    </span>
+                    <span className="text-sky-700 dark:text-sky-400">
+                      L {activeRegressionMatch.deservedLossPct}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-[240px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={activeRegressionMatch.timeline} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip />
+                      <Area
+                        type="stepAfter"
+                        dataKey="homeXg"
+                        name={`${activeRegressionMatch.homeTeam} Cumulative xG`}
+                        stroke="#10b981"
+                        fill="#10b981"
+                        fillOpacity={0.18}
+                        strokeWidth={2.25}
+                      />
+                      <Area
+                        type="stepAfter"
+                        dataKey="awayXg"
+                        name={`${activeRegressionMatch.awayTeam} Cumulative xG`}
+                        stroke="#0ea5e9"
+                        fill="#0ea5e9"
+                        fillOpacity={0.14}
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl border border-border bg-background flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="text-xs text-muted-foreground">
+                    <span>{activeRegressionMatch.league}</span>
+                    <span aria-hidden="true"> · </span>
+                    <span className="font-mono tabular-nums">Score {activeRegressionMatch.actualScore}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center p-3 rounded-lg border border-border bg-muted/20 font-mono tabular-nums">
+                    <div>
+                      <span className="text-[10px] font-sans text-muted-foreground block">Actual PTS</span>
+                      <span className="text-sm font-bold text-foreground">{activeRegressionMatch.homeActualPts}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-sans text-muted-foreground block">Expected xPTS</span>
+                      <span className="text-sm font-bold text-primary">{activeRegressionMatch.homeExpectedPts.toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-sans text-muted-foreground block">Luck Δ</span>
+                      <span
+                        className={`text-sm font-bold ${
+                          activeRegressionMatch.luckDelta < 0
+                            ? 'text-emerald-700 dark:text-emerald-400'
+                            : 'text-rose-700 dark:text-rose-400'
+                        }`}
+                      >
+                        {activeRegressionMatch.luckDelta > 0 ? '+' : ''}
+                        {activeRegressionMatch.luckDelta.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-foreground">{activeRegressionMatch.signal}</div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {activeRegressionMatch.luckDelta <= -0.75
+                        ? `${activeRegressionMatch.homeTeam} out-created ${activeRegressionMatch.awayTeam} by ${(activeRegressionMatch.homeXg - activeRegressionMatch.awayXg).toFixed(2)} xG—strong positive regression buy-low spot.`
+                        : `${activeRegressionMatch.homeTeam} outperformed expected chance quality; monitor opponent handicap or fade candidate next fixture.`}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleAddSlipSelection(
+                      activeRegressionMatch.id,
+                      activeRegressionMatch.homeTeam,
+                      activeRegressionMatch.awayTeam,
+                      activeRegressionMatch.league,
+                      activeRegressionMatch.nextMatchPick,
+                      activeRegressionMatch.nextMatchOdds,
+                      81
+                    )
+                  }
+                  className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-bold font-mono tabular-nums flex items-center justify-between cursor-pointer"
+                >
+                  <span className="truncate mr-2">{activeRegressionMatch.nextMatchPick}</span>
+                  <span className="shrink-0">@{activeRegressionMatch.nextMatchOdds.toFixed(2)} +</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 10. PLAYER PROP HIT-RATE LOGS (L5 / L10 / VS OPPONENT) (#4) */}
+        {activeTab === 'prop_logs' && (
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Player Prop Hit-Rate Logs (L5 / L10 / Referee &amp; Opponent Cross-Check)
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Match-by-match discrete prop hit grids paired with fair de-vigged odds, opponent defensive concession rank, and assigned referee foul strictness.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg" role="group" aria-label="Prop window">
+                  {(['L5', 'L10'] as const).map((w) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setPropWindow(w)}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-md cursor-pointer ${
+                        propWindow === w ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {w} Form
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg overflow-x-auto no-scrollbar" role="group" aria-label="Prop market filter">
+                  {(['All', '1+ SoT', '2+ Shots', 'Anytime G/A', '1+ Foul'] as const).map((mkt) => (
+                    <button
+                      key={mkt}
+                      type="button"
+                      onClick={() => setPropMarketFilter(mkt)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap shrink-0 cursor-pointer ${
+                        propMarketFilter === mkt
+                          ? 'bg-card text-foreground font-semibold shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {mkt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-2.5 px-3">Player &amp; Fixture</th>
+                    <th className="py-2.5 px-3">Prop Market</th>
+                    <th className="py-2.5 px-3">Match-by-Match Hit Log ({propWindow})</th>
+                    <th className="py-2.5 px-3 text-right">{propWindow} Hit %</th>
+                    <th className="py-2.5 px-3 text-right">Season %</th>
+                    <th className="py-2.5 px-3 text-right">Fair / Edge</th>
+                    <th className="py-2.5 px-3 text-right">Add to Slip</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border font-mono tabular-nums">
+                  {playerPropLogs.map((row) => {
+                    const visibleLogs = propWindow === 'L5' ? row.logs.slice(0, 5) : row.logs;
+                    const activeRate = propWindow === 'L5' ? row.l5RatePct : row.l10RatePct;
+                    const marketLabel = `${row.player} — ${row.market}`;
+                    return (
+                      <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-2.5 px-3 font-sans">
+                          <div className="flex items-center gap-2.5">
+                            <PlayerAvatar name={row.player} team={row.team} size="xs" showClubBadge={false} />
+                            <div>
+                              <div className="font-bold text-foreground">{row.player}</div>
+                              <div className="text-[11px] text-muted-foreground">
+                                {row.team} vs {row.opponent} · {row.referee}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 font-sans">
+                          <div className="font-semibold text-foreground">{row.market}</div>
+                          <div className="text-[11px] text-muted-foreground">{row.opponentRankNote}</div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex items-center gap-1">
+                            {visibleLogs.map((log, i) => (
+                              <span
+                                key={i}
+                                title={`${log.venue} vs ${log.opponent}: ${log.statValue}`}
+                                className={`inline-flex items-center justify-center w-6 h-6 rounded text-[11px] font-bold border ${
+                                  log.hit
+                                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300'
+                                    : 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400'
+                                }`}
+                              >
+                                {log.statValue}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-bold text-emerald-700 dark:text-emerald-400">
+                          {activeRate}%
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-foreground">{row.seasonRatePct}%</td>
+                        <td className="py-2.5 px-3 text-right">
+                          <div className="text-foreground">Fair @{row.fairOdds.toFixed(2)}</div>
+                          <div className={row.edgePct >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'}>
+                            {row.edgePct >= 0 ? '+' : ''}
+                            {row.edgePct}% EV
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAddSlipSelection(
+                                row.id,
+                                row.team,
+                                row.opponent,
+                                row.league,
+                                marketLabel,
+                                row.marketOdds,
+                                Math.min(92, activeRate)
+                              )
+                            }
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted text-xs font-bold text-foreground cursor-pointer"
+                          >
+                            <span>@{row.marketOdds.toFixed(2)}</span>
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 11. FIXTURE CONGESTION, TRAVEL MILES & SQUAD ROTATION RISK (#5) */}
+        {activeTab === 'congestion' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Club Elo Ratings, Rest-Day Edge, Travel Miles &amp; Squad Rotation Risk
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Identifies fatigued favorites coming off 3-day midweek turnarounds and high air-travel mileage against rested domestic opponents.
+                </p>
+              </div>
+              <span className="text-xs font-mono tabular-nums text-muted-foreground">
+                Rest Delta · Travel km · Rotation %
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-2.5 px-3">Fixture &amp; Midweek Schedule</th>
+                    <th className="py-2.5 px-3 text-right">Club Elo (H / A)</th>
+                    <th className="py-2.5 px-3 text-right">Rest Days (H / A)</th>
+                    <th className="py-2.5 px-3 text-right">Travel (km)</th>
+                    <th className="py-2.5 px-3 text-right">Rotation Risk</th>
+                    <th className="py-2.5 px-3 text-right">Fatigue Edge Play</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border font-mono tabular-nums">
+                  {congestionProfiles.map((row) => (
+                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 px-3 font-sans">
+                        <div className="font-bold text-foreground">
+                          {row.homeTeam} vs {row.awayTeam}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {row.league} · {row.midweekContext}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="font-bold text-foreground">
+                          {row.homeElo} / {row.awayElo}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Δ {row.eloDiff >= 0 ? '+' : ''}
+                          {row.eloDiff}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="font-bold text-foreground">
+                          {row.homeRestDays}d / {row.awayRestDays}d
+                        </div>
+                        <div
+                          className={`text-[11px] ${
+                            row.restEdgeDays >= 2
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : row.restEdgeDays <= -2
+                              ? 'text-amber-700 dark:text-amber-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          Edge: {row.restEdgeDays >= 0 ? '+' : ''}
+                          {row.restEdgeDays}d
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-foreground">
+                        {row.homeTravelKm} / {row.awayTravelKm}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <span
+                          className={`font-bold ${
+                            Math.max(row.homeRotationRiskPct, row.awayRotationRiskPct) >= 60
+                              ? 'text-rose-700 dark:text-rose-400'
+                              : 'text-foreground'
+                          }`}
+                        >
+                          {row.homeRotationRiskPct}% / {row.awayRotationRiskPct}%
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-sans">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAddSlipSelection(
+                              row.id,
+                              row.homeTeam,
+                              row.awayTeam,
+                              row.league,
+                              row.recommendedPick,
+                              row.recommendedOdds,
+                              row.confidence
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted text-xs font-bold text-foreground cursor-pointer"
+                        >
+                          <span className="truncate max-w-[180px]">{row.recommendedPick}</span>
+                          <span className="font-mono tabular-nums text-primary shrink-0">
+                            @{row.recommendedOdds.toFixed(2)} +
+                          </span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 12. LIVE IN-PLAY "PRESSURE SURGE" RADAR (#8) */}
+        {activeTab === 'pressure_radar' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Live In-Play &ldquo;Pressure Surge&rdquo; Radar &amp; Late-Goal Scanner
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  10-minute rolling Dangerous Attacks, Box Shots, Corners, and xG Velocity highlighting matches crossing 70&apos;+ late-goal thresholds.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !radarAudioAlerts;
+                    setRadarAudioAlerts(next);
+                    if (next) {
+                      triggerSurgeAudioPing();
+                      toast.success('70\'+ Surge Audio Alert enabled');
+                    }
+                  }}
+                  aria-pressed={radarAudioAlerts}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
+                    radarAudioAlerts
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {radarAudioAlerts ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+                  <span>{radarAudioAlerts ? 'Audio Chime On' : 'Enable Surge Chime'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRadarTick((t) => t + 1);
+                    if (radarAudioAlerts) triggerSurgeAudioPing();
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground cursor-pointer"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>Pulse Scan</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pressureSurgeFeed.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 rounded-xl border border-border bg-background flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="truncate">{item.league}</span>
+                      <span className="font-mono tabular-nums font-semibold text-foreground shrink-0">
+                        {item.isLiveFeed ? `LIVE ${item.minute}'` : `Sim ${item.minute}'`} · {item.homeScore}–{item.awayScore}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-bold text-sm text-foreground truncate">
+                        {item.homeTeam} vs {item.awayTeam}
+                      </div>
+                      <span
+                        className={`font-mono tabular-nums text-xs font-bold shrink-0 ${
+                          item.pressureScore >= 82
+                            ? 'text-rose-700 dark:text-rose-400'
+                            : 'text-emerald-700 dark:text-emerald-400'
+                        }`}
+                      >
+                        {item.pressureScore}/100
+                      </span>
+                    </div>
+
+                    <div className="text-xs font-semibold text-primary">{item.surgeLabel}</div>
+
+                    <div className="grid grid-cols-4 gap-2 pt-2 border-t border-border text-center font-mono tabular-nums text-[11px]">
+                      <div>
+                        <span className="text-[10px] font-sans text-muted-foreground block">Atk / 10m</span>
+                        <span className="font-bold text-foreground">
+                          {item.homeAttacks10m}:{item.awayAttacks10m}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-sans text-muted-foreground block">Box Shots</span>
+                        <span className="font-bold text-foreground">{item.boxShots10m}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-sans text-muted-foreground block">Corners</span>
+                        <span className="font-bold text-foreground">{item.cornersLast10m}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-sans text-muted-foreground block">xG / 10m</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                          {item.xgVelocity10m.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleAddSlipSelection(
+                        item.id,
+                        item.homeTeam,
+                        item.awayTeam,
+                        item.league,
+                        item.recommendedMarket,
+                        item.liveOdds,
+                        Math.min(90, item.pressureScore)
+                      )
+                    }
+                    className="w-full py-2 px-3 rounded-lg border border-border bg-card hover:bg-muted text-xs font-bold text-foreground font-mono tabular-nums flex items-center justify-between cursor-pointer"
+                  >
+                    <span className="font-sans truncate mr-2">{item.recommendedMarket}</span>
+                    <span className="shrink-0">@{item.liveOdds.toFixed(2)} +</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 13. NO-VIG TRUE ODDS & HOLD / VIG SCANNER (#1) */}
+        {activeTab === 'no_vig' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  No-Vig True Odds &amp; Soft Book Discrepancy Scanner
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Strips sharp market margin (vig) via multiplicative overround removal to expose true fair probability and +EV discrepancies on soft bookmakers.
+                </p>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg" role="group" aria-label="Minimum EV filter">
+                {[0, 3, 6].map((ev) => (
+                  <button
+                    key={ev}
+                    type="button"
+                    onClick={() => setMinEvFilter(ev)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md whitespace-nowrap shrink-0 cursor-pointer ${
+                      minEvFilter === ev
+                        ? 'bg-card text-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {ev === 0 ? 'All Markets' : `+${ev}% EV Min`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-2.5 px-3">Fixture &amp; Market</th>
+                    <th className="py-2.5 px-3 text-right">True No-Vig</th>
+                    <th className="py-2.5 px-3 text-right">Sharp Hold</th>
+                    <th className="py-2.5 px-3 text-right">Best Soft Book</th>
+                    <th className="py-2.5 px-3 text-right">Quarter-Kelly</th>
+                    <th className="py-2.5 px-3 text-right">True EV Edge</th>
+                    <th className="py-2.5 px-3 text-right">Add Edge</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border font-mono tabular-nums">
+                  {noVigRows.map((row) => (
+                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 px-3 font-sans">
+                        <div className="font-bold text-foreground">
+                          {row.homeTeam} vs {row.awayTeam}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {row.league} · {row.marketLabel}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="font-bold text-foreground">@{row.trueNoVigOdds.toFixed(2)}</div>
+                        <div className="text-[11px] text-muted-foreground">{row.trueWinProbPct}% Fair</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-muted-foreground">
+                        {row.sharpHoldPct}% vs {row.softHoldPct}%
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="font-bold text-foreground">@{row.softBookOdds.toFixed(2)}</div>
+                        <div className="text-[11px] text-muted-foreground font-sans">{row.bestSoftBook}</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-foreground">{row.kellyQuarterPct}% Bankroll</td>
+                      <td className="py-2.5 px-3 text-right">
+                        <span
+                          className={`font-bold ${
+                            row.evEdgePct >= 6
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : row.evEdgePct >= 2.5
+                              ? 'text-primary'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          +{row.evEdgePct.toFixed(2)}%
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-sans">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAddSlipSelection(
+                              row.id,
+                              row.homeTeam,
+                              row.awayTeam,
+                              row.league,
+                              `${row.marketLabel} (${row.bestSoftBook} +EV)`,
+                              row.softBookOdds,
+                              Math.round(row.trueWinProbPct)
+                            )
+                          }
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted font-mono font-bold text-foreground cursor-pointer"
+                        >
+                          <span>@{row.softBookOdds.toFixed(2)}</span>
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 14. STRATEGY BACKTESTER & EQUITY CURVE SIMULATOR (#2) */}
+        {activeTab === 'backtester' && (
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Historical Strategy Backtester — ROI, Yield &amp; Max Drawdown
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Simulate historical performance across market types, odds bands, and minimum model EV thresholds to validate staking edges before risking bankroll.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg" role="group" aria-label="Backtest market">
+                  {(['1X2', 'Over 2.5', 'BTTS', 'Asian Handicap'] as const).map((mkt) => (
+                    <button
+                      key={mkt}
+                      type="button"
+                      onClick={() => setBtMarket(mkt)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap shrink-0 cursor-pointer ${
+                        btMarket === mkt ? 'bg-card text-foreground font-semibold shadow-2xs' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {mkt}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg" role="group" aria-label="Backtest odds band">
+                  {(
+                    [
+                      { id: 'all', label: 'All Odds' },
+                      { id: 'favorites', label: 'Favorites' },
+                      { id: 'underdogs', label: 'Value Dogs' },
+                    ] as const
+                  ).map((band) => (
+                    <button
+                      key={band.id}
+                      type="button"
+                      onClick={() => setBtOddsBand(band.id)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap shrink-0 cursor-pointer ${
+                        btOddsBand === band.id ? 'bg-card text-foreground font-semibold shadow-2xs' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {band.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-border bg-muted/20 text-xs">
+              <div className="flex items-center gap-3">
+                <label htmlFor="backtest-min-edge" className="font-semibold text-foreground whitespace-nowrap">
+                  Min Model Edge Threshold: <span className="font-mono text-primary">{btMinEdge}% EV</span>
+                </label>
+                <input
+                  id="backtest-min-edge"
+                  name="backtest-min-edge"
+                  type="range"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={btMinEdge}
+                  onChange={(e) => setBtMinEdge(Number(e.target.value))}
+                  className="w-36 accent-primary cursor-pointer"
+                />
+              </div>
+              <span className="text-muted-foreground font-mono tabular-nums">
+                League Scope: {selectedLeague} · Flat 1u Staking · Avg Odds @{backtestResult.avgOdds.toFixed(2)}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono tabular-nums">
+              <div className="p-3 rounded-xl border border-border bg-background">
+                <span className="text-[10px] font-sans text-muted-foreground block">Simulated Yield / ROI</span>
+                <span
+                  className={`text-base font-bold ${
+                    backtestResult.roiPct >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+                  }`}
+                >
+                  {backtestResult.roiPct >= 0 ? '+' : ''}
+                  {backtestResult.roiPct}%
+                </span>
+              </div>
+              <div className="p-3 rounded-xl border border-border bg-background">
+                <span className="text-[10px] font-sans text-muted-foreground block">Net Profit (Units)</span>
+                <span className="text-base font-bold text-foreground">
+                  {backtestResult.netUnits >= 0 ? '+' : ''}
+                  {backtestResult.netUnits.toFixed(2)}u
+                </span>
+              </div>
+              <div className="p-3 rounded-xl border border-border bg-background">
+                <span className="text-[10px] font-sans text-muted-foreground block">Win Rate ({backtestResult.wins}/{backtestResult.totalBets})</span>
+                <span className="text-base font-bold text-foreground">{backtestResult.winRatePct}%</span>
+              </div>
+              <div className="p-3 rounded-xl border border-border bg-background">
+                <span className="text-[10px] font-sans text-muted-foreground block">Max Drawdown</span>
+                <span className="text-base font-bold text-rose-700 dark:text-rose-400">
+                  -{backtestResult.maxDrawdownUnits.toFixed(2)}u
+                </span>
+              </div>
+              <div className="p-3 rounded-xl border border-border bg-background">
+                <span className="text-[10px] font-sans text-muted-foreground block">Closing Line Value</span>
+                <span className="text-base font-bold text-emerald-700 dark:text-emerald-400">
+                  +{backtestResult.closingLineValuePct}%
+                </span>
+              </div>
+              <div className="p-3 rounded-xl border border-border bg-background">
+                <span className="text-[10px] font-sans text-muted-foreground block">Sharpe Ratio</span>
+                <span className="text-base font-bold text-primary">{backtestResult.sharpeRatio.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl border border-border bg-background space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-foreground">Cumulative Units Equity Curve</span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {backtestResult.totalBets} Settled Picks
+                </span>
+              </div>
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={backtestResult.equityCurve} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Area
+                      type="monotone"
+                      dataKey="cumulativeUnits"
+                      name="Net Units"
+                      stroke="#10b981"
+                      fill="#10b981"
+                      fillOpacity={0.18}
+                      strokeWidth={2.25}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 15. BETFAIR EXCHANGE LIQUIDITY & SHARP STEAM ALERTS (#6) */}
+        {activeTab === 'steam_liquidity' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Exchange Liquidity &amp; Sharp Money Steam Alerts
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Tracks matched exchange volume, sharp syndicate money share, opening-to-current steam drops, and Reverse Line Movement before soft books adjust.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSteamTick((t) => t + 1)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground shrink-0 cursor-pointer"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Refresh Steam</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-2.5 px-3">Fixture &amp; Steam Target</th>
+                    <th className="py-2.5 px-3">Steam Signal</th>
+                    <th className="py-2.5 px-3 text-right">Matched Volume</th>
+                    <th className="py-2.5 px-3 text-right">Open → Now</th>
+                    <th className="py-2.5 px-3 text-right">Sharp %</th>
+                    <th className="py-2.5 px-3 text-right">Lagging Book Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border font-mono tabular-nums">
+                  {exchangeSteamRows.map((row) => (
+                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 px-3 font-sans">
+                        <div className="font-bold text-foreground">
+                          {row.homeTeam} vs {row.awayTeam}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {row.league} · {row.steamSide}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 font-sans">
+                        <span
+                          className={`font-semibold ${
+                            row.alertType === 'Exchange Whale' || row.alertType === 'Reverse Line Move'
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : 'text-foreground'
+                          }`}
+                        >
+                          {row.alertType}
+                        </span>
+                        <div className="text-[11px] font-mono text-muted-foreground">{row.steamVelocityPerHr}</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-bold text-foreground">
+                        ${row.matchedVolumeUsd.toLocaleString()}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <span className="text-muted-foreground">@{row.openingOdds.toFixed(2)}</span>
+                        <span className="mx-1">→</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                          @{row.currentOdds.toFixed(2)} (-{row.dropPct}%)
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-bold text-primary">{row.sharpSharePct}%</td>
+                      <td className="py-2.5 px-3 text-right font-sans">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAddSlipSelection(
+                              row.id,
+                              row.homeTeam,
+                              row.awayTeam,
+                              row.league,
+                              `${row.steamSide} (Steam Lag)`,
+                              row.bookieLagOdds,
+                              row.confidence
+                            )
+                          }
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted font-mono font-bold text-foreground cursor-pointer"
+                        >
+                          <span>@{row.bookieLagOdds.toFixed(2)}</span>
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 16. BET SLIP WEAKEST-LEG AUDITOR & SMART HEDGE (#7) */}
+        {activeTab === 'slip_auditor' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Bet Slip Weakest-Leg Auditor &amp; Smart Hedge Salvage
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {selections.length > 0
+                    ? `Auditing your ${selections.length} live Bet Slip leg(s) to pinpoint vig drag and compute exact opposite-side hedge sizing.`
+                    : 'Showing sample 3-leg accumulator audit — add picks to your Bet Slip to audit your real legs automatically.'}
+                </p>
+              </div>
+              <span className="text-xs font-mono tabular-nums text-muted-foreground">
+                Slip EV: {slipAuditSummary.currentSlipEvPct >= 0 ? '+' : ''}
+                {slipAuditSummary.currentSlipEvPct}% · Optimized EV: {slipAuditSummary.optimizedSlipEvPct >= 0 ? '+' : ''}
+                {slipAuditSummary.optimizedSlipEvPct}%
+              </span>
+            </div>
+
+            {slipAuditSummary.weakestLeg && (
+              <div className="p-4 rounded-xl border border-border bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-rose-700 dark:text-rose-400">
+                    Weakest Leg Detected: {slipAuditSummary.weakestLeg.fixture} ({slipAuditSummary.weakestLeg.market})
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    True Fair Odds @{slipAuditSummary.weakestLeg.trueFairOdds.toFixed(2)} vs Slip @{slipAuditSummary.weakestLeg.odds.toFixed(2)} · Vig Tax {slipAuditSummary.weakestLeg.vigTaxPct}% · Safer Swap: <strong className="text-foreground">{slipAuditSummary.weakestLeg.saferAlternative}</strong> (@{slipAuditSummary.weakestLeg.saferOdds.toFixed(2)})
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const weak = slipAuditSummary.weakestLeg!;
+                      if (selections.some((s) => s.id === weak.id)) {
+                        removeSelection(weak.id);
+                      }
+                      handleAddSlipSelection(
+                        `${weak.id}-safe`,
+                        weak.homeTeam,
+                        weak.awayTeam,
+                        weak.league,
+                        weak.saferAlternative,
+                        weak.saferOdds,
+                        82
+                      );
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-bold text-foreground cursor-pointer"
+                  >
+                    Swap to {slipAuditSummary.weakestLeg.saferAlternative}
+                  </button>
+                  {selections.some((s) => s.id === slipAuditSummary.weakestLeg?.id) && (
+                    <button
+                      type="button"
+                      onClick={() => removeSelection(slipAuditSummary.weakestLeg!.id)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Drop Weakest Leg</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-2.5 px-3">Slip Leg</th>
+                    <th className="py-2.5 px-3">Selection</th>
+                    <th className="py-2.5 px-3 text-right">Slip Odds</th>
+                    <th className="py-2.5 px-3 text-right">True Fair</th>
+                    <th className="py-2.5 px-3 text-right">Vig Tax</th>
+                    <th className="py-2.5 px-3 text-right">Leg EV</th>
+                    <th className="py-2.5 px-3 text-right">Audit Tier</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border font-mono tabular-nums">
+                  {slipAuditSummary.auditedLegs.map((leg) => (
+                    <tr key={leg.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 px-3 font-sans font-bold text-foreground">{leg.fixture}</td>
+                      <td className="py-2.5 px-3 font-sans text-foreground">{leg.market}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-foreground">@{leg.odds.toFixed(2)}</td>
+                      <td className="py-2.5 px-3 text-right text-muted-foreground">
+                        @{leg.trueFairOdds.toFixed(2)} ({leg.trueProbPct}%)
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-muted-foreground">{leg.vigTaxPct}%</td>
+                      <td
+                        className={`py-2.5 px-3 text-right font-bold ${
+                          leg.expectedValuePct >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+                        }`}
+                      >
+                        {leg.expectedValuePct >= 0 ? '+' : ''}
+                        {leg.expectedValuePct}%
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-sans font-semibold text-foreground">{leg.riskTier}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div>
+                <span className="font-bold text-foreground">Smart Hedge Sizing ({slipAuditSummary.hedgeMarketLabel}): </span>
+                <span className="text-muted-foreground">
+                  Lay / Hedge Stake <strong className="font-mono text-foreground">{slipAuditSummary.hedgeStakeAmount}</strong> secures net profit lock of{' '}
+                  <strong className="font-mono text-emerald-700 dark:text-emerald-400">
+                    +{slipAuditSummary.hedgeGuaranteedProfit}
+                  </strong>
+                </span>
+              </div>
+              <span className="font-mono tabular-nums text-muted-foreground">
+                Combined @{slipAuditSummary.currentCombinedOdds.toFixed(2)}x → Optimized @{slipAuditSummary.optimizedCombinedOdds.toFixed(2)}x
+              </span>
             </div>
           </div>
         )}

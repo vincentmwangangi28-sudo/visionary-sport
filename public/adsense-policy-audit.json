@@ -1,5 +1,5 @@
 {
-  "auditedAt": "2026-11-17T14:47:28.720Z",
+  "auditedAt": "2026-11-20T12:39:18.788Z",
   "publisherId": "ca-pub-1375386376692976",
   "domain": "https://www.predictpro.guru",
   "overallStatus": "COMPLIANT",
@@ -9,12 +9,12 @@
   "editorialWordCount": 780,
   "mainLinkCount": 38,
   "prohibitedContentScan": {
-    "filesScanned": 497,
+    "filesScanned": 500,
     "patternsChecked": 12,
     "violationsFound": 0
   },
   "adPlacementScan": {
-    "uiFilesScanned": 393,
+    "uiFilesScanned": 395,
     "routesWithAds": 7,
     "totalAdUnits": 7,
     "maxAdsPerPageAllowed": 3,
@@ -59,7 +59,7 @@
     ]
   },
   "popupAndInterstitialScan": {
-    "uiFilesScanned": 393,
+    "uiFilesScanned": 395,
     "windowOpenOrAlertCount": 0,
     "singleOverlayMutexActive": true,
     "mediapartnersExempted": true,
@@ -93,7 +93,7 @@
       "title": "Prohibited Content & Unreliable Claims Codebase Scanner",
       "category": "Prohibited Content",
       "status": "PASS",
-      "detail": "Scanned 497 codebase files & templates across 12 prohibited content patterns: 0 violations found."
+      "detail": "Scanned 500 codebase files & templates across 12 prohibited content patterns: 0 violations found."
     },
     {
       "id": "editorial-depth-and-link-density",
@@ -114,14 +114,14 @@
       "title": "Non-Compliant Ad Placements, Density & Overlay Audit",
       "category": "Ad Placement Policies",
       "status": "PASS",
-      "detail": "Audited 393 component/page files (7 routes with ads, max 3/page, 0 ads in modals/popovers, unfilled collapse active)."
+      "detail": "Audited 395 component/page files (7 routes with ads, max 3/page, 0 ads in modals/popovers, unfilled collapse active)."
     },
     {
       "id": "excessive-popups-and-interstitials",
       "title": "Excessive Pop-Ups, window.open & Intrusive Interstitial Scanner",
       "category": "Pop-Up & Interstitial Policy",
       "status": "PASS",
-      "detail": "Scanned 393 UI files: 0 window.open/alert pop-ups, single-overlay mutex enforced, Mediapartners-Google exempted, all modals dismissible."
+      "detail": "Scanned 395 UI files: 0 window.open/alert pop-ups, single-overlay mutex enforced, Mediapartners-Google exempted, all modals dismissible."
     }
   ],
   "violations": []

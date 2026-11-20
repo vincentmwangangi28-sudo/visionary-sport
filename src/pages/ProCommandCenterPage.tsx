@@ -13,7 +13,7 @@ import {
 } from '@/components/MatchProAnalyticsWidget';
 import { usePredictions } from '@/hooks/usePredictions';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { useCurrency } from '@/hooks/useCurrency';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
   TrendingDown,
@@ -31,7 +31,7 @@ import {
 export default function ProCommandCenterPage() {
   const { data: predictions = [] } = usePredictions(1);
   const { addSelection, isInSlip } = useBetSlip();
-  const { formatOdds } = useCurrency();
+  const { formatOdds } = useUserPreferences();
 
   const [selectedLeague, setSelectedLeague] = useState<string>('ALL');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');

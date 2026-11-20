@@ -10,6 +10,7 @@ import { SEO } from '@/components/SEO';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { HomeDownloadAppBanner } from '@/components/PWAInstallButton';
 import { triggerPWAInstallFlow } from '@/hooks/usePWAInstall';
+import { DailyTopFiveBestBets } from '@/components/DailyTopFiveBestBets';
 import {
   Flame,
   Ticket,
@@ -389,6 +390,9 @@ const Index = () => {
 
         {/* Home Screen Download App Banner */}
         <HomeDownloadAppBanner />
+
+        {/* Daily Top 5 Best Bets (Bivariate Poisson High-Probability Filter) */}
+        {(activeMode === 'predictions' || activeMode === 'all') && <DailyTopFiveBestBets />}
 
         {/* Primary Matchday Predictions Workspace */}
         {(activeMode === 'predictions' || activeMode === 'all') && (

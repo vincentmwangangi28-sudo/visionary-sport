@@ -50,7 +50,7 @@ export default function Auth() {
     if (knownAccount) return 'login';
     return requestedMode || 'login';
   });
-  const [email, setEmail] = useState(() => getKnownAccountEmail());
+  const [email, setEmail] = useState(() => getKnownAccountEmail() || '');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -108,8 +108,8 @@ export default function Auth() {
     }
   };
 
-  const isGmailAddress = (addr: string) => {
-    const lower = addr.trim().toLowerCase();
+  const isGmailAddress = (addr?: string | null) => {
+    const lower = String(addr || '').trim().toLowerCase();
     return lower.endsWith('@gmail.com') || lower.endsWith('@googlemail.com');
   };
 

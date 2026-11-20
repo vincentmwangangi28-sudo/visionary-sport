@@ -17,6 +17,10 @@ import { AdvancedMarketsTab } from '@/components/AdvancedMarketsTab';
 import { OddsComparisonTable } from '@/components/OddsComparisonTable';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
 import { MatchProAnalyticsWidget } from '@/components/MatchProAnalyticsWidget';
+import {
+  buildFixtureCongestionProfiles,
+  buildXgStepTimeline,
+} from '@/services/topSiteIntelEngine';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { toast } from 'sonner';
 import {
@@ -74,6 +78,18 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
       away: Math.max(0, 100 - Math.round((h / total) * 100) - Math.round((d / total) * 100)),
     };
   }, [p, baseHome, baseDraw, baseAway]);
+
+  const congestionInsight = useMemo(() => buildFixtureCongestionProfiles([p])[0], [p]);
+  const xgTrajectory = useMemo(
+    () =>
+      buildXgStepTimeline(
+        p.home_team,
+        p.away_team,
+        Number((1.05 + (winProbabilities.home / 100) * 1.6).toFixed(2)),
+        Number((0.65 + (winProbabilities.away / 100) * 1.4).toFixed(2))
+      ),
+    [p.home_team, p.away_team, winProbabilities.home, winProbabilities.away]
+  );
 
   const handleQuickAddMainTip = (market: string, odds: number) => {
     addSelection({
@@ -390,6 +406,54 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                   </button>
                 </div>
               </div>
+
+              {/* Club Elo, Rest-Day Edge & 0'-90' Expected xG Trajectory */}
+              {congestionInsight && (
+                <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-foreground">
+                      Club Elo, Rest Edge &amp; 0&apos;–90&apos; xG Trajectory
+                    </span>
+                    <span className="font-mono tabular-nums text-muted-foreground">
+                      {p.home_team} {congestionInsight.homeElo} vs {p.away_team} {congestionInsight.awayElo}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono tabular-nums">
+                    <div className="p-2 rounded-lg border border-border bg-card">
+                      <span className="font-sans text-[10px] text-muted-foreground block">Rest Days (H / A)</span>
+                      <span className="font-bold text-foreground">
+                        {congestionInsight.homeRestDays}d / {congestionInsight.awayRestDays}d
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg border border-border bg-card">
+                      <span className="font-sans text-[10px] text-muted-foreground block">Rotation Risk</span>
+                      <span className="font-bold text-foreground">
+                        {congestionInsight.homeRotationRiskPct}% / {congestionInsight.awayRotationRiskPct}%
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg border border-border bg-card">
+                      <span className="font-sans text-[10px] text-muted-foreground block">Projected 90&apos; xG</span>
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                        {xgTrajectory[xgTrajectory.length - 1]?.homeXg.toFixed(2)} – {xgTrajectory[xgTrajectory.length - 1]?.awayXg.toFixed(2)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleQuickAddMainTip(congestionInsight.recommendedPick, congestionInsight.recommendedOdds)
+                      }
+                      className="p-2 rounded-lg border border-border bg-card hover:bg-muted text-left transition-colors cursor-pointer"
+                    >
+                      <span className="font-sans text-[10px] text-muted-foreground block truncate">
+                        Fatigue Edge Pick
+                      </span>
+                      <span className="font-bold text-primary">
+                        @{congestionInsight.recommendedOdds.toFixed(2)} +
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {analysis && (
                 <div className="bg-muted/30 rounded-xl p-4 border border-border space-y-2">

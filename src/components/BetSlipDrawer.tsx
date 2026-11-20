@@ -42,7 +42,9 @@ import {
   Radio,
   Volume2,
   VolumeX,
+  ShieldAlert,
 } from 'lucide-react';
+import { auditBetSlipLegs } from '@/services/topSiteIntelEngine';
 import { usePredictions } from '@/hooks/usePredictions';
 import { TeamLogo } from '@/components/TeamLogo';
 import { ConfidenceMeter } from '@/components/ConfidenceMeter';
@@ -424,6 +426,11 @@ export const BetSlipDrawer = () => {
       boostPercent,
     };
   }, [selections, predictions, totalOdds]);
+
+  const slipAudit = useMemo(
+    () => auditBetSlipLegs(selections, stake || 100),
+    [selections, stake]
+  );
 
   // Helper to top-up and group multiple predictions into a single 'Weekly Long Bet' accumulation slip
   const handleGroupAndTopUpWeeklyLongBet = (targetCount: number) => {
@@ -1235,6 +1242,42 @@ export const BetSlipDrawer = () => {
                         <Plus className="h-3.5 w-3.5" />
                         Add Leg
                       </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* #7 Weakest-Leg Auditor & Smart Hedge Advisor */}
+                {selections.length >= 2 && slipAudit.weakestLeg && (
+                  <div className="rounded-xl border border-border bg-background p-3 space-y-2 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-foreground flex items-center gap-1.5">
+                        <ShieldAlert className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+                        Weakest-Leg Auditor &amp; Hedge
+                      </span>
+                      <span className="font-mono tabular-nums text-[11px] text-muted-foreground">
+                        Slip EV {slipAudit.currentSlipEvPct >= 0 ? '+' : ''}
+                        {slipAudit.currentSlipEvPct}% → {slipAudit.optimizedSlipEvPct >= 0 ? '+' : ''}
+                        {slipAudit.optimizedSlipEvPct}%
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Drag Leg: <strong className="text-foreground">{slipAudit.weakestLeg.fixture}</strong> ({slipAudit.weakestLeg.market} @{slipAudit.weakestLeg.odds.toFixed(2)} vs Fair @{slipAudit.weakestLeg.trueFairOdds.toFixed(2)} · Vig {slipAudit.weakestLeg.vigTaxPct}%).
+                    </p>
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <span className="text-[11px] font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
+                        Hedge: {currency} {slipAudit.hedgeStakeAmount} → Lock +{currency} {slipAudit.hedgeGuaranteedProfit}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const w = slipAudit.weakestLeg!;
+                          removeSelection(w.id);
+                          toast.success(`Removed weakest leg (${w.fixture}) to reduce slip vig drag`);
+                        }}
+                        className="px-2.5 py-1 rounded border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-[11px] font-bold text-rose-700 dark:text-rose-300 transition-colors cursor-pointer shrink-0"
+                      >
+                        Drop Weakest
+                      </button>
                     </div>
                   </div>
                 )}

@@ -752,10 +752,13 @@ export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promis
       }
     }
   } else {
+    const normalizedFilter = leagueFilter.toLowerCase().trim();
+    const mappedCode = STANDINGS_LEAGUE_MAP[normalizedFilter];
     const matchedLeagues = SERVER_LEAGUES.filter(
       (l) =>
-        l.name.toLowerCase().includes(leagueFilter.toLowerCase()) ||
-        l.code.toLowerCase().includes(leagueFilter.toLowerCase())
+        (mappedCode && l.code.toLowerCase() === mappedCode) ||
+        l.name.toLowerCase().includes(normalizedFilter) ||
+        l.code.toLowerCase().includes(normalizedFilter)
     );
     const activeLeagues = (matchedLeagues.length > 0 ? matchedLeagues : SERVER_LEAGUES.slice(0, 10)).slice(
       0,
@@ -2009,6 +2012,7 @@ const STANDINGS_LEAGUE_MAP: Record<string, string> = {
   'fra.1': 'fra.1',
   'ligue 1': 'fra.1',
   '2': 'uefa.champions',
+  ucl: 'uefa.champions',
   'uefa.champions': 'uefa.champions',
   'champions league': 'uefa.champions',
   '3': 'uefa.europa',
@@ -2044,6 +2048,7 @@ const STANDINGS_LEAGUE_MAP: Record<string, string> = {
   '288': 'rsa.1',
   'rsa.1': 'rsa.1',
   '276': 'ken.1',
+  kpl: 'ken.1',
   'ken.1': 'ken.1',
   '233': 'egy.1',
   'egy.1': 'egy.1',
