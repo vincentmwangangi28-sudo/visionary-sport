@@ -1,8 +1,9 @@
 import { Prediction } from '@/types/prediction';
 import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
 
-const STORAGE_KEY = 'predictpro_saved_predictions_v9_espn_live';
+const STORAGE_KEY = 'predictpro_saved_predictions_v10_full_slate';
 const LEGACY_STORAGE_KEYS = [
+  'predictpro_saved_predictions_v9_espn_live',
   'predictpro_saved_predictions_v8_real',
   'predictpro_saved_predictions_v7_authentic',
   'predictpro_saved_predictions_v6_live',

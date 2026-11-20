@@ -900,10 +900,40 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
         const json = await apiRes.json();
         if (json.success && Array.isArray(json.fixtures) && json.fixtures.length > 0) {
           const nowMs = Date.now();
-          const validFixtures = json.fixtures.filter((p: Prediction) => {
+          const nowDate = new Date(nowMs);
+          const validFixtures: Prediction[] = json.fixtures.filter((p: Prediction) => {
             const t = new Date(p.match_date).getTime();
-            return !isNaN(t) && t > nowMs;
+            return !isNaN(t) && t > nowMs - 30 * 60_000;
           });
+          const todayCount = validFixtures.filter((p) => {
+            const d = new Date(p.match_date);
+            return (
+              d.getFullYear() === nowDate.getFullYear() &&
+              d.getMonth() === nowDate.getMonth() &&
+              d.getDate() === nowDate.getDate()
+            );
+          }).length;
+
+          const minTotal = leagueFilter && leagueFilter !== 'All' ? 8 : 36;
+          const minToday = leagueFilter && leagueFilter !== 'All' ? 3 : 12;
+
+          if (validFixtures.length < minTotal || todayCount < minToday) {
+            const seenPairs = new Set(
+              validFixtures.map((p) => `${p.home_team.toLowerCase()}-${p.away_team.toLowerCase()}`)
+            );
+            let supplemental = getUpdatedDefaultPredictions();
+            if (leagueFilter && leagueFilter !== 'All') {
+              supplemental = supplemental.filter((f) => matchesLeagueFilter(f.league, leagueFilter));
+            }
+            for (const item of supplemental) {
+              const pair = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
+              if (!seenPairs.has(pair)) {
+                seenPairs.add(pair);
+                validFixtures.push(item);
+              }
+            }
+          }
+
           if (validFixtures.length > 0) {
             return mergeAndPreservePredictions(validFixtures);
           }
@@ -1251,8 +1281,19 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Supplement with verified fixtures ONLY if live feeds returned zero matches
-  if (predictions.length === 0) {
+  // Supplement with verified fixtures whenever Today's slate (< 12) or total pool (< 36) is sparse
+  const todayDirectCount = predictions.filter((p) => {
+    const d = new Date(p.match_date);
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  }).length;
+  const minTotalDirect = leagueFilter && leagueFilter !== 'All' ? 8 : 36;
+  const minTodayDirect = leagueFilter && leagueFilter !== 'All' ? 3 : 12;
+
+  if (predictions.length < minTotalDirect || todayDirectCount < minTodayDirect) {
     let supplementalFixtures = getUpdatedDefaultPredictions();
     if (leagueFilter && leagueFilter !== 'All') {
       supplementalFixtures = supplementalFixtures.filter((f) =>

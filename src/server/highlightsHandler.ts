@@ -4,6 +4,8 @@
  * and official match video previews without browser CORS limitations.
  */
 
+import { safeFootballFetch, isHostInCooldown } from '../services/footballDataCache';
+
 export interface ServerHighlightItem {
   id: string;
   title: string;
@@ -108,18 +110,16 @@ export async function handleHighlightsRequest(forceRefresh: boolean = false): Pr
   }
 
   // Fetch recent finished fixtures from ESPN scoreboard to ensure live scores are present
-  try {
-    const leagues = ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'uefa.champions'];
-    const responses = await Promise.allSettled(
-      leagues.map(league =>
-        fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            Accept: 'application/json',
-          },
-        }).then(r => (r.ok ? r.json() : null))
-      )
-    );
+  if (!isHostInCooldown('site.api.espn.com')) {
+    try {
+      const leagues = ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'uefa.champions'];
+      const responses = await Promise.allSettled(
+        leagues.map((league) =>
+          safeFootballFetch(
+            `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard`
+          ).then((r) => (r && r.ok ? r.json() : null))
+        )
+      );
 
     for (const r of responses) {
       if (r.status === 'fulfilled' && r.value?.events) {
@@ -171,7 +171,8 @@ export async function handleHighlightsRequest(forceRefresh: boolean = false): Pr
         }
       }
     }
-  } catch {}
+    } catch {}
+  }
 
   // Fallback to verified official match highlights if no direct feeds returned items
   if (items.length === 0) {

@@ -44,6 +44,9 @@ const TeamNewsInjuryUpdates = lazyWithRetry(() =>
 const PastResultsArchive = lazyWithRetry(() =>
   import('@/components/PastResultsArchive').then((m) => ({ default: m.PastResultsArchive }))
 );
+const LiveApiIntelligenceSuite = lazyWithRetry(() =>
+  import('@/components/LiveApiIntelligenceSuite').then((m) => ({ default: m.LiveApiIntelligenceSuite }))
+);
 
 const PRO_SPORTS_TOOLS = [
   {
@@ -395,6 +398,19 @@ const Index = () => {
             className="container mx-auto max-w-7xl px-4 sm:px-6 py-6"
           >
             <PredictionsDashboard />
+          </section>
+        )}
+
+        {/* Complete 8-Feature Live API Intelligence Suite (Scorers/Props, Extended Markets, Injuries, Win-Prob Momentum, Referee Cards, Club Schedule, Knockout Brackets, Live News) */}
+        {(activeMode === 'predictions' || activeMode === 'api_suite' || activeMode === 'all') && (
+          <section
+            id="section-api-intelligence"
+            aria-label="Live API Football Intelligence, Player Props and Extended Markets"
+            className="container mx-auto max-w-7xl px-4 sm:px-6 py-4"
+          >
+            <Suspense fallback={<div className="min-h-[320px]" aria-hidden="true" />}>
+              <LiveApiIntelligenceSuite />
+            </Suspense>
           </section>
         )}
 

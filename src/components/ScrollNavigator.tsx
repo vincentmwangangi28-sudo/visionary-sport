@@ -45,38 +45,31 @@ export const ScrollNavigator: React.FC = () => {
   });
 
   useEffect(() => {
-    let ticking = false;
+    let timeoutId: number | null = null;
 
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollTop = window.scrollY;
-          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-          const progress = docHeight > 0 ? Math.min(100, Math.max(0, Math.round((scrollTop / docHeight) * 100))) : 0;
+      if (timeoutId !== null) return;
+      timeoutId = window.setTimeout(() => {
+        timeoutId = null;
+        const scrollTop = window.scrollY;
+        const isNowVisible = scrollTop > 240;
+        setVisible((prev) => (prev === isNowVisible ? prev : isNowVisible));
 
-          setScrollProgress(progress);
-          setVisible(scrollTop > 240);
+        if (!isNowVisible) return;
 
-          // Find current active section
-          for (const sec of DEFAULT_SECTIONS) {
-            const el = document.getElementById(sec.id);
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              if (rect.top <= 200 && rect.bottom >= 200) {
-                setActiveSectionId(sec.id);
-                break;
-              }
-            }
-          }
-
-          ticking = false;
-        });
-        ticking = true;
-      }
+        const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const progress = Math.min(100, Math.max(0, Math.round((scrollTop / docHeight) * 100)));
+        setScrollProgress((prev) => (Math.abs(prev - progress) >= 3 || progress === 0 || progress === 100 ? progress : prev));
+      }, 150);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   const scrollToTop = () => {

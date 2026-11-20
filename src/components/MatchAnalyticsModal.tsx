@@ -329,6 +329,68 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
               {/* Opta 10k Simulation, SofaScore 90' Goal Timing, Understat xG Radar & FotMob Crowd Poll */}
               <MatchProAnalyticsWidget prediction={p} compact />
 
+              {/* Referee Card Tendency & Extended Asian Handicap / Corners Strip */}
+              <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-foreground">
+                    Extended API Props — Asian Handicap, Corners &amp; Referee Cards
+                  </span>
+                  <span className="font-mono tabular-nums text-muted-foreground">
+                    1-Click Bet Slip
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono tabular-nums text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddMainTip(`${p.home_team} AH (-0.5)`, Number((baseHome * 0.96).toFixed(2)))}
+                    className="p-2 rounded-lg border border-border bg-card hover:bg-muted text-left transition-colors cursor-pointer"
+                  >
+                    <span className="font-sans text-[11px] text-muted-foreground block truncate">
+                      {p.home_team} AH (-0.5)
+                    </span>
+                    <span className="font-bold text-foreground">
+                      @{Number((baseHome * 0.96).toFixed(2))} +
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddMainTip('Both Teams To Score — Yes', 1.72)}
+                    className="p-2 rounded-lg border border-border bg-card hover:bg-muted text-left transition-colors cursor-pointer"
+                  >
+                    <span className="font-sans text-[11px] text-muted-foreground block truncate">
+                      BTTS — Yes
+                    </span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                      @1.72 +
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddMainTip('Over 9.5 Total Corners', 1.80)}
+                    className="p-2 rounded-lg border border-border bg-card hover:bg-muted text-left transition-colors cursor-pointer"
+                  >
+                    <span className="font-sans text-[11px] text-muted-foreground block truncate">
+                      Over 9.5 Corners
+                    </span>
+                    <span className="font-bold text-foreground">
+                      @1.80 +
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAddMainTip('Over 3.5 Total Cards', 1.66)}
+                    className="p-2 rounded-lg border border-border bg-card hover:bg-muted text-left transition-colors cursor-pointer"
+                  >
+                    <span className="font-sans text-[11px] text-muted-foreground block truncate">
+                      Referee O3.5 Cards
+                    </span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">
+                      @1.66 +
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {analysis && (
                 <div className="bg-muted/30 rounded-xl p-4 border border-border space-y-2">
                   <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">

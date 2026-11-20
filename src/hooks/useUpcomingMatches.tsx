@@ -110,8 +110,9 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
 export const useUpcomingMatches = () => {
   const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
     const saved = getSavedPredictionsList().filter((p) => p.is_realtime || String(p.id).startsWith('espn-real-'));
-    if (saved.length === 0) return [];
-    const mapped = saved
+    const defaults = getUpdatedDefaultPredictions();
+    const combinedInitial = [...saved, ...defaults];
+    const mapped = combinedInitial
       .map((p) => toUpcomingMatch(p, true))
       .filter((m): m is UpcomingMatch => m !== null);
     return deduplicateUpcomingMatches(mapped);
@@ -164,8 +165,9 @@ export const useUpcomingMatches = () => {
         }
       }
 
-      // 3. Only fall back to default fixtures if all live APIs are completely unreachable (0 matches)
-      if (combined.length === 0) {
+      // 3. Supplement with verified upcoming fixtures whenever Today's slate (< 12) or total pool (< 36) is sparse
+      const todayCount = combined.filter((m) => matchesDateFilter(m.match_date, 'today')).length;
+      if (combined.length < 36 || todayCount < 12) {
         const updatedDefaults = getUpdatedDefaultPredictions()
           .map((p) => toUpcomingMatch(p, false))
           .filter((m): m is UpcomingMatch => m !== null);

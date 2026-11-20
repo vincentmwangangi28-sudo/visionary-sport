@@ -1,7 +1,7 @@
 import React from 'react';
-import { Trophy, Zap, Layers, Newspaper, Archive, LayoutList } from 'lucide-react';
+import { Trophy, Zap, Layers, Newspaper, Archive, LayoutList, Activity } from 'lucide-react';
 
-export type HomeViewMode = 'predictions' | 'live' | 'slips' | 'news' | 'archive' | 'all';
+export type HomeViewMode = 'predictions' | 'live' | 'slips' | 'api_suite' | 'news' | 'archive' | 'all';
 
 interface HomeViewTabsProps {
   activeMode: HomeViewMode;
@@ -20,6 +20,7 @@ export const HomeViewTabs: React.FC<HomeViewTabsProps> = ({
     icon: React.ComponentType<{ className?: string }>;
   }> = [
     { id: 'predictions', label: 'Fixtures & Odds', icon: Trophy },
+    { id: 'api_suite', label: 'Props, Brackets & Telemetry', icon: Activity },
     { id: 'live', label: 'In-Play & TV', icon: Zap },
     { id: 'slips', label: 'Acca Builder', icon: Layers },
     { id: 'news', label: 'Lineups & News', icon: Newspaper },

@@ -85,7 +85,7 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
   return sortMatchesByDatePriority(sanitized);
 }
 
-const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v5_espn_live';
+const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v6_full_slate';
 
 const INITIAL_PAYLOAD_CACHE = new Map<string, {
   allPredictions: Prediction[];
@@ -105,16 +105,21 @@ function getCachedInitialPredictionsPayload(league?: string) {
     try {
       localStorage.removeItem('predictpro_real_upcoming_v1');
       localStorage.removeItem('predictpro_real_upcoming_v3');
+      localStorage.removeItem('predictpro_real_upcoming_v5_espn_live');
       const raw = localStorage.getItem(REAL_UPCOMING_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { timestamp: number; fixtures: Prediction[] };
         if (
           parsed &&
           Array.isArray(parsed.fixtures) &&
-          parsed.fixtures.length > 0 &&
+          parsed.fixtures.length >= 24 &&
           Date.now() - parsed.timestamp < 30 * 60_000
         ) {
-          seed = parsed.fixtures;
+          const validStored = filterOutPlayedMatches(parsed.fixtures);
+          const todayStoredCount = validStored.filter((p) => matchesDateFilter(p.match_date, 'today')).length;
+          if (validStored.length >= 24 && todayStoredCount >= 8) {
+            seed = validStored;
+          }
         }
       }
     } catch {
@@ -124,6 +129,17 @@ function getCachedInitialPredictionsPayload(league?: string) {
 
   if (seed.length === 0) {
     seed = getUpdatedDefaultPredictions();
+  } else {
+    const existingPairs = new Set(
+      seed.map((p) => `${p.home_team.toLowerCase()}-${p.away_team.toLowerCase()}`)
+    );
+    for (const def of getUpdatedDefaultPredictions()) {
+      const pair = `${def.home_team.toLowerCase()}-${def.away_team.toLowerCase()}`;
+      if (!existingPairs.has(pair)) {
+        existingPairs.add(pair);
+        seed.push(def);
+      }
+    }
   }
 
   if (league && league !== 'All') {
@@ -294,8 +310,12 @@ export const usePredictions = (
         }
       }
 
-      // 2. Fallback to curated upcoming fixtures if live feeds returned 0 matches
-      if (combinedPredictions.length === 0) {
+      // 2. Supplement with verified upcoming fixtures whenever Today's slate (< 12) or total pool (< 36) is sparse
+      const todayLiveCount = combinedPredictions.filter((p) => matchesDateFilter(p.match_date, 'today')).length;
+      const minTotalTarget = league && league !== 'All' ? 8 : 36;
+      const minTodayTarget = league && league !== 'All' ? 3 : 12;
+
+      if (combinedPredictions.length < minTotalTarget || todayLiveCount < minTodayTarget) {
         let updatedDefaultList = getUpdatedDefaultPredictions();
         if (league && league !== 'All') {
           const leagueFiltered = updatedDefaultList.filter((p) => matchesLeagueFilter(p.league, league));
