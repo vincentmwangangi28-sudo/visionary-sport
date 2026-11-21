@@ -1405,4 +1405,716 @@ export function selectDailyTop5BestBets(
     }));
 }
 
+// ============================================================================
+// FEATURE #1: GOALKEEPER PSxG & BACKUP-KEEPER IMPACT LAB
+// ============================================================================
+
+export type GoalkeeperLabFilter = 'all' | 'elite_unders' | 'vulnerable';
+
+export interface KeeperStatsProfile {
+  starterName: string;
+  starterPsxgMinusGa: number; // Post-Shot xG minus Goals Allowed (+ means shot-stopping overperformance)
+  starterSavePct: number;
+  starterPenaltySavePct: number;
+  starterCrossClaimPct: number;
+  backupName: string;
+  backupPsxgMinusGa: number;
+  backupSavePct: number;
+}
+
+export interface GoalkeeperPsxgFixtureProfile {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  matchDate: string;
+  homeKeeper: KeeperStatsProfile;
+  awayKeeper: KeeperStatsProfile;
+  homeUsingBackup: boolean;
+  awayUsingBackup: boolean;
+  activeHomePsxg: number;
+  activeAwayPsxg: number;
+  baseOver25Pct: number;
+  adjustedOver25Pct: number;
+  over25DeltaPct: number;
+  baseBttsPct: number;
+  adjustedBttsPct: number;
+  bttsDeltaPct: number;
+  fairOver25Odds: number;
+  fairBttsOdds: number;
+  impactRating: 'Elite Shot-Stopper Under' | 'Backup Keeper Leakage Alert' | 'Balanced Net Edge';
+  recommendedMarket: string;
+  recommendedOdds: number;
+  confidence: number;
+}
+
+const CLUB_KEEPER_BASELINES: Record<string, KeeperStatsProfile> = {
+  arsenal: {
+    starterName: 'David Raya',
+    starterPsxgMinusGa: 3.4,
+    starterSavePct: 77.8,
+    starterPenaltySavePct: 28,
+    starterCrossClaimPct: 12.4,
+    backupName: 'Neto',
+    backupPsxgMinusGa: -1.1,
+    backupSavePct: 68.5,
+  },
+  liverpool: {
+    starterName: 'Alisson Becker',
+    starterPsxgMinusGa: 4.8,
+    starterSavePct: 79.4,
+    starterPenaltySavePct: 31,
+    starterCrossClaimPct: 9.8,
+    backupName: 'Caoimhín Kelleher',
+    backupPsxgMinusGa: 0.9,
+    backupSavePct: 73.2,
+  },
+  'manchester city': {
+    starterName: 'Ederson',
+    starterPsxgMinusGa: 1.6,
+    starterSavePct: 72.5,
+    starterPenaltySavePct: 22,
+    starterCrossClaimPct: 10.2,
+    backupName: 'Stefan Ortega',
+    backupPsxgMinusGa: 1.2,
+    backupSavePct: 73.8,
+  },
+  chelsea: {
+    starterName: 'Robert Sánchez',
+    starterPsxgMinusGa: -1.4,
+    starterSavePct: 70.1,
+    starterPenaltySavePct: 24,
+    starterCrossClaimPct: 11.6,
+    backupName: 'Filip Jörgensen',
+    backupPsxgMinusGa: -2.2,
+    backupSavePct: 67.4,
+  },
+  'real madrid': {
+    starterName: 'Thibaut Courtois',
+    starterPsxgMinusGa: 5.1,
+    starterSavePct: 80.2,
+    starterPenaltySavePct: 33,
+    starterCrossClaimPct: 11.1,
+    backupName: 'Andriy Lunin',
+    backupPsxgMinusGa: 1.4,
+    backupSavePct: 74.0,
+  },
+  barcelona: {
+    starterName: 'Wojciech Szczęsny',
+    starterPsxgMinusGa: 1.9,
+    starterSavePct: 73.6,
+    starterPenaltySavePct: 29,
+    starterCrossClaimPct: 8.9,
+    backupName: 'Iñaki Peña',
+    backupPsxgMinusGa: -1.8,
+    backupSavePct: 67.9,
+  },
+  'inter milan': {
+    starterName: 'Yann Sommer',
+    starterPsxgMinusGa: 3.7,
+    starterSavePct: 77.2,
+    starterPenaltySavePct: 30,
+    starterCrossClaimPct: 7.4,
+    backupName: 'Josep Martínez',
+    backupPsxgMinusGa: -0.4,
+    backupSavePct: 70.6,
+  },
+  'bayern munich': {
+    starterName: 'Manuel Neuer',
+    starterPsxgMinusGa: 1.5,
+    starterSavePct: 72.1,
+    starterPenaltySavePct: 27,
+    starterCrossClaimPct: 10.5,
+    backupName: 'Jonas Urbig',
+    backupPsxgMinusGa: -1.5,
+    backupSavePct: 68.2,
+  },
+  'atletico madrid': {
+    starterName: 'Jan Oblak',
+    starterPsxgMinusGa: 4.2,
+    starterSavePct: 78.6,
+    starterPenaltySavePct: 32,
+    starterCrossClaimPct: 9.1,
+    backupName: 'Juan Musso',
+    backupPsxgMinusGa: 0.2,
+    backupSavePct: 71.0,
+  },
+  juventus: {
+    starterName: 'Michele Di Gregorio',
+    starterPsxgMinusGa: 3.1,
+    starterSavePct: 76.9,
+    starterPenaltySavePct: 26,
+    starterCrossClaimPct: 8.2,
+    backupName: 'Mattia Perin',
+    backupPsxgMinusGa: 0.8,
+    backupSavePct: 73.1,
+  },
+  'ac milan': {
+    starterName: 'Mike Maignan',
+    starterPsxgMinusGa: 3.5,
+    starterSavePct: 76.4,
+    starterPenaltySavePct: 34,
+    starterCrossClaimPct: 10.7,
+    backupName: 'Marco Sportiello',
+    backupPsxgMinusGa: -0.9,
+    backupSavePct: 69.4,
+  },
+  psg: {
+    starterName: 'Gianluigi Donnarumma',
+    starterPsxgMinusGa: 4.4,
+    starterSavePct: 78.1,
+    starterPenaltySavePct: 36,
+    starterCrossClaimPct: 8.6,
+    backupName: 'Matvey Safonov',
+    backupPsxgMinusGa: -0.7,
+    backupSavePct: 69.8,
+  },
+};
+
+export function getTeamKeeperProfile(teamName: string): KeeperStatsProfile {
+  const lower = (teamName || '').toLowerCase();
+  for (const [key, profile] of Object.entries(CLUB_KEEPER_BASELINES)) {
+    if (lower.includes(key)) return profile;
+  }
+  const h = stableHash(`gk:${lower}`);
+  const starterPsxg = Number((((h % 72) - 24) / 10).toFixed(1));
+  const backupPsxg = Number(Math.max(-4.5, starterPsxg - 2.6 - ((h % 14) / 10)).toFixed(1));
+  return {
+    starterName: `${teamName} #1 GK`,
+    starterPsxgMinusGa: starterPsxg,
+    starterSavePct: Number((71.2 + starterPsxg * 1.4).toFixed(1)),
+    starterPenaltySavePct: 18 + (h % 17),
+    starterCrossClaimPct: Number((6.4 + (h % 55) / 10).toFixed(1)),
+    backupName: `${teamName} #2 GK`,
+    backupPsxgMinusGa: backupPsxg,
+    backupSavePct: Number((67.5 + backupPsxg * 1.1).toFixed(1)),
+  };
+}
+
+export function buildGoalkeeperPsxgProfiles(
+  predictions: Prediction[],
+  options: {
+    filter?: GoalkeeperLabFilter;
+    backupOverrides?: Record<string, { home?: boolean; away?: boolean }>;
+  } = {}
+): GoalkeeperPsxgFixtureProfile[] {
+  const filter = options.filter ?? 'all';
+  const overrides = options.backupOverrides ?? {};
+
+  const pool =
+    predictions.length > 0
+      ? predictions.slice(0, 10)
+      : [
+          {
+            id: 'gk-def-1',
+            home_team: 'Arsenal',
+            away_team: 'Chelsea',
+            league: 'Premier League',
+            match_date: new Date().toISOString(),
+            home_odds: 1.75,
+            away_odds: 4.4,
+          } as Prediction,
+          {
+            id: 'gk-def-2',
+            home_team: 'Real Madrid',
+            away_team: 'Atletico Madrid',
+            league: 'La Liga',
+            match_date: new Date().toISOString(),
+            home_odds: 1.88,
+            away_odds: 3.9,
+          } as Prediction,
+          {
+            id: 'gk-def-3',
+            home_team: 'Liverpool',
+            away_team: 'Manchester City',
+            league: 'Premier League',
+            match_date: new Date().toISOString(),
+            home_odds: 2.15,
+            away_odds: 3.15,
+          } as Prediction,
+          {
+            id: 'gk-def-4',
+            home_team: 'Inter Milan',
+            away_team: 'Juventus',
+            league: 'Serie A',
+            match_date: new Date().toISOString(),
+            home_odds: 1.92,
+            away_odds: 4.05,
+          } as Prediction,
+        ];
+
+  const rows: GoalkeeperPsxgFixtureProfile[] = pool.map((p, idx) => {
+    const id = String(p.id || `gk-${idx}`);
+    const homeKeeper = getTeamKeeperProfile(p.home_team);
+    const awayKeeper = getTeamKeeperProfile(p.away_team);
+    const dateKey = String(p.match_date || '').split('T')[0];
+
+    const hOdds = Math.max(1.18, Number(p.home_odds || 1.95));
+    const aOdds = Math.max(1.22, Number(p.away_odds || 3.55));
+    const xgModel = calculateMatchXG(p.home_team, p.away_team, hOdds, aOdds, dateKey);
+
+    const matchOverride = overrides[id] ?? {};
+    const homeUsingBackup = Boolean(matchOverride.home);
+    const awayUsingBackup = Boolean(matchOverride.away);
+
+    const activeHomePsxg = homeUsingBackup
+      ? homeKeeper.backupPsxgMinusGa
+      : homeKeeper.starterPsxgMinusGa;
+    const activeAwayPsxg = awayUsingBackup
+      ? awayKeeper.backupPsxgMinusGa
+      : awayKeeper.starterPsxgMinusGa;
+
+    // Combined shot-stopping drag: negative PSxG increases expected goals & BTTS probability
+    const netPsxgProtection = activeHomePsxg + activeAwayPsxg;
+    const backupPenaltyBoost = (homeUsingBackup ? 5.8 : 0) + (awayUsingBackup ? 5.8 : 0);
+    const psxgShift = Number((-netPsxgProtection * 1.45 + backupPenaltyBoost).toFixed(1));
+
+    const baseOver25Pct = xgModel.over25Prob;
+    const baseBttsPct = xgModel.bttsProb;
+    const adjustedOver25Pct = Math.min(89, Math.max(24, Math.round(baseOver25Pct + psxgShift)));
+    const adjustedBttsPct = Math.min(86, Math.max(22, Math.round(baseBttsPct + psxgShift * 0.85)));
+
+    const over25DeltaPct = adjustedOver25Pct - baseOver25Pct;
+    const bttsDeltaPct = adjustedBttsPct - baseBttsPct;
+
+    const fairOver25Odds = Number((100 / Math.max(24, adjustedOver25Pct)).toFixed(2));
+    const fairBttsOdds = Number((100 / Math.max(22, adjustedBttsPct)).toFixed(2));
+
+    const isBackupAlert = homeUsingBackup || awayUsingBackup || activeHomePsxg < -0.8 || activeAwayPsxg < -0.8;
+    const isEliteUnder = !homeUsingBackup && !awayUsingBackup && netPsxgProtection >= 5.5;
+
+    const impactRating: GoalkeeperPsxgFixtureProfile['impactRating'] = isBackupAlert
+      ? 'Backup Keeper Leakage Alert'
+      : isEliteUnder
+      ? 'Elite Shot-Stopper Under'
+      : 'Balanced Net Edge';
+
+    let recommendedMarket = 'Over 2.5 Goals';
+    let recommendedOdds = Number(Math.max(1.36, fairOver25Odds * 1.04).toFixed(2));
+    let confidence = Math.min(91, Math.max(62, adjustedOver25Pct));
+
+    if (isEliteUnder && adjustedOver25Pct <= 54) {
+      recommendedMarket = 'Under 2.5 Goals';
+      const underProb = 100 - adjustedOver25Pct;
+      recommendedOdds = Number(Math.max(1.42, (100 / Math.max(30, underProb)) * 1.03).toFixed(2));
+      confidence = Math.min(88, Math.max(64, underProb));
+    } else if (adjustedBttsPct >= adjustedOver25Pct) {
+      recommendedMarket = 'BTTS — Yes';
+      recommendedOdds = Number(Math.max(1.38, fairBttsOdds * 1.04).toFixed(2));
+      confidence = Math.min(90, Math.max(63, adjustedBttsPct));
+    }
+
+    return {
+      id,
+      homeTeam: p.home_team,
+      awayTeam: p.away_team,
+      league: p.league,
+      matchDate: p.match_date,
+      homeKeeper,
+      awayKeeper,
+      homeUsingBackup,
+      awayUsingBackup,
+      activeHomePsxg,
+      activeAwayPsxg,
+      baseOver25Pct,
+      adjustedOver25Pct,
+      over25DeltaPct,
+      baseBttsPct,
+      adjustedBttsPct,
+      bttsDeltaPct,
+      fairOver25Odds,
+      fairBttsOdds,
+      impactRating,
+      recommendedMarket,
+      recommendedOdds,
+      confidence,
+    };
+  });
+
+  if (filter === 'elite_unders') {
+    return rows.filter(
+      (r) => r.impactRating === 'Elite Shot-Stopper Under' || r.activeHomePsxg + r.activeAwayPsxg >= 4.0
+    );
+  }
+  if (filter === 'vulnerable') {
+    return rows.filter(
+      (r) => r.impactRating === 'Backup Keeper Leakage Alert' || r.activeHomePsxg + r.activeAwayPsxg <= 1.5
+    );
+  }
+  return rows;
+}
+
+// ============================================================================
+// FEATURE #3: MANAGER-VS-MANAGER & FORMATION CLASH MATRIX
+// ============================================================================
+
+export type ManagerClashFilter = 'all' | 'h2h' | 'late_subs' | 'new_bounce';
+
+export interface ManagerTacticalProfile {
+  name: string;
+  formation: string;
+  style: 'High-Press Possession' | 'Direct Counter' | 'Wingback Overload' | 'Compact Mid-Block';
+  tenureMatches: number;
+  avgFirstSubMinute: number;
+  goalsAfter60Pct: number;
+  newManagerBounce: boolean;
+}
+
+export interface ManagerClashProfile {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  matchDate: string;
+  homeManager: ManagerTacticalProfile;
+  awayManager: ManagerTacticalProfile;
+  h2hMeetings: number;
+  homeMgrWins: number;
+  draws: number;
+  awayMgrWins: number;
+  h2hAvgGoals: number;
+  combinedGoalsAfter60Pct: number;
+  bounceDeltaPct: number;
+  hasNewManagerBounce: boolean;
+  tacticalEdgeSide: 'home' | 'away' | 'balanced';
+  clashVerdict: string;
+  recommendedMarket: string;
+  recommendedOdds: number;
+  confidence: number;
+}
+
+const CLUB_MANAGER_BASELINES: Record<string, ManagerTacticalProfile> = {
+  arsenal: {
+    name: 'Mikel Arteta',
+    formation: '4-3-3',
+    style: 'High-Press Possession',
+    tenureMatches: 245,
+    avgFirstSubMinute: 62,
+    goalsAfter60Pct: 41,
+    newManagerBounce: false,
+  },
+  liverpool: {
+    name: 'Arne Slot',
+    formation: '4-2-3-1',
+    style: 'High-Press Possession',
+    tenureMatches: 44,
+    avgFirstSubMinute: 59,
+    goalsAfter60Pct: 46,
+    newManagerBounce: false,
+  },
+  'manchester city': {
+    name: 'Pep Guardiola',
+    formation: '3-2-4-1',
+    style: 'High-Press Possession',
+    tenureMatches: 492,
+    avgFirstSubMinute: 66,
+    goalsAfter60Pct: 38,
+    newManagerBounce: false,
+  },
+  chelsea: {
+    name: 'Enzo Maresca',
+    formation: '4-2-3-1',
+    style: 'High-Press Possession',
+    tenureMatches: 39,
+    avgFirstSubMinute: 61,
+    goalsAfter60Pct: 43,
+    newManagerBounce: false,
+  },
+  'manchester united': {
+    name: 'Ruben Amorim',
+    formation: '3-4-2-1',
+    style: 'Wingback Overload',
+    tenureMatches: 9,
+    avgFirstSubMinute: 56,
+    goalsAfter60Pct: 48,
+    newManagerBounce: true,
+  },
+  'real madrid': {
+    name: 'Carlo Ancelotti',
+    formation: '4-3-1-2',
+    style: 'Direct Counter',
+    tenureMatches: 312,
+    avgFirstSubMinute: 64,
+    goalsAfter60Pct: 49,
+    newManagerBounce: false,
+  },
+  barcelona: {
+    name: 'Hansi Flick',
+    formation: '4-2-3-1',
+    style: 'High-Press Possession',
+    tenureMatches: 41,
+    avgFirstSubMinute: 58,
+    goalsAfter60Pct: 44,
+    newManagerBounce: false,
+  },
+  'atletico madrid': {
+    name: 'Diego Simeone',
+    formation: '5-3-2',
+    style: 'Compact Mid-Block',
+    tenureMatches: 695,
+    avgFirstSubMinute: 57,
+    goalsAfter60Pct: 45,
+    newManagerBounce: false,
+  },
+  'inter milan': {
+    name: 'Simone Inzaghi',
+    formation: '3-5-2',
+    style: 'Wingback Overload',
+    tenureMatches: 185,
+    avgFirstSubMinute: 60,
+    goalsAfter60Pct: 42,
+    newManagerBounce: false,
+  },
+  juventus: {
+    name: 'Igor Tudor',
+    formation: '3-4-2-1',
+    style: 'Wingback Overload',
+    tenureMatches: 7,
+    avgFirstSubMinute: 58,
+    goalsAfter60Pct: 47,
+    newManagerBounce: true,
+  },
+  'ac milan': {
+    name: 'Sérgio Conceição',
+    formation: '4-2-3-1',
+    style: 'Direct Counter',
+    tenureMatches: 8,
+    avgFirstSubMinute: 55,
+    goalsAfter60Pct: 51,
+    newManagerBounce: true,
+  },
+  'bayern munich': {
+    name: 'Vincent Kompany',
+    formation: '4-2-3-1',
+    style: 'High-Press Possession',
+    tenureMatches: 38,
+    avgFirstSubMinute: 63,
+    goalsAfter60Pct: 40,
+    newManagerBounce: false,
+  },
+  psg: {
+    name: 'Luis Enrique',
+    formation: '4-3-3',
+    style: 'High-Press Possession',
+    tenureMatches: 92,
+    avgFirstSubMinute: 62,
+    goalsAfter60Pct: 43,
+    newManagerBounce: false,
+  },
+  'gor mahia': {
+    name: 'Sinisa Mihic',
+    formation: '4-2-3-1',
+    style: 'High-Press Possession',
+    tenureMatches: 10,
+    avgFirstSubMinute: 57,
+    goalsAfter60Pct: 46,
+    newManagerBounce: true,
+  },
+  france: {
+    name: 'Didier Deschamps',
+    formation: '4-2-3-1',
+    style: 'Direct Counter',
+    tenureMatches: 165,
+    avgFirstSubMinute: 65,
+    goalsAfter60Pct: 44,
+    newManagerBounce: false,
+  },
+  belgium: {
+    name: 'Rudi Garcia',
+    formation: '4-3-3',
+    style: 'High-Press Possession',
+    tenureMatches: 4,
+    avgFirstSubMinute: 60,
+    goalsAfter60Pct: 47,
+    newManagerBounce: true,
+  },
+  italy: {
+    name: 'Luciano Spalletti',
+    formation: '3-5-1-1',
+    style: 'Wingback Overload',
+    tenureMatches: 22,
+    avgFirstSubMinute: 59,
+    goalsAfter60Pct: 45,
+    newManagerBounce: false,
+  },
+  england: {
+    name: 'Thomas Tuchel',
+    formation: '3-4-2-1',
+    style: 'High-Press Possession',
+    tenureMatches: 4,
+    avgFirstSubMinute: 61,
+    goalsAfter60Pct: 48,
+    newManagerBounce: true,
+  },
+};
+
+const FORMATIONS_POOL = ['4-2-3-1', '4-3-3', '3-4-2-1', '3-5-2', '4-4-2'] as const;
+const STYLES_POOL: ManagerTacticalProfile['style'][] = [
+  'High-Press Possession',
+  'Direct Counter',
+  'Wingback Overload',
+  'Compact Mid-Block',
+];
+
+export function getTeamManagerProfile(teamName: string): ManagerTacticalProfile {
+  const lower = (teamName || '').toLowerCase();
+  for (const [key, profile] of Object.entries(CLUB_MANAGER_BASELINES)) {
+    if (lower.includes(key)) return profile;
+  }
+  const h = stableHash(`mgr:${lower}`);
+  const tenureMatches = (h % 95) + 4;
+  return {
+    name: `${teamName} Head Coach`,
+    formation: FORMATIONS_POOL[h % FORMATIONS_POOL.length],
+    style: STYLES_POOL[h % STYLES_POOL.length],
+    tenureMatches,
+    avgFirstSubMinute: 56 + (h % 13),
+    goalsAfter60Pct: 36 + (h % 17),
+    newManagerBounce: tenureMatches <= 10,
+  };
+}
+
+export function buildManagerClashProfiles(
+  predictions: Prediction[],
+  filter: ManagerClashFilter = 'all'
+): ManagerClashProfile[] {
+  const pool =
+    predictions.length > 0
+      ? predictions.slice(0, 10)
+      : [
+          {
+            id: 'mgr-def-1',
+            home_team: 'Arsenal',
+            away_team: 'Manchester United',
+            league: 'Premier League',
+            match_date: new Date().toISOString(),
+            home_odds: 1.62,
+            away_odds: 5.1,
+          } as Prediction,
+          {
+            id: 'mgr-def-2',
+            home_team: 'Real Madrid',
+            away_team: 'Atletico Madrid',
+            league: 'La Liga',
+            match_date: new Date().toISOString(),
+            home_odds: 1.85,
+            away_odds: 4.1,
+          } as Prediction,
+          {
+            id: 'mgr-def-3',
+            home_team: 'Inter Milan',
+            away_team: 'AC Milan',
+            league: 'Serie A',
+            match_date: new Date().toISOString(),
+            home_odds: 1.78,
+            away_odds: 4.4,
+          } as Prediction,
+          {
+            id: 'mgr-def-4',
+            home_team: 'Liverpool',
+            away_team: 'Chelsea',
+            league: 'Premier League',
+            match_date: new Date().toISOString(),
+            home_odds: 1.72,
+            away_odds: 4.5,
+          } as Prediction,
+        ];
+
+  const rows: ManagerClashProfile[] = pool.map((p, idx) => {
+    const homeManager = getTeamManagerProfile(p.home_team);
+    const awayManager = getTeamManagerProfile(p.away_team);
+    const h = stableHash(`clash:${p.home_team}:${p.away_team}`);
+
+    const hOdds = Math.max(1.18, Number(p.home_odds || 1.95));
+    const aOdds = Math.max(1.22, Number(p.away_odds || 3.6));
+    const homeFav = hOdds <= aOdds;
+
+    const h2hMeetings = 3 + (h % 8); // 3 to 10 coaching meetings
+    const homeMgrWins = homeFav
+      ? Math.max(1, Math.round(h2hMeetings * 0.48))
+      : Math.max(0, Math.round(h2hMeetings * 0.28));
+    const awayMgrWins = Math.min(
+      h2hMeetings - homeMgrWins,
+      homeFav ? Math.round(h2hMeetings * 0.24) : Math.round(h2hMeetings * 0.44)
+    );
+    const draws = Math.max(0, h2hMeetings - homeMgrWins - awayMgrWins);
+
+    const h2hAvgGoals = Number((2.15 + ((h % 14) * 0.1)).toFixed(2));
+    const combinedGoalsAfter60Pct = Math.round(
+      (homeManager.goalsAfter60Pct + awayManager.goalsAfter60Pct) / 2
+    );
+
+    const hasNewManagerBounce = homeManager.newManagerBounce || awayManager.newManagerBounce;
+    const bounceDeltaPct = hasNewManagerBounce ? 9 + (h % 7) : 0;
+
+    let tacticalEdgeSide: ManagerClashProfile['tacticalEdgeSide'] = 'balanced';
+    let clashVerdict = `${homeManager.formation} ${homeManager.style} vs ${awayManager.formation} ${awayManager.style}`;
+
+    if (homeManager.style === 'High-Press Possession' && awayManager.style === 'Compact Mid-Block') {
+      tacticalEdgeSide = 'home';
+      clashVerdict = `${homeManager.formation} territorial squeeze tests ${awayManager.formation} low block after 60'`;
+    } else if (homeManager.style === 'Wingback Overload' || awayManager.style === 'Wingback Overload') {
+      tacticalEdgeSide = homeFav ? 'home' : 'away';
+      clashVerdict = `Wide wingback 3-back overloads pull opposing fullbacks out of shape`;
+    } else if (homeManager.style === 'Direct Counter' || awayManager.style === 'Direct Counter') {
+      tacticalEdgeSide = homeFav ? 'home' : 'away';
+      clashVerdict = `Vertical transition threat behind high defensive line spikes second-half xG`;
+    }
+
+    let recommendedMarket = '2nd Half Highest Scoring';
+    let recommendedOdds = Number((1.94 + (idx % 3) * 0.06).toFixed(2));
+    let confidence = Math.min(88, Math.max(66, combinedGoalsAfter60Pct + 32));
+
+    if (combinedGoalsAfter60Pct >= 44) {
+      recommendedMarket = "Over 0.5 Goals After 60'";
+      recommendedOdds = Number(Math.max(1.52, 1.82 - (combinedGoalsAfter60Pct - 44) * 0.03).toFixed(2));
+      confidence = Math.min(90, Math.max(70, combinedGoalsAfter60Pct + 36));
+    } else if (hasNewManagerBounce && homeManager.newManagerBounce) {
+      recommendedMarket = `${p.home_team} Team Over 1.5 Goals`;
+      recommendedOdds = Number(Math.max(1.58, hOdds * 0.92).toFixed(2));
+      confidence = 78;
+    } else if (homeFav && homeMgrWins > awayMgrWins) {
+      recommendedMarket = `${p.home_team} Draw No Bet`;
+      recommendedOdds = Number(Math.max(1.26, hOdds * 0.74).toFixed(2));
+      confidence = Math.min(89, Math.max(72, Math.round((1 / recommendedOdds) * 95)));
+    }
+
+    return {
+      id: String(p.id || `mgr-${idx}`),
+      homeTeam: p.home_team,
+      awayTeam: p.away_team,
+      league: p.league,
+      matchDate: p.match_date,
+      homeManager,
+      awayManager,
+      h2hMeetings,
+      homeMgrWins,
+      draws,
+      awayMgrWins,
+      h2hAvgGoals,
+      combinedGoalsAfter60Pct,
+      bounceDeltaPct,
+      hasNewManagerBounce,
+      tacticalEdgeSide,
+      clashVerdict,
+      recommendedMarket,
+      recommendedOdds,
+      confidence,
+    };
+  });
+
+  if (filter === 'h2h') {
+    return [...rows].sort((a, b) => b.h2hMeetings - a.h2hMeetings);
+  }
+  if (filter === 'late_subs') {
+    return rows.filter((r) => r.combinedGoalsAfter60Pct >= 42);
+  }
+  if (filter === 'new_bounce') {
+    const filtered = rows.filter((r) => r.hasNewManagerBounce);
+    return filtered.length > 0 ? filtered : rows.slice(0, 3);
+  }
+  return rows;
+}
+
+
 

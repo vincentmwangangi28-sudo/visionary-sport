@@ -37,6 +37,8 @@ import {
   Flame,
   LineChart,
   Trash2,
+  Shield,
+  LayoutGrid,
 } from 'lucide-react';
 import {
   computeDeservedPointsRegression,
@@ -47,24 +49,30 @@ import {
   runStrategyBacktest,
   buildExchangeSteamFeed,
   auditBetSlipLegs,
+  buildGoalkeeperPsxgProfiles,
+  buildManagerClashProfiles,
   type PropMarketType,
   type BacktestOddsBand,
   type BacktestMarketType,
+  type GoalkeeperLabFilter,
+  type ManagerClashFilter,
 } from '@/services/topSiteIntelEngine';
 
 export type ApiSuiteTab =
   | 'leaders'
+  | 'prop_logs'
+  | 'xg_step'
+  | 'gk_psxg'
+  | 'manager_clash'
+  | 'no_vig'
+  | 'backtester'
+  | 'congestion'
+  | 'steam_liquidity'
+  | 'slip_auditor'
+  | 'pressure_radar'
   | 'markets'
   | 'injuries'
   | 'momentum'
-  | 'xg_step'
-  | 'prop_logs'
-  | 'congestion'
-  | 'pressure_radar'
-  | 'no_vig'
-  | 'backtester'
-  | 'steam_liquidity'
-  | 'slip_auditor'
   | 'referees'
   | 'clubs'
   | 'brackets'
@@ -500,6 +508,13 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
   const [btMinEdge, setBtMinEdge] = useState<number>(4);
   // #6: Exchange Liquidity & Steam tick
   const [steamTick, setSteamTick] = useState<number>(0);
+  // Goalkeeper PSxG & Backup-Keeper Lab state
+  const [gkFilter, setGkFilter] = useState<GoalkeeperLabFilter>('all');
+  const [gkBackupOverrides, setGkBackupOverrides] = useState<
+    Record<string, { home?: boolean; away?: boolean }>
+  >({});
+  // Manager-vs-Manager & Formation Clash Matrix state
+  const [managerFilter, setManagerFilter] = useState<ManagerClashFilter>('all');
 
   const { data: predictionsData } = usePredictions(1);
   const { selections, addSelection, removeSelection, stake } = useBetSlip();
@@ -896,6 +911,34 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     [auditTargetLegs, stake]
   );
 
+  const gkPsxgProfiles = useMemo(
+    () =>
+      buildGoalkeeperPsxgProfiles(upcomingMatches, {
+        filter: gkFilter,
+        backupOverrides: gkBackupOverrides,
+      }),
+    [upcomingMatches, gkFilter, gkBackupOverrides]
+  );
+
+  const managerClashProfiles = useMemo(
+    () => buildManagerClashProfiles(upcomingMatches, managerFilter),
+    [upcomingMatches, managerFilter]
+  );
+
+  const toggleKeeperBackup = (fixtureId: string, side: 'home' | 'away') => {
+    hapticService.selection();
+    setGkBackupOverrides((prev) => {
+      const current = prev[fixtureId] ?? {};
+      return {
+        ...prev,
+        [fixtureId]: {
+          ...current,
+          [side]: !current[side],
+        },
+      };
+    });
+  };
+
   const triggerSurgeAudioPing = () => {
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -925,6 +968,8 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     { id: 'leaders', label: 'Scorers & Player Props', icon: Trophy },
     { id: 'prop_logs', label: 'Prop Hit-Rate Logs (L5/L10)', icon: BarChart2 },
     { id: 'xg_step', label: "0'–90' xG Step & Regression", icon: TrendingUp },
+    { id: 'gk_psxg', label: 'GK PSxG & Backup Lab', icon: Shield },
+    { id: 'manager_clash', label: 'Manager & Formation Matrix', icon: LayoutGrid },
     { id: 'no_vig', label: 'No-Vig True Odds Scanner', icon: Scale },
     { id: 'backtester', label: 'Strategy Backtester', icon: LineChart },
     { id: 'congestion', label: 'Elo, Fatigue & Travel Risk', icon: Compass },
@@ -2986,6 +3031,309 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               <span className="font-mono tabular-nums text-muted-foreground">
                 Combined @{slipAuditSummary.currentCombinedOdds.toFixed(2)}x → Optimized @{slipAuditSummary.optimizedCombinedOdds.toFixed(2)}x
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* 17. GOALKEEPER PSxG & BACKUP-KEEPER IMPACT LAB (#1) */}
+        {activeTab === 'gk_psxg' && (
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Goalkeeper PSxG Shot-Stopping &amp; Backup-Keeper Impact Lab
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Compares Post-Shot Expected Goals prevented (PSxG − GA) and save percentages. Toggle any starter to #2 Backup GK to recalculate BTTS and Over 2.5 fair odds immediately.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg" role="group" aria-label="Goalkeeper lab filter">
+                  {(
+                    [
+                      { id: 'all', label: 'All Keepers' },
+                      { id: 'elite_unders', label: 'Elite PSxG+ Unders' },
+                      { id: 'vulnerable', label: 'Leakage / Backups' },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setGkFilter(opt.id)}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-md whitespace-nowrap shrink-0 cursor-pointer ${
+                        gkFilter === opt.id
+                          ? 'bg-card text-foreground shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {Object.keys(gkBackupOverrides).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setGkBackupOverrides({})}
+                    className="px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground whitespace-nowrap shrink-0 cursor-pointer"
+                  >
+                    Reset to Starters
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-2.5 px-3">Fixture &amp; Impact Verdict</th>
+                    <th className="py-2.5 px-3">Home GK (Toggle #2)</th>
+                    <th className="py-2.5 px-3">Away GK (Toggle #2)</th>
+                    <th className="py-2.5 px-3 text-right">Over 2.5 Shift</th>
+                    <th className="py-2.5 px-3 text-right">BTTS Shift</th>
+                    <th className="py-2.5 px-3 text-right">Fair Prices</th>
+                    <th className="py-2.5 px-3 text-right">Model Play</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border font-mono tabular-nums">
+                  {gkPsxgProfiles.map((row) => (
+                    <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2.5 px-3 font-sans">
+                        <div className="font-bold text-foreground">
+                          {row.homeTeam} vs {row.awayTeam}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {row.league} · {row.impactRating}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 font-sans">
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <div className="font-semibold text-foreground">
+                              {row.homeUsingBackup ? row.homeKeeper.backupName : row.homeKeeper.starterName}
+                            </div>
+                            <div className="text-[11px] font-mono text-muted-foreground">
+                              PSxG {row.activeHomePsxg >= 0 ? '+' : ''}
+                              {row.activeHomePsxg.toFixed(1)} · Save{' '}
+                              {(row.homeUsingBackup
+                                ? row.homeKeeper.backupSavePct
+                                : row.homeKeeper.starterSavePct
+                              ).toFixed(1)}
+                              %
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleKeeperBackup(row.id, 'home')}
+                            aria-pressed={row.homeUsingBackup}
+                            className={`px-2 py-1 rounded border text-[11px] font-mono font-bold whitespace-nowrap shrink-0 cursor-pointer transition-colors ${
+                              row.homeUsingBackup
+                                ? 'bg-amber-600 text-white border-amber-600'
+                                : 'bg-background hover:bg-muted border-border text-foreground'
+                            }`}
+                          >
+                            {row.homeUsingBackup ? '#2 Active' : 'Sim #2'}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 font-sans">
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <div className="font-semibold text-foreground">
+                              {row.awayUsingBackup ? row.awayKeeper.backupName : row.awayKeeper.starterName}
+                            </div>
+                            <div className="text-[11px] font-mono text-muted-foreground">
+                              PSxG {row.activeAwayPsxg >= 0 ? '+' : ''}
+                              {row.activeAwayPsxg.toFixed(1)} · Save{' '}
+                              {(row.awayUsingBackup
+                                ? row.awayKeeper.backupSavePct
+                                : row.awayKeeper.starterSavePct
+                              ).toFixed(1)}
+                              %
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleKeeperBackup(row.id, 'away')}
+                            aria-pressed={row.awayUsingBackup}
+                            className={`px-2 py-1 rounded border text-[11px] font-mono font-bold whitespace-nowrap shrink-0 cursor-pointer transition-colors ${
+                              row.awayUsingBackup
+                                ? 'bg-amber-600 text-white border-amber-600'
+                                : 'bg-background hover:bg-muted border-border text-foreground'
+                            }`}
+                          >
+                            {row.awayUsingBackup ? '#2 Active' : 'Sim #2'}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="font-bold text-foreground">{row.adjustedOver25Pct}%</div>
+                        <div
+                          className={`text-[11px] ${
+                            row.over25DeltaPct > 0
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : row.over25DeltaPct < 0
+                              ? 'text-amber-700 dark:text-amber-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          {row.over25DeltaPct >= 0 ? '+' : ''}
+                          {row.over25DeltaPct}% vs base
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="font-bold text-foreground">{row.adjustedBttsPct}%</div>
+                        <div
+                          className={`text-[11px] ${
+                            row.bttsDeltaPct > 0
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : row.bttsDeltaPct < 0
+                              ? 'text-amber-700 dark:text-amber-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          {row.bttsDeltaPct >= 0 ? '+' : ''}
+                          {row.bttsDeltaPct}% vs base
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-muted-foreground">
+                        <div>O2.5 @{row.fairOver25Odds.toFixed(2)}</div>
+                        <div>BTTS @{row.fairBttsOdds.toFixed(2)}</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-sans">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAddSlipSelection(
+                              row.id,
+                              row.homeTeam,
+                              row.awayTeam,
+                              row.league,
+                              row.recommendedMarket,
+                              row.recommendedOdds,
+                              row.confidence
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted text-xs font-bold text-foreground whitespace-nowrap shrink-0 cursor-pointer"
+                        >
+                          <span>{row.recommendedMarket}</span>
+                          <span className="font-mono text-primary">@{row.recommendedOdds.toFixed(2)} +</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 18. MANAGER-VS-MANAGER & FORMATION CLASH MATRIX (#3) */}
+        {activeTab === 'manager_clash' && (
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Manager-vs-Manager &amp; Tactical Formation Clash Matrix
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Pairs coaching head-to-head records, preferred tactical shapes, new-manager bounce deltas, and 60&apos;+ substitution impact scoring windows.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg overflow-x-auto no-scrollbar" role="group" aria-label="Manager matrix filter">
+                {(
+                  [
+                    { id: 'all', label: 'All Matchups' },
+                    { id: 'h2h', label: 'Coaching H2H' },
+                    { id: 'late_subs', label: "60'+ Sub Impact" },
+                    { id: 'new_bounce', label: 'New Manager Bounce' },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setManagerFilter(opt.id)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md whitespace-nowrap shrink-0 cursor-pointer ${
+                      managerFilter === opt.id
+                        ? 'bg-card text-foreground shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {managerClashProfiles.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 rounded-xl border border-border bg-background flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="truncate">
+                        {item.league}
+                        {item.hasNewManagerBounce ? ` · New Manager Bounce +${item.bounceDeltaPct}%` : ''}
+                      </span>
+                      <span className="font-mono tabular-nums font-semibold text-foreground shrink-0">
+                        H2H {item.homeMgrWins}W–{item.draws}D–{item.awayMgrWins}L · {item.h2hAvgGoals.toFixed(2)} G/M
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-foreground truncate">{item.homeTeam}</div>
+                        <div className="text-xs text-primary font-semibold truncate">{item.homeManager.name}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                          {item.homeManager.formation} · 1st Sub {item.homeManager.avgFirstSubMinute}&apos;
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">{item.homeManager.style}</div>
+                      </div>
+                      <div className="space-y-0.5 text-right">
+                        <div className="text-xs font-bold text-foreground truncate">{item.awayTeam}</div>
+                        <div className="text-xs text-primary font-semibold truncate">{item.awayManager.name}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                          {item.awayManager.formation} · 1st Sub {item.awayManager.avgFirstSubMinute}&apos;
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">{item.awayManager.style}</div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-border text-xs text-muted-foreground">
+                      {item.clashVerdict}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="text-[11px] font-mono tabular-nums text-muted-foreground">
+                      60&apos;+ Sub Goal Share: <strong className="text-foreground">{item.combinedGoalsAfter60Pct}%</strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddSlipSelection(
+                          item.id,
+                          item.homeTeam,
+                          item.awayTeam,
+                          item.league,
+                          item.recommendedMarket,
+                          item.recommendedOdds,
+                          item.confidence
+                        )
+                      }
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-bold text-foreground whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      <span>{item.recommendedMarket}</span>
+                      <span className="font-mono text-primary">@{item.recommendedOdds.toFixed(2)} +</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

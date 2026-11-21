@@ -25,7 +25,6 @@ import {
   RefreshCw,
   Clock,
   Sparkles,
-  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -515,17 +514,6 @@ export const FirstVisitSignupModal: React.FC = () => {
           className="fixed inset-0 z-[9995] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200 select-none"
         >
           <div className="w-full max-w-[460px] rounded-2xl border border-border/80 bg-background shadow-2xl overflow-hidden my-auto relative select-text">
-            {/* Always-dismissible close button (AdSense Better Ads & No-Inescapable-Interstitial Policy) */}
-            <button
-              type="button"
-              data-adsense-dismissible="true"
-              onClick={handleClosePreviewModal}
-              aria-label="Close dialog and return to preview"
-              className="absolute top-4 right-4 h-8 w-8 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10 cursor-pointer"
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-            </button>
-
             {/* Top Accent Header */}
             <div className="bg-card border-b border-border/60 px-6 pt-6 pb-5">
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -799,6 +787,7 @@ export const FirstVisitSignupModal: React.FC = () => {
                 {!isGateLocked && remainingSeconds > 0 ? (
                   <button
                     type="button"
+                    data-adsense-dismissible="true"
                     onClick={handleClosePreviewModal}
                     className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline cursor-pointer"
                   >

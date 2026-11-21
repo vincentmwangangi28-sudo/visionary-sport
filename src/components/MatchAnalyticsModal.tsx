@@ -20,6 +20,8 @@ import { MatchProAnalyticsWidget } from '@/components/MatchProAnalyticsWidget';
 import {
   buildFixtureCongestionProfiles,
   buildXgStepTimeline,
+  buildGoalkeeperPsxgProfiles,
+  buildManagerClashProfiles,
 } from '@/services/topSiteIntelEngine';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
 import { toast } from 'sonner';
@@ -80,6 +82,8 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
   }, [p, baseHome, baseDraw, baseAway]);
 
   const congestionInsight = useMemo(() => buildFixtureCongestionProfiles([p])[0], [p]);
+  const gkPsxgInsight = useMemo(() => buildGoalkeeperPsxgProfiles([p])[0], [p]);
+  const managerClashInsight = useMemo(() => buildManagerClashProfiles([p])[0], [p]);
   const xgTrajectory = useMemo(
     () =>
       buildXgStepTimeline(
@@ -449,6 +453,54 @@ export const MatchAnalyticsModal: React.FC<Props> = ({ prediction: p, open, onCl
                       </span>
                       <span className="font-bold text-primary">
                         @{congestionInsight.recommendedOdds.toFixed(2)} +
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Goalkeeper PSxG & Manager Formation Clash Strip */}
+              {gkPsxgInsight && managerClashInsight && (
+                <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="font-bold text-foreground">
+                      Goalkeeper PSxG &amp; Manager Tactical Clash
+                    </span>
+                    <span className="font-mono tabular-nums text-muted-foreground">
+                      H2H {managerClashInsight.homeMgrWins}W–{managerClashInsight.draws}D–{managerClashInsight.awayMgrWins}L · 60&apos;+ Subs {managerClashInsight.combinedGoalsAfter60Pct}%
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono tabular-nums">
+                    <div className="p-2.5 rounded-lg border border-border bg-card font-sans">
+                      <span className="text-[10px] text-muted-foreground block">Starting GKs (PSxG − GA)</span>
+                      <div className="font-bold text-foreground truncate">
+                        {gkPsxgInsight.homeKeeper.starterName} ({gkPsxgInsight.activeHomePsxg >= 0 ? '+' : ''}{gkPsxgInsight.activeHomePsxg.toFixed(1)})
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        vs {gkPsxgInsight.awayKeeper.starterName} ({gkPsxgInsight.activeAwayPsxg >= 0 ? '+' : ''}{gkPsxgInsight.activeAwayPsxg.toFixed(1)})
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg border border-border bg-card font-sans">
+                      <span className="text-[10px] text-muted-foreground block">Managers &amp; Shapes</span>
+                      <div className="font-bold text-foreground truncate">
+                        {managerClashInsight.homeManager.name} ({managerClashInsight.homeManager.formation})
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        vs {managerClashInsight.awayManager.name} ({managerClashInsight.awayManager.formation})
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleQuickAddMainTip(gkPsxgInsight.recommendedMarket, gkPsxgInsight.recommendedOdds)
+                      }
+                      className="p-2.5 rounded-lg border border-border bg-card hover:bg-muted text-left transition-colors cursor-pointer"
+                    >
+                      <span className="font-sans text-[10px] text-muted-foreground block truncate">
+                        GK-Adjusted Edge ({gkPsxgInsight.adjustedOver25Pct}% O2.5)
+                      </span>
+                      <span className="font-bold text-primary">
+                        {gkPsxgInsight.recommendedMarket} @{gkPsxgInsight.recommendedOdds.toFixed(2)} +
                       </span>
                     </button>
                   </div>
