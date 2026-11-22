@@ -1,5 +1,6 @@
 import { Prediction } from '@/types/prediction';
 import { registerRuntimeTeamLogo } from '@/services/teamLogos';
+import { calculateMatchXG } from '@/utils/predictiveEngine';
 import type { RawDirectJackpotMatch, DirectJackpotResponse } from '@/server/jackpotDirectHandler';
 
 export type JackpotProviderId =
@@ -10,6 +11,43 @@ export type JackpotProviderId =
   | 'mozzart';
 
 export type JackpotPickOption = '1' | 'X' | '2' | '1X' | 'X2' | '12';
+export type JackpotExtendedPick = JackpotPickOption | '1X2';
+
+export interface JackpotTierProbability {
+  hits: number;
+  label: string;
+  probAtLeastPct: number;
+}
+
+export interface JackpotSurvivalProfile {
+  totalGames: number;
+  singleCount: number;
+  doubleCount: number;
+  tripleCount: number;
+  totalCombinations: number;
+  totalStake: number;
+  expectedCorrect: number;
+  jackpotFullProbabilityPct: number;
+  minBonusTarget: number;
+  bonusZoneProbabilityPct: number;
+  tierProbabilities: JackpotTierProbability[];
+}
+
+export interface JackpotBudgetOptimizationResult {
+  picks: Record<string, JackpotExtendedPick>;
+  survivalProfile: JackpotSurvivalProfile;
+  hedgedFixtureIds: string[];
+  tripleFixtureIds: string[];
+  budgetUsed: number;
+  maxBudgetKes: number;
+}
+
+export interface GeneratedJackpotLine {
+  lineNo: number;
+  code: string;
+  picks: Array<'1' | 'X' | '2'>;
+  compactString: string;
+}
 
 export interface JackpotGame {
   id: number;
@@ -280,9 +318,16 @@ export function rawMatchToJackpotGame(raw: RawDirectJackpotMatch): JackpotGame {
   const isBanker = maxProb >= 42 || Math.min(homeOdds, awayOdds) <= 2.20;
   const isValueDraw = Math.abs(homeOdds - awayOdds) <= 0.32 || drawProb >= 31;
 
-  // Expected Goals (xG) derived from official odds implied scoring rates
-  const homeXG = Number(Math.max(0.65, Math.min(2.45, (homeProb / 100) * 2.75 + 0.32)).toFixed(2));
-  const awayXG = Number(Math.max(0.55, Math.min(2.35, (awayProb / 100) * 2.65 + 0.28)).toFixed(2));
+  // Bivariate Poisson Expected Goals (xG) calibrated with Dixon-Coles tau factor
+  const xgModel = calculateMatchXG(
+    raw.homeTeam,
+    raw.awayTeam,
+    homeOdds,
+    awayOdds,
+    raw.kickoffIso.slice(0, 10)
+  );
+  const homeXG = xgModel.homeXG;
+  const awayXG = xgModel.awayXG;
 
   let hGoals = Math.round(homeXG);
   let aGoals = Math.round(awayXG);
@@ -433,7 +478,7 @@ export function buildUpcomingJackpotPoolFromEspn(
  * Safe on both full-stack servers and static CDN hosts (Render Static Sites).
  */
 export async function fetchLiveJackpotPools(
-  _unusedPredictions: Prediction[] = [],
+  fallbackPredictions: Prediction[] = [],
   forceCronTrigger = false
 ): Promise<{
   pools: Record<JackpotProviderId, JackpotGame[]>;
@@ -444,6 +489,7 @@ export async function fetchLiveJackpotPools(
 }> {
   const pools = getInitialOfficialJackpotPools();
   let prizes: DirectJackpotResponse['prizes'] = {};
+  let apiSucceeded = false;
 
   try {
     if (forceCronTrigger) {
@@ -462,12 +508,14 @@ export async function fetchLiveJackpotPools(
     const contentType = (res.headers.get('content-type') || '').toLowerCase();
     if (res.ok && contentType.includes('application/json')) {
       const data = (await res.json()) as DirectJackpotResponse;
+      apiSucceeded = true;
       if (data?.prizes) {
         prizes = data.prizes;
         if (prizes.sportpesaMega) JACKPOT_PROVIDERS.sportpesa.prizePool = prizes.sportpesaMega;
         if (prizes.betikaMidweek) JACKPOT_PROVIDERS.betika.prizePool = prizes.betikaMidweek;
         if (prizes.betikaGrand) JACKPOT_PROVIDERS.betika_grand.prizePool = prizes.betikaGrand;
         if (prizes.sportpesaMidweek) JACKPOT_PROVIDERS.sportpesa_midweek.prizePool = prizes.sportpesaMidweek;
+        if (prizes.mozzartGrand) JACKPOT_PROVIDERS.mozzart.prizePool = prizes.mozzartGrand;
       }
 
       if (Array.isArray(data?.pools?.sportpesa) && data.pools.sportpesa.length >= 13) {
@@ -487,7 +535,15 @@ export async function fetchLiveJackpotPools(
       }
     }
   } catch {
-    // Fallback to verified official bookmaker pools already populated in `pools`
+    // Fallback below
+  }
+
+  if (!apiSucceeded && fallbackPredictions.length >= 13) {
+    (Object.keys(pools) as JackpotProviderId[]).forEach((pid) => {
+      if (pools[pid].every((g) => g.matchStatus === 'finished')) {
+        pools[pid] = buildUpcomingJackpotPoolFromEspn(pid, fallbackPredictions);
+      }
+    });
   }
 
   const totalRealFixtures =
@@ -505,3 +561,288 @@ export async function fetchLiveJackpotPools(
     sourcesUsed: ['SPORTPESA DIRECT API', 'BETIKA DIRECT API', 'MOZZART OFFICIAL'],
   };
 }
+
+// ============================================================================
+// POISSON-BINOMIAL SURVIVAL ENGINE & BUDGET-CONSTRAINED EV OPTIMIZER
+// ============================================================================
+
+export function getPickOutcomes(pick: JackpotExtendedPick): Array<'1' | 'X' | '2'> {
+  if (pick === '1X2') return ['1', 'X', '2'];
+  if (pick === '1X') return ['1', 'X'];
+  if (pick === 'X2') return ['X', '2'];
+  if (pick === '12') return ['1', '2'];
+  if (pick === 'X') return ['X'];
+  if (pick === '2') return ['2'];
+  return ['1'];
+}
+
+export function getPickCoverProbability(game: JackpotGame, pick: JackpotExtendedPick): number {
+  const outcomes = getPickOutcomes(pick);
+  if (outcomes.length === 3) return 1;
+  const h = Math.max(0.01, game.homeProb / 100);
+  const d = Math.max(0.01, game.drawProb / 100);
+  const a = Math.max(0.01, game.awayProb / 100);
+  const sum = h + d + a || 1;
+  let total = 0;
+  if (outcomes.includes('1')) total += h / sum;
+  if (outcomes.includes('X')) total += d / sum;
+  if (outcomes.includes('2')) total += a / sum;
+  return Math.min(1, Math.max(0.01, total));
+}
+
+export function getBestDoubleChanceForGame(game: JackpotGame): {
+  pick: '1X' | 'X2' | '12';
+  prob: number;
+  bestSingle: '1' | 'X' | '2';
+  singleProb: number;
+} {
+  const pairs: Array<{ pick: '1X' | 'X2' | '12'; prob: number }> = [
+    { pick: '1X', prob: getPickCoverProbability(game, '1X') },
+    { pick: 'X2', prob: getPickCoverProbability(game, 'X2') },
+    { pick: '12', prob: getPickCoverProbability(game, '12') },
+  ];
+  pairs.sort((a, b) => b.prob - a.prob);
+
+  const singles: Array<{ pick: '1' | 'X' | '2'; prob: number }> = [
+    { pick: '1', prob: getPickCoverProbability(game, '1') },
+    { pick: 'X', prob: getPickCoverProbability(game, 'X') },
+    { pick: '2', prob: getPickCoverProbability(game, '2') },
+  ];
+  singles.sort((a, b) => b.prob - a.prob);
+
+  return {
+    pick: pairs[0].pick,
+    prob: pairs[0].prob,
+    bestSingle: singles[0].pick,
+    singleProb: singles[0].prob,
+  };
+}
+
+export function getMinBonusThreshold(provider: JackpotProviderId, totalGames: number): number {
+  if (provider === 'sportpesa_midweek' || totalGames <= 13) return Math.max(1, totalGames - 3);
+  if (provider === 'mozzart' || totalGames >= 19) return Math.max(1, totalGames - 6);
+  if (provider === 'betika' || provider === 'betika_grand' || totalGames === 15) return 12;
+  return 12; // SportPesa Mega 17 Pro bonuses start at 12/17 (or Pro 13)
+}
+
+/**
+ * Computes exact Poisson-Binomial hit distribution via O(N^2) dynamic programming.
+ */
+export function computeJackpotSurvivalProfile(
+  provider: JackpotProviderId,
+  games: JackpotGame[],
+  picksMap: Record<string, JackpotExtendedPick>
+): JackpotSurvivalProfile {
+  const n = games.length;
+  const baseStake = JACKPOT_PROVIDERS[provider]?.baseStake || 99;
+
+  if (n === 0) {
+    return {
+      totalGames: 0,
+      singleCount: 0,
+      doubleCount: 0,
+      tripleCount: 0,
+      totalCombinations: 1,
+      totalStake: baseStake,
+      expectedCorrect: 0,
+      jackpotFullProbabilityPct: 0,
+      minBonusTarget: 12,
+      bonusZoneProbabilityPct: 0,
+      tierProbabilities: [],
+    };
+  }
+
+  let dp = new Array<number>(n + 1).fill(0);
+  dp[0] = 1;
+
+  let singleCount = 0;
+  let doubleCount = 0;
+  let tripleCount = 0;
+  let totalCombinations = 1;
+  let expectedCorrect = 0;
+  let jackpotFullProb = 1;
+
+  for (const g of games) {
+    const pick = picksMap[g.fixtureId] || g.recommendedPick;
+    const cardinality = getPickOutcomes(pick).length;
+    if (cardinality === 3) tripleCount++;
+    else if (cardinality === 2) doubleCount++;
+    else singleCount++;
+
+    totalCombinations *= cardinality;
+    const p = getPickCoverProbability(g, pick);
+    expectedCorrect += p;
+    jackpotFullProb *= p;
+
+    const next = new Array<number>(n + 1).fill(0);
+    for (let k = 0; k <= n; k++) {
+      if (dp[k] === 0) continue;
+      next[k] += dp[k] * (1 - p);
+      if (k + 1 <= n) {
+        next[k + 1] += dp[k] * p;
+      }
+    }
+    dp = next;
+  }
+
+  const minBonusTarget = getMinBonusThreshold(provider, n);
+  const tierProbabilities: JackpotTierProbability[] = [];
+  for (let t = minBonusTarget; t <= n; t++) {
+    let tail = 0;
+    for (let k = t; k <= n; k++) tail += dp[k];
+    tierProbabilities.push({
+      hits: t,
+      label: t === n ? `${t}/${n} Jackpot` : `${t}+/${n} Bonus`,
+      probAtLeastPct: Number((Math.min(1, Math.max(0, tail)) * 100).toFixed(2)),
+    });
+  }
+
+  const bonusZoneProb = tierProbabilities[0]?.probAtLeastPct ?? 0;
+
+  return {
+    totalGames: n,
+    singleCount,
+    doubleCount,
+    tripleCount,
+    totalCombinations,
+    totalStake: totalCombinations * baseStake,
+    expectedCorrect: Number(expectedCorrect.toFixed(2)),
+    jackpotFullProbabilityPct: Number((jackpotFullProb * 100).toFixed(4)),
+    minBonusTarget,
+    bonusZoneProbabilityPct: bonusZoneProb,
+    tierProbabilities,
+  };
+}
+
+/**
+ * Optimizes Double Chance (and optional Triple Chance) allocations under a KES budget
+ * by ranking fixtures by highest marginal log-survival gain per doubling step: log((p1+p2)/p1).
+ */
+export function optimizeJackpotPicksForBudget(
+  provider: JackpotProviderId,
+  games: JackpotGame[],
+  maxBudgetKes: number,
+  allowTriples = false
+): JackpotBudgetOptimizationResult {
+  const baseStake = JACKPOT_PROVIDERS[provider]?.baseStake || 99;
+  const maxLines = Math.max(1, Math.floor(maxBudgetKes / baseStake));
+
+  const picks: Record<string, JackpotExtendedPick> = {};
+  const candidates = games.map((g) => {
+    const best = getBestDoubleChanceForGame(g);
+    picks[g.fixtureId] = g.recommendedPick || best.bestSingle;
+    const baseSingleProb = getPickCoverProbability(g, picks[g.fixtureId]);
+    const doubleGain = Math.log(Math.max(1.0001, best.prob / baseSingleProb));
+    const tripleGain = Math.log(Math.max(1.0001, 1 / best.prob));
+    return {
+      game: g,
+      bestDouble: best.pick,
+      doubleGain,
+      tripleGain,
+    };
+  });
+
+  // Sort strictly descending by marginal log-survival gain of adding a Double Chance
+  const rankedDoubles = [...candidates].sort((a, b) => b.doubleGain - a.doubleGain);
+
+  let currentLines = 1;
+  const hedgedFixtureIds: string[] = [];
+  const tripleFixtureIds: string[] = [];
+
+  for (const c of rankedDoubles) {
+    if (currentLines * 2 <= maxLines) {
+      picks[c.game.fixtureId] = c.bestDouble;
+      hedgedFixtureIds.push(c.game.fixtureId);
+      currentLines *= 2;
+    }
+  }
+
+  // Optionally upgrade highest remaining uncertainty Double Chances into 3-way Triples (3/2x cost multiplier)
+  if (allowTriples && hedgedFixtureIds.length > 0) {
+    const hedgedSet = new Set(hedgedFixtureIds);
+    const rankedTriples = [...candidates]
+      .filter((c) => hedgedSet.has(c.game.fixtureId))
+      .sort((a, b) => b.tripleGain - a.tripleGain);
+
+    for (const c of rankedTriples) {
+      const upgradedLines = Math.round((currentLines / 2) * 3);
+      if (upgradedLines <= maxLines) {
+        picks[c.game.fixtureId] = '1X2';
+        tripleFixtureIds.push(c.game.fixtureId);
+        currentLines = upgradedLines;
+      }
+    }
+  }
+
+  const survivalProfile = computeJackpotSurvivalProfile(provider, games, picks);
+
+  return {
+    picks,
+    survivalProfile,
+    hedgedFixtureIds,
+    tripleFixtureIds,
+    budgetUsed: survivalProfile.totalStake,
+    maxBudgetKes,
+  };
+}
+
+/**
+ * Generates individual playable single-line 1X2 combinations from the active matrix.
+ */
+export function generatePlayableSingleLines(
+  games: JackpotGame[],
+  picksMap: Record<string, JackpotExtendedPick>,
+  bookingPrefix: string,
+  maxLines = 128
+): { lines: GeneratedJackpotLine[]; totalPossible: number; truncated: boolean } {
+  let totalPossible = 1;
+  for (const g of games) {
+    totalPossible *= getPickOutcomes(picksMap[g.fixtureId] || g.recommendedPick).length;
+  }
+
+  let combinations: Array<Array<'1' | 'X' | '2'>> = [[]];
+  for (const g of games) {
+    const options = getPickOutcomes(picksMap[g.fixtureId] || g.recommendedPick);
+    const next: Array<Array<'1' | 'X' | '2'>> = [];
+    for (const combo of combinations) {
+      for (const opt of options) {
+        next.push([...combo, opt]);
+        if (next.length >= maxLines) break;
+      }
+      if (next.length >= maxLines) break;
+    }
+    combinations = next;
+  }
+
+  const lines: GeneratedJackpotLine[] = combinations.map((line, index) => {
+    const codeSuffix = ((index + 1) * 7919 + games.length * 131)
+      .toString(36)
+      .toUpperCase()
+      .slice(0, 5);
+    return {
+      lineNo: index + 1,
+      code: `${bookingPrefix}-${codeSuffix}`,
+      picks: line,
+      compactString: line.join('-'),
+    };
+  });
+
+  return {
+    lines,
+    totalPossible,
+    truncated: totalPossible > maxLines,
+  };
+}
+
+export function formatJackpotSmsText(
+  providerMeta: JackpotProviderMeta,
+  games: JackpotGame[],
+  picksMap: Record<string, JackpotExtendedPick>
+): string {
+  const lines = games.map((g, idx) => {
+    const p = picksMap[g.fixtureId] || g.recommendedPick;
+    return `${idx + 1}:${p}`;
+  });
+  return `${providerMeta.shortName} (${games.length} Games · ${providerMeta.prizePool}): ${lines.join(' ')}`;
+}
+

@@ -40,6 +40,7 @@ import { AdminExternalApisTab } from '@/components/admin/AdminExternalApisTab';
 import { AdminDatabaseTab } from '@/components/admin/AdminDatabaseTab';
 import { AdminGoogleIndexingSuite } from '@/components/admin/AdminGoogleIndexingSuite';
 import { AdminAppStoreStudioTab } from '@/components/admin/AdminAppStoreStudioTab';
+import { AdminAppStoreMetadataTab } from '@/components/admin/AdminAppStoreMetadataTab';
 import { AdminJackpotAndCodesManagerTab } from '@/components/admin/AdminJackpotAndCodesManagerTab';
 import { AdminLiveMatchOverrideTab } from '@/components/admin/AdminLiveMatchOverrideTab';
 import { AdminAffiliateManagerTab } from '@/components/admin/AdminAffiliateManagerTab';
@@ -72,6 +73,7 @@ export default function AdminDashboard() {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
     if (tabParam) return tabParam;
+    if (location.pathname.includes('/app-store-metadata')) return 'app-store-metadata';
     if (location.pathname.includes('/user-analysis')) return 'user-analysis';
     if (location.pathname.includes('/users')) return 'users';
     if (location.pathname.includes('/seo')) return 'seo';
@@ -85,6 +87,8 @@ export default function AdminDashboard() {
     const tabParam = params.get('tab');
     if (tabParam) {
       setActiveTab(tabParam);
+    } else if (location.pathname.includes('/app-store-metadata')) {
+      setActiveTab('app-store-metadata');
     } else if (location.pathname.includes('/user-analysis')) {
       setActiveTab('user-analysis');
     } else if (location.pathname.includes('/users')) {
@@ -377,6 +381,11 @@ export default function AdminDashboard() {
                 <span>App Stores &amp; APK</span>
               </TabsTrigger>
 
+              <TabsTrigger value="app-store-metadata" className="gap-2 text-xs">
+                <FileText className="h-3.5 w-3.5 text-emerald-500" />
+                <span>App Store Metadata</span>
+              </TabsTrigger>
+
               <TabsTrigger value="jackpot-codes" className="gap-2 text-xs">
                 <Trophy className="h-3.5 w-3.5 text-amber-500" />
                 <span>Jackpot &amp; Booking Codes</span>
@@ -523,6 +532,11 @@ export default function AdminDashboard() {
           {/* App Store Publishing & Native Packaging Studio Tab */}
           <TabsContent value="app-stores" className="space-y-6">
             <AdminAppStoreStudioTab />
+          </TabsContent>
+
+          {/* App Store Metadata & Asset Generator Tab */}
+          <TabsContent value="app-store-metadata" className="space-y-6">
+            <AdminAppStoreMetadataTab />
           </TabsContent>
 
           {/* Jackpot Banker Curator & Verified Booking Codes Tab */}

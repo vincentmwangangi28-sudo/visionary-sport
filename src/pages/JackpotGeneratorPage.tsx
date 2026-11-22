@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -11,477 +11,187 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+  Calculator,
   CheckCircle2,
   Copy,
-  Flame,
   Layers,
   Lock,
   Plus,
   Radio,
   RefreshCw,
   Share2,
-  ShieldCheck,
   Sparkles,
   Trophy,
   XCircle,
-  Zap,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
   getAdminJackpotOverrides,
   recordAffiliatePartnerClick,
 } from '@/services/adminOverrideSyncService';
+import {
+  fetchLiveJackpotPools,
+  getInitialOfficialJackpotPools,
+  buildUpcomingJackpotPoolFromEspn,
+  computeJackpotSurvivalProfile,
+  optimizeJackpotPicksForBudget,
+  generatePlayableSingleLines,
+  formatJackpotSmsText,
+  getPickOutcomes,
+  JACKPOT_PROVIDERS,
+  JackpotProviderId,
+  JackpotExtendedPick,
+} from '@/services/jackpotService';
+import { settleJackpotPool } from '@/services/jackpotResultsService';
 import { toast } from 'sonner';
 
-type PickOption = '1' | 'X' | '2';
+type SinglePick = '1' | 'X' | '2';
 
-interface JackpotFixture {
-  gameNo: number;
-  homeTeam: string;
-  awayTeam: string;
-  league: string;
-  kickoff: string;
-  odds1: number;
-  oddsX: number;
-  odds2: number;
-  aiBanker: PickOption;
-  aiHedgeSecond: PickOption;
-  aiConfidence: number;
-  varianceLevel: 'BANKER LOCK' | 'MODERATE' | 'HIGH VARIANCE COIN-FLIP';
-  tacticalNote: string;
-  liveStatus?: 'LIVE' | 'FT' | 'UPCOMING';
-  homeScore?: number;
-  awayScore?: number;
-  actualOutcome?: PickOption;
-}
-
-interface JackpotProviderConfig {
-  id: 'sportpesa-mega' | 'betika-grand' | 'mozzart-super' | 'sportpesa-midweek';
-  name: string;
-  countryFlag: string;
-  totalGames: number;
-  jackpotPool: string;
-  lineCost: number;
-  currency: string;
-  bonusTiers: string[];
+const GENERATOR_PROVIDERS: Array<{
+  id: JackpotProviderId;
   bookingPrefix: string;
+}> = [
+  { id: 'sportpesa', bookingPrefix: 'SPMJ' },
+  { id: 'betika_grand', bookingPrefix: 'BTKG' },
+  { id: 'mozzart', bookingPrefix: 'MZJP' },
+  { id: 'sportpesa_midweek', bookingPrefix: 'SPMW' },
+  { id: 'betika', bookingPrefix: 'BTKM' },
+];
+
+const MAX_HEDGED_GAMES = 6; // 2^6 = 64 max lines for clean interactive preview
+
+function parseSelectedProviderParam(raw: string | null): JackpotProviderId {
+  if (
+    raw === 'sportpesa' ||
+    raw === 'betika' ||
+    raw === 'betika_grand' ||
+    raw === 'sportpesa_midweek' ||
+    raw === 'mozzart'
+  ) {
+    return raw;
+  }
+  return 'sportpesa';
 }
-
-const JACKPOT_PROVIDERS: JackpotProviderConfig[] = [
-  {
-    id: 'sportpesa-mega',
-    name: 'SportPesa 17-Game Mega Jackpot',
-    countryFlag: '🇰🇪',
-    totalGames: 17,
-    jackpotPool: 'KES 384,912,450',
-    lineCost: 99,
-    currency: 'KES',
-    bonusTiers: ['13/17 Correct', '14/17 Correct', '15/17 Correct', '16/17 Correct', '17/17 Mega Prize'],
-    bookingPrefix: 'SPMJ',
-  },
-  {
-    id: 'betika-grand',
-    name: 'Betika 17-GameSababisha Grand Jackpot',
-    countryFlag: '🇰🇪',
-    totalGames: 17,
-    jackpotPool: 'KES 100,000,000',
-    lineCost: 49,
-    currency: 'KES',
-    bonusTiers: ['12/17 Bonus', '13/17 Bonus', '14/17 Bonus', '15/17 Bonus', '16/17 Bonus', '17/17 Grand Prize'],
-    bookingPrefix: 'BTKG',
-  },
-  {
-    id: 'mozzart-super',
-    name: 'Mozzart Super Grand Jackpot (17 Split)',
-    countryFlag: '🌍',
-    totalGames: 17,
-    jackpotPool: 'KES 200,000,000',
-    lineCost: 50,
-    currency: 'KES',
-    bonusTiers: ['0/17 Refund Bonus', '14/17 Bonus', '15/17 Bonus', '16/17 Bonus', '17/17 Super Prize'],
-    bookingPrefix: 'MZJP',
-  },
-  {
-    id: 'sportpesa-midweek',
-    name: 'SportPesa 13-Game Midweek Jackpot',
-    countryFlag: '🇰🇪',
-    totalGames: 13,
-    jackpotPool: 'KES 22,450,800',
-    lineCost: 99,
-    currency: 'KES',
-    bonusTiers: ['10/13 Bonus', '11/13 Bonus', '12/13 Bonus', '13/13 Midweek Prize'],
-    bookingPrefix: 'SPMW',
-  },
-];
-
-const MASTER_JACKPOT_FIXTURES: JackpotFixture[] = [
-  {
-    gameNo: 1,
-    homeTeam: 'Arsenal',
-    awayTeam: 'Newcastle United',
-    league: 'Premier League',
-    kickoff: 'Sat 15:00',
-    odds1: 1.62,
-    oddsX: 3.95,
-    odds2: 5.40,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 87,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Arsenal generate 2.38 home xG/90 and hold an 84% win rate at the Emirates.',
-  },
-  {
-    gameNo: 2,
-    homeTeam: 'Aston Villa',
-    awayTeam: 'Tottenham',
-    league: 'Premier League',
-    kickoff: 'Sat 17:30',
-    odds1: 2.35,
-    oddsX: 3.60,
-    odds2: 2.85,
-    aiBanker: '1',
-    aiHedgeSecond: '2',
-    aiConfidence: 63,
-    varianceLevel: 'HIGH VARIANCE COIN-FLIP',
-    tacticalNote: 'Both sides play high defensive lines; only 1 draw in their last 11 meetings (use 12 hedge).',
-  },
-  {
-    gameNo: 3,
-    homeTeam: 'Brighton',
-    awayTeam: 'Fulham',
-    league: 'Premier League',
-    kickoff: 'Sat 15:00',
-    odds1: 2.05,
-    oddsX: 3.45,
-    odds2: 3.55,
-    aiBanker: 'X',
-    aiHedgeSecond: '1',
-    aiConfidence: 65,
-    varianceLevel: 'HIGH VARIANCE COIN-FLIP',
-    tacticalNote: 'Fulham are unbeaten in 5 straight H2H clashes against Brighton; 1X covers 82% Poisson density.',
-  },
-  {
-    gameNo: 4,
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Villarreal',
-    league: 'La Liga',
-    kickoff: 'Sat 20:00',
-    odds1: 1.44,
-    oddsX: 4.70,
-    odds2: 6.80,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 91,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Pure single-pick AI Banker: Real Madrid boast +1.64 net xG differential at the Bernabéu.',
-  },
-  {
-    gameNo: 5,
-    homeTeam: 'Athletic Bilbao',
-    awayTeam: 'Real Sociedad',
-    league: 'La Liga',
-    kickoff: 'Sun 18:30',
-    odds1: 2.20,
-    oddsX: 3.10,
-    odds2: 3.50,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 66,
-    varianceLevel: 'HIGH VARIANCE COIN-FLIP',
-    tacticalNote: 'Basque Derby with tight low-scoring xG (2.05 total). 1X Double Chance locks in 86% safety.',
-  },
-  {
-    gameNo: 6,
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Napoli',
-    league: 'Serie A',
-    kickoff: 'Sun 19:45',
-    odds1: 1.85,
-    oddsX: 3.50,
-    odds2: 4.30,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 82,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Inter lead Serie A in box entries and set-piece xG at San Siro.',
-  },
-  {
-    gameNo: 7,
-    homeTeam: 'Atalanta',
-    awayTeam: 'Lazio',
-    league: 'Serie A',
-    kickoff: 'Sun 17:00',
-    odds1: 1.95,
-    oddsX: 3.50,
-    odds2: 3.85,
-    aiBanker: '1',
-    aiHedgeSecond: '2',
-    aiConfidence: 76,
-    varianceLevel: 'MODERATE',
-    tacticalNote: 'Atalanta press aggressively in Bergamo; strong home edge.',
-  },
-  {
-    gameNo: 8,
-    homeTeam: 'Bayer Leverkusen',
-    awayTeam: 'Eintracht Frankfurt',
-    league: 'Bundesliga',
-    kickoff: 'Sat 14:30',
-    odds1: 1.58,
-    oddsX: 4.25,
-    odds2: 5.25,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 88,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Leverkusen average 2.55 home goals per match.',
-  },
-  {
-    gameNo: 9,
-    homeTeam: 'Borussia Dortmund',
-    awayTeam: 'RB Leipzig',
-    league: 'Bundesliga',
-    kickoff: 'Sat 17:30',
-    odds1: 2.25,
-    oddsX: 3.65,
-    odds2: 2.95,
-    aiBanker: '1',
-    aiHedgeSecond: '2',
-    aiConfidence: 64,
-    varianceLevel: 'HIGH VARIANCE COIN-FLIP',
-    tacticalNote: 'End-to-end transition clash; hedging 12 avoids the high-tempo shootout variance.',
-  },
-  {
-    gameNo: 10,
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'Tusker FC',
-    league: 'FKF Premier League',
-    kickoff: 'Sun 15:00',
-    odds1: 1.78,
-    oddsX: 3.20,
-    odds2: 4.60,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 85,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Gor Mahia concede just 0.58 xGA/90 in Nairobi.',
-  },
-  {
-    gameNo: 11,
-    homeTeam: 'Simba SC',
-    awayTeam: 'Azam FC',
-    league: 'Tanzania NBC League',
-    kickoff: 'Sun 16:00',
-    odds1: 1.82,
-    oddsX: 3.25,
-    odds2: 4.35,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 81,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Simba SC dominate Dar es Salaam possession & dead-ball xG.',
-  },
-  {
-    gameNo: 12,
-    homeTeam: 'Kaizer Chiefs',
-    awayTeam: 'Orlando Pirates',
-    league: 'South Africa PSL',
-    kickoff: 'Sat 15:30',
-    odds1: 3.10,
-    oddsX: 2.95,
-    odds2: 2.40,
-    aiBanker: '2',
-    aiHedgeSecond: 'X',
-    aiConfidence: 67,
-    varianceLevel: 'HIGH VARIANCE COIN-FLIP',
-    tacticalNote: 'Soweto Derby: Pirates hold superior xG form, X2 Double Chance covers stalemate.',
-  },
-  {
-    gameNo: 13,
-    homeTeam: 'Raja Casablanca',
-    awayTeam: 'Wydad AC',
-    league: 'Morocco Botola Pro',
-    kickoff: 'Sun 20:00',
-    odds1: 2.15,
-    oddsX: 3.00,
-    odds2: 3.60,
-    aiBanker: 'X',
-    aiHedgeSecond: '1',
-    aiConfidence: 74,
-    varianceLevel: 'MODERATE',
-    tacticalNote: 'Casablanca Derby historically produces 44% draws; 1X or X Banker.',
-  },
-  {
-    gameNo: 14,
-    homeTeam: 'Monaco',
-    awayTeam: 'Lille',
-    league: 'Ligue 1',
-    kickoff: 'Fri 20:45',
-    odds1: 2.10,
-    oddsX: 3.40,
-    odds2: 3.45,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 78,
-    varianceLevel: 'MODERATE',
-    tacticalNote: 'Monaco create 1.94 xG/90 at Stade Louis II.',
-  },
-  {
-    gameNo: 15,
-    homeTeam: 'Sporting CP',
-    awayTeam: 'SC Braga',
-    league: 'Primeira Liga',
-    kickoff: 'Sun 20:30',
-    odds1: 1.52,
-    oddsX: 4.30,
-    odds2: 5.80,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 89,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'Sporting CP unbeaten at home in Lisbon.',
-  },
-  {
-    gameNo: 16,
-    homeTeam: 'Feyenoord',
-    awayTeam: 'AZ Alkmaar',
-    league: 'Eredivisie',
-    kickoff: 'Sat 20:00',
-    odds1: 1.72,
-    oddsX: 3.80,
-    odds2: 4.50,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 83,
-    varianceLevel: 'BANKER LOCK',
-    tacticalNote: 'De Kuip home fortress advantage (+1.35 xG margin).',
-  },
-  {
-    gameNo: 17,
-    homeTeam: 'Leeds United',
-    awayTeam: 'Sheffield United',
-    league: 'Championship',
-    kickoff: 'Fri 20:00',
-    odds1: 1.90,
-    oddsX: 3.45,
-    odds2: 4.10,
-    aiBanker: '1',
-    aiHedgeSecond: 'X',
-    aiConfidence: 79,
-    varianceLevel: 'MODERATE',
-    tacticalNote: 'Elland Road crowd intensity gives Leeds strong 1st-half xG.',
-  },
-];
-
-const MAX_HEDGED_GAMES = 6; // 2^6 = 64 max lines for clean browser rendering
 
 export const JackpotGeneratorPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const { addSelection } = useBetSlip();
-  const [selectedProviderId, setSelectedProviderId] = useState<JackpotProviderConfig['id']>('sportpesa-mega');
-  const [useLiveEspnSlate, setUseLiveEspnSlate] = useState<boolean>(false);
-  const [syncingEspn, setSyncingEspn] = useState<boolean>(false);
-  const [espnPoolFixtures, setEspnPoolFixtures] = useState<JackpotFixture[]>([]);
-
-  const activeProvider = useMemo(
-    () => JACKPOT_PROVIDERS.find((p) => p.id === selectedProviderId) || JACKPOT_PROVIDERS[0],
-    [selectedProviderId]
+  const { data: basePredictionsData } = usePredictions();
+  const basePredictions = useMemo(
+    () => basePredictionsData?.allPredictions ?? basePredictionsData?.predictions ?? [],
+    [basePredictionsData]
   );
 
-  const loadEspnJackpotTelemetry = async (showToast = false) => {
-    setSyncingEspn(true);
-    try {
-      const [liveRes, upRes] = await Promise.all([
-        fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch('/api/football?type=upcoming').then((r) => (r.ok ? r.json() : null)).catch(() => null),
-      ]);
-      const combined = [
-        ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
-        ...(Array.isArray(upRes?.predictions) ? upRes.predictions : []),
-      ];
-      if (combined.length > 0) {
-        const mapped: JackpotFixture[] = MASTER_JACKPOT_FIXTURES.map((base, idx) => {
-          const m = combined[idx];
-          if (!m) return base;
-          const hScore = typeof m.home_score === 'number' ? m.home_score : undefined;
-          const aScore = typeof m.away_score === 'number' ? m.away_score : undefined;
-          const isScored = typeof hScore === 'number' && typeof aScore === 'number';
-          const outcome: PickOption | undefined = isScored
-            ? hScore > aScore
-              ? '1'
-              : hScore === aScore
-              ? 'X'
-              : '2'
-            : undefined;
-          return {
-            ...base,
-            homeTeam: m.home_team || base.homeTeam,
-            awayTeam: m.away_team || base.awayTeam,
-            league: m.league || base.league,
-            odds1: Number(m.home_odds) || base.odds1,
-            oddsX: Number(m.draw_odds) || base.oddsX,
-            odds2: Number(m.away_odds) || base.odds2,
-            liveStatus: m.status === 'live' ? 'LIVE' : m.status === 'completed' ? 'FT' : undefined,
-            homeScore: hScore,
-            awayScore: aScore,
-            actualOutcome: outcome,
-          };
-        });
-        setEspnPoolFixtures(mapped);
-        if (showToast) {
-          toast.success('Synced live ESPN scoreboards & jackpot grading telemetry!');
+  const [selectedProviderId, setSelectedProviderId] = useState<JackpotProviderId>(() =>
+    parseSelectedProviderParam(searchParams.get('provider'))
+  );
+  const [pools, setPools] = useState(() => getInitialOfficialJackpotPools());
+  const [useLiveEspnSlate, setUseLiveEspnSlate] = useState<boolean>(false);
+  const [syncingEspn, setSyncingEspn] = useState<boolean>(false);
+  const [realFeedMatches, setRealFeedMatches] = useState<any[]>([]);
+  const [customPicksByProvider, setCustomPicksByProvider] = useState<
+    Partial<Record<JackpotProviderId, Record<string, JackpotExtendedPick>>>
+  >({});
+  const [budgetInput, setBudgetInput] = useState<number>(1600);
+  const [allowTriples, setAllowTriples] = useState<boolean>(false);
+
+  const activeProviderMeta = JACKPOT_PROVIDERS[selectedProviderId];
+  const activePrefix =
+    GENERATOR_PROVIDERS.find((p) => p.id === selectedProviderId)?.bookingPrefix || 'SPMJ';
+
+  const loadLivePools = useCallback(
+    async (showToast = false) => {
+      setSyncingEspn(true);
+      try {
+        const [poolRes, liveRes, resultsRes] = await Promise.all([
+          fetchLiveJackpotPools(basePredictions, showToast),
+          fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        ]);
+        setPools(poolRes.pools);
+
+        const combined = [
+          ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
+          ...(Array.isArray(liveRes?.matches) ? liveRes.matches : []),
+          ...(Array.isArray(resultsRes?.predictions) ? resultsRes.predictions : []),
+          ...(Array.isArray(resultsRes?.results) ? resultsRes.results : []),
+          ...(Array.isArray(resultsRes?.matches) ? resultsRes.matches : []),
+        ];
+        if (combined.length > 0) {
+          setRealFeedMatches(combined);
         }
-      } else if (showToast) {
-        toast.info('Official jackpot pool fixtures verified against live feeds.');
+
+        if (showToast) {
+          toast.success('Synced live bookmaker jackpot pools and scoreboards.');
+        }
+      } catch {
+        if (showToast) {
+          toast.info('Using verified local jackpot pool telemetry.');
+        }
+      } finally {
+        setSyncingEspn(false);
       }
-    } catch {
-      if (showToast) {
-        toast.info('Using verified local jackpot pool telemetry.');
-      }
-    } finally {
-      setSyncingEspn(false);
-    }
-  };
+    },
+    [basePredictions]
+  );
+
+  useEffect(() => {
+    loadLivePools(false);
+  }, [loadLivePools]);
 
   const activeFixtures = useMemo(() => {
-    const source =
-      useLiveEspnSlate && espnPoolFixtures.length > 0 ? espnPoolFixtures : MASTER_JACKPOT_FIXTURES;
-    return source.slice(0, activeProvider.totalGames);
-  }, [activeProvider.totalGames, useLiveEspnSlate, espnPoolFixtures]);
+    if (useLiveEspnSlate && basePredictions.length >= 10) {
+      return buildUpcomingJackpotPoolFromEspn(selectedProviderId, basePredictions);
+    }
+    return pools[selectedProviderId] || [];
+  }, [useLiveEspnSlate, basePredictions, selectedProviderId, pools]);
 
-  // Map of gameNo -> array of selected outcomes (['1'] or ['1', 'X'])
-  const [picksMap, setPicksMap] = useState<Record<number, PickOption[]>>(() => {
-    const initial: Record<number, PickOption[]> = {};
-    MASTER_JACKPOT_FIXTURES.forEach((f) => {
-      // Auto-hedge top 3 coin-flip games by default (2^3 = 8 combinations)
-      if ([2, 3, 5].includes(f.gameNo)) {
-        initial[f.gameNo] = [f.aiBanker, f.aiHedgeSecond];
-      } else {
-        initial[f.gameNo] = [f.aiBanker];
+  // Default balanced slate (3 Double Chances on highest variance games) if user has not customized yet
+  const activePicksMap = useMemo<Record<string, JackpotExtendedPick>>(() => {
+    const existing = customPicksByProvider[selectedProviderId];
+    if (existing && Object.keys(existing).length > 0) {
+      const merged: Record<string, JackpotExtendedPick> = {};
+      for (const g of activeFixtures) {
+        merged[g.fixtureId] = existing[g.fixtureId] || g.recommendedPick;
       }
-    });
-    return initial;
-  });
+      return merged;
+    }
+    const defaultOpt = optimizeJackpotPicksForBudget(
+      selectedProviderId,
+      activeFixtures,
+      activeProviderMeta.baseStake * 8,
+      false
+    );
+    return defaultOpt.picks;
+  }, [customPicksByProvider, selectedProviderId, activeFixtures, activeProviderMeta.baseStake]);
 
-  const hedgedCount = useMemo(() => {
-    return activeFixtures.filter((f) => (picksMap[f.gameNo]?.length || 1) > 1).length;
-  }, [activeFixtures, picksMap]);
+  const survivalProfile = useMemo(
+    () => computeJackpotSurvivalProfile(selectedProviderId, activeFixtures, activePicksMap),
+    [selectedProviderId, activeFixtures, activePicksMap]
+  );
+
+  const settledResult = useMemo(
+    () => settleJackpotPool(selectedProviderId, activeFixtures, {}, realFeedMatches),
+    [selectedProviderId, activeFixtures, realFeedMatches]
+  );
 
   const bonusGraderStats = useMemo(() => {
     let gradedCount = 0;
     let coveredHits = 0;
-    for (const f of activeFixtures) {
-      if (f.actualOutcome) {
+    for (const m of settledResult.matches) {
+      if ((m.status === 'finished' || m.status === 'live') && m.actualOutcome) {
         gradedCount++;
-        const selected = picksMap[f.gameNo] || [f.aiBanker];
-        if (selected.includes(f.actualOutcome)) {
+        const selectedOutcomes = getPickOutcomes(activePicksMap[m.fixtureId] || m.recommendedPick);
+        if (selectedOutcomes.includes(m.actualOutcome)) {
           coveredHits++;
         }
       }
     }
     const pendingCount = activeFixtures.length - gradedCount;
-    const projectedPendingHits = Math.round(pendingCount * 0.86);
     const projectedTotalHits = Math.min(
-      activeProvider.totalGames,
-      coveredHits + projectedPendingHits
+      activeFixtures.length,
+      Math.round(coveredHits + pendingCount * 0.78)
     );
     return {
       gradedCount,
@@ -489,137 +199,171 @@ export const JackpotGeneratorPage: React.FC = () => {
       pendingCount,
       projectedTotalHits,
     };
-  }, [activeFixtures, picksMap, activeProvider.totalGames]);
+  }, [settledResult.matches, activeFixtures.length, activePicksMap]);
 
-  const handleTogglePick = (gameNo: number, option: PickOption) => {
-    setPicksMap((prev) => {
-      const current = prev[gameNo] || ['1'];
-      if (current.includes(option)) {
-        if (current.length === 1) {
-          toast.info('Each jackpot fixture must have at least 1 outcome selected.');
-          return prev;
-        }
-        return { ...prev, [gameNo]: current.filter((o) => o !== option) };
-      } else {
-        if (current.length >= 2) {
-          // Replace the second choice so it stays a Double Chance (2 outcomes max per fixture)
-          return { ...prev, [gameNo]: [current[0], option] };
-        }
-        if (hedgedCount >= MAX_HEDGED_GAMES) {
-          toast.warning(`Maximum ${MAX_HEDGED_GAMES} Double Chance hedges (${Math.pow(2, MAX_HEDGED_GAMES)} lines) reached.`);
-          return prev;
-        }
-        return { ...prev, [gameNo]: [...current, option] };
+  const hedgedCount = survivalProfile.doubleCount + survivalProfile.tripleCount;
+
+  const setProviderPicks = (next: Record<string, JackpotExtendedPick>) => {
+    setCustomPicksByProvider((prev) => ({
+      ...prev,
+      [selectedProviderId]: next,
+    }));
+  };
+
+  const handleTogglePick = (fixtureId: string, option: SinglePick) => {
+    const currentPick = activePicksMap[fixtureId] || '1';
+    const current = getPickOutcomes(currentPick);
+
+    let updated: SinglePick[];
+    if (current.includes(option)) {
+      if (current.length === 1) {
+        toast.info('Each jackpot fixture must have at least 1 outcome selected.');
+        return;
       }
+      updated = current.filter((o) => o !== option);
+    } else {
+      if (current.length >= 2) {
+        if (allowTriples && current.length === 2) {
+          updated = [...current, option];
+        } else {
+          updated = [current[0], option];
+        }
+      } else {
+        if (hedgedCount >= MAX_HEDGED_GAMES) {
+          toast.warning(
+            `Maximum ${MAX_HEDGED_GAMES} multi-outcome hedges (${Math.pow(2, MAX_HEDGED_GAMES)} lines) reached.`
+          );
+          return;
+        }
+        updated = [...current, option];
+      }
+    }
+
+    const order: Record<SinglePick, number> = { '1': 0, X: 1, '2': 2 };
+    const normalized = updated
+      .slice()
+      .sort((a, b) => order[a] - order[b])
+      .join('') as JackpotExtendedPick;
+
+    setProviderPicks({
+      ...activePicksMap,
+      [fixtureId]: normalized,
     });
   };
 
   const applyStrategyPreset = (hedgeCountTarget: number) => {
-    const sortedByRisk = [...activeFixtures].sort((a, b) => a.aiConfidence - b.aiConfidence);
-    const gamesToHedge = new Set(sortedByRisk.slice(0, hedgeCountTarget).map((f) => f.gameNo));
-    const nextMap: Record<number, PickOption[]> = {};
-    MASTER_JACKPOT_FIXTURES.forEach((f) => {
-      if (gamesToHedge.has(f.gameNo)) {
-        nextMap[f.gameNo] = [f.aiBanker, f.aiHedgeSecond];
-      } else {
-        nextMap[f.gameNo] = [f.aiBanker];
-      }
-    });
-    setPicksMap(nextMap);
+    const maxBudget = activeProviderMeta.baseStake * Math.pow(2, hedgeCountTarget);
+    const opt = optimizeJackpotPicksForBudget(selectedProviderId, activeFixtures, maxBudget, false);
+    setProviderPicks(opt.picks);
     toast.success(
       hedgeCountTarget === 0
-        ? 'Applied Pure 1-Line AI Banker Slip!'
-        : `Applied AI Double-Chance Hedge on ${hedgeCountTarget} riskiest fixtures (${Math.pow(2, hedgeCountTarget)} combinations)!`
+        ? 'Applied Pure 1-Line AI Banker Slip.'
+        : `Applied AI Double-Chance Hedge on ${opt.survivalProfile.doubleCount} riskiest fixtures (${opt.survivalProfile.totalCombinations} combinations).`
+    );
+  };
+
+  const handleApplyBudgetOptimization = () => {
+    const opt = optimizeJackpotPicksForBudget(
+      selectedProviderId,
+      activeFixtures,
+      Math.max(activeProviderMeta.baseStake, budgetInput),
+      allowTriples
+    );
+    setProviderPicks(opt.picks);
+    toast.success(
+      `Optimized ${opt.hedgedFixtureIds.length} hedges within ${activeProviderMeta.currencySymbol} ${opt.budgetUsed.toLocaleString()} (${opt.survivalProfile.bonusZoneProbabilityPct}% bonus zone odds).`
     );
   };
 
   const handleApplyAdminBankerLocks = () => {
     const adminPool = getAdminJackpotOverrides();
-    const nextMap: Record<number, PickOption[]> = { ...picksMap };
-    adminPool.forEach((item) => {
-      if (item.isBankerLock) {
-        nextMap[item.gameNo] = [item.singlePick];
-      } else if (item.doubleCover === '1X') {
-        nextMap[item.gameNo] = ['1', 'X'];
-      } else if (item.doubleCover === 'X2') {
-        nextMap[item.gameNo] = ['X', '2'];
-      } else if (item.doubleCover === '12') {
-        nextMap[item.gameNo] = ['1', '2'];
+    const nextMap: Record<string, JackpotExtendedPick> = { ...activePicksMap };
+    let applied = 0;
+
+    activeFixtures.forEach((f, idx) => {
+      const override = adminPool.find((item) => item.gameNo === idx + 1);
+      if (!override) return;
+      applied++;
+      if (override.isBankerLock) {
+        nextMap[f.fixtureId] = override.singlePick;
+      } else if (
+        override.doubleCover === '1X' ||
+        override.doubleCover === 'X2' ||
+        override.doubleCover === '12'
+      ) {
+        nextMap[f.fixtureId] = override.doubleCover;
       } else {
-        nextMap[item.gameNo] = [item.singlePick];
+        nextMap[f.fixtureId] = override.singlePick;
       }
     });
-    setPicksMap(nextMap);
-    toast.success(`Loaded ${adminPool.filter((i) => i.isBankerLock).length} Official Admin Banker Locks & Double Chance Hedges!`);
+
+    setProviderPicks(nextMap);
+    toast.success(`Synced ${applied} curated Banker Locks & Hedges onto ${activeProviderMeta.shortName}.`);
   };
 
-  // Cartesian product generator for all single-line jackpot slips
-  const generatedLines = useMemo(() => {
-    let combinations: PickOption[][] = [[]];
-    for (const fixture of activeFixtures) {
-      const options = picksMap[fixture.gameNo] || [fixture.aiBanker];
-      const next: PickOption[][] = [];
-      for (const combo of combinations) {
-        for (const opt of options) {
-          next.push([...combo, opt]);
-        }
-      }
-      combinations = next;
-    }
-    return combinations.map((line, index) => {
-      const codeSuffix = ((index + 1) * 7919 + activeProvider.totalGames * 131)
-        .toString(36)
-        .toUpperCase()
-        .slice(0, 5);
-      return {
-        lineNo: index + 1,
-        code: `${activeProvider.bookingPrefix}-${codeSuffix}`,
-        picks: line,
-        compactString: line.join('-'),
-      };
-    });
-  }, [activeFixtures, picksMap, activeProvider]);
-
-  const totalCost = generatedLines.length * activeProvider.lineCost;
+  const { lines: generatedLines, totalPossible, truncated } = useMemo(
+    () => generatePlayableSingleLines(activeFixtures, activePicksMap, activePrefix, 64),
+    [activeFixtures, activePicksMap, activePrefix]
+  );
 
   const handleLoadTopBankersToSlip = () => {
-    const bankers = activeFixtures.filter((f) => f.varianceLevel === 'BANKER LOCK').slice(0, 6);
-    bankers.forEach((f) => {
-      const odds = f.aiBanker === '1' ? f.odds1 : f.aiBanker === 'X' ? f.oddsX : f.odds2;
-      const marketLabel = f.aiBanker === '1' ? 'Home Win (1)' : f.aiBanker === 'X' ? 'Draw (X)' : 'Away Win (2)';
+    const bankers = activeFixtures.filter((f) => f.isBanker).slice(0, 6);
+    const toLoad = bankers.length > 0 ? bankers : activeFixtures.slice(0, 6);
+    toLoad.forEach((f) => {
+      const odds =
+        f.recommendedPick === '1'
+          ? f.homeOdds
+          : f.recommendedPick === 'X'
+          ? f.drawOdds
+          : f.awayOdds;
+      const marketLabel =
+        f.recommendedPick === '1'
+          ? 'Home Win (1)'
+          : f.recommendedPick === 'X'
+          ? 'Draw (X)'
+          : 'Away Win (2)';
       addSelection({
-        matchId: `jp-banker-${f.gameNo}`,
-        match: `${f.homeTeam} vs ${f.awayTeam}`,
+        matchId: f.fixtureId,
+        match: f.match,
         homeTeam: f.homeTeam,
         awayTeam: f.awayTeam,
         league: f.league,
-        matchDate: new Date().toISOString(),
+        matchDate: f.matchDateIso,
         market: marketLabel,
         odds,
-        confidence: f.aiConfidence,
+        confidence: Math.max(f.homeProb, f.drawProb, f.awayProb),
       });
     });
-    toast.success(`Loaded ${bankers.length} Jackpot AI Bankers (81%+ Confidence) into your Bet Slip!`);
+    toast.success(`Loaded ${toLoad.length} Jackpot AI Bankers into your Bet Slip.`);
   };
 
-  const handleCopyAllCombinations = () => {
+  const handleCopyAllCombinations = async () => {
+    const header = formatJackpotSmsText(activeProviderMeta, activeFixtures, activePicksMap);
     const text =
-      `🏆 PredictPro ${activeProvider.name} (${generatedLines.length} Combinations)\n` +
-      `💰 Pool: ${activeProvider.jackpotPool} | Total Stake: ${activeProvider.currency} ${totalCost.toLocaleString()}\n\n` +
+      `${activeProviderMeta.name} (${totalPossible} Combinations)\n` +
+      `Pool: ${activeProviderMeta.prizePool} | Total Stake: ${activeProviderMeta.currencySymbol} ${survivalProfile.totalStake.toLocaleString()}\n` +
+      `Summary: ${header}\n\n` +
       generatedLines
         .map((l) => `Line #${l.lineNo} [${l.code}]: ${l.picks.map((p, idx) => `${idx + 1}:${p}`).join(' ')}`)
         .join('\n') +
-      `\n\n📲 VIP Jackpot Syndicate WhatsApp: https://wa.me/254721418238`;
-    navigator.clipboard.writeText(text);
-    toast.success(`Copied all ${generatedLines.length} playable jackpot combinations!`);
+      `\n\nVIP Jackpot Syndicate WhatsApp: https://wa.me/254721418238`;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
+      toast.success(`Copied ${generatedLines.length} playable jackpot combinations!`);
+    } catch {
+      toast.error('Clipboard permission unavailable.');
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="17-Game Mega & Midweek Jackpot Combination Generator | SportPesa, Betika & Mozzart AI Hedging"
-        description="Interactive 17-Game Mega Jackpot and 13-Game Midweek Jackpot combination generator. Lock AI Poisson Bankers and hedge 3–5 Double Chances into playable single-line slips."
-        canonicalUrl="https://predictpro.guru/jackpot-generator"
+        title="17-Game Mega & Midweek Jackpot Combination Generator | SportPesa, Betika & Mozzart AI"
+        description="Interactive 17-Game Mega Jackpot and 13-Game Midweek Jackpot combination generator. Lock AI Poisson Bankers and optimize Double Chance hedges under your budget."
+        canonical="/jackpot-generator"
       />
       <Navbar />
 
@@ -639,19 +383,19 @@ export const JackpotGeneratorPage: React.FC = () => {
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-2 max-w-3xl">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-medium">
                 <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                <span>Combinatorial Poisson Jackpot Hedging Engine</span>
+                <span>Combinatorial Poisson Jackpot Engine</span>
                 <span aria-hidden="true">·</span>
                 <span>2^N Multi-Line Generator</span>
                 <span aria-hidden="true">·</span>
-                <span>Bonus Tier Optimizer</span>
+                <span>Bonus Zone Survival</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                17-Game Mega &amp; Midweek Jackpot Combination Generator
+                Mega &amp; Midweek Jackpot Combination Generator
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Stop losing 16/17 jackpot slips to a single coin-flip fixture. Lock our <strong>82%+ AI Bankers</strong> on high-consensus matches and toggle <strong>Double Chance hedges (1X, X2, 12)</strong> on 3 to 5 high-variance games to automatically generate every individual playable line.
+                Lock high-consensus AI Bankers and optimize Double Chance hedges (1X, X2, 12) on high-variance coin flips to generate playable single-line coupons within your exact budget.
               </p>
             </div>
 
@@ -663,114 +407,118 @@ export const JackpotGeneratorPage: React.FC = () => {
                   setUseLiveEspnSlate(next);
                   toast.success(
                     next
-                      ? 'Switched to Live ESPN Matchweek Slate!'
-                      : `Switched to Official ${activeProvider.name} Pool!`
+                      ? 'Switched to Live ESPN Matchweek Slate.'
+                      : `Switched to Official ${activeProviderMeta.shortName} Pool.`
                   );
                 }}
-                className="gap-1.5 text-xs font-bold"
+                className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0"
               >
-                <Radio className={`h-3.5 w-3.5 ${useLiveEspnSlate ? 'animate-pulse' : 'text-emerald-500'}`} />
-                {useLiveEspnSlate ? 'Viewing Live ESPN Slate' : 'Sync Live ESPN 17-Game Slate'}
+                <Radio className="h-3.5 w-3.5 text-emerald-500" />
+                {useLiveEspnSlate ? 'Viewing ESPN Upcoming Slate' : 'Switch to ESPN Upcoming'}
               </Button>
               <Button
                 variant="outline"
-                onClick={() => loadEspnJackpotTelemetry(true)}
+                onClick={() => loadLivePools(true)}
                 disabled={syncingEspn}
-                className="gap-1.5 text-xs font-bold"
+                className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${syncingEspn ? 'animate-spin' : ''}`} />
-                Grade Live Scores
+                Sync Live Pools
               </Button>
               <Button
                 variant="outline"
                 onClick={handleApplyAdminBankerLocks}
-                className="gap-1.5 text-xs font-bold border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                className="gap-1.5 text-xs font-bold border-emerald-500/40 text-emerald-600 dark:text-emerald-400 whitespace-nowrap shrink-0"
               >
                 <Lock className="h-3.5 w-3.5" />
-                Load Admin Locked Bankers
+                Load Locked Bankers
               </Button>
               <Button
                 variant="outline"
                 onClick={() => {
-                  const partner = recordAffiliatePartnerClick(
-                    activeProvider.id.includes('betika')
-                      ? 'betika'
-                      : activeProvider.id.includes('mozzart')
-                      ? 'mozzartbet'
-                      : 'sportpesa'
-                  );
-                  if (partner?.affiliateUrl) {
-                    navigator.clipboard.writeText(partner.promoCode);
-                    toast.success(`Copied Promo Code ${partner.promoCode} for ${partner.name}!`);
+                  const target = selectedProviderId.includes('betika')
+                    ? 'betika'
+                    : selectedProviderId.includes('mozzart')
+                    ? 'mozzartbet'
+                    : 'sportpesa';
+                  const partner = recordAffiliatePartnerClick(target);
+                  if (partner?.promoCode) {
+                    navigator.clipboard?.writeText(partner.promoCode);
+                    toast.success(`Copied Promo Code ${partner.promoCode} for ${partner.name}.`);
                   }
                 }}
-                className="gap-1.5 text-xs font-bold"
+                className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0"
               >
                 <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                Claim Jackpot Bonus Code
+                Bonus Promo Code
               </Button>
-              <Button onClick={handleLoadTopBankersToSlip} className="gap-1.5 text-xs font-bold">
+              <Button onClick={handleLoadTopBankersToSlip} className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0">
                 <Plus className="h-3.5 w-3.5" />
-                Load 6 Jackpot Bankers to Acca Slip
+                Load Bankers to Slip
               </Button>
-              <Button variant="outline" onClick={handleCopyAllCombinations} className="gap-1.5 text-xs font-bold">
+              <Button
+                variant="outline"
+                onClick={handleCopyAllCombinations}
+                className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0"
+              >
                 <Copy className="h-3.5 w-3.5" />
-                Copy All {generatedLines.length} Lines
+                Copy {generatedLines.length} Lines
               </Button>
             </div>
           </div>
 
-          {/* Live ESPN Bonus Tier Grader Strip */}
+          {/* Live Telemetry & Survival Grader Strip */}
           <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <Radio className="h-4 w-4 text-emerald-500 animate-pulse shrink-0" />
+              <Radio className="h-4 w-4 text-emerald-500 shrink-0" />
               <div>
                 <span className="font-bold text-foreground">
-                  Live ESPN Jackpot Bonus Tier Grader ({activeProvider.name})
+                  Live Poisson Survival &amp; Bonus Grader ({activeProviderMeta.name})
                 </span>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground font-mono tabular-nums">
                   {bonusGraderStats.gradedCount > 0
-                    ? `${bonusGraderStats.coveredHits}/${bonusGraderStats.gradedCount} Settled/In-Play Fixtures Covered by Your Matrix · ${bonusGraderStats.pendingCount} Upcoming`
-                    : `All ${activeFixtures.length} Pool Fixtures Monitored Against Live ESPN Scoreboards`}
+                    ? `${bonusGraderStats.coveredHits}/${bonusGraderStats.gradedCount} Settled/In-Play Covered · ${bonusGraderStats.pendingCount} Upcoming`
+                    : `${activeFixtures.length} Official Fixtures Synced · Expected Hits: ${survivalProfile.expectedCorrect}/${activeFixtures.length}`}
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tabular-nums">
               <span className="px-2.5 py-1 rounded-md bg-background border border-border font-bold text-foreground">
-                Covered Hits: {bonusGraderStats.coveredHits}/{bonusGraderStats.gradedCount || 0}
+                {survivalProfile.minBonusTarget}+ Bonus Odds: {survivalProfile.bonusZoneProbabilityPct}%
               </span>
               <span className="px-2.5 py-1 rounded-md bg-emerald-600 text-white font-bold">
-                Projected Finish: {bonusGraderStats.projectedTotalHits}/{activeProvider.totalGames} Correct (Bonus Zone)
+                Projected Finish: {bonusGraderStats.projectedTotalHits}/{activeFixtures.length}
               </span>
             </div>
           </div>
 
           {/* Provider Selector Tabs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2">
-            {JACKPOT_PROVIDERS.map((provider) => {
-              const isSelected = provider.id === selectedProviderId;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-1">
+            {GENERATOR_PROVIDERS.map(({ id }) => {
+              const meta = JACKPOT_PROVIDERS[id];
+              const isSelected = id === selectedProviderId;
               return (
                 <button
-                  key={provider.id}
+                  key={id}
                   type="button"
-                  onClick={() => setSelectedProviderId(provider.id)}
-                  className={`p-3.5 rounded-lg border text-left transition-all cursor-pointer ${
+                  onClick={() => setSelectedProviderId(id)}
+                  className={`p-3 rounded-lg border text-left transition-colors cursor-pointer ${
                     isSelected
-                      ? 'border-primary bg-primary/10 shadow-sm'
+                      ? 'border-primary bg-primary/10'
                       : 'border-border bg-background hover:bg-muted/50'
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1 font-mono tabular-nums">
                     <span>
-                      {provider.countryFlag} {provider.totalGames} Games
+                      {meta.countryFlag} {pools[id]?.length || meta.gameCount} Games
                     </span>
-                    <span className="font-mono font-bold text-primary">
-                      {provider.currency} {provider.lineCost}/line
+                    <span className="font-bold text-primary">
+                      {meta.currencySymbol} {meta.baseStake}/line
                     </span>
                   </div>
-                  <p className="text-xs font-bold text-foreground truncate">{provider.name}</p>
-                  <p className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-                    {provider.jackpotPool}
+                  <p className="text-xs font-bold text-foreground truncate">{meta.shortName}</p>
+                  <p className="text-sm font-black font-mono tabular-nums text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    {meta.prizePool}
                   </p>
                 </button>
               );
@@ -778,59 +526,62 @@ export const JackpotGeneratorPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Control Bar: Preset Hedging Strategies + Live Cost Calculator */}
+        {/* Control Bar: Preset Hedges + Budget Optimizer + Live Cost Telemetry */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                1-Click AI Hedging Presets
+                <Calculator className="h-4 w-4 text-primary" />
+                AI Hedging Presets &amp; Budget Optimizer
               </CardTitle>
               <CardDescription className="text-xs">
-                Automatically assign Double Chances (1X / X2 / 12) to the lowest-confidence coin-flip matches while locking Single Bankers on the rest.
+                Assign Double Chances by highest marginal survival gain or optimize automatically for a maximum stake budget.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant={hedgedCount === 0 ? 'default' : 'outline'}
-                onClick={() => applyStrategyPreset(0)}
-                className="text-xs font-semibold"
-              >
-                Pure Banker (1 Line · {activeProvider.currency} {activeProvider.lineCost})
-              </Button>
-              <Button
-                size="sm"
-                variant={hedgedCount === 2 ? 'default' : 'outline'}
-                onClick={() => applyStrategyPreset(2)}
-                className="text-xs font-semibold"
-              >
-                2 Double Chances (4 Lines · {activeProvider.currency} {(4 * activeProvider.lineCost).toLocaleString()})
-              </Button>
-              <Button
-                size="sm"
-                variant={hedgedCount === 3 ? 'default' : 'outline'}
-                onClick={() => applyStrategyPreset(3)}
-                className="text-xs font-semibold"
-              >
-                3 Double Chances (8 Lines · {activeProvider.currency} {(8 * activeProvider.lineCost).toLocaleString()})
-              </Button>
-              <Button
-                size="sm"
-                variant={hedgedCount === 4 ? 'default' : 'outline'}
-                onClick={() => applyStrategyPreset(4)}
-                className="text-xs font-semibold"
-              >
-                4 Double Chances (16 Lines · {activeProvider.currency} {(16 * activeProvider.lineCost).toLocaleString()})
-              </Button>
-              <Button
-                size="sm"
-                variant={hedgedCount === 5 ? 'default' : 'outline'}
-                onClick={() => applyStrategyPreset(5)}
-                className="text-xs font-semibold"
-              >
-                5 Double Chances (32 Lines · {activeProvider.currency} {(32 * activeProvider.lineCost).toLocaleString()})
-              </Button>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {[0, 2, 3, 4, 5].map((cnt) => {
+                  const lines = Math.pow(2, cnt);
+                  const active = hedgedCount === cnt && survivalProfile.tripleCount === 0;
+                  return (
+                    <Button
+                      key={cnt}
+                      size="sm"
+                      variant={active ? 'default' : 'outline'}
+                      onClick={() => applyStrategyPreset(cnt)}
+                      className="text-xs font-semibold font-mono tabular-nums whitespace-nowrap shrink-0"
+                    >
+                      {cnt === 0 ? 'Pure Banker (1 Line)' : `${cnt} Doubles (${lines}x)`} · {activeProviderMeta.currencySymbol}{' '}
+                      {(lines * activeProviderMeta.baseStake).toLocaleString()}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border/60">
+                <span className="text-xs font-semibold text-foreground">Budget Target ({activeProviderMeta.currencySymbol}):</span>
+                <input
+                  type="number"
+                  min={activeProviderMeta.baseStake}
+                  step={50}
+                  value={budgetInput}
+                  onChange={(e) => setBudgetInput(Math.max(activeProviderMeta.baseStake, Number(e.target.value) || activeProviderMeta.baseStake))}
+                  className="w-28 h-8 px-2.5 rounded-md border border-border bg-background text-xs font-mono tabular-nums"
+                  aria-label="Maximum stake budget"
+                />
+                <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allowTriples}
+                    onChange={(e) => setAllowTriples(e.target.checked)}
+                    className="rounded border-border"
+                  />
+                  Allow Triples (1X2)
+                </label>
+                <Button size="sm" onClick={handleApplyBudgetOptimization} className="h-8 text-xs font-bold gap-1.5 whitespace-nowrap shrink-0">
+                  <Sparkles className="w-3.5 h-3.5" /> Optimize Within Budget
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -838,30 +589,32 @@ export const JackpotGeneratorPage: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center justify-between">
                 <span>Combination Telemetry</span>
-                <span className="font-mono text-xs text-primary">
-                  2^{hedgedCount} = {generatedLines.length} Slips
+                <span className="font-mono text-xs text-primary tabular-nums">
+                  {totalPossible} Slips
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs">
+            <CardContent className="space-y-2 text-xs font-mono tabular-nums">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Single Bankers Locked:</span>
-                <span className="font-bold text-foreground">{activeFixtures.length - hedgedCount} Games</span>
+                <span className="text-muted-foreground font-sans">Bankers / Multi-Picks:</span>
+                <span className="font-bold text-foreground">
+                  {survivalProfile.singleCount} Single · {survivalProfile.doubleCount} DC · {survivalProfile.tripleCount} Triple
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Double Chance Hedges:</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400">
-                  {hedgedCount} / {MAX_HEDGED_GAMES} Max
+                <span className="text-muted-foreground font-sans">Expected Hits (Poisson):</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  {survivalProfile.expectedCorrect} / {activeFixtures.length}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-primary/20">
-                <span className="font-semibold text-foreground">Total Combination Stake:</span>
+                <span className="font-semibold text-foreground font-sans">Total Combination Stake:</span>
                 <span className="text-base font-black text-primary">
-                  {activeProvider.currency} {totalCost.toLocaleString()}
+                  {activeProviderMeta.currencySymbol} {survivalProfile.totalStake.toLocaleString()}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Eligible for: {activeProvider.bonusTiers.join(' · ')}
+              <p className="text-[11px] text-muted-foreground font-sans truncate">
+                {activeProviderMeta.bonusTiers}
               </p>
             </CardContent>
           </Card>
@@ -874,14 +627,14 @@ export const JackpotGeneratorPage: React.FC = () => {
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Layers className="h-5 w-5 text-primary" />
-                  Interactive {activeProvider.totalGames}-Game Selection Matrix
+                  Interactive {activeFixtures.length}-Game Selection Matrix
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Click 1, X, or 2 to toggle outcomes. Selecting 2 outcomes on a fixture turns it into a Double Chance hedge across your generated slips.
+                  Click 1, X, or 2 to toggle outcomes. Selecting 2 outcomes creates a Double Chance hedge across your generated slips.
                 </CardDescription>
               </div>
               <span className="text-xs font-mono text-muted-foreground">
-                Click any 2 buttons per row for Double Chance (1X / X2 / 12)
+                Up to {MAX_HEDGED_GAMES} Double Chances (64 Preview Lines)
               </span>
             </div>
           </CardHeader>
@@ -890,70 +643,69 @@ export const JackpotGeneratorPage: React.FC = () => {
               <thead>
                 <tr className="border-y border-border bg-muted/40 text-muted-foreground uppercase">
                   <th className="py-2.5 px-3 font-semibold">#</th>
-                  <th className="py-2.5 px-3 font-semibold">Fixture &amp; Tactical Note</th>
-                  <th className="py-2.5 px-3 font-semibold">AI Risk Classification</th>
+                  <th className="py-2.5 px-3 font-semibold">Fixture &amp; Poisson Model</th>
+                  <th className="py-2.5 px-3 font-semibold">Risk Profile</th>
                   <th className="py-2.5 px-3 font-semibold text-center">Select Outcomes (1 / X / 2)</th>
-                  <th className="py-2.5 px-3 font-semibold text-right">Active Pick &amp; Live Grade</th>
+                  <th className="py-2.5 px-3 font-semibold text-right">Active Pick &amp; Grade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {activeFixtures.map((fixture) => {
-                  const selected = picksMap[fixture.gameNo] || [fixture.aiBanker];
+                  const activeCode = activePicksMap[fixture.fixtureId] || fixture.recommendedPick;
+                  const selected = getPickOutcomes(activeCode);
                   const isHedged = selected.length > 1;
-                  const activePickCode = selected.slice().sort().join('');
-                  const isCoveredHit = fixture.actualOutcome ? selected.includes(fixture.actualOutcome) : null;
+                  const settledMatch = settledResult.matches.find((m) => m.fixtureId === fixture.fixtureId);
+                  const isCoveredHit =
+                    settledMatch && settledMatch.actualOutcome && (settledMatch.status === 'finished' || settledMatch.status === 'live')
+                      ? selected.includes(settledMatch.actualOutcome)
+                      : null;
+                  const topProb = Math.max(fixture.homeProb, fixture.drawProb, fixture.awayProb);
 
                   return (
                     <tr
-                      key={fixture.gameNo}
+                      key={fixture.fixtureId}
                       className={`hover:bg-muted/30 transition-colors ${isHedged ? 'bg-amber-500/5' : ''}`}
                     >
-                      <td className="py-3 px-3 font-mono font-bold text-muted-foreground">
-                        {fixture.gameNo}
+                      <td className="py-3 px-3 font-mono font-bold text-muted-foreground tabular-nums">
+                        {fixture.id}
                       </td>
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-2 font-bold text-sm text-foreground flex-wrap">
-                          <TeamLogo team={fixture.homeTeam} size="xs" />
+                          <TeamLogo team={fixture.homeTeam} logoUrl={fixture.homeLogo} size="xs" />
                           <span>{fixture.homeTeam}</span>
-                          {fixture.liveStatus && typeof fixture.homeScore === 'number' ? (
-                            <span
-                              className={`px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${
-                                fixture.liveStatus === 'LIVE'
-                                  ? 'bg-rose-500/20 text-rose-500 border border-rose-500/30 animate-pulse'
-                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                              }`}
-                            >
-                              {fixture.liveStatus} {fixture.homeScore}-{fixture.awayScore}
+                          {settledMatch && (settledMatch.status === 'live' || settledMatch.status === 'finished') && settledMatch.homeScore != null ? (
+                            <span className="px-1.5 py-0.5 rounded font-mono text-[11px] font-black tabular-nums bg-slate-900 text-emerald-400">
+                              {settledMatch.homeScore}-{settledMatch.awayScore} {settledMatch.minute || settledMatch.status.toUpperCase()}
                             </span>
                           ) : (
                             <span className="text-muted-foreground font-normal text-xs">vs</span>
                           )}
-                          <TeamLogo team={fixture.awayTeam} size="xs" />
+                          <TeamLogo team={fixture.awayTeam} logoUrl={fixture.awayLogo} size="xs" />
                           <span>{fixture.awayTeam}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 font-mono tabular-nums">
                           <span>{fixture.league}</span>
                           <span aria-hidden="true">·</span>
                           <span>{fixture.kickoff}</span>
                           <span aria-hidden="true">·</span>
-                          <span className="text-foreground/80">{fixture.tacticalNote}</span>
+                          <span>xG {fixture.homeXG}–{fixture.awayXG}</span>
                         </div>
                       </td>
                       <td className="py-3 px-3">
                         <div className="space-y-0.5">
                           <span
                             className={`font-bold text-[11px] ${
-                              fixture.varianceLevel === 'BANKER LOCK'
+                              fixture.isBanker
                                 ? 'text-emerald-600 dark:text-emerald-400'
-                                : fixture.varianceLevel === 'HIGH VARIANCE COIN-FLIP'
+                                : fixture.isValueDraw
                                 ? 'text-amber-600 dark:text-amber-400'
                                 : 'text-sky-600 dark:text-sky-400'
                             }`}
                           >
-                            {fixture.varianceLevel}
+                            {fixture.isBanker ? 'BANKER LOCK' : fixture.isValueDraw ? 'HIGH VARIANCE DRAW RISK' : 'BALANCED PARITY'}
                           </span>
-                          <p className="text-[11px] text-muted-foreground">
-                            AI Confidence: <strong>{fixture.aiConfidence}%</strong> (Banker: {fixture.aiBanker})
+                          <p className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                            Prob {topProb}% · AI: {fixture.recommendedPick}
                           </p>
                         </div>
                       </td>
@@ -961,9 +713,9 @@ export const JackpotGeneratorPage: React.FC = () => {
                         <div className="flex items-center justify-center gap-1.5">
                           {(
                             [
-                              { opt: '1' as PickOption, odds: fixture.odds1 },
-                              { opt: 'X' as PickOption, odds: fixture.oddsX },
-                              { opt: '2' as PickOption, odds: fixture.odds2 },
+                              { opt: '1' as SinglePick, odds: fixture.homeOdds },
+                              { opt: 'X' as SinglePick, odds: fixture.drawOdds },
+                              { opt: '2' as SinglePick, odds: fixture.awayOdds },
                             ] as const
                           ).map(({ opt, odds }) => {
                             const active = selected.includes(opt);
@@ -971,17 +723,17 @@ export const JackpotGeneratorPage: React.FC = () => {
                               <button
                                 key={opt}
                                 type="button"
-                                onClick={() => handleTogglePick(fixture.gameNo, opt)}
-                                className={`min-w-[68px] py-1.5 px-2.5 rounded-md border text-xs font-bold transition-all cursor-pointer ${
+                                onClick={() => handleTogglePick(fixture.fixtureId, opt)}
+                                className={`min-w-[64px] py-1.5 px-2 rounded-md border text-xs font-bold transition-colors cursor-pointer font-mono tabular-nums ${
                                   active
                                     ? isHedged
-                                      ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm'
-                                      : 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                      ? 'bg-amber-500 text-slate-950 border-amber-500'
+                                      : 'bg-primary text-primary-foreground border-primary'
                                     : 'bg-background hover:bg-muted text-foreground border-border'
                                 }`}
                               >
                                 <span className="block">{opt}</span>
-                                <span className="block text-[10px] font-mono opacity-85">{odds.toFixed(2)}</span>
+                                <span className="block text-[10px] opacity-85">{odds.toFixed(2)}</span>
                               </button>
                             );
                           })}
@@ -993,11 +745,15 @@ export const JackpotGeneratorPage: React.FC = () => {
                             isHedged ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
                           }`}
                         >
-                          {isHedged ? `HEDGE (${activePickCode})` : `BANKER (${activePickCode})`}
+                          {selected.length === 3
+                            ? 'TRIPLE (1X2)'
+                            : isHedged
+                            ? `HEDGE (${activeCode})`
+                            : `BANKER (${activeCode})`}
                         </span>
-                        {isCoveredHit !== null && (
+                        {isCoveredHit !== null && settledMatch?.actualOutcome && (
                           <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${
                               isCoveredHit
                                 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                                 : 'bg-rose-500/15 text-rose-500'
@@ -1005,11 +761,11 @@ export const JackpotGeneratorPage: React.FC = () => {
                           >
                             {isCoveredHit ? (
                               <>
-                                <CheckCircle2 className="h-3 w-3" /> HIT ({fixture.actualOutcome})
+                                <CheckCircle2 className="h-3 w-3" /> HIT ({settledMatch.actualOutcome})
                               </>
                             ) : (
                               <>
-                                <XCircle className="h-3 w-3" /> MISS ({fixture.actualOutcome})
+                                <XCircle className="h-3 w-3" /> MISS ({settledMatch.actualOutcome})
                               </>
                             )}
                           </span>
@@ -1029,20 +785,21 @@ export const JackpotGeneratorPage: React.FC = () => {
             <div>
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                Generated Single-Line Jackpot Combinations ({generatedLines.length} Playable Slips)
+                Generated Single-Line Combinations ({generatedLines.length}
+                {truncated ? ` of ${totalPossible}` : ''} Slips)
               </h2>
               <p className="text-xs text-muted-foreground">
-                Each card below is an independent single-line entry covering a unique permutation of your Double Chance hedges.
+                Each card is a playable single-line ticket covering a unique permutation of your Double Chance hedges.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <a
                 href={`https://wa.me/254721418238?text=${encodeURIComponent(
-                  `Hello PredictPro VIP, I generated ${generatedLines.length} lines for the ${activeProvider.name} and want the official VIP Syndicate Split.`
+                  `Hello PredictPro VIP, I generated ${totalPossible} lines for ${activeProviderMeta.name} and want the VIP Syndicate Split.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors whitespace-nowrap shrink-0"
               >
                 <Share2 className="h-3.5 w-3.5" />
                 VIP Jackpot Syndicate (+254721418238)
@@ -1054,16 +811,19 @@ export const JackpotGeneratorPage: React.FC = () => {
             {generatedLines.map((line) => (
               <Card key={line.lineNo} className="border-border hover:border-primary/40 transition-colors">
                 <CardContent className="p-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between font-mono tabular-nums">
                     <span className="text-xs font-bold text-foreground">
                       Combination #{line.lineNo}
                     </span>
-                    <span className="font-mono text-xs font-bold text-primary">{line.code}</span>
+                    <span className="text-xs font-bold text-primary">{line.code}</span>
                   </div>
 
-                  <div className="grid grid-cols-6 gap-1 p-2 rounded-lg bg-muted/40 border border-border/60 font-mono text-[11px]">
+                  <div className="grid grid-cols-6 gap-1 p-2 rounded-lg bg-muted/40 border border-border/60 font-mono text-[11px] tabular-nums">
                     {line.picks.map((pick, idx) => {
-                      const isHedgedGame = (picksMap[idx + 1]?.length || 1) > 1;
+                      const f = activeFixtures[idx];
+                      const isHedgedGame = f
+                        ? getPickOutcomes(activePicksMap[f.fixtureId] || f.recommendedPick).length > 1
+                        : false;
                       return (
                         <div
                           key={idx}
@@ -1081,19 +841,19 @@ export const JackpotGeneratorPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-[11px] text-muted-foreground">
-                      Stake: <strong>{activeProvider.currency} {activeProvider.lineCost}</strong>
+                    <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                      Stake: <strong className="text-foreground">{activeProviderMeta.currencySymbol} {activeProviderMeta.baseStake}</strong>
                     </span>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        navigator.clipboard.writeText(
-                          `${activeProvider.name} Line #${line.lineNo} [${line.code}]: ${line.picks
+                        navigator.clipboard?.writeText(
+                          `${activeProviderMeta.name} Line #${line.lineNo} [${line.code}]: ${line.picks
                             .map((p, i) => `${i + 1}:${p}`)
                             .join(', ')}`
                         );
-                        toast.success(`Copied Line #${line.lineNo} (${line.code})!`);
+                        toast.success(`Copied Line #${line.lineNo} (${line.code}).`);
                       }}
                       className="h-7 px-2 text-xs gap-1 font-semibold"
                     >

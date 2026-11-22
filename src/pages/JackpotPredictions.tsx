@@ -16,10 +16,14 @@ import {
   fetchLiveJackpotPools,
   getInitialOfficialJackpotPools,
   buildUpcomingJackpotPoolFromEspn,
+  computeJackpotSurvivalProfile,
+  optimizeJackpotPicksForBudget,
+  formatJackpotSmsText,
   JACKPOT_PROVIDERS,
   JackpotProviderId,
   JackpotGame,
   JackpotPickOption,
+  JackpotExtendedPick,
 } from '@/services/jackpotService';
 import {
   Trophy,
@@ -108,13 +112,14 @@ export default function JackpotPredictions() {
     'BETIKA DIRECT API',
     'MOZZART OFFICIAL',
   ]);
-  const [customPicks, setCustomPicks] = useState<Record<string, JackpotPickOption>>({});
+  const [customPicks, setCustomPicks] = useState<Record<string, JackpotExtendedPick>>({});
   const [activeView, setActiveView] = useState<'predictions' | 'results' | 'history'>('predictions');
   const [cronTriggering, setCronTriggering] = useState<boolean>(false);
   const [cronStatusMessage, setCronStatusMessage] = useState<string | null>(null);
   const [selectedHistoryEditionId, setSelectedHistoryEditionId] = useState<string | null>(null);
   const [copiedSlip, setCopiedSlip] = useState(false);
   const [calculatorDoubles, setCalculatorDoubles] = useState<number>(3);
+  const [budgetInputKes, setBudgetInputKes] = useState<number>(1600);
   const [realFeedMatches, setRealFeedMatches] = useState<any[]>([]);
 
   const loadRealJackpotData = useCallback(
@@ -191,14 +196,14 @@ export default function JackpotPredictions() {
 
   // Reset or initialize user's interactive picks when switching provider pool
   const activePicks = useMemo(() => {
-    const map: Record<string, JackpotPickOption> = {};
+    const map: Record<string, JackpotExtendedPick> = {};
     for (const g of currentPool) {
       map[g.fixtureId] = customPicks[g.fixtureId] || g.recommendedPick;
     }
     return map;
   }, [currentPool, customPicks]);
 
-  const handleSelectPick = (fixtureId: string, option: JackpotPickOption) => {
+  const handleSelectPick = (fixtureId: string, option: JackpotExtendedPick) => {
     hapticService.selection();
     setCustomPicks((prev) => ({
       ...prev,
@@ -206,56 +211,60 @@ export default function JackpotPredictions() {
     }));
   };
 
-  // Strategy preset 1: Max Bonus Security (5 Double Chances)
+  // Strategy preset 1: Max Bonus Security (5 optimal Double Chances by log-survival gain)
   const handleApplyMaxBonusHedges = () => {
     hapticService.boost();
-    const next: Record<string, JackpotPickOption> = { ...customPicks };
-    let count = 0;
-    for (const g of currentPool) {
-      if (!g.isBanker && (g.doubleChance === '1X' || g.doubleChance === 'X2' || g.doubleChance === '12') && count < 5) {
-        next[g.fixtureId] = g.doubleChance;
-        count++;
-      } else {
-        next[g.fixtureId] = g.recommendedPick;
-      }
-    }
-    setCustomPicks(next);
+    const optimized = optimizeJackpotPicksForBudget(
+      provider,
+      currentPool,
+      currentMeta.baseStake * 32,
+      false
+    );
+    setCustomPicks((prev) => ({ ...prev, ...optimized.picks }));
     toast({
-      title: '🛡️ Max Bonus Strategy Applied',
-      description: `Applied ${count} Double Chance hedges (${Math.pow(2, count)} combinations) targeting 13/17 & 14/17 bonus payouts.`,
+      title: 'Max Bonus Strategy Applied',
+      description: `Optimized ${optimized.hedgedFixtureIds.length} Double Chances (${optimized.survivalProfile.totalCombinations} slips) · ${optimized.survivalProfile.bonusZoneProbabilityPct}% Bonus Zone survival.`,
     });
   };
 
-  // Strategy preset 2: Balanced Pro (3 Double Chances)
+  // Strategy preset 2: Balanced Pro (3 optimal Double Chances by log-survival gain)
   const handleApplyBalancedPro = () => {
     hapticService.selection();
-    const next: Record<string, JackpotPickOption> = { ...customPicks };
-    let count = 0;
-    for (const g of currentPool) {
-      if ((g.isValueDraw || g.drawProb >= 30) && count < 3) {
-        next[g.fixtureId] = g.doubleChance || '1X';
-        count++;
-      } else {
-        next[g.fixtureId] = g.recommendedPick;
-      }
-    }
-    setCustomPicks(next);
+    const optimized = optimizeJackpotPicksForBudget(
+      provider,
+      currentPool,
+      currentMeta.baseStake * 8,
+      false
+    );
+    setCustomPicks((prev) => ({ ...prev, ...optimized.picks }));
     toast({
-      title: '⚖️ Balanced Pro Strategy Applied',
-      description: `Applied ${count} Double Chance hedges (8 combinations) on top draw-risk games.`,
+      title: 'Balanced Pro Strategy Applied',
+      description: `Hedged top ${optimized.hedgedFixtureIds.length} coin-flips (${optimized.survivalProfile.totalCombinations} slips) · ${optimized.survivalProfile.bonusZoneProbabilityPct}% Bonus Zone survival.`,
+    });
+  };
+
+  // Budget-Constrained Auto-Optimizer handler
+  const handleOptimizeForBudget = (budgetKes: number) => {
+    hapticService.boost();
+    const optimized = optimizeJackpotPicksForBudget(provider, currentPool, budgetKes, false);
+    setCustomPicks((prev) => ({ ...prev, ...optimized.picks }));
+    setCalculatorDoubles(optimized.survivalProfile.doubleCount);
+    toast({
+      title: `Budget Optimized (${currentMeta.currencySymbol} ${optimized.budgetUsed.toLocaleString()})`,
+      description: `Allocated ${optimized.survivalProfile.doubleCount} optimal Double Chances (${optimized.survivalProfile.totalCombinations} lines) · ${optimized.survivalProfile.bonusZoneProbabilityPct}% chance of hitting ${optimized.survivalProfile.minBonusTarget}+/${optimized.survivalProfile.totalGames}.`,
     });
   };
 
   // Strategy preset 3: Pure Banker Single Slip (1x)
   const handleResetToSingleSlip = () => {
     hapticService.clear();
-    const next: Record<string, JackpotPickOption> = { ...customPicks };
+    const next: Record<string, JackpotExtendedPick> = { ...customPicks };
     for (const g of currentPool) {
       next[g.fixtureId] = g.recommendedPick;
     }
     setCustomPicks(next);
     toast({
-      title: '🎯 Pure Banker Single Slip',
+      title: 'Pure Banker Single Slip',
       description: 'Reset all games to highest-probability single outcome (1 combination).',
     });
   };
@@ -263,16 +272,15 @@ export default function JackpotPredictions() {
   // Copy entire slip to clipboard as SMS/Text string
   const handleCopySlipText = () => {
     hapticService.success();
-    const picksList = currentPool.map((g, i) => `${i + 1}: ${activePicks[g.fixtureId] || g.recommendedPick}`);
-    const slipText = `${currentMeta.name} Predictions (${new Date().toLocaleDateString()}):\n` + picksList.join(', ');
+    const smsText = formatJackpotSmsText(currentMeta, currentPool, activePicks);
 
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(slipText).then(() => {
+      navigator.clipboard.writeText(smsText).then(() => {
         setCopiedSlip(true);
         setTimeout(() => setCopiedSlip(false), 2500);
         toast({
-          title: '📋 Jackpot Slip Copied to Clipboard',
-          description: 'Ready to paste into bookmaker app, SMS, WhatsApp, or notes!',
+          title: 'Jackpot Slip Copied to Clipboard',
+          description: 'Ready to paste into bookmaker app, SMS, WhatsApp, or notes.',
         });
       });
     }
@@ -371,25 +379,25 @@ export default function JackpotPredictions() {
       .slice(0, 3);
   }, [currentPool]);
 
-  // Double Chance permutation math
+  // Exact Poisson-Binomial survival & permutation profile
+  const survivalProfile = useMemo(
+    () => computeJackpotSurvivalProfile(provider, currentPool, activePicks),
+    [provider, currentPool, activePicks]
+  );
+
   const permutationStats = useMemo(() => {
-    let doubleChanceCount = 0;
-    for (const g of currentPool) {
-      const pick = activePicks[g.fixtureId] || g.recommendedPick;
-      if (pick === '1X' || pick === 'X2' || pick === '12') {
-        doubleChanceCount++;
-      }
-    }
-
-    const combinations = Math.pow(2, doubleChanceCount);
-    const totalCost = combinations * currentMeta.baseStake;
-
     return {
-      doubleChanceCount,
-      combinations,
-      totalCost,
+      doubleChanceCount: survivalProfile.doubleCount,
+      tripleChanceCount: survivalProfile.tripleCount,
+      combinations: survivalProfile.totalCombinations,
+      totalCost: survivalProfile.totalStake,
     };
-  }, [currentPool, activePicks, currentMeta.baseStake]);
+  }, [survivalProfile]);
+
+  const calculatorPreviewProfile = useMemo(() => {
+    const budget = Math.pow(2, calculatorDoubles) * currentMeta.baseStake;
+    return optimizeJackpotPicksForBudget(provider, currentPool, budget, false).survivalProfile;
+  }, [provider, currentPool, calculatorDoubles, currentMeta.baseStake]);
 
   const handleLoadToBetSlip = (onlyBankers: boolean) => {
     hapticService.success();
@@ -508,7 +516,7 @@ export default function JackpotPredictions() {
         description="Algorithmic 17-game SportPesa Mega Jackpot selections and Betika Midweek combinations. Balance high-probability bankers with strategic Double Chance hedges."
         canonical="/jackpot-predictions"
         keywords="sportpesa mega jackpot prediction 17 games, sportpesa mega jackpot prediction this weekend, betika grand jackpot prediction 17 games, betika midweek jackpot 15 games, mozzart daily jackpot tips, mega jackpot sure banker predictions, double chance jackpot permutations"
-        jsonLd={faqJsonLd}
+        structuredData={faqJsonLd}
       />
       <Navbar />
 
@@ -520,13 +528,13 @@ export default function JackpotPredictions() {
             <div className="bg-slate-900 text-white p-6 rounded-xl border border-slate-800 space-y-4">
               {/* Top Bar */}
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                  <span className="font-bold uppercase tracking-wider text-emerald-400">
                     Official 17 &amp; 15 Game Jackpot Pools · Poisson Permutation Engine
                   </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-[11px] font-mono text-slate-300 flex items-center gap-1.5">
-                    <Radio className="h-3 w-3 animate-pulse text-emerald-400" />
+                  <span className="text-slate-600" aria-hidden="true">·</span>
+                  <span className="font-mono tabular-nums text-slate-300 flex items-center gap-1.5">
+                    <Radio className="h-3 w-3 text-emerald-400" />
                     Live Schedule ({currentPool.length} Fixtures)
                   </span>
                 </div>
@@ -536,7 +544,7 @@ export default function JackpotPredictions() {
                     variant="outline"
                     size="sm"
                     onClick={handleCopySlipText}
-                    className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-white hover:bg-slate-800 text-xs"
+                    className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-white hover:bg-slate-800 text-xs whitespace-nowrap shrink-0"
                   >
                     {copiedSlip ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4 text-emerald-400" />}
                     <span>{copiedSlip ? 'Copied Slip!' : 'Copy Slip (Text / SMS)'}</span>
@@ -546,18 +554,18 @@ export default function JackpotPredictions() {
                     variant="outline"
                     size="sm"
                     onClick={handleDownloadJackpotPng}
-                    className="min-h-[36px] gap-1.5 font-bold border-emerald-500/40 bg-slate-950 text-emerald-400 hover:bg-emerald-500/10 text-xs"
+                    className="min-h-[36px] gap-1.5 font-bold border-emerald-500/40 bg-slate-950 text-emerald-400 hover:bg-emerald-500/10 text-xs whitespace-nowrap shrink-0"
                     title="Download 2x High-DPI Jackpot Slip PNG Card"
                   >
                     <Download className="h-4 w-4 text-emerald-400" />
                     <span>Save Slip PNG</span>
                   </Button>
 
-                  <Link to="/slip-generator">
+                  <Link to="/slip-generator" className="shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-slate-200 hover:bg-slate-800 text-xs"
+                      className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-slate-200 hover:bg-slate-800 text-xs whitespace-nowrap shrink-0"
                       title="Convert Jackpot Booking Code to SportyBet, 1xBet, or Bet9ja"
                     >
                       <Ticket className="h-4 w-4 text-amber-400" />
@@ -569,7 +577,7 @@ export default function JackpotPredictions() {
                     variant="outline"
                     size="sm"
                     onClick={handleShareWhatsApp}
-                    className="min-h-[36px] gap-1.5 font-bold border-emerald-500/40 bg-slate-950 text-emerald-400 hover:bg-emerald-500/10 text-xs"
+                    className="min-h-[36px] gap-1.5 font-bold border-emerald-500/40 bg-slate-950 text-emerald-400 hover:bg-emerald-500/10 text-xs whitespace-nowrap shrink-0"
                     title="Share 17-match jackpot predictions on WhatsApp"
                   >
                     <Share2 className="h-4 w-4 text-emerald-400" />
@@ -581,7 +589,7 @@ export default function JackpotPredictions() {
                     size="sm"
                     onClick={() => loadRealJackpotData(true)}
                     disabled={refreshing}
-                    className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-white hover:bg-slate-800 text-xs"
+                    className="min-h-[36px] gap-1.5 font-bold border-slate-700 bg-slate-950 text-white hover:bg-slate-800 text-xs whitespace-nowrap shrink-0"
                   >
                     <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin text-emerald-400' : 'text-emerald-400'}`} />
                     <span>{refreshing ? 'Syncing...' : 'Sync Pools'}</span>
@@ -694,35 +702,45 @@ export default function JackpotPredictions() {
               </div>
             </div>
 
-            {/* Permutation Calculator & Combinations Strip */}
+            {/* Permutation Calculator & Poisson Survival Telemetry Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-card border border-border/60">
-                <p className="text-[11px] text-muted-foreground">Total Pool Games</p>
-                <p className="text-lg font-black text-foreground">{currentPool.length} Fixtures</p>
-                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">100% Sequence Synced</p>
+                <p className="text-[11px] text-muted-foreground">Poisson Expected Hits</p>
+                <p className="text-lg font-black font-mono tabular-nums text-foreground">
+                  {survivalProfile.expectedCorrect} / {currentPool.length}
+                </p>
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">
+                  {bankerCount} Banker Locks · {drawAlertCount} Draw Alerts
+                </p>
               </div>
 
               <div className="p-3 rounded-xl bg-card border border-border/60">
-                <p className="text-[11px] text-muted-foreground">AI Banker Locks</p>
-                <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{bankerCount} Matches</p>
-                <p className="text-[10px] text-muted-foreground">&gt;50% Statistical Win Rate</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Bonus Survival (P≥{survivalProfile.minBonusTarget}/{currentPool.length})
+                </p>
+                <p className="text-lg font-black font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
+                  {survivalProfile.bonusZoneProbabilityPct}%
+                </p>
+                <p className="text-[10px] text-muted-foreground font-mono tabular-nums">
+                  Full Ticket: {survivalProfile.jackpotFullProbabilityPct}%
+                </p>
               </div>
 
               <div className="p-3 rounded-xl bg-card border border-border/60">
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <Calculator className="h-3 w-3 text-primary" /> Permutations (2^N)
+                  <Calculator className="h-3 w-3 text-primary" /> Permutations (2^D × 3^T)
                 </p>
-                <p className="text-lg font-black text-primary">
-                  {permutationStats.combinations} {permutationStats.combinations === 1 ? 'Slip' : 'Slips'}
+                <p className="text-lg font-black font-mono tabular-nums text-primary">
+                  {permutationStats.combinations.toLocaleString()} {permutationStats.combinations === 1 ? 'Slip' : 'Slips'}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {permutationStats.doubleChanceCount} Double Chances Active
+                  {permutationStats.doubleChanceCount} Doubles · {permutationStats.tripleChanceCount} Triples
                 </p>
               </div>
 
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
                 <p className="text-[11px] text-amber-900 dark:text-amber-300 font-semibold">Estimated Stake</p>
-                <p className="text-lg font-black text-amber-900 dark:text-amber-300">
+                <p className="text-lg font-black font-mono tabular-nums text-amber-900 dark:text-amber-300">
                   {currentMeta.currencySymbol} {permutationStats.totalCost.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
@@ -748,7 +766,6 @@ export default function JackpotPredictions() {
                       Automated Jackpot Cron &amp; Settlement Trigger
                     </span>
                     <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Schedule: */15 * * * * (Every 15 Mins)
                     </Badge>
                   </div>
@@ -802,7 +819,7 @@ export default function JackpotPredictions() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/50 text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="text-muted-foreground text-[11px]">Round Status:</span>
-                <Badge className={`text-[10px] font-bold ${settlementSummary.isOver ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40' : settlementSummary.liveGames > 0 ? 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40 animate-pulse' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/40'}`}>
+                <Badge className={`text-[10px] font-bold ${settlementSummary.isOver ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40' : settlementSummary.liveGames > 0 ? 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/40'}`}>
                   {settlementSummary.isOver ? 'COMPLETED (Rolled Over)' : settlementSummary.liveGames > 0 ? `${settlementSummary.liveGames} IN PLAY` : 'ACTIVE UPCOMING'}
                 </Badge>
               </div>
@@ -1032,40 +1049,49 @@ export default function JackpotPredictions() {
                                   <TeamLogo team={g.awayTeam} logoUrl={g.awayLogo} size="xs" />
                                   <span className="truncate">{g.awayTeam}</span>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-muted-foreground font-mono tabular-nums">
                                   {g.smsId && (
-                                    <Badge variant="secondary" className="text-[9px] px-1 py-0 font-mono font-bold">
-                                      ID: {g.smsId}
-                                    </Badge>
+                                    <>
+                                      <span className="font-bold text-foreground/80">ID:{g.smsId}</span>
+                                      <span aria-hidden="true">·</span>
+                                    </>
                                   )}
-                                  <span className="font-medium">{g.league}</span>
-                                  <span>·</span>
+                                  <span className="font-sans font-medium">{g.league}</span>
+                                  <span aria-hidden="true">·</span>
                                   <span>{g.kickoff}</span>
                                   {settledLeg?.status === 'live' && (
-                                    <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 text-[9px] py-0 px-1 font-mono font-bold animate-pulse">
-                                      LIVE {settledLeg.minute || ''}
-                                    </Badge>
+                                    <>
+                                      <span aria-hidden="true">·</span>
+                                      <span className="font-bold text-rose-600 dark:text-rose-400">
+                                        LIVE {settledLeg.minute || ''}
+                                      </span>
+                                    </>
                                   )}
                                   {settledLeg?.status === 'finished' && (
-                                    <Badge
-                                      className={`text-[9px] py-0 px-1 font-mono font-bold ${
-                                        settledLeg.isWon || settledLeg.doubleChanceWon
-                                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
-                                          : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30'
-                                      }`}
-                                    >
-                                      FT · {settledLeg.isWon || settledLeg.doubleChanceWon ? 'LEG WON' : 'MISSED'}
-                                    </Badge>
+                                    <>
+                                      <span aria-hidden="true">·</span>
+                                      <span
+                                        className={`font-bold ${
+                                          settledLeg.isWon || settledLeg.doubleChanceWon
+                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                            : 'text-rose-600 dark:text-rose-400'
+                                        }`}
+                                      >
+                                        FT {settledLeg.isWon || settledLeg.doubleChanceWon ? 'WON' : 'MISSED'}
+                                      </span>
+                                    </>
                                   )}
                                   {g.isBanker && (
-                                    <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-[9px] py-0 px-1 font-bold">
-                                      BANKER
-                                    </Badge>
+                                    <>
+                                      <span aria-hidden="true">·</span>
+                                      <span className="font-bold text-emerald-600 dark:text-emerald-400">BANKER</span>
+                                    </>
                                   )}
                                   {g.isValueDraw && (
-                                    <Badge className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 text-[9px] py-0 px-1 font-bold">
-                                      DRAW ALERT
-                                    </Badge>
+                                    <>
+                                      <span aria-hidden="true">·</span>
+                                      <span className="font-bold text-amber-600 dark:text-amber-400">DRAW ALERT</span>
+                                    </>
                                   )}
                                 </div>
                               </div>
@@ -1074,7 +1100,7 @@ export default function JackpotPredictions() {
                             {/* AI Probability % */}
                             <td className="py-3.5 px-3 text-center">
                               <div className="space-y-1">
-                                <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold">
+                                <div className="flex items-center justify-center gap-2 text-xs font-mono tabular-nums font-bold">
                                   <span className={g.homeProb >= 50 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-foreground'}>
                                     1: {g.homeProb}%
                                   </span>
@@ -1097,10 +1123,10 @@ export default function JackpotPredictions() {
 
                             {/* xG & Projected Score */}
                             <td className="py-3.5 px-3 text-center">
-                              <Badge variant="secondary" className="font-mono font-black text-xs px-2 py-0.5">
+                              <span className="font-mono font-black text-xs tabular-nums text-foreground">
                                 {g.scoreline}
-                              </Badge>
-                              <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                              </span>
+                              <div className="text-[10px] font-mono tabular-nums text-muted-foreground mt-0.5">
                                 xG: {g.homeXG} vs {g.awayXG}
                               </div>
                             </td>
@@ -1120,10 +1146,10 @@ export default function JackpotPredictions() {
                               </span>
                             </td>
 
-                            {/* Interactive Pick Selector */}
+                            {/* Interactive Pick Selector (Singles, Doubles, Triple) */}
                             <td className="py-3.5 px-3 text-center">
                               <div className="inline-flex items-center gap-1 flex-wrap justify-center">
-                                {(['1', 'X', '2', '1X', 'X2', '12'] as JackpotPickOption[]).map((opt) => {
+                                {(['1', 'X', '2', '1X', 'X2', '12', '1X2'] as JackpotExtendedPick[]).map((opt) => {
                                   const isSelected = userPick === opt;
                                   const isAIHedge = g.doubleChance === opt && opt.length === 2;
                                   return (
@@ -1131,11 +1157,19 @@ export default function JackpotPredictions() {
                                       key={opt}
                                       type="button"
                                       onClick={() => handleSelectPick(g.fixtureId, opt)}
-                                      title={isAIHedge ? `AI Recommended Double Chance (${opt})` : `Select ${opt}`}
+                                      title={
+                                        opt === '1X2'
+                                          ? 'Triple Chance Cover (All 3 Outcomes · 3x lines)'
+                                          : isAIHedge
+                                          ? `AI Recommended Double Chance (${opt})`
+                                          : `Select ${opt}`
+                                      }
                                       aria-label={`Select ${opt} for ${g.match}`}
-                                      className={`h-7 px-2 rounded text-[11px] font-black border transition-all cursor-pointer ${
+                                      className={`h-7 px-2 rounded text-[11px] font-black border transition-all cursor-pointer whitespace-nowrap ${
                                         isSelected
-                                          ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-105'
+                                          ? opt === '1X2'
+                                            ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-xs'
+                                            : 'bg-primary text-primary-foreground border-primary shadow-xs'
                                           : isAIHedge
                                           ? 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20'
                                           : 'bg-muted/40 text-muted-foreground border-border/50 hover:text-foreground hover:bg-muted'
@@ -1247,14 +1281,14 @@ export default function JackpotPredictions() {
                       className="bg-gradient-to-r from-emerald-500 via-primary to-emerald-400 transition-all duration-500"
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono pt-1">
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono tabular-nums pt-1">
                     <span>0 Correct</span>
-                    <span>10 (Tier 5)</span>
-                    <span>12 (Tier 4)</span>
-                    <span>13 (Tier 3)</span>
-                    <span>14 (Tier 2)</span>
-                    <span>15 (Tier 1)</span>
-                    <span className="font-bold text-foreground">17 (GRAND JACKPOT)</span>
+                    <span>{Math.max(8, currentPool.length - 5)} (Bonus)</span>
+                    <span>{Math.max(9, currentPool.length - 4)} (Tier 4)</span>
+                    <span>{Math.max(10, currentPool.length - 3)} (Tier 3)</span>
+                    <span>{Math.max(11, currentPool.length - 2)} (Tier 2)</span>
+                    <span>{Math.max(12, currentPool.length - 1)} (Tier 1)</span>
+                    <span className="font-bold text-foreground">{currentPool.length} (GRAND JACKPOT)</span>
                   </div>
                 </div>
 
@@ -1327,7 +1361,7 @@ export default function JackpotPredictions() {
                                 FT
                               </Badge>
                             ) : isLive ? (
-                              <Badge className="text-[10px] font-bold bg-rose-600 text-white animate-pulse">
+                              <Badge className="text-[10px] font-bold bg-rose-600 text-white">
                                 {m.minute || 'LIVE'}
                               </Badge>
                             ) : (
@@ -1337,7 +1371,7 @@ export default function JackpotPredictions() {
                             )}
                           </td>
 
-                          <td className="py-3.5 px-3 text-center font-mono font-black text-sm">
+                          <td className="py-3.5 px-3 text-center font-mono tabular-nums font-black text-sm">
                             {m.homeScore != null && m.awayScore != null ? (
                               <span className="px-2 py-0.5 rounded bg-muted">
                                 {m.homeScore} - {m.awayScore}
@@ -1375,8 +1409,8 @@ export default function JackpotPredictions() {
                                 </Badge>
                               )
                             ) : isLive ? (
-                              <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40 text-[10px] font-bold animate-pulse">
-                                IN PLAY ⏳
+                              <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/40 text-[10px] font-bold">
+                                IN PLAY
                               </Badge>
                             ) : (
                               <span className="text-[10px] text-muted-foreground">Awaiting Kickoff</span>
@@ -1567,25 +1601,43 @@ export default function JackpotPredictions() {
               </Card>
             </div>
 
-            {/* Interactive Permutation & Stake Calculator */}
+            {/* Interactive Permutation & Budget-Constrained EV Optimizer */}
             <div className="mt-8 p-6 rounded-2xl bg-card border border-border/80 space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-lg font-black text-foreground flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-primary" /> Double Chance Permutation &amp; Budget Optimizer
+                    <Calculator className="h-5 w-5 text-primary" /> Double Chance Permutation &amp; Budget EV Optimizer
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Calculate exact combinations (2ⁿ) and official stakes for {currentMeta.shortName} ({currentMeta.currency} {currentMeta.baseStake} per line).
+                    Maximize Poisson-Binomial survival odds for {currentMeta.shortName} ({currentMeta.currencySymbol} {currentMeta.baseStake} per line) using marginal log-gain ranking.
                   </p>
                 </div>
-                <Badge variant="outline" className="font-mono text-xs border-primary/30 text-primary w-fit">
-                  Formula: 2ⁿ × Stake
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1">
+                    <span className="text-[11px] font-semibold text-muted-foreground">Budget ({currentMeta.currencySymbol}):</span>
+                    <input
+                      type="number"
+                      min={currentMeta.baseStake}
+                      step={100}
+                      value={budgetInputKes}
+                      onChange={(e) => setBudgetInputKes(Math.max(currentMeta.baseStake, Number(e.target.value) || currentMeta.baseStake))}
+                      className="w-20 bg-transparent text-xs font-mono font-bold tabular-nums focus:outline-none text-foreground"
+                      aria-label="Max Jackpot Budget"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleOptimizeForBudget(budgetInputKes)}
+                    className="h-8 text-xs font-bold whitespace-nowrap shrink-0"
+                  >
+                    Optimize &amp; Apply to Slip
+                  </Button>
+                </div>
               </div>
 
               {/* Selector Buttons for Double Chances */}
               <div className="space-y-2">
-                <p className="text-xs font-bold text-foreground">Select Number of Double Chances (Hedges):</p>
+                <p className="text-xs font-bold text-foreground">Select Number of Optimal Double Chances (Hedges):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                   {[0, 1, 2, 3, 4, 5, 6].map((num) => {
                     const slips = Math.pow(2, num);
@@ -1598,6 +1650,7 @@ export default function JackpotPredictions() {
                         onClick={() => {
                           hapticService.selection();
                           setCalculatorDoubles(num);
+                          setBudgetInputKes(cost);
                         }}
                         className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                           isSelected
@@ -1606,11 +1659,11 @@ export default function JackpotPredictions() {
                         }`}
                       >
                         <div className="text-xs font-black">{num} {num === 1 ? 'Double' : 'Doubles'}</div>
-                        <div className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>
+                        <div className={`text-[10px] font-mono tabular-nums mt-0.5 ${isSelected ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>
                           {slips} {slips === 1 ? 'Slip' : 'Slips'}
                         </div>
-                        <div className={`text-[11px] font-bold mt-1 ${isSelected ? 'text-white' : 'text-primary'}`}>
-                          {currentMeta.currency} {cost.toLocaleString()}
+                        <div className={`text-[11px] font-bold font-mono tabular-nums mt-1 ${isSelected ? 'text-white' : 'text-primary'}`}>
+                          {currentMeta.currencySymbol} {cost.toLocaleString()}
                         </div>
                       </button>
                     );
@@ -1618,25 +1671,60 @@ export default function JackpotPredictions() {
                 </div>
               </div>
 
-              {/* Calculated Strategy Output */}
-              <div className="grid sm:grid-cols-3 gap-3 p-4 rounded-xl bg-muted/30 border border-border/60 text-xs">
+              {/* Calculated Strategy Output + Tier Probabilities */}
+              <div className="grid sm:grid-cols-4 gap-3 p-4 rounded-xl bg-muted/30 border border-border/60 text-xs">
                 <div>
                   <span className="text-muted-foreground block text-[11px]">Total Generated Slips:</span>
-                  <span className="text-lg font-black font-mono text-foreground">{Math.pow(2, calculatorDoubles)} Permutations</span>
+                  <span className="text-lg font-black font-mono tabular-nums text-foreground">
+                    {calculatorPreviewProfile.totalCombinations} Permutations
+                  </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block text-[11px]">Total Ticket Investment:</span>
-                  <span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
-                    {currentMeta.currency} {(Math.pow(2, calculatorDoubles) * currentMeta.baseStake).toLocaleString()}
+                  <span className="text-lg font-black font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+                    {currentMeta.currencySymbol} {calculatorPreviewProfile.totalStake.toLocaleString()}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Bonus Catch Target:</span>
-                  <span className="text-lg font-black text-primary">
-                    {calculatorDoubles >= 4 ? '13 – 16 Correct Tiers' : calculatorDoubles >= 2 ? '12 – 14 Correct Tiers' : 'Single Pure Ticket'}
+                  <span className="text-muted-foreground block text-[11px]">Expected Correct Picks:</span>
+                  <span className="text-lg font-black font-mono tabular-nums text-foreground">
+                    {calculatorPreviewProfile.expectedCorrect} / {calculatorPreviewProfile.totalGames}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">
+                    Bonus Zone (P≥{calculatorPreviewProfile.minBonusTarget}/{calculatorPreviewProfile.totalGames}):
+                  </span>
+                  <span className="text-lg font-black font-mono tabular-nums text-primary">
+                    {calculatorPreviewProfile.bonusZoneProbabilityPct}%
                   </span>
                 </div>
               </div>
+
+              {calculatorPreviewProfile.tierProbabilities.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+                    <span className="font-bold text-muted-foreground">Poisson-Binomial Tier Survival:</span>
+                    {calculatorPreviewProfile.tierProbabilities.map((tp) => (
+                      <span
+                        key={tp.hits}
+                        className="font-mono tabular-nums text-foreground"
+                      >
+                        {tp.label}: <strong className="text-emerald-600 dark:text-emerald-400">{tp.probAtLeastPct}%</strong>
+                      </span>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleOptimizeForBudget(Math.pow(2, calculatorDoubles) * currentMeta.baseStake)}
+                    className="h-8 text-xs font-bold whitespace-nowrap shrink-0"
+                  >
+                    Apply {calculatorDoubles} {calculatorDoubles === 1 ? 'Double' : 'Doubles'} to Slip
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* 52-Week Historical Winning Combination Patterns & Draw Analysis */}

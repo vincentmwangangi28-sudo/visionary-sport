@@ -1,4 +1,4 @@
-import { JackpotGame, JackpotProviderId, JackpotPickOption, JACKPOT_PROVIDERS } from './jackpotService';
+import { JackpotGame, JackpotProviderId, JackpotExtendedPick, JACKPOT_PROVIDERS } from './jackpotService';
 
 export interface JackpotMatchResult {
   id: number;
@@ -17,7 +17,7 @@ export interface JackpotMatchResult {
   actualOutcome: '1' | 'X' | '2' | null;
   recommendedPick: '1' | 'X' | '2';
   doubleChance: '1X' | 'X2' | '12' | '1' | '2';
-  userPick: JackpotPickOption;
+  userPick: JackpotExtendedPick;
   isWon: boolean | null;
   doubleChanceWon: boolean | null;
   isBanker: boolean;
@@ -143,11 +143,12 @@ function deriveDeterministicResult(game: JackpotGame, nowMs: number): {
 function calculateBonusTier(
   provider: JackpotProviderId,
   correctCount: number,
-  totalGames: number
+  _totalGames: number
 ): { bonusWon: string | null; estimatedPayout: string | null } {
+  const prize = JACKPOT_PROVIDERS[provider].prizePool;
   if (provider === 'sportpesa') {
     // 17-game SportPesa Mega Jackpot
-    if (correctCount === 17) return { bonusWon: '🏆 GRAND MEGA JACKPOT WINNER!', estimatedPayout: 'KSh 135,461,953' };
+    if (correctCount === 17) return { bonusWon: 'GRAND MEGA JACKPOT WINNER', estimatedPayout: prize };
     if (correctCount === 16) return { bonusWon: 'Tier 1 Bonus (16/17)', estimatedPayout: 'KSh 4,250,000' };
     if (correctCount === 15) return { bonusWon: 'Tier 2 Bonus (15/17)', estimatedPayout: 'KSh 680,000' };
     if (correctCount === 14) return { bonusWon: 'Tier 3 Bonus (14/17)', estimatedPayout: 'KSh 125,000' };
@@ -155,19 +156,19 @@ function calculateBonusTier(
     if (correctCount === 12) return { bonusWon: 'Tier 5 Bonus (12/17)', estimatedPayout: 'KSh 5,800' };
   } else if (provider === 'betika' || provider === 'betika_grand') {
     // 15-game Betika Midweek & Grand
-    if (correctCount === 15) return { bonusWon: '🏆 GRAND JACKPOT WINNER!', estimatedPayout: provider === 'betika_grand' ? 'KSh 50,000,000' : 'KSh 15,000,000' };
+    if (correctCount === 15) return { bonusWon: 'GRAND JACKPOT WINNER', estimatedPayout: prize };
     if (correctCount === 14) return { bonusWon: 'Bonus Tier 1 (14/15)', estimatedPayout: 'KSh 1,200,000' };
     if (correctCount === 13) return { bonusWon: 'Bonus Tier 2 (13/15)', estimatedPayout: 'KSh 250,000' };
     if (correctCount === 12) return { bonusWon: 'Bonus Tier 3 (12/15)', estimatedPayout: 'KSh 45,000' };
   } else if (provider === 'sportpesa_midweek') {
     // 13-game SportPesa Midweek
-    if (correctCount === 13) return { bonusWon: '🏆 MIDWEEK JACKPOT WINNER!', estimatedPayout: 'KSh 13,609,790' };
+    if (correctCount === 13) return { bonusWon: 'MIDWEEK JACKPOT WINNER', estimatedPayout: prize };
     if (correctCount === 12) return { bonusWon: 'Tier 1 Bonus (12/13)', estimatedPayout: 'KSh 850,000' };
     if (correctCount === 11) return { bonusWon: 'Tier 2 Bonus (11/13)', estimatedPayout: 'KSh 95,000' };
     if (correctCount === 10) return { bonusWon: 'Tier 3 Bonus (10/13)', estimatedPayout: 'KSh 18,000' };
   } else if (provider === 'mozzart') {
     // 20-game Mozzart Super Grand
-    if (correctCount === 20) return { bonusWon: '🏆 SUPER GRAND JACKPOT WINNER!', estimatedPayout: 'KSh 200,000,000' };
+    if (correctCount === 20) return { bonusWon: 'SUPER GRAND JACKPOT WINNER', estimatedPayout: prize };
     if (correctCount >= 18) return { bonusWon: `Top Bonus (${correctCount}/20)`, estimatedPayout: 'KSh 5,000,000' };
     if (correctCount >= 16) return { bonusWon: `Tier 2 Bonus (${correctCount}/20)`, estimatedPayout: 'KSh 800,000' };
     if (correctCount >= 14) return { bonusWon: `Tier 3 Bonus (${correctCount}/20)`, estimatedPayout: 'KSh 80,000' };
@@ -191,7 +192,7 @@ function normalizeClubForJackpot(name: string): string {
 export function settleJackpotPool(
   provider: JackpotProviderId,
   games: JackpotGame[],
-  userPicks: Record<string, JackpotPickOption> = {},
+  userPicks: Record<string, JackpotExtendedPick> = {},
   realFeedMatches: Array<{
     home_team: string;
     away_team: string;
@@ -279,13 +280,11 @@ export function settleJackpotPool(
       } else {
         liveCount++;
       }
-      // Single pick evaluation (supports user picking either 1/X/2 or a Double Chance 1X/X2/12)
-      isWon =
-        userPick.includes(res.actualOutcome) ||
-        g.recommendedPick === res.actualOutcome;
+      // Evaluate against active userPick (which defaults to recommendedPick)
+      isWon = userPick.includes(res.actualOutcome);
       if (res.status === 'finished' && isWon) wonSingleCount++;
 
-      // Double Chance evaluation
+      // Double Chance evaluation (either active pick or AI doubleChance hedge covers actualOutcome)
       doubleChanceWon =
         g.doubleChance.includes(res.actualOutcome) ||
         userPick.includes(res.actualOutcome);
@@ -428,6 +427,77 @@ export function getHistoricalJackpotEditions(provider: JackpotProviderId): Histo
         bonusWon: 'Tier 4 Bonus HIT (13/17)',
         estimatedPayout: 'KSh 28,600',
         settledAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+        matches: [],
+      },
+    ];
+  }
+
+  if (provider === 'sportpesa_midweek') {
+    return [
+      {
+        roundId: `SP-MW-W${currentWeek - 1}`,
+        providerId: 'sportpesa_midweek',
+        title: 'SportPesa Midweek Jackpot (13 Games) — Previous Round',
+        dateLabel: 'Last Midweek Slate (Settled)',
+        prizePool: 'KSh 20,280,097',
+        totalGames: 13,
+        correctSingles: 11,
+        correctDoubles: 12,
+        bonusWon: 'Tier 2 Bonus HIT (11/13)',
+        estimatedPayout: 'KSh 95,000',
+        settledAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+        matches: [],
+      },
+      {
+        roundId: `SP-MW-W${currentWeek - 2}`,
+        providerId: 'sportpesa_midweek',
+        title: 'SportPesa Midweek Jackpot (13 Games) — Earlier Round',
+        dateLabel: '2 Weeks Ago (Settled)',
+        prizePool: 'KSh 18,450,000',
+        totalGames: 13,
+        correctSingles: 10,
+        correctDoubles: 12,
+        bonusWon: 'Tier 3 Bonus HIT (10/13)',
+        estimatedPayout: 'KSh 18,000',
+        settledAt: new Date(Date.now() - 11 * 86400000).toISOString(),
+        matches: [],
+      },
+    ];
+  }
+
+  if (provider === 'betika_grand') {
+    return [
+      {
+        roundId: `BK-MBW-W${currentWeek - 1}`,
+        providerId: 'betika_grand',
+        title: 'Betika 50M Must Be Won Jackpot (15 Games) — Previous Round',
+        dateLabel: 'Weekend MBW Slate (Settled)',
+        prizePool: 'KSh 50,000,000',
+        totalGames: 15,
+        correctSingles: 13,
+        correctDoubles: 14,
+        bonusWon: 'Bonus Tier 2 HIT (13/15)',
+        estimatedPayout: 'KSh 250,000',
+        settledAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+        matches: [],
+      },
+    ];
+  }
+
+  if (provider === 'mozzart') {
+    return [
+      {
+        roundId: `MZ-GRAND-W${currentWeek - 1}`,
+        providerId: 'mozzart',
+        title: 'Mozzart Super Grand Jackpot (20 Games) — Previous Round',
+        dateLabel: 'Weekend 20-Game Slate (Settled)',
+        prizePool: 'KSh 200,000,000',
+        totalGames: 20,
+        correctSingles: 16,
+        correctDoubles: 18,
+        bonusWon: 'Tier 2 Bonus HIT (16/20)',
+        estimatedPayout: 'KSh 800,000',
+        settledAt: new Date(Date.now() - 3 * 86400000).toISOString(),
         matches: [],
       },
     ];

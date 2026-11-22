@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   CheckCircle2,
   Copy,
@@ -17,6 +18,8 @@ import {
   Lock,
   Radio,
   Search,
+  Store,
+  Smartphone,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,8 +66,17 @@ export const AdminAppStoreStudioTab: React.FC = () => {
   const [contactEmail, setContactEmail] = useState('vincentmwangangi28@gmail.com');
   const [sha256, setSha256] = useState(DEFAULT_SHA256);
   const [activeSubTab, setActiveSubTab] = useState<
-    'play-console' | 'apple-connect' | 'config-files' | 'seo-paste' | 'release-gate'
+    'play-console' | 'apple-connect' | 'free-stores' | 'config-files' | 'seo-paste' | 'release-gate'
   >('play-console');
+  const [prepChecklist, setPrepChecklist] = useState<{
+    signedBinary: boolean;
+    listingAssets: boolean;
+    privacyUrl: boolean;
+  }>({
+    signedBinary: false,
+    listingAssets: false,
+    privacyUrl: false,
+  });
 
   const [releaseConfig, setReleaseConfig] = useState<NativeReleaseConfig>(() => {
     try {
@@ -182,8 +194,8 @@ export const AdminAppStoreStudioTab: React.FC = () => {
       backgroundColor: '#0B101B',
       enableNotifications: true,
       startUrl: '/?utm_source=twa',
-      iconUrl: `${domain}/icons/icon-512x512.png`,
-      maskableIconUrl: `${domain}/icons/maskable-icon-512x512.png`,
+      iconUrl: `${domain}/icon-512.png`,
+      maskableIconUrl: `${domain}/icon-512.png`,
       appVersionName: releaseConfig.androidVersionName,
       appVersionCode: releaseConfig.androidVersionCode,
       shortcuts: [
@@ -428,6 +440,109 @@ Sitemap: ${domain}/sitemap-discover-news.xml`,
     },
   ];
 
+  const freeAppStorePortals = [
+    {
+      name: 'Samsung Galaxy Store',
+      portalName: 'Samsung Galaxy Store Seller Portal',
+      feeBadge: 'Free · $0 Signup Fee',
+      regionFocus: 'Global Samsung Galaxy Devices',
+      url: 'https://seller.samsungapps.com/',
+      description:
+        'Register for free on the Samsung Galaxy Store Seller Portal to distribute your app across Samsung devices worldwide without paying a signup fee.',
+      acceptedFormat: 'Signed APK / AAB',
+    },
+    {
+      name: 'Amazon Appstore',
+      portalName: 'Amazon Appstore Developer Portal',
+      feeBadge: 'Free · No Annual Fee',
+      regionFocus: 'Fire Tablets & Android Devices',
+      url: 'https://developer.amazon.com/apps-and-games',
+      description:
+        'Create a free account via the Amazon Appstore Developer Portal to list your Android app on Fire tablets and Android devices with no annual fee.',
+      acceptedFormat: 'Signed APK / AAB',
+    },
+    {
+      name: 'Uptodown',
+      portalName: 'Uptodown Developers Console',
+      feeBadge: 'Free · 0% Profit-Sharing',
+      regionFocus: 'High Search Visibility · Direct APK',
+      url: 'https://developer.uptodown.com/',
+      description:
+        'Sign up on the Uptodown Developers Console for free publishing, zero profit-sharing, and strong search engine visibility for direct APK downloads.',
+      acceptedFormat: 'Signed APK',
+    },
+    {
+      name: 'APKPure',
+      portalName: 'APKPure Submit APK Portal',
+      feeBadge: 'Free · Direct APK Install',
+      regionFocus: 'Global Direct APK Audience',
+      url: 'https://apkpure.com/submit-apk',
+      description:
+        'Submit your signed APK directly through the APKPure Submit APK Portal after creating a free account to reach global users looking for direct APK installs.',
+      acceptedFormat: 'Signed APK / XAPK',
+    },
+    {
+      name: 'Huawei AppGallery',
+      portalName: 'Huawei Developers Console',
+      feeBadge: 'Free Registration',
+      regionFocus: 'Kenya & Global Huawei Devices',
+      url: 'https://developer.huawei.com/consumer/en/',
+      description:
+        'Register for free on the Huawei Developers Console to publish directly onto Huawei devices widely used across Kenya and globally.',
+      acceptedFormat: 'Signed APK / AAB',
+    },
+    {
+      name: 'Xiaomi GetApps',
+      portalName: 'Xiaomi Developer Platform',
+      feeBadge: 'Free Registration',
+      regionFocus: 'Kenya & Global Xiaomi / Redmi / POCO',
+      url: 'https://global.developer.mi.com/',
+      description:
+        'Register for free on the Xiaomi Developer Platform to reach Xiaomi, Redmi, and POCO smartphone users across Kenya and globally.',
+      acceptedFormat: 'Signed APK / AAB',
+    },
+  ];
+
+  const freeStoreCopyFields = [
+    {
+      label: '1. App Name & Short Tagline (Copy-Paste into Samsung / Amazon / Huawei / Xiaomi / Uptodown)',
+      value: `App Title: PredictPro: Football xG & Stats
+Short Description: AI football predictions, Bivariate Poisson 6x6 score matrices, live xG & H2H.`,
+    },
+    {
+      label: '2. Package Metadata, Privacy Policy & Required Store URLs',
+      value: `Package Name (Application ID): ${packageId}
+Version Name: ${releaseConfig.androidVersionName} (Code: ${releaseConfig.androidVersionCode})
+512x512 App Icon URL: ${domain}/icon-512.png
+Public Privacy Policy URL: ${domain}/privacy
+Official Website / Support URL: ${domain}/contact
+Direct Signed APK URL: ${releaseConfig.directApkMirrorUrl}
+Developer Support Email: ${contactEmail}
+Category: Sports / Reference`,
+    },
+    {
+      label: '3. Full App Store Description (Free Android Portals Copy-Paste)',
+      value: `PredictPro is an independent quantitative football analytics, Expected Goals (xG), and mathematical probability application covering 35+ global competitions including the Premier League, UEFA Champions League, LaLiga, Serie A, Bundesliga, Ligue 1, and FKF Premier League (Kenya).
+
+KEY FEATURES:
+• Bivariate Poisson & Dixon-Coles 6×6 Exact Score Matrices
+• Real-Time Live Scores, Expected Goals (xG) & Lineup Alerts
+• 17-Game Mega Jackpot & 13-Game Midweek Jackpot Mathematical Combinatorics Optimizer
+• Head-to-Head (H2H) Form Index, Corners & Referee Card Telemetry
+• Universal Analytical Slip & Regional Odds Format Converter
+
+COMPLIANCE NOTICE:
+PredictPro is strictly a sports statistics and mathematical probability reference tool. It does not accept bets, process wagers, or facilitate real-money gambling.`,
+    },
+    {
+      label: '4. What’s New / Release Changelog (Plain Text for Free Android Portals)',
+      value: `Version ${releaseConfig.androidVersionName}:
+- Live 17-Game Mega Jackpot & 13-Game Midweek Jackpot budget optimizer
+- Upgraded Bivariate Poisson 6x6 exact scoreline & Over/Under probability simulator
+- Faster offline PWA & APK caching for live football fixtures and league standings`,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -543,9 +658,10 @@ Sitemap: ${domain}/sitemap-discover-news.xml`,
         {[
           { id: 'play-console', label: '1. Google Play Console (Copy & Paste Sheet)', icon: Play },
           { id: 'apple-connect', label: '2. Apple App Store Connect (Copy & Paste Sheet)', icon: Apple },
-          { id: 'config-files', label: '3. JSON Config Files & CLI (Download / Paste)', icon: FileCode },
-          { id: 'seo-paste', label: '4. Google Search Console & IndexNow Paste Hub', icon: Search },
-          { id: 'release-gate', label: '5. Native Version Gate & OTA Push', icon: Radio },
+          { id: 'free-stores', label: '3. Free App Stores (Zero-Fee APK Portals)', icon: Store },
+          { id: 'config-files', label: '4. JSON Config Files & CLI (Download / Paste)', icon: FileCode },
+          { id: 'seo-paste', label: '5. Google Search Console & IndexNow Paste Hub', icon: Search },
+          { id: 'release-gate', label: '6. Native Version Gate & OTA Push', icon: Radio },
         ].map((tab) => {
           const Icon = tab.icon;
           const active = activeSubTab === tab.id;
@@ -556,7 +672,7 @@ Sitemap: ${domain}/sitemap-discover-news.xml`,
               size="sm"
               variant={active ? 'default' : 'outline'}
               onClick={() => setActiveSubTab(tab.id as typeof activeSubTab)}
-              className="gap-1.5 text-xs"
+              className="gap-1.5 text-xs whitespace-nowrap shrink-0"
             >
               <Icon className="w-3.5 h-3.5" />
               {tab.label}
@@ -657,6 +773,206 @@ Sitemap: ${domain}/sitemap-discover-news.xml`,
             ))}
           </CardContent>
         </Card>
+      )}
+
+      {/* TAB 3: Free App Store Developer Portals & Quick Preparation Checklist */}
+      {activeSubTab === 'free-stores' && (
+        <div className="space-y-6">
+          {/* Quick Preparation Checklist */}
+          <Card className="border-emerald-500/30 bg-emerald-500/5">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    Quick Preparation Checklist
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Before uploading to these zero-fee developer portals, ensure you have these 3 items ready:
+                  </CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => copyText(`${domain}/privacy`, 'Public Privacy Policy URL')}
+                  className="h-7 text-xs gap-1.5 whitespace-nowrap shrink-0"
+                >
+                  <Copy className="w-3 h-3" /> Copy /privacy URL
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <label className="flex items-start gap-3 rounded-lg border bg-background/80 p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={prepChecklist.signedBinary}
+                  onChange={(e) =>
+                    setPrepChecklist((prev) => ({ ...prev, signedBinary: e.target.checked }))
+                  }
+                  className="mt-0.5 rounded border-border"
+                />
+                <div className="space-y-1 text-xs">
+                  <div className="font-bold text-foreground">
+                    1. A Signed APK or AAB File
+                  </div>
+                  <p className="text-muted-foreground">
+                    Wrapped from your web URL (<code className="font-mono text-foreground">{domain}</code>) using a tool like{' '}
+                    <a
+                      href={`https://www.pwabuilder.com/reportcard?site=${encodeURIComponent(domain)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-600 dark:text-emerald-400 underline font-semibold"
+                    >
+                      PWABuilder
+                    </a>{' '}
+                    or <code className="font-mono">@bubblewrap/cli</code>.
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 rounded-lg border bg-background/80 p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={prepChecklist.listingAssets}
+                  onChange={(e) =>
+                    setPrepChecklist((prev) => ({ ...prev, listingAssets: e.target.checked }))
+                  }
+                  className="mt-0.5 rounded border-border"
+                />
+                <div className="space-y-1 text-xs">
+                  <div className="font-bold text-foreground">
+                    2. Store Listing Assets
+                  </div>
+                  <p className="text-muted-foreground">
+                    A <span className="font-mono font-semibold text-foreground">512×512</span> app icon (<code className="font-mono">{domain}/icon-512.png</code>), at least <span className="font-semibold text-foreground">2–4 mobile screenshots</span>, and a short/full app description —{' '}
+                    <Link
+                      to="/admin/app-store-metadata"
+                      className="text-emerald-600 dark:text-emerald-400 underline font-semibold"
+                    >
+                      generate all listing assets in App Store Metadata
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 rounded-lg border bg-background/80 p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={prepChecklist.privacyUrl}
+                  onChange={(e) =>
+                    setPrepChecklist((prev) => ({ ...prev, privacyUrl: e.target.checked }))
+                  }
+                  className="mt-0.5 rounded border-border"
+                />
+                <div className="space-y-1 text-xs">
+                  <div className="font-bold text-foreground">
+                    3. A Public Privacy Policy URL
+                  </div>
+                  <p className="text-muted-foreground">
+                    Hosted directly on a page on your website (<code className="font-mono font-semibold text-foreground">{domain}/privacy</code>), as almost all stores require this link before approving a listing.
+                  </p>
+                </div>
+              </label>
+            </CardContent>
+          </Card>
+
+          {/* Free App Store Developer Portals Directory */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Store className="w-4 h-4 text-emerald-500" />
+                Free App Store Developer Portals (Zero Registration Fee)
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Distribute PredictPro worldwide and across Kenya (Samsung, Huawei, Xiaomi, Amazon Fire, Uptodown, and APKPure) without paying Play Store or Apple developer fees.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {freeAppStorePortals.map((portal) => (
+                  <div
+                    key={portal.name}
+                    className="rounded-xl border bg-muted/20 p-4 flex flex-col justify-between gap-3"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <h3 className="text-sm font-bold text-foreground">{portal.name}</h3>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap shrink-0">
+                          {portal.feeBadge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-mono text-muted-foreground">
+                        {portal.regionFocus} · {portal.acceptedFormat}
+                      </p>
+                      <p className="text-xs text-foreground/90 leading-relaxed">
+                        {portal.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyText(portal.url, `${portal.name} Portal URL`)}
+                        className="h-7 text-xs gap-1 whitespace-nowrap shrink-0"
+                      >
+                        <Copy className="w-3 h-3" /> Copy Link
+                      </Button>
+                      <a
+                        href={portal.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold px-2.5 h-7 hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
+                      >
+                        Open Portal <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ready-to-Paste Free App Store Submission Kit */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Copy className="w-4 h-4 text-emerald-500" />
+                Free App Stores — Copy &amp; Paste Submission Kit
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Pre-filled title, package metadata, Privacy Policy URL, store description, and changelog ready to paste into Samsung, Amazon, Uptodown, APKPure, Huawei, and Xiaomi portals.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {freeStoreCopyFields.map((field) => (
+                <div key={field.label} className="rounded-xl border bg-muted/20 p-4 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-emerald-500">{field.label}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="default"
+                      onClick={() => copyText(field.value, field.label)}
+                      className="h-7 text-xs gap-1.5 shrink-0"
+                    >
+                      <Copy className="w-3 h-3" /> Copy to Paste
+                    </Button>
+                  </div>
+                  <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans bg-background/80 border rounded-lg p-3 leading-relaxed">
+                    {field.value}
+                  </pre>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* TAB 3: Ready-to-Paste JSON Config Files & CLI Commands */}

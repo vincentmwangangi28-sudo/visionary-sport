@@ -458,7 +458,7 @@ export async function handleDirectJackpotFetch(forceRefresh = false): Promise<Di
           pools.betika = buildPoolFromEspn(15, 2, 'bk-mw-espn', 'betika_direct');
         }
         if (!pools.betika_grand || pools.betika_grand.length < 10) {
-          pools.betika_grand = buildPoolFromEspn(17, 4, 'bk-grand-espn', 'betika_direct');
+          pools.betika_grand = buildPoolFromEspn(15, 4, 'bk-grand-espn', 'betika_direct');
         }
         if (!pools.sportpesa_midweek || pools.sportpesa_midweek.length < 10) {
           pools.sportpesa_midweek = buildPoolFromEspn(13, 6, 'sp-mw-espn', 'sportpesa_direct');
