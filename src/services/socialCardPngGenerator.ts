@@ -61,87 +61,11 @@ export interface BankrollSyncedSlip {
   status: 'pending' | 'won' | 'lost';
 }
 
-export const DEFAULT_VERIFIED_WIN_PROOFS: VerifiedWinProof[] = [
-  {
-    id: 'proof-1',
-    date: 'Yesterday · Verified FT',
-    title: '2.18x Daily Rollover Double — 100% Green Sweep',
-    bookmaker: 'SportyBet',
-    bookingCode: 'BC8942X',
-    totalOdds: 2.18,
-    profitUnits: 1.18,
-    legs: [
-      { match: 'Manchester City vs Sunderland', market: 'Man City Win & Over 2.5', finalScore: '5 - 3 (FT)', odds: 1.48 },
-      { match: 'Sevilla vs Barcelona', market: 'Barcelona Win (2)', finalScore: '1 - 3 (FT)', odds: 1.47 },
-    ],
-    certifiedBy: 'PredictPro AutomatedESPN Grader',
-  },
-  {
-    id: 'proof-2',
-    date: '2 Days Ago · Verified FT',
-    title: '5.42x European Elite xG Accumulator',
-    bookmaker: '1xBet',
-    bookingCode: 'PRD26X',
-    totalOdds: 5.42,
-    profitUnits: 4.42,
-    legs: [
-      { match: 'Atlético Madrid vs Real Madrid', market: 'BTTS: Yes', finalScore: '2 - 1 (FT)', odds: 1.68 },
-      { match: 'Juventus vs Atalanta', market: 'Juventus Win (1)', finalScore: '2 - 0 (FT)', odds: 2.05 },
-      { match: 'AC Milan vs Lecce', market: 'AC Milan -1.5 AH', finalScore: '3 - 0 (FT)', odds: 1.57 },
-    ],
-    certifiedBy: 'PredictPro AutomatedESPN Grader',
-  },
-];
+export const DEFAULT_VERIFIED_WIN_PROOFS: VerifiedWinProof[] = [];
 
-export const DEFAULT_WATCHLIST_FIXTURES: WatchlistFixtureItem[] = [
-  {
-    matchId: 'wl-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    matchDate: 'Upcoming · 19:45 UTC',
-    pick: 'Arsenal Win (1)',
-    confidence: 84,
-    addedAt: 'Saved to Watchlist',
-  },
-  {
-    matchId: 'wl-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    matchDate: 'Upcoming · 15:00 UTC',
-    pick: 'Gor Mahia Win (1)',
-    confidence: 86,
-    addedAt: 'Saved to Watchlist',
-  },
-];
+export const DEFAULT_WATCHLIST_FIXTURES: WatchlistFixtureItem[] = [];
 
-export const DEFAULT_BANKROLL_SLIPS: BankrollSyncedSlip[] = [
-  {
-    id: 'br-slip-1',
-    date: new Date().toLocaleDateString('en-GB'),
-    slipTitle: 'Daily 2.14x Sure Rollover Double',
-    bookmaker: 'SportyBet',
-    bookingCode: 'BC8942X',
-    odds: 2.14,
-    stake: 1000,
-    currency: 'KES',
-    potentialReturn: 2140,
-    status: 'won',
-  },
-  {
-    id: 'br-slip-2',
-    date: new Date().toLocaleDateString('en-GB'),
-    slipTitle: '5.42x Smart Value Accumulator',
-    bookmaker: 'Bet9ja',
-    bookingCode: 'B9J551092',
-    odds: 5.42,
-    stake: 500,
-    currency: 'KES',
-    potentialReturn: 2710,
-    status: 'pending',
-  },
-];
+export const DEFAULT_BANKROLL_SLIPS: BankrollSyncedSlip[] = [];
 
 export function getVerifiedWinProofs(): VerifiedWinProof[] {
   if (typeof window === 'undefined') return DEFAULT_VERIFIED_WIN_PROOFS;

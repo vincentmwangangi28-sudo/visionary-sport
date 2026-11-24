@@ -232,6 +232,13 @@ export function useAppLocale() {
   };
 }
 
+export interface BroadcastMatchLine {
+  match: string;
+  market: string;
+  odds: string;
+  confidence: number;
+}
+
 export function generateMultilingualBroadcastText(
   locale: SupportedLocale,
   params: {
@@ -243,21 +250,29 @@ export function generateMultilingualBroadcastText(
     bet9jaCode: string;
     bet9jaOdds: string;
     jackpotPool: string;
+    topMatches?: BroadcastMatchLine[];
   }
 ): string {
+  const realLines =
+    params.topMatches && params.topMatches.length > 0
+      ? params.topMatches.slice(0, 4).map(
+          (m, idx) =>
+            `⚽ ${idx + 1}. ${m.match} — ${m.market} @ ${m.odds} (${m.confidence}%)`
+        )
+      : [
+          `⚽ Live ESPN Schedule Sync Active — View Today's Qualified Picks on PredictPro`,
+        ];
+
   if (locale === 'sw') {
     return [
       `🔥 MKEKA WA KITAALAMU WA PREDICTPRO (${params.dateLabel})`,
       `━━━━━━━━━━━━━━━━━━━━━━`,
-      `⚽ 1. Arsenal vs Chelsea — Zaidi ya Magoli 2.5 (Over 2.5) @ 1.72 (Uhakika: 86%)`,
-      `⚽ 2. Real Madrid vs Barcelona — Timu Zote Kufungana (GG) @ 1.65 (Uhakika: 84%)`,
-      `⚽ 3. Bayern Munich vs Dortmund — Ushindi wa Nyumbani & Over 1.5 @ 1.64 (Uhakika: 88%)`,
-      `⚽ 4. Gor Mahia vs AFC Leopards — Gor Mahia Kushinda (1) @ 1.75 (Uhakika: 83%)`,
+      ...realLines,
       `━━━━━━━━━━━━━━━━━━━━━━`,
       `🎟️ Kodi ya SportyBet: ${params.sportyCode} (${params.sportyOdds} Odds)`,
       `🎟️ Kodi ya 1xBet: ${params.onexCode} (${params.onexOdds} Odds)`,
       `🎟️ Kodi ya Bet9ja: ${params.bet9jaCode} (${params.bet9jaOdds} Odds)`,
-      `🏆 17-Game Mega Jackpot (${params.jackpotPool}): Chaguzi 6 za Uhakika zimefungwa!`,
+      `🏆 17-Game Mega Jackpot (${params.jackpotPool}): Uchambuzi Kamili Umefungwa!`,
       `🌐 Uchambuzi Bure 100%: https://predictpro.guru/booking-code-converter`,
     ].join('\n');
   }
@@ -266,14 +281,11 @@ export function generateMultilingualBroadcastText(
     return [
       `🔥 PRONOSTICS QUANTITATIFS PREDICTPRO (${params.dateLabel})`,
       `━━━━━━━━━━━━━━━━━━━━━━`,
-      `⚽ 1. Arsenal vs Chelsea — Plus de 2,5 Buts @ 1.72 (Modèle Poisson: 86%)`,
-      `⚽ 2. Real Madrid vs Barcelone — Les Deux Équipes Marquent (BTTS) @ 1.65 (84%)`,
-      `⚽ 3. Bayern Munich vs Dortmund — Victoire Bayern & +1,5 Buts @ 1.64 (88%)`,
-      `⚽ 4. Al Ahly vs Mamelodi Sundowns — Chance Double 1X & +1,5 Buts @ 1.58 (85%)`,
+      ...realLines,
       `━━━━━━━━━━━━━━━━━━━━━━`,
       `🎟️ Code 1xBet: ${params.onexCode} (Cote ${params.onexOdds})`,
       `🎟️ Code SportyBet: ${params.sportyCode} (Cote ${params.sportyOdds})`,
-      `🏆 Mega Jackpot 17 Matchs (${params.jackpotPool}): 6 bases mathématiques verrouillées!`,
+      `🏆 Mega Jackpot 17 Matchs (${params.jackpotPool}): Sélection mathématique active!`,
       `🌐 Accès 100% Gratuit: https://predictpro.guru/booking-code-converter`,
     ].join('\n');
   }
@@ -282,14 +294,11 @@ export function generateMultilingualBroadcastText(
     return [
       `🔥 PALPITES QUANTITATIVOS PREDICTPRO (${params.dateLabel})`,
       `━━━━━━━━━━━━━━━━━━━━━━`,
-      `⚽ 1. Arsenal vs Chelsea — Mais de 2.5 Gols @ 1.72 (Probabilidade: 86%)`,
-      `⚽ 2. Real Madrid vs Barcelona — Ambas Marcam (BTTS Sim) @ 1.65 (84%)`,
-      `⚽ 3. Bayern Munique vs Dortmund — Casa Vence & +1.5 Gols @ 1.64 (88%)`,
-      `⚽ 4. Sporting CP vs Braga — Vitória Casa (1) @ 1.68 (85%)`,
+      ...realLines,
       `━━━━━━━━━━━━━━━━━━━━━━`,
       `🎟️ Código 1xBet: ${params.onexCode} (Odd ${params.onexOdds})`,
       `🎟️ Código SportyBet: ${params.sportyCode} (Odd ${params.sportyOdds})`,
-      `🏆 Mega Jackpot 17 Jogos (${params.jackpotPool}): 6 banqueiros matemáticos!`,
+      `🏆 Mega Jackpot 17 Jogos (${params.jackpotPool}): Dados em tempo real ativos!`,
       `🌐 100% Gratuito: https://predictpro.guru/booking-code-converter`,
     ].join('\n');
   }
@@ -298,10 +307,7 @@ export function generateMultilingualBroadcastText(
     return [
       `🔥 التوقعات الرقمية اليومية من PREDICTPRO (${params.dateLabel})`,
       `━━━━━━━━━━━━━━━━━━━━━━`,
-      `⚽ 1. أرسنال ضد تشيلسي — أكثر من 2.5 هدف @ 1.72 (الاحتمال: 86%)`,
-      `⚽ 2. ريال مدريد ضد برشلونة — كلا الفريقين يسجلان (BTTS) @ 1.65 (84%)`,
-      `⚽ 3. بايرن ميونخ ضد دورتموند — فوز بايرن وأكثر من 1.5 هدف @ 1.64 (88%)`,
-      `⚽ 4. الأهلي ضد ماميلودي صن داونز — فرصة مزدوجة 1X @ 1.55 (86%)`,
+      ...realLines,
       `━━━━━━━━━━━━━━━━━━━━━━`,
       `🎟️ كود 1xBet: ${params.onexCode} (معامل ${params.onexOdds})`,
       `🎟️ كود SportyBet: ${params.sportyCode} (معامل ${params.sportyOdds})`,
@@ -312,15 +318,12 @@ export function generateMultilingualBroadcastText(
   return [
     `🔥 PREDICTPRO QUANTITATIVE DAILY CARD (${params.dateLabel})`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `⚽ 1. Arsenal vs Chelsea — Over 2.5 Match Goals @ 1.72 (Model: 86% | +11.4% CLV)`,
-    `⚽ 2. Real Madrid vs Barcelona — BTTS Yes @ 1.65 (Model: 84% | +9.8% CLV)`,
-    `⚽ 3. Bayern Munich vs Dortmund — Home Win & Over 1.5 @ 1.64 (Model: 88% | +12.1% CLV)`,
-    `⚽ 4. Gor Mahia vs AFC Leopards — Home Win (1) @ 1.75 (Model: 83% | +9.5% CLV)`,
+    ...realLines,
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `🎟️ SportyBet Code: ${params.sportyCode} (${params.sportyOdds}x)`,
     `🎟️ 1xBet Code: ${params.onexCode} (${params.onexOdds}x)`,
     `🎟️ Bet9ja Code: ${params.bet9jaCode} (${params.bet9jaOdds}x)`,
-    `🏆 17-Game Mega Jackpot (${params.jackpotPool}): 6 Locked Poisson Bankers!`,
+    `🏆 17-Game Mega Jackpot (${params.jackpotPool}): Real Fixture Model Active!`,
     `🌐 100% Free Analytics Hub: https://predictpro.guru/closing-line-value`,
   ].join('\n');
 }

@@ -31,8 +31,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/EmptyState';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
   VERIFIED_TIPSTER_PROFILES,
+  hydrateTipsterProfilesWithPredictions,
   VerifiedTipsterProfile,
   getFollowedTipsterIds,
   toggleFollowTipsterId,
@@ -55,53 +57,14 @@ interface Tip {
   user_vote?: 'like' | 'dislike' | null;
 }
 
-const DEFAULT_COMMUNITY_TIPS: Tip[] = [
-  {
-    id: 'tip-1',
-    user_id: 'tipster-victor',
-    match: 'Arsenal vs Chelsea',
-    prediction: 'Arsenal Win & Over 1.5 Goals',
-    reasoning:
-      'Arsenal averaging 2.34 xG at the Emirates over their last 8 home league fixtures while Chelsea have conceded in 7 straight away matches.',
-    odds: 1.92,
-    likes: 34,
-    dislikes: 3,
-    created_at: new Date(Date.now() - 3600 * 1000 * 3).toISOString(),
-    profiles: { full_name: 'Victor K.' },
-  },
-  {
-    id: 'tip-2',
-    user_id: 'tipster-grace',
-    match: 'Real Madrid vs Barcelona',
-    prediction: 'Both Teams to Score & Over 2.5',
-    reasoning:
-      'El Clásico high defensive lines and transitional pace on both wings make BTTS + Over 2.5 the strongest mathematical play.',
-    odds: 1.85,
-    likes: 28,
-    dislikes: 2,
-    created_at: new Date(Date.now() - 3600 * 1000 * 6).toISOString(),
-    profiles: { full_name: 'Grace M.' },
-  },
-  {
-    id: 'tip-3',
-    user_id: 'tipster-john',
-    match: 'Gor Mahia vs AFC Leopards',
-    prediction: 'Under 2.5 Goals (1X Double Chance)',
-    reasoning:
-      'Mashemeji Derby tactical discipline historically keeps total goals below 2.5 in 78% of recent meetings, with Gor Mahia holding edge.',
-    odds: 1.74,
-    likes: 21,
-    dislikes: 1,
-    created_at: new Date(Date.now() - 3600 * 1000 * 10).toISOString(),
-    profiles: { full_name: 'John O.' },
-  },
-];
+const DEFAULT_COMMUNITY_TIPS: Tip[] = [];
 
-const LOCAL_TIPS_KEY = 'predictpro_community_tips_v1';
+const LOCAL_TIPS_KEY = 'predictpro_community_tips_v2';
 
 export default function Tipsters() {
   const { user } = useAuth();
   const { addSelections, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
 
   const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,20 +129,25 @@ export default function Tipsters() {
     fetchTips();
   }, []);
 
+  const hydratedTipsters = useMemo(
+    () => hydrateTipsterProfilesWithPredictions(predictions),
+    [predictions]
+  );
+
   const filteredVerifiedTipsters = useMemo(() => {
-    return VERIFIED_TIPSTER_PROFILES.filter((tp) => {
+    return hydratedTipsters.filter((tp) => {
       if (specialtyFilter === 'All') return true;
       if (specialtyFilter === 'Followed') return followedIds.includes(tp.id);
       return tp.specialty === specialtyFilter;
     });
-  }, [specialtyFilter, followedIds]);
+  }, [hydratedTipsters, specialtyFilter, followedIds]);
 
   const activeTipster = useMemo(() => {
     return (
-      VERIFIED_TIPSTER_PROFILES.find((t) => t.id === selectedTipsterId) ||
-      VERIFIED_TIPSTER_PROFILES[0]
+      hydratedTipsters.find((t) => t.id === selectedTipsterId) ||
+      hydratedTipsters[0]
     );
-  }, [selectedTipsterId]);
+  }, [hydratedTipsters, selectedTipsterId]);
 
   const handleFollowToggle = (tipster: VerifiedTipsterProfile) => {
     const res = toggleFollowTipsterId(tipster.id);
@@ -683,7 +651,7 @@ export default function Tipsters() {
                       </label>
                       <Input
                         id="tip-match-input"
-                        placeholder="Match (e.g. Arsenal vs Chelsea)"
+                        placeholder="Match (e.g. Home Team vs Away Team)"
                         value={form.match}
                         onChange={(e) => setForm((f) => ({ ...f, match: e.target.value }))}
                         aria-label="Match fixture"
@@ -695,7 +663,7 @@ export default function Tipsters() {
                       </label>
                       <Input
                         id="tip-prediction-input"
-                        placeholder="Prediction (e.g. Arsenal Win / Over 2.5)"
+                        placeholder="Prediction (e.g. Home Win / Over 2.5 Goals)"
                         value={form.prediction}
                         onChange={(e) => setForm((f) => ({ ...f, prediction: e.target.value }))}
                         aria-label="Prediction outcome"

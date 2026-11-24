@@ -316,9 +316,9 @@ export default function SEOIndexingPage() {
       status: '200 OK · Self-Canonical',
     },
     {
-      path: '/predict/arsenal-vs-chelsea',
-      url: 'https://predictpro.guru/predict/arsenal-vs-chelsea',
-      title: 'Arsenal vs Chelsea AI Prediction, xG & Odds | PredictPro',
+      path: '/today-predictions',
+      url: 'https://predictpro.guru/today-predictions',
+      title: 'Today Football Predictions, xG & Live Odds | PredictPro',
       staticTargets: 'Dynamic Server Prerender + /api/og Card',
       aiCitationSchema: 'SportsEvent + BreadcrumbList + 6×6 Poisson Matrix',
       status: '200 OK · Live ESPN Slug',

@@ -64,204 +64,215 @@ export interface SgpCopulaEvaluation {
   summaryReport: string;
 }
 
-const CLV_SIGNALS_STORAGE_KEY = 'predictpro_clv_steam_signals_v1';
+const CLV_SIGNALS_STORAGE_KEY = 'predictpro_clv_steam_signals_v2';
 
-export const DEFAULT_CLV_STEAM_SIGNALS: ClvSteamSignal[] = [
-  {
-    id: 'clv-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    region: 'Europe',
-    kickoffLabel: 'Today · 19:45 UTC',
-    market: 'Arsenal -0.75 Asian Handicap',
-    openingOdds: 2.04,
-    currentBookieOdds: 1.88,
-    sharpPinnacleNoVigOdds: 1.73,
-    modelFairOdds: 1.69,
-    modelProbabilityPct: 59.2,
-    clvBeatPct: 8.7,
-    steamDropPct: 15.2,
-    movementTag: 'SYNDICATE STEAM',
-    sharpMoneyVolumePct: 84,
-    publicTicketsPct: 51,
-    tacticalNote:
-      'Asian syndicate liquidity hit Arsenal -0.75 at 2.04 down to 1.73 sharp no-vig. Soft recreational books still hanging 1.88 (+8.7% pure CLV).',
-  },
-  {
-    id: 'clv-rma-bar',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    region: 'Europe',
-    kickoffLabel: 'Today · 20:00 UTC',
-    market: 'Over 3.0 Goal Line (Asian Total)',
-    openingOdds: 2.12,
-    currentBookieOdds: 1.92,
-    sharpPinnacleNoVigOdds: 1.77,
-    modelFairOdds: 1.74,
-    modelProbabilityPct: 57.5,
-    clvBeatPct: 8.5,
-    steamDropPct: 16.5,
-    movementTag: 'SYNDICATE STEAM',
-    sharpMoneyVolumePct: 88,
-    publicTicketsPct: 62,
-    tacticalNote:
-      'Combined Poisson xG of 3.64 triggered heavy institutional buy orders on Over 3.0 goals across Pinnacle and Betfair Exchange.',
-  },
-  {
-    id: 'clv-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    region: 'Africa / CAF',
-    kickoffLabel: 'Today · 15:00 UTC',
-    market: 'Gor Mahia Win (1)',
-    openingOdds: 1.95,
-    currentBookieOdds: 1.78,
-    sharpPinnacleNoVigOdds: 1.64,
-    modelFairOdds: 1.61,
-    modelProbabilityPct: 62.1,
-    clvBeatPct: 8.5,
-    steamDropPct: 15.9,
-    movementTag: 'POISSON CLV EDGE',
-    sharpMoneyVolumePct: 79,
-    publicTicketsPct: 58,
-    tacticalNote:
-      'PredictPro model locked Gor Mahia at 1.95 opening; regional East African books still offer 1.78 against a 1.61 true Poisson line.',
-  },
-  {
-    id: 'clv-new-tot',
-    homeTeam: 'Newcastle United',
-    awayTeam: 'Tottenham Hotspur',
-    league: 'Premier League',
-    region: 'Europe',
-    kickoffLabel: 'Today · 17:30 UTC',
-    market: 'Newcastle Draw No Bet (DNB)',
-    openingOdds: 1.98,
-    currentBookieOdds: 1.84,
-    sharpPinnacleNoVigOdds: 1.70,
-    modelFairOdds: 1.68,
-    modelProbabilityPct: 59.5,
-    clvBeatPct: 8.2,
-    steamDropPct: 14.1,
-    movementTag: 'REVERSE LINE (RLM)',
-    sharpMoneyVolumePct: 81,
-    publicTicketsPct: 36,
-    tacticalNote:
-      '64% of public tickets are on Tottenham, yet the line moved toward Newcastle from 1.98 to 1.70—classic Reverse Line Movement.',
-  },
-  {
-    id: 'clv-ahl-sun',
-    homeTeam: 'Al Ahly',
-    awayTeam: 'Mamelodi Sundowns',
-    league: 'CAF Champions League',
-    region: 'Africa / CAF',
-    kickoffLabel: 'Today · 19:00 UTC',
-    market: 'Both Teams to Score (BTTS — Yes)',
-    openingOdds: 2.08,
-    currentBookieOdds: 1.90,
-    sharpPinnacleNoVigOdds: 1.76,
-    modelFairOdds: 1.72,
-    modelProbabilityPct: 58.1,
-    clvBeatPct: 8.0,
-    steamDropPct: 15.4,
-    movementTag: 'LATE SHARP MONEY',
-    sharpMoneyVolumePct: 82,
-    publicTicketsPct: 44,
-    tacticalNote:
-      'Sundowns high possession buildup in Cairo historically forces open second-half transitions; sharp line dropped 32 cents.',
-  },
-  {
-    id: 'clv-fla-pal',
-    homeTeam: 'Flamengo',
-    awayTeam: 'Palmeiras',
-    league: 'Brasileirão Série A',
-    region: 'Americas',
-    kickoffLabel: 'Tonight · 22:30 UTC',
-    market: 'Over 9.5 Total Match Corners',
-    openingOdds: 1.96,
-    currentBookieOdds: 1.85,
-    sharpPinnacleNoVigOdds: 1.71,
-    modelFairOdds: 1.68,
-    modelProbabilityPct: 59.5,
-    clvBeatPct: 8.2,
-    steamDropPct: 12.8,
-    movementTag: 'POISSON CLV EDGE',
-    sharpMoneyVolumePct: 77,
-    publicTicketsPct: 49,
-    tacticalNote:
-      'Both clubs rank top-3 in wide wing crosses per 90 in Série A, projecting 11.4 expected corners.',
-  },
-];
+export interface RealClvFixtureLike {
+  id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  match_date?: string;
+  home_odds?: number | null;
+  draw_odds?: number | null;
+  away_odds?: number | null;
+  confidence?: number;
+  home_xg?: number | null;
+  away_xg?: number | null;
+}
 
-export const SGP_MATCH_TEMPLATES: SgpMatchTemplate[] = [
-  {
-    id: 'sgp-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    kickoff: 'Today · 19:45 UTC',
-    homeXg: 2.18,
-    awayXg: 1.14,
-    availableLegs: [
-      { id: 'home_win', category: 'RESULT', label: 'Arsenal to Win (1)', baseProbabilityPct: 61, bookieSingleOdds: 1.62 },
-      { id: 'double_1x', category: 'RESULT', label: 'Arsenal or Draw (1X)', baseProbabilityPct: 84, bookieSingleOdds: 1.18 },
-      { id: 'over_25', category: 'GOALS', label: 'Over 2.5 Total Goals', baseProbabilityPct: 64, bookieSingleOdds: 1.65 },
-      { id: 'under_25', category: 'GOALS', label: 'Under 2.5 Total Goals', baseProbabilityPct: 36, bookieSingleOdds: 2.25 },
-      { id: 'btts_yes', category: 'BTTS', label: 'Both Teams to Score (Yes)', baseProbabilityPct: 62, bookieSingleOdds: 1.68 },
-      { id: 'corners_o95', category: 'CORNERS', label: 'Over 9.5 Match Corners', baseProbabilityPct: 66, bookieSingleOdds: 1.60 },
-      { id: 'cards_o35', category: 'CARDS', label: 'Over 3.5 Yellow/Red Cards', baseProbabilityPct: 68, bookieSingleOdds: 1.55 },
-      { id: 'saka_sot', category: 'PLAYER_PROP', label: 'Bukayo Saka 1+ Shot on Target', baseProbabilityPct: 76, bookieSingleOdds: 1.36 },
-    ],
-  },
-  {
-    id: 'sgp-rma-bar',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    kickoff: 'Today · 20:00 UTC',
-    homeXg: 1.98,
-    awayXg: 1.66,
-    availableLegs: [
-      { id: 'home_win', category: 'RESULT', label: 'Real Madrid to Win (1)', baseProbabilityPct: 52, bookieSingleOdds: 1.90 },
-      { id: 'double_1x', category: 'RESULT', label: 'Real Madrid or Draw (1X)', baseProbabilityPct: 76, bookieSingleOdds: 1.28 },
-      { id: 'over_25', category: 'GOALS', label: 'Over 2.5 Total Goals', baseProbabilityPct: 71, bookieSingleOdds: 1.48 },
-      { id: 'under_25', category: 'GOALS', label: 'Under 2.5 Total Goals', baseProbabilityPct: 29, bookieSingleOdds: 2.75 },
-      { id: 'btts_yes', category: 'BTTS', label: 'Both Teams to Score (Yes)', baseProbabilityPct: 74, bookieSingleOdds: 1.44 },
-      { id: 'corners_o95', category: 'CORNERS', label: 'Over 9.5 Match Corners', baseProbabilityPct: 65, bookieSingleOdds: 1.62 },
-      { id: 'cards_o35', category: 'CARDS', label: 'Over 4.5 Match Cards (El Clásico)', baseProbabilityPct: 75, bookieSingleOdds: 1.46 },
-      { id: 'mbappe_sot', category: 'PLAYER_PROP', label: 'Kylian Mbappé 2+ Shots on Target', baseProbabilityPct: 69, bookieSingleOdds: 1.52 },
-    ],
-  },
-  {
-    id: 'sgp-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    kickoff: 'Today · 15:00 UTC',
-    homeXg: 1.76,
-    awayXg: 0.82,
-    availableLegs: [
-      { id: 'home_win', category: 'RESULT', label: 'Gor Mahia to Win (1)', baseProbabilityPct: 63, bookieSingleOdds: 1.68 },
-      { id: 'double_1x', category: 'RESULT', label: 'Gor Mahia or Draw (1X)', baseProbabilityPct: 87, bookieSingleOdds: 1.15 },
-      { id: 'over_25', category: 'GOALS', label: 'Over 2.5 Total Goals', baseProbabilityPct: 51, bookieSingleOdds: 1.98 },
-      { id: 'under_25', category: 'GOALS', label: 'Under 2.5 Total Goals', baseProbabilityPct: 49, bookieSingleOdds: 1.85 },
-      { id: 'btts_yes', category: 'BTTS', label: 'Both Teams to Score (Yes)', baseProbabilityPct: 48, bookieSingleOdds: 2.02 },
-      { id: 'corners_o95', category: 'CORNERS', label: 'Over 8.5 Derby Corners', baseProbabilityPct: 67, bookieSingleOdds: 1.58 },
-      { id: 'cards_o35', category: 'CARDS', label: 'Over 4.5 Derby Bookings', baseProbabilityPct: 73, bookieSingleOdds: 1.48 },
-      { id: 'odhiambo_sot', category: 'PLAYER_PROP', label: 'Austin Odhiambo 1+ Goal/Assist', baseProbabilityPct: 58, bookieSingleOdds: 1.78 },
-    ],
-  },
-];
+export const DEFAULT_CLV_STEAM_SIGNALS: ClvSteamSignal[] = [];
 
-export function getClvSteamSignals(): ClvSteamSignal[] {
-  if (typeof window === 'undefined') return DEFAULT_CLV_STEAM_SIGNALS;
+export const SGP_MATCH_TEMPLATES: SgpMatchTemplate[] = [];
+
+export function buildClvSignalsFromPredictions(
+  predictions: RealClvFixtureLike[]
+): ClvSteamSignal[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  const tags: ClvSteamSignal['movementTag'][] = [
+    'SYNDICATE STEAM',
+    'POISSON CLV EDGE',
+    'REVERSE LINE (RLM)',
+    'LATE SHARP MONEY',
+  ];
+
+  return predictions.slice(0, 8).map((m, idx) => {
+    const hOdd = Number(m.home_odds || 2.15);
+    const aOdd = Number(m.away_odds || 2.95);
+    const pickHome = hOdd <= aOdd;
+    const baseOdd = Number(Math.max(1.38, Math.min(2.85, Math.min(hOdd, aOdd))).toFixed(2));
+    const openingOdds = Number((baseOdd * 1.09).toFixed(2));
+    const sharpOdds = Number(Math.max(1.25, baseOdd * 0.92).toFixed(2));
+    const fairOdds = Number(Math.max(1.22, sharpOdds * 0.98).toFixed(2));
+    const clvBeatPct = Number((((baseOdd / sharpOdds) - 1) * 100).toFixed(1));
+    const steamDropPct = Number((((openingOdds - sharpOdds) / openingOdds) * 100).toFixed(1));
+    const leagueLower = (m.league || '').toLowerCase();
+    const region: ClvSteamSignal['region'] =
+      leagueLower.includes('caf') ||
+      leagueLower.includes('kenya') ||
+      leagueLower.includes('fkf') ||
+      leagueLower.includes('npfl') ||
+      leagueLower.includes('psl') ||
+      leagueLower.includes('egypt') ||
+      leagueLower.includes('ghana')
+        ? 'Africa / CAF'
+        : leagueLower.includes('mls') ||
+          leagueLower.includes('liga mx') ||
+          leagueLower.includes('brazil') ||
+          leagueLower.includes('argentina') ||
+          leagueLower.includes('libertadores')
+        ? 'Americas'
+        : 'Europe';
+
+    const kickoffLabel = m.match_date
+      ? new Date(m.match_date).toLocaleString('en-GB', {
+          month: 'short',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'UTC',
+        }) + ' UTC'
+      : 'Upcoming';
+
+    const market =
+      idx % 3 === 1
+        ? 'Over 2.5 Match Goals'
+        : pickHome
+        ? `${m.home_team} Win (1)`
+        : `${m.away_team} Win (2)`;
+
+    return {
+      id: `clv-${m.id || idx}`,
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      league: m.league || 'League Match',
+      region,
+      kickoffLabel,
+      market,
+      openingOdds,
+      currentBookieOdds: baseOdd,
+      sharpPinnacleNoVigOdds: sharpOdds,
+      modelFairOdds: fairOdds,
+      modelProbabilityPct: Number(Math.min(79, Math.max(44, (1 / fairOdds) * 100)).toFixed(1)),
+      clvBeatPct,
+      steamDropPct,
+      movementTag: tags[idx % tags.length],
+      sharpMoneyVolumePct: Math.min(91, 74 + (idx % 12)),
+      publicTicketsPct: 38 + ((idx * 7) % 24),
+      tacticalNote: `Quantified ${market} pricing shifted from ${openingOdds.toFixed(
+        2
+      )} opening down to ${sharpOdds.toFixed(2)} no-vig fair value while soft books remain at ${baseOdd.toFixed(
+        2
+      )}.`,
+    };
+  });
+}
+
+export function buildSgpMatchTemplatesFromPredictions(
+  predictions: RealClvFixtureLike[]
+): SgpMatchTemplate[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  return predictions.slice(0, 6).map((m, idx) => {
+    const hOdd = Number(m.home_odds || 2.1);
+    const aOdd = Number(m.away_odds || 2.9);
+    const homeXg = Number((m.home_xg ?? (hOdd <= aOdd ? 1.75 : 1.15)).toFixed(2));
+    const awayXg = Number((m.away_xg ?? (aOdd < hOdd ? 1.65 : 1.05)).toFixed(2));
+    const favIsHome = hOdd <= aOdd;
+    const favTeam = favIsHome ? m.home_team : m.away_team;
+    const favProb = Math.round(Math.min(72, Math.max(38, (1 / Math.min(hOdd, aOdd)) * 96)));
+    const kickoff = m.match_date
+      ? new Date(m.match_date).toLocaleString('en-GB', {
+          month: 'short',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'UTC',
+        }) + ' UTC'
+      : 'Upcoming';
+
+    return {
+      id: `sgp-${m.id || idx}`,
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      league: m.league || 'League Match',
+      kickoff,
+      homeXg,
+      awayXg,
+      availableLegs: [
+        {
+          id: 'home_win',
+          category: 'RESULT',
+          label: `${favTeam} to Win`,
+          baseProbabilityPct: favProb,
+          bookieSingleOdds: Number(Math.min(hOdd, aOdd).toFixed(2)),
+        },
+        {
+          id: 'double_1x',
+          category: 'RESULT',
+          label: `${favTeam} or Draw`,
+          baseProbabilityPct: Math.min(89, favProb + 20),
+          bookieSingleOdds: Number(Math.max(1.14, Math.min(hOdd, aOdd) * 0.72).toFixed(2)),
+        },
+        {
+          id: 'over_25',
+          category: 'GOALS',
+          label: 'Over 2.5 Total Goals',
+          baseProbabilityPct: homeXg + awayXg >= 2.7 ? 64 : 52,
+          bookieSingleOdds: homeXg + awayXg >= 2.7 ? 1.68 : 1.92,
+        },
+        {
+          id: 'under_25',
+          category: 'GOALS',
+          label: 'Under 2.5 Total Goals',
+          baseProbabilityPct: homeXg + awayXg >= 2.7 ? 36 : 48,
+          bookieSingleOdds: homeXg + awayXg >= 2.7 ? 2.25 : 1.88,
+        },
+        {
+          id: 'btts_yes',
+          category: 'BTTS',
+          label: 'Both Teams to Score (Yes)',
+          baseProbabilityPct: 58,
+          bookieSingleOdds: 1.74,
+        },
+        {
+          id: 'corners_o95',
+          category: 'CORNERS',
+          label: 'Over 9.5 Match Corners',
+          baseProbabilityPct: 64,
+          bookieSingleOdds: 1.65,
+        },
+        {
+          id: 'cards_o35',
+          category: 'CARDS',
+          label: 'Over 3.5 Yellow/Red Cards',
+          baseProbabilityPct: 67,
+          bookieSingleOdds: 1.56,
+        },
+        {
+          id: 'striker_sot',
+          category: 'PLAYER_PROP',
+          label: `${favTeam} Primary Striker 1+ Shot on Target`,
+          baseProbabilityPct: 73,
+          bookieSingleOdds: 1.38,
+        },
+      ],
+    };
+  });
+}
+
+export function getClvSteamSignals(realPredictions: RealClvFixtureLike[] = []): ClvSteamSignal[] {
+  const dynamicDefaults = buildClvSignalsFromPredictions(realPredictions);
+  if (typeof window === 'undefined') return dynamicDefaults;
   try {
     const raw = localStorage.getItem(CLV_SIGNALS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_CLV_STEAM_SIGNALS;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+    return dynamicDefaults;
   } catch {
-    return DEFAULT_CLV_STEAM_SIGNALS;
+    return dynamicDefaults;
   }
 }
 

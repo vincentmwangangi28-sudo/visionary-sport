@@ -10,34 +10,59 @@ import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Scale, Trophy, ArrowRight, CheckCircle2, Calculator } from 'lucide-react';
+import { Scale, Trophy, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
 export default function EuropeanHandicapPredictions() {
-  const { data: matches = [] } = usePredictions();
+  const { predictions: matches = [], isLoading } = usePredictions(7);
+  const { addSelections } = useBetSlip();
 
   const euroHandicapPicks = useMemo(() => {
-    return matches.slice(0, 8).map((m, idx) => {
-      const homeXg = Number((2.35 + (idx % 4) * 0.18).toFixed(2));
-      const awayXg = Number((0.68 + (idx % 3) * 0.12).toFixed(2));
-      const probWinBy2Plus = Math.min(76, Math.max(58, Math.round(45 + (homeXg - awayXg) * 14)));
-      const odds = Number((2.05 + (idx % 5) * 0.12).toFixed(2));
-      return {
-        id: m.id || `eh-${idx}`,
-        homeTeam: m.homeTeam || ['Manchester City', 'Real Madrid', 'Bayern Munich', 'PSG', 'Arsenal', 'Sporting CP', 'PSV Eindhoven', 'Celtic'][idx],
-        awayTeam: m.awayTeam || ['Southampton', 'Getafe', 'Bochum', 'Le Havre', 'Leicester City', 'Estrela', 'RKC Waalwijk', 'Ross County'][idx],
-        league: m.league || ['Premier League', 'La Liga', 'Bundesliga', 'Ligue 1', 'Premier League', 'Primeira Liga', 'Eredivisie', 'Scottish Premiership'][idx],
-        kickoff: m.time || `${14 + idx}:00 UTC`,
-        homeXg,
-        awayXg,
-        probWinBy2Plus,
-        odds,
-        line: 'Home (-1) 3-Way',
-        projectedScore: idx % 2 === 0 ? '3-0' : '3-1',
-      };
-    });
+    return [...matches]
+      .sort((a, b) => {
+        const aMax = Math.max(a.ai_prediction?.home_win_prob ?? 45, a.ai_prediction?.away_win_prob ?? 25);
+        const bMax = Math.max(b.ai_prediction?.home_win_prob ?? 45, b.ai_prediction?.away_win_prob ?? 25);
+        return bMax - aMax;
+      })
+      .slice(0, 8)
+      .map((m) => {
+        const hProb = m.ai_prediction?.home_win_prob ?? 48;
+        const aProb = m.ai_prediction?.away_win_prob ?? 26;
+        const homeFav = hProb >= aProb;
+        const favTeam = homeFav ? m.home_team : m.away_team;
+        const favWinProb = Math.max(hProb, aProb);
+        const homeXg = Number((1.1 + (hProb / 100) * 1.9).toFixed(2));
+        const awayXg = Number((0.65 + (aProb / 100) * 1.65).toFixed(2));
+        const probWinBy2Plus = Math.min(76, Math.max(44, Math.round(favWinProb * 0.72 + 12)));
+        const baseOdds = homeFav ? m.ai_prediction?.odds_home || 1.55 : m.ai_prediction?.odds_away || 1.75;
+        const odds = Number(Math.max(1.85, Math.min(3.4, baseOdds * 1.48)).toFixed(2));
+        const kickoff = m.match_date
+          ? new Date(m.match_date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : 'Upcoming';
+
+        return {
+          id: m.id,
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          league: m.league,
+          kickoff,
+          matchDate: m.match_date,
+          homeXg,
+          awayXg,
+          probWinBy2Plus,
+          odds,
+          line: `${homeFav ? 'Home' : 'Away'} (${favTeam} -1) 3-Way`,
+          projectedScore: homeFav ? (hProb >= 62 ? '3-0' : '2-0') : '0-2',
+        };
+      });
   }, [matches]);
+
+  const doubleOdds = useMemo(() => {
+    if (euroHandicapPicks.length < 2) return null;
+    return (euroHandicapPicks[0].odds * euroHandicapPicks[1].odds).toFixed(2);
+  }, [euroHandicapPicks]);
 
   const schemas = useMemo(
     () => [
@@ -87,15 +112,32 @@ export default function EuropeanHandicapPredictions() {
             European Handicap (-1) Predictions Today (3-Way Handicap 1X2)
           </h1>
           <p className="text-muted-foreground max-w-3xl text-sm sm:text-base leading-relaxed mb-5">
-            When elite clubs like Manchester City, Bayern Munich, or Real Madrid are priced at 1.22 on the standard 1X2 moneyline, backing
-            <strong> European Handicap (-1)</strong> requires a 2+ goal victory margin (2-0, 3-0, 3-1) while boosting your payout above 2.05+.
+            When elite favorites are priced at short odds on the standard 1X2 moneyline, backing
+            <strong> European Handicap (-1)</strong> requires a 2+ goal victory margin (2-0, 3-0, 3-1) while boosting your payout above 2.00+.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => toast.success('European Handicap (-1) Double copied to slip!')}
+              disabled={euroHandicapPicks.length < 2}
+              onClick={() => {
+                const topTwo = euroHandicapPicks.slice(0, 2);
+                addSelections(
+                  topTwo.map((p) => ({
+                    matchId: p.id,
+                    match: `${p.homeTeam} vs ${p.awayTeam}`,
+                    homeTeam: p.homeTeam,
+                    awayTeam: p.awayTeam,
+                    league: p.league,
+                    kickoff: p.matchDate,
+                    market: p.line,
+                    odds: p.odds,
+                    confidence: p.probWinBy2Plus,
+                  }))
+                );
+                toast.success('European Handicap (-1) Double copied to slip!');
+              }}
               className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold"
             >
-              <Trophy className="w-4 h-4 mr-2" /> Copy Top (-1) Handicap Double (4.20x)
+              <Trophy className="w-4 h-4 mr-2" /> Copy Top (-1) Handicap Double {doubleOdds ? `(${doubleOdds}x)` : ''}
             </Button>
             <Button variant="outline" asChild>
               <Link to="/asian-handicap-predictions">
@@ -110,34 +152,44 @@ export default function EuropeanHandicapPredictions() {
             <CheckCircle2 className="w-5 h-5 text-indigo-400" /> Today&apos;s Top (-1) Handicap Margin Picks
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {euroHandicapPicks.map((pick) => (
-              <Card key={pick.id} className="p-5 border-border/60 bg-card/70 hover:border-indigo-500/40 transition-all">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                  <span className="font-medium text-indigo-400">{pick.league}</span>
-                  <span>{pick.kickoff}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-bold text-base">
-                      {pick.homeTeam} vs {pick.awayTeam}
+          {isLoading && euroHandicapPicks.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              Loading live 3-way European Handicap projections...
+            </Card>
+          ) : euroHandicapPicks.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              No scheduled fixtures available in the 7-day feed right now.
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {euroHandicapPicks.map((pick) => (
+                <Card key={pick.id} className="p-5 border-border/60 bg-card/70 hover:border-indigo-500/40 transition-all">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span className="font-medium text-indigo-400">{pick.league}</span>
+                    <span>{pick.kickoff}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-bold text-base">
+                        {pick.homeTeam} vs {pick.awayTeam}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        xG Diff: <strong className="text-foreground">{Math.abs(pick.homeXg - pick.awayXg).toFixed(2)}</strong> • Score Model: <strong className="text-indigo-400">{pick.projectedScore}</strong>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      xG Supremacy: <strong className="text-foreground">+{ (pick.homeXg - pick.awayXg).toFixed(2) }</strong> • Score Model: <strong className="text-indigo-400">{pick.projectedScore}</strong>
+                    <div className="text-right">
+                      <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/40 font-bold">
+                        {pick.line} @ {pick.odds}
+                      </Badge>
+                      <div className="text-[11px] text-indigo-400 font-medium mt-1">
+                        {pick.probWinBy2Plus}% 2+ Goal Margin Prob
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/40 font-bold">
-                      {pick.line} @ {pick.odds}
-                    </Badge>
-                    <div className="text-[11px] text-indigo-400 font-medium mt-1">
-                      {pick.probWinBy2Plus}% 2+ Goal Margin Prob
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
         <SEOAuthorityHub />

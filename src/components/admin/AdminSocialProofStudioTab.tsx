@@ -31,14 +31,14 @@ export const AdminSocialProofStudioTab: React.FC = () => {
   const [proofs, setProofs] = useState<VerifiedWinProof[]>(() => getVerifiedWinProofs());
 
   // New Proof Form state
-  const [proofTitle, setProofTitle] = useState('3.45x Premier League xG Double — WON');
+  const [proofTitle, setProofTitle] = useState('');
   const [proofBookie, setProofBookie] = useState('SportyBet');
-  const [proofCode, setProofCode] = useState('BC8942X');
-  const [proofOdds, setProofOdds] = useState('3.45');
-  const [proofLeg1Match, setProofLeg1Match] = useState('Arsenal vs Chelsea');
-  const [proofLeg1Score, setProofLeg1Score] = useState('3 - 1 (FT)');
-  const [proofLeg2Match, setProofLeg2Match] = useState('Atalanta vs Fiorentina');
-  const [proofLeg2Score, setProofLeg2Score] = useState('2 - 0 (FT)');
+  const [proofCode, setProofCode] = useState('');
+  const [proofOdds, setProofOdds] = useState('2.50');
+  const [proofLeg1Match, setProofLeg1Match] = useState('');
+  const [proofLeg1Score, setProofLeg1Score] = useState('');
+  const [proofLeg2Match, setProofLeg2Match] = useState('');
+  const [proofLeg2Score, setProofLeg2Score] = useState('');
 
   const activeConfig = useMemo<SocialCardRenderConfig>(() => {
     const codes = getAdminBookingCodes();

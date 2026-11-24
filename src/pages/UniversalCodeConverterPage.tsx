@@ -17,10 +17,11 @@ import {
   History,
   Sparkles,
 } from 'lucide-react';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
   SUPPORTED_BOOKMAKERS,
   BookmakerId,
-  SAMPLE_BOOKING_CODES,
+  buildBookingCodePresetsFromPredictions,
   convertBookingCodeAcrossBookmakers,
   BookingCodeConversionOutput,
 } from '@/services/phase13EdgeService';
@@ -55,11 +56,17 @@ function extractSharedBookingCode(raw: string): { code: string; detectedBookie?:
 
 export const UniversalCodeConverterPage: React.FC = () => {
   const { addSelections, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
   const [searchParams] = useSearchParams();
 
   const [sourceBookie, setSourceBookie] = useState<BookmakerId>('sportybet');
   const [targetBookie, setTargetBookie] = useState<BookmakerId>('betika');
   const [bookingCodeInput, setBookingCodeInput] = useState<string>('SB-88492A');
+
+  const sampleBookingCodes = useMemo(
+    () => buildBookingCodePresetsFromPredictions(predictions),
+    [predictions]
+  );
 
   useEffect(() => {
     const sharedPayload =
@@ -96,8 +103,8 @@ export const UniversalCodeConverterPage: React.FC = () => {
   });
 
   const conversion: BookingCodeConversionOutput = useMemo(
-    () => convertBookingCodeAcrossBookmakers(bookingCodeInput, sourceBookie, targetBookie),
-    [bookingCodeInput, sourceBookie, targetBookie]
+    () => convertBookingCodeAcrossBookmakers(bookingCodeInput, sourceBookie, targetBookie, predictions),
+    [bookingCodeInput, sourceBookie, targetBookie, predictions]
   );
 
   const handleSwapBookmakers = () => {
@@ -216,7 +223,7 @@ export const UniversalCodeConverterPage: React.FC = () => {
               Click a Trending Matchday Code to Test Instant Translation:
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-              {SAMPLE_BOOKING_CODES.map((sample) => {
+              {sampleBookingCodes.map((sample) => {
                 const isSelected = bookingCodeInput.toUpperCase() === sample.code.toUpperCase();
                 return (
                   <button

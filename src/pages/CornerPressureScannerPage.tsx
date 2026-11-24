@@ -4,8 +4,9 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
-  TODAY_CORNER_PRESSURE_FIXTURES,
+  buildCornerProjectionsFromPredictions,
   computeCornerPoissonProbabilities,
   CornerMatchProjection,
 } from '@/services/phase14SyndicateService';
@@ -20,6 +21,7 @@ import {
 
 export const CornerPressureScannerPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
 
   const [selectedLeague, setSelectedLeague] = useState<string>('ALL');
   const [minEdgeFilter, setMinEdgeFilter] = useState<number>(0);
@@ -41,18 +43,23 @@ export const CornerPressureScannerPage: React.FC = () => {
     [customExpectedTotal]
   );
 
+  const cornerFixtures = useMemo(
+    () => buildCornerProjectionsFromPredictions(predictions),
+    [predictions]
+  );
+
   const leagues = useMemo(() => {
-    const set = new Set(TODAY_CORNER_PRESSURE_FIXTURES.map((f) => f.league));
+    const set = new Set(cornerFixtures.map((f) => f.league));
     return ['ALL', ...Array.from(set)];
-  }, []);
+  }, [cornerFixtures]);
 
   const filteredFixtures = useMemo(() => {
-    return TODAY_CORNER_PRESSURE_FIXTURES.filter((f) => {
+    return cornerFixtures.filter((f) => {
       if (selectedLeague !== 'ALL' && f.league !== selectedLeague) return false;
       if (f.edgePct < minEdgeFilter) return false;
       return true;
     });
-  }, [selectedLeague, minEdgeFilter]);
+  }, [cornerFixtures, selectedLeague, minEdgeFilter]);
 
   const handleAddCornerPickToSlip = (item: CornerMatchProjection) => {
     addSelection({

@@ -132,8 +132,6 @@ export function computeEnrichedStandings(
         liveProjectedPts = points + inPlayPts;
         gd = gd + (myGoals - oppGoals);
       }
-    } else if (tableMode === 'live_inplay') {
-      liveProjectedPts = points + (idx % 4 === 0 ? 3 : idx % 4 === 1 ? 1 : 0);
     }
 
     return {

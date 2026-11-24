@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { 
   getSavedPrediction, 
   getSavedPredictionsList,
@@ -10,7 +9,6 @@ import { Prediction } from '@/types/prediction';
 import {
   isPlayedOrPastMatch,
   sortMatchesByDatePriority,
-  matchesDateFilter,
 } from '@/lib/dateFilterUtils';
 
 export interface UpcomingMatch extends Prediction {
@@ -109,10 +107,10 @@ function toUpcomingMatch(p: Partial<Prediction>, isRealtime = false): UpcomingMa
 
 export const useUpcomingMatches = () => {
   const [matches, setMatches] = useState<UpcomingMatch[]>(() => {
-    const saved = getSavedPredictionsList().filter((p) => p.is_realtime || String(p.id).startsWith('espn-real-'));
-    const defaults = getUpdatedDefaultPredictions();
-    const combinedInitial = [...saved, ...defaults];
-    const mapped = combinedInitial
+    const saved = getSavedPredictionsList().filter(
+      (p) => (p.is_realtime || String(p.id).startsWith('espn-real-') || String(p.id).startsWith('real-match-')) && !isPlayedOrPastMatch(p)
+    );
+    const mapped = saved
       .map((p) => toUpcomingMatch(p, true))
       .filter((m): m is UpcomingMatch => m !== null);
     return deduplicateUpcomingMatches(mapped);
@@ -165,23 +163,15 @@ export const useUpcomingMatches = () => {
         }
       }
 
-      // 3. Supplement with verified upcoming fixtures whenever Today's slate (< 12) or total pool (< 36) is sparse
-      const todayCount = combined.filter((m) => matchesDateFilter(m.match_date, 'today')).length;
-      if (combined.length < 36 || todayCount < 12) {
-        const updatedDefaults = getUpdatedDefaultPredictions()
-          .map((p) => toUpcomingMatch(p, false))
-          .filter((m): m is UpcomingMatch => m !== null);
-        combined.push(...updatedDefaults);
-      }
-
       const sanitized = deduplicateUpcomingMatches(combined);
       setMatches(sanitized);
       setIsRealTime(true);
     } catch (e) {
       console.warn('useUpcomingMatches refresh fallback:', e instanceof Error ? e.message : 'fetch failed');
-      const saved = getSavedPredictionsList();
-      const sourcePool = saved.length > 0 ? saved : getUpdatedDefaultPredictions();
-      const offlineList = sourcePool
+      const saved = getSavedPredictionsList().filter(
+        (p) => (p.is_realtime || String(p.id).startsWith('espn-real-')) && !isPlayedOrPastMatch(p)
+      );
+      const offlineList = saved
         .map((p) => toUpcomingMatch(p, false))
         .filter((m): m is UpcomingMatch => m !== null);
       setMatches(deduplicateUpcomingMatches(offlineList));

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { callEdgeFn } from '@/lib/callEdgeFunction';
+import { usePredictions } from '@/hooks/usePredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { getConfidence, getPrediction } from '@/types/prediction';
 import { Zap, Loader2, TrendingUp, Target, AlertCircle, Sparkles, Plus, CheckCheck, ShieldCheck, Flame } from 'lucide-react';
@@ -86,6 +87,7 @@ export default function MatchPredictor() {
   const [result, setResult] = useState<PredResult | null>(null);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
 
+  const { predictions: upcomingPredictions } = usePredictions(7);
   const { addSelection, selections } = useBetSlip();
   const [geminiAnalysis, setGeminiAnalysis] = useState<GeminiMatchAnalysis | null>(null);
   const [loadingGemini, setLoadingGemini] = useState(false);
@@ -200,14 +202,11 @@ export default function MatchPredictor() {
     }
   };
 
-  const POPULAR = [
-    { home: 'Arsenal', away: 'Chelsea', league: 'Premier League' },
-    { home: 'Real Madrid', away: 'Barcelona', league: 'La Liga' },
-    { home: 'Bayern Munich', away: 'Dortmund', league: 'Bundesliga' },
-    { home: 'Gor Mahia', away: 'AFC Leopards', league: 'KPL' },
-    { home: 'Inter Miami', away: 'LA Galaxy', league: 'MLS' },
-    { home: 'Nigeria', away: 'Ghana', league: 'AFCON Qualifier' },
-  ];
+  const POPULAR = upcomingPredictions.slice(0, 6).map((m) => ({
+    home: m.home_team,
+    away: m.away_team,
+    league: m.league || 'Premier League',
+  }));
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
@@ -290,7 +289,7 @@ export default function MatchPredictor() {
                 <label htmlFor="home-team-input" className="text-xs font-medium text-muted-foreground mb-1.5 block">Home Team</label>
                 <Input
                   id="home-team-input"
-                  placeholder="e.g. Arsenal"
+                  placeholder="Enter Home Team"
                   value={home}
                   onChange={e => setHome(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && predict()}
@@ -302,7 +301,7 @@ export default function MatchPredictor() {
                 <label htmlFor="away-team-input" className="text-xs font-medium text-muted-foreground mb-1.5 block">Away Team</label>
                 <Input
                   id="away-team-input"
-                  placeholder="e.g. Chelsea"
+                  placeholder="Enter Away Team"
                   value={away}
                   onChange={e => setAway(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && predict()}
@@ -339,28 +338,30 @@ export default function MatchPredictor() {
           </CardContent>
         </Card>
 
-        {/* Quick picks */}
-        <div className="mb-6">
-          <p className="text-xs text-muted-foreground mb-2">Quick simulations:</p>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Quick match simulations">
-            {POPULAR.map(m => (
-              <button
-                type="button"
-                key={m.home + m.away}
-                onClick={() => {
-                  hapticService.selection();
-                  setHome(m.home);
-                  setAway(m.away);
-                  setLeague(m.league);
-                }}
-                aria-label={`Simulate match: ${m.home} vs ${m.away}`}
-                className="text-xs px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-full border transition-colors"
-              >
-                {m.home} vs {m.away}
-              </button>
-            ))}
+        {/* Quick picks from live 7-day upcoming fixtures */}
+        {POPULAR.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs text-muted-foreground mb-2">Quick simulations from upcoming fixtures:</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Quick match simulations">
+              {POPULAR.map(m => (
+                <button
+                  type="button"
+                  key={m.home + m.away}
+                  onClick={() => {
+                    hapticService.selection();
+                    setHome(m.home);
+                    setAway(m.away);
+                    setLeague(m.league);
+                  }}
+                  aria-label={`Simulate match: ${m.home} vs ${m.away}`}
+                  className="text-xs px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-full border transition-colors"
+                >
+                  {m.home} vs {m.away}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Fallback Notice if active */}
         {isUsingFallback && (

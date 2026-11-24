@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   Scale,
@@ -20,7 +21,7 @@ import {
 import {
   PHASE13_CURRENCIES,
   SupportedCurrency,
-  INITIAL_ARBITRAGE_OPPORTUNITIES,
+  buildArbitrageOpportunitiesFromPredictions,
   ArbitrageOpportunity,
   StakeRoundingStep,
   computeArbitrageStakes,
@@ -38,20 +39,31 @@ const ALL_ARB_BOOKMAKERS = [
 
 export const ArbitrageSurebetMatrixPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { predictions } = usePredictions();
+
+  const liveArbList = useMemo(
+    () => buildArbitrageOpportunitiesFromPredictions(predictions),
+    [predictions]
+  );
 
   const [currency, setCurrency] = useState<SupportedCurrency>('USD');
   const [marketFilter, setMarketFilter] = useState<'all' | '2way' | '3way'>('all');
   const [minRoiFilter, setMinRoiFilter] = useState<number>(0);
   const [activeBookmakers, setActiveBookmakers] = useState<string[]>(ALL_ARB_BOOKMAKERS);
 
-  const [selectedArbId, setSelectedArbId] = useState<string>(INITIAL_ARBITRAGE_OPPORTUNITIES[0].id);
+  const [selectedArbId, setSelectedArbId] = useState<string>('');
   const [totalBankroll, setTotalBankroll] = useState<string>('200');
   const [roundingStep, setRoundingStep] = useState<StakeRoundingStep>(0);
 
   // Custom odds override state for the interactive splitter
-  const [customOdds, setCustomOdds] = useState<string[]>(
-    INITIAL_ARBITRAGE_OPPORTUNITIES[0].legs.map((l) => l.odds.toFixed(2))
-  );
+  const [customOdds, setCustomOdds] = useState<string[]>(['2.00', '2.00']);
+
+  useEffect(() => {
+    if (liveArbList.length > 0 && (!selectedArbId || !liveArbList.some((o) => o.id === selectedArbId))) {
+      setSelectedArbId(liveArbList[0].id);
+      setCustomOdds(liveArbList[0].legs.map((l) => l.odds.toFixed(2)));
+    }
+  }, [liveArbList, selectedArbId]);
 
   const currencyMeta = PHASE13_CURRENCIES[currency];
 
@@ -83,7 +95,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
   };
 
   const enrichedOpportunities = useMemo(() => {
-    return INITIAL_ARBITRAGE_OPPORTUNITIES.map((opp) => {
+    return liveArbList.map((opp) => {
       const split = computeArbitrageStakes(
         opp.legs.map((l) => l.odds),
         parseFloat(totalBankroll) || 200,
@@ -99,20 +111,23 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
       const allLegsSupported = opp.legs.every((leg) => activeBookmakers.includes(leg.bookmaker));
       return allLegsSupported;
     });
-  }, [marketFilter, minRoiFilter, activeBookmakers, totalBankroll, roundingStep]);
+  }, [liveArbList, marketFilter, minRoiFilter, activeBookmakers, totalBankroll, roundingStep]);
 
   const activeOpportunity = useMemo(() => {
     return (
-      INITIAL_ARBITRAGE_OPPORTUNITIES.find((o) => o.id === selectedArbId) ||
-      INITIAL_ARBITRAGE_OPPORTUNITIES[0]
+      liveArbList.find((o) => o.id === selectedArbId) ||
+      liveArbList[0] ||
+      null
     );
-  }, [selectedArbId]);
+  }, [liveArbList, selectedArbId]);
 
   const activeSplit = useMemo(() => {
-    const parsedOdds = activeOpportunity.legs.map((leg, idx) => {
-      const val = parseFloat(customOdds[idx]);
-      return Number.isFinite(val) && val > 1.01 ? val : leg.odds;
-    });
+    const parsedOdds = activeOpportunity
+      ? activeOpportunity.legs.map((leg, idx) => {
+          const val = parseFloat(customOdds[idx]);
+          return Number.isFinite(val) && val > 1.01 ? val : leg.odds;
+        })
+      : [2.0, 2.0];
     return computeArbitrageStakes(parsedOdds, parseFloat(totalBankroll) || 200, roundingStep);
   }, [activeOpportunity, customOdds, totalBankroll, roundingStep]);
 
@@ -143,6 +158,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
   };
 
   const copySurebetPlan = () => {
+    if (!activeOpportunity) return;
     const lines = [
       `PredictPro Surebet Staking Split — ${activeOpportunity.homeTeam} vs ${activeOpportunity.awayTeam} (${activeOpportunity.marketCategory})`,
       `Total Implied Book: ${activeSplit.totalImpliedPct.toFixed(2)}% · Guaranteed ROI: +${activeSplit.roiPct.toFixed(2)}%`,
@@ -305,7 +321,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {enrichedOpportunities.map(({ opp, split }) => {
-                  const isSelected = opp.id === activeOpportunity.id;
+                  const isSelected = activeOpportunity?.id === opp.id;
                   return (
                     <div
                       key={opp.id}
@@ -394,15 +410,23 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
               <div className="text-xs font-semibold text-emerald-400">
                 Interactive Surebet Stake Splitter
               </div>
-              <h2 className="text-base font-extrabold text-foreground">
-                {activeOpportunity.homeTeam} vs {activeOpportunity.awayTeam}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {activeOpportunity.marketCategory} · Total Implied Book:{' '}
-                <strong className="font-mono tabular-nums text-foreground">
-                  {activeSplit.totalImpliedPct.toFixed(2)}%
-                </strong>
-              </p>
+              {activeOpportunity ? (
+                <>
+                  <h2 className="text-base font-extrabold text-foreground">
+                    {activeOpportunity.homeTeam} vs {activeOpportunity.awayTeam}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {activeOpportunity.marketCategory} · Total Implied Book:{' '}
+                    <strong className="font-mono tabular-nums text-foreground">
+                      {activeSplit.totalImpliedPct.toFixed(2)}%
+                    </strong>
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground pt-1">
+                  Loading live upcoming fixtures...
+                </p>
+              )}
             </div>
 
             {/* Bankroll & Rounding Controls */}
@@ -450,7 +474,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
 
             {/* Individual Leg Staking Breakdown */}
             <div className="space-y-2.5 pt-2 border-t border-border/60">
-              {activeOpportunity.legs.map((leg, idx) => (
+              {(activeOpportunity?.legs || []).map((leg, idx) => (
                 <div
                   key={leg.outcomeLabel}
                   className="p-3 rounded-lg border border-border bg-background/60 space-y-2"
@@ -485,24 +509,24 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
                     <span className="text-muted-foreground">
                       Required Stake:{' '}
                       <strong className="text-emerald-400">
-                        {fmtMoney(activeSplit.roundedStakes[idx])}
+                        {fmtMoney(activeSplit.roundedStakes[idx] || 0)}
                       </strong>
                     </span>
                     <span className="text-muted-foreground">
                       Payout:{' '}
                       <strong className="text-foreground">
-                        {fmtMoney(activeSplit.payoutsPerOutcome[idx])}
+                        {fmtMoney(activeSplit.payoutsPerOutcome[idx] || 0)}
                       </strong>{' '}
                       (
                       <span
                         className={
-                          activeSplit.netProfitsPerOutcome[idx] >= 0
+                          (activeSplit.netProfitsPerOutcome[idx] || 0) >= 0
                             ? 'text-emerald-400'
                             : 'text-rose-400'
                         }
                       >
-                        {activeSplit.netProfitsPerOutcome[idx] >= 0 ? '+' : ''}
-                        {fmtMoney(activeSplit.netProfitsPerOutcome[idx])}
+                        {(activeSplit.netProfitsPerOutcome[idx] || 0) >= 0 ? '+' : ''}
+                        {fmtMoney(activeSplit.netProfitsPerOutcome[idx] || 0)}
                       </span>
                       )
                     </span>
@@ -533,7 +557,8 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Button
-                onClick={() => loadArbToBetSlip(activeOpportunity)}
+                disabled={!activeOpportunity}
+                onClick={() => activeOpportunity && loadArbToBetSlip(activeOpportunity)}
                 className="flex-1 gap-1.5 text-xs font-bold"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -541,6 +566,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
               </Button>
               <Button
                 variant="outline"
+                disabled={!activeOpportunity}
                 onClick={copySurebetPlan}
                 className="gap-1.5 text-xs font-semibold"
               >

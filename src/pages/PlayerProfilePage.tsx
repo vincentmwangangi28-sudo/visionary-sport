@@ -77,13 +77,13 @@ function findPlayerBySlug(
 
   return {
     id: 8500,
-    name: displayName || 'Erling Haaland',
+    name: displayName || 'Player Profile',
     nationality: 'International',
     position: 'Attacker',
     roleTag: extraGoals > 0 ? `Verified Matchday Scorer (${extraGoals}G)` : 'First-Team Starter',
     age: 25,
-    team: customTeam || 'Arsenal',
-    league: customLeague || 'Premier League',
+    team: customTeam || 'Club Unassigned',
+    league: customLeague || 'Global Football',
     jerseyNumber: 9,
     rating: Number(Math.min(9.5, 8.4 + extraGoals * 0.3).toFixed(1)),
     goals: 14 + extraGoals,
@@ -130,15 +130,25 @@ export default function PlayerProfilePage() {
     Array<{ minute: string; type: string; matchLabel: string; team: string; league: string }>
   >([]);
 
+  const [upcomingTeamFixtures, setUpcomingTeamFixtures] = useState<Prediction[]>([]);
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const [liveRes, resultsRes] = await Promise.all([
+        const [liveRes, resultsRes, upcomingRes] = await Promise.all([
           fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
           fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch('/api/football?type=upcoming').then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
         if (!mounted) return;
+        const upcomingPool: Prediction[] = Array.isArray(upcomingRes?.matches)
+          ? upcomingRes.matches
+          : Array.isArray(upcomingRes?.predictions)
+          ? upcomingRes.predictions
+          : [];
+        setUpcomingTeamFixtures(upcomingPool);
+
         const allMatches: Prediction[] = [
           ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
           ...(Array.isArray(resultsRes?.predictions) ? resultsRes.predictions : []),
@@ -321,19 +331,37 @@ export default function PlayerProfilePage() {
     return { heatZones, shots };
   }, [player]);
 
+  const realNextFixture = useMemo(() => {
+    const teamLower = (player.team || '').toLowerCase();
+    if (!teamLower || teamLower === 'club unassigned') return null;
+    return (
+      upcomingTeamFixtures.find(
+        (f) =>
+          f.home_team?.toLowerCase().includes(teamLower) ||
+          teamLower.includes(f.home_team?.toLowerCase() || '') ||
+          f.away_team?.toLowerCase().includes(teamLower) ||
+          teamLower.includes(f.away_team?.toLowerCase() || '')
+      ) || null
+    );
+  }, [upcomingTeamFixtures, player.team]);
+
   const handleAddPropToSlip = (marketLabel: string, odds: number, probability: number) => {
+    if (!realNextFixture) {
+      toast.info(`No upcoming official fixture scheduled yet for ${player.team}. Use sliders to simulate fair odds.`);
+      return;
+    }
     addSelection({
-      matchId: `player-prop-${player.id}-${marketLabel}`,
-      match: `${player.team} Next Fixture (${player.name})`,
-      homeTeam: player.team,
-      awayTeam: `${player.league} Opponent`,
-      league: player.league,
-      matchDate: new Date().toISOString(),
+      matchId: `player-prop-${player.id}-${realNextFixture.id}-${marketLabel}`,
+      match: `${realNextFixture.home_team} vs ${realNextFixture.away_team}`,
+      homeTeam: realNextFixture.home_team,
+      awayTeam: realNextFixture.away_team,
+      league: realNextFixture.league || player.league,
+      matchDate: realNextFixture.match_date,
       market: marketLabel,
       odds,
       confidence: probability,
     });
-    toast.success(`Added "${marketLabel}" (@${odds.toFixed(2)}) to Bet Slip`);
+    toast.success(`Added "${marketLabel}" (@${odds.toFixed(2)}) for ${realNextFixture.home_team} vs ${realNextFixture.away_team} to Bet Slip`);
   };
 
   const slug = formatPlayerSlug(player.name);

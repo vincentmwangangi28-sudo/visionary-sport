@@ -1,4 +1,4 @@
-import { getUpdatedDefaultPredictions } from '../data/mockPredictions.ts';
+import { getSavedPredictionsList } from './predictionStorage.ts';
 
 export interface SitemapEntry {
   url: string;
@@ -330,7 +330,8 @@ export function getAllSitemapEntries(baseUrl: string = BASE_URL): SitemapEntry[]
 
   // 5. Dynamic Match Prediction Routes
   const seenMatches = new Set<string>();
-  for (const pred of getUpdatedDefaultPredictions()) {
+  const savedMatches = typeof window !== 'undefined' ? getSavedPredictionsList() : [];
+  for (const pred of savedMatches) {
     const slug = formatMatchSlug(pred.home_team, pred.away_team, pred.match_date);
     if (!seenMatches.has(slug)) {
       seenMatches.add(slug);

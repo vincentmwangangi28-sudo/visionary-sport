@@ -16,7 +16,6 @@ import { ViralSlipShareCard } from '@/components/ViralSlipShareCard';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import type { Prediction } from '@/types/prediction';
 import { getPrediction, getConfidence } from '@/types/prediction';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { mergeAndPreservePredictions } from '@/services/predictionStorage';
 import { isPlayedOrPastMatch, sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
@@ -106,17 +105,6 @@ export default function BestBets() {
         }
       } catch (err) {
         console.warn('BestBets fetch error:', err);
-      }
-
-      if (items.length < 8) {
-        const fallback = getUpdatedDefaultPredictions().filter(p => (getConfidence(p) || 0) >= minConf);
-        const existingIds = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
-        for (const f of fallback) {
-          const key = `${f.home_team}-${f.away_team}`.toLowerCase();
-          if (!existingIds.has(key)) {
-            items.push(f);
-          }
-        }
       }
     }
 

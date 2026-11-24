@@ -33,6 +33,7 @@ import {
   renderSocialCardPngDataUrl,
   getCertifiedWinningProofs,
 } from '@/services/socialCardPngGenerator';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 type BroadcastTemplateId =
@@ -42,6 +43,7 @@ type BroadcastTemplateId =
   | 'EVENING_WINNER_PROOF';
 
 export const AdminTelegramWebhookTab: React.FC = () => {
+  const { predictions: livePredictions } = usePredictions(1);
   const [config, setConfig] = useState<WebhookBroadcastConfig>(() =>
     getWebhookBroadcastConfig()
   );
@@ -74,17 +76,22 @@ export const AdminTelegramWebhookTab: React.FC = () => {
     const betway = bookingCodes.find((c) => c.bookmaker === 'Betway') || bookingCodes[3];
 
     if (selectedTemplate === 'MORNING_BANKERS') {
+      const topLive = livePredictions.slice(0, 4);
+      const matchLines =
+        topLive.length > 0
+          ? topLive.map(
+              (m, idx) =>
+                `⚽ <b>${idx + 1}. ${m.home_team} vs ${m.away_team}</b> (${m.league}) — ${m.predicted_outcome || m.prediction || 'Home Win'} @ <b>${Number(m.home_odds || 1.75).toFixed(2)}</b> (Model: ${m.confidence || 78}%)`
+            )
+          : [`<i>Awaiting next scheduled live ESPN fixtures...</i>`];
       return [
         `🔥 <b>PREDICTPRO QUANTITATIVE DAILY BANKERS (${todayLabel})</b>`,
         `━━━━━━━━━━━━━━━━━━━━━━`,
-        `⚽ <b>1. Arsenal vs Chelsea</b> — Over 2.5 Goals @ <b>1.72</b> (Model: 86% | +11.4% EV)`,
-        `⚽ <b>2. Real Madrid vs Barcelona</b> — BTTS &amp; Over 2.5 @ <b>1.88</b> (Model: 84% | +10.2% EV)`,
-        `⚽ <b>3. Bayern Munich vs Dortmund</b> — Home Win &amp; Over 1.5 @ <b>1.64</b> (Model: 88% | +12.1% EV)`,
-        `⚽ <b>4. Gor Mahia vs AFC Leopards</b> — Home Win (1) @ <b>1.75</b> (Model: 83% | +9.5% EV)`,
+        ...matchLines,
         `━━━━━━━━━━━━━━━━━━━━━━`,
-        `🎟️ <b>SportyBet Code:</b> <code>${sporty?.code || 'BC8942X'}</code>`,
-        `🎟️ <b>1xBet Code:</b> <code>${onex?.code || 'PRD26X'}</code>`,
-        `📐 <b>Recommended Kelly Stake:</b> 2.5% Bankroll (4-Fold Rollover)`,
+        `🎟️ <b>SportyBet Code:</b> <code>${sporty?.code || 'PENDING'}</code>`,
+        `🎟️ <b>1xBet Code:</b> <code>${onex?.code || 'PENDING'}</code>`,
+        `📐 <b>Recommended Kelly Stake:</b> 2.5% Bankroll`,
         `🌐 <b>Interactive 10,000-Run Simulator:</b> https://predictpro.guru/live-multiview`,
       ].join('\n');
     }
@@ -131,7 +138,7 @@ export const AdminTelegramWebhookTab: React.FC = () => {
       `📂 Inspect full immutable archive &amp; Poisson scoreline proofs:`,
       `👉 https://predictpro.guru/archive`,
     ].join('\n');
-  }, [selectedTemplate, bookingCodes, jackpotConfig, certifiedProofs]);
+  }, [selectedTemplate, bookingCodes, jackpotConfig, certifiedProofs, livePredictions]);
 
   const activeMessageText = customMessageText.trim()
     ? customMessageText
@@ -272,22 +279,13 @@ export const AdminTelegramWebhookTab: React.FC = () => {
         kellyStakePct: 2.5,
         isWinnerCertified: selectedTemplate === 'EVENING_WINNER_PROOF',
         verificationHash: 'PP-SHA256-98F4A2',
-        legs: [
-          {
-            match: 'Arsenal vs Chelsea',
-            league: 'Premier League',
-            market: 'Over 2.5 Goals',
-            odds: 1.72,
-            result: selectedTemplate === 'EVENING_WINNER_PROOF' ? 'WON' : 'PENDING',
-          },
-          {
-            match: 'Real Madrid vs Barcelona',
-            league: 'La Liga',
-            market: 'BTTS — Yes',
-            odds: 1.58,
-            result: selectedTemplate === 'EVENING_WINNER_PROOF' ? 'WON' : 'PENDING',
-          },
-        ],
+        legs: livePredictions.slice(0, 2).map((m) => ({
+          match: `${m.home_team} vs ${m.away_team}`,
+          league: m.league || 'Football',
+          market: m.predicted_outcome || m.prediction || 'Home Win',
+          odds: Number(m.home_odds || 1.75),
+          result: selectedTemplate === 'EVENING_WINNER_PROOF' ? 'WON' : 'PENDING',
+        })),
       });
 
       if (!config.telegramBotToken.trim()) {

@@ -1,4 +1,4 @@
-import { Prediction } from '@/types/prediction';
+import { Prediction } from '../types/prediction.ts';
 
 export type DateFilterType = 'all' | 'today' | 'tomorrow' | 'weekend';
 

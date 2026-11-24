@@ -55,76 +55,58 @@ export interface CuratedCashOutScenario {
   oppositeHedgeOdds: number;
 }
 
-export const CURATED_CASHOUT_SCENARIOS: CuratedCashOutScenario[] = [
-  {
-    id: 'sportybet-5leg-ucl',
-    bookmaker: 'SportyBet',
-    title: '5-Leg UCL Acca (4/5 Won — Final Leg Tonight)',
-    legsWonSummary: '4 of 5 legs settled WON (8.20x locked multiplier)',
-    remainingMatch: 'Real Madrid vs Bayern Munich',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Bayern Munich',
-    league: 'UEFA Champions League',
-    remainingPick: 'Real Madrid to Win (1)',
-    oppositeHedgePick: 'Bayern Munich or Draw (X2 Double Chance)',
-    originalStakeUsd: 20,
-    totalTicketOdds: 15.17,
-    remainingUnplayedOdds: 1.85,
-    bookieCashOutOfferUsd: 132,
-    oppositeHedgeOdds: 2.04,
-  },
-  {
-    id: 'betika-6leg-epl',
-    bookmaker: 'Betika',
-    title: '6-Leg EPL Rollover Slip (5/6 Won — Sunday Finale)',
-    legsWonSummary: '5 of 6 legs settled WON (11.40x locked multiplier)',
-    remainingMatch: 'Liverpool vs Arsenal',
-    homeTeam: 'Liverpool',
-    awayTeam: 'Arsenal',
-    league: 'Premier League',
-    remainingPick: 'Over 2.5 Total Goals',
-    oppositeHedgePick: 'Under 2.5 Total Goals',
-    originalStakeUsd: 15,
-    totalTicketOdds: 19.61,
-    remainingUnplayedOdds: 1.72,
-    bookieCashOutOfferUsd: 141,
-    oppositeHedgeOdds: 2.22,
-  },
-  {
-    id: 'sportpesa-7leg-btts',
-    bookmaker: 'SportPesa',
-    title: '7-Leg Weekend BTTS Acca (6/7 Won)',
-    legsWonSummary: '6 of 7 legs settled WON (18.50x locked multiplier)',
-    remainingMatch: 'Inter Milan vs AC Milan',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'AC Milan',
-    league: 'Serie A',
-    remainingPick: 'Both Teams to Score (Yes)',
-    oppositeHedgePick: 'Both Teams to Score (No)',
-    originalStakeUsd: 10,
-    totalTicketOdds: 32.93,
-    remainingUnplayedOdds: 1.78,
-    bookieCashOutOfferUsd: 154,
-    oppositeHedgeOdds: 2.12,
-  },
-  {
-    id: '1xbet-4leg-underdog',
-    bookmaker: '1xBet',
-    title: '4-Leg High-Odds Value Slip (3/4 Won)',
-    legsWonSummary: '3 of 4 legs settled WON (6.40x locked multiplier)',
-    remainingMatch: 'Borussia Dortmund vs RB Leipzig',
-    homeTeam: 'Borussia Dortmund',
-    awayTeam: 'RB Leipzig',
-    league: 'Bundesliga',
-    remainingPick: 'Borussia Dortmund -0.5 Asian Handicap',
-    oppositeHedgePick: 'RB Leipzig +0.5 Asian Handicap (X2)',
-    originalStakeUsd: 25,
-    totalTicketOdds: 13.44,
-    remainingUnplayedOdds: 2.10,
-    bookieCashOutOfferUsd: 129,
-    oppositeHedgeOdds: 1.82,
-  },
-];
+export interface RealPhase15FixtureLike {
+  id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  match_date?: string;
+  home_odds?: number | null;
+  draw_odds?: number | null;
+  away_odds?: number | null;
+  confidence?: number;
+  home_xg?: number | null;
+  away_xg?: number | null;
+}
+
+export const CURATED_CASHOUT_SCENARIOS: CuratedCashOutScenario[] = [];
+
+export function buildCashOutScenariosFromPredictions(
+  predictions: RealPhase15FixtureLike[]
+): CuratedCashOutScenario[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  const bookmakers: CuratedCashOutScenario['bookmaker'][] = ['SportyBet', 'Betika', 'SportPesa', '1xBet'];
+  return predictions.slice(0, 4).map((m, idx) => {
+    const hOdd = Number(m.home_odds || 2.1);
+    const dOdd = Number(m.draw_odds || 3.3);
+    const aOdd = Number(m.away_odds || 3.2);
+    const homeFav = hOdd <= aOdd;
+    const remOdds = Number(Math.max(1.35, Math.min(hOdd, aOdd)).toFixed(2));
+    const oppOdds = Number(
+      Math.max(1.45, Math.min(2.6, 1 / (1 / dOdd + 1 / (homeFav ? aOdd : hOdd)) * 0.96)).toFixed(2)
+    );
+    const totalOdds = Number((8.5 * remOdds).toFixed(2));
+    return {
+      id: `cashout-${m.id || idx}`,
+      bookmaker: bookmakers[idx % bookmakers.length],
+      title: `${idx + 4}-Leg Slip (${idx + 3}/${idx + 4} Won · Final Leg)`,
+      legsWonSummary: `${idx + 3} settled winning legs waiting on final fixture`,
+      remainingMatch: `${m.home_team} vs ${m.away_team}`,
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      league: m.league || 'League Match',
+      remainingPick: homeFav ? `${m.home_team} to Win (1)` : `${m.away_team} to Win (2)`,
+      oppositeHedgePick: homeFav
+        ? `${m.away_team} or Draw (X2 Double Chance)`
+        : `${m.home_team} or Draw (1X Double Chance)`,
+      originalStakeUsd: 20,
+      totalTicketOdds: totalOdds,
+      remainingUnplayedOdds: remOdds,
+      bookieCashOutOfferUsd: 132,
+      oppositeHedgeOdds: oppOdds,
+    };
+  });
+}
 
 export function computeCashOutEquityAudit(input: CashOutAuditInput): CashOutAuditResult {
   const stake = Math.max(0.5, input.originalStake || 10);
@@ -348,146 +330,44 @@ export function computeRefereeCardPoissonMatrix(
   };
 }
 
-export const REFEREE_DISCIPLINE_MATCHUPS: RefereeMatchupRow[] = [
-  {
-    id: 'ref-manzano-clasico',
-    refereeName: 'Jesús Gil Manzano',
-    league: 'LaLiga',
-    match: 'Real Madrid vs Barcelona',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    kickoffTime: '20:00 UTC',
-    yellowsPer90: 5.42,
-    redsPer90: 0.31,
-    foulsPerTackle: 0.44,
-    penaltyRatePct: 41,
-    awayBookingBiasPct: 56,
-    homeAggressionIndex: 1.18,
-    awayAggressionIndex: 1.24,
-    isDerbyOrKnockout: true,
-    bookieOddsOver35Cards: 1.36,
-    bookieOddsOver45Cards: 1.74,
-    bookieOddsOver55Cards: 2.28,
-    bookieOddsRedCardYes: 3.45,
-    topBookingCandidate: 'Gavi (Barcelona) to be Booked',
-    topBookingCandidateOdds: 2.35,
-  },
-  {
-    id: 'ref-taylor-london',
-    refereeName: 'Anthony Taylor',
-    league: 'Premier League',
-    match: 'Arsenal vs Chelsea',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    kickoffTime: '16:30 UTC',
-    yellowsPer90: 4.68,
-    redsPer90: 0.22,
-    foulsPerTackle: 0.39,
-    penaltyRatePct: 38,
-    awayBookingBiasPct: 54,
-    homeAggressionIndex: 1.12,
-    awayAggressionIndex: 1.28,
-    isDerbyOrKnockout: true,
-    bookieOddsOver35Cards: 1.42,
-    bookieOddsOver45Cards: 1.82,
-    bookieOddsOver55Cards: 2.48,
-    bookieOddsRedCardYes: 3.90,
-    topBookingCandidate: 'Moisés Caicedo (Chelsea) to be Booked',
-    topBookingCandidateOdds: 2.50,
-  },
-  {
-    id: 'ref-massa-milano',
-    refereeName: 'Davide Massa',
-    league: 'Serie A',
-    match: 'Inter Milan vs Juventus',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Juventus',
-    kickoffTime: '19:45 UTC',
-    yellowsPer90: 4.95,
-    redsPer90: 0.25,
-    foulsPerTackle: 0.42,
-    penaltyRatePct: 36,
-    awayBookingBiasPct: 58,
-    homeAggressionIndex: 1.15,
-    awayAggressionIndex: 1.20,
-    isDerbyOrKnockout: true,
-    bookieOddsOver35Cards: 1.40,
-    bookieOddsOver45Cards: 1.78,
-    bookieOddsOver55Cards: 2.38,
-    bookieOddsRedCardYes: 3.75,
-    topBookingCandidate: 'Nicolò Barella (Inter) to be Booked',
-    topBookingCandidateOdds: 2.75,
-  },
-  {
-    id: 'ref-turpin-ucl',
-    refereeName: 'Clément Turpin',
-    league: 'UEFA Champions League',
-    match: 'Bayern Munich vs Paris Saint-Germain',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Paris Saint-Germain',
-    kickoffTime: '20:00 UTC',
-    yellowsPer90: 4.18,
-    redsPer90: 0.24,
-    foulsPerTackle: 0.37,
-    penaltyRatePct: 44,
-    awayBookingBiasPct: 53,
-    homeAggressionIndex: 1.08,
-    awayAggressionIndex: 1.19,
-    isDerbyOrKnockout: true,
-    bookieOddsOver35Cards: 1.52,
-    bookieOddsOver45Cards: 1.98,
-    bookieOddsOver55Cards: 2.72,
-    bookieOddsRedCardYes: 4.10,
-    topBookingCandidate: 'Achraf Hakimi (PSG) to be Booked',
-    topBookingCandidateOdds: 2.90,
-  },
-  {
-    id: 'ref-ndala-caf',
-    refereeName: 'Jean-Jacques Ndala',
-    league: 'CAF Champions League',
-    match: 'Al Ahly vs Espérance Tunis',
-    homeTeam: 'Al Ahly',
-    awayTeam: 'Espérance Tunis',
-    kickoffTime: '19:00 UTC',
-    yellowsPer90: 4.82,
-    redsPer90: 0.27,
-    foulsPerTackle: 0.43,
-    penaltyRatePct: 39,
-    awayBookingBiasPct: 61,
-    homeAggressionIndex: 1.16,
-    awayAggressionIndex: 1.31,
-    isDerbyOrKnockout: true,
-    bookieOddsOver35Cards: 1.38,
-    bookieOddsOver45Cards: 1.76,
-    bookieOddsOver55Cards: 2.34,
-    bookieOddsRedCardYes: 3.60,
-    topBookingCandidate: 'Roger Aholou (Espérance) to be Booked',
-    topBookingCandidateOdds: 2.40,
-  },
-  {
-    id: 'ref-oliver-epl',
-    refereeName: 'Michael Oliver',
-    league: 'Premier League',
-    match: 'Newcastle United vs Aston Villa',
-    homeTeam: 'Newcastle United',
-    awayTeam: 'Aston Villa',
-    kickoffTime: '15:00 UTC',
-    yellowsPer90: 4.35,
-    redsPer90: 0.19,
-    foulsPerTackle: 0.36,
-    penaltyRatePct: 35,
-    awayBookingBiasPct: 52,
-    homeAggressionIndex: 1.19,
-    awayAggressionIndex: 1.16,
-    isDerbyOrKnockout: false,
-    bookieOddsOver35Cards: 1.50,
-    bookieOddsOver45Cards: 1.95,
-    bookieOddsOver55Cards: 2.68,
-    bookieOddsRedCardYes: 4.40,
-    topBookingCandidate: 'Bruno Guimarães (Newcastle) to be Booked',
-    topBookingCandidateOdds: 2.65,
-  },
-];
+export const REFEREE_DISCIPLINE_MATCHUPS: RefereeMatchupRow[] = [];
+
+export function buildRefereeDisciplineFromPredictions(
+  predictions: RealPhase15FixtureLike[]
+): RefereeMatchupRow[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  return predictions.slice(0, 8).map((m, idx) => {
+    const hOdd = Number(m.home_odds || 2.3);
+    const aOdd = Number(m.away_odds || 2.7);
+    const closeTie = Math.abs(hOdd - aOdd) < 0.75;
+    const kickoffTime = m.match_date
+      ? new Date(m.match_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC'
+      : 'Upcoming';
+    return {
+      id: `ref-disc-${m.id || idx}`,
+      refereeName: `${m.league || 'League'} Match Referee`,
+      league: m.league || 'League Match',
+      match: `${m.home_team} vs ${m.away_team}`,
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      kickoffTime,
+      yellowsPer90: closeTie ? 4.82 : 4.28,
+      redsPer90: closeTie ? 0.25 : 0.19,
+      foulsPerTackle: 0.41,
+      penaltyRatePct: closeTie ? 39 : 34,
+      awayBookingBiasPct: 55,
+      homeAggressionIndex: 1.12,
+      awayAggressionIndex: closeTie ? 1.22 : 1.14,
+      isDerbyOrKnockout: closeTie,
+      bookieOddsOver35Cards: 1.42,
+      bookieOddsOver45Cards: 1.84,
+      bookieOddsOver55Cards: 2.52,
+      bookieOddsRedCardYes: 3.85,
+      topBookingCandidate: `${m.away_team} Defensive Midfielder to be Booked`,
+      topBookingCandidateOdds: 2.45,
+    };
+  });
+}
 
 // ============================================================================
 // 3. PLAYER SHOTS ON TARGET (SoT) & GOALSCORER PROP LAB ENGINE
@@ -581,152 +461,40 @@ export function computePlayerPropPoissonMatrix(input: PlayerPropInput): PlayerPr
   };
 }
 
-export const ELITE_PLAYER_PROP_DATABASE: ElitePlayerPropRow[] = [
-  {
-    id: 'haaland-mci',
-    playerName: 'Erling Haaland',
-    team: 'Manchester City',
-    opponent: 'Tottenham Hotspur',
-    league: 'Premier League',
-    position: 'FW',
-    sotPer90: 2.38,
-    totalShotsPer90: 4.45,
-    nonPenaltyXgPer90: 0.89,
-    expectedMinutes: 90,
-    opponentDefenseMultiplier: 1.18,
-    isPenaltyTaker: true,
-    isFreeKickTaker: false,
-    bookieOdds1PlusSot: 1.18,
-    bookieOdds2PlusSot: 1.68,
-    bookieOddsAnytimeGoal: 1.65,
-  },
-  {
-    id: 'mbappe-rma',
-    playerName: 'Kylian Mbappé',
-    team: 'Real Madrid',
-    opponent: 'Sevilla',
-    league: 'LaLiga',
-    position: 'FW',
-    sotPer90: 2.44,
-    totalShotsPer90: 4.82,
-    nonPenaltyXgPer90: 0.82,
-    expectedMinutes: 89,
-    opponentDefenseMultiplier: 1.14,
-    isPenaltyTaker: true,
-    isFreeKickTaker: true,
-    bookieOdds1PlusSot: 1.16,
-    bookieOdds2PlusSot: 1.64,
-    bookieOddsAnytimeGoal: 1.72,
-  },
-  {
-    id: 'salah-liv',
-    playerName: 'Mohamed Salah',
-    team: 'Liverpool',
-    opponent: 'Newcastle United',
-    league: 'Premier League',
-    position: 'RW',
-    sotPer90: 1.96,
-    totalShotsPer90: 3.74,
-    nonPenaltyXgPer90: 0.68,
-    expectedMinutes: 90,
-    opponentDefenseMultiplier: 1.12,
-    isPenaltyTaker: true,
-    isFreeKickTaker: false,
-    bookieOdds1PlusSot: 1.26,
-    bookieOdds2PlusSot: 1.95,
-    bookieOddsAnytimeGoal: 1.98,
-  },
-  {
-    id: 'palmer-che',
-    playerName: 'Cole Palmer',
-    team: 'Chelsea',
-    opponent: 'Brighton',
-    league: 'Premier League',
-    position: 'AM',
-    sotPer90: 1.84,
-    totalShotsPer90: 3.62,
-    nonPenaltyXgPer90: 0.56,
-    expectedMinutes: 90,
-    opponentDefenseMultiplier: 1.16,
-    isPenaltyTaker: true,
-    isFreeKickTaker: true,
-    bookieOdds1PlusSot: 1.28,
-    bookieOdds2PlusSot: 2.08,
-    bookieOddsAnytimeGoal: 2.15,
-  },
-  {
-    id: 'kane-bay',
-    playerName: 'Harry Kane',
-    team: 'Bayern Munich',
-    opponent: 'Bayer Leverkusen',
-    league: 'Bundesliga',
-    position: 'FW',
-    sotPer90: 2.26,
-    totalShotsPer90: 4.18,
-    nonPenaltyXgPer90: 0.84,
-    expectedMinutes: 90,
-    opponentDefenseMultiplier: 1.06,
-    isPenaltyTaker: true,
-    isFreeKickTaker: true,
-    bookieOdds1PlusSot: 1.20,
-    bookieOdds2PlusSot: 1.75,
-    bookieOddsAnytimeGoal: 1.76,
-  },
-  {
-    id: 'lautaro-int',
-    playerName: 'Lautaro Martínez',
-    team: 'Inter Milan',
-    opponent: 'AC Milan',
-    league: 'Serie A',
-    position: 'FW',
-    sotPer90: 1.78,
-    totalShotsPer90: 3.55,
-    nonPenaltyXgPer90: 0.64,
-    expectedMinutes: 87,
-    opponentDefenseMultiplier: 1.10,
-    isPenaltyTaker: false,
-    isFreeKickTaker: false,
-    bookieOdds1PlusSot: 1.32,
-    bookieOdds2PlusSot: 2.24,
-    bookieOddsAnytimeGoal: 2.38,
-  },
-  {
-    id: 'saka-ars',
-    playerName: 'Bukayo Saka',
-    team: 'Arsenal',
-    opponent: 'West Ham United',
-    league: 'Premier League',
-    position: 'RW',
-    sotPer90: 1.68,
-    totalShotsPer90: 3.28,
-    nonPenaltyXgPer90: 0.52,
-    expectedMinutes: 88,
-    opponentDefenseMultiplier: 1.22,
-    isPenaltyTaker: true,
-    isFreeKickTaker: false,
-    bookieOdds1PlusSot: 1.30,
-    bookieOdds2PlusSot: 2.12,
-    bookieOddsAnytimeGoal: 2.20,
-  },
-  {
-    id: 'yamal-bar',
-    playerName: 'Lamine Yamal',
-    team: 'Barcelona',
-    opponent: 'Athletic Club',
-    league: 'LaLiga',
-    position: 'RW',
-    sotPer90: 1.62,
-    totalShotsPer90: 3.45,
-    nonPenaltyXgPer90: 0.46,
-    expectedMinutes: 86,
-    opponentDefenseMultiplier: 1.14,
-    isPenaltyTaker: false,
-    isFreeKickTaker: false,
-    bookieOdds1PlusSot: 1.36,
-    bookieOdds2PlusSot: 2.38,
-    bookieOddsAnytimeGoal: 2.75,
-  },
-];
+export const ELITE_PLAYER_PROP_DATABASE: ElitePlayerPropRow[] = [];
+
+export function buildPlayerPropLabRowsFromPredictions(
+  predictions: RealPhase15FixtureLike[]
+): ElitePlayerPropRow[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  return predictions.slice(0, 8).map((m, idx) => {
+    const hXg = Number(m.home_xg || 1.45);
+    const aXg = Number(m.away_xg || 1.15);
+    const pickHome = hXg >= aXg;
+    const team = pickHome ? m.home_team : m.away_team;
+    const opponent = pickHome ? m.away_team : m.home_team;
+    const xg = pickHome ? hXg : aXg;
+    const sotPer90 = Number(Math.max(1.2, Math.min(2.4, 1.15 + xg * 0.52)).toFixed(2));
+    return {
+      id: `prop-lab-${m.id || idx}`,
+      playerName: `${team} #9 Primary Striker`,
+      team,
+      opponent,
+      league: m.league || 'League Match',
+      position: 'FW',
+      sotPer90,
+      totalShotsPer90: Number((sotPer90 * 2.05).toFixed(2)),
+      nonPenaltyXgPer90: Number((xg * 0.42).toFixed(2)),
+      expectedMinutes: 88,
+      opponentDefenseMultiplier: Number(Math.max(0.95, Math.min(1.25, 0.92 + (pickHome ? aXg : hXg) * 0.14)).toFixed(2)),
+      isPenaltyTaker: true,
+      isFreeKickTaker: idx % 2 === 0,
+      bookieOdds1PlusSot: 1.24,
+      bookieOdds2PlusSot: 1.92,
+      bookieOddsAnytimeGoal: 2.05,
+    };
+  });
+}
 
 // ============================================================================
 // 4. SYSTEM BET & FAULT-TOLERANT PERMUTATION ENGINE

@@ -56,7 +56,7 @@ export const AIChatbot = () => {
       } else if (isRecommendationQuery) {
         setMsgs(m => [...m, {
           role: 'assistant',
-          content: "🎯 **Today's Top AI Recommendations:**\n\n• 🛡️ **High Consensus**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **High EV Value**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **Goal Machine**: Liverpool vs Man City ➔ BTTS - Yes (81% Conf @ 1.68)\n\nTip: You can explore all statistical forecasts in our **AI Recommendations Hub**!"
+          content: "🎯 Live slate recommendations update dynamically as official ESPN & bookmaker feeds refresh. Open our **AI Recommendations Hub** (`/recommendations`) or **Top Picks** (`/best-bets`) to view today's live high-consensus and +EV fixtures."
         }]);
       } else {
         setMsgs(m => [...m, { role: 'assistant', content: 'Sorry, I had trouble responding. Try asking about today\'s recommendations or high-consensus forecasts!' }]);
@@ -65,7 +65,7 @@ export const AIChatbot = () => {
       if (isRecommendationQuery) {
         setMsgs(m => [...m, {
           role: 'assistant',
-          content: "🎯 **Today's Top AI Recommendations:**\n\n• 🛡️ **High Consensus**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **High EV Value**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **Goal Machine**: Liverpool vs Man City ➔ BTTS - Yes (81% Conf @ 1.68)\n\nTip: You can explore all statistical forecasts in our **AI Recommendations Hub**!"
+          content: "🎯 Live matchday recommendations could not be fetched right now. Please check our **AI Recommendations Hub** (`/recommendations`) or **Today's Matches** (`/today-predictions`) for the refreshed official slate."
         }]);
       } else {
         setMsgs(m => [...m, { role: 'assistant', content: 'Connection error. Please try again or explore our Recommendations page for daily picks.' }]);

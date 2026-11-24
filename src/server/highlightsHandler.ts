@@ -4,7 +4,7 @@
  * and official match video previews without browser CORS limitations.
  */
 
-import { safeFootballFetch, isHostInCooldown } from '../services/footballDataCache';
+import { safeFootballFetch, isHostInCooldown } from '../services/footballDataCache.ts';
 
 export interface ServerHighlightItem {
   id: string;
@@ -174,152 +174,56 @@ export async function handleHighlightsRequest(forceRefresh: boolean = false): Pr
     } catch {}
   }
 
-  // Fallback to verified official match highlights if no direct feeds returned items
-  if (items.length === 0) {
-    const verifiedOfficialPreviews: ServerHighlightItem[] = [
-      {
-        id: 'hl-ucl-rma-bar',
-        title: 'Real Madrid 3 - 2 Barcelona | Extended El Clásico Match Highlights',
-        competition: 'La Liga',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Barcelona',
-        homeScore: 3,
-        awayScore: 2,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/86.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/83.png',
-        thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=Real+Madrid+vs+Barcelona+extended+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=Real+Madrid+vs+Barcelona+official+highlights+La+Liga&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '11:15',
-        badge: 'El Clásico Official',
-        venue: 'Santiago Bernabéu, Madrid',
-        summary: 'Thrilling five-goal clash featuring breathtaking counter-attacks and injury-time match-winner in Madrid.',
-      },
-      {
-        id: 'hl-ucl-mci-liv',
-        title: 'Manchester City 1 - 1 Liverpool | Title Decider Official Preview',
-        competition: 'Premier League',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 42).toISOString(),
-        homeTeam: 'Manchester City',
-        awayTeam: 'Liverpool',
-        homeScore: 1,
-        awayScore: 1,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/382.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/364.png',
-        thumbnail: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=Manchester+City+vs+Liverpool+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=Manchester+City+vs+Liverpool+match+highlights+goals&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '10:30',
-        badge: 'Tactical Masterclass',
-        venue: 'Etihad Stadium, Manchester',
-        summary: 'Tactical stalemate between two heavyweights featuring world-class pressing and individual brilliance.',
-      },
-      {
-        id: 'hl-ucl-bay-dor',
-        title: 'Bayern Munich 3 - 1 Borussia Dortmund | Der Klassiker Highlights',
-        competition: 'Bundesliga',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 50).toISOString(),
-        homeTeam: 'Bayern Munich',
-        awayTeam: 'Borussia Dortmund',
-        homeScore: 3,
-        awayScore: 1,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/132.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/124.png',
-        thumbnail: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=Bayern+Munich+vs+Borussia+Dortmund+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=Bayern+Munich+vs+Borussia+Dortmund+Bundesliga+highlights&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '08:50',
-        badge: 'Bundesliga Official',
-        venue: 'Allianz Arena, Munich',
-        summary: 'Clinical finishing and relentless midfield dominance seal another high-octane Der Klassiker victory.',
-      },
-      {
-        id: 'hl-ita-int-mil',
-        title: 'Inter Milan 2 - 0 AC Milan | Derby della Madonnina Match Recap',
-        competition: 'Serie A',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 68).toISOString(),
-        homeTeam: 'Inter Milan',
-        awayTeam: 'AC Milan',
-        homeScore: 2,
-        awayScore: 0,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/110.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/103.png',
-        thumbnail: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=Inter+Milan+vs+AC+Milan+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=Inter+Milan+vs+AC+Milan+Serie+A+official+highlights&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '07:45',
-        badge: 'Serie A Official',
-        venue: 'San Siro, Milan',
-        summary: 'Nerazzurri dominate the Milan derby with defensive discipline and two devastating counter-attacks.',
-      },
-      {
-        id: 'hl-fra-psg-om',
-        title: 'Paris Saint-Germain 3 - 0 Marseille | Le Classique Goals & Video Recap',
-        competition: 'Ligue 1',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 74).toISOString(),
-        homeTeam: 'Paris Saint-Germain',
-        awayTeam: 'Marseille',
-        homeScore: 3,
-        awayScore: 0,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/160.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/166.png',
-        thumbnail: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=PSG+vs+Marseille+Ligue+1+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=PSG+vs+Marseille+Ligue+1+official+highlights&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '09:40',
-        badge: 'Ligue 1 Uber Eats',
-        venue: 'Parc des Princes, Paris',
-        summary: 'Parisians showcase devastating transition attacking with three sublime finishes.',
-      },
-      {
-        id: 'hl-kpl-gor-afc',
-        title: 'Gor Mahia 1 - 0 AFC Leopards | Mashemeji Derby Highlights & Goal Clip',
-        competition: 'KPL',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 80).toISOString(),
-        homeTeam: 'Gor Mahia',
-        awayTeam: 'AFC Leopards',
-        homeScore: 1,
-        awayScore: 0,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/19080.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/19079.png',
-        thumbnail: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=Gor+Mahia+vs+AFC+Leopards+Mashemeji+derby+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=Gor+Mahia+vs+AFC+Leopards+Mashemeji+derby+highlights&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '06:30',
-        badge: 'KPL Classic',
-        venue: 'Nyayo National Stadium, Nairobi',
-        summary: 'Electric atmosphere in Nairobi as K’Ogalo claim bragging rights with a solitary second-half strike.',
-      },
-      {
-        id: 'hl-ucl-mci-rma',
-        title: 'Manchester City 4 - 0 Real Madrid | Champions League Semi-Final Highlights',
-        competition: 'Champions League',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 92).toISOString(),
-        homeTeam: 'Manchester City',
-        awayTeam: 'Real Madrid',
-        homeScore: 4,
-        awayScore: 0,
-        homeLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/382.png',
-        awayLogo: 'https://a.espncdn.com/i/teamlogos/soccer/500/86.png',
-        thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80',
-        videoUrl: 'https://www.youtube.com/results?search_query=Manchester+City+vs+Real+Madrid+Champions+League+highlights',
-        embedUrl: 'https://www.youtube-nocookie.com/embed?listType=search&list=Manchester+City+vs+Real+Madrid+UEFA+Champions+League+highlights&autoplay=1&rel=0',
-        source: 'api_football',
-        duration: '12:05',
-        badge: 'UEFA Official',
-        venue: 'Etihad Stadium, Manchester',
-        summary: 'A breathtaking performance in European football history, combining total possession and relentless pressure.',
-      },
-    ];
+  // Enrich from authentic 48h ESPN global finished results so highlights always reflect real completed matches
+  if (items.length < 24) {
+    try {
+      const { fetchServerFinishedResults } = await import('./footballHandler.ts');
+      const finished = await fetchServerFinishedResults();
+      for (const m of finished.slice(0, 30)) {
+        if (!m.home_team || !m.away_team) continue;
+        const matchDate = m.match_date || new Date().toISOString();
+        const year = new Date(matchDate).getFullYear();
+        const scoreText =
+          m.home_score !== null && m.home_score !== undefined && m.away_score !== null && m.away_score !== undefined
+            ? `${m.home_score} - ${m.away_score}`
+            : 'vs';
+        const id = `espn-fin-${m.id}`;
+        const alreadyIncluded = items.some(
+          (x) =>
+            x.id === id ||
+            (x.homeTeam.toLowerCase() === m.home_team.toLowerCase() &&
+              x.awayTeam.toLowerCase() === m.away_team.toLowerCase())
+        );
+        if (alreadyIncluded) continue;
 
-    items.push(...verifiedOfficialPreviews);
+        const query = encodeURIComponent(
+          `${m.home_team} vs ${m.away_team} official highlights ${year}`
+        );
+        items.push({
+          id,
+          title: `${m.home_team} ${scoreText} ${m.away_team} Match Highlights & Goals`,
+          competition: m.league || 'Football Match',
+          date: matchDate,
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          homeScore: m.home_score ?? null,
+          awayScore: m.away_score ?? null,
+          homeLogo: m.home_logo || null,
+          awayLogo: m.away_logo || null,
+          thumbnail:
+            m.home_logo ||
+            m.away_logo ||
+            'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
+          videoUrl: `https://www.youtube.com/results?search_query=${query}`,
+          embedUrl: `https://www.youtube-nocookie.com/embed?listType=search&list=${query}&autoplay=1&rel=0`,
+          source: 'official_broadcast',
+          duration: '08:30',
+          badge: 'Verified FT Recap',
+          venue: undefined,
+          summary: `Post-match video highlights and scoreline recap (${scoreText}) from ${m.league || 'official competition'}.`,
+        });
+      }
+    } catch {}
   }
 
   serverHighlightsCache = {
@@ -329,7 +233,7 @@ export async function handleHighlightsRequest(forceRefresh: boolean = false): Pr
 
   return {
     success: true,
-    source: items.length > 0 ? (apiKey ? 'api_football_live' : 'verified_official_feed') : 'default',
+    source: items.length > 0 ? (apiKey ? 'api_football_live' : 'espn_live_results') : 'none',
     count: items.length,
     highlights: items,
     updatedAt: new Date().toISOString(),

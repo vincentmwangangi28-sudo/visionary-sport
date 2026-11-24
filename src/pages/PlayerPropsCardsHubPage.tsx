@@ -17,9 +17,10 @@ import {
   Calculator,
   Search,
 } from 'lucide-react';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
-  PLAYER_PROP_PROJECTIONS,
-  REFEREE_CARD_STRICTNESS_TABLE,
+  buildPlayerPropProjectionsFromPredictions,
+  buildRefereeCardRowsFromPredictions,
   PlayerPropModelRow,
   RefereeCardStrictnessRow,
 } from '@/services/phase13EdgeService';
@@ -37,19 +38,30 @@ function poissonProbAtLeast(lambda: number, k: number): number {
 
 export const PlayerPropsCardsHubPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
 
   const [activeTab, setActiveTab] = useState<'shots' | 'referees' | 'calculator'>('shots');
   const [leagueFilter, setLeagueFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Custom Player SOT Poisson Calculator state
-  const [customPlayerName, setCustomPlayerName] = useState<string>('Cole Palmer');
+  const [customPlayerName, setCustomPlayerName] = useState<string>('Lead Forward');
   const [customSotPer90, setCustomSotPer90] = useState<string>('1.82');
   const [customExpectedMinutes, setCustomExpectedMinutes] = useState<string>('88');
   const [customBookieOdds2Sot, setCustomBookieOdds2Sot] = useState<string>('2.10');
 
+  const playerPropProjections = useMemo(
+    () => buildPlayerPropProjectionsFromPredictions(predictions),
+    [predictions]
+  );
+
+  const refereeCardRows = useMemo(
+    () => buildRefereeCardRowsFromPredictions(predictions),
+    [predictions]
+  );
+
   const filteredPlayers = useMemo(() => {
-    return PLAYER_PROP_PROJECTIONS.filter((row) => {
+    return playerPropProjections.filter((row) => {
       if (leagueFilter !== 'all' && row.league !== leagueFilter) return false;
       if (
         searchQuery.trim() &&
@@ -61,7 +73,7 @@ export const PlayerPropsCardsHubPage: React.FC = () => {
       }
       return true;
     });
-  }, [leagueFilter, searchQuery]);
+  }, [playerPropProjections, leagueFilter, searchQuery]);
 
   const customPoisson = useMemo(() => {
     const sot90 = Math.max(0.1, parseFloat(customSotPer90) || 1.5);
@@ -343,7 +355,7 @@ export const PlayerPropsCardsHubPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60 font-mono tabular-nums">
-                  {REFEREE_CARD_STRICTNESS_TABLE.map((ref) => (
+                  {refereeCardRows.map((ref) => (
                     <tr key={ref.id} className="hover:bg-muted/40">
                       <td className="py-3 pr-3 font-sans">
                         <div className="font-bold text-foreground">

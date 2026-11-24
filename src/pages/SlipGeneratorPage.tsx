@@ -68,7 +68,7 @@ export default function SlipGeneratorPage() {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const isBookingCodesRoute = location.pathname === '/booking-codes';
-  const { predictions } = usePredictions(1);
+  const { predictions, isLoading: predictionsLoading } = usePredictions(7);
   const {
     addSelections,
     clearSlip,
@@ -167,16 +167,7 @@ export default function SlipGeneratorPage() {
               confidence: conf,
             };
           })
-        : [
-            { id: '1', homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League', market: 'Home Win', odds: 1.75, confidence: 85 },
-            { id: '2', homeTeam: 'Real Madrid', awayTeam: 'Barcelona', league: 'LaLiga', market: 'Over 2.5 Goals', odds: 1.68, confidence: 83 },
-            { id: '3', homeTeam: 'Bayern Munich', awayTeam: 'Dortmund', league: 'Bundesliga', market: 'BTTS Yes', odds: 1.62, confidence: 86 },
-            { id: '4', homeTeam: 'Inter Milan', awayTeam: 'AC Milan', league: 'Serie A', market: '1X Double Chance', odds: 1.36, confidence: 89 },
-            { id: '5', homeTeam: 'Liverpool', awayTeam: 'Man City', league: 'Premier League', market: 'BTTS Yes', odds: 1.65, confidence: 82 },
-            { id: '6', homeTeam: 'PSG', awayTeam: 'Marseille', league: 'Ligue 1', market: 'Home Win', odds: 1.55, confidence: 87 },
-            { id: '7', homeTeam: 'Sporting CP', awayTeam: 'Benfica', league: 'Primeira Liga', market: 'Over 1.5 Goals', odds: 1.34, confidence: 88 },
-            { id: '8', homeTeam: 'Gor Mahia', awayTeam: 'AFC Leopards', league: 'FKF Premier League', market: 'Home Win', odds: 1.82, confidence: 81 },
-          ];
+        : [];
 
     return base;
   }, [predictions, marketFilter, riskProfile]);
@@ -268,23 +259,25 @@ export default function SlipGeneratorPage() {
       },
     ];
 
-    return packages.map((pkg) => {
-      const odds = Number(pkg.legs.reduce((a, b) => a * b.odds, 1).toFixed(2));
-      const conf = Math.round(pkg.legs.reduce((a, b) => a + b.confidence, 0) / Math.max(1, pkg.legs.length));
-      const seedStr = pkg.id + lastCronSync;
-      return {
-        ...pkg,
-        odds,
-        conf,
-        codes: {
-          sportybet: generateRegionalBookingCode('sportybet', pkg.legs.length, seedStr + 'sb'),
-          '1xbet': generateRegionalBookingCode('1xbet', pkg.legs.length, seedStr + '1x'),
-          bet9ja: generateRegionalBookingCode('bet9ja', pkg.legs.length, seedStr + 'b9j'),
-          sportpesa: generateRegionalBookingCode('sportpesa', pkg.legs.length, seedStr + 'sp'),
-          betika: generateRegionalBookingCode('betika', pkg.legs.length, seedStr + 'btk'),
-        },
-      };
-    });
+    return packages
+      .filter((pkg) => pkg.legs.length > 0)
+      .map((pkg) => {
+        const odds = Number(pkg.legs.reduce((a, b) => a * b.odds, 1).toFixed(2));
+        const conf = Math.round(pkg.legs.reduce((a, b) => a + b.confidence, 0) / Math.max(1, pkg.legs.length));
+        const seedStr = pkg.id + lastCronSync;
+        return {
+          ...pkg,
+          odds,
+          conf,
+          codes: {
+            sportybet: generateRegionalBookingCode('sportybet', pkg.legs.length, seedStr + 'sb'),
+            '1xbet': generateRegionalBookingCode('1xbet', pkg.legs.length, seedStr + '1x'),
+            bet9ja: generateRegionalBookingCode('bet9ja', pkg.legs.length, seedStr + 'b9j'),
+            sportpesa: generateRegionalBookingCode('sportpesa', pkg.legs.length, seedStr + 'sp'),
+            betika: generateRegionalBookingCode('betika', pkg.legs.length, seedStr + 'btk'),
+          },
+        };
+      });
   }, [candidatePool, lastCronSync]);
 
   const toggleLock = (leg: GeneratedSlipLeg) => {
@@ -694,63 +687,74 @@ export default function SlipGeneratorPage() {
                 </CardHeader>
 
                 <CardContent className="p-4 space-y-2.5 flex-1">
-                  {generatedLegs.map((leg, idx) => {
-                    const isLocked = Boolean(lockedIds[leg.id]);
-                    const gameId = generateMatchGameId(leg.homeTeam, leg.awayTeam, activeBookmaker.id);
-                    const translated = translateMarketForBookmaker(leg.market, activeBookmaker.id);
+                  {predictionsLoading ? (
+                    <div className="py-10 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+                      <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+                      <span>Loading live 7-day fixture slate...</span>
+                    </div>
+                  ) : generatedLegs.length === 0 ? (
+                    <div className="py-10 text-center text-xs text-muted-foreground border border-dashed rounded-xl">
+                      No upcoming fixtures matched this filter in the 7-day live feed.
+                    </div>
+                  ) : (
+                    generatedLegs.map((leg, idx) => {
+                      const isLocked = Boolean(lockedIds[leg.id]);
+                      const gameId = generateMatchGameId(leg.homeTeam, leg.awayTeam, activeBookmaker.id);
+                      const translated = translateMarketForBookmaker(leg.market, activeBookmaker.id);
 
-                    return (
-                      <div
-                        key={leg.id}
-                        className={`p-3 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
-                          isLocked ? 'bg-primary/5 border-primary/40' : 'bg-muted/30 border-border/70'
-                        }`}
-                      >
-                        <div className="flex items-start gap-2.5 min-w-0">
-                          <button
-                            type="button"
-                            onClick={() => toggleLock(leg)}
-                            title={isLocked ? 'Unlock pick' : 'Lock pick'}
-                            className={`mt-0.5 p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                              isLocked
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-background text-muted-foreground hover:text-foreground border-border'
-                            }`}
-                          >
-                            {isLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
-                          </button>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-0.5">
-                              <span className="font-mono font-bold text-primary">#{gameId}</span>
-                              <span>•</span>
-                              <span className="truncate">{leg.league}</span>
+                      return (
+                        <div
+                          key={leg.id}
+                          className={`p-3 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+                            isLocked ? 'bg-primary/5 border-primary/40' : 'bg-muted/30 border-border/70'
+                          }`}
+                        >
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => toggleLock(leg)}
+                              title={isLocked ? 'Unlock pick' : 'Lock pick'}
+                              className={`mt-0.5 p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                                isLocked
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-background text-muted-foreground hover:text-foreground border-border'
+                              }`}
+                            >
+                              {isLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+                            </button>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-0.5">
+                                <span className="font-mono font-bold text-primary">#{gameId}</span>
+                                <span>•</span>
+                                <span className="truncate">{leg.league}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+                                <TeamLogo team={leg.homeTeam} size="xs" />
+                                <span className="truncate">{leg.homeTeam}</span>
+                                <span className="text-xs text-muted-foreground font-normal">vs</span>
+                                <TeamLogo team={leg.awayTeam} size="xs" />
+                                <span className="truncate">{leg.awayTeam}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
-                              <TeamLogo team={leg.homeTeam} size="xs" />
-                              <span className="truncate">{leg.homeTeam}</span>
-                              <span className="text-xs text-muted-foreground font-normal">vs</span>
-                              <TeamLogo team={leg.awayTeam} size="xs" />
-                              <span className="truncate">{leg.awayTeam}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end gap-3 pl-8 sm:pl-0">
+                            <div className="text-left sm:text-right">
+                              <Badge variant="outline" className="font-bold text-xs bg-background text-primary">
+                                {translated}
+                              </Badge>
+                              <div className="mt-1">
+                                <ConfidenceMeter confidence={leg.confidence} variant="compact" />
+                              </div>
+                            </div>
+                            <div className="px-2.5 py-1.5 rounded-lg bg-background border font-mono font-black text-sm text-foreground">
+                              @{formatOdds(leg.odds)}
                             </div>
                           </div>
                         </div>
-
-                        <div className="flex items-center justify-between sm:justify-end gap-3 pl-8 sm:pl-0">
-                          <div className="text-left sm:text-right">
-                            <Badge variant="outline" className="font-bold text-xs bg-background text-primary">
-                              {translated}
-                            </Badge>
-                            <div className="mt-1">
-                              <ConfidenceMeter confidence={leg.confidence} variant="compact" />
-                            </div>
-                          </div>
-                          <div className="px-2.5 py-1.5 rounded-lg bg-background border font-mono font-black text-sm text-foreground">
-                            @{formatOdds(leg.odds)}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </CardContent>
 
                 {/* Slip Footer */}
@@ -1030,6 +1034,15 @@ export default function SlipGeneratorPage() {
               </Button>
             </div>
 
+            {predictionsLoading ? (
+              <div className="py-10 text-center text-xs text-muted-foreground">
+                Loading real 7-day fixtures for automated booking codes...
+              </div>
+            ) : dailyCronPackages.length === 0 ? (
+              <div className="py-10 text-center text-xs text-muted-foreground border border-dashed rounded-xl">
+                No upcoming fixtures currently available to bundle into automated slips.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {dailyCronPackages.map((pkg) => (
                 <Card key={pkg.id} className="border bg-card flex flex-col justify-between">
@@ -1103,6 +1116,7 @@ export default function SlipGeneratorPage() {
                 </Card>
               ))}
             </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

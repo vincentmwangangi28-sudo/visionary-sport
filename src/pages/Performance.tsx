@@ -28,23 +28,6 @@ interface BetRecord {
 
 const STORAGE_KEY = 'predictpro_user_bets';
 
-const getRelativeDateStr = (daysAgo: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  return d.toISOString().split('T')[0];
-};
-
-const INITIAL_SAMPLE_BETS: BetRecord[] = [
-  { id: '1', match: 'Arsenal vs Chelsea', prediction: 'Home Win', odds: 1.85, stake: 500, result: 'win', profit: 425, date: getRelativeDateStr(2) },
-  { id: '2', match: 'Real Madrid vs Barcelona', prediction: 'Draw', odds: 3.20, stake: 300, result: 'loss', profit: -300, date: getRelativeDateStr(5) },
-  { id: '3', match: 'Gor Mahia vs AFC Leopards', prediction: 'Home Win', odds: 2.00, stake: 200, result: 'win', profit: 200, date: getRelativeDateStr(8) },
-  { id: '4', match: 'Bayern vs Dortmund', prediction: 'Home Win', odds: 1.70, stake: 400, result: 'win', profit: 280, date: getRelativeDateStr(12) },
-  { id: '5', match: 'PSG vs Lyon', prediction: 'Home Win', odds: 1.40, stake: 500, result: 'win', profit: 200, date: getRelativeDateStr(15) },
-  { id: '6', match: 'Liverpool vs Man City', prediction: 'Over 2.5', odds: 1.65, stake: 450, result: 'win', profit: 292, date: getRelativeDateStr(18) },
-  { id: '7', match: 'Inter Milan vs Juventus', prediction: 'BTTS (Yes)', odds: 1.90, stake: 350, result: 'win', profit: 315, date: getRelativeDateStr(22) },
-  { id: '8', match: 'Shabana vs Tusker FC', prediction: 'Away Win', odds: 2.15, stake: 250, result: 'loss', profit: -250, date: getRelativeDateStr(25) },
-];
-
 export default function Performance() {
   const { user } = useAuth();
   const [bets, setBets] = useState<BetRecord[]>(() => {
@@ -52,10 +35,10 @@ export default function Performance() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
-    return INITIAL_SAMPLE_BETS;
+    return [];
   });
 
   const [showAdd, setShowAdd] = useState(false);
@@ -175,7 +158,7 @@ export default function Performance() {
   const handleAddBet = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.match.trim()) {
-      toast.error('Please enter the match name (e.g. Arsenal vs Chelsea)');
+      toast.error('Please enter the match name (e.g. Home Team vs Away Team)');
       return;
     }
     const odds = parseFloat(form.odds) || 1.0;
@@ -283,8 +266,8 @@ export default function Performance() {
                   <Input
                     id="bet-match-input"
                     name="match"
-                    toolparamdescription="Football match or fixture name (e.g. Arsenal vs Chelsea)"
-                    placeholder="e.g. Arsenal vs Chelsea"
+                    toolparamdescription="Football match or fixture name (e.g. Home Team vs Away Team)"
+                    placeholder="e.g. Home Team vs Away Team"
                     value={form.match}
                     onChange={e => setForm(f => ({ ...f, match: e.target.value }))}
                     required

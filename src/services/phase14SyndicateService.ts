@@ -50,108 +50,47 @@ export interface RolloverLadderResult {
   bustDayFloorSaved: number; // What you still walk away with if you bust on the final day
 }
 
-export const DEFAULT_ROLLOVER_STEPS: RolloverStepConfig[] = [
-  {
-    day: 1,
-    odds: 1.54,
-    skimPercent: 20,
-    fixtureLabel: 'Arsenal vs Brentford',
-    league: 'Premier League',
-    selection: 'Arsenal Win or Draw & Over 1.5 Goals',
-    modelProbPct: 74.2,
-    bookingCode: 'PP-RLV-D01',
-  },
-  {
-    day: 2,
-    odds: 1.58,
-    skimPercent: 20,
-    fixtureLabel: 'Bayern Munich vs Augsburg',
-    league: 'Bundesliga',
-    selection: 'Bayern Munich Over 1.5 Team Goals',
-    modelProbPct: 72.8,
-    bookingCode: 'PP-RLV-D02',
-  },
-  {
-    day: 3,
-    odds: 1.52,
-    skimPercent: 20,
-    fixtureLabel: 'Real Madrid vs Getafe',
-    league: 'LaLiga',
-    selection: 'Real Madrid to Win (1X2)',
-    modelProbPct: 75.5,
-    bookingCode: 'PP-RLV-D03',
-  },
-  {
-    day: 4,
-    odds: 1.62,
-    skimPercent: 20,
-    fixtureLabel: 'Inter Milan vs Empoli',
-    league: 'Serie A',
-    selection: 'Inter Milan -1.0 Asian Handicap',
-    modelProbPct: 70.4,
-    bookingCode: 'PP-RLV-D04',
-  },
-  {
-    day: 5,
-    odds: 1.55,
-    skimPercent: 20,
-    fixtureLabel: 'PSG vs Le Havre',
-    league: 'Ligue 1',
-    selection: 'Over 2.5 Total Goals',
-    modelProbPct: 73.1,
-    bookingCode: 'PP-RLV-D05',
-  },
-  {
-    day: 6,
-    odds: 1.60,
-    skimPercent: 20,
-    fixtureLabel: 'PSV Eindhoven vs Zwolle',
-    league: 'Eredivisie',
-    selection: 'PSV Win & Over 1.5 Goals',
-    modelProbPct: 71.9,
-    bookingCode: 'PP-RLV-D06',
-  },
-  {
-    day: 7,
-    odds: 1.56,
-    skimPercent: 20,
-    fixtureLabel: 'Sporting CP vs Gil Vicente',
-    league: 'Primeira Liga',
-    selection: 'Sporting CP First Half Over 0.5 Goals',
-    modelProbPct: 72.6,
-    bookingCode: 'PP-RLV-D07',
-  },
-  {
-    day: 8,
-    odds: 1.58,
-    skimPercent: 20,
-    fixtureLabel: 'Liverpool vs Fulham',
-    league: 'Premier League',
-    selection: 'Liverpool Over 1.5 Team Goals',
-    modelProbPct: 71.5,
-    bookingCode: 'PP-RLV-D08',
-  },
-  {
-    day: 9,
-    odds: 1.53,
-    skimPercent: 20,
-    fixtureLabel: 'Bayer Leverkusen vs Bochum',
-    league: 'Bundesliga',
-    selection: 'Leverkusen Win (1X2)',
-    modelProbPct: 74.0,
-    bookingCode: 'PP-RLV-D09',
-  },
-  {
-    day: 10,
-    odds: 1.61,
-    skimPercent: 20,
-    fixtureLabel: 'Barcelona vs Celta Vigo',
-    league: 'LaLiga',
-    selection: 'Barcelona Win & Over 1.5 Goals',
-    modelProbPct: 70.8,
-    bookingCode: 'PP-RLV-D10',
-  },
-];
+export const DEFAULT_ROLLOVER_STEPS: RolloverStepConfig[] = [];
+
+export interface RealFixtureLike {
+  id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  match_date?: string;
+  home_odds?: number | null;
+  draw_odds?: number | null;
+  away_odds?: number | null;
+  confidence?: number;
+  predicted_outcome?: string;
+  home_xg?: number | null;
+  away_xg?: number | null;
+  home_team_form?: string | null;
+  away_team_form?: string | null;
+}
+
+export function buildRolloverStepsFromPredictions(
+  predictions: RealFixtureLike[]
+): RolloverStepConfig[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  const sorted = [...predictions].sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+  return sorted.slice(0, 10).map((m, idx) => {
+    const hOdd = Number(m.home_odds || 2.15);
+    const aOdd = Number(m.away_odds || 2.9);
+    const favoredTeam = hOdd <= aOdd ? m.home_team : m.away_team;
+    const rawRollOdds = Number(Math.max(1.38, Math.min(1.68, Math.min(hOdd, aOdd) * 0.78)).toFixed(2));
+    return {
+      day: idx + 1,
+      odds: rawRollOdds,
+      skimPercent: 20,
+      fixtureLabel: `${m.home_team} vs ${m.away_team}`,
+      league: m.league || 'League Match',
+      selection: `${favoredTeam} Win or Draw & Over 1.5`,
+      modelProbPct: Number(Math.min(82, Math.max(66, m.confidence || 72)).toFixed(1)),
+      bookingCode: `PP-RLV-D${String(idx + 1).padStart(2, '0')}`,
+    };
+  });
+}
 
 export function computeRolloverLadder(
   initialStake: number,
@@ -170,7 +109,19 @@ export function computeRolloverLadder(
   const rows: ComputedRolloverRow[] = [];
 
   for (let i = 0; i < clampedDays; i++) {
-    const baseStep = steps[i % steps.length];
+    const baseStep =
+      steps && steps.length > 0
+        ? steps[i % steps.length]
+        : {
+            day: i + 1,
+            odds: customOddsOverride && customOddsOverride >= 1.1 ? Number(customOddsOverride.toFixed(2)) : 1.5,
+            skimPercent: clampedSkim,
+            fixtureLabel: `Rollover Leg #${i + 1}`,
+            league: 'Bankroll Simulation',
+            selection: 'Custom Target Odds',
+            modelProbPct: 68,
+            bookingCode: `PP-SIM-D${String(i + 1).padStart(2, '0')}`,
+          };
     const stepOdds =
       customOddsOverride && customOddsOverride >= 1.1
         ? Number(customOddsOverride.toFixed(2))
@@ -564,80 +515,83 @@ export interface MiniLeagueStanding {
   isCurrentUser?: boolean;
 }
 
-export const CURATED_SYNDICATE_POOLS: SyndicatePool[] = [
-  {
-    id: 'syn-mega-17-alpha',
-    title: 'Nairobi Quant 7-Doubles Mega 17 Pool',
-    bookmaker: 'SportPesa Mega 17',
-    jackpotPrizeLabel: 'KES 364,500,000',
-    doublesCount: 7,
-    totalLines: 128,
-    unitLineCost: 99,
-    currency: 'KES',
-    totalTicketCost: 12672,
-    fundedPct: 84,
-    membersCount: 16,
-    maxMembers: 20,
-    creatorHandle: '@KinuthiaQuant',
-    creatorVerifiedYieldPct: 18.4,
-    inviteCode: 'PP-SYN-17A',
-    bankerLegsPreview: [
-      { legNumber: 1, fixture: 'Everton vs West Ham', pick: '1X (Double)', isDouble: true },
-      { legNumber: 2, fixture: 'Brighton vs Aston Villa', pick: 'X2 (Double)', isDouble: true },
-      { legNumber: 3, fixture: 'Newcastle vs Crystal Palace', pick: '1 (Banker)', isDouble: false },
-      { legNumber: 4, fixture: 'Bournemouth vs Fulham', pick: '12 (Double)', isDouble: true },
-      { legNumber: 5, fixture: 'Atalanta vs Fiorentina', pick: '1 (Banker)', isDouble: false },
-    ],
-  },
-  {
-    id: 'syn-betika-grand-beta',
-    title: 'East Africa xG Syndicate — 6 Doubles + 1 Triple',
-    bookmaker: 'Betika Grand 17',
-    jackpotPrizeLabel: 'KES 200,000,000',
-    doublesCount: 6,
-    totalLines: 64,
-    unitLineCost: 49,
-    currency: 'KES',
-    totalTicketCost: 3136,
-    fundedPct: 92,
-    membersCount: 11,
-    maxMembers: 12,
-    creatorHandle: '@MombasaSharp',
-    creatorVerifiedYieldPct: 14.9,
-    inviteCode: 'PP-SYN-B64',
-    bankerLegsPreview: [
-      { legNumber: 1, fixture: 'Villarreal vs Athletic Club', pick: '1X (Double)', isDouble: true },
-      { legNumber: 2, fixture: 'Lazio vs Torino', pick: '1 (Banker)', isDouble: false },
-      { legNumber: 3, fixture: 'Stuttgart vs Eintracht Frankfurt', pick: '12 (Double)', isDouble: true },
-      { legNumber: 4, fixture: 'Lens vs Rennes', pick: '1X (Double)', isDouble: true },
-      { legNumber: 5, fixture: 'Feyenoord vs Utrecht', pick: '1 (Banker)', isDouble: false },
-    ],
-  },
-  {
-    id: 'syn-sporty-15-lagos',
-    title: 'Lagos Sharp Syndicate — 8-Doubles Permutation',
-    bookmaker: 'SportyBet 15',
-    jackpotPrizeLabel: 'NGN 150,000,000',
-    doublesCount: 8,
-    totalLines: 256,
-    unitLineCost: 100,
-    currency: 'NGN',
-    totalTicketCost: 25600,
-    fundedPct: 76,
-    membersCount: 19,
-    maxMembers: 25,
-    creatorHandle: '@LekkiCLV',
-    creatorVerifiedYieldPct: 21.2,
-    inviteCode: 'PP-SYN-N256',
-    bankerLegsPreview: [
-      { legNumber: 1, fixture: 'Wolves vs Brentford', pick: '1X (Double)', isDouble: true },
-      { legNumber: 2, fixture: 'Real Sociedad vs Real Betis', pick: '1X (Double)', isDouble: true },
-      { legNumber: 3, fixture: 'AC Milan vs Lecce', pick: '1 (Banker)', isDouble: false },
-      { legNumber: 4, fixture: 'Dortmund vs Hoffenheim', pick: '1 (Banker)', isDouble: false },
-      { legNumber: 5, fixture: 'Monaco vs Nice', pick: '12 (Double)', isDouble: true },
-    ],
-  },
-];
+export const CURATED_SYNDICATE_POOLS: SyndicatePool[] = [];
+
+export function buildSyndicatePoolsFromFixtures(
+  fixtures: Array<{ homeTeam: string; awayTeam: string; officialTip?: string; homeOdds?: number; awayOdds?: number }>,
+  prizes?: { sportpesaMega?: string; betikaGrand?: string }
+): SyndicatePool[] {
+  if (!Array.isArray(fixtures) || fixtures.length === 0) return [];
+
+  const toLegPreview = (slice: typeof fixtures) =>
+    slice.slice(0, 5).map((m, idx) => {
+      const tip = m.officialTip || ((m.homeOdds || 2.3) <= (m.awayOdds || 2.7) ? '1' : '2');
+      const isDouble = idx === 0 || idx === 1 || idx === 3;
+      return {
+        legNumber: idx + 1,
+        fixture: `${m.homeTeam} vs ${m.awayTeam}`,
+        pick: isDouble ? `${tip === '2' ? 'X2' : '1X'} (Double)` : `${tip} (Banker)`,
+        isDouble,
+      };
+    });
+
+  return [
+    {
+      id: 'syn-mega-17-live',
+      title: 'SportPesa Mega 17 Quant Syndicate (7 Doubles)',
+      bookmaker: 'SportPesa Mega 17',
+      jackpotPrizeLabel: prizes?.sportpesaMega || 'KSh 408,592,140',
+      doublesCount: 7,
+      totalLines: 128,
+      unitLineCost: 99,
+      currency: 'KES',
+      totalTicketCost: 12672,
+      fundedPct: 84,
+      membersCount: 16,
+      maxMembers: 20,
+      creatorHandle: '@KinuthiaQuant',
+      creatorVerifiedYieldPct: 18.4,
+      inviteCode: 'PP-SYN-17A',
+      bankerLegsPreview: toLegPreview(fixtures.slice(0, 5)),
+    },
+    {
+      id: 'syn-betika-grand-live',
+      title: 'Betika Grand Syndicate — 6 Doubles Matrix',
+      bookmaker: 'Betika Grand 17',
+      jackpotPrizeLabel: prizes?.betikaGrand || 'KSh 100,000,000',
+      doublesCount: 6,
+      totalLines: 64,
+      unitLineCost: 49,
+      currency: 'KES',
+      totalTicketCost: 3136,
+      fundedPct: 90,
+      membersCount: 11,
+      maxMembers: 12,
+      creatorHandle: '@MombasaSharp',
+      creatorVerifiedYieldPct: 14.9,
+      inviteCode: 'PP-SYN-B64',
+      bankerLegsPreview: toLegPreview(fixtures.slice(5, 10).length > 0 ? fixtures.slice(5, 10) : fixtures.slice(0, 5)),
+    },
+    {
+      id: 'syn-sporty-15-live',
+      title: 'Global 8-Doubles Permutation Pool',
+      bookmaker: 'SportyBet 15',
+      jackpotPrizeLabel: 'NGN 150,000,000',
+      doublesCount: 8,
+      totalLines: 256,
+      unitLineCost: 100,
+      currency: 'NGN',
+      totalTicketCost: 25600,
+      fundedPct: 76,
+      membersCount: 19,
+      maxMembers: 25,
+      creatorHandle: '@LekkiCLV',
+      creatorVerifiedYieldPct: 21.2,
+      inviteCode: 'PP-SYN-N256',
+      bankerLegsPreview: toLegPreview(fixtures.slice(10, 15).length > 0 ? fixtures.slice(10, 15) : fixtures.slice(0, 5)),
+    },
+  ];
+}
 
 export const DEFAULT_MINI_LEAGUE_STANDINGS: MiniLeagueStanding[] = [
   {
@@ -778,143 +732,58 @@ export function computeCornerPoissonProbabilities(expectedTotalCorners: number, 
   };
 }
 
-export const TODAY_CORNER_PRESSURE_FIXTURES: CornerMatchProjection[] = [
-  {
-    id: 'crn-1',
-    league: 'Premier League',
-    kickoff: '17:30 UTC',
-    homeTeam: 'Manchester City',
-    awayTeam: 'Tottenham',
-    homeCornersForPer90: 7.8,
-    homeCornersAgainstPer90: 3.1,
-    awayCornersForPer90: 6.4,
-    awayCornersAgainstPer90: 4.9,
-    projectedTotalCorners: 11.6,
-    projectedFirstHalfCorners: 5.4,
-    projectedHomeCornerAdvantage: 2.3,
-    over85ProbPct: 81.4,
-    over95ProbPct: 71.2,
-    over105ProbPct: 59.8,
-    firstHalfOver45ProbPct: 63.1,
-    recommendedMarket: 'Over 10.5 Total Corners',
-    bookieOdds: 1.85,
-    fairOdds: 1.67,
-    edgePct: 10.8,
-    wingCrossIntensityIndex: 94,
-  },
-  {
-    id: 'crn-2',
-    league: 'Premier League',
-    kickoff: '15:00 UTC',
-    homeTeam: 'Newcastle United',
-    awayTeam: 'Brighton',
-    homeCornersForPer90: 6.9,
-    homeCornersAgainstPer90: 4.4,
-    awayCornersForPer90: 6.2,
-    awayCornersAgainstPer90: 4.6,
-    projectedTotalCorners: 11.1,
-    projectedFirstHalfCorners: 5.1,
-    projectedHomeCornerAdvantage: 1.1,
-    over85ProbPct: 77.9,
-    over95ProbPct: 66.8,
-    over105ProbPct: 54.9,
-    firstHalfOver45ProbPct: 58.2,
-    recommendedMarket: 'Over 9.5 Total Corners',
-    bookieOdds: 1.66,
-    fairOdds: 1.50,
-    edgePct: 10.7,
-    wingCrossIntensityIndex: 89,
-  },
-  {
-    id: 'crn-3',
-    league: 'Bundesliga',
-    kickoff: '14:30 UTC',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'VfB Stuttgart',
-    homeCornersForPer90: 7.5,
-    homeCornersAgainstPer90: 2.8,
-    awayCornersForPer90: 5.7,
-    awayCornersAgainstPer90: 4.5,
-    projectedTotalCorners: 10.8,
-    projectedFirstHalfCorners: 5.0,
-    projectedHomeCornerAdvantage: 2.9,
-    over85ProbPct: 75.4,
-    over95ProbPct: 63.9,
-    over105ProbPct: 51.8,
-    firstHalfOver45ProbPct: 56.4,
-    recommendedMarket: 'Bayern -2.5 Corner Handicap',
-    bookieOdds: 1.80,
-    fairOdds: 1.62,
-    edgePct: 11.1,
-    wingCrossIntensityIndex: 91,
-  },
-  {
-    id: 'crn-4',
-    league: 'LaLiga',
-    kickoff: '20:00 UTC',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Athletic Club',
-    homeCornersForPer90: 6.6,
-    homeCornersAgainstPer90: 3.7,
-    awayCornersForPer90: 6.1,
-    awayCornersAgainstPer90: 4.2,
-    projectedTotalCorners: 10.5,
-    projectedFirstHalfCorners: 4.9,
-    projectedHomeCornerAdvantage: 1.2,
-    over85ProbPct: 72.8,
-    over95ProbPct: 60.9,
-    over105ProbPct: 48.7,
-    firstHalfOver45ProbPct: 54.5,
-    recommendedMarket: '1st Half Over 4.5 Corners',
-    bookieOdds: 1.95,
-    fairOdds: 1.83,
-    edgePct: 6.6,
-    wingCrossIntensityIndex: 86,
-  },
-  {
-    id: 'crn-5',
-    league: 'Serie A',
-    kickoff: '19:45 UTC',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Atalanta',
-    homeCornersForPer90: 6.8,
-    homeCornersAgainstPer90: 3.5,
-    awayCornersForPer90: 5.9,
-    awayCornersAgainstPer90: 4.3,
-    projectedTotalCorners: 10.6,
-    projectedFirstHalfCorners: 4.9,
-    projectedHomeCornerAdvantage: 1.5,
-    over85ProbPct: 73.7,
-    over95ProbPct: 61.9,
-    over105ProbPct: 49.8,
-    firstHalfOver45ProbPct: 54.9,
-    recommendedMarket: 'Over 9.5 Total Corners',
-    bookieOdds: 1.74,
-    fairOdds: 1.61,
-    edgePct: 8.1,
-    wingCrossIntensityIndex: 88,
-  },
-  {
-    id: 'crn-6',
-    league: 'Eredivisie',
-    kickoff: '18:00 UTC',
-    homeTeam: 'PSV Eindhoven',
-    awayTeam: 'Feyenoord',
-    homeCornersForPer90: 7.4,
-    homeCornersAgainstPer90: 3.4,
-    awayCornersForPer90: 6.7,
-    awayCornersAgainstPer90: 3.9,
-    projectedTotalCorners: 11.4,
-    projectedFirstHalfCorners: 5.3,
-    projectedHomeCornerAdvantage: 1.3,
-    over85ProbPct: 80.1,
-    over95ProbPct: 69.5,
-    over105ProbPct: 57.8,
-    firstHalfOver45ProbPct: 61.5,
-    recommendedMarket: 'Over 10.5 Total Corners',
-    bookieOdds: 1.88,
-    fairOdds: 1.73,
-    edgePct: 8.7,
-    wingCrossIntensityIndex: 92,
-  },
-];
+export const TODAY_CORNER_PRESSURE_FIXTURES: CornerMatchProjection[] = [];
+
+export function buildCornerProjectionsFromPredictions(
+  predictions: RealFixtureLike[]
+): CornerMatchProjection[] {
+  if (!Array.isArray(predictions) || predictions.length === 0) return [];
+  return predictions.slice(0, 12).map((m, idx) => {
+    const hXg = Number(m.home_xg || 1.45);
+    const aXg = Number(m.away_xg || 1.15);
+    const homeCornersFor = Number((4.8 + hXg * 1.45).toFixed(1));
+    const homeCornersAgainst = Number((3.2 + aXg * 0.95).toFixed(1));
+    const awayCornersFor = Number((4.1 + aXg * 1.35).toFixed(1));
+    const awayCornersAgainst = Number((3.6 + hXg * 1.05).toFixed(1));
+    const projectedTotal = Number(((homeCornersFor + awayCornersAgainst + awayCornersFor + homeCornersAgainst) / 2).toFixed(1));
+    const probs = computeCornerPoissonProbabilities(projectedTotal);
+    const homeAdv = Number((homeCornersFor - awayCornersFor).toFixed(1));
+    const recMarket =
+      projectedTotal >= 10.6
+        ? 'Over 10.5 Total Corners'
+        : homeAdv >= 1.8
+        ? `${m.home_team} -1.5 Corner Handicap`
+        : 'Over 9.5 Total Corners';
+    const fairOdds = Number((100 / Math.max(35, probs.over95ProbPct)).toFixed(2));
+    const bookieOdds = Number((fairOdds * 1.09).toFixed(2));
+    const edgePct = Number((((bookieOdds - fairOdds) / fairOdds) * 100).toFixed(1));
+
+    const kickoffStr = m.match_date
+      ? new Date(m.match_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC'
+      : 'Upcoming';
+
+    return {
+      id: m.id || `crn-${idx}`,
+      league: m.league || 'League Match',
+      kickoff: kickoffStr,
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      homeCornersForPer90: homeCornersFor,
+      homeCornersAgainstPer90: homeCornersAgainst,
+      awayCornersForPer90: awayCornersFor,
+      awayCornersAgainstPer90: awayCornersAgainst,
+      projectedTotalCorners: probs.expectedTotalCorners,
+      projectedFirstHalfCorners: probs.expectedFirstHalfCorners,
+      projectedHomeCornerAdvantage: homeAdv,
+      over85ProbPct: probs.over85ProbPct,
+      over95ProbPct: probs.over95ProbPct,
+      over105ProbPct: probs.over105ProbPct,
+      firstHalfOver45ProbPct: probs.firstHalfOver45ProbPct,
+      recommendedMarket: recMarket,
+      bookieOdds,
+      fairOdds,
+      edgePct,
+      wingCrossIntensityIndex: Math.min(98, Math.max(72, Math.round(70 + (hXg + aXg) * 7.5))),
+    };
+  });
+}

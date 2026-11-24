@@ -4,6 +4,7 @@ import {
   handleBraveSearchRequest,
   BraveNewsResultItem,
 } from './braveSearchHandler.ts';
+import { getCachedUpcomingFixturesSync, fetchServerUpcomingFixtures } from './footballHandler.ts';
 
 export interface GroundingSource {
   title: string;
@@ -61,8 +62,8 @@ const BRAVE_GROUNDED_TASKS = new Set([
 
 export async function handleGeminiTask(task: string, payload: any): Promise<GeminiTaskResponse> {
   const ai = getGeminiClient();
-  const homeName = payload?.homeTeam || payload?.matchContext?.homeTeam || 'Arsenal';
-  const awayName = payload?.awayTeam || payload?.matchContext?.awayTeam || 'Chelsea';
+  const homeName = payload?.homeTeam || payload?.matchContext?.homeTeam || 'Home Team';
+  const awayName = payload?.awayTeam || payload?.matchContext?.awayTeam || 'Away Team';
 
   let braveGrounding: {
     queries: string[];
@@ -122,7 +123,7 @@ export async function handleGeminiTask(task: string, payload: any): Promise<Gemi
 
   // If no Gemini API key is available, return a structured response enriched with live Brave Search data
   if (!ai) {
-    return generateFallbackWithGrounding(task, payload, 'API Key not configured', braveGrounding);
+    return await generateFallbackWithGrounding(task, payload, 'API Key not configured', braveGrounding);
   }
 
   let prompt = '';
@@ -461,11 +462,11 @@ Return a JSON array of 5 news items:
       });
       rawText = directResponse.text || '';
       if (!rawText.trim()) {
-        return generateFallbackWithGrounding(task, payload, 'Empty model response', braveGrounding);
+        return await generateFallbackWithGrounding(task, payload, 'Empty model response', braveGrounding);
       }
     } catch {
       // Tier 3: If direct generation also experiences rate limiting, use safe structured fallback
-      return generateFallbackWithGrounding(task, payload, 'Rate limit fallback', braveGrounding);
+      return await generateFallbackWithGrounding(task, payload, 'Rate limit fallback', braveGrounding);
     }
   }
 
@@ -486,11 +487,11 @@ Return a JSON array of 5 news items:
     };
   } catch {
     // If output wasn't pure JSON, return task-appropriate fallback
-    return generateFallbackWithGrounding(task, payload, 'Invalid JSON response', braveGrounding);
+    return await generateFallbackWithGrounding(task, payload, 'Invalid JSON response', braveGrounding);
   }
 }
 
-function generateFallbackWithGrounding(
+async function generateFallbackWithGrounding(
   task: string,
   payload: any,
   _reason: string,
@@ -500,7 +501,7 @@ function generateFallbackWithGrounding(
     contextSnippets: string[];
     newsItems?: BraveNewsResultItem[];
   } | null
-): GeminiTaskResponse {
+): Promise<GeminiTaskResponse> {
   const home = payload.homeTeam || 'Home Team';
   const away = payload.awayTeam || 'Away Team';
 
@@ -641,26 +642,27 @@ function generateFallbackWithGrounding(
   }
 
   if (task === 'curate_acca') {
-    const matches = Array.isArray(payload.matches) ? payload.matches : [];
+    const providedMatches = Array.isArray(payload.matches) ? payload.matches : [];
+    const matches = providedMatches.length > 0
+      ? providedMatches
+      : await fetchServerUpcomingFixtures().catch(() => getCachedUpcomingFixturesSync());
     const strategy = payload.strategy || 'banker';
     return {
       success: true,
       result: {
         acca_title: `AI ${String(strategy).toUpperCase()} ACCUMULATOR`,
-        combined_odds: 3.45,
-        combined_confidence: 81,
-        rationale: 'Curated from high underlying Expected Goals (xG) differentials and consistent home territorial dominance.',
-        legs: (matches.length > 0 ? matches.slice(0, 3) : [
-          { homeTeam: 'Arsenal', awayTeam: 'Wolves', league: 'Premier League' },
-          { homeTeam: 'Real Madrid', awayTeam: 'Getafe', league: 'La Liga' },
-          { homeTeam: 'Bayern Munich', awayTeam: 'Hoffenheim', league: 'Bundesliga' },
-        ]).map((m: any) => ({
-          match: `${m.homeTeam || 'Home'} vs ${m.awayTeam || 'Away'}`,
+        combined_odds: matches.length > 0 ? 3.45 : 1.0,
+        combined_confidence: matches.length > 0 ? 81 : 0,
+        rationale: matches.length > 0
+          ? 'Curated from verified live upcoming fixtures using underlying Expected Goals (xG) differentials.'
+          : 'No active upcoming fixtures cached yet to curate legs.',
+        legs: matches.slice(0, 3).map((m: any) => ({
+          match: m.match || `${m.homeTeam || m.home_team || 'Home'} vs ${m.awayTeam || m.away_team || 'Away'}`,
           league: m.league || 'Top Flight',
-          market: strategy === 'goals' ? 'Over 2.5 Goals' : 'Home Win or Draw',
-          odds: 1.45,
-          confidence: 83,
-          reason: 'Superior xG creation and strong defensive transition metrics.',
+          market: strategy === 'goals' ? 'Over 2.5 Goals' : (m.prediction || 'Home Win or Draw'),
+          odds: Number(m.odds?.home || m.home_odds || 1.45),
+          confidence: Number(m.confidence || 78),
+          reason: m.reasoning || 'Superior xG creation and strong defensive transition metrics.',
         })),
       },
       groundingMetadata,
@@ -718,43 +720,37 @@ function generateFallbackWithGrounding(
   }
 
   if (task === 'daily_digest') {
-    const matches = Array.isArray(payload.matches) ? payload.matches : [];
-    const first = matches[0] || { match: 'Arsenal vs Chelsea', league: 'Premier League', odds: { home: 1.85 }, confidence: 86 };
-    const second = matches[1] || { match: 'Real Madrid vs Barcelona', league: 'La Liga', odds: { home: 1.92 }, confidence: 82 };
+    const providedMatches = Array.isArray(payload.matches) ? payload.matches : [];
+    const liveFixtures = providedMatches.length > 0 ? providedMatches : await fetchServerUpcomingFixtures().catch(() => getCachedUpcomingFixturesSync());
+    const topPicks = liveFixtures.slice(0, 2).map((m: any, idx: number) => ({
+      type: idx === 0 ? 'banker' : 'value',
+      title: idx === 0 ? 'Primary Statistical Lock' : '+EV Tactical Edge',
+      badge: `${m.confidence || 75}% Conf`,
+      match: m.match || `${m.home_team || 'Home'} vs ${m.away_team || 'Away'}`,
+      league: m.league || 'Global Football',
+      pick: m.prediction || m.predicted_outcome || 'Home Win',
+      odds: m.odds?.home || m.home_odds || 1.85,
+      confidence: m.confidence || 75,
+      tacticalAngle: m.reasoning || m.analysis || 'Generated from live ESPN fixture metrics and implied probabilities.',
+    }));
+    const first = liveFixtures[0];
     return {
       success: true,
       result: {
-        headline: 'Matchday Intelligence: Key AI Angles for Today',
-        summary: 'Analytical models spotlight significant xG conversion edges in home fixtures across major leagues.',
+        headline: liveFixtures.length > 0
+          ? 'Matchday Intelligence: Verified Live Fixtures Overview'
+          : 'Matchday Intelligence: Awaiting Next Scheduled Slate',
+        summary: liveFixtures.length > 0
+          ? `Statistical models analyzed ${liveFixtures.length} live upcoming ESPN fixtures for fair odds discrepancies.`
+          : 'No active upcoming fixtures cached yet. Trigger Live Fixtures Sync to refresh the match slate.',
         marketPulse: {
-          totalMatchesAnalyzed: matches.length || 42,
-          avgConfidence: 81,
-          bestValueLeague: first.league || 'Premier League',
+          totalMatchesAnalyzed: liveFixtures.length,
+          avgConfidence: liveFixtures.length > 0
+            ? Math.round(liveFixtures.reduce((acc: number, m: any) => acc + Number(m.confidence || 75), 0) / liveFixtures.length)
+            : 0,
+          bestValueLeague: first?.league || 'Pending Live Sync',
         },
-        topPicks: [
-          {
-            type: 'banker',
-            title: 'Primary Banker Lock',
-            badge: `${first.confidence || 86}% Conf`,
-            match: first.match || 'Arsenal vs Chelsea',
-            league: first.league || 'Premier League',
-            pick: first.prediction || 'Home Win',
-            odds: first.odds?.home || 1.85,
-            confidence: first.confidence || 86,
-            tacticalAngle: 'High pressing efficiency and superior box occupancy gives the home side a commanding statistical edge.',
-          },
-          {
-            type: 'value',
-            title: '+EV Tactical Edge',
-            badge: 'Value Edge',
-            match: second.match || 'Real Madrid vs Barcelona',
-            league: second.league || 'La Liga',
-            pick: 'Over 2.5 Goals',
-            odds: second.odds?.home || 1.92,
-            confidence: second.confidence || 82,
-            tacticalAngle: 'Both attacks operating above 2.3 expected goals per game, exploiting transition half-spaces.',
-          },
-        ],
+        topPicks,
       },
       groundingMetadata,
       fallback_used: true,
@@ -855,9 +851,15 @@ function generateFallbackWithGrounding(
 
   if (task === 'ai_chat') {
     const userMessage = String(payload?.message || '').trim();
+    const liveFixtures = await fetchServerUpcomingFixtures().catch(() => getCachedUpcomingFixturesSync());
+    const fixtureLines = liveFixtures.slice(0, 3).map((m, i) => {
+      const icon = i === 0 ? '🛡️' : i === 1 ? '💎' : '⚽';
+      const label = i === 0 ? 'Top Confidence' : i === 1 ? 'Live Matchup' : 'Featured Fixture';
+      return `• ${icon} **${label}**: ${m.home_team} vs ${m.away_team} (${m.league}) ➔ ${m.prediction} (${m.confidence}% Conf @ ${m.home_odds})`;
+    }).join('\n');
     const liveBullets =
       braveGrounding?.contextSnippets && braveGrounding.contextSnippets.length > 0
-        ? `\n\n📡 **Live Brave Search Intelligence:**\n${braveGrounding.contextSnippets
+        ? `\n\n📡 **Live Search Intelligence:**\n${braveGrounding.contextSnippets
             .slice(0, 3)
             .map((s) => `• ${s}`)
             .join('\n')}`
@@ -865,7 +867,9 @@ function generateFallbackWithGrounding(
     return {
       success: true,
       result: {
-        reply: `🎯 **PredictPro Scout Analysis${userMessage ? ` ("${userMessage.slice(0, 48)}")` : ''}:**\n\n• 🛡️ **Primary Banker**: Arsenal vs Chelsea ➔ Home Win (78% Conf @ 1.85)\n• 💎 **+EV Value Pick**: Real Madrid vs Barcelona ➔ Over 2.5 Goals (74% Conf @ 1.92)\n• ⚽ **BTTS Spotlight**: Liverpool vs Man City ➔ BTTS Yes (81% Conf @ 1.68)${liveBullets}`,
+        reply: fixtureLines
+          ? `🎯 **PredictPro Live Slate Analysis${userMessage ? ` ("${userMessage.slice(0, 48)}")` : ''}:**\n\n${fixtureLines}${liveBullets}`
+          : `🎯 **PredictPro Live Analyst**: No live matches matched right now — check the **Upcoming Fixtures** tab for the refreshed 7-day official schedule.${liveBullets}`,
       },
       groundingMetadata,
       fallback_used: !braveGrounding?.contextSnippets?.length,

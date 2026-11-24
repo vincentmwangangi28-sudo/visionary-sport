@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { PredictionDetailModal } from '@/components/PredictionDetailModal';
 import { AdBannerHorizontal } from '@/components/AdBanner';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { 
   getSavedPrediction, 
@@ -155,9 +154,9 @@ export default function MatchPrediction() {
           fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
         const combinedPool: Prediction[] = [
-          ...(Array.isArray(liveRes?.predictions) ? liveRes.predictions : []),
+          ...(Array.isArray(liveRes?.matches) ? liveRes.matches : []),
           ...upFixtures,
-          ...(Array.isArray(finRes?.predictions) ? finRes.predictions : []),
+          ...(Array.isArray(finRes?.results) ? finRes.results : []),
         ];
         const hLower = home.toLowerCase();
         const aLower = away.toLowerCase();
@@ -180,19 +179,6 @@ export default function MatchPrediction() {
       const saved = getSavedPrediction(home, away, date);
       if (saved) {
         setPrediction(saved);
-        setIsFallback(false);
-        setLoading(false);
-        return;
-      }
-
-      const localMatch = DEFAULT_PREDICTIONS.find(p =>
-        (p.home_team.toLowerCase().includes(home.toLowerCase()) || home.toLowerCase().includes(p.home_team.toLowerCase())) &&
-        (p.away_team.toLowerCase().includes(away.toLowerCase()) || away.toLowerCase().includes(p.away_team.toLowerCase()))
-      );
-
-      if (localMatch) {
-        const savedPred = savePrediction(localMatch);
-        setPrediction(savedPred);
         setIsFallback(false);
         setLoading(false);
         return;

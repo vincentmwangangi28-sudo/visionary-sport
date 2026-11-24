@@ -39,6 +39,9 @@ import {
   BlogSearchResult,
   SearchCategoryFilter,
 } from '@/services/unifiedSearch';
+import { Prediction } from '@/types/prediction';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { getSavedPredictionsList } from '@/services/predictionStorage';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -50,6 +53,7 @@ export const UnifiedSearchModal: React.FC = () => {
 
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [liveMatchesPool, setLiveMatchesPool] = useState<Prediction[]>(() => getSavedPredictionsList());
   const [braveWebItems, setBraveWebItems] = useState<
     Array<{ title: string; url: string; description: string; source: string; age?: string; category?: string }>
   >([]);
@@ -57,11 +61,20 @@ export const UnifiedSearchModal: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
 
-  // Load recent searches when opening
+  // Load recent searches and real upcoming fixtures when opening
   useEffect(() => {
     if (isOpen) {
       setRecentSearches(getRecentSearches());
       setSelectedIndex(0);
+      fetchRealtimeUpcomingFixtures()
+        .then((realFixtures) => {
+          if (realFixtures && realFixtures.length > 0) {
+            setLiveMatchesPool(realFixtures);
+          }
+        })
+        .catch(() => {
+          setLiveMatchesPool(getSavedPredictionsList());
+        });
       // Autofocus input
       setTimeout(() => {
         inputRef.current?.focus();
@@ -69,10 +82,10 @@ export const UnifiedSearchModal: React.FC = () => {
     }
   }, [isOpen]);
 
-  // Execute search
+  // Execute search against live fixtures pool
   const { results, counts } = useMemo(() => {
-    return executeUnifiedSearch(query, activeCategory);
-  }, [query, activeCategory]);
+    return executeUnifiedSearch(query, activeCategory, { customPredictions: liveMatchesPool });
+  }, [query, activeCategory, liveMatchesPool]);
 
   // Fetch live Brave Search intelligence when query has 3+ chars (550ms debounce for Free Tier 1-QPS protection)
   useEffect(() => {

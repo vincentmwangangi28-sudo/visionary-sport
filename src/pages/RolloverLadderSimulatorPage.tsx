@@ -4,9 +4,10 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
   computeRolloverLadder,
-  DEFAULT_ROLLOVER_STEPS,
+  buildRolloverStepsFromPredictions,
   RolloverCurrency,
 } from '@/services/phase14SyndicateService';
 import {
@@ -34,6 +35,7 @@ const CURRENCY_DEFAULTS: Record<RolloverCurrency, number> = {
 
 export const RolloverLadderSimulatorPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
 
   const [currency, setCurrency] = useState<RolloverCurrency>('KES');
   const [initialStake, setInitialStake] = useState<number>(1000);
@@ -45,9 +47,9 @@ export const RolloverLadderSimulatorPage: React.FC = () => {
   const [completedDays, setCompletedDays] = useState<number[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY_COMPLETED_DAYS);
-      return raw ? JSON.parse(raw) : [1, 2];
+      return raw ? JSON.parse(raw) : [];
     } catch {
-      return [1, 2];
+      return [];
     }
   });
 
@@ -64,6 +66,11 @@ export const RolloverLadderSimulatorPage: React.FC = () => {
     setInitialStake(CURRENCY_DEFAULTS[nextCurr]);
   };
 
+  const rolloverSteps = useMemo(
+    () => buildRolloverStepsFromPredictions(predictions),
+    [predictions]
+  );
+
   const ladder = useMemo(
     () =>
       computeRolloverLadder(
@@ -71,9 +78,9 @@ export const RolloverLadderSimulatorPage: React.FC = () => {
         targetDays,
         skimPercent,
         useCustomUniformOdds ? customOdds : undefined,
-        DEFAULT_ROLLOVER_STEPS
+        rolloverSteps
       ),
-    [initialStake, targetDays, skimPercent, useCustomUniformOdds, customOdds]
+    [initialStake, targetDays, skimPercent, useCustomUniformOdds, customOdds, rolloverSteps]
   );
 
   const toggleDayCompleted = (day: number) => {

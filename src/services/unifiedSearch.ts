@@ -1,4 +1,4 @@
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { getSavedPredictionsList } from '@/services/predictionStorage';
 import { LEAGUES, CURRENT_SEASON_STANDINGS } from '@/data/standingsData';
 import { STRATEGY_POSTS, BlogPostItem } from '@/data/blogData';
 import { Prediction } from '@/types/prediction';
@@ -282,7 +282,7 @@ export function executeUnifiedSearch(
   const cleanQuery = query.trim().toLowerCase();
   const terms = cleanQuery.split(/\s+/).filter(Boolean);
 
-  const matches = buildMatchesCorpus(options?.customPredictions || getUpdatedDefaultPredictions());
+  const matches = buildMatchesCorpus(options?.customPredictions || getSavedPredictionsList());
   const leagues = buildLeaguesCorpus();
   const teams = buildTeamsCorpus();
   const blogs = buildBlogCorpus(options?.customBlogPosts);

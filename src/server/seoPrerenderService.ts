@@ -5,9 +5,8 @@
  * and powers live ESPN match XML sitemaps and RSS feeds.
  */
 
-import { handleFootballRequest } from './footballHandler.ts';
+import { getCachedUpcomingFixturesSync } from './footballHandler.ts';
 import { getAllSitemapEntries, CLUB_ANALYTICS_HUBS, BLOG_POSTS_METADATA, GLOBAL_HREFLANGS } from '../services/sitemapGenerator.ts';
-import { getUpdatedDefaultPredictions } from '../data/mockPredictions.ts';
 import { getContextualPageIntegration } from '../services/seoKeywords.ts';
 import { getRouteAhrefsOptimizationBundle } from '../services/ahrefsOpportunitiesService.ts';
 
@@ -325,9 +324,9 @@ export async function resolveLiveMatchSlugs(
     }
   }
 
-  // 2. Crawl active matchday predictions from the active prediction store
+  // 2. Crawl active matchday predictions from live cached server schedule
   try {
-    const activePredictions = getUpdatedDefaultPredictions();
+    const activePredictions = getCachedUpcomingFixturesSync();
     for (const p of activePredictions) {
       const pred = p.predicted_outcome || p.prediction || 'Home Win';
       const conf = Number(p.confidence_score ?? p.confidence ?? 80);

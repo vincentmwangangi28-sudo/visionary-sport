@@ -63,159 +63,6 @@ interface InPlayAlertMatch {
   matchEvents?: Array<{ minute: string; type: string; team: 'home' | 'away'; text: string }>;
 }
 
-const LIVE_INPLAY_RADAR_DATA: InPlayAlertMatch[] = [
-  {
-    id: 'inplay-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    regionTag: 'Europe',
-    minute: 64,
-    homeScore: 1,
-    awayScore: 1,
-    liveXgHome: 2.34,
-    liveXgAway: 0.92,
-    appmIndex: 94,
-    dangerousAttacksLast10: { home: 16, away: 3 },
-    boxEntriesLast15: { home: 11, away: 2 },
-    shotsOnTarget: { home: 7, away: 3 },
-    cornersLive: { home: 8, away: 2 },
-    alertCategory: 'GOAL IMMINENT',
-    alertHeadline: 'GOAL IMMINENT (NEXT 15 MINS) — Arsenal +1.42 Unconverted xG Deficit',
-    recommendedMarket: 'Over 2.5 Match Goals (In-Play)',
-    liveOdds: 1.68,
-    aiProbability: 89,
-    valueEdgePct: 14.2,
-    tacticalTelemetry:
-      'Arsenal have recorded 16 dangerous attacks and 4 shots inside the 6-yard box in the last 10 minutes. Poisson live decay projects an 89% probability of at least 1 more goal.',
-  },
-  {
-    id: 'inplay-rma-bar',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    regionTag: 'Europe',
-    minute: 73,
-    homeScore: 1,
-    awayScore: 2,
-    liveXgHome: 2.18,
-    liveXgAway: 1.95,
-    appmIndex: 91,
-    dangerousAttacksLast10: { home: 14, away: 6 },
-    boxEntriesLast15: { home: 9, away: 5 },
-    shotsOnTarget: { home: 6, away: 6 },
-    cornersLive: { home: 7, away: 5 },
-    alertCategory: 'LATE DRAMA 70+',
-    alertHeadline: 'LATE 75+ MINUTE SURGE — Real Madrid Chasing Equalizer at Bernabéu',
-    recommendedMarket: 'Over 3.5 Total Goals (Live)',
-    liveOdds: 1.76,
-    aiProbability: 86,
-    valueEdgePct: 11.8,
-    tacticalTelemetry:
-      'Real Madrid score 38% of their home goals between minutes 75 and 90+5. High transition space leaves both boxes exposed.',
-  },
-  {
-    id: 'inplay-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    regionTag: 'Africa / CAF',
-    minute: 58,
-    homeScore: 0,
-    awayScore: 0,
-    liveXgHome: 1.54,
-    liveXgAway: 0.41,
-    appmIndex: 88,
-    dangerousAttacksLast10: { home: 13, away: 2 },
-    boxEntriesLast15: { home: 8, away: 1 },
-    shotsOnTarget: { home: 5, away: 1 },
-    cornersLive: { home: 6, away: 1 },
-    alertCategory: 'GOAL IMMINENT',
-    alertHeadline: 'SECOND HALF BREAKTHROUGH ALERT — Gor Mahia Pinning Deep Block',
-    recommendedMarket: 'Over 0.5 Match Goals (In-Play)',
-    liveOdds: 1.55,
-    aiProbability: 88,
-    valueEdgePct: 12.6,
-    tacticalTelemetry:
-      'Mashemeji Derby pressure spike: Austin Odhiambo has created 4 key passes in the last 12 minutes as AFC Leopards tire in midfield.',
-  },
-  {
-    id: 'inplay-yanga-simba',
-    homeTeam: 'Young Africans',
-    awayTeam: 'Simba SC',
-    league: 'Tanzania NBC Premier League',
-    regionTag: 'Africa / CAF',
-    minute: 69,
-    homeScore: 1,
-    awayScore: 0,
-    liveXgHome: 1.62,
-    liveXgAway: 1.38,
-    appmIndex: 87,
-    dangerousAttacksLast10: { home: 7, away: 12 },
-    boxEntriesLast15: { home: 5, away: 8 },
-    shotsOnTarget: { home: 4, away: 5 },
-    cornersLive: { home: 5, away: 7 },
-    alertCategory: 'CORNER SURGE',
-    alertHeadline: 'WING OVERLOAD SURGE — Simba SC Forcing Repeated Wide Blocks',
-    recommendedMarket: 'Over 14.5 Total Match Corners',
-    liveOdds: 1.82,
-    aiProbability: 84,
-    valueEdgePct: 10.4,
-    tacticalTelemetry:
-      '12 corners already registered by minute 69. Simba SC trailing by 1 goal are crossing every 75 seconds from the right flank.',
-  },
-  {
-    id: 'inplay-bay-bvb',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    regionTag: 'Europe',
-    minute: 36,
-    homeScore: 0,
-    awayScore: 1,
-    liveXgHome: 1.48,
-    liveXgAway: 0.62,
-    appmIndex: 92,
-    dangerousAttacksLast10: { home: 15, away: 2 },
-    boxEntriesLast15: { home: 10, away: 2 },
-    shotsOnTarget: { home: 6, away: 2 },
-    cornersLive: { home: 5, away: 1 },
-    alertCategory: 'COMEBACK VALUE',
-    alertHeadline: 'FAVORITE TRAILING VALUE — Bayern Dominant Despite Early Counter Goal',
-    recommendedMarket: 'Bayern Munich Double Chance (1X) / Next Goal',
-    liveOdds: 1.64,
-    aiProbability: 87,
-    valueEdgePct: 13.5,
-    tacticalTelemetry:
-      'Dortmund scored on their only shot in the box (0.62 xG), while Bayern have hit the woodwork twice and lead box touches 24 to 4.',
-  },
-  {
-    id: 'inplay-ahl-sun',
-    homeTeam: 'Al Ahly',
-    awayTeam: 'Mamelodi Sundowns',
-    league: 'CAF Champions League',
-    regionTag: 'Africa / CAF',
-    minute: 77,
-    homeScore: 1,
-    awayScore: 1,
-    liveXgHome: 1.89,
-    liveXgAway: 1.44,
-    appmIndex: 89,
-    dangerousAttacksLast10: { home: 13, away: 5 },
-    boxEntriesLast15: { home: 9, away: 4 },
-    shotsOnTarget: { home: 6, away: 4 },
-    cornersLive: { home: 8, away: 4 },
-    alertCategory: 'LATE DRAMA 70+',
-    alertHeadline: 'CAIRO LATE WINNER RADAR — Al Ahly 75–90+ Minute Surge Active',
-    recommendedMarket: 'Over 2.5 Total Goals (In-Play)',
-    liveOdds: 1.90,
-    aiProbability: 82,
-    valueEdgePct: 11.9,
-    tacticalTelemetry:
-      'Al Ahly average 1.12 expected goals in the final 20 minutes at Cairo International Stadium in CAF knockout clashes.',
-  },
-];
-
 export const InPlayPredictionsPage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const {
@@ -226,6 +73,7 @@ export const InPlayPredictionsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [tickCount, setTickCount] = useState(0);
   const [liveApiMatches, setLiveApiMatches] = useState<InPlayAlertMatch[]>([]);
+  const [hasLoadedRadar, setHasLoadedRadar] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date>(new Date());
   const [expandedSummaryId, setExpandedSummaryId] = useState<string | null>(null);
   const [simulatorMatch, setSimulatorMatch] = useState<InPlayAlertMatch | null>(null);
@@ -432,7 +280,9 @@ export const InPlayPredictionsPage: React.FC = () => {
         setLiveApiMatches(mapped);
         setLastSyncedAt(new Date());
       } catch {
-        // fallback to default radar data if offline
+        // leave empty if feed unavailable
+      } finally {
+        if (!cancelled) setHasLoadedRadar(true);
       }
     };
 
@@ -444,7 +294,7 @@ export const InPlayPredictionsPage: React.FC = () => {
     };
   }, [tickCount, realtimeHookFixtures]);
 
-  const activeSourceList = liveApiMatches.length > 0 ? liveApiMatches : LIVE_INPLAY_RADAR_DATA;
+  const activeSourceList = liveApiMatches;
   const activeLiveNowCount = useMemo(
     () => activeSourceList.filter((m) => m.isLiveNow || String(m.statusLabel || '').startsWith('LIVE')).length,
     [activeSourceList]
@@ -600,6 +450,26 @@ export const InPlayPredictionsPage: React.FC = () => {
         </section>
 
         {/* Live Radar Cards */}
+        {!hasLoadedRadar && filteredMatches.length === 0 ? (
+          <Card className="p-8 text-center text-sm text-muted-foreground">
+            Syncing real-time ESPN live &amp; upcoming match radar...
+          </Card>
+        ) : filteredMatches.length === 0 ? (
+          <Card className="p-8 text-center space-y-3">
+            <p className="text-sm font-semibold text-foreground">
+              {selectedCategory === 'LIVE_NOW'
+                ? 'No matches are currently in-play right now across tracked ESPN leagues.'
+                : 'No fixtures match the selected radar filter right now.'}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSelectedCategory('ALL')}
+            >
+              Show All Upcoming &amp; Active Fixtures ({activeSourceList.length})
+            </Button>
+          </Card>
+        ) : (
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredMatches.map((match) => {
             const totalDang =
@@ -822,6 +692,7 @@ export const InPlayPredictionsPage: React.FC = () => {
             );
           })}
         </section>
+        )}
 
         <SEOAuthorityHub />
       </main>

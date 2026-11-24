@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { TrendingUp, Target, Globe, Zap, BarChart2, Trophy, Clock, CheckCircle } from 'lucide-react';
 
 interface InsightData {
@@ -40,7 +39,23 @@ export default function Insights() {
           // fallback below
         }
 
-        const preds = livePreds && livePreds.length > 0 ? livePreds : getUpdatedDefaultPredictions();
+        if (!livePreds || livePreds.length === 0) {
+          try {
+            const { data: dbPreds } = await supabase
+              .from('predictions')
+              .select('league, prediction, predicted_outcome, confidence, confidence_score, is_premium, match_date')
+              .gt('match_date', new Date().toISOString())
+              .order('match_date', { ascending: true })
+              .limit(60);
+            if (dbPreds && dbPreds.length > 0) {
+              livePreds = dbPreds;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        const preds = livePreds;
 
         if (!preds.length) {
           setLoading(false);

@@ -9,7 +9,7 @@ import { sanitizeLogoCdnUrl } from '@/components/TeamLogo';
 import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
 import { computeEnrichedStandings } from '@/pages/Standings';
 import { ELITE_PLAYER_DATABASE } from '@/pages/PlayerSearch';
-import { LIVE_LINEUP_TRANSFER_WIRE } from '@/pages/News';
+import { classifyPressDesk } from '@/pages/News';
 import { WIDGET_TYPES, SVG_AUTHORITY_BADGES, TARGET_ANCHOR_HUBS } from '@/pages/Widgets';
 import { FALLBACK_STANDINGS } from '@/data/standingsData';
 
@@ -194,10 +194,11 @@ describe('LivePitchVisualizer, Broadcast Hub & GlobalMatchdayCommandRibbon', () 
     expect(cafStars.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('provides regional press desk lineup & tactical xG wire entries in LIVE_LINEUP_TRANSFER_WIRE', () => {
-    expect(LIVE_LINEUP_TRANSFER_WIRE).toHaveLength(4);
-    expect(LIVE_LINEUP_TRANSFER_WIRE[0].xgDelta).toContain('xG');
-    expect(LIVE_LINEUP_TRANSFER_WIRE[0].matchSlug).toMatch(/^\/predict\//);
+  it('classifies regional press desks accurately for European and African fixtures in News', () => {
+    expect(classifyPressDesk('Premier League')).toBe('UK (Sky / BBC)');
+    expect(classifyPressDesk('La Liga')).toBe('Spain (Marca / MD)');
+    expect(classifyPressDesk('FKF Premier League')).toBe('Africa (CAF / KPL)');
+    expect(classifyPressDesk('Serie A')).toBe("Europe (Kicker / Gazzetta / L'Équipe)");
   });
 
   it('exposes 8 specialized publisher embed widgets, 3 SVG authority badges, and 12 deep-link semantic anchor hubs', () => {

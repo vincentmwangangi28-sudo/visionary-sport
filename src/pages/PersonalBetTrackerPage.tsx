@@ -9,10 +9,10 @@ import {
   saveTrackedBets,
   addTrackedBetEntry,
   gradeBetAgainstScore,
-  DEFAULT_TRACKED_BETS,
   type TrackedBetEntry,
   type BetSettlementStatus,
 } from '@/services/phase11AnalyticsService';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   RefreshCw,
@@ -37,20 +37,31 @@ interface LaunchQueue {
 
 export const PersonalBetTrackerPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const { predictions } = usePredictions();
   const [entries, setEntries] = useState<TrackedBetEntry[]>(() => getTrackedBets());
   const [statusFilter, setStatusFilter] = useState<'ALL' | BetSettlementStatus>('ALL');
   const [syncingEspn, setSyncingEspn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const homeTeamInputRef = useRef<HTMLInputElement | null>(null);
 
-  // New Bet Form State
-  const [homeTeam, setHomeTeam] = useState('Liverpool');
-  const [awayTeam, setAwayTeam] = useState('Manchester City');
-  const [league, setLeague] = useState('Premier League');
+  // New Bet Form State (hydrated from real upcoming match when available)
+  const [homeTeam, setHomeTeam] = useState('');
+  const [awayTeam, setAwayTeam] = useState('');
+  const [league, setLeague] = useState('');
   const [market, setMarket] = useState('Over 2.5 Goals');
   const [odds, setOdds] = useState('1.85');
   const [stake, setStake] = useState('50');
   const [bookmaker, setBookmaker] = useState('SportyBet');
+
+  useEffect(() => {
+    if (!homeTeam && !awayTeam && predictions.length > 0) {
+      const first = predictions[0];
+      setHomeTeam(first.home_team);
+      setAwayTeam(first.away_team);
+      setLeague(first.league || 'Football');
+      if (first.home_odds) setOdds(Number(first.home_odds).toFixed(2));
+    }
+  }, [predictions, homeTeam, awayTeam]);
 
   const importLedgerFileText = useCallback((text: string, fileName: string) => {
     try {
@@ -60,13 +71,14 @@ export const PersonalBetTrackerPage: React.FC = () => {
         const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.entries) ? parsed.entries : [parsed];
         for (const item of list) {
           if (!item || typeof item !== 'object') continue;
-          const h = String(item.homeTeam || item.home_team || 'Arsenal').trim();
-          const a = String(item.awayTeam || item.away_team || 'Chelsea').trim();
+          const h = String(item.homeTeam || item.home_team || '').trim();
+          const a = String(item.awayTeam || item.away_team || '').trim();
+          if (!h || !a) continue;
           addTrackedBetEntry({
             fixture: String(item.fixture || `${h} vs ${a}`),
             homeTeam: h,
             awayTeam: a,
-            league: String(item.league || 'Premier League'),
+            league: String(item.league || 'Football'),
             market: String(item.market || 'Over 2.5 Goals'),
             odds: Math.max(1.05, Number(item.odds) || 1.85),
             stake: Math.max(1, Number(item.stake) || 25),
@@ -84,14 +96,15 @@ export const PersonalBetTrackerPage: React.FC = () => {
         const dataLines = lines.slice(1);
         for (const line of dataLines) {
           const cols = line.split(',').map((c) => c.replace(/^"|"$/g, '').trim());
-          if (cols.length < 6) continue;
-          const fixture = cols[1] || 'Arsenal vs Chelsea';
+          if (cols.length < 6 || !cols[1]) continue;
+          const fixture = cols[1];
           const parts = fixture.split(/\s+vs\s+/i);
+          if (parts.length < 2) continue;
           addTrackedBetEntry({
             fixture,
-            homeTeam: parts[0] || 'Arsenal',
-            awayTeam: parts[1] || 'Chelsea',
-            league: cols[2] || 'Premier League',
+            homeTeam: parts[0].trim(),
+            awayTeam: parts[1].trim(),
+            league: cols[2] || 'Football',
             market: cols[3] || 'Over 2.5 Goals',
             bookmaker: cols[4] || 'SportyBet',
             odds: Math.max(1.05, Number(cols[5]) || 1.85),
@@ -188,29 +201,33 @@ export const PersonalBetTrackerPage: React.FC = () => {
     toast.info('Removed entry from Bet Tracker');
   };
 
-  const handleResetDemoLedger = () => {
-    saveTrackedBets(DEFAULT_TRACKED_BETS);
-    setEntries(DEFAULT_TRACKED_BETS);
-    toast.info('Restored default quantitative ledger entries');
+  const handleClearLedger = () => {
+    saveTrackedBets([]);
+    setEntries([]);
+    toast.info('Cleared personal bet tracker ledger');
   };
 
   const handleAutoSettleViaEspn = async () => {
     setSyncingEspn(true);
     try {
-      const res = await fetch('/api/football?type=live');
-      const liveMatches: Array<Record<string, unknown>> = res.ok
-        ? (await res.json())?.matches || []
-        : [];
+      const [liveRes, finRes] = await Promise.all([
+        fetch('/api/football?type=live').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch('/api/football?type=results').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]);
+      const combinedMatches: Array<Record<string, unknown>> = [
+        ...(Array.isArray(liveRes?.matches) ? liveRes.matches : []),
+        ...(Array.isArray(finRes?.matches) ? finRes.matches : []),
+      ];
 
       let settledCount = 0;
       const updated = entries.map((entry) => {
         if (entry.status !== 'PENDING') return entry;
 
-        const matchFound = liveMatches.find((m) => {
+        const matchFound = combinedMatches.find((m) => {
           const h = String(m.home_team || '').toLowerCase();
           const a = String(m.away_team || '').toLowerCase();
           return (
-            h.includes(entry.homeTeam.toLowerCase()) ||
+            h.includes(entry.homeTeam.toLowerCase()) &&
             a.includes(entry.awayTeam.toLowerCase())
           );
         });
@@ -230,23 +247,13 @@ export const PersonalBetTrackerPage: React.FC = () => {
           };
         }
 
-        // Deterministic fallback auto-grade if user clicks auto-settle on pending demo fixtures
-        if (entry.homeTeam === 'Real Madrid' && entry.awayTeam === 'Barcelona') {
-          settledCount += 1;
-          return {
-            ...entry,
-            status: 'WON' as BetSettlementStatus,
-            settledScore: '2 - 1',
-          };
-        }
-
         return entry;
       });
 
       setEntries(updated);
       saveTrackedBets(updated);
       if (settledCount > 0) {
-        toast.success(`Auto-settled ${settledCount} pending slip(s) against finished scores`);
+        toast.success(`Auto-settled ${settledCount} pending slip(s) against finished ESPN scores`);
       } else {
         toast.info('All finished matches in your ledger are up to date');
       }
@@ -488,10 +495,10 @@ export const PersonalBetTrackerPage: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={handleResetDemoLedger}
+                onClick={handleClearLedger}
                 className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 cursor-pointer"
               >
-                Reset Sample Data
+                Clear Ledger
               </button>
             </div>
 
@@ -510,7 +517,14 @@ export const PersonalBetTrackerPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/50">
-                    {filteredEntries.map((item) => {
+                    {filteredEntries.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                          No tracked bets logged yet. Add a real fixture selection on the right or import a CSV/JSON ledger.
+                        </td>
+                      </tr>
+                    ) : (
+                    filteredEntries.map((item) => {
                       const pnl =
                         item.status === 'WON'
                           ? (item.odds - 1) * item.stake
@@ -594,7 +608,8 @@ export const PersonalBetTrackerPage: React.FC = () => {
                           </td>
                         </tr>
                       );
-                    })}
+                    })
+                    )}
                   </tbody>
                 </table>
               </div>

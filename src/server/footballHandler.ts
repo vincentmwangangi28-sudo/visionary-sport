@@ -210,19 +210,26 @@ const SLUG_TO_LEAGUE_NAME: Record<string, string> = {
 const ESPN_UID_LEAGUE_MAP: Record<string, string> = {
   '700': 'Premier League',
   '705': 'Championship',
+  '3914': 'Championship',
   '702': 'EFL Cup',
   '18481': 'EFL Trophy',
   '18625': 'FA Cup',
   '740': 'La Liga',
+  '3921': 'LaLiga 2',
   '3951': 'Copa del Rey',
+  '20956': 'Spanish Liga F',
   '730': 'Serie A',
   '720': 'Bundesliga',
   '710': 'Ligue 1',
+  '3926': 'Ligue 2',
   '19483': 'UEFA Champions League',
   '2310': 'UEFA Champions League',
+  '775': 'UEFA Champions League',
   '2311': 'UEFA Europa League',
   '20296': 'UEFA Conference League',
   '2395': 'UEFA Nations League',
+  '3902': 'AFC Champions League Elite',
+  '3946': 'Turkish Süper Lig',
   '8315': 'AFCON Qualifier',
   '23541': 'Liga MX',
   '760': 'Liga MX',
@@ -281,6 +288,10 @@ function resolveLeagueNameFromEvent(ev: Record<string, any>, fallbackLeagueName:
       return canonicalName;
     }
   }
+  const evLeagueName = String(ev.leagues?.[0]?.name || ev.league?.name || '').trim();
+  if (evLeagueName && evLeagueName !== 'All') {
+    return evLeagueName;
+  }
   const noteHeadline = String(ev.competitions?.[0]?.notes?.[0]?.headline || '').trim();
   if (
     noteHeadline &&
@@ -295,13 +306,31 @@ function resolveLeagueNameFromEvent(ev: Record<string, any>, fallbackLeagueName:
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
   }
-  return 'European & Global Top Flight';
+  return 'International Club & League Fixture';
 }
 
 let cachedUpcoming: { timestamp: number; data: RawFootballFixture[] } | null = null;
 let cachedLive: { timestamp: number; data: RawFootballLiveMatch[] } | null = null;
 let cachedFinished: { timestamp: number; data: RawFootballLiveMatch[] } | null = null;
 const cachedSummaries = new Map<string, { timestamp: number; data: ServerMatchSummary }>();
+
+export function invalidateFootballCaches(): void {
+  cachedUpcoming = null;
+  cachedLive = null;
+  cachedFinished = null;
+  cachedSummaries.clear();
+  cachedStandings.clear();
+  cachedNews.clear();
+  cachedLeaders.clear();
+  espnResponseCache.clear();
+}
+
+export function getCachedUpcomingFixturesSync(): RawFootballFixture[] {
+  if (cachedUpcoming?.data && cachedUpcoming.data.length > 0) {
+    return cachedUpcoming.data;
+  }
+  return [];
+}
 
 function hashString(str: string): number {
   let hash = 5381;
@@ -722,33 +751,31 @@ export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promis
   const fixtures: RawFootballFixture[] = [];
   const seenKeys = new Set<string>();
 
-  // Query single dates for Today (0), Tomorrow (+1), Day+2 (+2), Day+3 (+3), Day+4 (+4)
-  const dateOffsets = isBrowserRuntime ? [0, 1] : [0, 1, 2, 3, 4];
+  // Query single dates for Today (0) through Day+6 (+6) to capture full 7-day official schedule including weekend top flights
+  const dateOffsets = isBrowserRuntime ? [0, 1] : [0, 1, 2, 3, 4, 5, 6];
   const dateYmds = dateOffsets.map((offset) => formatEspnDateYmd(now + offset * 86_400_000));
 
   const urlsToFetch: Array<{ url: string; fallbackLeague: string }> = [];
 
   if (!leagueFilter || leagueFilter === 'All') {
-    for (const ymd of dateYmds.slice(0, isBrowserRuntime ? 2 : 4)) {
+    for (const ymd of dateYmds) {
       urlsToFetch.push({
         url: `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${ymd}`,
         fallbackLeague: 'All',
       });
     }
     if (!isBrowserRuntime) {
-      for (const league of SERVER_LEAGUES.slice(0, 12)) {
+      for (const league of SERVER_LEAGUES.slice(0, 16)) {
         urlsToFetch.push({
           url: `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard`,
           fallbackLeague: league.name,
         });
-        urlsToFetch.push({
-          url: `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${dateYmds[0]}`,
-          fallbackLeague: league.name,
-        });
-        urlsToFetch.push({
-          url: `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${dateYmds[1]}`,
-          fallbackLeague: league.name,
-        });
+        for (const ymd of dateYmds.slice(0, 3)) {
+          urlsToFetch.push({
+            url: `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${ymd}`,
+            fallbackLeague: league.name,
+          });
+        }
       }
     }
   } else {
@@ -896,83 +923,7 @@ export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promis
     })
   );
 
-  // Ensure Today's slate and overall upcoming match pool are always fully populated
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
-  const countToday = () =>
-    fixtures.filter((f) => {
-      const t = new Date(f.match_date).getTime();
-      return t >= now - 30 * 60 * 1000 && t >= todayStart.getTime() && t <= todayEnd.getTime();
-    }).length;
-
-  const minTotal = leagueFilter && leagueFilter !== 'All' ? 8 : 36;
-  const minToday = leagueFilter && leagueFilter !== 'All' ? 3 : 14;
-
-  if (fixtures.length < minTotal || countToday() < minToday) {
-    try {
-      const { getUpdatedDefaultPredictions } = await import('../data/mockPredictions.ts');
-      const defaults = getUpdatedDefaultPredictions();
-      for (const item of defaults) {
-        if (leagueFilter && leagueFilter !== 'All') {
-          const pL = (item.league || '').toLowerCase();
-          const tL = leagueFilter.toLowerCase();
-          const matchesLeague =
-            pL.includes(tL) ||
-            tL.includes(pL) ||
-            (tL === 'epl' && pL.includes('premier league')) ||
-            (tL === 'ucl' && pL.includes('champions league')) ||
-            (tL === 'kpl' && (pL.includes('kenya') || pL.includes('fkf') || pL === 'kpl'));
-          if (!matchesLeague) continue;
-        }
-        const mKey = `${item.home_team.toLowerCase()}_${item.away_team.toLowerCase()}_${String(item.match_date).slice(0, 10)}`;
-        const pairKey = `${item.home_team.toLowerCase()}_${item.away_team.toLowerCase()}`;
-        if (seenKeys.has(mKey) || seenKeys.has(pairKey)) continue;
-        seenKeys.add(mKey);
-        seenKeys.add(pairKey);
-
-        fixtures.push({
-          id: item.id,
-          match_id: item.match_id || `match-${item.id}`,
-          home_team: item.home_team,
-          away_team: item.away_team,
-          home_logo: item.home_logo || null,
-          away_logo: item.away_logo || null,
-          league: item.league,
-          match_date: item.match_date,
-          prediction: item.prediction || item.predicted_outcome || 'Home Win',
-          predicted_outcome: item.predicted_outcome || item.prediction || 'Home Win',
-          confidence: item.confidence ?? item.confidence_score ?? 76,
-          confidence_score: item.confidence_score ?? item.confidence ?? 76,
-          home_odds: item.home_odds ?? 1.95,
-          draw_odds: item.draw_odds ?? 3.4,
-          away_odds: item.away_odds ?? 3.6,
-          home_win_probability: item.home_win_probability ?? 48,
-          draw_probability: item.draw_probability ?? 27,
-          away_win_probability: item.away_win_probability ?? 25,
-          home_form: item.home_form,
-          away_form: item.away_form,
-          home_record: item.home_record,
-          away_record: item.away_record,
-          over_under_line: item.over_under_line,
-          sportsbook_line: item.sportsbook_line,
-          is_realtime: true,
-          analysis: item.analysis || `Official ${item.league} matchday fixture.`,
-          reasoning: item.reasoning || `Confirmed ${item.league} fixture.`,
-          is_premium: Boolean(item.is_premium),
-          status: 'pending',
-          venue: item.venue || 'Official Matchday Stadium',
-          created_at: item.created_at || new Date().toISOString(),
-          ai_model: item.ai_model || 'gemini-2.5-flash',
-        });
-      }
-    } catch {
-      // ignore fallback import error
-    }
-  }
-
-  // Sort upcoming chronologically
+  // Only return authentic ESPN / official API fixtures (no mockPredictions fallback)
   fixtures.sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
 
   if (!leagueFilter && fixtures.length > 0) {
@@ -1141,581 +1092,16 @@ export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> 
     })
   );
 
-  // Ensure the Live Match Center always has active in-play matches across global time zones
-  const currentInPlayCount = liveMatches.filter(
-    (m) => m.status === 'live' || m.status === 'halftime'
-  ).length;
-
-  if (currentInPlayCount < 6) {
-    const utcMin = new Date(now).getUTCMinutes();
-    const baseMin = (utcMin % 38) + 22; // Dynamic progressing clock between 22' and 59'
-    const lateMin = Math.min(89, (utcMin % 28) + 61); // Dynamic progressing clock between 61' and 89'
-    const isoNow = new Date(now).toISOString();
-    const todayDatePrefix = isoNow.slice(0, 10);
-
-    const TOP_LIVE_LEAGUES =
-      /premier league|la liga|serie a|bundesliga|ligue 1|champions league|europa league|nations league|caf|afcon|mls|saudi pro|eredivisie|primeira liga/i;
-
-    // Promote today's top real ESPN fixtures (which carry real numeric ESPN event IDs so /api/football?type=summary works)
-    const promotableCandidates = liveMatches
-      .filter(
-        (m) =>
-          m.status === 'upcoming' &&
-          /^live-\d+$/.test(m.id) &&
-          !/\bu21\b|\bu19\b|efl trophy/i.test(`${m.home_team} ${m.away_team} ${m.league}`)
-      )
-      .sort((a, b) => {
-        const aTop = TOP_LIVE_LEAGUES.test(a.league) ? 0 : 1;
-        const bTop = TOP_LIVE_LEAGUES.test(b.league) ? 0 : 1;
-        if (aTop !== bTop) return aTop - bTop;
-        const aToday = a.match_date.slice(0, 10) === todayDatePrefix ? 0 : 1;
-        const bToday = b.match_date.slice(0, 10) === todayDatePrefix ? 0 : 1;
-        if (aToday !== bToday) return aToday - bToday;
-        return b.confidence - a.confidence;
-      })
-      .slice(0, 6 - currentInPlayCount);
-
-    const liveClockPresets: Array<{
-      status: 'live' | 'halftime';
-      minute: number | string;
-      homeScore: number;
-      awayScore: number;
-      homePossession: number;
-      homeShots: number;
-      awayShots: number;
-      homeOnTarget: number;
-      awayOnTarget: number;
-      homeCorners: number;
-      awayCorners: number;
-    }> = [
-      { status: 'live', minute: lateMin, homeScore: 2, awayScore: 1, homePossession: 57, homeShots: 14, awayShots: 9, homeOnTarget: 6, awayOnTarget: 4, homeCorners: 7, awayCorners: 4 },
-      { status: 'live', minute: baseMin + 14, homeScore: 1, awayScore: 1, homePossession: 52, homeShots: 12, awayShots: 11, homeOnTarget: 5, awayOnTarget: 5, homeCorners: 6, awayCorners: 5 },
-      { status: 'halftime', minute: 'HT', homeScore: 1, awayScore: 0, homePossession: 55, homeShots: 9, awayShots: 4, homeOnTarget: 4, awayOnTarget: 1, homeCorners: 5, awayCorners: 2 },
-      { status: 'live', minute: Math.max(51, lateMin - 8), homeScore: 2, awayScore: 0, homePossession: 61, homeShots: 15, awayShots: 6, homeOnTarget: 7, awayOnTarget: 2, homeCorners: 8, awayCorners: 2 },
-      { status: 'live', minute: baseMin + 6, homeScore: 1, awayScore: 2, homePossession: 46, homeShots: 8, awayShots: 13, homeOnTarget: 3, awayOnTarget: 6, homeCorners: 4, awayCorners: 6 },
-      { status: 'live', minute: baseMin + 18, homeScore: 1, awayScore: 0, homePossession: 54, homeShots: 10, awayShots: 5, homeOnTarget: 4, awayOnTarget: 2, homeCorners: 5, awayCorners: 3 },
-    ];
-
-    const getClubKeyPlayers = (clubName: string): [string, string, string] => {
-      const c = clubName.toLowerCase();
-      if (c.includes('paris saint-germain') || c.includes('psg')) return ['Ousmane Dembélé', 'Bradley Barcola', 'Vitinha'];
-      if (c.includes('bayern')) return ['Harry Kane', 'Jamal Musiala', 'Michael Olise'];
-      if (c.includes('inter') || c.includes('internazionale')) return ['Lautaro Martínez', 'Marcus Thuram', 'Nicolò Barella'];
-      if (c.includes('manchester city') || c.includes('man city')) return ['Erling Haaland', 'Phil Foden', 'Savinho'];
-      if (c.includes('real madrid')) return ['Kylian Mbappé', 'Vinícius Jr', 'Jude Bellingham'];
-      if (c.includes('barcelona')) return ['Robert Lewandowski', 'Lamine Yamal', 'Raphinha'];
-      if (c.includes('chelsea')) return ['Cole Palmer', 'Nicolas Jackson', 'Noni Madueke'];
-      if (c.includes('arsenal')) return ['Bukayo Saka', 'Kai Havertz', 'Martin Ødegaard'];
-      if (c.includes('liverpool')) return ['Mohamed Salah', 'Luis Díaz', 'Dominik Szoboszlai'];
-      if (c.includes('juventus')) return ['Dušan Vlahović', 'Kenan Yıldız', 'Teun Koopmeiners'];
-      if (c.includes('dortmund')) return ['Serhou Guirassy', 'Jamie Gittens', 'Julian Brandt'];
-      if (c.includes('atletico') || c.includes('atlético')) return ['Julián Alvarez', 'Antoine Griezmann', 'Alexander Sørloth'];
-      if (c.includes('milan')) return ['Christian Pulisic', 'Rafael Leão', 'Tijjani Reijnders'];
-      if (c.includes('napoli')) return ['Romelu Lukaku', 'Khvicha Kvaratskhelia', 'Scott McTominay'];
-      if (c.includes('leverkusen')) return ['Florian Wirtz', 'Victor Boniface', 'Alejandro Grimaldo'];
-      if (c.includes('sporting')) return ['Viktor Gyökeres', 'Francisco Trincão', 'Pedro Gonçalves'];
-      if (c.includes('manchester united') || c.includes('man utd')) return ['Bruno Fernandes', 'Amad Diallo', 'Rasmus Højlund'];
-      if (c.includes('tottenham') || c.includes('spurs')) return ['Son Heung-Min', 'Dominic Solanke', 'James Maddison'];
-      const short = clubName.replace(/\b(FC|CF|SC|AC|AS|BK|CD|UD|SK|FK)\b/gi, '').trim() || clubName;
-      return [`${short} #9`, `${short} #10`, `${short} #7`];
-    };
-
-    promotableCandidates.forEach((cand, idx) => {
-      const preset = liveClockPresets[idx % liveClockPresets.length];
-      cand.status = preset.status;
-      cand.minute = preset.minute;
-      cand.home_score = preset.homeScore;
-      cand.away_score = preset.awayScore;
-      cand.match_stats = {
-        homePossession: preset.homePossession,
-        awayPossession: 100 - preset.homePossession,
-        homeShots: preset.homeShots,
-        awayShots: preset.awayShots,
-        homeOnTarget: preset.homeOnTarget,
-        awayOnTarget: preset.awayOnTarget,
-        homeCorners: preset.homeCorners,
-        awayCorners: preset.awayCorners,
-        homeFouls: 8 + (idx % 4),
-        awayFouls: 10 + (idx % 3),
-        homeShotAssists: Math.max(3, preset.homeShots - 3),
-        awayShotAssists: Math.max(2, preset.awayShots - 2),
-      };
-      if (!cand.match_events || cand.match_events.length === 0) {
-        const [hScorer1, hScorer2, hAssist] = getClubKeyPlayers(cand.home_team);
-        const [aScorer1, aScorer2, aAssist] = getClubKeyPlayers(cand.away_team);
-        const events: ServerMatchEvent[] = [];
-        if (preset.homeScore >= 1) {
-          events.push({
-            minute: "19'",
-            type: 'goal',
-            team: 'home',
-            teamName: cand.home_team,
-            player: hScorer1,
-            detailText: `Assist: ${hAssist}`,
-            text: `⚽ ${hScorer1} (Assist: ${hAssist})`,
-          });
-        }
-        if (preset.awayScore >= 1) {
-          events.push({
-            minute: "34'",
-            type: 'goal',
-            team: 'away',
-            teamName: cand.away_team,
-            player: aScorer1,
-            detailText: `Assist: ${aAssist}`,
-            text: `⚽ ${aScorer1} (Assist: ${aAssist})`,
-          });
-        }
-        if (preset.homeScore >= 2) {
-          events.push({
-            minute: "56'",
-            type: 'goal',
-            team: 'home',
-            teamName: cand.home_team,
-            player: hScorer2,
-            detailText: 'Driven finish inside box',
-            text: `⚽ ${hScorer2} (56')`,
-          });
-        }
-        if (preset.awayScore >= 2) {
-          events.push({
-            minute: "62'",
-            type: 'goal',
-            team: 'away',
-            teamName: cand.away_team,
-            player: aScorer2,
-            detailText: 'Curled effort from edge of box',
-            text: `⚽ ${aScorer2} (62')`,
-          });
-        }
-        cand.match_events = events;
-      }
-    });
-
-    const updatedInPlayCount = liveMatches.filter(
-      (m) => m.status === 'live' || m.status === 'halftime'
-    ).length;
-
-    const supplementalInPlay: RawFootballLiveMatch[] = updatedInPlayCount >= 6 ? [] : [
-      {
-        id: 'live-epl-ars-che',
-        home_team: 'Arsenal',
-        away_team: 'Chelsea',
-        home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/359.png',
-        away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/363.png',
-        league: 'Premier League',
-        match_date: isoNow,
-        status: 'live',
-        minute: lateMin,
-        home_score: 2,
-        away_score: 1,
-        prediction: 'Home Win',
-        confidence: 86,
-        home_odds: 1.42,
-        draw_odds: 4.50,
-        away_odds: 7.20,
-        home_odds_open: 1.78,
-        draw_odds_open: 3.75,
-        away_odds_open: 4.40,
-        odds_movement_pct: -20.2,
-        clv_edge_pct: 6.4,
-        home_form: 'WWWDW',
-        away_form: 'WDWLD',
-        home_record: '19-5-3',
-        away_record: '14-7-6',
-        venue: 'Emirates Stadium, London',
-        over_under_line: 3.5,
-        sportsbook_line: 'ARS -1.25',
-        match_events: [
-          { minute: "18'", type: 'goal', team: 'home', teamName: 'Arsenal', player: 'Bukayo Saka', detailText: 'Assist: M. Odegaard', text: '⚽ Bukayo Saka (Assist: M. Odegaard)' },
-          { minute: "34'", type: 'card', team: 'away', teamName: 'Chelsea', player: 'Moises Caicedo', detailText: 'Yellow Card', text: '🟨 Moises Caicedo (Tactical Foul)' },
-          { minute: "41'", type: 'goal', team: 'away', teamName: 'Chelsea', player: 'Cole Palmer', detailText: 'Left-footed shot', text: '⚽ Cole Palmer (Assist: E. Fernandez)' },
-          { minute: "58'", type: 'goal', team: 'home', teamName: 'Arsenal', player: 'Kai Havertz', detailText: 'Header from 6 yards', text: '⚽ Kai Havertz (Assist: D. Rice)' },
-          { minute: "64'", type: 'sub', team: 'away', teamName: 'Chelsea', player: 'Christopher Nkunku', detailText: 'Replaces N. Madueke', text: '🔄 C. Nkunku IN · N. Madueke OUT' },
-        ],
-        match_stats: {
-          homePossession: 58,
-          awayPossession: 42,
-          homeShots: 15,
-          awayShots: 9,
-          homeOnTarget: 7,
-          awayOnTarget: 4,
-          homeCorners: 7,
-          awayCorners: 3,
-          homeFouls: 9,
-          awayFouls: 12,
-          homeShotAssists: 12,
-          awayShotAssists: 7,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-laliga-rma-bar',
-        home_team: 'Real Madrid',
-        away_team: 'Barcelona',
-        home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/86.png',
-        away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/83.png',
-        league: 'La Liga',
-        match_date: isoNow,
-        status: 'live',
-        minute: baseMin + 14,
-        home_score: 1,
-        away_score: 1,
-        prediction: 'Over 2.5 Goals',
-        confidence: 88,
-        home_odds: 2.15,
-        draw_odds: 3.25,
-        away_odds: 3.40,
-        home_odds_open: 2.05,
-        draw_odds_open: 3.60,
-        away_odds_open: 3.50,
-        odds_movement_pct: 4.8,
-        clv_edge_pct: 5.1,
-        home_form: 'WWWWL',
-        away_form: 'WWDWW',
-        home_record: '21-4-2',
-        away_record: '20-4-3',
-        venue: 'Santiago Bernabéu, Madrid',
-        over_under_line: 3.5,
-        sportsbook_line: 'RMA -0.25',
-        match_events: [
-          { minute: "14'", type: 'goal', team: 'away', teamName: 'Barcelona', player: 'Lamine Yamal', detailText: 'Curled top corner', text: '⚽ Lamine Yamal (Assist: Pedri)' },
-          { minute: "29'", type: 'penalty', team: 'home', teamName: 'Real Madrid', player: 'Kylian Mbappé', detailText: 'Penalty converted', text: '⚽ Kylian Mbappé (Penalty)' },
-          { minute: "37'", type: 'card', team: 'away', teamName: 'Barcelona', player: 'Ronald Araújo', detailText: 'Yellow Card', text: '🟨 Ronald Araújo' },
-        ],
-        match_stats: {
-          homePossession: 49,
-          awayPossession: 51,
-          homeShots: 13,
-          awayShots: 12,
-          homeOnTarget: 6,
-          awayOnTarget: 5,
-          homeCorners: 6,
-          awayCorners: 5,
-          homeFouls: 10,
-          awayFouls: 11,
-          homeShotAssists: 10,
-          awayShotAssists: 9,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-seriea-int-juv',
-        home_team: 'Inter Milan',
-        away_team: 'Juventus',
-        home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/110.png',
-        away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/111.png',
-        league: 'Serie A',
-        match_date: isoNow,
-        status: 'halftime',
-        minute: 'HT',
-        home_score: 1,
-        away_score: 0,
-        prediction: 'Home Win',
-        confidence: 82,
-        home_odds: 1.55,
-        draw_odds: 3.80,
-        away_odds: 6.10,
-        home_odds_open: 1.85,
-        draw_odds_open: 3.45,
-        away_odds_open: 4.50,
-        odds_movement_pct: -16.2,
-        clv_edge_pct: 4.8,
-        home_form: 'WWWWW',
-        away_form: 'DWWDD',
-        home_record: '22-3-2',
-        away_record: '16-9-2',
-        venue: 'San Siro, Milan',
-        over_under_line: 2.5,
-        sportsbook_line: 'INT -0.75',
-        match_events: [
-          { minute: "27'", type: 'goal', team: 'home', teamName: 'Inter Milan', player: 'Lautaro Martínez', detailText: 'Near-post finish', text: '⚽ Lautaro Martínez (Assist: N. Barella)' },
-          { minute: "42'", type: 'card', team: 'away', teamName: 'Juventus', player: 'Manuel Locatelli', detailText: 'Yellow Card', text: '🟨 Manuel Locatelli' },
-        ],
-        match_stats: {
-          homePossession: 54,
-          awayPossession: 46,
-          homeShots: 9,
-          awayShots: 4,
-          homeOnTarget: 4,
-          awayOnTarget: 1,
-          homeCorners: 5,
-          awayCorners: 2,
-          homeFouls: 6,
-          awayFouls: 8,
-          homeShotAssists: 7,
-          awayShotAssists: 3,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-bundesliga-bay-bvb',
-        home_team: 'Bayern Munich',
-        away_team: 'Borussia Dortmund',
-        home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/132.png',
-        away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/124.png',
-        league: 'Bundesliga',
-        match_date: isoNow,
-        status: 'live',
-        minute: lateMin - 8,
-        home_score: 3,
-        away_score: 1,
-        prediction: 'Home Win',
-        confidence: 89,
-        home_odds: 1.18,
-        draw_odds: 7.40,
-        away_odds: 13.00,
-        home_odds_open: 1.52,
-        draw_odds_open: 4.60,
-        away_odds_open: 5.50,
-        odds_movement_pct: -22.4,
-        clv_edge_pct: 7.2,
-        home_form: 'WWWDW',
-        away_form: 'WLWWL',
-        home_record: '20-4-3',
-        away_record: '15-5-7',
-        venue: 'Allianz Arena, Munich',
-        over_under_line: 4.5,
-        sportsbook_line: 'BAY -1.75',
-        match_events: [
-          { minute: "11'", type: 'goal', team: 'home', teamName: 'Bayern Munich', player: 'Harry Kane', detailText: 'Right-footed strike', text: '⚽ Harry Kane (Assist: J. Musiala)' },
-          { minute: "24'", type: 'goal', team: 'away', teamName: 'Borussia Dortmund', player: 'Serhou Guirassy', detailText: 'Header', text: '⚽ Serhou Guirassy (Assist: J. Brandt)' },
-          { minute: "49'", type: 'goal', team: 'home', teamName: 'Bayern Munich', player: 'Jamal Musiala', detailText: 'Solo dribble finish', text: '⚽ Jamal Musiala (Assist: M. Olise)' },
-          { minute: "61'", type: 'red_card', team: 'away', teamName: 'Borussia Dortmund', player: 'Emre Can', detailText: 'Second Yellow / Red Card', text: '🟥 Emre Can (Sent Off)' },
-          { minute: "66'", type: 'goal', team: 'home', teamName: 'Bayern Munich', player: 'Harry Kane', detailText: 'Brace completed', text: '⚽ Harry Kane (Assist: J. Kimmich)' },
-        ],
-        match_stats: {
-          homePossession: 66,
-          awayPossession: 34,
-          homeShots: 19,
-          awayShots: 6,
-          homeOnTarget: 9,
-          awayOnTarget: 3,
-          homeCorners: 9,
-          awayCorners: 2,
-          homeFouls: 7,
-          awayFouls: 14,
-          homeShotAssists: 15,
-          awayShotAssists: 4,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-caf-ahl-pir',
-        home_team: 'Al Ahly SC',
-        away_team: 'Orlando Pirates',
-        home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/10256.png',
-        away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/4153.png',
-        league: 'CAF Champions League',
-        match_date: isoNow,
-        status: 'live',
-        minute: baseMin + 6,
-        home_score: 1,
-        away_score: 0,
-        prediction: 'Home Win',
-        confidence: 84,
-        home_odds: 1.50,
-        draw_odds: 3.70,
-        away_odds: 6.80,
-        home_odds_open: 1.72,
-        draw_odds_open: 3.40,
-        away_odds_open: 5.10,
-        odds_movement_pct: -12.8,
-        clv_edge_pct: 5.5,
-        home_form: 'WWWDW',
-        away_form: 'WDWWL',
-        home_record: '14-3-1',
-        away_record: '12-4-2',
-        venue: 'Cairo International Stadium',
-        over_under_line: 2.5,
-        sportsbook_line: 'AHL -1.0',
-        match_events: [
-          { minute: "21'", type: 'goal', team: 'home', teamName: 'Al Ahly SC', player: 'Wessam Abou Ali', detailText: 'Direct Free Kick', text: '⚽ Wessam Abou Ali (Direct Free Kick)' },
-          { minute: "35'", type: 'card', team: 'away', teamName: 'Orlando Pirates', player: 'Thalente Mbatha', detailText: 'Yellow Card', text: '🟨 Thalente Mbatha' },
-        ],
-        match_stats: {
-          homePossession: 61,
-          awayPossession: 39,
-          homeShots: 11,
-          awayShots: 5,
-          homeOnTarget: 5,
-          awayOnTarget: 2,
-          homeCorners: 6,
-          awayCorners: 2,
-          homeFouls: 8,
-          awayFouls: 11,
-          homeShotAssists: 9,
-          awayShotAssists: 4,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-kpl-gor-afc',
-        home_team: 'Gor Mahia',
-        away_team: 'AFC Leopards',
-        home_logo: null,
-        away_logo: null,
-        league: 'Kenyan Premier League',
-        match_date: isoNow,
-        status: 'live',
-        minute: baseMin + 19,
-        home_score: 2,
-        away_score: 0,
-        prediction: 'Home Win',
-        confidence: 85,
-        home_odds: 1.36,
-        draw_odds: 4.30,
-        away_odds: 8.50,
-        home_odds_open: 1.80,
-        draw_odds_open: 3.30,
-        away_odds_open: 4.70,
-        odds_movement_pct: -24.4,
-        clv_edge_pct: 6.1,
-        home_form: 'WWWWL',
-        away_form: 'DWLWD',
-        home_record: '17-6-2',
-        away_record: '11-8-6',
-        venue: 'Nyayo National Stadium, Nairobi',
-        over_under_line: 2.5,
-        sportsbook_line: 'GOR -1.25',
-        match_events: [
-          { minute: "16'", type: 'goal', team: 'home', teamName: 'Gor Mahia', player: 'Austin Odhiambo', detailText: 'Low drive inside box', text: '⚽ Austin Odhiambo (Assist: S. Kapaito)' },
-          { minute: "44'", type: 'goal', team: 'home', teamName: 'Gor Mahia', player: 'Benson Omala', detailText: 'Counter-attack finish', text: '⚽ Benson Omala (Assist: A. Onyango)' },
-        ],
-        match_stats: {
-          homePossession: 57,
-          awayPossession: 43,
-          homeShots: 12,
-          awayShots: 6,
-          homeOnTarget: 6,
-          awayOnTarget: 2,
-          homeCorners: 5,
-          awayCorners: 3,
-          homeFouls: 9,
-          awayFouls: 13,
-          homeShotAssists: 9,
-          awayShotAssists: 4,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-psl-sun-kzc',
-        home_team: 'Mamelodi Sundowns',
-        away_team: 'Kaizer Chiefs',
-        home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/4151.png',
-        away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/4152.png',
-        league: 'South Africa PSL',
-        match_date: isoNow,
-        status: 'live',
-        minute: baseMin,
-        home_score: 1,
-        away_score: 1,
-        prediction: 'Home Win',
-        confidence: 83,
-        home_odds: 1.65,
-        draw_odds: 3.55,
-        away_odds: 5.40,
-        home_odds_open: 1.58,
-        draw_odds_open: 3.75,
-        away_odds_open: 5.80,
-        odds_movement_pct: 4.4,
-        clv_edge_pct: 4.9,
-        home_form: 'WWWWW',
-        away_form: 'WDLWD',
-        home_record: '18-4-0',
-        away_record: '10-6-6',
-        venue: 'Loftus Versfeld Stadium, Pretoria',
-        over_under_line: 2.5,
-        sportsbook_line: 'SUN -0.75',
-        match_events: [
-          { minute: "9'", type: 'goal', team: 'home', teamName: 'Mamelodi Sundowns', player: 'Lucas Ribeiro', detailText: 'Left-footed curler', text: '⚽ Lucas Ribeiro (Assist: T.okoena)' },
-          { minute: "23'", type: 'goal', team: 'away', teamName: 'Kaizer Chiefs', player: 'Mduduzi Shabalala', detailText: 'Fast break equalizer', text: '⚽ Mduduzi Shabalala' },
-        ],
-        match_stats: {
-          homePossession: 64,
-          awayPossession: 36,
-          homeShots: 10,
-          awayShots: 4,
-          homeOnTarget: 5,
-          awayOnTarget: 2,
-          homeCorners: 6,
-          awayCorners: 1,
-          homeFouls: 6,
-          awayFouls: 10,
-          homeShotAssists: 8,
-          awayShotAssists: 3,
-        },
-        is_realtime: true,
-      },
-      {
-        id: 'live-npfl-eny-ran',
-        home_team: 'Enyimba FC',
-        away_team: 'Enugu Rangers',
-        home_logo: null,
-        away_logo: null,
-        league: 'Nigeria NPFL',
-        match_date: isoNow,
-        status: 'live',
-        minute: lateMin - 12,
-        home_score: 1,
-        away_score: 0,
-        prediction: 'Home Win',
-        confidence: 80,
-        home_odds: 1.60,
-        draw_odds: 3.40,
-        away_odds: 6.20,
-        home_odds_open: 1.90,
-        draw_odds_open: 3.20,
-        away_odds_open: 4.30,
-        odds_movement_pct: -15.8,
-        clv_edge_pct: 4.5,
-        home_form: 'WWDWL',
-        away_form: 'WDWWL',
-        home_record: '15-6-5',
-        away_record: '14-7-5',
-        venue: 'Enyimba International Stadium, Aba',
-        over_under_line: 2.5,
-        sportsbook_line: 'ENY -0.75',
-        match_events: [
-          { minute: "38'", type: 'goal', team: 'home', teamName: 'Enyimba FC', player: 'Chijioke Mbaoma', detailText: 'Penalty Box Volley', text: '⚽ Chijioke Mbaoma (38\')' },
-        ],
-        match_stats: {
-          homePossession: 56,
-          awayPossession: 44,
-          homeShots: 11,
-          awayShots: 5,
-          homeOnTarget: 4,
-          awayOnTarget: 2,
-          homeCorners: 5,
-          awayCorners: 2,
-          homeFouls: 11,
-          awayFouls: 12,
-          homeShotAssists: 8,
-          awayShotAssists: 4,
-        },
-        is_realtime: true,
-      },
-    ];
-
-    for (const sup of supplementalInPlay) {
-      const key = `${sup.home_team.toLowerCase()}_${sup.away_team.toLowerCase()}`;
-      const alreadyExists = liveMatches.some(
-        (m) =>
-          `${m.home_team.toLowerCase()}_${m.away_team.toLowerCase()}` === key &&
-          (m.status === 'live' || m.status === 'halftime')
-      );
-      if (!alreadyExists) {
-        liveMatches.unshift(sup);
-      }
-    }
-  }
-
-  // Sort: live/halftime first, then today's upcoming, then recent finished with real match events
+  // Strictly preserve truthful ESPN statuses: never fabricate fake live scores or inject fake derbies.
+  // Sort: genuine live/halftime first, then today's real upcoming kickoffs, then recent finished results.
   liveMatches.sort((a, b) => {
     const rank = (s: RawFootballLiveMatch['status']) =>
       s === 'live' || s === 'halftime' ? 0 : s === 'upcoming' ? 1 : 2;
     const rDiff = rank(a.status) - rank(b.status);
     if (rDiff !== 0) return rDiff;
+    if (a.status === 'finished' && b.status === 'finished') {
+      return new Date(b.match_date).getTime() - new Date(a.match_date).getTime();
+    }
     return new Date(a.match_date).getTime() - new Date(b.match_date).getTime();
   });
 
@@ -2182,76 +1568,38 @@ export async function fetchServerNews(leagueParam = 'EPL') {
   }
 
   if (articles.length < 6) {
-    const fallbackNews = [
-      {
-        id: 'news-fb-1',
-        headline: 'Pre-Match Medical Briefing: Late Fitness Tests Ahead of Weekend Derbies',
-        description:
-          'Club medical staffs confirm key midfield and attacking starters underwent final training assessments ahead of matchday lock.',
-        published: new Date(now - 35 * 60_000).toISOString(),
-        category: 'Injury Update' as const,
-        league: leagueParam,
-        teamTag: 'Premier League',
-        impactLevel: 'High' as const,
-      },
-      {
-        id: 'news-fb-2',
-        headline: 'Tactical Pressing & High-Line xG Shifts Across European Matchweek',
-        description:
-          'High-line defensive structures have increased Over 2.5 Goals and BTTS hit rates by 14.2% across top-flight fixtures this month.',
-        published: new Date(now - 95 * 60_000).toISOString(),
-        category: 'Tactical Preview' as const,
-        league: leagueParam,
-        teamTag: 'UEFA Champions League',
-        impactLevel: 'Medium' as const,
-      },
-      {
-        id: 'news-fb-3',
-        headline: 'Squad Rotation Alert: Domestic & Continental Fixture Congestion Impact',
-        description:
-          'Managers confirm strategic wing-back and striker rotation following midweek travel, creating value in second-half goal markets.',
-        published: new Date(now - 160 * 60_000).toISOString(),
-        category: 'Press Conference' as const,
-        league: leagueParam,
-        teamTag: 'La Liga',
-        impactLevel: 'High' as const,
-      },
-      {
-        id: 'news-fb-4',
-        headline: 'Set-Piece Efficiency Surge: Corner & Aerial xG Leaders Updated',
-        description:
-          'Arsenal, Inter Milan, and Bayer Leverkusen lead European top flights in dead-ball expected goals per 90 minutes.',
-        published: new Date(now - 240 * 60_000).toISOString(),
-        category: 'Tactical Preview' as const,
-        league: leagueParam,
-        teamTag: 'Serie A',
-        impactLevel: 'Medium' as const,
-      },
-      {
-        id: 'news-fb-5',
-        headline: 'Referee Committee Appointments Confirmed for High-Stakes Clash Slate',
-        description:
-          'Match officials with above-average disciplinary card metrics assigned to three top-six fixtures this round.',
-        published: new Date(now - 310 * 60_000).toISOString(),
-        category: 'Transfer & Squad' as const,
-        league: leagueParam,
-        teamTag: 'Bundesliga',
-        impactLevel: 'High' as const,
-      },
-      {
-        id: 'news-fb-6',
-        headline: 'CAF & FKF Premier League Matchday Squad Declarations Released',
-        description:
-          'Gor Mahia, Al Ahly, and Mamelodi Sundowns confirm full attacking availability ahead of decisive league and continental ties.',
-        published: new Date(now - 400 * 60_000).toISOString(),
-        category: 'Injury Update' as const,
-        league: leagueParam,
-        teamTag: 'AFCON / KPL',
-        impactLevel: 'Medium' as const,
-      },
-    ];
-    for (const item of fallbackNews) {
-      if (articles.length < 8) articles.push(item);
+    // Supplement from other real ESPN global news feeds (UEFA Champions League, La Liga, Serie A) before any fallback
+    const extraCodes = ['uefa.champions', 'esp.1', 'ita.1', 'ger.1'].filter((c) => c !== espnCode);
+    for (const altCode of extraCodes) {
+      if (articles.length >= 8) break;
+      try {
+        const res = await fetchWithBrowserSafeTimeout(
+          `https://site.api.espn.com/apis/site/v2/sports/soccer/${altCode}/news?limit=4`,
+          3000
+        );
+        if (!res.ok) continue;
+        const json = await res.json();
+        const rawArticles = (json.articles as Array<Record<string, any>>) || [];
+        for (const a of rawArticles) {
+          const headline = String(a.headline || '').trim();
+          if (!headline || articles.some((x) => x.headline === headline)) continue;
+          const desc = String(a.description || a.story || headline).trim();
+          const teamCat = (a.categories as Array<Record<string, any>>)?.find((c) => c.type === 'team');
+          articles.push({
+            id: String(a.id || `espn-news-${articles.length}`),
+            headline,
+            description: desc.slice(0, 220),
+            published: a.published ? new Date(a.published).toISOString() : new Date().toISOString(),
+            category: /injur|doubt|fit|out/i.test(headline + desc) ? 'Injury Update' : 'Tactical Preview',
+            league: altCode === 'uefa.champions' ? 'Champions League' : altCode === 'esp.1' ? 'La Liga' : altCode === 'ita.1' ? 'Serie A' : 'Bundesliga',
+            teamTag: String(teamCat?.description || leagueParam),
+            sourceUrl: a.links?.web?.href,
+            impactLevel: 'Medium',
+          });
+        }
+      } catch {
+        // continue
+      }
     }
   }
 
@@ -2268,143 +1616,150 @@ export async function fetchServerLeaders(leagueParam = 'EPL') {
     return hit.data;
   }
 
-  const curatedByLeague: Record<
-    string,
-    Array<{
-      rank: number;
-      player: string;
-      team: string;
-      league: string;
-      position: string;
-      matches: number;
-      goals: number;
-      assists: number;
-      shotsOnTargetPer90: number;
-      xgPer90: number;
-      anytimeScorerOdds: number;
-      onePlusSotOdds: number;
-      twoPlusSotOdds: number;
-    }>
-  > = {
-    'eng.1': [
-      { rank: 1, player: 'Erling Haaland', team: 'Manchester City', league: 'Premier League', position: 'ST', matches: 27, goals: 24, assists: 5, shotsOnTargetPer90: 2.45, xgPer90: 0.89, anytimeScorerOdds: 1.62, onePlusSotOdds: 1.22, twoPlusSotOdds: 1.85 },
-      { rank: 2, player: 'Mohamed Salah', team: 'Liverpool', league: 'Premier League', position: 'RW', matches: 28, goals: 21, assists: 13, shotsOnTargetPer90: 1.98, xgPer90: 0.72, anytimeScorerOdds: 1.95, onePlusSotOdds: 1.30, twoPlusSotOdds: 2.15 },
-      { rank: 3, player: 'Cole Palmer', team: 'Chelsea', league: 'Premier League', position: 'AM', matches: 28, goals: 18, assists: 10, shotsOnTargetPer90: 1.76, xgPer90: 0.61, anytimeScorerOdds: 2.20, onePlusSotOdds: 1.36, twoPlusSotOdds: 2.40 },
-      { rank: 4, player: 'Alexander Isak', team: 'Newcastle United', league: 'Premier League', position: 'ST', matches: 25, goals: 17, assists: 4, shotsOnTargetPer90: 1.84, xgPer90: 0.68, anytimeScorerOdds: 2.05, onePlusSotOdds: 1.33, twoPlusSotOdds: 2.25 },
-      { rank: 5, player: 'Bukayo Saka', team: 'Arsenal', league: 'Premier League', position: 'RW', matches: 26, goals: 15, assists: 11, shotsOnTargetPer90: 1.58, xgPer90: 0.54, anytimeScorerOdds: 2.45, onePlusSotOdds: 1.42, twoPlusSotOdds: 2.65 },
-      { rank: 6, player: 'Ollie Watkins', team: 'Aston Villa', league: 'Premier League', position: 'ST', matches: 28, goals: 15, assists: 9, shotsOnTargetPer90: 1.62, xgPer90: 0.58, anytimeScorerOdds: 2.35, onePlusSotOdds: 1.40, twoPlusSotOdds: 2.55 },
-    ],
-    'esp.1': [
-      { rank: 1, player: 'Kylian Mbappé', team: 'Real Madrid', league: 'La Liga', position: 'ST', matches: 27, goals: 23, assists: 6, shotsOnTargetPer90: 2.52, xgPer90: 0.86, anytimeScorerOdds: 1.68, onePlusSotOdds: 1.20, twoPlusSotOdds: 1.80 },
-      { rank: 2, player: 'Robert Lewandowski', team: 'Barcelona', league: 'La Liga', position: 'ST', matches: 27, goals: 21, assists: 4, shotsOnTargetPer90: 2.10, xgPer90: 0.78, anytimeScorerOdds: 1.82, onePlusSotOdds: 1.28, twoPlusSotOdds: 2.05 },
-      { rank: 3, player: 'Vinícius Júnior', team: 'Real Madrid', league: 'La Liga', position: 'LW', matches: 25, goals: 16, assists: 10, shotsOnTargetPer90: 1.80, xgPer90: 0.62, anytimeScorerOdds: 2.15, onePlusSotOdds: 1.35, twoPlusSotOdds: 2.30 },
-      { rank: 4, player: 'Raphinha', team: 'Barcelona', league: 'La Liga', position: 'RW', matches: 26, goals: 15, assists: 12, shotsOnTargetPer90: 1.72, xgPer90: 0.57, anytimeScorerOdds: 2.30, onePlusSotOdds: 1.38, twoPlusSotOdds: 2.45 },
-      { rank: 5, player: 'Julián Álvarez', team: 'Atlético Madrid', league: 'La Liga', position: 'ST', matches: 27, goals: 15, assists: 5, shotsOnTargetPer90: 1.55, xgPer90: 0.53, anytimeScorerOdds: 2.40, onePlusSotOdds: 1.44, twoPlusSotOdds: 2.70 },
-    ],
-    'ita.1': [
-      { rank: 1, player: 'Lautaro Martínez', team: 'Inter Milan', league: 'Serie A', position: 'ST', matches: 27, goals: 20, assists: 5, shotsOnTargetPer90: 2.05, xgPer90: 0.74, anytimeScorerOdds: 1.88, onePlusSotOdds: 1.28, twoPlusSotOdds: 2.10 },
-      { rank: 2, player: 'Mateo Retegui', team: 'Atalanta', league: 'Serie A', position: 'ST', matches: 27, goals: 19, assists: 4, shotsOnTargetPer90: 1.88, xgPer90: 0.69, anytimeScorerOdds: 1.98, onePlusSotOdds: 1.32, twoPlusSotOdds: 2.22 },
-      { rank: 3, player: 'Marcus Thuram', team: 'Inter Milan', league: 'Serie A', position: 'ST', matches: 27, goals: 15, assists: 8, shotsOnTargetPer90: 1.60, xgPer90: 0.56, anytimeScorerOdds: 2.30, onePlusSotOdds: 1.40, twoPlusSotOdds: 2.55 },
-      { rank: 4, player: 'Christian Pulisic', team: 'AC Milan', league: 'Serie A', position: 'RW', matches: 26, goals: 13, assists: 9, shotsOnTargetPer90: 1.48, xgPer90: 0.49, anytimeScorerOdds: 2.65, onePlusSotOdds: 1.48, twoPlusSotOdds: 2.85 },
-    ],
-    'ger.1': [
-      { rank: 1, player: 'Harry Kane', team: 'Bayern Munich', league: 'Bundesliga', position: 'ST', matches: 26, goals: 26, assists: 8, shotsOnTargetPer90: 2.60, xgPer90: 0.92, anytimeScorerOdds: 1.55, onePlusSotOdds: 1.18, twoPlusSotOdds: 1.72 },
-      { rank: 2, player: 'Florian Wirtz', team: 'Bayer Leverkusen', league: 'Bundesliga', position: 'AM', matches: 26, goals: 14, assists: 13, shotsOnTargetPer90: 1.65, xgPer90: 0.52, anytimeScorerOdds: 2.50, onePlusSotOdds: 1.40, twoPlusSotOdds: 2.55 },
-      { rank: 3, player: 'Jamal Musiala', team: 'Bayern Munich', league: 'Bundesliga', position: 'AM', matches: 25, goals: 15, assists: 9, shotsOnTargetPer90: 1.78, xgPer90: 0.58, anytimeScorerOdds: 2.25, onePlusSotOdds: 1.35, twoPlusSotOdds: 2.35 },
-      { rank: 4, player: 'Serhou Guirassy', team: 'Borussia Dortmund', league: 'Bundesliga', position: 'ST', matches: 24, goals: 17, assists: 3, shotsOnTargetPer90: 1.92, xgPer90: 0.71, anytimeScorerOdds: 1.95, onePlusSotOdds: 1.30, twoPlusSotOdds: 2.15 },
-    ],
-    'uefa.champions': [
-      { rank: 1, player: 'Erling Haaland', team: 'Manchester City', league: 'Champions League', position: 'ST', matches: 10, goals: 10, assists: 2, shotsOnTargetPer90: 2.55, xgPer90: 0.91, anytimeScorerOdds: 1.65, onePlusSotOdds: 1.22, twoPlusSotOdds: 1.82 },
-      { rank: 2, player: 'Harry Kane', team: 'Bayern Munich', league: 'Champions League', position: 'ST', matches: 10, goals: 9, assists: 3, shotsOnTargetPer90: 2.35, xgPer90: 0.84, anytimeScorerOdds: 1.75, onePlusSotOdds: 1.25, twoPlusSotOdds: 1.92 },
-      { rank: 3, player: 'Vinícius Júnior', team: 'Real Madrid', league: 'Champions League', position: 'LW', matches: 10, goals: 8, assists: 5, shotsOnTargetPer90: 1.95, xgPer90: 0.67, anytimeScorerOdds: 2.05, onePlusSotOdds: 1.32, twoPlusSotOdds: 2.20 },
-      { rank: 4, player: 'Raphinha', team: 'Barcelona', league: 'Champions League', position: 'RW', matches: 10, goals: 8, assists: 6, shotsOnTargetPer90: 1.88, xgPer90: 0.63, anytimeScorerOdds: 2.15, onePlusSotOdds: 1.35, twoPlusSotOdds: 2.30 },
-    ],
-  };
+  // Try fetching authentic ESPN league scoring leaders first
+  try {
+    const res = await fetchWithBrowserSafeTimeout(
+      `https://site.api.espn.com/apis/site/v2/sports/soccer/${espnCode}/leaders`,
+      3800
+    );
+    if (res.ok) {
+      const json = await res.json();
+      const categories = (json.leaders as Array<Record<string, any>>) || (json.categories as Array<Record<string, any>>) || [];
+      const goalCat = categories.find((c) => /goal|scor/i.test(String(c.name || c.displayName || ''))) || categories[0];
+      const entries = (goalCat?.leaders as Array<Record<string, any>>) || [];
+      if (entries.length > 0) {
+        const rows = entries.slice(0, 12).map((entry: Record<string, any>, idx: number) => {
+          const athlete = entry.athlete || {};
+          const teamName = String(entry.team?.displayName || athlete.team?.displayName || 'Club');
+          const goals = Number(entry.value ?? 0);
+          const matches = Math.max(goals, 12);
+          const xgPer90 = Number(Math.max(0.25, goals / matches * 0.92).toFixed(2));
+          return {
+            rank: idx + 1,
+            player: String(athlete.displayName || athlete.fullName || 'Forward'),
+            team: teamName,
+            league: leagueParam,
+            position: String(athlete.position?.abbreviation || 'FW'),
+            matches,
+            goals,
+            assists: Math.max(1, Math.round(goals * 0.25)),
+            shotsOnTargetPer90: Number(Math.max(0.8, xgPer90 * 2.6).toFixed(2)),
+            xgPer90,
+            anytimeScorerOdds: Number(Math.max(1.45, 2.85 - xgPer90 * 1.1).toFixed(2)),
+            onePlusSotOdds: Number(Math.max(1.16, 1.55 - xgPer90 * 0.3).toFixed(2)),
+            twoPlusSotOdds: Number(Math.max(1.65, 2.95 - xgPer90 * 0.9).toFixed(2)),
+          };
+        });
+        cachedLeaders.set(espnCode, { timestamp: now, data: rows });
+        return rows;
+      }
+    }
+  } catch {
+    // fallback to active upcoming teams' key forwards below
+  }
 
-  const rows = curatedByLeague[espnCode] || curatedByLeague['eng.1'];
+  // Derive fallback leaders only from real teams in the league standings so teams always match current season
+  const standings = await fetchServerStandings(leagueParam);
+  const rows = standings.slice(0, 6).map((row: any, idx: number) => {
+    const gf = Number(row.gf ?? 22);
+    const played = Math.max(1, Number(row.played ?? 15));
+    const estGoals = Math.max(4, Math.round(gf * 0.34));
+    const xgPer90 = Number(Math.min(0.88, Math.max(0.32, estGoals / played * 0.95)).toFixed(2));
+    return {
+      rank: idx + 1,
+      player: `${row.team} Primary Forward`,
+      team: row.team,
+      league: leagueParam,
+      position: 'ST',
+      matches: played,
+      goals: estGoals,
+      assists: Math.max(2, Math.round(estGoals * 0.3)),
+      shotsOnTargetPer90: Number((xgPer90 * 2.55).toFixed(2)),
+      xgPer90,
+      anytimeScorerOdds: Number(Math.max(1.55, 2.75 - xgPer90).toFixed(2)),
+      onePlusSotOdds: 1.28,
+      twoPlusSotOdds: 2.15,
+    };
+  });
+
   cachedLeaders.set(espnCode, { timestamp: now, data: rows });
   return rows;
 }
 
 export async function fetchServerInjuries(leagueParam = 'EPL') {
-  const upcoming = await fetchServerUpcomingFixtures(leagueParam);
-  const topMatches = upcoming.slice(0, 6);
-  const baseInjuries = [
-    {
-      id: 'inj-srv-1',
-      player: 'Rodri',
-      team: topMatches[0]?.home_team || 'Manchester City',
-      opponent: topMatches[0]?.away_team || 'Arsenal',
-      league: topMatches[0]?.league || 'Premier League',
-      position: 'CDM',
-      status: 'Ruled Out',
-      detail: 'Knee ligament rehabilitation — absent from matchday squad',
-      expectedReturn: 'Long-term recovery',
-      xgDelta: '+0.26 Opponent Transition xG',
-      recommendedPlay: 'Both Teams To Score — Yes',
-      recommendedOdds: 1.74,
-    },
-    {
-      id: 'inj-srv-2',
-      player: 'Martin Ødegaard',
-      team: topMatches[0]?.away_team || 'Arsenal',
-      opponent: topMatches[0]?.home_team || 'Manchester City',
-      league: topMatches[0]?.league || 'Premier League',
-      position: 'CAM',
-      status: 'Returning',
-      detail: 'Completed full team training session; cleared for starting XI',
-      expectedReturn: 'Available Today',
-      xgDelta: '+0.31 Creative xG Boost',
-      recommendedPlay: 'Over 2.5 Match Goals',
-      recommendedOdds: 1.82,
-    },
-    {
-      id: 'inj-srv-3',
-      player: 'Dani Carvajal',
-      team: topMatches[1]?.home_team || 'Real Madrid',
-      opponent: topMatches[1]?.away_team || 'Barcelona',
-      league: topMatches[1]?.league || 'La Liga',
-      position: 'RB',
-      status: 'Ruled Out',
-      detail: 'Right-flank defensive rotation active following ligament injury',
-      expectedReturn: 'Season recovery',
-      xgDelta: '+0.22 Left-Wing Attack xG',
-      recommendedPlay: 'BTTS — Yes',
-      recommendedOdds: 1.68,
-    },
-    {
-      id: 'inj-srv-4',
-      player: 'Nicolò Barella',
-      team: topMatches[2]?.home_team || 'Inter Milan',
-      opponent: topMatches[2]?.away_team || 'Juventus',
-      league: topMatches[2]?.league || 'Serie A',
-      position: 'CM',
-      status: 'Suspended',
-      detail: '1-match yellow card accumulation suspension',
-      expectedReturn: 'Next Matchweek',
-      xgDelta: '-0.18 Midfield Progression xG',
-      recommendedPlay: 'First Half Under 1.5 Goals',
-      recommendedOdds: 1.58,
-    },
-  ];
-  return baseInjuries;
+  const filterArg = leagueParam && leagueParam.toUpperCase() !== 'ALL' ? leagueParam : undefined;
+  const upcoming = await fetchServerUpcomingFixtures(filterArg);
+  const pool = upcoming.length > 0 ? upcoming : await fetchServerUpcomingFixtures();
+  const topMatches = pool.slice(0, 8);
+  const news = await fetchServerNews(leagueParam || 'EPL');
+
+  const injuryNews = news.filter((n: any) => n.category === 'Injury Update' || /injur|doubt|miss|return|suspend/i.test(n.headline || ''));
+
+  return topMatches.map((m, idx) => {
+    const matchedHeadline = injuryNews.find(
+      (n: any) =>
+        (n.headline || '').toLowerCase().includes(m.home_team.toLowerCase()) ||
+        (n.headline || '').toLowerCase().includes(m.away_team.toLowerCase())
+    ) || injuryNews[idx];
+
+    const hForm = m.home_form || 'WDW';
+    const aForm = m.away_form || 'WDL';
+    return {
+      id: `inj-srv-${m.id}`,
+      player: matchedHeadline?.teamTag ? `${matchedHeadline.teamTag} Squad Note` : `${m.home_team} vs ${m.away_team} XI Watch`,
+      team: m.home_team,
+      opponent: m.away_team,
+      league: m.league,
+      matchDate: m.match_date,
+      position: 'XI',
+      status: matchedHeadline ? 'Team News Watch' : 'Pre-Match Monitor',
+      detail: matchedHeadline
+        ? matchedHeadline.headline
+        : `Official ${m.league} availability check (${m.home_team} form ${hForm} vs ${m.away_team} form ${aForm})`,
+      expectedReturn: 'Pre-Kickoff Lineup (-60m)',
+      xgDelta: Number(m.home_odds) < Number(m.away_odds) ? '+0.24 Home Attacking Edge' : '+0.21 Transition xG Watch',
+      recommendedPlay: m.prediction === 'Draw' ? 'Both Teams To Score — Yes' : `${m.prediction} or Double Chance`,
+      recommendedOdds: Number((m.prediction === 'Home Win' ? m.home_odds : m.prediction === 'Away Win' ? m.away_odds : m.draw_odds).toFixed(2)),
+    };
+  });
 }
 
 export async function fetchServerReferees(leagueParam = 'EPL') {
-  const upcoming = await fetchServerUpcomingFixtures(leagueParam);
-  const officials = [
-    { name: 'Michael Oliver', yellow: 4.42, red: 0.18, fouls: 23.4, pkPct: 31 },
-    { name: 'Anthony Taylor', yellow: 4.68, red: 0.22, fouls: 24.1, pkPct: 34 },
-    { name: 'Szymon Marciniak', yellow: 4.15, red: 0.16, fouls: 22.8, pkPct: 29 },
-    { name: 'Jesús Gil Manzano', yellow: 5.12, red: 0.28, fouls: 26.2, pkPct: 38 },
-    { name: 'Daniele Orsato', yellow: 4.55, red: 0.19, fouls: 25.0, pkPct: 32 },
-    { name: 'Felix Zwayer', yellow: 4.38, red: 0.17, fouls: 23.1, pkPct: 30 },
-  ];
-  return upcoming.slice(0, 8).map((m, idx) => {
-    const ref = officials[idx % officials.length];
+  const filterArg = leagueParam && leagueParam.toUpperCase() !== 'ALL' ? leagueParam : undefined;
+  const upcoming = await fetchServerUpcomingFixtures(filterArg);
+  const pool = upcoming.length > 0 ? upcoming : await fetchServerUpcomingFixtures();
+  const officialsByLeague: Record<string, Array<{ name: string; yellow: number; red: number; fouls: number; pkPct: number }>> = {
+    'premier league': [
+      { name: 'Michael Oliver', yellow: 4.42, red: 0.18, fouls: 23.4, pkPct: 31 },
+      { name: 'Anthony Taylor', yellow: 4.68, red: 0.22, fouls: 24.1, pkPct: 34 },
+      { name: 'Chris Kavanagh', yellow: 4.35, red: 0.17, fouls: 22.9, pkPct: 28 },
+    ],
+    'la liga': [
+      { name: 'Jesús Gil Manzano', yellow: 5.12, red: 0.28, fouls: 26.2, pkPct: 38 },
+      { name: 'Alejandro Hernández', yellow: 4.95, red: 0.24, fouls: 25.4, pkPct: 35 },
+    ],
+    'serie a': [
+      { name: 'Daniele Orsato', yellow: 4.55, red: 0.19, fouls: 25.0, pkPct: 32 },
+      { name: 'Marco Guida', yellow: 4.48, red: 0.20, fouls: 24.6, pkPct: 30 },
+    ],
+    'bundesliga': [
+      { name: 'Felix Zwayer', yellow: 4.38, red: 0.17, fouls: 23.1, pkPct: 30 },
+      { name: 'Daniel Siebert', yellow: 4.25, red: 0.16, fouls: 22.4, pkPct: 29 },
+    ],
+    default: [
+      { name: 'Szymon Marciniak', yellow: 4.15, red: 0.16, fouls: 22.8, pkPct: 29 },
+      { name: 'Clément Turpin', yellow: 4.05, red: 0.19, fouls: 22.1, pkPct: 33 },
+      { name: 'Slavko Vinčić', yellow: 4.30, red: 0.15, fouls: 23.0, pkPct: 27 },
+    ],
+  };
+
+  return pool.slice(0, 10).map((m, idx) => {
+    const lKey = Object.keys(officialsByLeague).find((k) => k !== 'default' && (m.league || '').toLowerCase().includes(k)) || 'default';
+    const refPool = officialsByLeague[lKey];
+    const ref = refPool[idx % refPool.length];
     return {
       id: `ref-srv-${m.id || idx}`,
-      referee: ref.name,
+      referee: `${ref.name} (Est. Panel)`,
       league: m.league,
       homeTeam: m.home_team,
       awayTeam: m.away_team,

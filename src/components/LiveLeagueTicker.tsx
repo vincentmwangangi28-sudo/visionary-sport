@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Activity } from 'lucide-react';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 
 interface LeagueStat { league: string; count: number; avgConfidence: number; }
@@ -36,20 +35,14 @@ export const LiveLeagueTicker = () => {
       if (Object.keys(map).length === 0) {
         try {
           const fixtures = await fetchRealtimeUpcomingFixtures();
-          const items = fixtures.length > 0 ? fixtures : DEFAULT_PREDICTIONS;
-          items.forEach(p => {
+          fixtures.forEach(p => {
             if (!p.league) return;
             if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
             map[p.league].total++;
             map[p.league].sum += p.confidence_score ?? p.confidence ?? 75;
           });
         } catch {
-          DEFAULT_PREDICTIONS.forEach(p => {
-            if (!p.league) return;
-            if (!map[p.league]) map[p.league] = { total: 0, sum: 0 };
-            map[p.league].total++;
-            map[p.league].sum += p.confidence_score ?? p.confidence ?? 75;
-          });
+          // Live league telemetry unavailable right now
         }
       }
 

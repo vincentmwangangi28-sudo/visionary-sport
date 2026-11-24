@@ -199,7 +199,7 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
       checkedFields: ['events[].id', 'competitions[0].competitors', 'status.type.state', 'date'],
       sampleFixture: {
         id: 'espn-eng1-live',
-        match: 'Liverpool vs Manchester City',
+        match: 'Live Scoreboard Schema Check',
         competition: 'English Premier League',
         kickoffUtc: new Date().toISOString(),
         status: 'SCHEDULED',
@@ -237,8 +237,8 @@ const INITIAL_PROVIDERS: ApiProviderTelemetry[] = [
       integrityScore: 100,
       checkedFields: ['response[].fixture.id', 'teams.home.name', 'teams.away.name', 'goals', 'fixture.status'],
       sampleFixture: {
-        id: 'apifootball-1035042',
-        match: 'Real Madrid vs Barcelona',
+        id: 'apifootball-live-schema',
+        match: 'In-Play Fixture Feed Check',
         competition: 'La Liga',
         kickoffUtc: new Date().toISOString(),
         status: '1H',

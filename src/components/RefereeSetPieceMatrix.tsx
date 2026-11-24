@@ -38,7 +38,7 @@ export const RefereeSetPieceMatrix: React.FC<RefereeSetPieceMatrixProps> = ({
     if (propHome && propAway) {
       return { homeTeam: propHome, awayTeam: propAway, league: propLeague || 'Premier League' };
     }
-    const chosen = predictions[selectedMatchIdx];
+    const chosen = predictions[selectedMatchIdx] || predictions[0];
     if (chosen) {
       return {
         homeTeam: chosen.home_team,
@@ -46,12 +46,15 @@ export const RefereeSetPieceMatrix: React.FC<RefereeSetPieceMatrixProps> = ({
         league: chosen.league || 'Premier League',
       };
     }
-    return { homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League' };
+    return null;
   }, [propHome, propAway, propLeague, predictions, selectedMatchIdx]);
 
-  const { homeTeam, awayTeam, league } = activeFixture;
+  const homeTeam = activeFixture?.homeTeam || '';
+  const awayTeam = activeFixture?.awayTeam || '';
+  const league = activeFixture?.league || '';
 
   const telemetry = useMemo(() => {
+    if (!activeFixture) return null;
     const seed = (homeTeam + awayTeam + league)
       .split('')
       .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
@@ -88,7 +91,7 @@ export const RefereeSetPieceMatrix: React.FC<RefereeSetPieceMatrixProps> = ({
       over35CardsProb,
       over45CardsProb,
     };
-  }, [homeTeam, awayTeam, league]);
+  }, [activeFixture, homeTeam, awayTeam, league]);
 
   const handleAddPropToSlip = (marketLabel: string, odds: number, prob: number) => {
     addSelection({
@@ -115,6 +118,22 @@ export const RefereeSetPieceMatrix: React.FC<RefereeSetPieceMatrixProps> = ({
       setIsSyncingCron(false);
     }
   };
+
+  if (!activeFixture || !telemetry) {
+    return (
+      <Card className="border-border/80 bg-card shadow-xs">
+        <CardHeader className="p-5 pb-3">
+          <CardTitle className="text-base font-black text-foreground flex items-center gap-2">
+            <Scale className="h-4 w-4 text-primary" />
+            Referee Discipline &amp; Corner Tempo Matrix
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Syncing upcoming official fixtures for officiating discipline and corner tempo modeling...
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-border/80 bg-card shadow-xs">

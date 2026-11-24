@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { usePredictions } from '@/hooks/usePredictions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,21 +31,32 @@ import { toast } from 'sonner';
 
 export const AdminClvAndLocalizationTab: React.FC = () => {
   const { locale: activeSiteLocale, changeLocale } = useAppLocale();
+  const { data: predictions = [] } = usePredictions(7);
   const [selectedBroadcastLocale, setSelectedBroadcastLocale] =
     useState<SupportedLocale>('sw');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const [clvList, setClvList] = useState<ClvSteamSignal[]>(() => getClvSteamSignals());
-  const [homeTeam, setHomeTeam] = useState('Arsenal');
-  const [awayTeam, setAwayTeam] = useState('Liverpool');
-  const [league, setLeague] = useState('Premier League');
+  const [homeTeam, setHomeTeam] = useState('');
+  const [awayTeam, setAwayTeam] = useState('');
+  const [league, setLeague] = useState('');
   const [market, setMarket] = useState('Over 2.5 Match Goals');
   const [openingOdds, setOpeningOdds] = useState(2.02);
   const [currentBookieOdds, setCurrentBookieOdds] = useState(1.86);
   const [sharpNoVigOdds, setSharpNoVigOdds] = useState(1.71);
   const [tacticalNote, setTacticalNote] = useState(
-    'Heavy Asian syndicate steam pushed true no-vig line down 31 cents; soft books still hanging 1.86.'
+    'Heavy Asian syndicate steam pushed true no-vig line down; soft books still hanging value odds.'
   );
+
+  useEffect(() => {
+    setClvList(getClvSteamSignals(predictions));
+    if (predictions.length > 0 && !homeTeam) {
+      setHomeTeam(predictions[0].home_team);
+      setAwayTeam(predictions[0].away_team);
+      setLeague(predictions[0].league || 'League Match');
+      setMarket(predictions[0].prediction || predictions[0].predicted_outcome || '1X2');
+    }
+  }, [predictions, homeTeam]);
 
   const bookingCodes = useMemo(() => getVerifiedBookingCodes(), []);
   const jackpotConfig = useMemo(() => getJackpotAdminConfig(), []);
@@ -67,9 +79,15 @@ export const AdminClvAndLocalizationTab: React.FC = () => {
       onexOdds: Number(onex?.totalOdds || 2.18).toFixed(2),
       bet9jaCode: bet9ja?.code || 'B9J551092',
       bet9jaOdds: Number(bet9ja?.totalOdds || 3.85).toFixed(2),
-      jackpotPool: jackpotConfig.prizePoolLabel || 'KES 384M+',
+      jackpotPool: jackpotConfig.prizePoolLabel || 'KES 408M+',
+      topMatches: predictions.slice(0, 4).map((m) => ({
+        match: `${m.home_team} vs ${m.away_team}`,
+        market: m.prediction || m.predicted_outcome || '1X2',
+        odds: Number(m.home_odds || 1.85).toFixed(2),
+        confidence: Math.round(m.confidence || 76),
+      })),
     });
-  }, [selectedBroadcastLocale, bookingCodes, jackpotConfig]);
+  }, [selectedBroadcastLocale, bookingCodes, jackpotConfig, predictions]);
 
   const handleCopy = async (id: string, text: string, label: string) => {
     try {

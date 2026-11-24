@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -21,20 +21,27 @@ import {
   Wallet,
 } from 'lucide-react';
 import {
-  SGP_MATCH_TEMPLATES,
+  buildSgpMatchTemplatesFromPredictions,
   evaluateGaussianCopulaSgp,
   SgpMatchTemplate,
 } from '@/services/clvAndCopulaService';
 import { syncSlipToBankroll } from '@/services/socialCardPngGenerator';
 import { useAppLocale } from '@/services/i18nLocalizationService';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 export const SgpCopulaBuilderPage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const { t } = useAppLocale();
+  const { data: predictions = [] } = usePredictions(7);
 
-  const [selectedMatchId, setSelectedMatchId] = useState<string>(SGP_MATCH_TEMPLATES[0].id);
+  const matchTemplates = useMemo(
+    () => buildSgpMatchTemplatesFromPredictions(predictions),
+    [predictions]
+  );
+
+  const [selectedMatchId, setSelectedMatchId] = useState<string>('');
   const [selectedLegIds, setSelectedLegIds] = useState<string[]>([
     'home_win',
     'over_25',
@@ -42,21 +49,47 @@ export const SgpCopulaBuilderPage: React.FC = () => {
   ]);
   const [copiedBrief, setCopiedBrief] = useState(false);
 
-  const activeMatch: SgpMatchTemplate = useMemo(() => {
+  useEffect(() => {
+    if (matchTemplates.length > 0 && !selectedMatchId) {
+      setSelectedMatchId(matchTemplates[0].id);
+      setSelectedLegIds(matchTemplates[0].availableLegs.slice(0, 3).map((l) => l.id));
+    }
+  }, [matchTemplates, selectedMatchId]);
+
+  const activeMatch: SgpMatchTemplate | null = useMemo(() => {
     return (
-      SGP_MATCH_TEMPLATES.find((m) => m.id === selectedMatchId) || SGP_MATCH_TEMPLATES[0]
+      matchTemplates.find((m) => m.id === selectedMatchId) ||
+      matchTemplates[0] ||
+      null
     );
-  }, [selectedMatchId]);
+  }, [matchTemplates, selectedMatchId]);
 
   const evaluation = useMemo(() => {
+    if (!activeMatch) {
+      return {
+        legsCount: 0,
+        uncorrelatedProbPct: 0,
+        uncorrelatedFairOdds: 1,
+        bookmakerQuotedSgpOdds: 1,
+        copulaTrueProbPct: 0,
+        copulaTrueFairOdds: 1,
+        correlationBoostPct: 0,
+        valueEdgePct: 0,
+        kellyStakePct: 0,
+        pairwiseCorrelations: [],
+        summaryReport: '',
+      };
+    }
     return evaluateGaussianCopulaSgp(activeMatch, selectedLegIds);
   }, [activeMatch, selectedLegIds]);
 
   const handleSelectMatch = (matchId: string) => {
     setSelectedMatchId(matchId);
     const nextMatch =
-      SGP_MATCH_TEMPLATES.find((m) => m.id === matchId) || SGP_MATCH_TEMPLATES[0];
-    setSelectedLegIds(nextMatch.availableLegs.slice(0, 3).map((l) => l.id));
+      matchTemplates.find((m) => m.id === matchId) || matchTemplates[0];
+    if (nextMatch) {
+      setSelectedLegIds(nextMatch.availableLegs.slice(0, 3).map((l) => l.id));
+    }
   };
 
   const toggleLeg = (legId: string) => {
@@ -73,6 +106,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
   };
 
   const handleLoadPositiveCorrelationPreset = () => {
+    if (!activeMatch) return;
     const ids = activeMatch.availableLegs
       .filter((l) => ['RESULT', 'GOALS', 'CORNERS', 'PLAYER_PROP'].includes(l.category))
       .slice(0, 4)
@@ -82,7 +116,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
   };
 
   const handleAddSgpToBetSlip = () => {
-    if (evaluation.legsCount === 0) return;
+    if (!activeMatch || evaluation.legsCount === 0) return;
     const chosenLabels = activeMatch.availableLegs
       .filter((l) => selectedLegIds.includes(l.id))
       .map((l) => l.label)
@@ -109,7 +143,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
   };
 
   const handleSyncSgpToBankroll = () => {
-    if (evaluation.legsCount === 0) return;
+    if (!activeMatch || evaluation.legsCount === 0) return;
     const chosenLegs = activeMatch.availableLegs.filter((l) =>
       selectedLegIds.includes(l.id)
     );
@@ -205,7 +239,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
           {/* Match Selector Strip */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
             <span className="text-xs font-semibold text-slate-400 mr-1">Select Fixture:</span>
-            {SGP_MATCH_TEMPLATES.map((m) => (
+            {matchTemplates.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -225,6 +259,11 @@ export const SgpCopulaBuilderPage: React.FC = () => {
           </div>
         </section>
 
+        {!activeMatch ? (
+          <Card className="border-border p-8 text-center text-sm text-muted-foreground">
+            Syncing live fixture probabilities for the SGP Copula Builder...
+          </Card>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT 6 COLS: Candidate SGP Legs Selector */}
           <Card className="lg:col-span-6 border-border">
@@ -439,6 +478,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
             </Card>
           </div>
         </div>
+        )}
       </main>
 
       <Footer />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   ShieldAlert,
@@ -17,45 +18,66 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import {
-  REFEREE_DISCIPLINE_MATCHUPS,
+  buildRefereeDisciplineFromPredictions,
   RefereeMatchupRow,
   computeRefereeCardPoissonMatrix,
 } from '@/services/phase15PropSystemService';
 
 export const RefereeDisciplineMatrixPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
 
-  const [leagueFilter, setLeagueFilter] = useState<string>('all');
-  const [selectedMatchupId, setSelectedMatchupId] = useState<string>(
-    REFEREE_DISCIPLINE_MATCHUPS[0].id
+  const refereeMatchups = useMemo(
+    () => buildRefereeDisciplineFromPredictions(predictions),
+    [predictions]
   );
 
+  const [leagueFilter, setLeagueFilter] = useState<string>('all');
+  const [selectedMatchupId, setSelectedMatchupId] = useState<string>('');
+
   // Interactive Poisson Card & Booking Points Calculator state
-  const [refYellowsPer90, setRefYellowsPer90] = useState<string>('5.42');
-  const [refRedsPer90, setRefRedsPer90] = useState<string>('0.31');
-  const [homeAggression, setHomeAggression] = useState<string>('1.18');
-  const [awayAggression, setAwayAggression] = useState<string>('1.24');
-  const [isDerbyOrKnockout, setIsDerbyOrKnockout] = useState<boolean>(true);
-  const [oddsOver35, setOddsOver35] = useState<string>('1.36');
-  const [oddsOver45, setOddsOver45] = useState<string>('1.74');
-  const [oddsOver55, setOddsOver55] = useState<string>('2.28');
-  const [oddsRedCard, setOddsRedCard] = useState<string>('3.45');
+  const [refYellowsPer90, setRefYellowsPer90] = useState<string>('4.50');
+  const [refRedsPer90, setRefRedsPer90] = useState<string>('0.22');
+  const [homeAggression, setHomeAggression] = useState<string>('1.12');
+  const [awayAggression, setAwayAggression] = useState<string>('1.16');
+  const [isDerbyOrKnockout, setIsDerbyOrKnockout] = useState<boolean>(false);
+  const [oddsOver35, setOddsOver35] = useState<string>('1.42');
+  const [oddsOver45, setOddsOver45] = useState<string>('1.84');
+  const [oddsOver55, setOddsOver55] = useState<string>('2.52');
+  const [oddsRedCard, setOddsRedCard] = useState<string>('3.85');
+
+  useEffect(() => {
+    if (refereeMatchups.length > 0 && !selectedMatchupId) {
+      const first = refereeMatchups[0];
+      setSelectedMatchupId(first.id);
+      setRefYellowsPer90(first.yellowsPer90.toFixed(2));
+      setRefRedsPer90(first.redsPer90.toFixed(2));
+      setHomeAggression(first.homeAggressionIndex.toFixed(2));
+      setAwayAggression(first.awayAggressionIndex.toFixed(2));
+      setIsDerbyOrKnockout(first.isDerbyOrKnockout);
+      setOddsOver35(first.bookieOddsOver35Cards.toFixed(2));
+      setOddsOver45(first.bookieOddsOver45Cards.toFixed(2));
+      setOddsOver55(first.bookieOddsOver55Cards.toFixed(2));
+      setOddsRedCard(first.bookieOddsRedCardYes.toFixed(2));
+    }
+  }, [refereeMatchups, selectedMatchupId]);
 
   const leagues = useMemo(() => {
-    const set = new Set(REFEREE_DISCIPLINE_MATCHUPS.map((r) => r.league));
+    const set = new Set(refereeMatchups.map((r) => r.league));
     return ['all', ...Array.from(set)];
-  }, []);
+  }, [refereeMatchups]);
 
   const filteredMatchups = useMemo(() => {
-    if (leagueFilter === 'all') return REFEREE_DISCIPLINE_MATCHUPS;
-    return REFEREE_DISCIPLINE_MATCHUPS.filter((m) => m.league === leagueFilter);
-  }, [leagueFilter]);
+    if (leagueFilter === 'all') return refereeMatchups;
+    return refereeMatchups.filter((m) => m.league === leagueFilter);
+  }, [refereeMatchups, leagueFilter]);
 
-  const activeMatchup = useMemo(
+  const activeMatchup: RefereeMatchupRow | null = useMemo(
     () =>
-      REFEREE_DISCIPLINE_MATCHUPS.find((m) => m.id === selectedMatchupId) ||
-      REFEREE_DISCIPLINE_MATCHUPS[0],
-    [selectedMatchupId]
+      refereeMatchups.find((m) => m.id === selectedMatchupId) ||
+      refereeMatchups[0] ||
+      null,
+    [refereeMatchups, selectedMatchupId]
   );
 
   const handleSelectMatchup = (row: RefereeMatchupRow) => {
@@ -99,19 +121,19 @@ export const RefereeDisciplineMatrixPage: React.FC = () => {
   );
 
   const handleAddCardMarket = (
-    matchup: RefereeMatchupRow,
+    matchup: RefereeMatchupRow | null,
     marketLabel: string,
     odds: number,
     probPct: number
   ) => {
     addSelection({
-      id: `ref-card-${matchup.id}-${marketLabel}`,
-      homeTeam: matchup.homeTeam,
-      awayTeam: matchup.awayTeam,
-      league: matchup.league,
-      kickoff: matchup.kickoffTime,
-      market: `${marketLabel} (${matchup.refereeName})`,
-      selection: `${marketLabel} (${matchup.refereeName})`,
+      id: `ref-card-${matchup?.id || 'custom'}-${marketLabel}`,
+      homeTeam: matchup?.homeTeam || 'Matchday Home',
+      awayTeam: matchup?.awayTeam || 'Matchday Away',
+      league: matchup?.league || 'Card Markets',
+      kickoff: matchup?.kickoffTime || 'Upcoming',
+      market: matchup ? `${marketLabel} (${matchup.refereeName})` : marketLabel,
+      selection: matchup ? `${marketLabel} (${matchup.refereeName})` : marketLabel,
       odds,
       confidence: Math.round(probPct),
     });
@@ -289,7 +311,7 @@ export const RefereeDisciplineMatrixPage: React.FC = () => {
                 </h2>
               </div>
               <span className="text-xs text-muted-foreground truncate max-w-[140px]">
-                {activeMatchup.refereeName}
+                {activeMatchup?.refereeName || 'Custom Official'}
               </span>
             </div>
 
@@ -450,10 +472,10 @@ export const RefereeDisciplineMatrixPage: React.FC = () => {
               <div className="rounded-xl border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">Active Fixture</p>
                 <p className="text-sm font-bold text-foreground mt-1 truncate">
-                  {activeMatchup.match}
+                  {activeMatchup?.match || 'Custom Card Matchup'}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                  Ref: {activeMatchup.refereeName}
+                  Ref: {activeMatchup?.refereeName || 'Manual Profile'}
                 </p>
               </div>
             </div>

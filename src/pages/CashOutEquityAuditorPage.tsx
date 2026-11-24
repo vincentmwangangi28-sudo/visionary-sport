@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   Scale,
@@ -21,31 +22,29 @@ import {
 import {
   PHASE13_CURRENCIES,
   SupportedCurrency,
-  CURATED_CASHOUT_SCENARIOS,
+  buildCashOutScenariosFromPredictions,
   CuratedCashOutScenario,
   computeCashOutEquityAudit,
 } from '@/services/phase15PropSystemService';
 
 export const CashOutEquityAuditorPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { predictions } = usePredictions();
+
+  const liveScenarios = useMemo(
+    () => buildCashOutScenariosFromPredictions(predictions),
+    [predictions]
+  );
 
   const [currency, setCurrency] = useState<SupportedCurrency>('USD');
-  const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
-    CURATED_CASHOUT_SCENARIOS[0].id
-  );
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('');
 
-  const [remainingMatch, setRemainingMatch] = useState<string>(
-    CURATED_CASHOUT_SCENARIOS[0].remainingMatch
-  );
-  const [homeTeam, setHomeTeam] = useState<string>(CURATED_CASHOUT_SCENARIOS[0].homeTeam);
-  const [awayTeam, setAwayTeam] = useState<string>(CURATED_CASHOUT_SCENARIOS[0].awayTeam);
-  const [league, setLeague] = useState<string>(CURATED_CASHOUT_SCENARIOS[0].league);
-  const [remainingPick, setRemainingPick] = useState<string>(
-    CURATED_CASHOUT_SCENARIOS[0].remainingPick
-  );
-  const [oppositeHedgePick, setOppositeHedgePick] = useState<string>(
-    CURATED_CASHOUT_SCENARIOS[0].oppositeHedgePick
-  );
+  const [remainingMatch, setRemainingMatch] = useState<string>('Custom Remaining Fixture');
+  const [homeTeam, setHomeTeam] = useState<string>('Home Team');
+  const [awayTeam, setAwayTeam] = useState<string>('Away Team');
+  const [league, setLeague] = useState<string>('League Match');
+  const [remainingPick, setRemainingPick] = useState<string>('Home Win (1)');
+  const [oppositeHedgePick, setOppositeHedgePick] = useState<string>('Away or Draw (X2)');
 
   const [originalStake, setOriginalStake] = useState<string>('20');
   const [totalTicketOdds, setTotalTicketOdds] = useState<string>('15.17');
@@ -69,7 +68,7 @@ export const CashOutEquityAuditorPage: React.FC = () => {
     setBookieCashOutOffer(String(Math.max(1, Math.round(c * ratio))));
   };
 
-  const applyScenario = (scenario: CuratedCashOutScenario) => {
+  const applyScenario = (scenario: CuratedCashOutScenario, silent = false) => {
     setSelectedScenarioId(scenario.id);
     setRemainingMatch(scenario.remainingMatch);
     setHomeTeam(scenario.homeTeam);
@@ -86,8 +85,16 @@ export const CashOutEquityAuditorPage: React.FC = () => {
       String(Math.max(1, Math.round(scenario.bookieCashOutOfferUsd * rate)))
     );
     setOppositeHedgeOdds(scenario.oppositeHedgeOdds.toFixed(2));
-    toast.success(`Loaded ${scenario.bookmaker} ticket audit: ${scenario.remainingMatch}`);
+    if (!silent) {
+      toast.success(`Loaded ${scenario.bookmaker} ticket audit: ${scenario.remainingMatch}`);
+    }
   };
+
+  useEffect(() => {
+    if (!selectedScenarioId && liveScenarios.length > 0) {
+      applyScenario(liveScenarios[0], true);
+    }
+  }, [liveScenarios, selectedScenarioId]);
 
   const audit = useMemo(
     () =>
@@ -111,8 +118,8 @@ export const CashOutEquityAuditorPage: React.FC = () => {
 
   const fmtMoney = (val: number) =>
     `${currencyMeta.symbol}${val.toLocaleString(undefined, {
-      minimumFractionDigits: currencyMeta.decimals,
-      maximumFractionDigits: currencyMeta.decimals,
+      minimumFractionDigits: currency === 'USD' || currency === 'GBP' ? 2 : 0,
+      maximumFractionDigits: 2,
     })}`;
 
   const handleAddDiyHedgeToSlip = () => {
@@ -213,33 +220,39 @@ export const CashOutEquityAuditorPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {CURATED_CASHOUT_SCENARIOS.map((sc) => {
-              const active = selectedScenarioId === sc.id;
-              return (
-                <button
-                  key={sc.id}
-                  type="button"
-                  onClick={() => applyScenario(sc)}
-                  className={`text-left p-4 rounded-xl border transition-all cursor-pointer ${
-                    active
-                      ? 'border-primary bg-primary/5 shadow-2xs'
-                      : 'border-border bg-card hover:border-primary/40'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
-                    <span className="font-semibold text-foreground">{sc.bookmaker}</span>
-                    <span className="font-mono tabular-nums text-primary font-bold">
-                      {sc.totalTicketOdds.toFixed(2)}x Total
-                    </span>
-                  </div>
-                  <p className="text-sm font-bold text-foreground truncate">{sc.remainingMatch}</p>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{sc.remainingPick}</p>
-                  <p className="text-[11px] font-mono tabular-nums text-muted-foreground mt-2">
-                    Rem Odds: {sc.remainingUnplayedOdds.toFixed(2)} · Hedge: {sc.oppositeHedgeOdds.toFixed(2)}
-                  </p>
-                </button>
-              );
-            })}
+            {liveScenarios.length === 0 ? (
+              <div className="col-span-full text-xs text-muted-foreground py-2">
+                Syncing live upcoming fixture presets...
+              </div>
+            ) : (
+              liveScenarios.map((sc) => {
+                const active = selectedScenarioId === sc.id;
+                return (
+                  <button
+                    key={sc.id}
+                    type="button"
+                    onClick={() => applyScenario(sc)}
+                    className={`text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                      active
+                        ? 'border-primary bg-primary/5 shadow-2xs'
+                        : 'border-border bg-card hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
+                      <span className="font-semibold text-foreground">{sc.bookmaker}</span>
+                      <span className="font-mono tabular-nums text-primary font-bold">
+                        {sc.totalTicketOdds.toFixed(2)}x Total
+                      </span>
+                    </div>
+                    <p className="text-sm font-bold text-foreground truncate">{sc.remainingMatch}</p>
+                    <p className="text-xs text-muted-foreground mt-1 truncate">{sc.remainingPick}</p>
+                    <p className="text-[11px] font-mono tabular-nums text-muted-foreground mt-2">
+                      Rem Odds: {sc.remainingUnplayedOdds.toFixed(2)} · Hedge: {sc.oppositeHedgeOdds.toFixed(2)}
+                    </p>
+                  </button>
+                );
+              })
+            )}
           </div>
         </section>
 

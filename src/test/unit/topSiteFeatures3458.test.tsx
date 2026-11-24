@@ -62,6 +62,65 @@ const SAMPLE_MATCHES: Prediction[] = [
     draw_probability: 24,
     away_win_probability: 22,
     is_premium: true,
+    home_score: 0,
+    away_score: 1,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'm-2',
+    home_team: 'Liverpool',
+    away_team: 'Everton',
+    league: 'Premier League',
+    match_date: new Date(Date.now() + 3600_000 * 6).toISOString(),
+    prediction: 'Home Win',
+    predicted_outcome: 'Home Win',
+    confidence: 84,
+    confidence_score: 84,
+    home_odds: 1.52,
+    draw_odds: 4.2,
+    away_odds: 6.1,
+    home_win_probability: 64,
+    draw_probability: 20,
+    away_win_probability: 16,
+    is_premium: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'm-3',
+    home_team: 'Real Madrid',
+    away_team: 'Villarreal',
+    league: 'La Liga',
+    match_date: new Date(Date.now() + 3600_000 * 8).toISOString(),
+    prediction: 'Home Win',
+    predicted_outcome: 'Home Win',
+    confidence: 79,
+    confidence_score: 79,
+    home_odds: 1.68,
+    draw_odds: 3.85,
+    away_odds: 4.8,
+    home_win_probability: 59,
+    draw_probability: 22,
+    away_win_probability: 19,
+    is_premium: false,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'm-4',
+    home_team: 'Bayern Munich',
+    away_team: 'Borussia Dortmund',
+    league: 'Bundesliga',
+    match_date: new Date(Date.now() + 3600_000 * 10).toISOString(),
+    prediction: 'Over 2.5 Goals',
+    predicted_outcome: 'Over 2.5 Goals',
+    confidence: 81,
+    confidence_score: 81,
+    home_odds: 1.62,
+    draw_odds: 4.0,
+    away_odds: 5.1,
+    home_win_probability: 60,
+    draw_probability: 21,
+    away_win_probability: 19,
+    is_premium: false,
     created_at: new Date().toISOString(),
   },
 ];
@@ -72,6 +131,16 @@ function renderSuite(initialTab: Parameters<typeof LiveApiIntelligenceSuite>[0][
       queries: { retry: false, enabled: false },
     },
   });
+
+  queryClient.setQueryData(
+    ['predictions', 'list', 'all'],
+    {
+      allPredictions: SAMPLE_MATCHES,
+      total: SAMPLE_MATCHES.length,
+      isRealTime: true,
+    },
+    { updatedAt: Date.now() + 60_000 }
+  );
 
   return render(
     <QueryClientProvider client={queryClient}>
@@ -128,7 +197,7 @@ describe('Top-Site Features #3, #4, #5 & #8', () => {
 
   it('#5 computes Club Elo, Rest Days, Travel km, and Rotation Risk', () => {
     const profiles = buildFixtureCongestionProfiles(SAMPLE_MATCHES);
-    expect(profiles).toHaveLength(1);
+    expect(profiles).toHaveLength(4);
     expect(profiles[0].homeElo).toBeGreaterThan(1900);
     expect(profiles[0].homeRestDays).toBeGreaterThanOrEqual(3);
     expect(profiles[0].awayRestDays).toBeGreaterThanOrEqual(3);

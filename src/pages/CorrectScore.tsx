@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { CorrectScoreListSkeleton } from '@/components/PredictionCardSkeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { Target, RefreshCw, Plus, Check, Calculator, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatMatchSlug } from '@/services/sitemapGenerator';
@@ -102,12 +101,12 @@ export default function CorrectScore() {
         if (data && data.length > 0) {
           setPreds(data as Prediction[]);
         } else {
-          setPreds(getUpdatedDefaultPredictions().slice(0, 18));
+          setPreds([]);
         }
       }
     } catch (e) {
       console.warn('Correct score fetch error:', e);
-      setPreds(getUpdatedDefaultPredictions().slice(0, 18));
+      setPreds([]);
     } finally {
       setLoading(false);
     }

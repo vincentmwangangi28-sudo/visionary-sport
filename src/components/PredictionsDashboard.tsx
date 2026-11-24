@@ -55,44 +55,6 @@ interface PredictionsDashboardProps {
 
 type QuickFilter = 'all' | 'recommended' | 'high_confidence' | 'value_bets' | 'pinned' | 'today';
 
-const MINI_STANDINGS_DATA: Record<
-  'EPL' | 'LALIGA' | 'SERIEA' | 'BUNDESLIGA',
-  Array<{ rank: number; team: string; played: number; gd: string; xPts: number; pts: number }>
-> = {
-  EPL: [
-    { rank: 1, team: 'Liverpool', played: 28, gd: '+41', xPts: 64.8, pts: 67 },
-    { rank: 2, team: 'Arsenal', played: 28, gd: '+38', xPts: 63.4, pts: 64 },
-    { rank: 3, team: 'Manchester City', played: 28, gd: '+32', xPts: 60.1, pts: 61 },
-    { rank: 4, team: 'Chelsea', played: 28, gd: '+19', xPts: 53.6, pts: 52 },
-    { rank: 5, team: 'Aston Villa', played: 28, gd: '+11', xPts: 48.2, pts: 49 },
-    { rank: 6, team: 'Newcastle', played: 28, gd: '+10', xPts: 47.5, pts: 47 },
-  ],
-  LALIGA: [
-    { rank: 1, team: 'Real Madrid', played: 28, gd: '+42', xPts: 65.2, pts: 68 },
-    { rank: 2, team: 'Barcelona', played: 28, gd: '+36', xPts: 62.9, pts: 65 },
-    { rank: 3, team: 'Atletico Madrid', played: 28, gd: '+24', xPts: 56.4, pts: 58 },
-    { rank: 4, team: 'Athletic Club', played: 28, gd: '+18', xPts: 51.0, pts: 52 },
-    { rank: 5, team: 'Villarreal', played: 28, gd: '+9', xPts: 46.8, pts: 47 },
-    { rank: 6, team: 'Real Betis', played: 28, gd: '+5', xPts: 43.1, pts: 44 },
-  ],
-  SERIEA: [
-    { rank: 1, team: 'Inter Milan', played: 28, gd: '+44', xPts: 66.5, pts: 69 },
-    { rank: 2, team: 'Napoli', played: 28, gd: '+27', xPts: 59.8, pts: 62 },
-    { rank: 3, team: 'Atalanta', played: 28, gd: '+29', xPts: 58.9, pts: 59 },
-    { rank: 4, team: 'Juventus', played: 28, gd: '+21', xPts: 54.2, pts: 55 },
-    { rank: 5, team: 'AC Milan', played: 28, gd: '+14', xPts: 49.7, pts: 50 },
-    { rank: 6, team: 'Lazio', played: 28, gd: '+11', xPts: 47.3, pts: 48 },
-  ],
-  BUNDESLIGA: [
-    { rank: 1, team: 'Bayern Munich', played: 26, gd: '+49', xPts: 64.1, pts: 65 },
-    { rank: 2, team: 'Bayer Leverkusen', played: 26, gd: '+31', xPts: 57.6, pts: 59 },
-    { rank: 3, team: 'Eintracht Frankfurt', played: 26, gd: '+14', xPts: 46.8, pts: 48 },
-    { rank: 4, team: 'RB Leipzig', played: 26, gd: '+13', xPts: 46.2, pts: 46 },
-    { rank: 5, team: 'Borussia Dortmund', played: 26, gd: '+12', xPts: 45.4, pts: 45 },
-    { rank: 6, team: 'VfB Stuttgart', played: 26, gd: '+9', xPts: 43.9, pts: 43 },
-  ],
-};
-
 function getLeagueCountry(leagueName: string): string {
   const lower = leagueName.toLowerCase();
   if (lower.includes('premier league') && !lower.includes('fkf') && !lower.includes('kenya')) return 'England';
@@ -204,10 +166,7 @@ export const PredictionsDashboard = ({
       return;
     }
     let cancelled = false;
-    let triggered = false;
     const loadStandings = async () => {
-      if (triggered || cancelled) return;
-      triggered = true;
       try {
         const r = await fetch(`/api/football?type=standings&league=${standingsTab}`);
         if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) return;
@@ -218,27 +177,13 @@ export const PredictionsDashboard = ({
           [standingsTab]: json.standings.slice(0, 6),
         }));
       } catch {
-        // fallback to default table
+        // leave empty if unavailable
       }
     };
 
-    if (standingsTab !== 'EPL') {
-      loadStandings();
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    window.addEventListener('scroll', loadStandings, { passive: true, once: true });
-    window.addEventListener('pointerdown', loadStandings, { passive: true, once: true });
-    window.addEventListener('touchstart', loadStandings, { passive: true, once: true });
-    window.addEventListener('keydown', loadStandings, { passive: true, once: true });
+    loadStandings();
     return () => {
       cancelled = true;
-      window.removeEventListener('scroll', loadStandings);
-      window.removeEventListener('pointerdown', loadStandings);
-      window.removeEventListener('touchstart', loadStandings);
-      window.removeEventListener('keydown', loadStandings);
     };
   }, [standingsTab]);
 
@@ -538,22 +483,30 @@ export const PredictionsDashboard = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {(liveStandingsMap[standingsTab] ?? MINI_STANDINGS_DATA[standingsTab]).map((row) => (
-                  <tr key={row.team} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-2 font-mono tabular-nums text-muted-foreground">{row.rank}</td>
-                    <td className="py-2 font-medium text-foreground truncate max-w-[110px]">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <TeamLogo team={row.team} size="xs" badgeOnly />
-                        <span className="truncate">{row.team}</span>
-                      </div>
+                {(liveStandingsMap[standingsTab] ?? []).length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-5 text-center text-[11px] text-muted-foreground">
+                      Loading live {standingsTab} standings...
                     </td>
-                    <td className="py-2 text-right font-mono tabular-nums text-muted-foreground">{row.played}</td>
-                    <td className="py-2 text-right font-mono tabular-nums text-primary font-medium">
-                      {Number(row.xPts).toFixed(1)}
-                    </td>
-                    <td className="py-2 text-right font-mono tabular-nums font-bold text-foreground">{row.pts}</td>
                   </tr>
-                ))}
+                ) : (
+                  (liveStandingsMap[standingsTab] ?? []).map((row) => (
+                    <tr key={row.team} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-2 font-mono tabular-nums text-muted-foreground">{row.rank}</td>
+                      <td className="py-2 font-medium text-foreground truncate max-w-[110px]">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <TeamLogo team={row.team} size="xs" badgeOnly />
+                          <span className="truncate">{row.team}</span>
+                        </div>
+                      </td>
+                      <td className="py-2 text-right font-mono tabular-nums text-muted-foreground">{row.played}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-primary font-medium">
+                        {Number(row.xPts).toFixed(1)}
+                      </td>
+                      <td className="py-2 text-right font-mono tabular-nums font-bold text-foreground">{row.pts}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -623,6 +576,10 @@ export const PredictionsDashboard = ({
                 const top5 = [...filteredPredictions]
                   .sort((a, b) => getConfidence(b) - getConfidence(a))
                   .slice(0, 5);
+                if (top5.length === 0) {
+                  toast.info('No upcoming matches available in this filter right now.');
+                  return;
+                }
                 top5.forEach((m) => {
                   const pick = getPrediction(m);
                   const odds =
@@ -644,7 +601,7 @@ export const PredictionsDashboard = ({
                   });
                 });
                 setBetSlipOpen(true);
-                toast.success('Loaded 5-Game High-Chance Banker Pack into Bet Slip!');
+                toast.success(`Loaded ${top5.length}-Game High-Chance Banker Pack into Bet Slip!`);
               }}
               className="h-8 text-xs font-bold gap-1.5 border-emerald-500/40 bg-background hover:bg-emerald-500/10 cursor-pointer"
             >

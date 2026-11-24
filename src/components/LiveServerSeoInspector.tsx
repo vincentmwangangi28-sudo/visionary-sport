@@ -49,11 +49,9 @@ interface RouteSeoPayload {
 }
 
 const PRESET_ROUTES = [
-  { label: 'Arsenal vs Chelsea (Match)', path: '/predict/arsenal-vs-chelsea' },
-  { label: 'Gor Mahia vs AFC Leopards (KPL)', path: '/predict/gor-mahia-vs-afc-leopards' },
-  { label: 'Al Ahly vs Sundowns (CAF CL)', path: '/predict/al-ahly-vs-mamelodi-sundowns' },
+  { label: "Today's Predictions", path: '/today-predictions' },
+  { label: 'Live Matches & Scores', path: '/live' },
   { label: '17-Game Jackpot Generator', path: '/jackpot-generator' },
-  { label: 'Arsenal Club xG Hub', path: '/teams/arsenal' },
   { label: 'Corners Prop Hub', path: '/corners-predictions' },
   { label: 'Set-Piece Specialists', path: '/set-piece-specialists' },
   { label: 'Cashout & Arb Lab', path: '/cashout-calculator' },
@@ -61,8 +59,8 @@ const PRESET_ROUTES = [
 ];
 
 export const LiveServerSeoInspector: React.FC = () => {
-  const [selectedPath, setSelectedPath] = useState<string>('/predict/arsenal-vs-chelsea');
-  const [customPathInput, setCustomPathInput] = useState<string>('/predict/arsenal-vs-chelsea');
+  const [selectedPath, setSelectedPath] = useState<string>('/today-predictions');
+  const [customPathInput, setCustomPathInput] = useState<string>('/today-predictions');
   const [payload, setPayload] = useState<RouteSeoPayload | null>(null);
   const [liveMatches, setLiveMatches] = useState<LiveSeoMatchItem[]>([]);
   const [liveMatchesCount, setLiveMatchesCount] = useState<number>(0);
@@ -154,7 +152,7 @@ export const LiveServerSeoInspector: React.FC = () => {
 
   const localOgPreviewUrl = payload?.ogImageUrl
     ? payload.ogImageUrl.replace(/^https?:\/\/[^/]+/, '')
-    : '/api/og?home=Arsenal&away=Chelsea&league=Premier+League&tip=Home+Win&conf=82&xg=1.94+-+0.98&score=2-1';
+    : '/api/og?home=PredictPro&away=Live+Matchday&league=Global+Football&tip=Poisson+xG&conf=80&xg=1.80+-+1.00&score=2-1';
 
   return (
     <div className="space-y-6 mb-8">

@@ -11,22 +11,16 @@ import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { TeamLogo } from '@/components/TeamLogo';
 import { MatchDeepSummaryPanel } from '@/components/MatchDeepSummaryPanel';
 import { fetchDeepMatchSummary } from '@/services/autoSettlementService';
+import { usePredictions } from '@/hooks/usePredictions';
 import { Prediction } from '@/types/prediction';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Activity,
-  AlertCircle,
-  Calculator,
-  CheckCircle2,
   Plus,
   Radio,
   RefreshCw,
-  ShieldAlert,
   Sliders,
   UserMinus,
-  Users,
-  Zap,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
@@ -37,8 +31,8 @@ interface KeySquadMember {
   slug: string;
   role: 'Attacking Star' | 'Midfield Engine' | 'Defensive Anchor';
   rating: number;
-  xgDeltaWhenOut: number; // drop in team xG/90 when absent
-  xgaDeltaWhenOut: number; // increase in team xGA/90 when absent
+  xgDeltaWhenOut: number;
+  xgaDeltaWhenOut: number;
   defaultStatus: 'FIT' | 'DOUBTFUL (LATE TEST)' | 'RULED OUT / SUSPENDED';
   absenceReason: string;
 }
@@ -54,235 +48,65 @@ interface ClubLineupImpactProfile {
   keyPlayers: KeySquadMember[];
 }
 
-const LINEUP_IMPACT_CLUBS: ClubLineupImpactProfile[] = [
-  {
-    clubId: 'manchester-city',
-    clubName: 'Manchester City',
-    opponent: 'Arsenal',
-    league: 'Premier League',
-    baseXg: 2.15,
-    baseOpponentXg: 1.12,
-    bookmakerFavoriteOdds: 1.95,
+function buildFallbackTacticalProfile(fixture: Prediction): ClubLineupImpactProfile {
+  const rawId = String(fixture.id).replace(/^espn-/, '');
+  const league = fixture.competition || fixture.league || 'Matchday Fixture';
+  return {
+    clubId: `espn-${rawId}`,
+    clubName: fixture.home_team,
+    opponent: fixture.away_team,
+    league,
+    baseXg: fixture.home_xg || 1.65,
+    baseOpponentXg: fixture.away_xg || 1.15,
+    bookmakerFavoriteOdds: fixture.odds?.home || fixture.home_odds || 1.95,
     keyPlayers: [
       {
-        id: 'rodri',
-        name: 'Rodri',
-        slug: 'erling-haaland',
-        role: 'Midfield Engine',
-        rating: 9.1,
-        xgDeltaWhenOut: -0.24,
-        xgaDeltaWhenOut: 0.38,
-        defaultStatus: 'RULED OUT / SUSPENDED',
-        absenceReason: 'Knee ligament recovery — City win rate drops by 19% without Rodri.',
-      },
-      {
-        id: 'haaland',
-        name: 'Erling Haaland',
-        slug: 'erling-haaland',
+        id: `espn-p-${rawId}-1`,
+        name: `${fixture.home_team} Primary Striker (#9)`,
+        slug: 'primary-striker',
         role: 'Attacking Star',
-        rating: 9.3,
-        xgDeltaWhenOut: -0.58,
-        xgaDeltaWhenOut: 0.04,
-        defaultStatus: 'FIT',
-        absenceReason: 'Primary penalty & box finisher (42% of team xG share).',
-      },
-      {
-        id: 'de-bruyne',
-        name: 'Kevin De Bruyne',
-        slug: 'erling-haaland',
-        role: 'Midfield Engine',
-        rating: 8.9,
-        xgDeltaWhenOut: -0.35,
-        xgaDeltaWhenOut: 0.08,
-        defaultStatus: 'DOUBTFUL (LATE TEST)',
-        absenceReason: 'Minutes managed ahead of UEFA Champions League knockout tie.',
-      },
-    ],
-  },
-  {
-    clubId: 'arsenal',
-    clubName: 'Arsenal',
-    opponent: 'Chelsea',
-    league: 'Premier League',
-    baseXg: 2.08,
-    baseOpponentXg: 0.96,
-    bookmakerFavoriteOdds: 1.88,
-    keyPlayers: [
-      {
-        id: 'saka',
-        name: 'Bukayo Saka',
-        slug: 'bukayo-saka',
-        role: 'Attacking Star',
-        rating: 8.8,
-        xgDeltaWhenOut: -0.44,
+        rating: 8.3,
+        xgDeltaWhenOut: -0.38,
         xgaDeltaWhenOut: 0.06,
         defaultStatus: 'FIT',
-        absenceReason: 'Primary right-wing creator, corner taker & 1st penalty taker.',
+        absenceReason: `Primary penalty & box target for ${fixture.home_team}.`,
       },
       {
-        id: 'saliba',
-        name: 'William Saliba',
-        slug: 'bukayo-saka',
+        id: `espn-p-${rawId}-2`,
+        name: `${fixture.home_team} Central Playmaker (#8)`,
+        slug: 'central-playmaker',
+        role: 'Midfield Engine',
+        rating: 8.1,
+        xgDeltaWhenOut: -0.26,
+        xgaDeltaWhenOut: 0.24,
+        defaultStatus: 'FIT',
+        absenceReason: `Controls progressive passes and tempo vs ${fixture.away_team}.`,
+      },
+      {
+        id: `espn-p-${rawId}-3`,
+        name: `${fixture.home_team} Defensive Captain (#4)`,
+        slug: 'defensive-captain',
         role: 'Defensive Anchor',
-        rating: 8.7,
+        rating: 7.9,
         xgDeltaWhenOut: -0.08,
-        xgaDeltaWhenOut: 0.45,
-        defaultStatus: 'DOUBTFUL (LATE TEST)',
-        absenceReason: 'One-booking suspension tightrope; Arsenal xGA rises from 0.82 to 1.27 when absent.',
-      },
-      {
-        id: 'odegaard',
-        name: 'Martin Ødegaard',
-        slug: 'bukayo-saka',
-        role: 'Midfield Engine',
-        rating: 8.7,
-        xgDeltaWhenOut: -0.36,
-        xgaDeltaWhenOut: 0.12,
-        defaultStatus: 'FIT',
-        absenceReason: 'Leads Premier League in high-press recoveries & final-third passes.',
-      },
-    ],
-  },
-  {
-    clubId: 'real-madrid',
-    clubName: 'Real Madrid',
-    opponent: 'Barcelona',
-    league: 'La Liga',
-    baseXg: 2.26,
-    baseOpponentXg: 1.28,
-    bookmakerFavoriteOdds: 1.92,
-    keyPlayers: [
-      {
-        id: 'mbappe',
-        name: 'Kylian Mbappé',
-        slug: 'kylian-mbappe',
-        role: 'Attacking Star',
-        rating: 9.1,
-        xgDeltaWhenOut: -0.52,
-        xgaDeltaWhenOut: 0.02,
-        defaultStatus: 'FIT',
-        absenceReason: 'Generates 0.84 non-penalty xG/90 in transition.',
-      },
-      {
-        id: 'bellingham',
-        name: 'Jude Bellingham',
-        slug: 'jude-bellingham',
-        role: 'Midfield Engine',
-        rating: 8.9,
-        xgDeltaWhenOut: -0.32,
-        xgaDeltaWhenOut: 0.18,
-        defaultStatus: 'DOUBTFUL (LATE TEST)',
-        absenceReason: 'Shoulder & ankle load management after midweek European tie.',
-      },
-      {
-        id: 'rudiger',
-        name: 'Antonio Rüdiger',
-        slug: 'jude-bellingham',
-        role: 'Defensive Anchor',
-        rating: 8.5,
-        xgDeltaWhenOut: -0.06,
         xgaDeltaWhenOut: 0.39,
-        defaultStatus: 'FIT',
-        absenceReason: 'Essential aerial & high-line recovery sweeper.',
-      },
-    ],
-  },
-  {
-    clubId: 'gor-mahia',
-    clubName: 'Gor Mahia',
-    opponent: 'AFC Leopards',
-    league: 'FKF Premier League',
-    baseXg: 1.88,
-    baseOpponentXg: 0.68,
-    bookmakerFavoriteOdds: 1.76,
-    keyPlayers: [
-      {
-        id: 'odhiambo',
-        name: 'Austin Odhiambo',
-        slug: 'austin-odhiambo',
-        role: 'Midfield Engine',
-        rating: 8.6,
-        xgDeltaWhenOut: -0.46,
-        xgaDeltaWhenOut: 0.09,
-        defaultStatus: 'FIT',
-        absenceReason: 'FKF MVP — responsible for 48% of Gor Mahia’s dead-ball & open-play chance creation.',
-      },
-      {
-        id: 'omala',
-        name: 'Benson Omala',
-        slug: 'austin-odhiambo',
-        role: 'Attacking Star',
-        rating: 8.4,
-        xgDeltaWhenOut: -0.41,
-        xgaDeltaWhenOut: 0.03,
         defaultStatus: 'DOUBTFUL (LATE TEST)',
-        absenceReason: 'National team Harambee Stars travel load assessment.',
-      },
-      {
-        id: 'owino',
-        name: 'Sylvester Owino',
-        slug: 'austin-odhiambo',
-        role: 'Defensive Anchor',
-        rating: 8.2,
-        xgDeltaWhenOut: -0.07,
-        xgaDeltaWhenOut: 0.34,
-        defaultStatus: 'FIT',
-        absenceReason: 'Dominates aerial duels in Mashemeji Derby set pieces.',
+        absenceReason: `Organizes backline press resistance & aerial clearances.`,
       },
     ],
-  },
-  {
-    clubId: 'young-africans',
-    clubName: 'Young Africans',
-    opponent: 'Simba SC',
-    league: 'Tanzania NBC Premier League',
-    baseXg: 1.94,
-    baseOpponentXg: 0.89,
-    bookmakerFavoriteOdds: 1.85,
-    keyPlayers: [
-      {
-        id: 'aziz-ki',
-        name: 'Stephane Aziz Ki',
-        slug: 'austin-odhiambo',
-        role: 'Attacking Star',
-        rating: 8.9,
-        xgDeltaWhenOut: -0.49,
-        xgaDeltaWhenOut: 0.05,
-        defaultStatus: 'FIT',
-        absenceReason: 'Burkina Faso international & Golden Boot leader.',
-      },
-      {
-        id: 'diarra',
-        name: 'Djigui Diarra',
-        slug: 'austin-odhiambo',
-        role: 'Defensive Anchor',
-        rating: 8.5,
-        xgDeltaWhenOut: -0.08,
-        xgaDeltaWhenOut: 0.37,
-        defaultStatus: 'DOUBTFUL (LATE TEST)',
-        absenceReason: 'Sweeper-keeper ball distribution & penalty-saving specialist.',
-      },
-    ],
-  },
-];
+  };
+}
 
 export const InjuryLineupImpactPage: React.FC = () => {
   const { addSelection } = useBetSlip();
-  const [selectedClubId, setSelectedClubId] = useState<string>('manchester-city');
+  const { data: hookedPredictions = [], isLoading: isPredictionsLoading } = usePredictions(7);
+  const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [espnFixtures, setEspnFixtures] = useState<Prediction[]>([]);
   const [selectedEspnEventId, setSelectedEspnEventId] = useState<string | null>(null);
   const [dynamicEspnClub, setDynamicEspnClub] = useState<ClubLineupImpactProfile | null>(null);
   const [loadingEspnSquad, setLoadingEspnSquad] = useState(false);
 
-  // Track which players are toggled OUT in the interactive simulator
-  const [absentPlayerIds, setAbsentPlayerIds] = useState<Record<string, boolean>>({
-    rodri: true,
-    'de-bruyne': true,
-    saliba: true,
-    bellingham: true,
-    omala: true,
-    diarra: true,
-  });
+  const [absentPlayerIds, setAbsentPlayerIds] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let active = true;
@@ -295,17 +119,23 @@ export const InjuryLineupImpactPage: React.FC = () => {
         if (!active) return;
         const liveList: Prediction[] = Array.isArray(liveRes?.predictions) ? liveRes.predictions : [];
         const upList: Prediction[] = Array.isArray(upRes?.predictions) ? upRes.predictions : [];
-        const combined = [...liveList, ...upList].slice(0, 8);
-        setEspnFixtures(combined);
+        const combined = [...liveList, ...upList, ...hookedPredictions].filter(
+          (item, index, arr) =>
+            item.status !== 'finished' &&
+            arr.findIndex((other) => other.id === item.id) === index
+        );
+        setEspnFixtures(combined.slice(0, 12));
       } catch {
-        // non-blocking
+        if (active && hookedPredictions.length > 0) {
+          setEspnFixtures(hookedPredictions.filter((p) => p.status !== 'finished').slice(0, 12));
+        }
       }
     };
     loadFixtures();
     return () => {
       active = false;
     };
-  }, []);
+  }, [hookedPredictions]);
 
   const handleSelectEspnFixture = async (fixture: Prediction) => {
     const rawId = String(fixture.id).replace(/^espn-/, '');
@@ -313,8 +143,9 @@ export const InjuryLineupImpactPage: React.FC = () => {
     setSelectedClubId(`espn-${rawId}`);
     setLoadingEspnSquad(true);
     try {
-      const summary = await fetchDeepMatchSummary(rawId);
+      const summary = /^\d+$/.test(rawId) ? await fetchDeepMatchSummary(rawId) : null;
       const starters = summary?.homeRoster?.starters || [];
+      const fallback = buildFallbackTacticalProfile(fixture);
       const builtPlayers: KeySquadMember[] =
         starters.length > 0
           ? starters.slice(0, 6).map((s, idx) => {
@@ -341,69 +172,40 @@ export const InjuryLineupImpactPage: React.FC = () => {
                 }.`,
               };
             })
-          : [
-              {
-                id: `espn-p-${rawId}-1`,
-                name: `${fixture.home_team} Primary Striker (#9)`,
-                slug: 'primary-striker',
-                role: 'Attacking Star',
-                rating: 8.3,
-                xgDeltaWhenOut: -0.38,
-                xgaDeltaWhenOut: 0.06,
-                defaultStatus: 'FIT',
-                absenceReason: `Primary penalty & box target for ${fixture.home_team}.`,
-              },
-              {
-                id: `espn-p-${rawId}-2`,
-                name: `${fixture.home_team} Central Playmaker (#8)`,
-                slug: 'central-playmaker',
-                role: 'Midfield Engine',
-                rating: 8.1,
-                xgDeltaWhenOut: -0.26,
-                xgaDeltaWhenOut: 0.24,
-                defaultStatus: 'FIT',
-                absenceReason: `Controls progressive passes and tempo vs ${fixture.away_team}.`,
-              },
-              {
-                id: `espn-p-${rawId}-3`,
-                name: `${fixture.home_team} Defensive Captain (#4)`,
-                slug: 'defensive-captain',
-                role: 'Defensive Anchor',
-                rating: 7.9,
-                xgDeltaWhenOut: -0.08,
-                xgaDeltaWhenOut: 0.39,
-                defaultStatus: 'DOUBTFUL (LATE TEST)',
-                absenceReason: `Organizes backline press resistance & aerial clearances.`,
-              },
-            ];
+          : fallback.keyPlayers;
 
       const profile: ClubLineupImpactProfile = {
-        clubId: `espn-${rawId}`,
-        clubName: fixture.home_team,
-        opponent: fixture.away_team,
-        league: fixture.competition || 'Live ESPN Matchday',
-        baseXg: fixture.home_xg || 1.78,
-        baseOpponentXg: fixture.away_xg || 1.18,
-        bookmakerFavoriteOdds: fixture.odds?.home || fixture.home_odds || 1.95,
+        ...fallback,
         keyPlayers: builtPlayers,
       };
       setDynamicEspnClub(profile);
-      if (builtPlayers[0]) {
-        setAbsentPlayerIds((prev) => ({ ...prev, [builtPlayers[0].id]: true }));
+      if (builtPlayers[builtPlayers.length - 1]) {
+        setAbsentPlayerIds({ [builtPlayers[builtPlayers.length - 1].id]: true });
       }
     } catch {
-      toast.error('Could not load ESPN Starting XI telemetry for this fixture');
+      const fallback = buildFallbackTacticalProfile(fixture);
+      setDynamicEspnClub(fallback);
+      toast.info(`Loaded model lineup baseline for ${fixture.home_team}`);
     } finally {
       setLoadingEspnSquad(false);
     }
   };
 
-  const activeClub = useMemo(() => {
-    if (selectedClubId.startsWith('espn-') && dynamicEspnClub) {
-      return dynamicEspnClub;
+  useEffect(() => {
+    if (!selectedClubId && espnFixtures.length > 0) {
+      const first = espnFixtures[0];
+      const rawId = String(first.id).replace(/^espn-/, '');
+      setSelectedClubId(`espn-${rawId}`);
+      setSelectedEspnEventId(rawId);
+      setDynamicEspnClub(buildFallbackTacticalProfile(first));
     }
-    return LINEUP_IMPACT_CLUBS.find((c) => c.clubId === selectedClubId) || LINEUP_IMPACT_CLUBS[0];
-  }, [selectedClubId, dynamicEspnClub]);
+  }, [espnFixtures, selectedClubId]);
+
+  const activeClub = useMemo(() => {
+    if (dynamicEspnClub) return dynamicEspnClub;
+    if (espnFixtures.length > 0) return buildFallbackTacticalProfile(espnFixtures[0]);
+    return null;
+  }, [dynamicEspnClub, espnFixtures]);
 
   const togglePlayerAbsence = (playerId: string) => {
     setAbsentPlayerIds((prev) => ({
@@ -414,6 +216,22 @@ export const InjuryLineupImpactPage: React.FC = () => {
 
   // Real-time Poisson xG & Fair Odds Recalculation based on active absences
   const impactSimulation = useMemo(() => {
+    if (!activeClub) {
+      return {
+        missingCount: 0,
+        adjustedClubXg: 0,
+        adjustedOpponentXg: 0,
+        baseWinProb: 50,
+        adjWinProb: 50,
+        winProbDrop: 0,
+        fairClubOdds: 2.0,
+        isFavoriteOverpriced: false,
+        recommendedMarket: 'Awaiting Fixture',
+        recommendedOdds: 1.95,
+        recommendedConfidence: 50,
+      };
+    }
+
     let xgDrop = 0;
     let xgaSpike = 0;
     let missingCount = 0;
@@ -429,7 +247,6 @@ export const InjuryLineupImpactPage: React.FC = () => {
     const adjustedClubXg = Math.max(0.65, activeClub.baseXg + xgDrop);
     const adjustedOpponentXg = Math.min(2.85, activeClub.baseOpponentXg + xgaSpike);
 
-    // Simplified Poisson win probability approximation
     const baseNetDiff = activeClub.baseXg - activeClub.baseOpponentXg;
     const adjNetDiff = adjustedClubXg - adjustedOpponentXg;
 
@@ -499,76 +316,53 @@ export const InjuryLineupImpactPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Club Selector Buttons */}
+          {/* Live ESPN Fixture Selector */}
           <div className="space-y-3 pt-2">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Featured Club Tactical Profiles
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {LINEUP_IMPACT_CLUBS.map((club) => {
-                const isSelected = club.clubId === selectedClubId;
-                return (
-                  <button
-                    key={club.clubId}
-                    type="button"
-                    onClick={() => {
-                      setSelectedEspnEventId(null);
-                      setSelectedClubId(club.clubId);
-                    }}
-                    className={`px-3.5 py-2 rounded-lg border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                        : 'bg-background hover:bg-muted text-foreground border-border'
-                    }`}
-                  >
-                    <TeamLogo team={club.clubName} size="xs" />
-                    <span>{club.clubName}</span>
-                    <span className="opacity-75 font-normal">vs {club.opponent}</span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-emerald-500">
+              <Radio className="h-3.5 w-3.5 animate-pulse" />
+              <span>Today&apos;s Live &amp; Upcoming ESPN Matchday Squads (Click to Load Confirmed XI)</span>
+              {loadingEspnSquad && <RefreshCw className="h-3.5 w-3.5 animate-spin text-primary" />}
             </div>
 
-            {espnFixtures.length > 0 && (
-              <div className="pt-2 border-t border-border/60 space-y-2">
-                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-emerald-500">
-                  <Radio className="h-3.5 w-3.5 animate-pulse" />
-                  <span>Today&apos;s Live &amp; Upcoming ESPN Matchday Squads (Click to Load Confirmed XI)</span>
-                  {loadingEspnSquad && <RefreshCw className="h-3.5 w-3.5 animate-spin text-primary" />}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {espnFixtures.map((fix) => {
-                    const rawId = String(fix.id).replace(/^espn-/, '');
-                    const isSelected = selectedClubId === `espn-${rawId}`;
-                    return (
-                      <button
-                        key={fix.id}
-                        type="button"
-                        onClick={() => handleSelectEspnFixture(fix)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
-                            : 'bg-muted/40 hover:bg-muted text-foreground border-border/70'
-                        }`}
-                      >
-                        <TeamLogo team={fix.home_team} size="xs" />
-                        <span>{fix.home_team}</span>
-                        <span className="opacity-70 font-normal">vs {fix.away_team}</span>
-                        {fix.is_live && (
-                          <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
-                            LIVE
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+            {espnFixtures.length === 0 ? (
+              <div className="p-4 rounded-xl border border-border/60 bg-muted/20 text-xs text-muted-foreground">
+                {isPredictionsLoading
+                  ? 'Syncing live & upcoming ESPN matchday fixtures...'
+                  : 'No active or upcoming fixtures in the current window to load lineups.'}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {espnFixtures.map((fix) => {
+                  const rawId = String(fix.id).replace(/^espn-/, '');
+                  const isSelected = selectedClubId === `espn-${rawId}`;
+                  return (
+                    <button
+                      key={fix.id}
+                      type="button"
+                      onClick={() => handleSelectEspnFixture(fix)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                          : 'bg-muted/40 hover:bg-muted text-foreground border-border/70'
+                      }`}
+                    >
+                      <TeamLogo team={fix.home_team} size="xs" />
+                      <span>{fix.home_team}</span>
+                      <span className="opacity-70 font-normal">vs {fix.away_team}</span>
+                      {fix.is_live && (
+                        <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+                          LIVE
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
         </section>
 
-        {selectedEspnEventId && /^\d+$/.test(selectedEspnEventId) && (
+        {activeClub && selectedEspnEventId && /^\d+$/.test(selectedEspnEventId) && (
           <MatchDeepSummaryPanel
             eventId={selectedEspnEventId}
             homeTeam={activeClub.clubName}
@@ -577,161 +371,163 @@ export const InjuryLineupImpactPage: React.FC = () => {
         )}
 
         {/* Interactive What-If Lineup Absence Simulator */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                <Sliders className="h-5 w-5 text-primary" />
-                Interactive &ldquo;What-If&rdquo; Lineup Absence Toggle — {activeClub.clubName} vs {activeClub.opponent}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Click any key player below to toggle their status between <strong>STARTING (FIT)</strong> and <strong>RULED OUT / BENCHED</strong> and watch the Poisson xG model recalculate live.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {activeClub.keyPlayers.map((player) => {
-                const isOut = !!absentPlayerIds[player.id];
-                return (
-                  <div
-                    key={player.id}
-                    className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isOut
-                        ? 'border-amber-500/40 bg-amber-500/5'
-                        : 'border-emerald-500/30 bg-emerald-500/5'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <PlayerAvatar
-                        name={player.name}
-                        team={activeClub.clubName}
-                        rating={player.rating}
-                        size="md"
-                        showClubBadge
-                        showRatingBadge
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 text-xs">
-                          <Link
-                            to={`/players/${player.slug}`}
-                            className="font-bold text-sm text-foreground hover:text-primary transition-colors"
-                          >
-                            {player.name}
-                          </Link>
-                          <span className="text-muted-foreground">· {player.role}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{player.absenceReason}</p>
-                        <div className="flex items-center gap-3 text-[11px] font-mono mt-1">
-                          <span className="text-amber-600 dark:text-amber-400 font-bold">
-                            Attacking Impact: {player.xgDeltaWhenOut.toFixed(2)} xG/90
-                          </span>
-                          <span className="text-destructive font-bold">
-                            Defensive Concession: +{player.xgaDeltaWhenOut.toFixed(2)} xGA/90
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => togglePlayerAbsence(player.id)}
-                      className={`px-3.5 py-2 rounded-lg text-xs font-bold shrink-0 border transition-colors cursor-pointer ${
+        {activeClub && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Sliders className="h-5 w-5 text-primary" />
+                  Interactive &ldquo;What-If&rdquo; Lineup Absence Toggle — {activeClub.clubName} vs {activeClub.opponent}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Click any key player below to toggle their status between <strong>STARTING (FIT)</strong> and <strong>RULED OUT / BENCHED</strong> and watch the Poisson xG model recalculate live.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {activeClub.keyPlayers.map((player) => {
+                  const isOut = !!absentPlayerIds[player.id];
+                  return (
+                    <div
+                      key={player.id}
+                      className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                         isOut
-                          ? 'bg-amber-500 text-slate-950 border-amber-500'
-                          : 'bg-emerald-600 text-white border-emerald-600'
+                          ? 'border-amber-500/40 bg-amber-500/5'
+                          : 'border-emerald-500/30 bg-emerald-500/5'
                       }`}
                     >
-                      {isOut ? 'STATUS: RULED OUT (Click to Start)' : 'STATUS: STARTING XI (Click to Rule Out)'}
-                    </button>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <PlayerAvatar
+                          name={player.name}
+                          team={activeClub.clubName}
+                          rating={player.rating}
+                          size="md"
+                          showClubBadge
+                          showRatingBadge
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 text-xs">
+                            <Link
+                              to={`/players/${player.slug}?team=${encodeURIComponent(activeClub.clubName)}&league=${encodeURIComponent(activeClub.league)}`}
+                              className="font-bold text-sm text-foreground hover:text-primary transition-colors"
+                            >
+                              {player.name}
+                            </Link>
+                            <span className="text-muted-foreground">· {player.role}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">{player.absenceReason}</p>
+                          <div className="flex items-center gap-3 text-[11px] font-mono mt-1">
+                            <span className="text-amber-600 dark:text-amber-400 font-bold">
+                              Attacking Impact: {player.xgDeltaWhenOut.toFixed(2)} xG/90
+                            </span>
+                            <span className="text-destructive font-bold">
+                              Defensive Concession: +{player.xgaDeltaWhenOut.toFixed(2)} xGA/90
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => togglePlayerAbsence(player.id)}
+                        className={`px-3.5 py-2 rounded-lg text-xs font-bold shrink-0 border transition-colors cursor-pointer ${
+                          isOut
+                            ? 'bg-amber-500 text-slate-950 border-amber-500'
+                            : 'bg-emerald-600 text-white border-emerald-600'
+                        }`}
+                      >
+                        {isOut ? 'STATUS: RULED OUT (Click to Start)' : 'STATUS: STARTING XI (Click to Rule Out)'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            {/* Real-Time Adjusted Poisson Telemetry Card */}
+            <Card className="border-primary/30 bg-primary/5 flex flex-col justify-between">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center justify-between">
+                  <span>Lineup-Adjusted Model</span>
+                  <span className="font-mono text-xs text-primary">
+                    {impactSimulation.missingCount} Key Starters Out
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Comparing Full-Strength Baseline vs Current Lineup Absences
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-lg bg-background border border-border">
+                    <span className="text-[10px] text-muted-foreground block">Full-Strength xG</span>
+                    <span className="font-mono font-bold text-sm text-foreground">
+                      {activeClub.baseXg.toFixed(2)} vs {activeClub.baseOpponentXg.toFixed(2)}
+                    </span>
                   </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+                  <div className="p-2.5 rounded-lg bg-background border border-primary/30">
+                    <span className="text-[10px] text-muted-foreground block">Lineup-Adjusted xG</span>
+                    <span className="font-mono font-black text-sm text-primary">
+                      {impactSimulation.adjustedClubXg.toFixed(2)} vs {impactSimulation.adjustedOpponentXg.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
 
-          {/* Real-Time Adjusted Poisson Telemetry Card */}
-          <Card className="border-primary/30 bg-primary/5 flex flex-col justify-between">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center justify-between">
-                <span>Lineup-Adjusted Model</span>
-                <span className="font-mono text-xs text-primary">
-                  {impactSimulation.missingCount} Key Starters Out
-                </span>
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Comparing Full-Strength Baseline vs Current Lineup Absences
-              </CardDescription>
-            </CardHeader>
+                <div className="p-3 rounded-lg bg-background border border-border space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Full-Strength Win Prob:</span>
+                    <span className="font-mono font-bold">{impactSimulation.baseWinProb}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Lineup-Adjusted Win Prob:</span>
+                    <span className="font-mono font-black text-amber-600 dark:text-amber-400">
+                      {impactSimulation.adjWinProb}% (-{impactSimulation.winProbDrop}%)
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-1 border-t border-border">
+                    <span className="text-muted-foreground">Bookmaker Odds vs True Fair Odds:</span>
+                    <span className="font-mono font-bold">
+                      {activeClub.bookmakerFavoriteOdds.toFixed(2)} vs{' '}
+                      <strong className="text-primary">{impactSimulation.fairClubOdds.toFixed(2)}</strong>
+                    </span>
+                  </div>
+                </div>
 
-            <CardContent className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2.5 rounded-lg bg-background border border-border">
-                  <span className="text-[10px] text-muted-foreground block">Full-Strength xG</span>
-                  <span className="font-mono font-bold text-sm text-foreground">
-                    {activeClub.baseXg.toFixed(2)} vs {activeClub.baseOpponentXg.toFixed(2)}
-                  </span>
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-2">
+                  <p className="text-[11px] font-bold uppercase text-emerald-700 dark:text-emerald-300">
+                    {impactSimulation.isFavoriteOverpriced
+                      ? '⚠️ FAVORITE OVERPRICED — FADE INJURED LINEUP'
+                      : '✅ FULL-STRENGTH VALUE CONFIRMED'}
+                  </p>
+                  <p className="font-bold text-foreground">
+                    AI Pick: {impactSimulation.recommendedMarket}
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      addSelection({
+                        matchId: `lineup-${activeClub.clubId}`,
+                        match: `${activeClub.clubName} vs ${activeClub.opponent}`,
+                        homeTeam: activeClub.clubName,
+                        awayTeam: activeClub.opponent,
+                        league: activeClub.league,
+                        matchDate: new Date().toISOString(),
+                        market: impactSimulation.recommendedMarket,
+                        odds: impactSimulation.recommendedOdds,
+                        confidence: impactSimulation.recommendedConfidence,
+                      });
+                      toast.success(`Added Lineup-Adjusted Pick: ${impactSimulation.recommendedMarket}!`);
+                    }}
+                    className="w-full gap-1.5 text-xs font-bold"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add Pick @ {impactSimulation.recommendedOdds.toFixed(2)} ({impactSimulation.recommendedConfidence}% AI)
+                  </Button>
                 </div>
-                <div className="p-2.5 rounded-lg bg-background border border-primary/30">
-                  <span className="text-[10px] text-muted-foreground block">Lineup-Adjusted xG</span>
-                  <span className="font-mono font-black text-sm text-primary">
-                    {impactSimulation.adjustedClubXg.toFixed(2)} vs {impactSimulation.adjustedOpponentXg.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-background border border-border space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Full-Strength Win Prob:</span>
-                  <span className="font-mono font-bold">{impactSimulation.baseWinProb}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Lineup-Adjusted Win Prob:</span>
-                  <span className="font-mono font-black text-amber-600 dark:text-amber-400">
-                    {impactSimulation.adjWinProb}% (-{impactSimulation.winProbDrop}%)
-                  </span>
-                </div>
-                <div className="flex justify-between pt-1 border-t border-border">
-                  <span className="text-muted-foreground">Bookmaker Odds vs True Fair Odds:</span>
-                  <span className="font-mono font-bold">
-                    {activeClub.bookmakerFavoriteOdds.toFixed(2)} vs{' '}
-                    <strong className="text-primary">{impactSimulation.fairClubOdds.toFixed(2)}</strong>
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-2">
-                <p className="text-[11px] font-bold uppercase text-emerald-700 dark:text-emerald-300">
-                  {impactSimulation.isFavoriteOverpriced
-                    ? '⚠️ FAVORITE OVERPRICED — FADE INJURED LINEUP'
-                    : '✅ FULL-STRENGTH VALUE CONFIRMED'}
-                </p>
-                <p className="font-bold text-foreground">
-                  AI Pick: {impactSimulation.recommendedMarket}
-                </p>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    addSelection({
-                      matchId: `lineup-${activeClub.clubId}`,
-                      match: `${activeClub.clubName} vs ${activeClub.opponent}`,
-                      homeTeam: activeClub.clubName,
-                      awayTeam: activeClub.opponent,
-                      league: activeClub.league,
-                      matchDate: new Date().toISOString(),
-                      market: impactSimulation.recommendedMarket,
-                      odds: impactSimulation.recommendedOdds,
-                      confidence: impactSimulation.recommendedConfidence,
-                    });
-                    toast.success(`Added Lineup-Adjusted Pick: ${impactSimulation.recommendedMarket}!`);
-                  }}
-                  className="w-full gap-1.5 text-xs font-bold"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add Pick @ {impactSimulation.recommendedOdds.toFixed(2)} ({impactSimulation.recommendedConfidence}% AI)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <SEOAuthorityHub />
       </main>

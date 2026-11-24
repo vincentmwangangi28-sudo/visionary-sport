@@ -2099,75 +2099,9 @@ const VERIFIED_FIXTURE_SEEDS: VerifiedFixtureSeed[] = [
  * Guarantees that Today (dayOffset = 0), Tomorrow (dayOffset = 1), and Upcoming/Weekend (dayOffset = 2..4)
  * always contain a comprehensive, multi-league slate of matches at any hour of the day.
  */
-let cachedDefaultPredictions: Prediction[] | null = null;
-let cachedDefaultPredictionsAt = 0;
-
 export function getUpdatedDefaultPredictions(): Prediction[] {
-  const nowMs = Date.now();
-  if (cachedDefaultPredictions && nowMs - cachedDefaultPredictionsAt < 60_000) {
-    return cachedDefaultPredictions;
-  }
-  const now = new Date(nowMs);
-  const nowIso = now.toISOString();
-  const dayRotationSeed = Math.floor(now.getTime() / 86_400_000);
-
-  // Track per-league count so the first fixtures of EVERY league land on Today (dayOffset = 0),
-  // the next land on Tomorrow (dayOffset = 1), and the rest distribute across Day +2..+4 (including Weekend).
-  const leagueCounters = new Map<string, number>();
-
-  // Calculate days until upcoming Saturday so weekend bucket is also always populated
-  const dayOfWeek = now.getDay(); // 0=Sun .. 6=Sat
-  const saturdayOffset = dayOfWeek === 6 ? 0 : dayOfWeek === 0 ? 6 : 6 - dayOfWeek;
-
-  // Rotate seed order deterministically by calendar day so daily slates feel fresh while staying stable all day
-  const rotatedSeeds = [...VERIFIED_FIXTURE_SEEDS];
-  const shift = dayRotationSeed % Math.max(1, rotatedSeeds.length);
-  const orderedSeeds = [...rotatedSeeds.slice(shift), ...rotatedSeeds.slice(0, shift)];
-
-  const list = orderedSeeds.map((seed, slotIndex) => {
-    const { scheduledIso, fallbackDayOffset: _origOffset, fallbackHourUtc, fallbackMinute, ...rest } = seed;
-    const leagueKey = (seed.league || 'Global').toLowerCase();
-    const countInLeague = leagueCounters.get(leagueKey) ?? 0;
-    leagueCounters.set(leagueKey, countInLeague + 1);
-
-    // Assign dayOffset so every league has Today (0), Tomorrow (1), and Weekend/Upcoming fixtures:
-    // - 1st & 2nd match of each league (or ~45% of total pool) -> Today (dayOffset = 0)
-    // - 3rd match of each league (or ~30% of total pool) -> Tomorrow (dayOffset = 1)
-    // - 4th+ match of each league -> Upcoming / Weekend (saturdayOffset or 2..3)
-    let assignedDayOffset = 0;
-    if (countInLeague === 0 || countInLeague === 1 || slotIndex % 3 === 0) {
-      assignedDayOffset = 0;
-    } else if (countInLeague === 2 || slotIndex % 3 === 1) {
-      assignedDayOffset = 1;
-    } else {
-      assignedDayOffset = saturdayOffset >= 2 && saturdayOffset <= 5 ? saturdayOffset : 2 + (slotIndex % 2);
-    }
-
-    const staggeredHour =
-      assignedDayOffset === 0
-        ? Math.min(22, Math.max(12, fallbackHourUtc || 14 + (slotIndex % 8)))
-        : fallbackHourUtc || 15 + (slotIndex % 6);
-
-    return {
-      ...rest,
-      match_date: ensureFutureKickoffIso(
-        scheduledIso,
-        assignedDayOffset,
-        staggeredHour,
-        fallbackMinute,
-        slotIndex
-      ),
-      status: 'pending' as const,
-      created_at: nowIso,
-    };
-  });
-
-  cachedDefaultPredictions = list.sort(
-    (a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime()
-  );
-  cachedDefaultPredictionsAt = nowMs;
-  return cachedDefaultPredictions;
+  return [];
 }
 
-export const DEFAULT_PREDICTIONS: Prediction[] = getUpdatedDefaultPredictions();
+export const DEFAULT_PREDICTIONS: Prediction[] = [];
 

@@ -24,6 +24,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { fetchRealtimeLiveMatches, fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { fetchDeepMatchSummary } from '@/services/autoSettlementService';
 import type { RealMatchSummary } from '@/types/prediction';
@@ -34,6 +35,7 @@ export interface RefereeProfile {
   name: string;
   nationality: string;
   primaryLeague: string;
+  leagueKeywords: string[];
   matchesOfficiated: number;
   yellowCardsPer90: number;
   redCardsPerMatch: number;
@@ -44,14 +46,6 @@ export interface RefereeProfile {
   over45CardsPct: number;
   strictnessRating: number; // 0-100
   styleTag: 'Card-Happy Strict' | 'High VAR Penalty Rate' | 'Balanced Flow' | 'Derby Specialist';
-  upcomingAssignment: {
-    match: string;
-    homeTeam: string;
-    awayTeam: string;
-    recommendedPick: string;
-    odds: number;
-    confidence: number;
-  };
 }
 
 export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
@@ -60,6 +54,7 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     name: 'Jesús Gil Manzano',
     nationality: 'Spain',
     primaryLeague: 'La Liga / UCL',
+    leagueKeywords: ['la liga', 'laliga', 'champions league', 'spanish'],
     matchesOfficiated: 24,
     yellowCardsPer90: 5.42,
     redCardsPerMatch: 0.31,
@@ -70,20 +65,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 71,
     strictnessRating: 96,
     styleTag: 'Card-Happy Strict',
-    upcomingAssignment: {
-      match: 'Real Madrid vs Barcelona',
-      homeTeam: 'Real Madrid',
-      awayTeam: 'Barcelona',
-      recommendedPick: 'Over 5.5 Total Cards',
-      odds: 1.78,
-      confidence: 82,
-    },
   },
   {
     id: 'anthony-taylor',
     name: 'Anthony Taylor',
     nationality: 'England',
     primaryLeague: 'Premier League / UCL',
+    leagueKeywords: ['premier league', 'english', 'champions league', 'fa cup'],
     matchesOfficiated: 27,
     yellowCardsPer90: 4.68,
     redCardsPerMatch: 0.22,
@@ -94,20 +82,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 62,
     strictnessRating: 89,
     styleTag: 'High VAR Penalty Rate',
-    upcomingAssignment: {
-      match: 'Arsenal vs Chelsea',
-      homeTeam: 'Arsenal',
-      awayTeam: 'Chelsea',
-      recommendedPick: 'Over 4.5 Total Cards',
-      odds: 1.72,
-      confidence: 79,
-    },
   },
   {
     id: 'michael-oliver',
     name: 'Michael Oliver',
     nationality: 'England',
     primaryLeague: 'Premier League / UCL',
+    leagueKeywords: ['premier league', 'english', 'champions league', 'efl'],
     matchesOfficiated: 28,
     yellowCardsPer90: 4.35,
     redCardsPerMatch: 0.19,
@@ -118,20 +99,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 56,
     strictnessRating: 84,
     styleTag: 'Derby Specialist',
-    upcomingAssignment: {
-      match: 'Liverpool vs Manchester City',
-      homeTeam: 'Liverpool',
-      awayTeam: 'Manchester City',
-      recommendedPick: 'Both Teams 2+ Cards Each',
-      odds: 1.84,
-      confidence: 76,
-    },
   },
   {
     id: 'clement-turpin',
     name: 'Clément Turpin',
     nationality: 'France',
     primaryLeague: 'Ligue 1 / UCL',
+    leagueKeywords: ['ligue 1', 'french', 'champions league', 'europa'],
     matchesOfficiated: 25,
     yellowCardsPer90: 4.18,
     redCardsPerMatch: 0.24,
@@ -142,20 +116,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 54,
     strictnessRating: 86,
     styleTag: 'High VAR Penalty Rate',
-    upcomingAssignment: {
-      match: 'PSG vs Marseille',
-      homeTeam: 'PSG',
-      awayTeam: 'Marseille',
-      recommendedPick: 'Over 4.5 Cards & PSG 1X',
-      odds: 1.92,
-      confidence: 77,
-    },
   },
   {
     id: 'dahane-beida',
     name: 'Dahane Beida',
     nationality: 'Mauritania',
     primaryLeague: 'CAF Champions League / AFCON',
+    leagueKeywords: ['caf', 'afcon', 'africa'],
     matchesOfficiated: 19,
     yellowCardsPer90: 4.85,
     redCardsPerMatch: 0.26,
@@ -166,20 +133,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 65,
     strictnessRating: 91,
     styleTag: 'Card-Happy Strict',
-    upcomingAssignment: {
-      match: 'Al Ahly vs Mamelodi Sundowns',
-      homeTeam: 'Al Ahly',
-      awayTeam: 'Mamelodi Sundowns',
-      recommendedPick: 'Over 4.5 Total Cards',
-      odds: 1.68,
-      confidence: 81,
-    },
   },
   {
     id: 'szymon-marciniak',
     name: 'Szymon Marciniak',
     nationality: 'Poland',
     primaryLeague: 'UEFA Champions League',
+    leagueKeywords: ['champions league', 'bundesliga', 'uefa', 'europa'],
     matchesOfficiated: 26,
     yellowCardsPer90: 4.28,
     redCardsPerMatch: 0.16,
@@ -190,20 +150,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 55,
     strictnessRating: 83,
     styleTag: 'Derby Specialist',
-    upcomingAssignment: {
-      match: 'Bayern Munich vs Borussia Dortmund',
-      homeTeam: 'Bayern Munich',
-      awayTeam: 'Borussia Dortmund',
-      recommendedPick: 'Over 3.5 Total Cards',
-      odds: 1.54,
-      confidence: 80,
-    },
   },
   {
     id: 'peter-waweru',
     name: 'Dr. Peter Waweru Kamaku',
     nationality: 'Kenya',
     primaryLeague: 'FKF Premier League / CAF',
+    leagueKeywords: ['kpl', 'kenya', 'fkf', 'caf'],
     matchesOfficiated: 21,
     yellowCardsPer90: 4.12,
     redCardsPerMatch: 0.18,
@@ -214,20 +167,13 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 52,
     strictnessRating: 80,
     styleTag: 'Derby Specialist',
-    upcomingAssignment: {
-      match: 'Gor Mahia vs AFC Leopards',
-      homeTeam: 'Gor Mahia',
-      awayTeam: 'AFC Leopards',
-      recommendedPick: 'Over 4.5 Cards (Mashemeji Derby)',
-      odds: 1.74,
-      confidence: 78,
-    },
   },
   {
     id: 'abongile-tom',
     name: 'Abongile Tom',
     nationality: 'South Africa',
     primaryLeague: 'Betway Premiership (PSL) / CAF',
+    leagueKeywords: ['psl', 'south africa', 'betway', 'caf'],
     matchesOfficiated: 22,
     yellowCardsPer90: 4.46,
     redCardsPerMatch: 0.21,
@@ -238,14 +184,6 @@ export const ELITE_REFEREE_DATABASE: RefereeProfile[] = [
     over45CardsPct: 59,
     strictnessRating: 85,
     styleTag: 'Card-Happy Strict',
-    upcomingAssignment: {
-      match: 'Mamelodi Sundowns vs Orlando Pirates',
-      homeTeam: 'Mamelodi Sundowns',
-      awayTeam: 'Orlando Pirates',
-      recommendedPick: 'Over 4.5 Total Cards',
-      odds: 1.76,
-      confidence: 77,
-    },
   },
 ];
 
@@ -267,10 +205,12 @@ interface EspnFixtureOption {
   awayTeam: string;
   league: string;
   statusLabel: string;
+  matchDate?: string;
 }
 
 export default function RefereeStatsPredictions() {
   const { addSelection, selections, removeSelection } = useBetSlip();
+  const { predictions: upcoming7d } = usePredictions(7);
   const [selectedRefId, setSelectedRefId] = useState<string>(ELITE_REFEREE_DATABASE[0].id);
   const [derbyIntensity, setDerbyIntensity] = useState<number>(1.15); // 1.00 = Standard, 1.15 = Rivalry, 1.32 = Fierce Derby
   const [combinedTeamFouls, setCombinedTeamFouls] = useState<number>(25);
@@ -301,6 +241,7 @@ export default function RefereeStatsPredictions() {
               awayTeam: m.away_team,
               league: m.competition || 'Live Fixture',
               statusLabel: `LIVE ${m.home_score ?? 0}-${m.away_score ?? 0} (${m.minute ?? 'HT'}')`,
+              matchDate: m.match_date,
             });
           }
         }
@@ -317,6 +258,7 @@ export default function RefereeStatsPredictions() {
                 hour: '2-digit',
                 minute: '2-digit',
               }),
+              matchDate: f.match_date,
             });
           }
         }
@@ -360,6 +302,81 @@ export default function RefereeStatsPredictions() {
     () => ELITE_REFEREE_DATABASE.find((r) => r.id === selectedRefId) || ELITE_REFEREE_DATABASE[0],
     [selectedRefId]
   );
+
+  const selectedLiveFixture = useMemo(
+    () => espnFixtures.find((x) => x.eventId === selectedEventId) || espnFixtures[0] || null,
+    [espnFixtures, selectedEventId]
+  );
+
+  // Match each referee's primary competition to a real 7-day scheduled fixture (if one exists)
+  const refereeFixtureMap = useMemo(() => {
+    const map: Record<string, {
+      matchId: string;
+      match: string;
+      homeTeam: string;
+      awayTeam: string;
+      league: string;
+      matchDate?: string;
+      recommendedPick: string;
+      odds: number;
+      confidence: number;
+    } | null> = {};
+
+    const allCandidates = [
+      ...espnFixtures.map((e) => ({
+        id: e.id,
+        home_team: e.homeTeam,
+        away_team: e.awayTeam,
+        league: e.league,
+        match_date: e.matchDate,
+      })),
+      ...upcoming7d.map((u) => ({
+        id: String(u.id),
+        home_team: u.home_team,
+        away_team: u.away_team,
+        league: u.league,
+        match_date: u.match_date,
+      })),
+    ];
+
+    ELITE_REFEREE_DATABASE.forEach((ref, idx) => {
+      const matching = allCandidates.filter((c) => {
+        const l = (c.league || '').toLowerCase();
+        return ref.leagueKeywords.some((kw) => l.includes(kw));
+      });
+      const picked = matching.length > 0 ? matching[idx % matching.length] : null;
+      if (picked) {
+        const line = ref.yellowCardsPer90 >= 4.7 ? 'Over 4.5 Total Cards' : 'Over 3.5 Total Cards';
+        const odds = Number(Math.max(1.45, Math.min(2.05, 100 / (ref.over45CardsPct + 12))).toFixed(2));
+        map[ref.id] = {
+          matchId: `ref-pick-${ref.id}-${picked.id}`,
+          match: `${picked.home_team} vs ${picked.away_team}`,
+          homeTeam: picked.home_team,
+          awayTeam: picked.away_team,
+          league: picked.league,
+          matchDate: picked.match_date,
+          recommendedPick: line,
+          odds,
+          confidence: ref.over35CardsPct,
+        };
+      } else {
+        map[ref.id] = null;
+      }
+    });
+
+    return map;
+  }, [espnFixtures, upcoming7d]);
+
+  const activeFixtureForSim = selectedLiveFixture
+    ? {
+        matchId: selectedLiveFixture.id,
+        match: `${selectedLiveFixture.homeTeam} vs ${selectedLiveFixture.awayTeam}`,
+        homeTeam: selectedLiveFixture.homeTeam,
+        awayTeam: selectedLiveFixture.awayTeam,
+        league: selectedLiveFixture.league,
+        matchDate: selectedLiveFixture.matchDate,
+      }
+    : refereeFixtureMap[activeReferee.id];
 
   const simulatedCardMarkets = useMemo(() => {
     const foulRatio = combinedTeamFouls / activeReferee.foulsPerMatch;
@@ -678,7 +695,8 @@ export default function RefereeStatsPredictions() {
                       </div>
                       <p className="font-bold text-sm text-foreground">{m.label}</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Official: {activeReferee.name} ({activeReferee.upcomingAssignment.match})
+                        Official: {activeReferee.name}
+                        {activeFixtureForSim ? ` · ${activeFixtureForSim.match}` : ' · Quantitative Simulation'}
                       </p>
                     </div>
 
@@ -686,39 +704,45 @@ export default function RefereeStatsPredictions() {
                       <span className="font-mono font-black text-base text-primary">
                         @{m.odds.toFixed(2)}
                       </span>
-                      <Button
-                        size="sm"
-                        variant={isAdded ? 'default' : 'outline'}
-                        onClick={() => {
-                          if (isAdded) {
-                            removeSelection(matchId);
-                          } else {
-                            addSelection({
-                              matchId,
-                              match: activeReferee.upcomingAssignment.match,
-                              homeTeam: activeReferee.upcomingAssignment.homeTeam,
-                              awayTeam: activeReferee.upcomingAssignment.awayTeam,
-                              league: activeReferee.primaryLeague,
-                              matchDate: new Date().toISOString(),
-                              market: `${m.label} (Ref: ${activeReferee.name})`,
-                              odds: m.odds,
-                              confidence: m.prob,
-                            });
-                            toast.success(`Added "${m.label}" (@${m.odds.toFixed(2)}) to Bet Slip`);
-                          }
-                        }}
-                        className="h-8 text-xs font-bold gap-1"
-                      >
-                        {isAdded ? (
-                          <>
-                            <CheckCircle2 className="h-3.5 w-3.5" /> In Slip
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="h-3.5 w-3.5" /> Add to Slip
-                          </>
-                        )}
-                      </Button>
+                      {activeFixtureForSim ? (
+                        <Button
+                          size="sm"
+                          variant={isAdded ? 'default' : 'outline'}
+                          onClick={() => {
+                            if (isAdded) {
+                              removeSelection(matchId);
+                            } else {
+                              addSelection({
+                                matchId,
+                                match: activeFixtureForSim.match,
+                                homeTeam: activeFixtureForSim.homeTeam,
+                                awayTeam: activeFixtureForSim.awayTeam,
+                                league: activeFixtureForSim.league || activeReferee.primaryLeague,
+                                matchDate: activeFixtureForSim.matchDate,
+                                market: `${m.label} (Ref: ${activeReferee.name})`,
+                                odds: m.odds,
+                                confidence: m.prob,
+                              });
+                              toast.success(`Added "${m.label}" (@${m.odds.toFixed(2)}) to Bet Slip`);
+                            }
+                          }}
+                          className="h-8 text-xs font-bold gap-1"
+                        >
+                          {isAdded ? (
+                            <>
+                              <CheckCircle2 className="h-3.5 w-3.5" /> In Slip
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-3.5 w-3.5" /> Add to Slip
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          Select ESPN fixture above
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -748,11 +772,13 @@ export default function RefereeStatsPredictions() {
                   <th className="py-3 px-4 text-center">Fouls/Card</th>
                   <th className="py-3 px-4 text-center">VAR Penalty %</th>
                   <th className="py-3 px-4 text-center">O3.5 / O4.5 %</th>
-                  <th className="py-3 px-4">Next Assignment &amp; AI Pick</th>
+                  <th className="py-3 px-4">7-Day League Fixture &amp; AI Card Pick</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {ELITE_REFEREE_DATABASE.map((ref) => (
+                {ELITE_REFEREE_DATABASE.map((ref) => {
+                  const realPick = refereeFixtureMap[ref.id];
+                  return (
                   <tr
                     key={ref.id}
                     onClick={() => setSelectedRefId(ref.id)}
@@ -785,41 +811,48 @@ export default function RefereeStatsPredictions() {
                       <span>{ref.over45CardsPct}%</span>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <span className="font-semibold text-foreground block text-xs">
-                            {ref.upcomingAssignment.match}
-                          </span>
-                          <span className="text-[11px] text-amber-500 font-bold">
-                            {ref.upcomingAssignment.recommendedPick} (@{ref.upcomingAssignment.odds})
-                          </span>
+                      {realPick ? (
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <span className="font-semibold text-foreground block text-xs">
+                              {realPick.match}
+                            </span>
+                            <span className="text-[11px] text-amber-500 font-bold">
+                              {realPick.recommendedPick} (@{realPick.odds})
+                            </span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addSelection({
+                                matchId: realPick.matchId,
+                                match: realPick.match,
+                                homeTeam: realPick.homeTeam,
+                                awayTeam: realPick.awayTeam,
+                                league: realPick.league,
+                                matchDate: realPick.matchDate,
+                                market: `${realPick.recommendedPick} (Ref: ${ref.name})`,
+                                odds: realPick.odds,
+                                confidence: realPick.confidence,
+                              });
+                              toast.success(`Added ${realPick.recommendedPick} to Bet Slip`);
+                            }}
+                            className="h-7 text-xs font-bold shrink-0"
+                          >
+                            + Slip
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addSelection({
-                              matchId: `ref-pick-${ref.id}`,
-                              match: ref.upcomingAssignment.match,
-                              homeTeam: ref.upcomingAssignment.homeTeam,
-                              awayTeam: ref.upcomingAssignment.awayTeam,
-                              league: ref.primaryLeague,
-                              matchDate: new Date().toISOString(),
-                              market: `${ref.upcomingAssignment.recommendedPick} (Ref: ${ref.name})`,
-                              odds: ref.upcomingAssignment.odds,
-                              confidence: ref.upcomingAssignment.confidence,
-                            });
-                            toast.success(`Added ${ref.upcomingAssignment.recommendedPick} to Bet Slip`);
-                          }}
-                          className="h-7 text-xs font-bold shrink-0"
-                        >
-                          + Slip
-                        </Button>
-                      </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">
+                          No matching 7d competition fixture
+                        </span>
+                      )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </CardContent>

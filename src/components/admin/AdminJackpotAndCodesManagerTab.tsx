@@ -31,6 +31,8 @@ export {
   type JackpotOverrideItem,
 };
 
+const JACKPOT_OVERRIDE_STORAGE_KEY = 'predictpro_admin_jackpot_pool_v2';
+
 export const AdminJackpotAndCodesManagerTab: React.FC = () => {
   const [codes, setCodes] = useState<CuratedBookingCode[]>(() => {
     try {
@@ -43,12 +45,13 @@ export const AdminJackpotAndCodesManagerTab: React.FC = () => {
 
   const [jackpotPool, setJackpotPool] = useState<JackpotOverrideItem[]>(() => {
     try {
-      const saved = localStorage.getItem('predictpro_admin_jackpot_pool');
+      const saved = localStorage.getItem(JACKPOT_OVERRIDE_STORAGE_KEY);
       return saved ? JSON.parse(saved) : DEFAULT_JACKPOT_POOL;
     } catch {
       return DEFAULT_JACKPOT_POOL;
     }
   });
+  const [loadingJackpot, setLoadingJackpot] = useState<boolean>(false);
 
   const [newTier, setNewTier] = useState<CuratedBookingCode['tier']>('2.00 Sure Rollover');
   const [newBookmaker, setNewBookmaker] = useState<CuratedBookingCode['bookmaker']>('SportyBet');
@@ -58,6 +61,49 @@ export const AdminJackpotAndCodesManagerTab: React.FC = () => {
 
   // Smart Bulk Paste state
   const [bulkPasteText, setBulkPasteText] = useState('');
+
+  const syncLiveJackpotFromApi = async (notify = false) => {
+    setLoadingJackpot(true);
+    try {
+      const res = await fetch('/api/jackpots?type=mega');
+      if (!res.ok) throw new Error('Failed to fetch jackpot pool');
+      const data = await res.json();
+      const apiGames = Array.isArray(data?.matches) ? data.matches : [];
+      if (apiGames.length > 0) {
+        const mapped: JackpotOverrideItem[] = apiGames.slice(0, 17).map((g: any, idx: number) => {
+          const single: '1' | 'X' | '2' =
+            g.predictedPick === 'Away Win' || g.predictedPick === '2'
+              ? '2'
+              : g.predictedPick === 'Draw' || g.predictedPick === 'X'
+              ? 'X'
+              : '1';
+          const conf = Number(g.confidence || 72);
+          return {
+            gameNo: Number(g.gameNumber || idx + 1),
+            homeTeam: g.homeTeam,
+            awayTeam: g.awayTeam,
+            league: g.league || 'League',
+            singlePick: single,
+            doubleCover: conf >= 78 ? 'None (Banker)' : (g.doubleChancePick as JackpotOverrideItem['doubleCover']) || '1X',
+            confidence: conf,
+            isBankerLock: conf >= 78,
+          };
+        });
+        setJackpotPool(mapped);
+        if (notify) toast.success(`Synced ${mapped.length} real Mega Jackpot fixtures!`);
+      }
+    } catch {
+      if (notify) toast.error('Could not load live Mega Jackpot schedule.');
+    } finally {
+      setLoadingJackpot(false);
+    }
+  };
+
+  useEffect(() => {
+    if (jackpotPool.length === 0) {
+      syncLiveJackpotFromApi(false);
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -69,7 +115,7 @@ export const AdminJackpotAndCodesManagerTab: React.FC = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('predictpro_admin_jackpot_pool', JSON.stringify(jackpotPool));
+      localStorage.setItem(JACKPOT_OVERRIDE_STORAGE_KEY, JSON.stringify(jackpotPool));
     } catch {
       // ignore
     }
@@ -201,8 +247,9 @@ export const AdminJackpotAndCodesManagerTab: React.FC = () => {
   };
 
   const handlePublishJackpotOverrides = () => {
+    localStorage.setItem(JACKPOT_OVERRIDE_STORAGE_KEY, JSON.stringify(jackpotPool));
     localStorage.setItem('predictpro_admin_jackpot_pool', JSON.stringify(jackpotPool));
-    toast.success('17-Game Mega Jackpot & Midweek Jackpot locks synced to public Jackpot Optimizer');
+    toast.success('Mega Jackpot & Midweek Jackpot locks synced to public Jackpot Optimizer');
   };
 
   // Ready-to-Paste Social Broadcast Messages (Telegram / WhatsApp / X)
@@ -461,9 +508,20 @@ ${bankerLines}
                 Override single picks (1 / X / 2), lock high-confidence Bankers, and assign Double Chance (1X / X2 / 12) hedges.
               </CardDescription>
             </div>
-            <Button size="sm" onClick={handlePublishJackpotOverrides} className="gap-1.5 text-xs">
-              <RefreshCw className="w-3.5 h-3.5" /> Sync Jackpot Locks Live
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={loadingJackpot}
+                onClick={() => syncLiveJackpotFromApi(true)}
+                className="gap-1.5 text-xs"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingJackpot ? 'animate-spin' : ''}`} /> Refresh Real Schedule
+              </Button>
+              <Button size="sm" onClick={handlePublishJackpotOverrides} className="gap-1.5 text-xs">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Sync Jackpot Locks Live
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -481,7 +539,13 @@ ${bankerLines}
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {jackpotPool.map((row) => (
+                {jackpotPool.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-muted-foreground">
+                      {loadingJackpot ? 'Syncing real Mega Jackpot fixtures...' : 'No real jackpot fixtures loaded yet. Click Refresh Real Schedule above.'}
+                    </td>
+                  </tr>
+                ) : jackpotPool.map((row) => (
                   <tr key={row.gameNo} className="hover:bg-muted/30">
                     <td className="py-2.5 px-3 font-mono font-bold">#{row.gameNo}</td>
                     <td className="py-2.5 px-3 font-semibold">

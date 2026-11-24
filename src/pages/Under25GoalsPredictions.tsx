@@ -12,32 +12,46 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock, TrendingDown, CheckCircle2, ArrowRight, Calculator, HelpCircle } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
 export default function Under25GoalsPredictions() {
-  const { data: matches = [] } = usePredictions();
+  const { predictions: matches = [], isLoading } = usePredictions(7);
+  const { addSelections } = useBetSlip();
 
   const underPicks = useMemo(() => {
-    const base = matches.slice(0, 8).map((m, idx) => {
-      const totalXg = Number((1.65 + (idx % 4) * 0.14).toFixed(2));
-      const underProb = Math.min(82, Math.max(66, Math.round(81 - (totalXg - 1.6) * 20)));
-      const odds = Number((1.62 + (idx % 5) * 0.08).toFixed(2));
-      const scores = ['1-0', '0-0', '1-1', '0-1'];
-      return {
-        id: m.id || `under25-${idx}`,
-        homeTeam: m.homeTeam || ['Atlético Madrid', 'Juventus', 'Torino', 'Getafe', 'Real Sociedad', 'Lille', 'Empoli', 'Bologna'][idx],
-        awayTeam: m.awayTeam || ['Real Betis', 'Roma', 'Genoa', 'Valencia', 'Athletic Club', 'Lens', 'Lecce', 'Udinese'][idx],
-        league: m.league || ['La Liga', 'Serie A', 'Serie A', 'La Liga', 'La Liga', 'Ligue 1', 'Serie A', 'Serie A'][idx],
-        kickoff: m.time || `${14 + idx}:00 UTC`,
-        totalXg,
-        underProb,
-        odds,
-        topCluster: scores[idx % scores.length],
-        edge: Number((((underProb / 100) * odds - 1) * 100).toFixed(1)),
-      };
-    });
-    return base;
+    return [...matches]
+      .sort((a, b) => (a.ai_prediction?.over_25_prob ?? 50) - (b.ai_prediction?.over_25_prob ?? 50))
+      .slice(0, 8)
+      .map((m, idx) => {
+        const o25 = m.ai_prediction?.over_25_prob ?? 45;
+        const underProb = Math.min(82, Math.max(48, 100 - o25));
+        const totalXg = Number((1.45 + (o25 / 100) * 1.2).toFixed(2));
+        const odds = Number(Math.max(1.48, 100 / Math.max(45, underProb - 3)).toFixed(2));
+        const scores = ['1-0', '0-0', '1-1', '0-1'];
+        const kickoff = m.match_date
+          ? new Date(m.match_date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : 'Upcoming';
+        return {
+          id: m.id,
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          league: m.league,
+          kickoff,
+          matchDate: m.match_date,
+          totalXg,
+          underProb,
+          odds,
+          topCluster: m.ai_prediction?.predicted_score || scores[idx % scores.length],
+          edge: Number(Math.max(1.5, (((underProb / 100) * odds - 1) * 100)).toFixed(1)),
+        };
+      });
   }, [matches]);
+
+  const threeFoldOdds = useMemo(() => {
+    if (underPicks.length < 3) return null;
+    return (underPicks[0].odds * underPicks[1].odds * underPicks[2].odds).toFixed(2);
+  }, [underPicks]);
 
   const schemas = useMemo(
     () => [
@@ -96,7 +110,6 @@ export default function Under25GoalsPredictions() {
           ]}
         />
 
-        {/* Hero Section */}
         <section className="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-card to-background p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
@@ -115,10 +128,27 @@ export default function Under25GoalsPredictions() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => toast.success('Top 3 Under 2.5 Banker Picks copied to bet slip!')}
+              disabled={underPicks.length < 3}
+              onClick={() => {
+                const topThree = underPicks.slice(0, 3);
+                addSelections(
+                  topThree.map((p) => ({
+                    matchId: p.id,
+                    match: `${p.homeTeam} vs ${p.awayTeam}`,
+                    homeTeam: p.homeTeam,
+                    awayTeam: p.awayTeam,
+                    league: p.league,
+                    kickoff: p.matchDate,
+                    market: 'Under 2.5 Goals',
+                    odds: p.odds,
+                    confidence: p.underProb,
+                  }))
+                );
+                toast.success('Top 3 Under 2.5 Banker Picks copied to bet slip!');
+              }}
               className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
             >
-              <Lock className="w-4 h-4 mr-2" /> Load 3-Fold Under 2.5 Acca (4.55x)
+              <Lock className="w-4 h-4 mr-2" /> Load 3-Fold Under 2.5 Acca {threeFoldOdds ? `(${threeFoldOdds}x)` : ''}
             </Button>
             <Button variant="outline" asChild>
               <Link to="/poisson-calculator">
@@ -128,7 +158,6 @@ export default function Under25GoalsPredictions() {
           </div>
         </section>
 
-        {/* Predictions Table / Cards */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -137,37 +166,46 @@ export default function Under25GoalsPredictions() {
             <span className="text-xs text-muted-foreground">0-0, 1-0, 0-1, 1-1, 2-0, 0-2 Matrix Sum</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {underPicks.map((pick) => (
-              <Card key={pick.id} className="p-5 border-border/60 bg-card/70 hover:border-emerald-500/40 transition-all">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                  <span className="font-medium text-emerald-400">{pick.league}</span>
-                  <span>{pick.kickoff}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div>
-                    <div className="font-bold text-base">
-                      {pick.homeTeam} vs {pick.awayTeam}
+          {isLoading && underPicks.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              Loading live low-scoring fixture probabilities...
+            </Card>
+          ) : underPicks.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              No scheduled fixtures available in the 7-day feed right now.
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {underPicks.map((pick) => (
+                <Card key={pick.id} className="p-5 border-border/60 bg-card/70 hover:border-emerald-500/40 transition-all">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span className="font-medium text-emerald-400">{pick.league}</span>
+                    <span>{pick.kickoff}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <div className="font-bold text-base">
+                        {pick.homeTeam} vs {pick.awayTeam}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Projected Total xG: <strong className="text-foreground">{pick.totalXg}</strong> • Primary Score: <strong className="text-emerald-400">{pick.topCluster}</strong>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      Projected Total xG: <strong className="text-foreground">{pick.totalXg}</strong> • Primary Score: <strong className="text-emerald-400">{pick.topCluster}</strong>
+                    <div className="text-right">
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold">
+                        Under 2.5 @ {pick.odds}
+                      </Badge>
+                      <div className="text-[11px] text-emerald-400 font-medium mt-1">
+                        {pick.underProb}% Model Conf. (+{pick.edge}% EV)
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold">
-                      Under 2.5 @ {pick.odds}
-                    </Badge>
-                    <div className="text-[11px] text-emerald-400 font-medium mt-1">
-                      {pick.underProb}% Model Conf. (+{pick.edge}% EV)
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* Strategy & Related Markets */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-5 border-border/60 bg-card/60">
             <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
@@ -179,7 +217,7 @@ export default function Under25GoalsPredictions() {
           </Card>
           <Card className="p-5 border-border/60 bg-card/60">
             <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" /> PPDA & Pace Metrics
+              <Shield className="w-4 h-4 text-emerald-400" /> PPDA &amp; Pace Metrics
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               When two clubs rank in the bottom quartile for Passes Allowed Per Defensive Action (PPDA &gt; 14.5), neither side presses high, eliminating transition counter-attacking goals.

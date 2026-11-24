@@ -1,6 +1,6 @@
 import { callEdgeFn } from '@/lib/callEdgeFunction';
 import { Prediction } from '@/types/prediction';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { getSavedPredictionsList } from '@/services/predictionStorage';
 import { GroundingMetadata } from '@/services/geminiTasksService';
 import { safeFootballFetch, isHostInCooldown } from '@/services/footballDataCache';
 
@@ -1662,6 +1662,6 @@ export function getFeaturedMatchesForTeamNews(customMatches?: Prediction[]): Pre
   const source =
     customMatches && customMatches.length > 0
       ? customMatches
-      : getUpdatedDefaultPredictions();
+      : getSavedPredictionsList();
   return source.slice(0, 8);
 }

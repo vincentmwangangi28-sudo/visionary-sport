@@ -2,11 +2,11 @@ import { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Prediction, getPrediction, getConfidence } from '@/types/prediction';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { 
   mergeAndPreservePredictions, 
   generateDeterministicPrediction,
-  savePrediction
+  savePrediction,
+  getSavedPredictionsList,
 } from '@/services/predictionStorage';
 import {
   isPlayedOrPastMatch,
@@ -128,34 +128,24 @@ function getCachedInitialPredictionsPayload(league?: string) {
   }
 
   if (seed.length === 0) {
-    seed = getUpdatedDefaultPredictions();
-  } else {
-    const existingPairs = new Set(
-      seed.map((p) => `${p.home_team.toLowerCase()}-${p.away_team.toLowerCase()}`)
+    seed = getSavedPredictionsList().filter(
+      (p) => (p.is_realtime || String(p.id).startsWith('espn-real-') || String(p.id).startsWith('real-match-')) && !isPlayedOrPastMatch(p)
     );
-    for (const def of getUpdatedDefaultPredictions()) {
-      const pair = `${def.home_team.toLowerCase()}-${def.away_team.toLowerCase()}`;
-      if (!existingPairs.has(pair)) {
-        existingPairs.add(pair);
-        seed.push(def);
-      }
-    }
   }
 
   if (league && league !== 'All') {
     const filtered = seed.filter((p) => matchesLeagueFilter(p.league, league));
-    if (filtered.length > 0) seed = filtered;
+    seed = filtered;
   }
-  let cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
-  if (cleanList.length === 0) {
-    cleanList = getUpdatedDefaultPredictions();
-  }
+  const cleanList = sortMatchesByDatePriority(sanitizeAndDeduplicatePredictions(seed));
   const payload = {
     allPredictions: cleanList,
     total: cleanList.length,
     isRealTime: true,
   };
-  INITIAL_PAYLOAD_CACHE.set(key, payload);
+  if (cleanList.length > 0) {
+    INITIAL_PAYLOAD_CACHE.set(key, payload);
+  }
   return payload;
 }
 
@@ -222,19 +212,6 @@ export const usePredictions = (
     initialData: initialDataPayload,
     initialDataUpdatedAt: Date.now(),
     queryFn: async () => {
-      if (
-        typeof window !== 'undefined' &&
-        (navigator.webdriver ||
-          /HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(navigator.userAgent || ''))
-      ) {
-        return (
-          initialDataPayload || {
-            allPredictions: getUpdatedDefaultPredictions(),
-            total: 12,
-            isRealTime: true,
-          }
-        );
-      }
 
       const combinedPredictions: Prediction[] = [];
       const seenMatchupKeys = new Set<string>();
@@ -307,24 +284,6 @@ export const usePredictions = (
           }
         } catch {
           // silent fallback
-        }
-      }
-
-      // 2. Supplement with verified upcoming fixtures whenever Today's slate (< 12) or total pool (< 36) is sparse
-      const todayLiveCount = combinedPredictions.filter((p) => matchesDateFilter(p.match_date, 'today')).length;
-      const minTotalTarget = league && league !== 'All' ? 8 : 36;
-      const minTodayTarget = league && league !== 'All' ? 3 : 12;
-
-      if (combinedPredictions.length < minTotalTarget || todayLiveCount < minTodayTarget) {
-        let updatedDefaultList = getUpdatedDefaultPredictions();
-        if (league && league !== 'All') {
-          const leagueFiltered = updatedDefaultList.filter((p) => matchesLeagueFilter(p.league, league));
-          if (leagueFiltered.length > 0) {
-            updatedDefaultList = leagueFiltered;
-          }
-        }
-        for (const item of updatedDefaultList) {
-          pushIfValidUpcoming(item);
         }
       }
 

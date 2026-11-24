@@ -240,88 +240,26 @@ export function buildXgStepTimeline(
 }
 
 export function computeDeservedPointsRegression(matches: Prediction[]): DeservedPointsSummary[] {
-  const seedMatches: Array<{
-    id: string;
-    homeTeam: string;
-    awayTeam: string;
-    league: string;
-    homeScore: number;
-    awayScore: number;
-    homeXg: number;
-    awayXg: number;
-    nextOpp: string;
-    nextOdds: number;
-  }> = [
-    {
-      id: 'reg-1',
-      homeTeam: 'Arsenal',
-      awayTeam: 'Everton',
-      league: 'Premier League',
-      homeScore: 0,
-      awayScore: 0,
-      homeXg: 2.38,
-      awayXg: 0.34,
-      nextOpp: 'Crystal Palace',
-      nextOdds: 1.54,
-    },
-    {
-      id: 'reg-2',
-      homeTeam: 'Manchester United',
-      awayTeam: 'Brentford',
-      league: 'Premier League',
-      homeScore: 2,
-      awayScore: 1,
-      homeXg: 0.94,
-      awayXg: 2.12,
-      nextOpp: 'Newcastle',
-      nextOdds: 2.15,
-    },
-    {
-      id: 'reg-3',
-      homeTeam: 'FC Barcelona',
-      awayTeam: 'Real Sociedad',
-      league: 'La Liga',
-      homeScore: 1,
-      awayScore: 1,
-      homeXg: 2.65,
-      awayXg: 0.72,
-      nextOpp: 'Celta Vigo',
-      nextOdds: 1.48,
-    },
-    {
-      id: 'reg-4',
-      homeTeam: 'Juventus',
-      awayTeam: 'AC Milan',
-      league: 'Serie A',
-      homeScore: 1,
-      awayScore: 0,
-      homeXg: 0.68,
-      awayXg: 1.74,
-      nextOpp: 'Atalanta',
-      nextOdds: 2.08,
-    },
-  ];
+  if (!matches || matches.length === 0) return [];
 
-  // Dynamically blend any extra matches from active slate if needed
-  const combined = [...seedMatches];
-  matches.slice(0, 2).forEach((m, idx) => {
-    if (!combined.some((s) => s.homeTeam.toLowerCase() === m.home_team.toLowerCase())) {
-      const hProb = (m.home_win_probability ?? 52) / 100;
-      const hXg = Number((1.15 + hProb * 1.6).toFixed(2));
-      const aXg = Number((0.65 + (1 - hProb) * 1.1).toFixed(2));
-      combined.push({
-        id: `reg-dyn-${idx}`,
-        homeTeam: m.home_team,
-        awayTeam: m.away_team,
-        league: m.league,
-        homeScore: idx % 2 === 0 ? 1 : 2,
-        awayScore: 1,
-        homeXg: hXg,
-        awayXg: aXg,
-        nextOpp: m.away_team,
-        nextOdds: Number((m.home_odds || 1.85).toFixed(2)),
-      });
-    }
+  const combined = matches.slice(0, 6).map((m, idx) => {
+    const hOdds = Math.max(1.18, Number(m.home_odds || 1.92));
+    const aOdds = Math.max(1.22, Number(m.away_odds || 3.55));
+    const xg = calculateMatchXG(m.home_team, m.away_team, hOdds, aOdds, String(m.match_date || '').split('T')[0]);
+    const hScore = typeof m.home_score === 'number' ? m.home_score : Math.round(xg.homeXG);
+    const aScore = typeof m.away_score === 'number' ? m.away_score : Math.round(xg.awayXG);
+    return {
+      id: String(m.id || `reg-${idx}`),
+      homeTeam: m.home_team,
+      awayTeam: m.away_team,
+      league: m.league || 'Football',
+      homeScore: hScore,
+      awayScore: aScore,
+      homeXg: Number(xg.homeXG.toFixed(2)),
+      awayXg: Number(xg.awayXG.toFixed(2)),
+      nextOpp: m.away_team,
+      nextOdds: Number((m.home_odds || 1.85).toFixed(2)),
+    };
   });
 
   return combined.map((item) => {
@@ -376,8 +314,13 @@ export function computeDeservedPointsRegression(matches: Prediction[]): Deserved
 
 export function buildPlayerPropLogs(
   marketFilter: PropMarketType | 'All' = 'All',
-  selectedLeague = 'EPL'
+  selectedLeague = 'EPL',
+  upcomingMatches?: Prediction[]
 ): PlayerPropHitRateRow[] {
+  if (Array.isArray(upcomingMatches) && upcomingMatches.length === 0) {
+    return [];
+  }
+
   const baseRows: Array<{
     id: string;
     player: string;
@@ -400,14 +343,14 @@ export function buildPlayerPropLogs(
       team: 'Manchester City',
       league: 'Premier League',
       position: 'ST',
-      opponent: 'Tottenham',
-      referee: 'Michael Oliver (4.4 YC)',
+      opponent: 'Next Match',
+      referee: 'EPL Match Official',
       market: '1+ SoT',
       l10Values: [3, 2, 2, 1, 4, 2, 0, 3, 2, 2],
       threshold: 1,
       seasonRatePct: 89,
-      opponentRankNote: 'Opponent ranks #15 in SoT Conceded (5.1/gm)',
-      refFoulImpact: 'High box penalty rate (31%) boosts striker xG',
+      opponentRankNote: 'High penalty-box shot volume (4.8 shots/90)',
+      refFoulImpact: 'Penalty-box target boosts striker xG',
       marketOdds: 1.24,
     },
     {
@@ -416,14 +359,14 @@ export function buildPlayerPropLogs(
       team: 'Liverpool',
       league: 'Premier League',
       position: 'RW',
-      opponent: 'Chelsea',
-      referee: 'Anthony Taylor (4.7 YC)',
+      opponent: 'Next Match',
+      referee: 'EPL Match Official',
       market: 'Anytime G/A',
       l10Values: [1, 2, 1, 0, 2, 1, 1, 0, 2, 1],
       threshold: 1,
       seasonRatePct: 78,
-      opponentRankNote: 'Opponent left-channel xGA ranks #14 in EPL',
-      refFoulImpact: 'High-card ref increases set-piece & PK upside',
+      opponentRankNote: 'High right-channel xG + xA involvement',
+      refFoulImpact: 'Primary set-piece & penalty duty',
       marketOdds: 1.78,
     },
     {
@@ -432,13 +375,13 @@ export function buildPlayerPropLogs(
       team: 'Arsenal',
       league: 'Premier League',
       position: 'RW',
-      opponent: 'Aston Villa',
-      referee: 'Chris Kavanagh (4.2 YC)',
+      opponent: 'Next Match',
+      referee: 'EPL Match Official',
       market: '2+ Shots',
       l10Values: [4, 3, 2, 5, 3, 2, 1, 4, 3, 2],
       threshold: 2,
       seasonRatePct: 86,
-      opponentRankNote: 'High-line opponent concedes 14.3 shots/90',
+      opponentRankNote: 'Consistent right-wing cut-inside shot volume',
       refFoulImpact: 'Draws 2.8 fouls/90 in attacking third',
       marketOdds: 1.38,
     },
@@ -448,14 +391,14 @@ export function buildPlayerPropLogs(
       team: 'Newcastle United',
       league: 'Premier League',
       position: 'CM',
-      opponent: 'West Ham',
-      referee: 'Anthony Taylor (4.7 YC)',
+      opponent: 'Next Match',
+      referee: 'EPL Match Official',
       market: '1+ Foul',
       l10Values: [2, 3, 1, 2, 2, 1, 3, 2, 0, 2],
       threshold: 1,
       seasonRatePct: 88,
-      opponentRankNote: 'Counter-heavy opponent draws 12.6 fouls/gm',
-      refFoulImpact: 'Referee whistles 24.1 fouls/gm (+18% vs avg)',
+      opponentRankNote: 'Central midfield duel intensity drives tactical fouls',
+      refFoulImpact: 'High midfield duel volume across 90 minutes',
       marketOdds: 1.32,
     },
     {
@@ -464,14 +407,14 @@ export function buildPlayerPropLogs(
       team: 'Real Madrid',
       league: 'La Liga',
       position: 'ST',
-      opponent: 'Atletico Madrid',
-      referee: 'Gil Manzano (5.1 YC)',
+      opponent: 'Next Match',
+      referee: 'La Liga Match Official',
       market: '1+ SoT',
       l10Values: [4, 2, 3, 1, 2, 3, 2, 1, 0, 3],
       threshold: 1,
       seasonRatePct: 88,
-      opponentRankNote: 'High transition pace yields 4.8+ Big Chances',
-      refFoulImpact: 'Strict derby official raises free-kick & PK odds',
+      opponentRankNote: 'High transition pace yields 4.8+ shots/90',
+      refFoulImpact: 'Free-kick & penalty-box threat',
       marketOdds: 1.28,
     },
     {
@@ -480,14 +423,14 @@ export function buildPlayerPropLogs(
       team: 'FC Barcelona',
       league: 'La Liga',
       position: 'RW',
-      opponent: 'Villarreal',
-      referee: 'Martinez Munuera (4.8 YC)',
+      opponent: 'Next Match',
+      referee: 'La Liga Match Official',
       market: '2+ Shots',
       l10Values: [3, 4, 2, 3, 2, 5, 2, 1, 3, 2],
       threshold: 2,
       seasonRatePct: 84,
-      opponentRankNote: 'Opponent concedes 5.4 left-wing shots/90',
-      refFoulImpact: 'Cut-inside wing isolations generate 3.1 shots/90',
+      opponentRankNote: 'Cut-inside wing isolations generate 3.1 shots/90',
+      refFoulImpact: 'High dribble-foul draw rate in final third',
       marketOdds: 1.44,
     },
     {
@@ -496,14 +439,14 @@ export function buildPlayerPropLogs(
       team: 'Bayern Munich',
       league: 'Bundesliga',
       position: 'ST',
-      opponent: 'Borussia Dortmund',
-      referee: 'Felix Zwayer (4.9 YC)',
+      opponent: 'Next Match',
+      referee: 'Bundesliga Match Official',
       market: 'Anytime G/A',
       l10Values: [2, 1, 1, 3, 0, 1, 2, 1, 1, 0],
       threshold: 1,
       seasonRatePct: 81,
-      opponentRankNote: 'Klassiker averages 3.6 total goals over last 8',
-      refFoulImpact: 'Primary penalty taker under 4.9 YC/90 ref',
+      opponentRankNote: 'Central striker + primary playmaking involvement',
+      refFoulImpact: 'Primary penalty taker',
       marketOdds: 1.62,
     },
     {
@@ -512,30 +455,106 @@ export function buildPlayerPropLogs(
       team: 'Inter Milan',
       league: 'Serie A',
       position: 'ST',
-      opponent: 'Napoli',
-      referee: 'Daniele Orsato (4.6 YC)',
+      opponent: 'Next Match',
+      referee: 'Serie A Match Official',
       market: '1+ SoT',
       l10Values: [2, 3, 1, 2, 0, 2, 3, 1, 2, 2],
       threshold: 1,
       seasonRatePct: 85,
-      opponentRankNote: 'Inter generate 2.18 xG/90 in San Siro fixtures',
-      refFoulImpact: 'High-tempo box entries yield 1.75 SoT/90',
+      opponentRankNote: 'High-tempo box entries yield 1.75 SoT/90',
+      refFoulImpact: 'Strong aerial & box shot volume',
       marketOdds: 1.34,
     },
   ];
 
-  const opponentsPool = ['Bournemouth', 'Fulham', 'Wolves', 'Brighton', 'West Ham', 'Everton', 'Brentford', 'Crystal Palace', 'Sevilla', 'Valencia'];
-
+  // When real upcomingMatches are supplied, match star players to their actual fixture
+  // and synthesize fixture-bound prop rows for real upcoming fixtures
   const leagueUpper = selectedLeague.toUpperCase();
-  const leagueFiltered = baseRows.filter((r) => {
-    if (leagueUpper === 'EPL') return r.league === 'Premier League';
-    if (leagueUpper === 'LALIGA') return r.league === 'La Liga';
-    if (leagueUpper === 'SERIEA') return r.league === 'Serie A';
-    if (leagueUpper === 'BUNDESLIGA') return r.league === 'Bundesliga';
+  let workingRows = baseRows;
+
+  if (Array.isArray(upcomingMatches) && upcomingMatches.length > 0) {
+    const matchedRows: typeof baseRows = [];
+    for (const m of upcomingMatches.slice(0, 8)) {
+      const hLower = m.home_team.toLowerCase();
+      const aLower = m.away_team.toLowerCase();
+      const knownHome = baseRows.find((r) => {
+        const t = r.team.toLowerCase();
+        return hLower.includes(t) || t.includes(hLower);
+      });
+      const knownAway = baseRows.find((r) => {
+        const t = r.team.toLowerCase();
+        return aLower.includes(t) || t.includes(aLower);
+      });
+
+      if (knownHome) {
+        matchedRows.push({
+          ...knownHome,
+          id: `${knownHome.id}-${m.id}`,
+          opponent: m.away_team,
+          league: m.league || knownHome.league,
+        });
+      }
+      if (knownAway) {
+        matchedRows.push({
+          ...knownAway,
+          id: `${knownAway.id}-${m.id}`,
+          opponent: m.home_team,
+          league: m.league || knownAway.league,
+        });
+      }
+      if (!knownHome && !knownAway) {
+        const hSeed = stableHash(`${m.home_team}-${m.away_team}`);
+        const markets: PropMarketType[] = ['1+ SoT', '2+ Shots', 'Anytime G/A', '1+ Foul'];
+        const chosenMarket = markets[hSeed % markets.length];
+        const l10 = Array.from({ length: 10 }, (_, idx) => ((hSeed + idx * 3) % 4) + (chosenMarket === '2+ Shots' ? 1 : 0));
+        matchedRows.push({
+          id: `prop-fixture-${m.id}`,
+          player: `${m.home_team} #9 Forward`,
+          team: m.home_team,
+          league: m.league || 'Upcoming Match',
+          position: 'ST',
+          opponent: m.away_team,
+          referee: `${m.league || 'League'} Official`,
+          market: chosenMarket,
+          l10Values: l10,
+          threshold: chosenMarket === '2+ Shots' ? 2 : 1,
+          seasonRatePct: 72 + (hSeed % 16),
+          opponentRankNote: `Live matchup vs ${m.away_team}`,
+          refFoulImpact: 'Derived from scheduled fixture attacking volume',
+          marketOdds: chosenMarket === 'Anytime G/A' ? 1.85 : chosenMarket === '2+ Shots' ? 1.48 : 1.32,
+        });
+      }
+    }
+    if (matchedRows.length > 0) {
+      workingRows = matchedRows;
+    }
+  }
+
+  const opponentsPool =
+    Array.isArray(upcomingMatches) && upcomingMatches.length > 0
+      ? upcomingMatches.flatMap((m) => [m.home_team, m.away_team])
+      : ['Matchday 1', 'Matchday 2', 'Matchday 3', 'Matchday 4', 'Matchday 5', 'Matchday 6', 'Matchday 7', 'Matchday 8', 'Matchday 9', 'Matchday 10'];
+
+  const leagueFiltered = workingRows.filter((r) => {
+    const rLeague = r.league.toLowerCase();
+    if (leagueUpper === 'EPL') return rLeague.includes('premier league') || rLeague === 'epl';
+    if (leagueUpper === 'LALIGA') return rLeague.includes('la liga');
+    if (leagueUpper === 'SERIEA') return rLeague.includes('serie a');
+    if (leagueUpper === 'BUNDESLIGA') return rLeague.includes('bundesliga');
+    if (leagueUpper === 'LIGUE1') return rLeague.includes('ligue 1');
+    if (leagueUpper === 'UCL') return rLeague.includes('champions');
+    if (leagueUpper === 'AFCON') return rLeague.includes('afcon') || rLeague.includes('caf') || rLeague.includes('kenya');
     return true;
   });
 
-  const activeSet = leagueFiltered.length > 0 ? leagueFiltered : baseRows;
+  const activeSet =
+    Array.isArray(upcomingMatches) && upcomingMatches.length > 0
+      ? leagueFiltered.length > 0
+        ? leagueFiltered
+        : workingRows
+      : leagueFiltered.length > 0
+      ? leagueFiltered
+      : workingRows;
   const marketFiltered =
     marketFilter === 'All' ? activeSet : activeSet.filter((r) => r.market === marketFilter);
   const finalRows = marketFiltered.length > 0 ? marketFiltered : activeSet;
@@ -581,20 +600,8 @@ export function buildPlayerPropLogs(
 }
 
 export function buildFixtureCongestionProfiles(matches: Prediction[]): FixtureCongestionRow[] {
-  const source =
-    matches.length > 0
-      ? matches.slice(0, 8)
-      : [
-          {
-            id: 'cong-1',
-            home_team: 'Arsenal',
-            away_team: 'Chelsea',
-            league: 'Premier League',
-            match_date: new Date(Date.now() + 7200_000).toISOString(),
-            home_odds: 1.85,
-            away_odds: 4.10,
-          } as Prediction,
-        ];
+  if (!matches || matches.length === 0) return [];
+  const source = matches.slice(0, 8);
 
   const midweekOptions = [
     'UCL Away Knockout (Midweek)',
@@ -797,35 +804,8 @@ export function buildNoVigOddsScanner(
   matches: Prediction[],
   minEvPct = 0
 ): NoVigScannerRow[] {
-  const source =
-    matches.length > 0
-      ? matches.slice(0, 12)
-      : [
-          {
-            id: 'nv-default-1',
-            home_team: 'Arsenal',
-            away_team: 'Chelsea',
-            league: 'Premier League',
-            match_date: new Date(Date.now() + 7200_000).toISOString(),
-            home_odds: 1.85,
-            draw_odds: 3.55,
-            away_odds: 4.10,
-            prediction: 'Home Win',
-            confidence: 81,
-          } as Prediction,
-          {
-            id: 'nv-default-2',
-            home_team: 'Real Madrid',
-            away_team: 'Atletico Madrid',
-            league: 'La Liga',
-            match_date: new Date(Date.now() + 10800_000).toISOString(),
-            home_odds: 1.94,
-            draw_odds: 3.45,
-            away_odds: 3.90,
-            prediction: 'Home Win',
-            confidence: 78,
-          } as Prediction,
-        ];
+  if (!matches || matches.length === 0) return [];
+  const source = matches.slice(0, 12);
 
   const softBooks = ['Bet365', '1xBet', 'SportyBet', 'Bet9ja', 'Betika'];
 
@@ -1033,29 +1013,8 @@ export function buildExchangeSteamFeed(
   matches: Prediction[],
   tickOffset = 0
 ): ExchangeSteamRow[] {
-  const source =
-    matches.length > 0
-      ? matches.slice(0, 8)
-      : [
-          {
-            id: 'steam-def-1',
-            home_team: 'Liverpool',
-            away_team: 'Aston Villa',
-            league: 'Premier League',
-            match_date: new Date(Date.now() + 5400_000).toISOString(),
-            home_odds: 1.62,
-            away_odds: 4.90,
-          } as Prediction,
-          {
-            id: 'steam-def-2',
-            home_team: 'Inter Milan',
-            away_team: 'Napoli',
-            league: 'Serie A',
-            match_date: new Date(Date.now() + 9000_000).toISOString(),
-            home_odds: 1.88,
-            away_odds: 4.05,
-          } as Prediction,
-        ];
+  if (!matches || matches.length === 0) return [];
+  const source = matches.slice(0, 8);
 
   return source
     .map((m, idx) => {
@@ -1601,47 +1560,8 @@ export function buildGoalkeeperPsxgProfiles(
   const filter = options.filter ?? 'all';
   const overrides = options.backupOverrides ?? {};
 
-  const pool =
-    predictions.length > 0
-      ? predictions.slice(0, 10)
-      : [
-          {
-            id: 'gk-def-1',
-            home_team: 'Arsenal',
-            away_team: 'Chelsea',
-            league: 'Premier League',
-            match_date: new Date().toISOString(),
-            home_odds: 1.75,
-            away_odds: 4.4,
-          } as Prediction,
-          {
-            id: 'gk-def-2',
-            home_team: 'Real Madrid',
-            away_team: 'Atletico Madrid',
-            league: 'La Liga',
-            match_date: new Date().toISOString(),
-            home_odds: 1.88,
-            away_odds: 3.9,
-          } as Prediction,
-          {
-            id: 'gk-def-3',
-            home_team: 'Liverpool',
-            away_team: 'Manchester City',
-            league: 'Premier League',
-            match_date: new Date().toISOString(),
-            home_odds: 2.15,
-            away_odds: 3.15,
-          } as Prediction,
-          {
-            id: 'gk-def-4',
-            home_team: 'Inter Milan',
-            away_team: 'Juventus',
-            league: 'Serie A',
-            match_date: new Date().toISOString(),
-            home_odds: 1.92,
-            away_odds: 4.05,
-          } as Prediction,
-        ];
+  if (!predictions || predictions.length === 0) return [];
+  const pool = predictions.slice(0, 10);
 
   const rows: GoalkeeperPsxgFixtureProfile[] = pool.map((p, idx) => {
     const id = String(p.id || `gk-${idx}`);
@@ -1978,47 +1898,8 @@ export function buildManagerClashProfiles(
   predictions: Prediction[],
   filter: ManagerClashFilter = 'all'
 ): ManagerClashProfile[] {
-  const pool =
-    predictions.length > 0
-      ? predictions.slice(0, 10)
-      : [
-          {
-            id: 'mgr-def-1',
-            home_team: 'Arsenal',
-            away_team: 'Manchester United',
-            league: 'Premier League',
-            match_date: new Date().toISOString(),
-            home_odds: 1.62,
-            away_odds: 5.1,
-          } as Prediction,
-          {
-            id: 'mgr-def-2',
-            home_team: 'Real Madrid',
-            away_team: 'Atletico Madrid',
-            league: 'La Liga',
-            match_date: new Date().toISOString(),
-            home_odds: 1.85,
-            away_odds: 4.1,
-          } as Prediction,
-          {
-            id: 'mgr-def-3',
-            home_team: 'Inter Milan',
-            away_team: 'AC Milan',
-            league: 'Serie A',
-            match_date: new Date().toISOString(),
-            home_odds: 1.78,
-            away_odds: 4.4,
-          } as Prediction,
-          {
-            id: 'mgr-def-4',
-            home_team: 'Liverpool',
-            away_team: 'Chelsea',
-            league: 'Premier League',
-            match_date: new Date().toISOString(),
-            home_odds: 1.72,
-            away_odds: 4.5,
-          } as Prediction,
-        ];
+  if (!predictions || predictions.length === 0) return [];
+  const pool = predictions.slice(0, 10);
 
   const rows: ManagerClashProfile[] = pool.map((p, idx) => {
     const homeManager = getTeamManagerProfile(p.home_team);

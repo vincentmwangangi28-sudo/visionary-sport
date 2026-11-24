@@ -8,7 +8,8 @@
  */
 
 import { showBrowserNotification, isPushSupported, requestPushPermission, getPushPermission } from './matchNotificationService';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { getSavedPredictionsList } from '@/services/predictionStorage';
 import { Prediction } from '@/types/prediction';
 
 export interface AutomatedAlertsConfig {
@@ -223,7 +224,15 @@ export async function evaluateAutomatedAlerts(): Promise<number> {
   if (!config.enabled) return 0;
 
   const { pinnedTeams, pinnedLeagues } = getActivePinnedData();
-  const predictions: Prediction[] = DEFAULT_PREDICTIONS;
+  let predictions: Prediction[] = getSavedPredictionsList();
+  try {
+    const liveFixtures = await fetchRealtimeUpcomingFixtures();
+    if (liveFixtures && liveFixtures.length > 0) {
+      predictions = liveFixtures;
+    }
+  } catch {
+    // Keep saved real fixtures
+  }
   const now = Date.now();
   let alertsCount = 0;
 
@@ -317,13 +326,18 @@ export async function evaluateAutomatedAlerts(): Promise<number> {
 }
 
 /**
- * Helper to dispatch simulated automated alerts for testing and instant user feedback
+ * Helper to dispatch test automated alerts using real synced upcoming fixtures
  */
 export async function sendSimulatedAutomatedAlert(
   type: 'pinned_club' | 'high_confidence' | 'value_bet' | 'goal_alert'
 ): Promise<boolean> {
   const { pinnedTeams } = getActivePinnedData();
-  const sampleTeam = pinnedTeams[0] || 'Arsenal';
+  const realFixtures = getSavedPredictionsList();
+  const featured = realFixtures[0];
+  const sampleMatchTitle = featured ? `${featured.home_team} vs ${featured.away_team}` : `${pinnedTeams[0] || 'Featured Club'} Next Fixture`;
+  const sampleLeague = featured?.league || 'Live Schedule';
+  const sampleConf = featured?.confidence || 80;
+  const sampleTip = featured?.prediction || 'Match Winner';
   const timestamp = new Date().toISOString();
 
   let alertItem: AutomatedAlertItem;
@@ -333,11 +347,11 @@ export async function sendSimulatedAutomatedAlert(
       alertItem = {
         id: `sim-club-${Date.now()}`,
         type: 'pinned_club',
-        title: `⚽ Kickoff in 15 mins: ${sampleTeam} vs Opponent`,
-        message: `${sampleTeam} is about to kick off! Lineups confirmed. AI Model predicts Home Win (84% Confidence).`,
-        matchTitle: `${sampleTeam} vs Opponent`,
-        league: 'Premier League',
-        confidence: 84,
+        title: `⚽ Kickoff Alert: ${sampleMatchTitle}`,
+        message: `${sampleMatchTitle} (${sampleLeague}) pre-match alert active. AI Model Tip: ${sampleTip} (${sampleConf}% Confidence).`,
+        matchTitle: sampleMatchTitle,
+        league: sampleLeague,
+        confidence: sampleConf,
         timestamp,
         url: '/dashboard',
       };
@@ -346,11 +360,11 @@ export async function sendSimulatedAutomatedAlert(
       alertItem = {
         id: `sim-highconf-${Date.now()}`,
         type: 'high_confidence',
-        title: `📊 89% Model Consensus: Real Madrid vs Real Sociedad`,
-        message: `Poisson & xG ensemble detected an 89% probability Home Win projection. Projected scoreline: 2-0.`,
-        matchTitle: 'Real Madrid vs Real Sociedad',
-        league: 'La Liga',
-        confidence: 89,
+        title: `📊 ${sampleConf}% Model Consensus: ${sampleMatchTitle}`,
+        message: `Poisson & xG ensemble highlights ${sampleTip} for ${sampleMatchTitle} (${sampleLeague}).`,
+        matchTitle: sampleMatchTitle,
+        league: sampleLeague,
+        confidence: sampleConf,
         timestamp,
         url: '/recommendations',
       };
@@ -359,11 +373,11 @@ export async function sendSimulatedAutomatedAlert(
       alertItem = {
         id: `sim-val-${Date.now()}`,
         type: 'value_bet',
-        title: `⚡ +EV Value Edge Alert: Over 2.5 Goals @ 2.10`,
-        message: `Closing Line Value model found a +7.8% statistical edge over consensus bookmaker odds.`,
-        matchTitle: 'Bayern Munich vs Bayer Leverkusen',
-        league: 'Bundesliga',
-        edge: 7.8,
+        title: `⚡ +EV Value Edge Alert: ${sampleMatchTitle}`,
+        message: `Closing Line Value monitor active for ${sampleMatchTitle} (${sampleLeague}). Inspect live fair odds discrepancies.`,
+        matchTitle: sampleMatchTitle,
+        league: sampleLeague,
+        edge: featured?.clv_edge_pct ?? 4.5,
         timestamp,
         url: '/value-bets',
       };
@@ -373,10 +387,10 @@ export async function sendSimulatedAutomatedAlert(
       alertItem = {
         id: `sim-goal-${Date.now()}`,
         type: 'goal_alert',
-        title: `🚨 GOAL FLASH! (34') ${sampleTeam} 1 - 0 Opponent`,
-        message: `Goal scored! Prediction on track. Live in-play xG momentum currently at 72% for ${sampleTeam}.`,
-        matchTitle: `${sampleTeam} vs Opponent`,
-        league: 'Premier League',
+        title: `🚨 LIVE SCORE TRACKER: ${sampleMatchTitle}`,
+        message: `Live in-play momentum and goal notifications are enabled for ${sampleMatchTitle}.`,
+        matchTitle: sampleMatchTitle,
+        league: sampleLeague,
         timestamp,
         url: '/live',
       };

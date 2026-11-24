@@ -22,10 +22,10 @@ import {
   Zap,
 } from 'lucide-react';
 import {
-  MATCH_PITCH_TELEMETRY_PACKAGES,
   MatchPitchTelemetryPackage,
   PitchShotEvent,
   FormationPlayerNode,
+  buildPitchTelemetryFromMatch,
 } from '@/services/pitchTelemetryAndXptsService';
 import {
   isGoalHornAudioEnabled,
@@ -35,89 +35,62 @@ import {
   playRefereeWhistleAlert,
 } from '@/services/goalHornAudioService';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
+import { useFootballData } from '@/hooks/useFootballData';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
-
-function mapLiveFixtureToPitchTelemetryPackage(
-  m: ApiFootballLiveFixture,
-  idx: number
-): MatchPitchTelemetryPackage {
-  const baseTemplate = MATCH_PITCH_TELEMETRY_PACKAGES[idx % MATCH_PITCH_TELEMETRY_PACKAGES.length];
-  const hScore = m.home_score ?? 0;
-  const aScore = m.away_score ?? 0;
-  const st = m.match_stats;
-  const hShots = st?.homeShots ?? Math.max(hScore * 3 + 4, 8);
-  const aShots = st?.awayShots ?? Math.max(aScore * 3 + 3, 6);
-  const hOnTarget = st?.homeOnTarget ?? Math.max(hScore, Math.round(hShots * 0.44));
-  const aOnTarget = st?.awayOnTarget ?? Math.max(aScore, Math.round(aShots * 0.42));
-  const homeXg = Number((hShots * 0.11 + hOnTarget * 0.16 + hScore * 0.3).toFixed(2));
-  const awayXg = Number((aShots * 0.11 + aOnTarget * 0.16 + aScore * 0.3).toFixed(2));
-  const rawMin = parseInt(String(m.minute ?? '').replace(/\D/g, ''), 10) || (m.status === 'halftime' ? 45 : 64);
-
-  return {
-    ...baseTemplate,
-    id: String(m.id),
-    homeTeam: m.home_team,
-    awayTeam: m.away_team,
-    league: m.league || baseTemplate.league,
-    scoreline: `${hScore} - ${aScore}`,
-    minuteLabel: m.status === 'halftime' ? 'HT' : `LIVE ${rawMin}'`,
-    homeXg,
-    awayXg,
-    shotMap: baseTemplate.shotMap.map((s, sIdx) => ({
-      ...s,
-      id: `${m.id}-shot-${sIdx}`,
-      player:
-        m.match_events && m.match_events[sIdx]?.player
-          ? m.match_events[sIdx].player
-          : s.team === 'HOME'
-          ? `${m.home_team} #${9 + (sIdx % 3)}`
-          : `${m.away_team} #${10 + (sIdx % 2)}`,
-    })),
-  };
-}
 
 export const PitchTelemetryPage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const { liveFixtures } = useFootballData({ livePollInterval: 15_000 });
+  const { predictions, isLoading } = usePredictions(7);
 
   const telemetryPackages = useMemo<MatchPitchTelemetryPackage[]>(() => {
     const activeLive = liveFixtures.filter((m) => m.status === 'live' || m.status === 'halftime');
-    if (activeLive.length === 0) return MATCH_PITCH_TELEMETRY_PACKAGES;
+    const seen = new Set<string>();
+    const combined: MatchPitchTelemetryPackage[] = [];
 
-    const mapped = activeLive.slice(0, 6).map((m, idx) => mapLiveFixtureToPitchTelemetryPackage(m, idx));
-    const seenPairs = new Set(
-      mapped.map((p) => `${p.homeTeam.toLowerCase()}_${p.awayTeam.toLowerCase()}`)
-    );
-    const defaults = MATCH_PITCH_TELEMETRY_PACKAGES.filter(
-      (d) => !seenPairs.has(`${d.homeTeam.toLowerCase()}_${d.awayTeam.toLowerCase()}`)
-    );
-    return [...mapped, ...defaults];
-  }, [liveFixtures]);
+    for (const m of activeLive.slice(0, 6)) {
+      const key = `${m.home_team.toLowerCase()}_${m.away_team.toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      combined.push(buildPitchTelemetryFromMatch(m));
+    }
 
-  const [selectedMatchId, setSelectedMatchId] = useState<string>(
-    MATCH_PITCH_TELEMETRY_PACKAGES[0].id
-  );
+    for (const p of predictions) {
+      if (combined.length >= 6) break;
+      const key = `${p.home_team.toLowerCase()}_${p.away_team.toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      combined.push(buildPitchTelemetryFromMatch(p));
+    }
+
+    return combined;
+  }, [liveFixtures, predictions]);
+
+  const [selectedMatchId, setSelectedMatchId] = useState<string>('');
   const [activePitchTab, setActivePitchTab] = useState<'SHOT_MAP' | 'FORMATION_XI'>(
     'SHOT_MAP'
   );
-  const [selectedShot, setSelectedShot] = useState<PitchShotEvent | null>(
-    MATCH_PITCH_TELEMETRY_PACKAGES[0].shotMap[0]
-  );
-  const [selectedPlayer, setSelectedPlayer] = useState<FormationPlayerNode | null>(
-    MATCH_PITCH_TELEMETRY_PACKAGES[0].homeLineup[8]
-  );
+  const [selectedShot, setSelectedShot] = useState<PitchShotEvent | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<FormationPlayerNode | null>(null);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(() =>
     isGoalHornAudioEnabled()
   );
 
-  const match: MatchPitchTelemetryPackage = useMemo(() => {
-    return (
-      telemetryPackages.find((m) => m.id === selectedMatchId) ||
-      telemetryPackages[0] ||
-      MATCH_PITCH_TELEMETRY_PACKAGES[0]
-    );
+  const match: MatchPitchTelemetryPackage | null = useMemo(() => {
+    if (telemetryPackages.length === 0) return null;
+    return telemetryPackages.find((m) => m.id === selectedMatchId) || telemetryPackages[0];
   }, [selectedMatchId, telemetryPackages]);
+
+  const activeShot = selectedShot && match?.shotMap.some((s) => s.id === selectedShot.id)
+    ? selectedShot
+    : match?.shotMap[0] || null;
+  const activePlayer =
+    selectedPlayer &&
+    (match?.homeLineup.some((p) => p.name === selectedPlayer.name) ||
+      match?.awayLineup.some((p) => p.name === selectedPlayer.name))
+      ? selectedPlayer
+      : match?.homeLineup[9] || match?.homeLineup[0] || null;
 
   const handleToggleAudio = () => {
     const next = !audioEnabled;
@@ -286,6 +259,20 @@ export const PitchTelemetryPage: React.FC = () => {
           </div>
         </section>
 
+        {/* Empty / Loading State Guard */}
+        {!match ? (
+          <Card className="border-border p-8 text-center space-y-2">
+            <p className="text-sm font-bold text-foreground">
+              {isLoading
+                ? 'Loading live & upcoming pitch telemetry feeds...'
+                : 'No live or scheduled matches available for pitch telemetry right now.'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Live momentum waves and shot maps activate automatically as scheduled fixtures kick off.
+            </p>
+          </Card>
+        ) : (
+        <>
         {/* SECTION 1: Sofascore-Style 90-Minute Attack Momentum Wave */}
         <Card className="border-border">
           <CardHeader className="pb-2">
@@ -565,54 +552,54 @@ export const PitchTelemetryPage: React.FC = () => {
               </div>
 
               {/* Selected Shot or Player Inspector Strip */}
-              {activePitchTab === 'SHOT_MAP' && selectedShot && (
+              {activePitchTab === 'SHOT_MAP' && activeShot && (
                 <div className="p-3 rounded-xl bg-muted/40 border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2.5">
                     <Badge className="bg-emerald-500 text-slate-950 font-mono font-bold">
-                      {selectedShot.outcome} ({selectedShot.minute}&apos;)
+                      {activeShot.outcome} ({activeShot.minute}&apos;)
                     </Badge>
                     <PlayerAvatar
-                      name={selectedShot.player}
-                      team={selectedShot.team === 'HOME' ? match.homeTeam : match.awayTeam}
+                      name={activeShot.player}
+                      team={activeShot.team === 'HOME' ? match.homeTeam : match.awayTeam}
                       size="sm"
                     />
                     <span className="font-black text-sm text-foreground">
-                      {selectedShot.player}
+                      {activeShot.player}
                     </span>
-                    <span className="text-muted-foreground">· {selectedShot.situation}</span>
+                    <span className="text-muted-foreground">· {activeShot.situation}</span>
                   </div>
                   <div className="font-mono tabular-nums flex items-center gap-4">
                     <span>
-                      Shot Quality: <strong className="text-emerald-500">{selectedShot.xg.toFixed(2)} xG</strong>
+                      Shot Quality: <strong className="text-emerald-500">{activeShot.xg.toFixed(2)} xG</strong>
                     </span>
                     <span>
-                      Pitch Coord: ({selectedShot.x}, {selectedShot.y})
+                      Pitch Coord: ({activeShot.x}, {activeShot.y})
                     </span>
                   </div>
                 </div>
               )}
 
-              {activePitchTab === 'FORMATION_XI' && selectedPlayer && (
+              {activePitchTab === 'FORMATION_XI' && activePlayer && (
                 <div className="p-3 rounded-xl bg-muted/40 border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2.5">
                     <PlayerAvatar
-                      name={selectedPlayer.name}
+                      name={activePlayer.name}
                       team={
-                        match.homeLineup.some((p) => p.name === selectedPlayer.name)
+                        match.homeLineup.some((p) => p.name === activePlayer.name)
                           ? match.homeTeam
                           : match.awayTeam
                       }
-                      jerseyNumber={selectedPlayer.number}
-                      rating={selectedPlayer.rating}
+                      jerseyNumber={activePlayer.number}
+                      rating={activePlayer.rating}
                       size="sm"
                     />
                     <Badge className="bg-emerald-500 text-slate-950 font-mono font-bold">
-                      #{selectedPlayer.number} · {selectedPlayer.role}
+                      #{activePlayer.number} · {activePlayer.role}
                     </Badge>
                     <span className="font-black text-sm text-foreground">
-                      {selectedPlayer.name}
+                      {activePlayer.name}
                     </span>
-                    {selectedPlayer.isMvp && (
+                    {activePlayer.isMvp && (
                       <Badge variant="outline" className="text-amber-500 border-amber-500/40">
                         ★ Match MVP
                       </Badge>
@@ -622,11 +609,11 @@ export const PitchTelemetryPage: React.FC = () => {
                     <span>
                       Sofascore Rating:{' '}
                       <strong className="text-emerald-500">
-                        {selectedPlayer.rating.toFixed(1)} / 10.0
+                        {activePlayer.rating.toFixed(1)} / 10.0
                       </strong>
                     </span>
                     <span>
-                      xG Chain Contribution: <strong>{selectedPlayer.xgChain.toFixed(2)} xG</strong>
+                      xG Chain Contribution: <strong>{activePlayer.xgChain.toFixed(2)} xG</strong>
                     </span>
                   </div>
                 </div>
@@ -799,6 +786,8 @@ export const PitchTelemetryPage: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+        </>
+        )}
       </main>
 
       <Footer />

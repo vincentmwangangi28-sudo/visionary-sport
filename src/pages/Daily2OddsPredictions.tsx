@@ -14,126 +14,88 @@ import { useBetSlip, encodeSlipToParam } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
 export default function Daily2OddsPredictions() {
-  const { predictions = [], data } = usePredictions(1);
+  const { predictions = [], data, isLoading } = usePredictions(7);
   const { addSelections } = useBetSlip();
   const [tier, setTier] = useState<'2odds' | '3odds' | '5odds'>('2odds');
 
   const pool = useMemo(() => {
-    const raw = data?.allPredictions ?? predictions;
+    const raw = predictions.length > 0 ? predictions : data?.allPredictions ?? [];
     return Array.isArray(raw) ? raw.slice(0, 4) : [];
   }, [data?.allPredictions, predictions]);
 
   const ticket = useMemo(() => {
-    const m0 = pool[0];
-    const m1 = pool[1];
-    const m2 = pool[2];
-    const m3 = pool[3];
+    const targetCount = tier === '2odds' ? 2 : tier === '3odds' ? 3 : 4;
+    const selectedMatches = pool.slice(0, targetCount);
+
+    const legs = selectedMatches.map((m, idx) => {
+      const hProb = m.ai_prediction?.home_win_prob ?? 48;
+      const aProb = m.ai_prediction?.away_win_prob ?? 28;
+      const o25 = m.ai_prediction?.over_25_prob ?? 55;
+      const confNum = Math.min(92, Math.max(70, Math.round(m.ai_prediction?.confidence ?? 80)));
+
+      let market = 'Over 1.5 Match Goals';
+      let oddsNum = 1.38;
+
+      if (tier === '2odds') {
+        if (idx % 2 === 0 || o25 >= 58) {
+          market = 'Over 1.5 Match Goals';
+          oddsNum = Number(Math.max(1.26, Math.min(1.52, 1.38 + (60 - o25) * 0.005)).toFixed(2));
+        } else {
+          const favTeam = aProb > hProb ? m.away_team : m.home_team;
+          const favOdds = aProb > hProb ? (m.ai_prediction?.odds_away || 1.6) : (m.ai_prediction?.odds_home || 1.52);
+          market = favOdds <= 1.7 ? `${favTeam} Win` : `${favTeam} Double Chance`;
+          oddsNum = Number(Math.max(1.25, Math.min(1.62, favOdds <= 1.7 ? favOdds : favOdds * 0.65)).toFixed(2));
+        }
+      } else if (tier === '3odds') {
+        if (o25 >= 56 && idx % 2 === 0) {
+          market = 'Over 2.5 Match Goals';
+          oddsNum = Number(Math.max(1.42, Math.min(1.68, 100 / Math.max(54, o25))).toFixed(2));
+        } else {
+          const favTeam = aProb > hProb ? m.away_team : m.home_team;
+          market = `${favTeam} Win or Draw & Over 1.5`;
+          oddsNum = Number(Math.max(1.4, Math.min(1.65, 1.48 + (idx % 3) * 0.04)).toFixed(2));
+        }
+      } else {
+        const favTeam = aProb > hProb ? m.away_team : m.home_team;
+        market = idx % 2 === 0 ? `${favTeam} Win & Over 1.5` : 'Over 2.5 Match Goals';
+        oddsNum = Number(Math.max(1.45, Math.min(1.75, 1.5 + (idx % 3) * 0.05)).toFixed(2));
+      }
+
+      return {
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        league: m.league,
+        match: `${m.home_team} vs ${m.away_team}`,
+        matchDate: m.match_date,
+        market,
+        odds: oddsNum.toFixed(2),
+        conf: `${confNum}%`,
+      };
+    });
+
+    const combined = legs.reduce((acc, l) => acc * (parseFloat(l.odds) || 1.4), 1);
 
     if (tier === '2odds') {
       return {
-        label: 'Sure 2.05 Odds Banker Double',
-        winRate: '84% Historical Hit Rate',
-        totalOdds: '2.05',
-        legs: [
-          {
-            homeTeam: m0?.home_team || 'Liverpool',
-            awayTeam: m0?.away_team || 'Chelsea',
-            league: m0?.league || 'Premier League',
-            match: m0 ? `${m0.home_team} vs ${m0.away_team}` : 'Liverpool vs Chelsea',
-            market: 'Over 1.5 Match Goals',
-            odds: '1.38',
-            conf: '89%',
-          },
-          {
-            homeTeam: m1?.home_team || 'Bayern Munich',
-            awayTeam: m1?.away_team || 'VfB Stuttgart',
-            league: m1?.league || 'Bundesliga',
-            match: m1 ? `${m1.home_team} vs ${m1.away_team}` : 'Bayern Munich vs VfB Stuttgart',
-            market: 'Home Win (1X2)',
-            odds: '1.49',
-            conf: '86%',
-          },
-        ],
+        label: 'Sure 2.00+ Odds Banker Double',
+        winRate: 'Live AI Risk-Balanced Double',
+        totalOdds: legs.length > 0 ? combined.toFixed(2) : '0.00',
+        legs,
       };
     }
     if (tier === '3odds') {
       return {
-        label: 'Sure 3.15 Odds Smart Treble',
-        winRate: '76% Historical Hit Rate',
-        totalOdds: '3.15',
-        legs: [
-          {
-            homeTeam: m0?.home_team || 'Barcelona',
-            awayTeam: m0?.away_team || 'Sevilla',
-            league: m0?.league || 'LaLiga',
-            match: m0 ? `${m0.home_team} vs ${m0.away_team}` : 'Barcelona vs Sevilla',
-            market: 'Home Win & Over 1.5',
-            odds: '1.52',
-            conf: '85%',
-          },
-          {
-            homeTeam: m1?.home_team || 'Inter Milan',
-            awayTeam: m1?.away_team || 'AS Roma',
-            league: m1?.league || 'Serie A',
-            match: m1 ? `${m1.home_team} vs ${m1.away_team}` : 'Inter Milan vs AS Roma',
-            market: '1X Double Chance & Over 1.5',
-            odds: '1.44',
-            conf: '84%',
-          },
-          {
-            homeTeam: m2?.home_team || 'PSV Eindhoven',
-            awayTeam: m2?.away_team || 'AZ Alkmaar',
-            league: m2?.league || 'Eredivisie',
-            match: m2 ? `${m2.home_team} vs ${m2.away_team}` : 'PSV Eindhoven vs AZ Alkmaar',
-            market: 'Over 2.5 Goals',
-            odds: '1.44',
-            conf: '82%',
-          },
-        ],
+        label: 'Sure 3.00+ Odds Smart Treble',
+        winRate: 'Live AI Multi-League Treble',
+        totalOdds: legs.length > 0 ? combined.toFixed(2) : '0.00',
+        legs,
       };
     }
     return {
-      label: '5.20 Odds Value 4-Fold Acca',
-      winRate: '68% Historical Hit Rate',
-      totalOdds: '5.20',
-      legs: [
-        {
-          homeTeam: m0?.home_team || 'Real Madrid',
-          awayTeam: m0?.away_team || 'Celta Vigo',
-          league: m0?.league || 'LaLiga',
-          match: m0 ? `${m0.home_team} vs ${m0.away_team}` : 'Real Madrid vs Celta Vigo',
-          market: 'Home / Fav Win',
-          odds: '1.55',
-          conf: '83%',
-        },
-        {
-          homeTeam: m1?.home_team || 'Borussia Dortmund',
-          awayTeam: m1?.away_team || 'St. Pauli',
-          league: m1?.league || 'Bundesliga',
-          match: m1 ? `${m1.home_team} vs ${m1.away_team}` : 'Borussia Dortmund vs St. Pauli',
-          market: 'Home Win & Over 1.5',
-          odds: '1.48',
-          conf: '84%',
-        },
-        {
-          homeTeam: m2?.home_team || 'Sporting CP',
-          awayTeam: m2?.away_team || 'Braga',
-          league: m2?.league || 'Primeira Liga',
-          match: m2 ? `${m2.home_team} vs ${m2.away_team}` : 'Sporting CP vs Braga',
-          market: 'Over 2.5 Match Goals',
-          odds: '1.50',
-          conf: '80%',
-        },
-        {
-          homeTeam: m3?.home_team || 'Arsenal',
-          awayTeam: m3?.away_team || 'Bournemouth',
-          league: m3?.league || 'Premier League',
-          match: m3 ? `${m3.home_team} vs ${m3.away_team}` : 'Arsenal vs Bournemouth',
-          market: 'Over 8.5 Match Corners',
-          odds: '1.51',
-          conf: '81%',
-        },
-      ],
+      label: '5.00+ Odds Value 4-Fold Acca',
+      winRate: 'Live AI Multi-Market Acca',
+      totalOdds: legs.length > 0 ? combined.toFixed(2) : '0.00',
+      legs,
     };
   }, [pool, tier]);
 
@@ -157,17 +119,20 @@ export default function Daily2OddsPredictions() {
   }, [ticket, deepLinkUrl]);
 
   const handleLoadTicketToSlip = () => {
+    if (ticket.legs.length === 0) return;
     addSelections(
       ticket.legs.map((l) => ({
         match: l.match,
         homeTeam: l.homeTeam,
         awayTeam: l.awayTeam,
         league: l.league,
+        kickoff: l.matchDate,
         market: l.market,
         odds: parseFloat(l.odds) || 1.5,
         confidence: parseInt(l.conf, 10) || 84,
       }))
     );
+    toast.success(`Loaded ${ticket.totalOdds}x Ticket into Bet Slip!`);
   };
 
   return (
@@ -240,70 +205,84 @@ export default function Daily2OddsPredictions() {
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {ticket.legs.map((leg, i) => (
-              <div key={i} className="p-4 rounded-xl border border-border/60 bg-background/60 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground">Selection #{i + 1} • {leg.conf} AI Conf</div>
-                  <div className="font-bold text-sm sm:text-base mt-0.5">{leg.match}</div>
-                  <div className="text-xs text-primary font-semibold mt-1">{leg.market}</div>
-                </div>
-                <Badge variant="outline" className="text-sm font-bold font-mono">
-                  @{leg.odds}
-                </Badge>
+          {isLoading && ticket.legs.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              Building live multi-bet ticket from scheduled fixtures...
+            </div>
+          ) : ticket.legs.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              No active scheduled fixtures are available right now to build a daily slip. Check back once today&apos;s slate refreshes.
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {ticket.legs.map((leg, i) => (
+                  <div key={i} className="p-4 rounded-xl border border-border/60 bg-background/60 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Selection #{i + 1} • {leg.league} • {leg.conf} AI Conf</div>
+                      <div className="font-bold text-sm sm:text-base mt-0.5">{leg.match}</div>
+                      <div className="text-xs text-primary font-semibold mt-1">{leg.market}</div>
+                    </div>
+                    <Badge variant="outline" className="text-sm font-bold font-mono">
+                      @{leg.odds}
+                    </Badge>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="flex flex-wrap gap-3 pt-2">
-            <Button
-              onClick={handleLoadTicketToSlip}
-              className="font-bold gap-2"
-            >
-              <Plus className="w-4 h-4" /> Load {ticket.totalOdds}x Ticket to Bet Slip
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                navigator.clipboard?.writeText(shareMessage);
-                toast.success(`${ticket.label} copied to clipboard!`);
-              }}
-              className="font-semibold gap-2"
-            >
-              <Copy className="w-4 h-4" /> Copy {ticket.totalOdds}x Slip
-            </Button>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-4 gap-2 transition-colors"
-            >
-              <Share2 className="w-4 h-4" /> Share to WhatsApp Group
-            </a>
-            <a
-              href={`https://t.me/share/url?url=${encodeURIComponent(deepLinkUrl)}&text=${encodeURIComponent(shareMessage)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-md text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white h-10 px-4 gap-2 transition-colors"
-            >
-              <Send className="w-4 h-4" /> Share to Telegram
-            </a>
-          </div>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Button
+                  onClick={handleLoadTicketToSlip}
+                  className="font-bold gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Load {ticket.totalOdds}x Ticket to Bet Slip
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(shareMessage);
+                    toast.success(`${ticket.label} copied to clipboard!`);
+                  }}
+                  className="font-semibold gap-2"
+                >
+                  <Copy className="w-4 h-4" /> Copy {ticket.totalOdds}x Slip
+                </Button>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-4 gap-2 transition-colors"
+                >
+                  <Share2 className="w-4 h-4" /> Share to WhatsApp Group
+                </a>
+                <a
+                  href={`https://t.me/share/url?url=${encodeURIComponent(deepLinkUrl)}&text=${encodeURIComponent(shareMessage)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-md text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white h-10 px-4 gap-2 transition-colors"
+                >
+                  <Send className="w-4 h-4" /> Share to Telegram
+                </a>
+              </div>
+            </>
+          )}
         </Card>
 
-        <ViralSlipShareCard
-          title={ticket.label}
-          canonicalPath="/daily-2-odds-predictions"
-          items={ticket.legs.map((l) => ({
-            homeTeam: l.homeTeam,
-            awayTeam: l.awayTeam,
-            league: l.league,
-            market: l.market,
-            odds: parseFloat(l.odds) || 1.5,
-            confidence: parseInt(l.conf, 10) || 84,
-          }))}
-          totalOdds={parseFloat(ticket.totalOdds)}
-        />
+        {ticket.legs.length > 0 && (
+          <ViralSlipShareCard
+            title={ticket.label}
+            canonicalPath="/daily-2-odds-predictions"
+            items={ticket.legs.map((l) => ({
+              homeTeam: l.homeTeam,
+              awayTeam: l.awayTeam,
+              league: l.league,
+              market: l.market,
+              odds: parseFloat(l.odds) || 1.5,
+              confidence: parseInt(l.conf, 10) || 84,
+            }))}
+            totalOdds={parseFloat(ticket.totalOdds)}
+          />
+        )}
 
         <SEOAuthorityHub />
       </main>

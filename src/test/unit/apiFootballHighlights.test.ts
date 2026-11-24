@@ -12,12 +12,54 @@ describe('API-Football Highlights Service', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ response: [] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('/api/highlights')) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              success: true,
+              source: 'espn_live_results',
+              count: 2,
+              highlights: [
+                {
+                  id: 'srv-fin-1',
+                  title: 'Real Madrid 2 - 0 Villarreal Match Highlights & Goals',
+                  competition: 'La Liga',
+                  date: new Date().toISOString(),
+                  homeTeam: 'Real Madrid',
+                  awayTeam: 'Villarreal',
+                  homeScore: 2,
+                  awayScore: 0,
+                  thumbnail: 'https://a.espncdn.com/i/teamlogos/soccer/500/86.png',
+                },
+                {
+                  id: 'srv-fin-2',
+                  title: 'Arsenal 2 - 1 Chelsea Match Highlights & Goals',
+                  competition: 'Premier League',
+                  date: new Date().toISOString(),
+                  homeTeam: 'Arsenal',
+                  awayTeam: 'Chelsea',
+                  homeScore: 2,
+                  awayScore: 1,
+                  thumbnail: 'https://a.espncdn.com/i/teamlogos/soccer/500/359.png',
+                },
+              ],
+            }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          )
+        );
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify({ response: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+    });
   });
 
   it('manages API-Football credentials in storage', () => {

@@ -48,10 +48,20 @@ describe('Team News & Injury Updates Service', () => {
     expect(report.liveWireItems.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('returns top featured matches for the Team News switcher', () => {
-    const featured = getFeaturedMatchesForTeamNews();
+  it('returns top featured matches for the Team News switcher when provided real fixtures', () => {
+    const featured = getFeaturedMatchesForTeamNews([
+      {
+        id: 'sample-1',
+        home_team: 'Arsenal',
+        away_team: 'Chelsea',
+        league: 'Premier League',
+        match_date: new Date(Date.now() + 3600_000).toISOString(),
+        prediction: 'Home Win',
+        confidence: 80,
+      },
+    ]);
     expect(featured.length).toBeGreaterThan(0);
-    expect(featured[0].home_team).toBeTruthy();
-    expect(featured[0].away_team).toBeTruthy();
+    expect(featured[0].home_team).toBe('Arsenal');
+    expect(featured[0].away_team).toBe('Chelsea');
   });
 });

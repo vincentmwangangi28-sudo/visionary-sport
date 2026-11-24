@@ -1,27 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   getInPlayMomentumSignals,
   saveInPlayMomentumSignals,
-  DEFAULT_IN_PLAY_SIGNALS,
+  buildInPlaySignalsFromLiveMatches,
   type InPlayMomentumSignal,
   type InPlayAlertType,
 } from '@/services/phase11AnalyticsService';
+import { usePredictions } from '@/hooks/usePredictions';
+import { fetchRealtimeLiveMatches } from '@/services/realtimeFootball';
 import { toast } from 'sonner';
 import { Plus, RotateCcw, ExternalLink, Activity, Smartphone } from 'lucide-react';
 
 export const AdminSocialStoryStudioTab: React.FC = () => {
+  const { data: predictions = [] } = usePredictions(7);
   const [signals, setSignals] = useState<InPlayMomentumSignal[]>(() =>
     getInPlayMomentumSignals()
   );
-  const [homeTeam, setHomeTeam] = useState('Liverpool');
-  const [awayTeam, setAwayTeam] = useState('Arsenal');
-  const [league, setLeague] = useState('Premier League');
+  const [homeTeam, setHomeTeam] = useState('');
+  const [awayTeam, setAwayTeam] = useState('');
+  const [league, setLeague] = useState('');
   const [minute, setMinute] = useState('77');
   const [market, setMarket] = useState('Over 2.5 Match Goals (In-Play)');
   const [bookieOdds, setBookieOdds] = useState('1.58');
   const [alertType, setAlertType] = useState<InPlayAlertType>('LATE_GOAL_75_PLUS');
+
+  useEffect(() => {
+    if (predictions.length > 0 && !homeTeam) {
+      setHomeTeam(predictions[0].home_team);
+      setAwayTeam(predictions[0].away_team);
+      setLeague(predictions[0].league || 'League Match');
+    }
+  }, [predictions, homeTeam]);
+
+  useEffect(() => {
+    let active = true;
+    if (signals.length === 0) {
+      fetchRealtimeLiveMatches()
+        .then((live) => {
+          if (!active) return;
+          const liveSigs = buildInPlaySignalsFromLiveMatches(live);
+          if (liveSigs.length > 0) setSignals(liveSigs);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      active = false;
+    };
+  }, [signals.length]);
 
   const handlePinInPlayAlert = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +62,7 @@ export const AdminSocialStoryStudioTab: React.FC = () => {
       id: `admin-ip-${Date.now()}`,
       homeTeam: homeTeam.trim(),
       awayTeam: awayTeam.trim(),
-      league: league.trim() || 'Premier League',
+      league: league.trim() || 'League Match',
       minute: minNum,
       homeScore: 1,
       awayScore: 1,
@@ -59,10 +86,12 @@ export const AdminSocialStoryStudioTab: React.FC = () => {
     toast.success(`Pinned live in-play alert: ${homeTeam} vs ${awayTeam}`);
   };
 
-  const handleResetDefaults = () => {
-    setSignals(DEFAULT_IN_PLAY_SIGNALS);
-    saveInPlayMomentumSignals(DEFAULT_IN_PLAY_SIGNALS);
-    toast.info('Reset in-play momentum alerts to default feed');
+  const handleResetDefaults = async () => {
+    const live = await fetchRealtimeLiveMatches().catch(() => []);
+    const liveSigs = buildInPlaySignalsFromLiveMatches(live);
+    setSignals(liveSigs);
+    saveInPlayMomentumSignals(liveSigs);
+    toast.info('Synced in-play momentum alerts to live ESPN feed');
   };
 
   return (

@@ -41,10 +41,47 @@ beforeAll(() => {
   }
 });
 
+const SAMPLE_PREDICTIONS: Prediction[] = [
+  {
+    id: 'fx-ars-mun',
+    home_team: 'Arsenal',
+    away_team: 'Manchester United',
+    league: 'Premier League',
+    match_date: new Date(Date.now() + 3600_000 * 4).toISOString(),
+    prediction: 'Home Win',
+    confidence: 79,
+    home_odds: 1.65,
+    draw_odds: 3.9,
+    away_odds: 5.1,
+  },
+  {
+    id: 'fx-rma-atm',
+    home_team: 'Real Madrid',
+    away_team: 'Atletico Madrid',
+    league: 'La Liga',
+    match_date: new Date(Date.now() + 3600_000 * 6).toISOString(),
+    prediction: 'Home Win',
+    confidence: 74,
+    home_odds: 1.85,
+    draw_odds: 3.55,
+    away_odds: 4.1,
+  },
+];
+
 function renderSuite(initialTab: 'gk_psxg' | 'manager_clash' = 'gk_psxg') {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, enabled: false } },
   });
+
+  queryClient.setQueryData(
+    ['predictions', 'list', 'all'],
+    {
+      allPredictions: SAMPLE_PREDICTIONS,
+      total: SAMPLE_PREDICTIONS.length,
+      isRealTime: true,
+    },
+    { updatedAt: Date.now() + 60_000 }
+  );
 
   return render(
     <QueryClientProvider client={queryClient}>
@@ -64,33 +101,6 @@ function renderSuite(initialTab: 'gk_psxg' | 'manager_clash' = 'gk_psxg') {
     </QueryClientProvider>
   );
 }
-
-const SAMPLE_PREDICTIONS: Prediction[] = [
-  {
-    id: 'fx-ars-mun',
-    home_team: 'Arsenal',
-    away_team: 'Manchester United',
-    league: 'Premier League',
-    match_date: new Date().toISOString(),
-    prediction: 'Home Win',
-    confidence: 79,
-    home_odds: 1.65,
-    draw_odds: 3.9,
-    away_odds: 5.1,
-  },
-  {
-    id: 'fx-rma-atm',
-    home_team: 'Real Madrid',
-    away_team: 'Atletico Madrid',
-    league: 'La Liga',
-    match_date: new Date().toISOString(),
-    prediction: 'Home Win',
-    confidence: 74,
-    home_odds: 1.85,
-    draw_odds: 3.55,
-    away_odds: 4.1,
-  },
-];
 
 describe('Feature #1 (Goalkeeper PSxG & Backup Lab) & Feature #3 (Manager & Formation Clash Matrix)', () => {
   it('recalculates Over 2.5 and BTTS fair odds upward when simulating a #2 backup goalkeeper', () => {

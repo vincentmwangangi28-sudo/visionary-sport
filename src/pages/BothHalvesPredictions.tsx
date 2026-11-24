@@ -8,30 +8,39 @@ import { MarketQuickStrip } from '@/components/MarketQuickStrip';
 import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Flame, CheckCircle2 } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
 
 export default function BothHalvesPredictions() {
-  const { data: matches = [] } = usePredictions();
+  const { predictions: matches = [], isLoading } = usePredictions(7);
 
   const picks = useMemo(() => {
-    return matches.slice(0, 8).map((m, idx) => {
-      const home = m.homeTeam || ['Manchester City', 'Bayern Munich', 'Real Madrid', 'Barcelona', 'PSG', 'PSV Eindhoven', 'Celtic', 'Sporting CP'][idx];
-      const away = m.awayTeam || ['Fulham', 'Bochum', 'Osasuna', 'Espanyol', 'Strasbourg', 'PEC Zwolle', 'Dundee', 'Farense'][idx];
-      const market = idx % 2 === 0 ? `${home} to Score in Both Halves` : `${home} to Win Both Halves`;
-      const odds = idx % 2 === 0 ? (1.92 + (idx % 3) * 0.11).toFixed(2) : (2.65 + (idx % 3) * 0.15).toFixed(2);
-      const prob = idx % 2 === 0 ? 64 - (idx % 4) * 2 : 48 - (idx % 4) * 2;
-      return {
-        id: m.id || `bh-${idx}`,
-        match: `${home} vs ${away}`,
-        league: m.league || ['Premier League', 'Bundesliga', 'La Liga', 'La Liga', 'Ligue 1', 'Eredivisie', 'Scottish Premiership', 'Primeira Liga'][idx],
-        market,
-        odds,
-        prob,
-        htXg: (1.22 + (idx % 3) * 0.12).toFixed(2),
-        shXg: (1.45 + (idx % 3) * 0.14).toFixed(2),
-      };
-    });
+    return [...matches]
+      .sort((a, b) => {
+        const aMax = Math.max(a.ai_prediction?.home_win_prob ?? 45, a.ai_prediction?.away_win_prob ?? 25);
+        const bMax = Math.max(b.ai_prediction?.home_win_prob ?? 45, b.ai_prediction?.away_win_prob ?? 25);
+        return bMax - aMax;
+      })
+      .slice(0, 8)
+      .map((m, idx) => {
+        const hProb = m.ai_prediction?.home_win_prob ?? 48;
+        const aProb = m.ai_prediction?.away_win_prob ?? 26;
+        const favTeam = aProb > hProb ? m.away_team : m.home_team;
+        const favProb = Math.max(hProb, aProb);
+        const market = idx % 2 === 0 ? `${favTeam} to Score in Both Halves` : `${favTeam} to Win Both Halves`;
+        const prob = idx % 2 === 0 ? Math.min(72, Math.max(46, Math.round(favProb * 0.92))) : Math.min(58, Math.max(34, Math.round(favProb * 0.72)));
+        const odds = Number(Math.max(1.72, 100 / Math.max(32, prob - 3)).toFixed(2)).toFixed(2);
+        return {
+          id: m.id,
+          match: `${m.home_team} vs ${m.away_team}`,
+          league: m.league,
+          market,
+          odds,
+          prob,
+          htXg: Number((0.75 + (favProb / 100) * 0.85).toFixed(2)).toFixed(2),
+          shXg: Number((0.92 + (favProb / 100) * 0.95).toFixed(2)).toFixed(2),
+        };
+      });
   }, [matches]);
 
   return (
@@ -66,27 +75,37 @@ export default function BothHalvesPredictions() {
           </p>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {picks.map((p) => (
-            <Card key={p.id} className="p-5 border-border/60 bg-card/75 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-xs font-semibold text-orange-400">{p.league}</div>
-                <div className="font-bold text-base mt-0.5">{p.match}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  1H xG: <strong className="text-foreground">{p.htXg}</strong> • 2H xG: <strong className="text-foreground">{p.shXg}</strong>
+        {isLoading && picks.length === 0 ? (
+          <Card className="p-8 text-center text-sm text-muted-foreground">
+            Loading Split-Half Poisson projections for scheduled fixtures...
+          </Card>
+        ) : picks.length === 0 ? (
+          <Card className="p-8 text-center text-sm text-muted-foreground">
+            No scheduled fixtures available in the 7-day feed right now.
+          </Card>
+        ) : (
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {picks.map((p) => (
+              <Card key={p.id} className="p-5 border-border/60 bg-card/75 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold text-orange-400">{p.league}</div>
+                  <div className="font-bold text-base mt-0.5">{p.match}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    1H xG: <strong className="text-foreground">{p.htXg}</strong> • 2H xG: <strong className="text-foreground">{p.shXg}</strong>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/40 font-bold">
-                  {p.market} @{p.odds}
-                </Badge>
-                <div className="text-[11px] text-emerald-400 font-semibold mt-1">
-                  {p.prob}% Split-Half Prob
+                <div className="text-right">
+                  <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/40 font-bold">
+                    {p.market} @{p.odds}
+                  </Badge>
+                  <div className="text-[11px] text-emerald-400 font-semibold mt-1">
+                    {p.prob}% Split-Half Prob
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </section>
+              </Card>
+            ))}
+          </section>
+        )}
 
         <SEOAuthorityHub />
       </main>

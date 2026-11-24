@@ -36,45 +36,6 @@ export interface BetRecord {
 
 const STORAGE_KEY = 'pp_bankroll_portfolio_bets_v1';
 
-const DEFAULT_SAMPLE_BETS: BetRecord[] = [
-  {
-    id: 'bet-1',
-    date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
-    match: 'Arsenal vs Brighton',
-    selection: 'Home Win',
-    odds: 1.55,
-    stake: 50,
-    status: 'won',
-  },
-  {
-    id: 'bet-2',
-    date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
-    match: 'Real Madrid vs Real Valladolid',
-    selection: 'Over 2.5 Goals',
-    odds: 1.62,
-    stake: 60,
-    status: 'won',
-  },
-  {
-    id: 'bet-3',
-    date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0],
-    match: 'Chelsea vs Crystal Palace',
-    selection: 'Home Win',
-    odds: 1.60,
-    stake: 40,
-    status: 'lost',
-  },
-  {
-    id: 'bet-4',
-    date: new Date().toISOString().split('T')[0],
-    match: 'Man City vs Brentford',
-    selection: 'Home Win & Over 2.5',
-    odds: 1.70,
-    stake: 55,
-    status: 'pending',
-  },
-];
-
 export const BankrollPortfolioTracker = () => {
   const { format, currencyConfig } = useCurrency();
   const { formatOdds } = useUserPreferences();
@@ -86,7 +47,7 @@ export const BankrollPortfolioTracker = () => {
     } catch {
       // ignore
     }
-    return DEFAULT_SAMPLE_BETS;
+    return [];
   });
 
   const [filter, setFilter] = useState<'all' | 'won' | 'lost' | 'pending'>('all');

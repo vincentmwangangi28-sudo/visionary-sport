@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { usePredictions } from '@/hooks/usePredictions';
 import {
-  CURATED_SYNDICATE_POOLS,
+  buildSyndicatePoolsFromFixtures,
   DEFAULT_MINI_LEAGUE_STANDINGS,
   calculateSyndicateShareSplit,
   SyndicatePool,
@@ -95,6 +96,52 @@ export const SyndicatePoolsHubPage: React.FC = () => {
       // ignore
     }
   }, [customLeagues]);
+
+  const { data: predictions = [] } = usePredictions(7);
+  const [liveSyndicatePools, setLiveSyndicatePools] = useState<SyndicatePool[]>([]);
+  const [loadingPools, setLoadingPools] = useState<boolean>(true);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/jackpots')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => {
+        if (!active) return;
+        const fixtures =
+          payload?.sportpesaMega?.matches ||
+          payload?.betikaGrand?.matches ||
+          [];
+        const prizes = {
+          sportpesaMega: payload?.sportpesaMega?.prizePool,
+          betikaGrand: payload?.betikaGrand?.prizePool,
+        };
+        if (Array.isArray(fixtures) && fixtures.length > 0) {
+          setLiveSyndicatePools(buildSyndicatePoolsFromFixtures(fixtures, prizes));
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoadingPools(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const syndicatePools = useMemo(() => {
+    if (liveSyndicatePools.length > 0) return liveSyndicatePools;
+    if (predictions.length > 0) {
+      return buildSyndicatePoolsFromFixtures(
+        predictions.slice(0, 17).map((p) => ({
+          homeTeam: p.home_team,
+          awayTeam: p.away_team,
+          homeOdds: p.home_odds ?? undefined,
+          awayOdds: p.away_odds ?? undefined,
+        }))
+      );
+    }
+    return [];
+  }, [liveSyndicatePools, predictions]);
 
   const shareCalc = useMemo(
     () =>
@@ -212,7 +259,7 @@ export const SyndicatePoolsHubPage: React.FC = () => {
             }`}
           >
             <Users className="w-3.5 h-3.5 text-emerald-500" />
-            17-Game Jackpot Syndicates ({CURATED_SYNDICATE_POOLS.length})
+            17-Game Jackpot Syndicates ({syndicatePools.length})
           </button>
           <button
             type="button"
@@ -243,7 +290,12 @@ export const SyndicatePoolsHubPage: React.FC = () => {
         {/* TAB 1: 17-GAME JACKPOT SYNDICATE POOLS */}
         {activeTab === 'syndicates' && (
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {CURATED_SYNDICATE_POOLS.map((pool) => {
+            {syndicatePools.length === 0 ? (
+              <div className="lg:col-span-3 rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+                {loadingPools ? 'Syncing live 17-game jackpot syndicate pools...' : 'No active jackpot pools available right now.'}
+              </div>
+            ) : (
+            syndicatePools.map((pool) => {
               const isJoined = joinedPoolIds.includes(pool.id);
               return (
                 <div
@@ -376,7 +428,8 @@ export const SyndicatePoolsHubPage: React.FC = () => {
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
           </section>
         )}
 

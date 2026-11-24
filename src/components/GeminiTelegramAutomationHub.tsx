@@ -38,6 +38,7 @@ import {
   broadcastAcca,
   TelegramBotStatus,
 } from '@/services/telegramTasksService';
+import { usePredictions } from '@/hooks/usePredictions';
 
 export const GeminiTelegramAutomationHub = () => {
   // Bot status state
@@ -48,13 +49,15 @@ export const GeminiTelegramAutomationHub = () => {
   const [showTokenConfig, setShowTokenConfig] = useState(false);
   const [savingToken, setSavingToken] = useState(false);
 
+  const { predictions: livePredictions } = usePredictions(1);
+
   // Task 1: Banker State
   const [bankerMatch, setBankerMatch] = useState({
-    home_team: 'Arsenal',
-    away_team: 'Chelsea',
-    league: 'Premier League',
+    home_team: '',
+    away_team: '',
+    league: '',
     odds: 1.85,
-    confidence: 82,
+    confidence: 80,
     outcome: 'Home Win',
   });
   const [bankerAnalysis, setBankerAnalysis] = useState<GeminiMatchAnalysis | null>(null);
@@ -69,21 +72,53 @@ export const GeminiTelegramAutomationHub = () => {
 
   // Task 3: Value Screener State
   const [valueMatch, setValueMatch] = useState({
-    home: 'Liverpool',
-    away: 'Manchester City',
-    bookieHome: 2.35,
-    bookieDraw: 3.40,
-    bookieAway: 2.90,
+    home: '',
+    away: '',
+    bookieHome: 2.0,
+    bookieDraw: 3.4,
+    bookieAway: 3.2,
   });
   const [valueResult, setValueResult] = useState<GeminiValueResult | null>(null);
   const [loadingValueAi, setLoadingValueAi] = useState(false);
 
   // Task 4: Custom Broadcast Studio State
-  const [customText, setCustomText] = useState(
-    `🔥 <b>PREDICTPRO DAILY VIP ALERT</b> 🔥\n\n⚽ <b>Real Madrid vs Barcelona</b>\n🏆 <i>La Liga El Clásico</i>\n🎯 <b>Pick:</b> Both Teams to Score + Over 2.5\n💰 <b>Odds:</b> 1.95\n\n⚡ <i>Powered by Gemini Flash AI</i>\n🔗 https://predictpro.guru`
-  );
+  const [customText, setCustomText] = useState('');
   const [broadcastingCustom, setBroadcastingCustom] = useState(false);
   const [lastBroadcastPreview, setLastBroadcastPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (livePredictions.length === 0) return;
+    const top = livePredictions[0];
+    setBankerMatch((prev) =>
+      prev.home_team
+        ? prev
+        : {
+            home_team: top.home_team,
+            away_team: top.away_team,
+            league: top.league || 'Football',
+            odds: Number(top.home_odds || 1.85),
+            confidence: Number(top.confidence_score || top.confidence || 78),
+            outcome: top.predicted_outcome || top.prediction || 'Home Win',
+          }
+    );
+    const second = livePredictions[1] || top;
+    setValueMatch((prev) =>
+      prev.home
+        ? prev
+        : {
+            home: second.home_team,
+            away: second.away_team,
+            bookieHome: Number(second.home_odds || 2.1),
+            bookieDraw: Number(second.draw_odds || 3.4),
+            bookieAway: Number(second.away_odds || 3.2),
+          }
+    );
+    setCustomText((prev) =>
+      prev
+        ? prev
+        : `🔥 <b>PREDICTPRO LIVE MATCHDAY ALERT</b> 🔥\n\n⚽ <b>${top.home_team} vs ${top.away_team}</b>\n🏆 <i>${top.league}</i>\n🎯 <b>Pick:</b> ${top.predicted_outcome || top.prediction || 'Home Win'}\n💰 <b>Odds:</b> ${Number(top.home_odds || 1.85).toFixed(2)}\n\n⚡ <i>Powered by PredictPro AI</i>\n🔗 https://predictpro.guru`
+    );
+  }, [livePredictions]);
 
   const handleCheckBot = useCallback(async () => {
     setCheckingBot(true);
@@ -187,12 +222,16 @@ export const GeminiTelegramAutomationHub = () => {
   const handleCurateAcca = async () => {
     setLoadingAccaAi(true);
     try {
-      const fixtures = [
-        { homeTeam: 'Arsenal', awayTeam: 'Wolves', league: 'Premier League', homeOdds: 1.35 },
-        { homeTeam: 'Real Madrid', awayTeam: 'Getafe', league: 'La Liga', homeOdds: 1.45 },
-        { homeTeam: 'Bayern Munich', awayTeam: 'Hoffenheim', league: 'Bundesliga', homeOdds: 1.4 },
-        { homeTeam: 'PSG', awayTeam: 'Montpellier', league: 'Ligue 1', homeOdds: 1.3 },
-      ];
+      const fixtures = livePredictions.slice(0, 6).map((m) => ({
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        league: m.league || 'Football',
+        homeOdds: Number(m.home_odds || 1.75),
+      }));
+      if (fixtures.length === 0) {
+        toast.info('No live upcoming fixtures loaded yet — sync ESPN fixtures first.');
+        return;
+      }
       const res = await curateAccaWithGemini(fixtures, accaStrategy);
       setAccaResult(res);
       toast.success('AI Accumulator slip curated by Gemini!');
@@ -256,10 +295,11 @@ export const GeminiTelegramAutomationHub = () => {
   // Task 4 Actions
   const handleGenerateGeminiPost = async () => {
     try {
+      const lead = livePredictions[0];
       const post = await generateTelegramPostWithGemini('custom', {
-        match: 'El Clásico',
-        odds: 1.95,
-        pick: 'BTTS + Over 2.5',
+        match: lead ? `${lead.home_team} vs ${lead.away_team}` : 'Featured Matchday Slate',
+        odds: Number(lead?.home_odds || 1.85),
+        pick: lead?.predicted_outcome || lead?.prediction || 'Over 1.5 Goals',
       });
       if (post?.html_post) {
         setCustomText(post.html_post);

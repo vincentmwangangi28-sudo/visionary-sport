@@ -14,12 +14,14 @@ import {
   Flame,
 } from 'lucide-react';
 import { getVerifiedBookingCodes } from '@/services/adminOverrideSyncService';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 type PartnerWidgetType = 'MOTD_XG_CARD' | 'BOOKING_CODE_MINI' | 'TOP5_TICKER';
 type PartnerWidgetTheme = 'DARK_OBSIDIAN' | 'EMERALD_TERMINAL' | 'LIGHT_BROADCAST';
 
 export const AdminPartnerWidgetStudioTab: React.FC = () => {
+  const { predictions: livePredictions } = usePredictions(1);
   const [widgetType, setWidgetType] = useState<PartnerWidgetType>('MOTD_XG_CARD');
   const [theme, setTheme] = useState<PartnerWidgetTheme>('DARK_OBSIDIAN');
   const [partnerRefId, setPartnerRefId] = useState<string>('goal_africa_blog');
@@ -27,6 +29,7 @@ export const AdminPartnerWidgetStudioTab: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const bookingCodes = useMemo(() => getVerifiedBookingCodes(), []);
+  const motdMatch = livePredictions[0];
 
   const embedPath = useMemo(() => {
     const slug =
@@ -265,24 +268,28 @@ export const AdminPartnerWidgetStudioTab: React.FC = () => {
                 </div>
 
                 {widgetType === 'MOTD_XG_CARD' && (
-                  <div className="space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-black text-sm">Arsenal vs Chelsea</p>
-                        <p className="text-[11px] opacity-75">
-                          Premier League · Sim xG: 2.18 – 1.12
-                        </p>
+                  motdMatch ? (
+                    <div className="space-y-2.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-black text-sm">{motdMatch.home_team} vs {motdMatch.away_team}</p>
+                          <p className="text-[11px] opacity-75">
+                            {motdMatch.league} · Sim xG: {Number(motdMatch.home_xg || 1.65).toFixed(2)} – {Number(motdMatch.away_xg || 1.05).toFixed(2)}
+                          </p>
+                        </div>
+                        <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold text-xs">
+                          {motdMatch.predicted_outcome || motdMatch.prediction || 'Home Win'} ({motdMatch.confidence || 78}%)
+                        </span>
                       </div>
-                      <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold text-xs">
-                        Over 2.5 Goals (86%)
-                      </span>
+                      <div className="grid grid-cols-3 gap-2 text-center font-mono text-[11px] pt-1">
+                        <div className="p-1.5 rounded bg-current/5">1: {motdMatch.home_win_probability ?? 52}%</div>
+                        <div className="p-1.5 rounded bg-current/5">X: {motdMatch.draw_probability ?? 24}%</div>
+                        <div className="p-1.5 rounded bg-current/5">2: {motdMatch.away_win_probability ?? 24}%</div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-center font-mono text-[11px] pt-1">
-                      <div className="p-1.5 rounded bg-current/5">1: 58.4%</div>
-                      <div className="p-1.5 rounded bg-current/5">X: 22.1%</div>
-                      <div className="p-1.5 rounded bg-current/5">2: 19.5%</div>
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="text-xs opacity-75 py-2">Awaiting next scheduled live fixture for MOTD xG widget preview.</p>
+                  )
                 )}
 
                 {widgetType === 'BOOKING_CODE_MINI' && (
@@ -303,25 +310,25 @@ export const AdminPartnerWidgetStudioTab: React.FC = () => {
                 )}
 
                 {widgetType === 'TOP5_TICKER' && (
-                  <div className="space-y-1.5 text-xs">
-                    {[
-                      { match: 'Arsenal vs Chelsea', pick: 'Over 2.5 Goals', prob: '86%', odds: '1.72' },
-                      { match: 'Real Madrid vs Barcelona', pick: 'BTTS — Yes', prob: '84%', odds: '1.65' },
-                      { match: 'Bayern vs Dortmund', pick: 'Home & Over 1.5', prob: '88%', odds: '1.64' },
-                    ].map((row) => (
-                      <div
-                        key={row.match}
-                        className="flex items-center justify-between py-1.5 px-2 rounded bg-current/5"
-                      >
-                        <span className="font-semibold">{row.match}</span>
-                        <div className="flex items-center gap-2 font-mono">
-                          <span className="text-emerald-400 font-bold">{row.pick}</span>
-                          <span>@{row.odds}</span>
-                          <span className="text-[10px] opacity-75">({row.prob})</span>
+                  livePredictions.length === 0 ? (
+                    <p className="text-xs opacity-75 py-2">No upcoming fixtures cached yet for Top 5 ticker preview.</p>
+                  ) : (
+                    <div className="space-y-1.5 text-xs">
+                      {livePredictions.slice(0, 5).map((m) => (
+                        <div
+                          key={m.id}
+                          className="flex items-center justify-between py-1.5 px-2 rounded bg-current/5"
+                        >
+                          <span className="font-semibold">{m.home_team} vs {m.away_team}</span>
+                          <div className="flex items-center gap-2 font-mono">
+                            <span className="text-emerald-400 font-bold">{m.predicted_outcome || m.prediction || 'Home Win'}</span>
+                            <span>@{Number(m.home_odds || 1.75).toFixed(2)}</span>
+                            <span className="text-[10px] opacity-75">({m.confidence || 76}%)</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )
                 )}
 
                 <div className="pt-1 border-t border-current/10 flex items-center justify-between text-[11px]">

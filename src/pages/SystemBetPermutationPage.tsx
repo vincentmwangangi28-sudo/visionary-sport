@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   Layers,
@@ -28,21 +29,38 @@ import {
 } from '@/services/phase15PropSystemService';
 
 const INITIAL_SYSTEM_LEGS: SystemLegItem[] = [
-  { id: 1, label: 'Arsenal vs Chelsea — Over 2.5 Goals', odds: 1.85, status: 'won' },
-  { id: 2, label: 'Real Madrid vs Bayern — BTTS Yes', odds: 1.78, status: 'won' },
-  { id: 3, label: 'Liverpool vs Newcastle — Home Win (1)', odds: 1.92, status: 'won' },
-  { id: 4, label: 'Inter Milan vs Juventus — Under 2.5 Goals', odds: 2.05, status: 'lost' },
-  { id: 5, label: 'Dortmund vs Leipzig — Over 9.5 Corners', odds: 1.88, status: 'won' },
-  { id: 6, label: 'Al Ahly vs Espérance — Home -0.5 AH', odds: 1.95, status: 'won' },
+  { id: 1, label: 'Match Leg #1 — Home Win / Over 1.5', odds: 1.85, status: 'won' },
+  { id: 2, label: 'Match Leg #2 — BTTS Yes', odds: 1.78, status: 'won' },
+  { id: 3, label: 'Match Leg #3 — Home Win (1)', odds: 1.92, status: 'won' },
+  { id: 4, label: 'Match Leg #4 — Under 2.5 Goals', odds: 2.05, status: 'lost' },
+  { id: 5, label: 'Match Leg #5 — Over 9.5 Corners', odds: 1.88, status: 'won' },
+  { id: 6, label: 'Match Leg #6 — Home -0.5 AH', odds: 1.95, status: 'won' },
 ];
 
 export const SystemBetPermutationPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
 
   const [currency, setCurrency] = useState<SupportedCurrency>('USD');
   const [presetId, setPresetId] = useState<SystemBetPresetId>('yankee');
   const [unitStake, setUnitStake] = useState<string>('5');
   const [legs, setLegs] = useState<SystemLegItem[]>(INITIAL_SYSTEM_LEGS);
+
+  useEffect(() => {
+    if (predictions.length > 0) {
+      setLegs((prev) =>
+        prev.map((leg, idx) => {
+          const m = predictions[idx % predictions.length];
+          const odds = Number(Math.max(1.35, Number(m.home_odds || leg.odds)).toFixed(2));
+          return {
+            ...leg,
+            label: `${m.home_team} vs ${m.away_team} — ${m.prediction || m.predicted_outcome || 'Home Win'}`,
+            odds,
+          };
+        })
+      );
+    }
+  }, [predictions]);
 
   const currencyMeta = PHASE13_CURRENCIES[currency];
 
@@ -89,10 +107,11 @@ export const SystemBetPermutationPage: React.FC = () => {
     );
   };
 
+  const decimals = currency === 'USD' || currency === 'GBP' ? 2 : 0;
   const fmtMoney = (val: number) =>
     `${currencyMeta.symbol}${val.toLocaleString(undefined, {
-      minimumFractionDigits: currencyMeta.decimals,
-      maximumFractionDigits: currencyMeta.decimals,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     })}`;
 
   const handleLoadActiveLegsToSlip = () => {

@@ -61,7 +61,17 @@ export default function StreaksRadar() {
               f.away_team.toLowerCase().includes(teamLower) ||
               teamLower.includes(f.away_team.toLowerCase())
           );
-          if (!match) return streak;
+          if (!match) {
+            return {
+              ...streak,
+              hasRealNextMatch: false,
+              nextMatch: {
+                ...streak.nextMatch,
+                opponent: 'Awaiting Real Fixture',
+                date: 'No upcoming match scheduled',
+              },
+            };
+          }
           const isHome =
             match.home_team.toLowerCase().includes(teamLower) ||
             teamLower.includes(match.home_team.toLowerCase());
@@ -80,6 +90,7 @@ export default function StreaksRadar() {
 
           return {
             ...streak,
+            hasRealNextMatch: true,
             nextMatch: {
               ...streak.nextMatch,
               opponent,
@@ -132,17 +143,30 @@ export default function StreaksRadar() {
     }).sort((a, b) => b.sustainability.score - a.sustainability.score);
   }, [liveStreaks, selectedCategory, selectedLeague, searchQuery, minSustainability]);
 
-  // High confidence banker streaks (for 1-click Acca builder)
+  // High confidence banker streaks (only streaks matched to real upcoming fixtures)
   const topBankerStreaks = useMemo(() => {
-    return liveStreaks.filter(s => s.sustainability.score >= 80).slice(0, 4);
+    return liveStreaks.filter(s => s.hasRealNextMatch && s.sustainability.score >= 80).slice(0, 4);
   }, [liveStreaks]);
 
   const combinedBankerOdds = useMemo(() => {
     return topBankerStreaks.reduce((acc, s) => acc * s.nextMatch.odds, 1);
   }, [topBankerStreaks]);
 
+  // Dynamic summary KPIs from liveStreaks
+  const summaryStats = useMemo(() => {
+    const matchedCount = liveStreaks.filter((s) => s.hasRealNextMatch).length;
+    const longest = [...liveStreaks].sort((a, b) => b.streakCount - a.streakCount)[0];
+    const highestRate = [...liveStreaks].sort((a, b) => b.sustainability.score - a.sustainability.score)[0];
+    const avgHit =
+      liveStreaks.length > 0
+        ? (liveStreaks.reduce((sum, s) => sum + s.hitRateLast10, 0) / liveStreaks.length).toFixed(1)
+        : '0.0';
+    return { matchedCount, longest, highestRate, avgHit };
+  }, [liveStreaks]);
+
   // Check if a streak selection is already in betslip
   const isSelectionInSlip = (streak: TeamStreak) => {
+    if (!streak.hasRealNextMatch) return false;
     return selections.some(
       sel =>
         sel.homeTeam === (streak.nextMatch.isHome ? streak.team : streak.nextMatch.opponent) &&
@@ -152,6 +176,10 @@ export default function StreaksRadar() {
 
   // Add individual streak to slip
   const handleAddToSlip = (streak: TeamStreak) => {
+    if (!streak.hasRealNextMatch) {
+      toast.info(`No upcoming official fixture found yet for ${streak.team}.`);
+      return;
+    }
     const homeTeam = streak.nextMatch.isHome ? streak.team : streak.nextMatch.opponent;
     const awayTeam = streak.nextMatch.isHome ? streak.nextMatch.opponent : streak.team;
 
@@ -171,6 +199,10 @@ export default function StreaksRadar() {
 
   // Batch add top banker accumulator
   const handleBuildBankerAcca = () => {
+    if (topBankerStreaks.length === 0) {
+      toast.info('No synced upcoming fixtures currently match high-confidence streaks.');
+      return;
+    }
     const newItems = topBankerStreaks.map(streak => {
       const homeTeam = streak.nextMatch.isHome ? streak.team : streak.nextMatch.opponent;
       const awayTeam = streak.nextMatch.isHome ? streak.nextMatch.opponent : streak.team;
@@ -245,11 +277,14 @@ export default function StreaksRadar() {
             <div className="flex flex-wrap items-center gap-2.5">
               <Button
                 onClick={handleBuildBankerAcca}
+                disabled={topBankerStreaks.length === 0}
                 size="sm"
-                className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs disabled:opacity-50"
               >
                 <Zap className="h-3.5 w-3.5" />
-                Load Top Streak Acca ({formatOdds(combinedBankerOdds)})
+                {topBankerStreaks.length > 0
+                  ? `Load Top Streak Acca (${formatOdds(combinedBankerOdds)})`
+                  : 'Awaiting Synced Fixtures'}
               </Button>
 
               <Button
@@ -271,28 +306,32 @@ export default function StreaksRadar() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800">
             <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
               <span className="text-[11px] text-slate-400 block font-medium">Monitored Club Streaks</span>
-              <span className="text-xl font-extrabold font-mono text-white">{TEAM_STREAKS_DATA.length}</span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Active across 8 major leagues</span>
+              <span className="text-xl font-extrabold font-mono text-white">{liveStreaks.length}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">{summaryStats.matchedCount} matched to live schedule</span>
             </div>
 
             <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
-              <span className="text-[11px] text-slate-400 block font-medium">Longest Unbeaten Run</span>
+              <span className="text-[11px] text-slate-400 block font-medium">Longest Tracked Run</span>
               <span className="text-xl font-extrabold font-mono text-amber-400">
-                14 <span className="text-xs font-sans font-normal text-slate-300">Matches</span>
+                {summaryStats.longest?.streakCount ?? 0} <span className="text-xs font-sans font-normal text-slate-300">Matches</span>
               </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Real Madrid (LaLiga)</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                {summaryStats.longest ? `${summaryStats.longest.team} (${summaryStats.longest.league})` : '—'}
+              </span>
             </div>
 
             <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
-              <span className="text-[11px] text-slate-400 block font-medium">Highest Continuation Rate</span>
-              <span className="text-xl font-extrabold font-mono text-emerald-400">91%</span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Bayer Leverkusen (Away Scoring)</span>
+              <span className="text-[11px] text-slate-400 block font-medium">Top Sustainability Index</span>
+              <span className="text-xl font-extrabold font-mono text-emerald-400">{summaryStats.highestRate?.sustainability.score ?? 0}%</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                {summaryStats.highestRate ? `${summaryStats.highestRate.team} (${summaryStats.highestRate.title})` : '—'}
+              </span>
             </div>
 
             <div className="bg-slate-800/70 border border-slate-700/70 rounded-lg p-3">
-              <span className="text-[11px] text-slate-400 block font-medium">Last 10 Match Hit Rate</span>
-              <span className="text-xl font-extrabold font-mono text-white">88.5%</span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Verified across top-tier leagues</span>
+              <span className="text-[11px] text-slate-400 block font-medium">Avg L10 Hit Rate</span>
+              <span className="text-xl font-extrabold font-mono text-white">{summaryStats.avgHit}%</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Synced against ESPN fixtures</span>
             </div>
           </div>
         </div>
@@ -468,18 +507,24 @@ export default function StreaksRadar() {
                           <div className="flex items-center justify-between text-muted-foreground">
                             <span className="flex items-center gap-1 text-[11px] font-medium">
                               <Calendar className="h-3.5 w-3.5 text-primary" />
-                              Next: vs {streak.nextMatch.opponent} ({streak.nextMatch.isHome ? 'Home' : 'Away'})
+                              {streak.hasRealNextMatch
+                                ? `Next: vs ${streak.nextMatch.opponent} (${streak.nextMatch.isHome ? 'Home' : 'Away'})`
+                                : 'Next Fixture: Awaiting Official Matchday Schedule'}
                             </span>
-                            <span className="text-[11px] font-mono">{streak.nextMatch.date}</span>
+                            <span className="text-[11px] font-mono">
+                              {streak.hasRealNextMatch ? streak.nextMatch.date : 'Schedule Pending'}
+                            </span>
                           </div>
 
                           <div className="flex items-center justify-between pt-1">
                             <div>
-                              <span className="text-[10px] text-muted-foreground block">{isProbabilitiesMode ? 'Recommended Market:' : 'Recommended Bet:'}</span>
+                              <span className="text-[10px] text-muted-foreground block">{isProbabilitiesMode ? 'Recommended Market:' : 'Target Market:'}</span>
                               <span className="font-bold text-sm text-foreground">{streak.nextMatch.marketName}</span>
                             </div>
                             <div className="text-right">
-                              <span className="text-[10px] text-muted-foreground block font-mono">Market Confidence</span>
+                              <span className="text-[10px] text-muted-foreground block font-mono">
+                                {streak.hasRealNextMatch ? 'Market Confidence' : 'Est. Market Rate'}
+                              </span>
                               <Badge className="font-mono text-xs font-bold px-2 py-0.5 bg-primary text-primary-foreground">
                                 {isProbabilitiesMode ? `${Math.round((1 / streak.nextMatch.odds) * 100)}% Prob` : `@ ${formatOdds(streak.nextMatch.odds)}`}
                               </Badge>
@@ -585,12 +630,14 @@ export default function StreaksRadar() {
                       <Button
                         size="sm"
                         onClick={() => handleAddToSlip(streak)}
-                        disabled={inSlip}
+                        disabled={inSlip || !streak.hasRealNextMatch}
                         className={`h-8 text-xs font-semibold px-3 gap-1.5 ${
                           inSlip ? 'bg-emerald-600/20 text-emerald-600 hover:bg-emerald-600/30' : ''
                         }`}
                       >
-                        {inSlip ? (
+                        {!streak.hasRealNextMatch ? (
+                          <span>Awaiting Fixture</span>
+                        ) : inSlip ? (
                           <>
                             <Check className="h-3.5 w-3.5 text-emerald-600" /> In Slip
                           </>

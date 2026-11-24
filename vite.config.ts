@@ -78,6 +78,13 @@ function cronTasksPlugin(): Plugin {
       getCachedPublicFile(".well-known/agent-card.json", "application/json; charset=utf-8");
       getCachedPublicFile(".well-known/agent-skills/index.json", "application/json; charset=utf-8");
 
+      // Auto-start autonomous server-side cron scheduler on boot
+      import("./src/server/cronScheduler.ts")
+        .then(({ startAutonomousScheduler }) => {
+          startAutonomousScheduler();
+        })
+        .catch(() => {});
+
       server.middlewares.use(async (req, res, next) => {
         res.setHeader("X-Content-Type-Options", "nosniff");
         res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");

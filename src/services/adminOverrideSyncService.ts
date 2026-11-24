@@ -85,16 +85,7 @@ export const DEFAULT_BOOKING_CODES: CuratedBookingCode[] = [
   },
 ];
 
-export const DEFAULT_JACKPOT_POOL: JackpotOverrideItem[] = [
-  { gameNo: 1, homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League', singlePick: '1', doubleCover: 'None (Banker)', confidence: 84, isBankerLock: true },
-  { gameNo: 2, homeTeam: 'Brighton', awayTeam: 'Aston Villa', league: 'Premier League', singlePick: 'X', doubleCover: '1X', confidence: 68, isBankerLock: false },
-  { gameNo: 3, homeTeam: 'Newcastle', awayTeam: 'Tottenham', league: 'Premier League', singlePick: '1', doubleCover: '12', confidence: 73, isBankerLock: false },
-  { gameNo: 4, homeTeam: 'Real Sociedad', awayTeam: 'Villarreal', league: 'LaLiga', singlePick: '1', doubleCover: '1X', confidence: 71, isBankerLock: false },
-  { gameNo: 5, homeTeam: 'Atalanta', awayTeam: 'Fiorentina', league: 'Serie A', singlePick: '1', doubleCover: 'None (Banker)', confidence: 82, isBankerLock: true },
-  { gameNo: 6, homeTeam: 'Eintracht Frankfurt', awayTeam: 'VfB Stuttgart', league: 'Bundesliga', singlePick: '2', doubleCover: 'X2', confidence: 69, isBankerLock: false },
-  { gameNo: 7, homeTeam: 'Gor Mahia', awayTeam: 'AFC Leopards', league: 'FKF Premier League', singlePick: '1', doubleCover: 'None (Banker)', confidence: 86, isBankerLock: true },
-  { gameNo: 8, homeTeam: 'Mamelodi Sundowns', awayTeam: 'Orlando Pirates', league: 'South Africa PSL', singlePick: '1', doubleCover: '1X', confidence: 79, isBankerLock: true },
-];
+export const DEFAULT_JACKPOT_POOL: JackpotOverrideItem[] = [];
 
 export interface EditorialOverride {
   matchId: string;
@@ -221,58 +212,7 @@ export const DEFAULT_AFFILIATE_PARTNERS: AffiliatePartnerConfig[] = [
   },
 ];
 
-export const DEFAULT_COMMUNITY_SLIPS: CommunitySharedSlip[] = [
-  {
-    id: 'comm-slip-1',
-    author: 'Vincent M. (Lead Quant)',
-    authorWinRate: 86,
-    title: 'Weekend 2.14x High-Stability Poisson Double',
-    bookmaker: 'SportyBet',
-    bookingCode: 'BC8942X',
-    totalOdds: 2.14,
-    legsCount: 2,
-    legsSummary: ['Arsenal vs Chelsea — Arsenal 1X & Over 1.5', 'Atalanta vs Fiorentina — Home Win (1)'],
-    upvotes: 142,
-    createdAt: '28 mins ago',
-  },
-  {
-    id: 'comm-slip-2',
-    author: 'NairobiSharp_xG',
-    authorWinRate: 81,
-    title: 'CAF & EPL 5.42x Value Accumulator',
-    bookmaker: 'Bet9ja',
-    bookingCode: 'B9J551092',
-    totalOdds: 5.42,
-    legsCount: 4,
-    legsSummary: [
-      'Gor Mahia vs AFC Leopards — Gor Mahia Win (1)',
-      'Mamelodi Sundowns vs Orlando Pirates — Sundowns 1X',
-      'Newcastle vs Tottenham — BTTS & Over 2.5 Goals',
-      'Real Sociedad vs Villarreal — Over 1.5 Goals',
-    ],
-    upvotes: 98,
-    createdAt: '1 hour ago',
-  },
-  {
-    id: 'comm-slip-3',
-    author: 'LagosStatistical',
-    authorWinRate: 79,
-    title: '1xBet 11.20x European xG Surge Parlay',
-    bookmaker: '1xBet',
-    bookingCode: 'PRD26X',
-    totalOdds: 11.20,
-    legsCount: 5,
-    legsSummary: [
-      'Arsenal vs Chelsea — Home Win (1)',
-      'Brighton vs Aston Villa — BTTS Yes',
-      'Eintracht Frankfurt vs Stuttgart — Over 2.5 Goals',
-      'Sporting CP vs Braga — Home Win (1)',
-      'Feyenoord vs AZ Alkmaar — Feyenoord 1X',
-    ],
-    upvotes: 76,
-    createdAt: '2 hours ago',
-  },
-];
+export const DEFAULT_COMMUNITY_SLIPS: CommunitySharedSlip[] = [];
 
 export function broadcastAdminSync(topic: string) {
   if (typeof window !== 'undefined') {

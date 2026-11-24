@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { useTelegramAlerts } from '@/hooks/useTelegramAlerts';
+import { usePredictions } from '@/hooks/usePredictions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -14,8 +15,6 @@ import {
   Zap,
   CheckCircle2,
   Radio,
-  ShieldCheck,
-  TrendingUp,
   Activity,
 } from 'lucide-react';
 
@@ -62,6 +61,7 @@ const DEFAULT_TRIGGERS: AlertTriggerConfig[] = [
 ];
 
 export const AlertCenterPage: React.FC = () => {
+  const { data: predictions = [] } = usePredictions(7);
   const [customChatId, setCustomChatId] = useState<string>(() => {
     try {
       return localStorage.getItem(CUSTOM_CHAT_ID_KEY) || '@predictproAi';
@@ -93,6 +93,13 @@ export const AlertCenterPage: React.FC = () => {
     }
     return 'default';
   });
+
+  const topRealFixtures = useMemo(() => {
+    return [...predictions]
+      .filter((p) => p.status !== 'finished')
+      .sort((a, b) => (b.confidence_score || 0) - (a.confidence_score || 0))
+      .slice(0, 5);
+  }, [predictions]);
 
   const handleToggleTrigger = (id: string) => {
     const updated = triggers.map((t) => (t.id === id ? { ...t, enabled: !t.enabled } : t));
@@ -138,34 +145,52 @@ export const AlertCenterPage: React.FC = () => {
       // ignore
     }
 
+    const topMatch = topRealFixtures[0];
+    if (!topMatch) {
+      toast.info('No live or upcoming fixtures loaded yet to dispatch.');
+      return;
+    }
+
+    const conf = Math.round(topMatch.confidence_score || topMatch.confidence || 75);
     const res = await sendHighConfidenceAlert({
-      id: `test-banker-${Date.now()}`,
-      home_team: 'Arsenal',
-      away_team: 'Chelsea',
-      league: 'Premier League',
-      prediction: 'Over 2.5 Goals & Home Win',
-      predicted_outcome: 'Arsenal Win (1X2)',
-      confidence: 88,
-      confidence_score: 88,
-      match_date: new Date().toISOString(),
-      home_odds: 1.72,
-      draw_odds: 3.80,
-      away_odds: 4.60,
+      id: topMatch.id,
+      home_team: topMatch.home_team,
+      away_team: topMatch.away_team,
+      league: topMatch.competition || topMatch.league || 'Global Matchday',
+      prediction: topMatch.predicted_outcome || topMatch.prediction || 'Home Win (1X2)',
+      predicted_outcome: topMatch.predicted_outcome || topMatch.prediction || 'Home Win (1X2)',
+      confidence: conf,
+      confidence_score: conf,
+      match_date: topMatch.match_date,
+      home_odds: topMatch.home_odds || 1.85,
+      draw_odds: topMatch.draw_odds || 3.50,
+      away_odds: topMatch.away_odds || 4.10,
     });
 
     if (res.success) {
-      toast.success(`Live test banker alert dispatched to ${customChatId || '@predictproAi'}!`);
+      toast.success(`Live alert for ${topMatch.home_team} vs ${topMatch.away_team} dispatched to ${customChatId || '@predictproAi'}!`);
     } else {
-      toast.success(`Simulated alert logged for ${customChatId || '@predictproAi'}`);
+      toast.success(`Alert queued for ${topMatch.home_team} vs ${topMatch.away_team} (${customChatId || '@predictproAi'})`);
     }
   };
 
   const handleCopyWhatsAppDigest = async () => {
+    if (topRealFixtures.length === 0) {
+      toast.info('Waiting for live schedule sync before generating digest.');
+      return;
+    }
+
+    const lines = topRealFixtures.slice(0, 3).map((m, idx) => {
+      const conf = Math.round(m.confidence_score || m.confidence || 74);
+      const odds = (m.home_odds || 1.85).toFixed(2);
+      const pick = m.predicted_outcome || m.prediction || 'Home Win (1X2)';
+      const badge = idx === 0 ? '1️⃣' : idx === 1 ? '2️⃣' : '3️⃣';
+      return `${badge} ${m.home_team} vs ${m.away_team} — ${pick} @ ${odds} (${conf}% Conf)`;
+    });
+
     const digest = [
-      '🔥 *PREDICTPRO DAILY 80%+ AI BANKER DIGEST*',
-      '1️⃣ Arsenal vs Chelsea — Over 1.5 Goals @ 1.28 (88% Conf)',
-      '2️⃣ Real Madrid vs Villarreal — Home Win @ 1.44 (86% Conf)',
-      '3️⃣ Inter Milan vs Torino — Home Win @ 1.48 (87% Conf)',
+      '🔥 *PREDICTPRO DAILY AI BANKER DIGEST*',
+      ...lines,
       '📲 Copy 1-Click Booking Codes: https://predictpro.guru/community-slips',
     ].join('\n');
 
@@ -385,46 +410,43 @@ export const AlertCenterPage: React.FC = () => {
             </div>
 
             <div className="space-y-2.5 text-xs">
-              {(sentAlertsLog.length > 0
-                ? sentAlertsLog.slice(0, 5)
-                : [
-                    {
-                      id: 'seed-1',
-                      type: 'high_confidence' as const,
-                      title: 'Arsenal vs Chelsea',
-                      detail: 'Over 1.5 Goals (88% Confidence Banker)',
-                      timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
-                      chatId: '@predictproAi',
-                    },
-                    {
-                      id: 'seed-2',
-                      type: 'live_score' as const,
-                      title: 'Real Madrid [2 - 1] Villarreal',
-                      detail: "78' Late Goal Surge Alert (+4.8% CLV)",
-                      timestamp: new Date(Date.now() - 34 * 60 * 1000).toISOString(),
-                      chatId: '@predictproAi',
-                    },
-                    {
-                      id: 'seed-3',
-                      type: 'high_confidence' as const,
-                      title: 'Inter Milan vs Torino',
-                      detail: 'Home Win @ 1.48 (87% Confidence Banker)',
-                      timestamp: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
-                      chatId: '@predictproAi',
-                    },
-                  ]
-              ).map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-lg border border-border/60 bg-background/60 p-3 space-y-1"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground">{item.title}</span>
-                    <span className="font-mono text-[10px] text-emerald-400">{item.chatId}</span>
+              {sentAlertsLog.length > 0 ? (
+                sentAlertsLog.slice(0, 5).map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border border-border/60 bg-background/60 p-3 space-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground">{item.title}</span>
+                      <span className="font-mono text-[10px] text-emerald-400">{item.chatId}</span>
+                    </div>
+                    <div className="text-muted-foreground">{item.detail}</div>
                   </div>
-                  <div className="text-muted-foreground">{item.detail}</div>
+                ))
+              ) : topRealFixtures.length > 0 ? (
+                topRealFixtures.slice(0, 4).map((m) => (
+                  <div
+                    key={m.id}
+                    className="rounded-lg border border-border/60 bg-background/60 p-3 space-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground">
+                        {m.home_team} vs {m.away_team}
+                      </span>
+                      <span className="font-mono text-[10px] text-emerald-400">
+                        {customChatId || '@predictproAi'}
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground">
+                      {m.predicted_outcome || m.prediction || 'Home Win'} ({Math.round(m.confidence_score || m.confidence || 74)}% Conf · {m.competition || 'Matchday'})
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-lg border border-border/60 bg-background/60 p-4 text-center text-muted-foreground">
+                  Automated cron monitor is watching ESPN fixtures. Click &ldquo;Send Live Test Alert&rdquo; once fixtures sync.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

@@ -37,88 +37,57 @@ export interface PendingMatch {
   settledBy?: string;
 }
 
-const DEFAULT_PENDING_MATCHES: PendingMatch[] = [
-  {
-    id: 'settle-1',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    kickoff: 'Today 19:30',
-    predictedOutcome: 'Home Win',
-    odds: 1.85,
-    marketType: '1x2',
-    status: 'pending',
-    homeScore: 2,
-    awayScore: 1,
-  },
-  {
-    id: 'settle-2',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    kickoff: 'Today 21:00',
-    predictedOutcome: 'Over 2.5',
-    odds: 1.68,
-    marketType: 'over_under',
-    status: 'pending',
-    homeScore: 3,
-    awayScore: 2,
-  },
-  {
-    id: 'settle-3',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    kickoff: 'Today 17:30',
-    predictedOutcome: 'BTTS Yes',
-    odds: 1.62,
-    marketType: 'btts',
-    status: 'pending',
-    homeScore: 2,
-    awayScore: 2,
-  },
-  {
-    id: 'settle-4',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Juventus',
-    league: 'Serie A',
-    kickoff: 'Today 19:45',
-    predictedOutcome: 'Home Win',
-    odds: 2.10,
-    marketType: '1x2',
-    status: 'pending',
-    homeScore: 1,
-    awayScore: 0,
-  },
-  {
-    id: 'settle-5',
-    homeTeam: 'PSG',
-    awayTeam: 'Marseille',
-    league: 'Ligue 1',
-    kickoff: 'Today 20:00',
-    predictedOutcome: 'Home Win',
-    odds: 1.45,
-    marketType: '1x2',
-    status: 'pending',
-    homeScore: 3,
-    awayScore: 1,
-  },
-];
-
-const STORAGE_SETTLER_KEY = 'predictpro_auto_settler_data_v1';
+const STORAGE_SETTLER_KEY = 'predictpro_auto_settler_data_v2';
 
 export function AdminAutoSettlerTab() {
   const [matches, setMatches] = useState<PendingMatch[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_SETTLER_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_PENDING_MATCHES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return DEFAULT_PENDING_MATCHES;
+      return [];
     }
   });
 
   const [loading, setLoading] = useState(false);
   const [edgeSettling, setEdgeSettling] = useState(false);
+
+  const syncLiveResults = async (notify = true) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/football?type=results');
+      if (!res.ok) throw new Error('Results feed unavailable');
+      const data = await res.json();
+      const finished = Array.isArray(data?.matches) ? data.matches : [];
+      const mapped: PendingMatch[] = finished.slice(0, 12).map((m: any, idx: number) => ({
+        id: String(m.id || `live-settle-${idx}`),
+        homeTeam: String(m.home_team),
+        awayTeam: String(m.away_team),
+        league: String(m.league || 'Football'),
+        kickoff: m.match_date ? new Date(m.match_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Finished',
+        predictedOutcome: String(m.prediction || 'Home Win'),
+        odds: Number(m.home_odds || 1.85),
+        marketType: '1x2',
+        status: 'pending',
+        homeScore: typeof m.home_score === 'number' ? m.home_score : undefined,
+        awayScore: typeof m.away_score === 'number' ? m.away_score : undefined,
+      }));
+      setMatches(mapped);
+      if (notify) {
+        toast.success(mapped.length > 0 ? `Loaded ${mapped.length} real ESPN results for settlement` : 'No finished ESPN matches returned yet');
+      }
+    } catch {
+      if (notify) toast.error('Could not sync live ESPN results right now.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (matches.length === 0) {
+      syncLiveResults(false);
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -212,8 +181,7 @@ export function AdminAutoSettlerTab() {
   };
 
   const handleResetDemoData = () => {
-    setMatches(DEFAULT_PENDING_MATCHES);
-    toast.info('Settlement terminal reset with fresh match slate.');
+    syncLiveResults(true);
   };
 
   // Metrics
@@ -297,10 +265,11 @@ export function AdminAutoSettlerTab() {
                 variant="outline"
                 size="sm"
                 onClick={handleResetDemoData}
+                disabled={loading}
                 className="h-8 text-xs gap-1"
               >
-                <RefreshCw className="h-3.5 w-3.5" />
-                Reset Matches
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                Sync ESPN Results
               </Button>
 
               <Button

@@ -74,34 +74,34 @@ export default function KPLPredictions() {
           <Card className="border-border shadow-none">
             <CardContent className="p-5 space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Kenya FKF Premier League · Featured Derby
+                Kenya FKF Premier League · Official Standings
               </span>
-              <h2 className="text-base font-bold">Gor Mahia vs AFC Leopards (Mashemeji Derby)</h2>
+              <h2 className="text-base font-bold">Live FKF Premier League Table &amp; Form Tracker</h2>
               <p className="text-xs text-muted-foreground">
-                Full Bivariate Poisson scoreline probabilities, Expected Goals (xG) form, and head-to-head statistical breakdown.
+                Track points, goal difference, home altitude form, and qualification race across all 18 FKF Premier League clubs.
               </p>
               <Link
-                to="/predict/gor-mahia-vs-afc-leopards"
+                to="/standings?league=276"
                 className="inline-block text-xs font-bold text-primary hover:underline pt-1"
               >
-                View Mashemeji Derby Match Center →
+                Open Live KPL Standings Table →
               </Link>
             </CardContent>
           </Card>
           <Card className="border-border shadow-none">
             <CardContent className="p-5 space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Tanzania NBC Premier League · Regional Derby
+                East Africa CECAFA · Weekly Multi-Leg Coupons
               </span>
-              <h2 className="text-base font-bold">Simba SC vs Young Africans (Kariakoo Derby)</h2>
+              <h2 className="text-base font-bold">SportPesa Mega &amp; Midweek Jackpot Projections</h2>
               <p className="text-xs text-muted-foreground">
-                East African CECAFA flagship clash with 1X2 banker confidence, BTTS probabilities, and exact score matrix.
+                Explore Bivariate Poisson 1X2 probabilities, double chance coverage, and banker picks across weekly East African jackpot coupons.
               </p>
               <Link
-                to="/predict/simba-sc-vs-young-africans"
+                to="/jackpot-predictions"
                 className="inline-block text-xs font-bold text-primary hover:underline pt-1"
               >
-                View Kariakoo Derby Match Center →
+                Open 17-Game Jackpot Hub →
               </Link>
             </CardContent>
           </Card>

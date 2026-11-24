@@ -58,30 +58,39 @@ function renderTab() {
   );
 }
 
-describe('AdminAppStoreMetadataTab Asset Generator', () => {
-  it('renders descriptions, 4 portrait screenshot previews, icons, and privacy policy links', () => {
-    renderTab();
+describe('AdminAppStoreMetadataTab Manifest & Canvas Screenshot Generator', () => {
+  it('fetches metadata and generates structured manifest, 512x512 icon placeholder, 2-4 sentence overview, and 4 portrait screenshots', () => {
+    const { container } = renderTab();
 
-    expect(screen.getByText(/App Store Metadata & Listing Asset Generator/i)).toBeTruthy();
-    expect(screen.getByText(/01\. App Store Descriptions & Keywords/i)).toBeTruthy();
-    expect(screen.getByText(/02\. Store Listing Screenshots \(1080×1920 Portrait\) & App Icons/i)).toBeTruthy();
-    expect(screen.getByText(/03\. Public Privacy Policy & Store Compliance Links/i)).toBeTruthy();
+    expect(screen.getByText(/App Store Metadata & Asset Manifest Generator/i)).toBeTruthy();
+    expect(screen.getByText(/01\. Structured ‘App Store Metadata’ Manifest/i)).toBeTruthy();
+    expect(screen.getByText(/Optimized Store Overview \(2–4 Sentences/i)).toBeTruthy();
+    expect(screen.getAllByText(/512×512 Icon Placeholder/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/4 Canvas Placeholder Mobile Screenshots \(1080×1920/i)).toBeTruthy();
 
-    expect(screen.getByText(/01\. AI Match Predictions & Daily Confidence/i)).toBeTruthy();
-    expect(screen.getByText(/02\. 6×6 Bivariate Poisson Score Matrix/i)).toBeTruthy();
-    expect(screen.getByText(/03\. 17-Game Mega Jackpot Combinatorics/i)).toBeTruthy();
-    expect(screen.getByText(/04\. Global Coverage & Offline PWA Speed/i)).toBeTruthy();
+    expect(screen.getByText(/01\. Daily AI Match Predictions/i)).toBeTruthy();
+    expect(screen.getByText(/02\. 6×6 Bivariate Poisson Matrix/i)).toBeTruthy();
+    expect(screen.getByText(/03\. Mega & Midweek Jackpot Engine/i)).toBeTruthy();
+    expect(screen.getByText(/04\. 40\+ Global Leagues & Live xG/i)).toBeTruthy();
 
-    expect(screen.getByText(/https:\/\/predictpro\.guru\/privacy$/i)).toBeTruthy();
-    expect(screen.getByText(/512×512 App Icon \(Mandatory\)/i)).toBeTruthy();
+    expect(container.textContent).toContain('"dimensions": "512x512"');
+    expect(container.textContent).toContain('"privacyPolicyUrlTemplate": "https://{domain}/privacy"');
+    expect(screen.getAllByText(/https:\/\/predictpro\.guru\/privacy$/i).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('updates legal URLs and store copy limits dynamically when domain and preset change', () => {
-    renderTab();
+  it('updates privacy policy URL template, Apple limits, and neutral sports pitch background dynamically', () => {
+    const { container } = renderTab();
 
     const domainInput = screen.getByLabelText(/Production Domain/i) as HTMLInputElement;
     fireEvent.change(domainInput, { target: { value: 'https://staging.predictpro.guru' } });
-    expect(screen.getByText(/https:\/\/staging\.predictpro\.guru\/privacy$/i)).toBeTruthy();
+    expect(screen.getAllByText(/https:\/\/staging\.predictpro\.guru\/privacy$/i).length).toBeGreaterThanOrEqual(1);
+
+    const templateInput = screen.getByLabelText(/Privacy Policy URL Template/i) as HTMLInputElement;
+    fireEvent.change(templateInput, { target: { value: 'https://{domain}/legal/privacy-policy' } });
+    expect(screen.getAllByText(/https:\/\/staging\.predictpro\.guru\/legal\/privacy-policy$/i).length).toBeGreaterThanOrEqual(1);
+
+    fireEvent.click(screen.getByRole('button', { name: /Neutral Pitch Charcoal/i }));
+    expect(container.textContent).toContain('"background": "neutral_charcoal_pitch"');
 
     fireEvent.click(screen.getByRole('button', { name: /Apple App Store Connect/i }));
     expect(screen.getByText(/Apple Subtitle/i)).toBeTruthy();

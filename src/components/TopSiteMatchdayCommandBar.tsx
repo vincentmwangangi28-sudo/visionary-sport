@@ -724,7 +724,9 @@ export const TopSiteMatchdayCommandBar: React.FC<TopSiteMatchdayCommandBarProps>
                 onClick={() => {
                   playLiveGoalChime('goal');
                   toast.success(
-                    'GOAL ALERT TEST: Arsenal 2 - 1 Chelsea (78\' Bukayo Saka · 0.44 xG)'
+                    featuredPollMatch
+                      ? `GOAL ALERT TEST: ${featuredPollMatch.home_team} vs ${featuredPollMatch.away_team} Live Audio Chime Verified`
+                      : 'GOAL ALERT TEST: Live Goal & Momentum Audio Chime Verified'
                   );
                 }}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-background hover:border-primary/60 text-xs font-semibold text-foreground cursor-pointer"

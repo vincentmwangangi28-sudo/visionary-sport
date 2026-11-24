@@ -29,11 +29,13 @@ import { ADMIN_SYNC_EVENT } from '@/services/adminOverrideSyncService';
 import { syncSlipToBankroll } from '@/services/socialCardPngGenerator';
 import { useAppLocale } from '@/services/i18nLocalizationService';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 export const ClosingLineValuePage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const { t } = useAppLocale();
+  const { data: predictions = [] } = usePredictions(7);
   const [signals, setSignals] = useState<ClvSteamSignal[]>(() => getClvSteamSignals());
   const [filterTag, setFilterTag] = useState<string>('ALL');
 
@@ -44,12 +46,16 @@ export const ClosingLineValuePage: React.FC = () => {
   const [stakeAmount, setStakeAmount] = useState<number>(50);
 
   useEffect(() => {
+    setSignals(getClvSteamSignals(predictions));
+  }, [predictions]);
+
+  useEffect(() => {
     const syncHandler = () => {
-      setSignals(getClvSteamSignals());
+      setSignals(getClvSteamSignals(predictions));
     };
     window.addEventListener(ADMIN_SYNC_EVENT, syncHandler);
     return () => window.removeEventListener(ADMIN_SYNC_EVENT, syncHandler);
-  }, []);
+  }, [predictions]);
 
   const filteredSignals = useMemo(() => {
     return signals.filter((s) => {

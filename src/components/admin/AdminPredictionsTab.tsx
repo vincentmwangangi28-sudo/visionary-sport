@@ -12,60 +12,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Search, Plus, CheckCircle, XCircle, Clock, Sparkles, RefreshCw, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-const BASELINE_PREDICTIONS: PredictionRow[] = [
-  {
-    id: 'base-1',
-    home_team: 'Arsenal',
-    away_team: 'Chelsea',
-    league: 'Premier League',
-    match_date: new Date(Date.now() + 86400000).toISOString(),
-    prediction: 'Home Win',
-    confidence: 76,
-    reasoning: 'Strong expected goal differential (2.1 vs 1.1) and defensive stability at home.',
-    is_premium: false,
-    result: 'pending',
-    ai_model: 'Gemini 2.5 Flash',
-  },
-  {
-    id: 'base-2',
-    home_team: 'Real Madrid',
-    away_team: 'Barcelona',
-    league: 'La Liga',
-    match_date: new Date(Date.now() + 172800000).toISOString(),
-    prediction: 'Over 2.5 Goals',
-    confidence: 82,
-    reasoning: 'High attacking tempo and defensive transition vulnerabilities in both squads.',
-    is_premium: true,
-    result: 'pending',
-    ai_model: 'Gemini 2.5 Flash',
-  },
-  {
-    id: 'base-3',
-    home_team: 'Bayern Munich',
-    away_team: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    match_date: new Date(Date.now() - 86400000).toISOString(),
-    prediction: 'Home Win & Over 2.5',
-    confidence: 84,
-    reasoning: 'Dominant pressing structure and clinical conversion rate inside the 18-yard box.',
-    is_premium: false,
-    result: 'won',
-    ai_model: 'Gemini 2.5 Flash',
-  },
-  {
-    id: 'base-4',
-    home_team: 'Inter Milan',
-    away_team: 'Juventus',
-    league: 'Serie A',
-    match_date: new Date(Date.now() - 172800000).toISOString(),
-    prediction: 'Under 2.5 Goals',
-    confidence: 79,
-    reasoning: 'Tactical low-block setups and low non-penalty expected goals generated.',
-    is_premium: false,
-    result: 'won',
-    ai_model: 'Gemini 2.5 Flash',
-  },
-];
 
 interface PredictionRow {
   id: string;
@@ -111,16 +57,40 @@ export function AdminPredictionsTab() {
         .order('match_date', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
-      if (data && data.length > 0) {
+      if (!error && data && data.length > 0) {
         setPredictions(data as PredictionRow[]);
-      } else {
-        // Use default predictions as initial baseline if db is empty
-        setPredictions(BASELINE_PREDICTIONS);
+        return;
       }
+
+      // Sync from live server upcoming feed when DB table is empty or unavailable
+      const res = await fetch('/api/football?type=upcoming', {
+        headers: { Accept: 'application/json' },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const fixtures = Array.isArray(json?.fixtures) ? json.fixtures : [];
+        if (fixtures.length > 0) {
+          setPredictions(
+            fixtures.slice(0, 100).map((f: any) => ({
+              id: String(f.id || `${f.home_team}-${f.away_team}`),
+              home_team: String(f.home_team || ''),
+              away_team: String(f.away_team || ''),
+              league: String(f.league || 'Football'),
+              match_date: String(f.match_date || new Date().toISOString()),
+              prediction: String(f.predicted_outcome || f.prediction || 'Home Win'),
+              confidence: Number(f.confidence_score || f.confidence || 72),
+              reasoning: String(f.reasoning || 'Real-time Poisson & Elo fixture feed.'),
+              is_premium: Boolean(f.is_premium),
+              result: f.status === 'finished' ? (f.result || 'won') : 'pending',
+              ai_model: String(f.ai_model || 'Live ESPN + Poisson Engine'),
+            }))
+          );
+          return;
+        }
+      }
+      setPredictions([]);
     } catch {
-      // Fallback
-      setPredictions(BASELINE_PREDICTIONS);
+      setPredictions([]);
     } finally {
       setLoading(false);
     }

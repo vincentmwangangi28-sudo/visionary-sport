@@ -1,5 +1,5 @@
-import { Prediction } from '@/types/prediction';
-import { isPlayedOrPastMatch } from '@/lib/dateFilterUtils';
+import { Prediction } from '../types/prediction.ts';
+import { isPlayedOrPastMatch } from '../lib/dateFilterUtils.ts';
 
 const STORAGE_KEY = 'predictpro_saved_predictions_v10_full_slate';
 const LEGACY_STORAGE_KEYS = [

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { usePredictions } from '@/hooks/usePredictions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,6 @@ import {
   Copy,
   Check,
   ExternalLink,
-  ShieldCheck,
   Sparkles,
   Zap,
   TrendingUp,
@@ -52,12 +52,12 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <Zap className="h-4 w-4 text-emerald-500" />,
     defaultHeight: 320,
     previewUrl: '/embed/banker',
-    sampleMatch: 'Arsenal vs Chelsea',
-    samplePick: 'Arsenal Win (1X2)',
-    sampleOdds: '1.95',
-    sampleConfidence: '87% Win Prob',
-    sampleXg: '2.14 vs 0.98',
-    sampleScore: '2-0',
+    sampleMatch: 'Live Top Matchday Banker',
+    samplePick: 'High-Confidence AI Selection',
+    sampleOdds: '1.85',
+    sampleConfidence: 'Live Model Sync',
+    sampleXg: '1.75 vs 0.95',
+    sampleScore: '2-1',
   },
   {
     id: 'live-scores',
@@ -66,12 +66,12 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <Radio className="h-4 w-4 text-rose-500" />,
     defaultHeight: 400,
     previewUrl: '/embed/live-scores',
-    sampleMatch: 'Real Madrid vs Barcelona',
-    samplePick: 'Both Teams to Score (BTTS: Yes)',
-    sampleOdds: '1.68',
-    sampleConfidence: '82% Probability',
-    sampleXg: '2.45 vs 2.18',
-    sampleScore: '2-2',
+    sampleMatch: 'Live ESPN In-Play Feed',
+    samplePick: 'In-Play Momentum & Goal Markets',
+    sampleOdds: '1.90',
+    sampleConfidence: 'Real-Time Sync',
+    sampleXg: 'Live xG Telemetry',
+    sampleScore: 'Live',
   },
   {
     id: 'player-radar',
@@ -80,12 +80,12 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <Crosshair className="h-4 w-4 text-emerald-400" />,
     defaultHeight: 360,
     previewUrl: '/embed/player-radar',
-    sampleMatch: 'Erling Haaland vs Kylian Mbappé',
-    samplePick: 'Haaland Anytime Goalscorer (0.98 xG/90)',
-    sampleOdds: '1.72',
-    sampleConfidence: '8.94 Season Rating',
-    sampleXg: '0.98 vs 0.86 xG/90',
-    sampleScore: '99th Pct Finishing',
+    sampleMatch: 'Lead Attacker Prop Spotlight',
+    samplePick: 'Anytime Goalscorer xG/90 Model',
+    sampleOdds: '1.75',
+    sampleConfidence: 'Poisson Prop Rating',
+    sampleXg: '0.68 xG/90',
+    sampleScore: '8.7 Rating',
   },
   {
     id: 'xpts-table',
@@ -94,12 +94,12 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <Trophy className="h-4 w-4 text-amber-500" />,
     defaultHeight: 380,
     previewUrl: '/embed/xpts-table',
-    sampleMatch: 'Premier League xPTS Projection',
-    samplePick: 'Liverpool & Arsenal Top xG Differential',
+    sampleMatch: 'League xPTS Justice Projection',
+    samplePick: 'Expected Points vs Actual Differential',
     sampleOdds: '1.85',
-    sampleConfidence: '+1.18 Net xG/90',
-    sampleXg: '64.2 vs 62.8 xPTS',
-    sampleScore: '#1 vs #2 Justice Rank',
+    sampleConfidence: 'Dixon-Coles xPTS',
+    sampleXg: 'Net xG Differential',
+    sampleScore: '#1 Justice Rank',
   },
   {
     id: 'live-pitch',
@@ -108,12 +108,12 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <Tv className="h-4 w-4 text-sky-400" />,
     defaultHeight: 360,
     previewUrl: '/embed/live-pitch',
-    sampleMatch: 'Arsenal vs PSG (2D Match Cast)',
-    samplePick: 'Home Attacking Wave (+0.44 xG Last 15m)',
+    sampleMatch: 'Featured 2D Match Cast',
+    samplePick: 'Final-Third Pressure Surge',
     sampleOdds: '1.91',
-    sampleConfidence: '84% Live Win Prob',
-    sampleXg: '1.92 vs 0.84 Live xG',
-    sampleScore: 'Sky · SuperSport · DAZN',
+    sampleConfidence: 'Sub-15s Telemetry',
+    sampleXg: '1.80 vs 0.90 Live xG',
+    sampleScore: 'Live Broadcasters',
   },
   {
     id: 'btts',
@@ -122,12 +122,12 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <TrendingUp className="h-4 w-4 text-amber-500" />,
     defaultHeight: 380,
     previewUrl: '/embed/btts',
-    sampleMatch: 'Bayern Munich vs Dortmund',
-    samplePick: 'Over 2.5 Goals & BTTS',
+    sampleMatch: 'Daily BTTS Poisson Pick',
+    samplePick: 'Over 2.5 Goals & BTTS (GG)',
     sampleOdds: '1.75',
-    sampleConfidence: '79% Win Rate',
-    sampleXg: '3.10 vs 1.40',
-    sampleScore: '3-1',
+    sampleConfidence: 'Poisson Verified',
+    sampleXg: '2.95 Combined xG',
+    sampleScore: '2-1',
   },
   {
     id: 'jackpot',
@@ -136,11 +136,11 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <Sparkles className="h-4 w-4 text-purple-500" />,
     defaultHeight: 460,
     previewUrl: '/embed/jackpot',
-    sampleMatch: 'Gor Mahia vs AFC Leopards',
-    samplePick: '1X (Home Win or Draw)',
-    sampleOdds: '1.34',
-    sampleConfidence: '85% Hedged',
-    sampleXg: '1.25 vs 0.65',
+    sampleMatch: 'Live Weekly Jackpot Pool',
+    samplePick: '1X (Double Chance Banker)',
+    sampleOdds: '1.38',
+    sampleConfidence: 'Hedged Slip',
+    sampleXg: 'Pool Anchored',
     sampleScore: '1-0',
   },
   {
@@ -150,11 +150,11 @@ export const WIDGET_TYPES: WidgetConfig[] = [
     icon: <BarChart3 className="h-4 w-4 text-blue-500" />,
     defaultHeight: 380,
     previewUrl: '/embed/value-bets',
-    sampleMatch: 'Inter Milan vs AC Milan',
-    samplePick: 'Inter Milan Draw No Bet',
+    sampleMatch: 'Daily +EV Line Edge',
+    samplePick: 'Model Fair Line vs Market',
     sampleOdds: '1.88',
-    sampleConfidence: '+14.2% EV Edge',
-    sampleXg: '1.80 vs 1.15',
+    sampleConfidence: '+EV Screened',
+    sampleXg: '1.70 vs 1.05',
     sampleScore: '2-1',
   },
 ];
@@ -198,6 +198,7 @@ export const SVG_AUTHORITY_BADGES = [
 export type EmbedFormatType = 'iframe' | 'image-badge' | 'form-widget' | 'citation-html';
 
 export default function Widgets() {
+  const { data: predictions = [] } = usePredictions(7);
   const [selectedWidget, setSelectedWidget] = useState<string>('banker');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [width, setWidth] = useState<'100%' | '480px' | '320px'>('100%');
@@ -206,7 +207,28 @@ export default function Widgets() {
   const [targetHubPath, setTargetHubPath] = useState<string>('/');
   const [copied, setCopied] = useState<boolean>(false);
 
-  const active = WIDGET_TYPES.find((w) => w.id === selectedWidget) || WIDGET_TYPES[0];
+  const hydratedWidgets = useMemo(() => {
+    const activeUpcoming = predictions.filter((p) => p.status !== 'finished');
+    if (activeUpcoming.length === 0) return WIDGET_TYPES;
+    return WIDGET_TYPES.map((w, idx) => {
+      const m = activeUpcoming[idx % activeUpcoming.length];
+      const conf = Math.round(m.confidence_score || m.confidence || 74);
+      const odds = (m.home_odds || m.odds?.home || 1.85).toFixed(2);
+      const hxg = (m.home_xg || 1.65).toFixed(2);
+      const axg = (m.away_xg || 1.05).toFixed(2);
+      return {
+        ...w,
+        sampleMatch: `${m.home_team} vs ${m.away_team}`,
+        samplePick: m.predicted_outcome || m.prediction || w.samplePick,
+        sampleOdds: odds,
+        sampleConfidence: `${conf}% AI Conf`,
+        sampleXg: `${hxg} vs ${axg}`,
+        sampleScore: m.predicted_score || w.sampleScore,
+      };
+    });
+  }, [predictions]);
+
+  const active = hydratedWidgets.find((w) => w.id === selectedWidget) || hydratedWidgets[0];
   const targetHub = TARGET_ANCHOR_HUBS.find((h) => h.path === targetHubPath) || TARGET_ANCHOR_HUBS[0];
   const activeBadge = SVG_AUTHORITY_BADGES.find((b) => b.id === selectedBadgeId) || SVG_AUTHORITY_BADGES[0];
   const targetCanonicalUrl = targetHub.path === '/' ? 'https://predictpro.guru/' : `https://predictpro.guru${targetHub.path}`;
@@ -252,8 +274,8 @@ export default function Widgets() {
     Interactive Poisson xG Match Simulator
   </div>
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-    <input type="text" name="home" defaultValue="Arsenal" placeholder="Home Club" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 12px;" />
-    <input type="text" name="away" defaultValue="Chelsea" placeholder="Away Club" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 12px;" />
+    <input type="text" name="home" placeholder="Home Club" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 12px;" />
+    <input type="text" name="away" placeholder="Away Club" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 12px;" />
   </div>
   <button type="submit" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 0; background: #16a34a; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer;">
     Simulate 1X2 Odds &amp; Score Matrix on PredictPro.guru

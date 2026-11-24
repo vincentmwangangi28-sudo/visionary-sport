@@ -1,6 +1,5 @@
 import { NormalizedMatch, toIsoUtc, normalizeStatus } from '@/lib/matchNormalizer';
 import { Prediction } from '@/types/prediction';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { 
   generateDeterministicPrediction, 
   mergeAndPreservePredictions, 
@@ -731,130 +730,7 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
     });
   }
 
-    if (matches.filter((m) => m.status === 'live' || m.status === 'halftime').length < 6) {
-      const utcMin = new Date().getUTCMinutes();
-      const baseMin = (utcMin % 38) + 22;
-      const lateMin = Math.min(89, (utcMin % 28) + 61);
-      const isoNow = new Date().toISOString();
-
-      const fallbackInPlay: NormalizedMatch[] = [
-        {
-          id: 'live-epl-ars-che',
-          home_team: 'Arsenal',
-          away_team: 'Chelsea',
-          competition: 'Premier League',
-          match_date: isoNow,
-          status: 'live',
-          minute: lateMin,
-          home_score: 2,
-          away_score: 1,
-          home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/359.png',
-          away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/363.png',
-          prediction: 'Home Win',
-          confidence: 86,
-          home_odds: 1.42,
-          draw_odds: 4.5,
-          away_odds: 7.2,
-        },
-        {
-          id: 'live-laliga-rma-bar',
-          home_team: 'Real Madrid',
-          away_team: 'Barcelona',
-          competition: 'La Liga',
-          match_date: isoNow,
-          status: 'live',
-          minute: baseMin + 14,
-          home_score: 1,
-          away_score: 1,
-          home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/86.png',
-          away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/83.png',
-          prediction: 'Over 2.5 Goals',
-          confidence: 88,
-          home_odds: 2.15,
-          draw_odds: 3.25,
-          away_odds: 3.4,
-        },
-        {
-          id: 'live-seriea-int-juv',
-          home_team: 'Inter Milan',
-          away_team: 'Juventus',
-          competition: 'Serie A',
-          match_date: isoNow,
-          status: 'halftime',
-          minute: 45,
-          home_score: 1,
-          away_score: 0,
-          home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/110.png',
-          away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/111.png',
-          prediction: 'Home Win',
-          confidence: 82,
-          home_odds: 1.55,
-          draw_odds: 3.8,
-          away_odds: 6.1,
-        },
-        {
-          id: 'live-bundesliga-bay-bvb',
-          home_team: 'Bayern Munich',
-          away_team: 'Borussia Dortmund',
-          competition: 'Bundesliga',
-          match_date: isoNow,
-          status: 'live',
-          minute: lateMin - 8,
-          home_score: 3,
-          away_score: 1,
-          home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/132.png',
-          away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/124.png',
-          prediction: 'Home Win',
-          confidence: 89,
-          home_odds: 1.18,
-          draw_odds: 7.4,
-          away_odds: 13.0,
-        },
-        {
-          id: 'live-caf-ahl-pir',
-          home_team: 'Al Ahly SC',
-          away_team: 'Orlando Pirates',
-          competition: 'CAF Champions League',
-          match_date: isoNow,
-          status: 'live',
-          minute: baseMin + 6,
-          home_score: 1,
-          away_score: 0,
-          home_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/10256.png',
-          away_logo: 'https://a.espncdn.com/i/teamlogos/soccer/500/4153.png',
-          prediction: 'Home Win',
-          confidence: 84,
-          home_odds: 1.5,
-          draw_odds: 3.7,
-          away_odds: 6.8,
-        },
-        {
-          id: 'live-kpl-gor-afc',
-          home_team: 'Gor Mahia',
-          away_team: 'AFC Leopards',
-          competition: 'Kenyan Premier League',
-          match_date: isoNow,
-          status: 'live',
-          minute: baseMin + 19,
-          home_score: 2,
-          away_score: 0,
-          home_logo: null,
-          away_logo: null,
-          prediction: 'Home Win',
-          confidence: 85,
-          home_odds: 1.36,
-          draw_odds: 4.3,
-          away_odds: 8.5,
-        },
-      ];
-
-      for (const item of fallbackInPlay) {
-        if (!matches.some((m) => m.home_team === item.home_team && m.away_team === item.away_team)) {
-          matches.unshift(item);
-        }
-      }
-    }
-
+    // Strictly preserve truthful match statuses: never inject fabricated in-play derbies.
     const liveCount = matches.filter((m) => m.status === 'live' || m.status === 'halftime').length;
     const result: RealtimeMatchResult = {
       matches,
@@ -873,25 +749,11 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
 export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Promise<Prediction[]> {
   const cacheKey = `upcoming_fixtures_${leagueFilter || 'all'}`;
   return fetchWithCacheAndDeduplication(cacheKey, CACHE_TTLS.UPCOMING_FIXTURES, async () => {
-    const getOfflineOrFallbackList = () => {
-      let supplemental = getUpdatedDefaultPredictions();
-      if (leagueFilter && leagueFilter !== 'All') {
-        const filtered = supplemental.filter((f) => matchesLeagueFilter(f.league, leagueFilter));
-        if (filtered.length > 0) supplemental = filtered;
-      }
-      return mergeAndPreservePredictions(supplemental);
-    };
-
-    if (
-      (typeof navigator !== 'undefined' && navigator.onLine === false) ||
-      (typeof window !== 'undefined' &&
-        (navigator.webdriver ||
-          /HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(navigator.userAgent || '')))
-    ) {
-      return getOfflineOrFallbackList();
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return [];
     }
 
-    // 0. Query internal proxy /api/football endpoint first (if hosted with serverless backend)
+    // 0. Query internal proxy /api/football endpoint first (powered by 7-day autonomous ESPN cron cache)
     try {
       const q = leagueFilter && leagueFilter !== 'All' ? `?type=upcoming&league=${encodeURIComponent(leagueFilter)}` : '?type=upcoming';
       const apiRes = await fetch(`/api/football${q}`);
@@ -900,39 +762,10 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
         const json = await apiRes.json();
         if (json.success && Array.isArray(json.fixtures) && json.fixtures.length > 0) {
           const nowMs = Date.now();
-          const nowDate = new Date(nowMs);
           const validFixtures: Prediction[] = json.fixtures.filter((p: Prediction) => {
             const t = new Date(p.match_date).getTime();
             return !isNaN(t) && t > nowMs - 30 * 60_000;
           });
-          const todayCount = validFixtures.filter((p) => {
-            const d = new Date(p.match_date);
-            return (
-              d.getFullYear() === nowDate.getFullYear() &&
-              d.getMonth() === nowDate.getMonth() &&
-              d.getDate() === nowDate.getDate()
-            );
-          }).length;
-
-          const minTotal = leagueFilter && leagueFilter !== 'All' ? 8 : 36;
-          const minToday = leagueFilter && leagueFilter !== 'All' ? 3 : 12;
-
-          if (validFixtures.length < minTotal || todayCount < minToday) {
-            const seenPairs = new Set(
-              validFixtures.map((p) => `${p.home_team.toLowerCase()}-${p.away_team.toLowerCase()}`)
-            );
-            let supplemental = getUpdatedDefaultPredictions();
-            if (leagueFilter && leagueFilter !== 'All') {
-              supplemental = supplemental.filter((f) => matchesLeagueFilter(f.league, leagueFilter));
-            }
-            for (const item of supplemental) {
-              const pair = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
-              if (!seenPairs.has(pair)) {
-                seenPairs.add(pair);
-                validFixtures.push(item);
-              }
-            }
-          }
 
           if (validFixtures.length > 0) {
             return mergeAndPreservePredictions(validFixtures);
@@ -1281,35 +1114,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
     }
   }
 
-  // Supplement with verified fixtures whenever Today's slate (< 12) or total pool (< 36) is sparse
-  const todayDirectCount = predictions.filter((p) => {
-    const d = new Date(p.match_date);
-    return (
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate()
-    );
-  }).length;
-  const minTotalDirect = leagueFilter && leagueFilter !== 'All' ? 8 : 36;
-  const minTodayDirect = leagueFilter && leagueFilter !== 'All' ? 3 : 12;
-
-  if (predictions.length < minTotalDirect || todayDirectCount < minTodayDirect) {
-    let supplementalFixtures = getUpdatedDefaultPredictions();
-    if (leagueFilter && leagueFilter !== 'All') {
-      supplementalFixtures = supplementalFixtures.filter((f) =>
-        matchesLeagueFilter(f.league, leagueFilter)
-      );
-    }
-    for (const item of supplementalFixtures) {
-      const mKey = `${item.home_team.toLowerCase()}-${item.away_team.toLowerCase()}`;
-      if (!seenMatches.has(mKey)) {
-        seenMatches.add(mKey);
-        predictions.push(item);
-      }
-    }
-  }
-
-  // Merge with saved prediction registry to lock in and avoid prediction shifts on refreshes
+  // Merge with saved prediction registry to lock in authentic predictions across refreshes (excluding any played matches)
   const lockedPredictions = mergeAndPreservePredictions(predictions).filter((p) => {
     const t = new Date(p.match_date).getTime();
     return !isNaN(t) && t > Date.now() && p.status !== 'finished' && !p.result;

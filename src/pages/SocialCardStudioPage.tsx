@@ -10,6 +10,7 @@ import {
 } from '@/services/i18nLocalizationService';
 import { getVerifiedBookingCodes } from '@/services/adminOverrideSyncService';
 import { getClvSteamSignals } from '@/services/clvAndCopulaService';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   Download,
@@ -95,8 +96,12 @@ export const SocialCardStudioPage: React.FC = () => {
     [themeId]
   );
 
+  const { data: predictions = [] } = usePredictions(7);
   const curatedCodes = useMemo(() => getVerifiedBookingCodes(), []);
-  const clvSignals = useMemo(() => getClvSteamSignals().slice(0, 4), []);
+  const clvSignals = useMemo(
+    () => getClvSteamSignals(predictions).slice(0, 4),
+    [predictions]
+  );
 
   const sporty = curatedCodes.find((c) =>
     c.bookmaker.toLowerCase().includes('sporty')
@@ -149,54 +154,31 @@ export const SocialCardStudioPage: React.FC = () => {
     }
 
     if (templateType === 'JACKPOT_17') {
-      return [
-        {
-          title: 'Game 1: Arsenal vs Chelsea',
-          subtitle: 'Locked Poisson Banker: Arsenal Win (1)',
-          badge: '84% Conf',
-        },
-        {
-          title: 'Game 2: Real Madrid vs Barcelona',
-          subtitle: 'Double Chance Coverage: 1X (Home/Draw)',
-          badge: '86% Conf',
-        },
-        {
-          title: 'Game 3: Gor Mahia vs AFC Leopards',
-          subtitle: 'Mashemeji Derby Banker: Gor Mahia (1)',
-          badge: '83% Conf',
-        },
-        {
-          title: 'Game 4: Bayern Munich vs Dortmund',
-          subtitle: 'Locked Poisson Banker: Home Win (1)',
-          badge: '88% Conf',
-        },
-      ];
+      const jpList = predictions.slice(0, 4);
+      if (jpList.length === 0) {
+        return [{ title: '17-Game Jackpot Pool', subtitle: 'Syncing active official fixtures...', badge: 'Live Sync' }];
+      }
+      return jpList.map((m, i) => ({
+        title: `Game ${i + 1}: ${m.home_team} vs ${m.away_team}`,
+        subtitle: `Locked Poisson Pick: ${m.predicted_outcome === 'Away Win' ? `${m.away_team} (2)` : m.predicted_outcome === 'Draw' ? 'Draw (X)' : `${m.home_team} (1)`}`,
+        badge: `${Math.round(m.confidence || 75)}% Conf`,
+      }));
     }
 
     // Default DAILY_BANKERS
-    return [
-      {
-        title: 'Arsenal vs Chelsea',
-        subtitle: 'Premier League · Over 2.5 Match Goals @ 1.72',
-        badge: '86% Model',
-      },
-      {
-        title: 'Real Madrid vs Barcelona',
-        subtitle: 'La Liga · Both Teams to Score (Yes) @ 1.65',
-        badge: '84% Model',
-      },
-      {
-        title: 'Bayern Munich vs Dortmund',
-        subtitle: 'Bundesliga · Bayern Win & Over 1.5 @ 1.64',
-        badge: '88% Model',
-      },
-      {
-        title: 'Gor Mahia vs AFC Leopards',
-        subtitle: 'FKF Premier League · Gor Mahia Win (1) @ 1.75',
-        badge: '83% Model',
-      },
-    ];
-  }, [templateType, sporty, onex, bet9ja, clvSignals]);
+    const top4 = predictions.slice(0, 4);
+    if (top4.length === 0) {
+      return [{ title: 'Daily Quantitative Bankers', subtitle: 'Syncing live ESPN fixture feed...', badge: 'Live Sync' }];
+    }
+    return top4.map((m) => {
+      const hOdd = Number(m.home_odds || 1.95).toFixed(2);
+      return {
+        title: `${m.home_team} vs ${m.away_team}`,
+        subtitle: `${m.league} · ${m.prediction || m.predicted_outcome} @ ${hOdd}`,
+        badge: `${Math.round(m.confidence || 76)}% Model`,
+      };
+    });
+  }, [templateType, sporty, onex, bet9ja, clvSignals, predictions]);
 
   const defaultHeadline = useMemo(() => {
     if (customHeadline.trim()) return customHeadline.trim();
@@ -216,9 +198,15 @@ export const SocialCardStudioPage: React.FC = () => {
         onexOdds: Number(onex?.totalOdds || 6.40).toFixed(2),
         bet9jaCode: bet9ja?.code || 'B9J-5521K',
         bet9jaOdds: Number(bet9ja?.totalOdds || 5.12).toFixed(2),
-        jackpotPool: 'KSh 348M / $2.7M',
+        jackpotPool: 'KSh 408M+',
+        topMatches: predictions.slice(0, 4).map((m) => ({
+          match: `${m.home_team} vs ${m.away_team}`,
+          market: m.prediction || m.predicted_outcome || '1X2',
+          odds: Number(m.home_odds || 1.85).toFixed(2),
+          confidence: Math.round(m.confidence || 76),
+        })),
       }),
-    [locale, todayLabel, sporty, onex, bet9ja]
+    [locale, todayLabel, sporty, onex, bet9ja, predictions]
   );
 
   const handleDownloadSvg = () => {

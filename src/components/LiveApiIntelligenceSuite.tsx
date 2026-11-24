@@ -173,303 +173,6 @@ const LEAGUE_OPTIONS = [
   { id: 'KPL', label: 'AFCON & KPL' },
 ] as const;
 
-const BASELINE_LEADERS: Record<string, LeaderRow[]> = {
-  EPL: [
-    { rank: 1, player: 'Erling Haaland', team: 'Manchester City', league: 'Premier League', position: 'ST', matches: 27, goals: 24, assists: 5, shotsOnTargetPer90: 2.45, xgPer90: 0.89, anytimeScorerOdds: 1.62, onePlusSotOdds: 1.22, twoPlusSotOdds: 1.85 },
-    { rank: 2, player: 'Mohamed Salah', team: 'Liverpool', league: 'Premier League', position: 'RW', matches: 28, goals: 21, assists: 13, shotsOnTargetPer90: 1.98, xgPer90: 0.72, anytimeScorerOdds: 1.95, onePlusSotOdds: 1.30, twoPlusSotOdds: 2.15 },
-    { rank: 3, player: 'Cole Palmer', team: 'Chelsea', league: 'Premier League', position: 'AM', matches: 28, goals: 18, assists: 10, shotsOnTargetPer90: 1.76, xgPer90: 0.61, anytimeScorerOdds: 2.20, onePlusSotOdds: 1.36, twoPlusSotOdds: 2.40 },
-    { rank: 4, player: 'Alexander Isak', team: 'Newcastle United', league: 'Premier League', position: 'ST', matches: 25, goals: 17, assists: 4, shotsOnTargetPer90: 1.84, xgPer90: 0.68, anytimeScorerOdds: 2.05, onePlusSotOdds: 1.33, twoPlusSotOdds: 2.25 },
-    { rank: 5, player: 'Bukayo Saka', team: 'Arsenal', league: 'Premier League', position: 'RW', matches: 26, goals: 15, assists: 11, shotsOnTargetPer90: 1.58, xgPer90: 0.54, anytimeScorerOdds: 2.45, onePlusSotOdds: 1.42, twoPlusSotOdds: 2.65 },
-    { rank: 6, player: 'Ollie Watkins', team: 'Aston Villa', league: 'Premier League', position: 'ST', matches: 28, goals: 15, assists: 9, shotsOnTargetPer90: 1.62, xgPer90: 0.58, anytimeScorerOdds: 2.35, onePlusSotOdds: 1.40, twoPlusSotOdds: 2.55 },
-  ],
-  UCL: [
-    { rank: 1, player: 'Erling Haaland', team: 'Manchester City', league: 'Champions League', position: 'ST', matches: 10, goals: 10, assists: 2, shotsOnTargetPer90: 2.55, xgPer90: 0.91, anytimeScorerOdds: 1.65, onePlusSotOdds: 1.22, twoPlusSotOdds: 1.82 },
-    { rank: 2, player: 'Harry Kane', team: 'Bayern Munich', league: 'Champions League', position: 'ST', matches: 10, goals: 9, assists: 3, shotsOnTargetPer90: 2.35, xgPer90: 0.84, anytimeScorerOdds: 1.75, onePlusSotOdds: 1.25, twoPlusSotOdds: 1.92 },
-    { rank: 3, player: 'Vinícius Júnior', team: 'Real Madrid', league: 'Champions League', position: 'LW', matches: 10, goals: 8, assists: 5, shotsOnTargetPer90: 1.95, xgPer90: 0.67, anytimeScorerOdds: 2.05, onePlusSotOdds: 1.32, twoPlusSotOdds: 2.20 },
-    { rank: 4, player: 'Raphinha', team: 'Barcelona', league: 'Champions League', position: 'RW', matches: 10, goals: 8, assists: 6, shotsOnTargetPer90: 1.88, xgPer90: 0.63, anytimeScorerOdds: 2.15, onePlusSotOdds: 1.35, twoPlusSotOdds: 2.30 },
-    { rank: 5, player: 'Kylian Mbappé', team: 'Real Madrid', league: 'Champions League', position: 'ST', matches: 10, goals: 8, assists: 2, shotsOnTargetPer90: 2.40, xgPer90: 0.81, anytimeScorerOdds: 1.78, onePlusSotOdds: 1.24, twoPlusSotOdds: 1.88 },
-  ],
-  LALIGA: [
-    { rank: 1, player: 'Kylian Mbappé', team: 'Real Madrid', league: 'La Liga', position: 'ST', matches: 27, goals: 23, assists: 6, shotsOnTargetPer90: 2.52, xgPer90: 0.86, anytimeScorerOdds: 1.68, onePlusSotOdds: 1.20, twoPlusSotOdds: 1.80 },
-    { rank: 2, player: 'Robert Lewandowski', team: 'Barcelona', league: 'La Liga', position: 'ST', matches: 27, goals: 21, assists: 4, shotsOnTargetPer90: 2.10, xgPer90: 0.78, anytimeScorerOdds: 1.82, onePlusSotOdds: 1.28, twoPlusSotOdds: 2.05 },
-    { rank: 3, player: 'Vinícius Júnior', team: 'Real Madrid', league: 'La Liga', position: 'LW', matches: 25, goals: 16, assists: 10, shotsOnTargetPer90: 1.80, xgPer90: 0.62, anytimeScorerOdds: 2.15, onePlusSotOdds: 1.35, twoPlusSotOdds: 2.30 },
-    { rank: 4, player: 'Raphinha', team: 'Barcelona', league: 'La Liga', position: 'RW', matches: 26, goals: 15, assists: 12, shotsOnTargetPer90: 1.72, xgPer90: 0.57, anytimeScorerOdds: 2.30, onePlusSotOdds: 1.38, twoPlusSotOdds: 2.45 },
-    { rank: 5, player: 'Julián Álvarez', team: 'Atlético Madrid', league: 'La Liga', position: 'ST', matches: 27, goals: 15, assists: 5, shotsOnTargetPer90: 1.55, xgPer90: 0.53, anytimeScorerOdds: 2.40, onePlusSotOdds: 1.44, twoPlusSotOdds: 2.70 },
-  ],
-  SERIEA: [
-    { rank: 1, player: 'Lautaro Martínez', team: 'Inter Milan', league: 'Serie A', position: 'ST', matches: 27, goals: 20, assists: 5, shotsOnTargetPer90: 2.05, xgPer90: 0.74, anytimeScorerOdds: 1.88, onePlusSotOdds: 1.28, twoPlusSotOdds: 2.10 },
-    { rank: 2, player: 'Mateo Retegui', team: 'Atalanta', league: 'Serie A', position: 'ST', matches: 27, goals: 19, assists: 4, shotsOnTargetPer90: 1.88, xgPer90: 0.69, anytimeScorerOdds: 1.98, onePlusSotOdds: 1.32, twoPlusSotOdds: 2.22 },
-    { rank: 3, player: 'Marcus Thuram', team: 'Inter Milan', league: 'Serie A', position: 'ST', matches: 27, goals: 15, assists: 8, shotsOnTargetPer90: 1.60, xgPer90: 0.56, anytimeScorerOdds: 2.30, onePlusSotOdds: 1.40, twoPlusSotOdds: 2.55 },
-    { rank: 4, player: 'Christian Pulisic', team: 'AC Milan', league: 'Serie A', position: 'RW', matches: 26, goals: 13, assists: 9, shotsOnTargetPer90: 1.48, xgPer90: 0.49, anytimeScorerOdds: 2.65, onePlusSotOdds: 1.48, twoPlusSotOdds: 2.85 },
-  ],
-  BUNDESLIGA: [
-    { rank: 1, player: 'Harry Kane', team: 'Bayern Munich', league: 'Bundesliga', position: 'ST', matches: 26, goals: 26, assists: 8, shotsOnTargetPer90: 2.60, xgPer90: 0.92, anytimeScorerOdds: 1.55, onePlusSotOdds: 1.18, twoPlusSotOdds: 1.72 },
-    { rank: 2, player: 'Serhou Guirassy', team: 'Borussia Dortmund', league: 'Bundesliga', position: 'ST', matches: 24, goals: 17, assists: 3, shotsOnTargetPer90: 1.92, xgPer90: 0.71, anytimeScorerOdds: 1.95, onePlusSotOdds: 1.30, twoPlusSotOdds: 2.15 },
-    { rank: 3, player: 'Jamal Musiala', team: 'Bayern Munich', league: 'Bundesliga', position: 'AM', matches: 25, goals: 15, assists: 9, shotsOnTargetPer90: 1.78, xgPer90: 0.58, anytimeScorerOdds: 2.25, onePlusSotOdds: 1.35, twoPlusSotOdds: 2.35 },
-    { rank: 4, player: 'Florian Wirtz', team: 'Bayer Leverkusen', league: 'Bundesliga', position: 'AM', matches: 26, goals: 14, assists: 13, shotsOnTargetPer90: 1.65, xgPer90: 0.52, anytimeScorerOdds: 2.50, onePlusSotOdds: 1.40, twoPlusSotOdds: 2.55 },
-  ],
-  KPL: [
-    { rank: 1, player: 'Benson Omala', team: 'Gor Mahia', league: 'Kenyan Premier League', position: 'ST', matches: 24, goals: 17, assists: 4, shotsOnTargetPer90: 2.15, xgPer90: 0.76, anytimeScorerOdds: 1.85, onePlusSotOdds: 1.26, twoPlusSotOdds: 2.02 },
-    { rank: 2, player: 'Austine Odhiambo', team: 'Gor Mahia', league: 'Kenyan Premier League', position: 'AM', matches: 24, goals: 12, assists: 11, shotsOnTargetPer90: 1.64, xgPer90: 0.54, anytimeScorerOdds: 2.35, onePlusSotOdds: 1.38, twoPlusSotOdds: 2.50 },
-    { rank: 3, player: 'Victor Osimhen', team: 'Nigeria', league: 'AFCON Qualifier', position: 'ST', matches: 6, goals: 7, assists: 2, shotsOnTargetPer90: 2.48, xgPer90: 0.88, anytimeScorerOdds: 1.70, onePlusSotOdds: 1.22, twoPlusSotOdds: 1.85 },
-    { rank: 4, player: 'Achraf Hakimi', team: 'Morocco', league: 'AFCON Qualifier', position: 'RB', matches: 6, goals: 3, assists: 5, shotsOnTargetPer90: 1.25, xgPer90: 0.34, anytimeScorerOdds: 3.40, onePlusSotOdds: 1.65, twoPlusSotOdds: 3.20 },
-  ],
-};
-
-const INJURY_SUSPENSION_DATA: InjuryTrackerRow[] = [
-  {
-    id: 'inj-1',
-    player: 'Rodri',
-    team: 'Manchester City',
-    opponent: 'Arsenal',
-    league: 'Premier League',
-    position: 'CDM',
-    status: 'Ruled Out',
-    detail: 'Knee ligament rehabilitation — absent from matchday squad',
-    expectedReturn: 'Long-term recovery',
-    xgDelta: '+0.26 Opponent Transition xG',
-    recommendedPlay: 'Both Teams To Score — Yes',
-    recommendedOdds: 1.74,
-  },
-  {
-    id: 'inj-2',
-    player: 'Martin Ødegaard',
-    team: 'Arsenal',
-    opponent: 'Manchester City',
-    league: 'Premier League',
-    position: 'CAM',
-    status: 'Returning',
-    detail: 'Completed full team training session; cleared for starting XI',
-    expectedReturn: 'Available Today',
-    xgDelta: '+0.31 Home Creative xG',
-    recommendedPlay: 'Arsenal Over 1.5 Team Goals',
-    recommendedOdds: 1.92,
-  },
-  {
-    id: 'inj-3',
-    player: 'Dani Carvajal',
-    team: 'Real Madrid',
-    opponent: 'Barcelona',
-    league: 'La Liga',
-    position: 'RB',
-    status: 'Ruled Out',
-    detail: 'Cruciate ligament injury — right-flank defensive rotation active',
-    expectedReturn: 'Season recovery',
-    xgDelta: '+0.22 Left-Wing Attack xG',
-    recommendedPlay: 'Over 2.5 Match Goals',
-    recommendedOdds: 1.68,
-  },
-  {
-    id: 'inj-4',
-    player: 'Bruno Fernandes',
-    team: 'Manchester United',
-    opponent: 'Chelsea',
-    league: 'Premier League',
-    position: 'CAM',
-    status: 'Doubtful',
-    detail: 'Ankle knock assessed by club medical team after midweek tie',
-    expectedReturn: 'Late Fitness Test',
-    xgDelta: '-0.29 Shot Creation xG if absent',
-    recommendedPlay: 'Chelsea Draw No Bet',
-    recommendedOdds: 1.82,
-  },
-  {
-    id: 'inj-5',
-    player: 'Nicolò Barella',
-    team: 'Inter Milan',
-    opponent: 'Juventus',
-    league: 'Serie A',
-    position: 'CM',
-    status: 'Suspended',
-    detail: '1-match yellow card accumulation suspension in Serie A',
-    expectedReturn: 'Next Matchweek',
-    xgDelta: '-0.18 Midfield Progression xG',
-    recommendedPlay: 'First Half Under 1.5 Goals',
-    recommendedOdds: 1.58,
-  },
-  {
-    id: 'inj-6',
-    player: 'Dayot Upamecano',
-    team: 'Bayern Munich',
-    opponent: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    position: 'CB',
-    status: 'Doubtful',
-    detail: 'Hamstring tightness monitored ahead of Der Klassiker',
-    expectedReturn: 'Assessed Pre-Kickoff',
-    xgDelta: '+0.24 Counter-Attack xG',
-    recommendedPlay: 'BTTS & Over 2.5 Goals',
-    recommendedOdds: 1.86,
-  },
-];
-
-const CLUB_PROFILES: ClubScheduleProfile[] = [
-  {
-    club: 'Arsenal',
-    league: 'Premier League',
-    manager: 'Mikel Arteta',
-    homePpg: 2.42,
-    awayPpg: 2.08,
-    goalsForPer90: 2.28,
-    goalsAgainstPer90: 0.78,
-    cleanSheetPct: 48,
-    bttsPct: 52,
-    recentResults: [
-      { opponent: 'Tottenham', venue: 'A', score: '2-1', outcome: 'W', competition: 'Premier League' },
-      { opponent: 'PSG', venue: 'H', score: '2-0', outcome: 'W', competition: 'Champions League' },
-      { opponent: 'Brighton', venue: 'H', score: '1-1', outcome: 'D', competition: 'Premier League' },
-      { opponent: 'Aston Villa', venue: 'A', score: '2-0', outcome: 'W', competition: 'Premier League' },
-      { opponent: 'Wolves', venue: 'H', score: '2-0', outcome: 'W', competition: 'Premier League' },
-    ],
-    upcomingFixtures: [
-      { opponent: 'Chelsea', venue: 'H', dateLabel: 'Matchday +1', competition: 'Premier League', winOdds: 1.78 },
-      { opponent: 'Inter Milan', venue: 'A', dateLabel: 'Midweek UCL', competition: 'Champions League', winOdds: 2.25 },
-      { opponent: 'Newcastle United', venue: 'A', dateLabel: 'Matchday +2', competition: 'Premier League', winOdds: 1.95 },
-      { opponent: 'Nottingham Forest', venue: 'H', dateLabel: 'Matchday +3', competition: 'Premier League', winOdds: 1.36 },
-    ],
-  },
-  {
-    club: 'Real Madrid',
-    league: 'La Liga',
-    manager: 'Carlo Ancelotti',
-    homePpg: 2.58,
-    awayPpg: 2.12,
-    goalsForPer90: 2.45,
-    goalsAgainstPer90: 0.85,
-    cleanSheetPct: 44,
-    bttsPct: 58,
-    recentResults: [
-      { opponent: 'Borussia Dortmund', venue: 'H', score: '5-2', outcome: 'W', competition: 'Champions League' },
-      { opponent: 'Celta Vigo', venue: 'A', score: '2-1', outcome: 'W', competition: 'La Liga' },
-      { opponent: 'Villarreal', venue: 'H', score: '2-0', outcome: 'W', competition: 'La Liga' },
-      { opponent: 'Atlético Madrid', venue: 'A', score: '1-1', outcome: 'D', competition: 'La Liga' },
-      { opponent: 'Espanyol', venue: 'H', score: '4-1', outcome: 'W', competition: 'La Liga' },
-    ],
-    upcomingFixtures: [
-      { opponent: 'Barcelona', venue: 'H', dateLabel: 'El Clásico', competition: 'La Liga', winOdds: 2.02 },
-      { opponent: 'AC Milan', venue: 'H', dateLabel: 'Midweek UCL', competition: 'Champions League', winOdds: 1.55 },
-      { opponent: 'Valencia', venue: 'A', dateLabel: 'Matchday +2', competition: 'La Liga', winOdds: 1.62 },
-      { opponent: 'Osasuna', venue: 'H', dateLabel: 'Matchday +3', competition: 'La Liga', winOdds: 1.28 },
-    ],
-  },
-  {
-    club: 'Manchester City',
-    league: 'Premier League',
-    manager: 'Pep Guardiola',
-    homePpg: 2.50,
-    awayPpg: 2.15,
-    goalsForPer90: 2.54,
-    goalsAgainstPer90: 0.92,
-    cleanSheetPct: 41,
-    bttsPct: 62,
-    recentResults: [
-      { opponent: 'Sparta Prague', venue: 'H', score: '5-0', outcome: 'W', competition: 'Champions League' },
-      { opponent: 'Wolves', venue: 'A', score: '2-1', outcome: 'W', competition: 'Premier League' },
-      { opponent: 'Fulham', venue: 'H', score: '3-2', outcome: 'W', competition: 'Premier League' },
-      { opponent: 'Newcastle United', venue: 'A', score: '1-1', outcome: 'D', competition: 'Premier League' },
-      { opponent: 'Brentford', venue: 'H', score: '2-1', outcome: 'W', competition: 'Premier League' },
-    ],
-    upcomingFixtures: [
-      { opponent: 'Liverpool', venue: 'A', dateLabel: 'Matchday +1', competition: 'Premier League', winOdds: 2.30 },
-      { opponent: 'Sporting CP', venue: 'A', dateLabel: 'Midweek UCL', competition: 'Champions League', winOdds: 1.65 },
-      { opponent: 'Tottenham', venue: 'H', dateLabel: 'Matchday +2', competition: 'Premier League', winOdds: 1.42 },
-      { opponent: 'Brighton', venue: 'A', dateLabel: 'Matchday +3', competition: 'Premier League', winOdds: 1.58 },
-    ],
-  },
-  {
-    club: 'Bayern Munich',
-    league: 'Bundesliga',
-    manager: 'Vincent Kompany',
-    homePpg: 2.65,
-    awayPpg: 2.20,
-    goalsForPer90: 2.85,
-    goalsAgainstPer90: 0.96,
-    cleanSheetPct: 42,
-    bttsPct: 60,
-    recentResults: [
-      { opponent: 'Stuttgart', venue: 'H', score: '4-0', outcome: 'W', competition: 'Bundesliga' },
-      { opponent: 'Eintracht Frankfurt', venue: 'A', score: '3-3', outcome: 'D', competition: 'Bundesliga' },
-      { opponent: 'Bayer Leverkusen', venue: 'H', score: '1-1', outcome: 'D', competition: 'Bundesliga' },
-      { opponent: 'Werder Bremen', venue: 'A', score: '5-0', outcome: 'W', competition: 'Bundesliga' },
-      { opponent: 'Dinamo Zagreb', venue: 'H', score: '9-2', outcome: 'W', competition: 'Champions League' },
-    ],
-    upcomingFixtures: [
-      { opponent: 'Borussia Dortmund', venue: 'A', dateLabel: 'Der Klassiker', competition: 'Bundesliga', winOdds: 1.75 },
-      { opponent: 'Benfica', venue: 'H', dateLabel: 'Midweek UCL', competition: 'Champions League', winOdds: 1.35 },
-      { opponent: 'Union Berlin', venue: 'H', dateLabel: 'Matchday +2', competition: 'Bundesliga', winOdds: 1.24 },
-      { opponent: 'RB Leipzig', venue: 'H', dateLabel: 'Matchday +3', competition: 'Bundesliga', winOdds: 1.48 },
-    ],
-  },
-  {
-    club: 'Inter Milan',
-    league: 'Serie A',
-    manager: 'Simone Inzaghi',
-    homePpg: 2.48,
-    awayPpg: 2.18,
-    goalsForPer90: 2.22,
-    goalsAgainstPer90: 0.76,
-    cleanSheetPct: 50,
-    bttsPct: 50,
-    recentResults: [
-      { opponent: 'AS Roma', venue: 'A', score: '1-0', outcome: 'W', competition: 'Serie A' },
-      { opponent: 'Torino', venue: 'H', score: '3-2', outcome: 'W', competition: 'Serie A' },
-      { opponent: 'Red Star', venue: 'H', score: '4-0', outcome: 'W', competition: 'Champions League' },
-      { opponent: 'Udinese', venue: 'A', score: '3-2', outcome: 'W', competition: 'Serie A' },
-      { opponent: 'Manchester City', venue: 'A', score: '0-0', outcome: 'D', competition: 'Champions League' },
-    ],
-    upcomingFixtures: [
-      { opponent: 'Juventus', venue: 'H', dateLabel: 'Derby d’Italia', competition: 'Serie A', winOdds: 1.82 },
-      { opponent: 'Arsenal', venue: 'H', dateLabel: 'Midweek UCL', competition: 'Champions League', winOdds: 2.40 },
-      { opponent: 'Napoli', venue: 'H', dateLabel: 'Matchday +2', competition: 'Serie A', winOdds: 1.88 },
-      { opponent: 'Lazio', venue: 'A', dateLabel: 'Matchday +3', competition: 'Serie A', winOdds: 1.95 },
-    ],
-  },
-  {
-    club: 'Gor Mahia',
-    league: 'Kenyan Premier League',
-    manager: 'Leonardo Neiva',
-    homePpg: 2.52,
-    awayPpg: 2.04,
-    goalsForPer90: 1.96,
-    goalsAgainstPer90: 0.58,
-    cleanSheetPct: 56,
-    bttsPct: 42,
-    recentResults: [
-      { opponent: 'AFC Leopards', venue: 'H', score: '2-0', outcome: 'W', competition: 'FKF Premier League' },
-      { opponent: 'Tusker FC', venue: 'A', score: '1-0', outcome: 'W', competition: 'FKF Premier League' },
-      { opponent: 'Kenya Police FC', venue: 'H', score: '1-1', outcome: 'D', competition: 'FKF Premier League' },
-      { opponent: 'Bandari FC', venue: 'A', score: '2-1', outcome: 'W', competition: 'FKF Premier League' },
-      { opponent: 'Mathare United', venue: 'H', score: '4-0', outcome: 'W', competition: 'FKF Premier League' },
-    ],
-    upcomingFixtures: [
-      { opponent: 'KCB FC', venue: 'H', dateLabel: 'Matchday +1', competition: 'FKF Premier League', winOdds: 1.65 },
-      { opponent: 'Kakamega Homeboyz', venue: 'A', dateLabel: 'Matchday +2', competition: 'FKF Premier League', winOdds: 1.80 },
-      { opponent: 'Shabana FC', venue: 'H', dateLabel: 'Matchday +3', competition: 'FKF Premier League', winOdds: 1.45 },
-    ],
-  },
-];
-
-const TOURNAMENT_BRACKETS: Record<string, KnockoutTie[]> = {
-  UCL: [
-    { id: 'ucl-qf-1', stage: 'Quarter-Finals', homeTeam: 'Real Madrid', awayTeam: 'Bayern Munich', aggScore: 'QF Tie 1', homeAdvancePct: 56, awayAdvancePct: 44, homeQualifyOdds: 1.72, awayQualifyOdds: 2.10 },
-    { id: 'ucl-qf-2', stage: 'Quarter-Finals', homeTeam: 'Manchester City', awayTeam: 'Inter Milan', aggScore: 'QF Tie 2', homeAdvancePct: 61, awayAdvancePct: 39, homeQualifyOdds: 1.58, awayQualifyOdds: 2.38 },
-    { id: 'ucl-qf-3', stage: 'Quarter-Finals', homeTeam: 'Arsenal', awayTeam: 'Barcelona', aggScore: 'QF Tie 3', homeAdvancePct: 52, awayAdvancePct: 48, homeQualifyOdds: 1.85, awayQualifyOdds: 1.95 },
-    { id: 'ucl-qf-4', stage: 'Quarter-Finals', homeTeam: 'Liverpool', awayTeam: 'PSG', aggScore: 'QF Tie 4', homeAdvancePct: 58, awayAdvancePct: 42, homeQualifyOdds: 1.66, awayQualifyOdds: 2.20 },
-    { id: 'ucl-sf-1', stage: 'Semi-Finals', homeTeam: 'Real Madrid', awayTeam: 'Manchester City', aggScore: 'SF Projection 1', homeAdvancePct: 49, awayAdvancePct: 51, homeQualifyOdds: 1.92, awayQualifyOdds: 1.88 },
-    { id: 'ucl-sf-2', stage: 'Semi-Finals', homeTeam: 'Arsenal', awayTeam: 'Liverpool', aggScore: 'SF Projection 2', homeAdvancePct: 48, awayAdvancePct: 52, homeQualifyOdds: 1.95, awayQualifyOdds: 1.85 },
-    { id: 'ucl-fin', stage: 'Final', homeTeam: 'Manchester City', awayTeam: 'Liverpool', aggScore: 'Munich Final Projection', homeAdvancePct: 54, awayAdvancePct: 46, homeQualifyOdds: 1.78, awayQualifyOdds: 2.04 },
-  ],
-  AFCON: [
-    { id: 'afcon-qf-1', stage: 'Quarter-Finals', homeTeam: 'Morocco', awayTeam: 'Egypt', aggScore: 'QF Tie 1', homeAdvancePct: 58, awayAdvancePct: 42, homeQualifyOdds: 1.68, awayQualifyOdds: 2.18 },
-    { id: 'afcon-qf-2', stage: 'Quarter-Finals', homeTeam: 'Senegal', awayTeam: 'Ivory Coast', aggScore: 'QF Tie 2', homeAdvancePct: 54, awayAdvancePct: 46, homeQualifyOdds: 1.78, awayQualifyOdds: 2.02 },
-    { id: 'afcon-qf-3', stage: 'Quarter-Finals', homeTeam: 'Nigeria', awayTeam: 'Algeria', aggScore: 'QF Tie 3', homeAdvancePct: 55, awayAdvancePct: 45, homeQualifyOdds: 1.75, awayQualifyOdds: 2.06 },
-    { id: 'afcon-qf-4', stage: 'Quarter-Finals', homeTeam: 'South Africa', awayTeam: 'Mali', aggScore: 'QF Tie 4', homeAdvancePct: 51, awayAdvancePct: 49, homeQualifyOdds: 1.88, awayQualifyOdds: 1.92 },
-    { id: 'afcon-sf-1', stage: 'Semi-Finals', homeTeam: 'Morocco', awayTeam: 'Senegal', aggScore: 'SF Projection 1', homeAdvancePct: 53, awayAdvancePct: 47, homeQualifyOdds: 1.80, awayQualifyOdds: 2.00 },
-    { id: 'afcon-sf-2', stage: 'Semi-Finals', homeTeam: 'Nigeria', awayTeam: 'South Africa', aggScore: 'SF Projection 2', homeAdvancePct: 60, awayAdvancePct: 40, homeQualifyOdds: 1.60, awayQualifyOdds: 2.30 },
-    { id: 'afcon-fin', stage: 'Final', homeTeam: 'Morocco', awayTeam: 'Nigeria', aggScore: 'Championship Final Projection', homeAdvancePct: 54, awayAdvancePct: 46, homeQualifyOdds: 1.76, awayQualifyOdds: 2.05 },
-  ],
-};
-
 export interface LiveApiIntelligenceSuiteProps {
   initialTab?: ApiSuiteTab;
 }
@@ -479,12 +182,12 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
 }) => {
   const [activeTab, setActiveTab] = useState<ApiSuiteTab>(initialTab);
   const [selectedLeague, setSelectedLeague] = useState<string>('EPL');
-  const [leaders, setLeaders] = useState<LeaderRow[]>(BASELINE_LEADERS.EPL);
-  const [injuries, setInjuries] = useState<InjuryTrackerRow[]>(INJURY_SUSPENSION_DATA);
+  const [leaders, setLeaders] = useState<LeaderRow[]>([]);
+  const [injuries, setInjuries] = useState<InjuryTrackerRow[]>([]);
   const [apiReferees, setApiReferees] = useState<RefereeAssignmentRow[]>([]);
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [newsCategoryFilter, setNewsCategoryFilter] = useState<string>('All');
-  const [selectedClub, setSelectedClub] = useState<string>('Arsenal');
+  const [selectedClub, setSelectedClub] = useState<string>('');
   const [clubSearch, setClubSearch] = useState<string>('');
   const [bracketTournament, setBracketTournament] = useState<'UCL' | 'AFCON'>('UCL');
   const [selectedMomentumIdx, setSelectedMomentumIdx] = useState<number>(0);
@@ -526,7 +229,9 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
 
   useEffect(() => {
     let cancelled = false;
-    setLeaders(BASELINE_LEADERS[selectedLeague] || BASELINE_LEADERS.EPL);
+    setLeaders([]);
+    setInjuries([]);
+    setApiReferees([]);
 
     const safeJson = async (res: Response | null) => {
       if (!res || !res.ok) return null;
@@ -552,23 +257,23 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
           safeJson(liveRes),
         ]);
         if (cancelled) return;
-        if (Array.isArray(lJson?.leaders) && lJson.leaders.length > 0) {
+        if (Array.isArray(lJson?.leaders)) {
           setLeaders(lJson.leaders);
         }
-        if (Array.isArray(nJson?.articles) && nJson.articles.length > 0) {
+        if (Array.isArray(nJson?.articles)) {
           setNews(nJson.articles);
         }
-        if (Array.isArray(iJson?.injuries) && iJson.injuries.length > 0) {
+        if (Array.isArray(iJson?.injuries)) {
           setInjuries(iJson.injuries);
         }
-        if (Array.isArray(rJson?.referees) && rJson.referees.length > 0) {
+        if (Array.isArray(rJson?.referees)) {
           setApiReferees(rJson.referees);
         }
         if (Array.isArray(liveJson?.matches)) {
           setLiveFeedMatches(liveJson.matches);
         }
       } catch {
-        // Baseline already active
+        // Keep empty until live feed succeeds
       }
     };
 
@@ -720,21 +425,12 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
 
   // Live 90-Minute Win-Probability & Momentum Curve for selected fixture
   const activeMomentumMatch = useMemo(
-    () =>
-      upcomingMatches[selectedMomentumIdx] ||
-      upcomingMatches[0] || {
-        id: 'mom-default',
-        home_team: 'Arsenal',
-        away_team: 'Chelsea',
-        league: 'Premier League',
-        home_odds: 1.85,
-        draw_odds: 3.50,
-        away_odds: 4.10,
-      },
+    () => upcomingMatches[selectedMomentumIdx] || upcomingMatches[0] || null,
     [upcomingMatches, selectedMomentumIdx]
   );
 
   const momentumSeries = useMemo(() => {
+    if (!activeMomentumMatch) return [];
     const baseHome = activeMomentumMatch.home_win_probability ?? 48;
     const baseAway = activeMomentumMatch.away_win_probability ?? 26;
     const minutes = [0, 10, 20, 30, 38, 45, 55, 65, 74, 82, 90];
@@ -762,69 +458,102 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     });
   }, [activeMomentumMatch]);
 
+  const liveClubProfiles = useMemo<ClubScheduleProfile[]>(() => {
+    const map = new Map<string, ClubScheduleProfile>();
+    for (const m of upcomingMatches) {
+      const hOdds = Number(m.home_odds || 2.1);
+      const aOdds = Number(m.away_odds || 3.2);
+      const dateLabel = m.match_date
+        ? new Date(m.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : 'Upcoming';
+
+      const ensureClub = (clubName: string, leagueName: string, isHome: boolean, odds: number, opponent: string) => {
+        const existing = map.get(clubName);
+        if (!existing) {
+          const strengthFactor = Math.max(0.75, Math.min(1.65, 2.25 / Math.max(1.2, odds)));
+          map.set(clubName, {
+            club: clubName,
+            league: leagueName,
+            manager: 'Matchday Head Coach',
+            homePpg: Number(Math.min(2.7, 1.35 + strengthFactor * 0.65).toFixed(2)),
+            awayPpg: Number(Math.min(2.4, 1.15 + strengthFactor * 0.55).toFixed(2)),
+            goalsForPer90: Number(Math.min(2.8, 1.05 + strengthFactor * 0.72).toFixed(2)),
+            goalsAgainstPer90: Number(Math.max(0.65, 1.55 - strengthFactor * 0.45).toFixed(2)),
+            cleanSheetPct: Math.round(Math.min(58, 26 + strengthFactor * 14)),
+            bttsPct: 52,
+            recentResults: [],
+            upcomingFixtures: [
+              {
+                opponent,
+                venue: isHome ? 'H' : 'A',
+                dateLabel,
+                competition: leagueName,
+                winOdds: Number(odds.toFixed(2)),
+              },
+            ],
+          });
+        } else if (!existing.upcomingFixtures.some((u) => u.opponent === opponent)) {
+          existing.upcomingFixtures.push({
+            opponent,
+            venue: isHome ? 'H' : 'A',
+            dateLabel,
+            competition: leagueName,
+            winOdds: Number(odds.toFixed(2)),
+          });
+        }
+      };
+
+      ensureClub(m.home_team, m.league, true, hOdds, m.away_team);
+      ensureClub(m.away_team, m.league, false, aOdds, m.home_team);
+    }
+    return Array.from(map.values()).slice(0, 14);
+  }, [upcomingMatches]);
+
   const activeClubProfile = useMemo(() => {
-    const filtered = CLUB_PROFILES.filter(
+    if (liveClubProfiles.length === 0) return null;
+    const filtered = liveClubProfiles.filter(
       (c) =>
         !clubSearch.trim() ||
         c.club.toLowerCase().includes(clubSearch.toLowerCase()) ||
         c.league.toLowerCase().includes(clubSearch.toLowerCase())
     );
-    return filtered.find((c) => c.club === selectedClub) || filtered[0] || CLUB_PROFILES[0];
-  }, [selectedClub, clubSearch]);
+    return filtered.find((c) => c.club === selectedClub) || filtered[0] || liveClubProfiles[0] || null;
+  }, [liveClubProfiles, selectedClub, clubSearch]);
+
+  const liveBracketTies = useMemo<KnockoutTie[]>(() => {
+    const matchesForTournament = upcomingMatches.filter((m) => {
+      const l = (m.league || '').toLowerCase();
+      if (bracketTournament === 'AFCON') {
+        return l.includes('afcon') || l.includes('caf') || l.includes('africa');
+      }
+      return l.includes('champions') || l.includes('ucl') || l.includes('europa') || l.includes('conference');
+    });
+    return matchesForTournament.slice(0, 6).map((m, idx) => {
+      const hOdd = Math.max(1.2, Number(m.home_odds || 2.1));
+      const aOdd = Math.max(1.2, Number(m.away_odds || 3.2));
+      const invH = 1 / hOdd;
+      const invA = 1 / aOdd;
+      const total = invH + invA;
+      const homeAdvancePct = Math.round((invH / total) * 100);
+      const awayAdvancePct = Math.max(1, 100 - homeAdvancePct);
+      return {
+        id: `live-tie-${m.id || idx}`,
+        stage: idx < 4 ? 'Quarter-Finals' : idx === 4 ? 'Semi-Finals' : 'Final',
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        aggScore: m.league || bracketTournament,
+        homeAdvancePct,
+        awayAdvancePct,
+        homeQualifyOdds: Number(Math.max(1.15, hOdd * 0.88).toFixed(2)),
+        awayQualifyOdds: Number(Math.max(1.15, aOdd * 0.88).toFixed(2)),
+      };
+    });
+  }, [upcomingMatches, bracketTournament]);
 
   const filteredNews = useMemo(() => {
-    const source =
-      news.length > 0
-        ? news
-        : [
-            {
-              id: 'n-1',
-              headline: 'Pre-Match Medical Briefing: Starting XI Fitness Confirmations Released',
-              description:
-                'Club medical departments confirm key attacking midfielders completed final tactical sessions ahead of matchday lock.',
-              published: new Date().toISOString(),
-              category: 'Injury Update' as const,
-              league: selectedLeague,
-              teamTag: 'Premier League',
-              impactLevel: 'High' as const,
-            },
-            {
-              id: 'n-2',
-              headline: 'High-Line Pressing Metrics Trigger Over 2.5 & BTTS Value Across Top Flights',
-              description:
-                'Expected goals (xG) per 90 in transition phases has risen 14.2% across Premier League, La Liga, and Champions League ties.',
-              published: new Date().toISOString(),
-              category: 'Tactical Preview' as const,
-              league: selectedLeague,
-              teamTag: 'Champions League',
-              impactLevel: 'Medium' as const,
-            },
-            {
-              id: 'n-3',
-              headline: 'Managers Confirm Squad Rotation Plans Following Continental Travel',
-              description:
-                'Full-back and wing rotation creates high-probability second-half scoring windows in Sunday fixtures.',
-              published: new Date().toISOString(),
-              category: 'Press Conference' as const,
-              league: selectedLeague,
-              teamTag: 'La Liga',
-              impactLevel: 'High' as const,
-            },
-            {
-              id: 'n-4',
-              headline: 'Set-Piece & Corner Delivery Specialists Dominate Expected Threat (xT)',
-              description:
-                'Arsenal, Inter Milan, and Bayer Leverkusen lead European top flights in dead-ball xG creation per match.',
-              published: new Date().toISOString(),
-              category: 'Transfer & Squad' as const,
-              league: selectedLeague,
-              teamTag: 'Serie A',
-              impactLevel: 'Medium' as const,
-            },
-          ];
-    if (newsCategoryFilter === 'All') return source;
-    return source.filter((item) => item.category === newsCategoryFilter);
-  }, [news, newsCategoryFilter, selectedLeague]);
+    if (newsCategoryFilter === 'All') return news;
+    return news.filter((item) => item.category === newsCategoryFilter);
+  }, [news, newsCategoryFilter]);
 
   const deservedRegressionList = useMemo(
     () => computeDeservedPointsRegression(upcomingMatches),
@@ -837,8 +566,8 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
   );
 
   const playerPropLogs = useMemo(
-    () => buildPlayerPropLogs(propMarketFilter, selectedLeague),
-    [propMarketFilter, selectedLeague]
+    () => buildPlayerPropLogs(propMarketFilter, selectedLeague, upcomingMatches),
+    [propMarketFilter, selectedLeague, upcomingMatches]
   );
 
   const congestionProfiles = useMemo(
@@ -873,38 +602,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
     [upcomingMatches, steamTick]
   );
 
-  const auditTargetLegs = useMemo(() => {
-    if (selections.length > 0) return selections;
-    return [
-      {
-        id: 'sample-leg-1',
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        league: 'Premier League',
-        market: 'Arsenal Win',
-        odds: 1.85,
-        confidence: 82,
-      },
-      {
-        id: 'sample-leg-2',
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Atletico Madrid',
-        league: 'La Liga',
-        market: 'Over 2.5 Goals',
-        odds: 1.94,
-        confidence: 74,
-      },
-      {
-        id: 'sample-leg-3',
-        homeTeam: 'Juventus',
-        awayTeam: 'AC Milan',
-        league: 'Serie A',
-        market: 'Juventus Win',
-        odds: 1.72,
-        confidence: 42,
-      },
-    ];
-  }, [selections]);
+  const auditTargetLegs = useMemo(() => selections, [selections]);
 
   const slipAuditSummary = useMemo(
     () => auditBetSlipLegs(auditTargetLegs, stake || 100),
@@ -1087,6 +785,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </span>
             </div>
 
+            {leaders.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No live scorer telemetry available for {selectedLeague} yet — click Sync Feed to refresh from ESPN API.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -1205,6 +908,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -1225,6 +929,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </span>
             </div>
 
+            {extendedMarketRows.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No active upcoming fixtures loaded for extended sportsbook markets.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -1371,6 +1080,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -1391,6 +1101,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </span>
             </div>
 
+            {injuries.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No injury or lineup watch dispatches returned for {selectedLeague} yet — click Sync Feed to query live club updates.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {injuries.map((item) => (
                 <div
@@ -1458,6 +1173,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
 
@@ -1492,6 +1208,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {!activeMomentumMatch ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No active or upcoming matches loaded yet for win-probability curve modeling.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 p-4 rounded-xl border border-border bg-background">
                 <div className="flex items-center justify-between text-xs mb-3">
@@ -1610,6 +1331,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </div>
               </div>
             </div>
+            )}
           </div>
         )}
 
@@ -1630,6 +1352,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </span>
             </div>
 
+            {refereeRows.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No referee assignments or upcoming matches loaded for {selectedLeague} yet.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -1721,6 +1448,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -1729,13 +1457,13 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {CLUB_PROFILES.map((c) => (
+                {liveClubProfiles.map((c) => (
                   <button
                     key={c.club}
                     type="button"
                     onClick={() => setSelectedClub(c.club)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 border transition-colors cursor-pointer ${
-                      activeClubProfile.club === c.club
+                      activeClubProfile?.club === c.club
                         ? 'border-primary bg-primary text-primary-foreground'
                         : 'border-border bg-background text-muted-foreground hover:text-foreground'
                     }`}
@@ -1759,6 +1487,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {!activeClubProfile ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                Waiting for live matchday club feed... Click Sync Feed or return once upcoming fixtures load.
+              </div>
+            ) : (
             <div className="p-4 rounded-xl border border-border bg-background space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
@@ -1766,7 +1499,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                   <div>
                     <h3 className="text-base font-bold text-foreground">{activeClubProfile.club}</h3>
                     <div className="text-xs text-muted-foreground">
-                      {activeClubProfile.league} · Manager: {activeClubProfile.manager}
+                      {activeClubProfile.league} · {activeClubProfile.manager}
                     </div>
                   </div>
                 </div>
@@ -1805,7 +1538,12 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-foreground">Last 5 Official Results</h4>
+                  <h4 className="text-xs font-bold text-foreground">Recent Official Results</h4>
+                  {activeClubProfile.recentResults.length === 0 ? (
+                    <div className="p-4 rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                      Visit the Standings or Results page for full verified club FT scores.
+                    </div>
+                  ) : (
                   <div className="divide-y divide-border rounded-lg border border-border overflow-hidden text-xs">
                     {activeClubProfile.recentResults.map((res, i) => (
                       <div key={i} className="p-2.5 flex items-center justify-between bg-card">
@@ -1830,6 +1568,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                       </div>
                     ))}
                   </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -1870,6 +1609,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </div>
               </div>
             </div>
+            )}
           </div>
         )}
 
@@ -1907,9 +1647,14 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {liveBracketTies.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No active {bracketTournament} knockout matches scheduled in the current feed. Switch competitions or open the interactive Bracket Simulator page.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {(['Quarter-Finals', 'Semi-Finals', 'Final'] as const).map((stage) => {
-                const ties = (TOURNAMENT_BRACKETS[bracketTournament] || TOURNAMENT_BRACKETS.UCL).filter(
+                const ties = liveBracketTies.filter(
                   (t) => t.stage === stage
                 );
                 return (
@@ -1918,7 +1663,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                       {stage}
                     </h4>
                     <div className="space-y-3">
-                      {ties.map((tie) => (
+                      {ties.length === 0 ? (
+                        <div className="p-3.5 rounded-xl border border-dashed border-border text-[11px] text-muted-foreground">
+                          No scheduled {stage.toLowerCase()} ties in this slate.
+                        </div>
+                      ) : ties.map((tie) => (
                         <div key={tie.id} className="p-3.5 rounded-xl border border-border bg-background space-y-2.5">
                           <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
                             <span>{tie.aggScore}</span>
@@ -1979,6 +1728,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 );
               })}
             </div>
+            )}
           </div>
         )}
 
@@ -2014,6 +1764,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {filteredNews.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No live news dispatches loaded for {newsCategoryFilter} yet — click Sync Feed to query ESPN Soccer News.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredNews.map((item) => (
                 <article
@@ -2040,11 +1795,12 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </article>
               ))}
             </div>
+            )}
           </div>
         )}
 
         {/* 9. 0'–90' CUMULATIVE xG STEP-CHART & DESERVED POINTS REGRESSION (#3) */}
-        {activeTab === 'xg_step' && activeRegressionMatch && (
+        {activeTab === 'xg_step' && (
           <div className="space-y-4">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
               <div>
@@ -2073,6 +1829,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {!activeRegressionMatch ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No fixtures loaded yet for 0&apos;–90&apos; cumulative xG regression modeling.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 p-4 rounded-xl border border-border bg-background space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -2183,6 +1944,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </button>
               </div>
             </div>
+            )}
           </div>
         )}
 
@@ -2234,6 +1996,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {playerPropLogs.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No scheduled {selectedLeague} fixtures active for player prop hit-rate modeling right now.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -2323,6 +2090,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -2343,6 +2111,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </span>
             </div>
 
+            {congestionProfiles.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No upcoming fixtures loaded for Elo rest-day and congestion risk modeling.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -2433,6 +2206,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -2485,6 +2259,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {pressureSurgeFeed.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No live or upcoming {selectedLeague} fixtures currently available for 10-minute rolling Pressure Surge tracking.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {pressureSurgeFeed.map((item) => (
                 <div
@@ -2561,6 +2340,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
 
@@ -2594,6 +2374,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {noVigRows.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No {selectedLeague} fixtures match the selected +{minEvFilter}% EV filter yet.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -2668,6 +2453,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -2838,6 +2624,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </button>
             </div>
 
+            {exchangeSteamRows.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No active sharp money steam alerts detected for upcoming {selectedLeague} fixtures.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -2909,6 +2700,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -2923,16 +2715,24 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 <p className="text-xs text-muted-foreground">
                   {selections.length > 0
                     ? `Auditing your ${selections.length} live Bet Slip leg(s) to pinpoint vig drag and compute exact opposite-side hedge sizing.`
-                    : 'Showing sample 3-leg accumulator audit — add picks to your Bet Slip to audit your real legs automatically.'}
+                    : 'Your Bet Slip is empty — add selections from any live or upcoming fixture to audit legs and calculate hedge sizing.'}
                 </p>
               </div>
+              {auditTargetLegs.length > 0 && (
               <span className="text-xs font-mono tabular-nums text-muted-foreground">
                 Slip EV: {slipAuditSummary.currentSlipEvPct >= 0 ? '+' : ''}
                 {slipAuditSummary.currentSlipEvPct}% · Optimized EV: {slipAuditSummary.optimizedSlipEvPct >= 0 ? '+' : ''}
                 {slipAuditSummary.optimizedSlipEvPct}%
               </span>
+              )}
             </div>
 
+            {auditTargetLegs.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                Add 2 or more real fixture picks to your Bet Slip to run the Weakest-Leg Auditor &amp; Smart Hedge calculator.
+              </div>
+            ) : (
+            <>
             {slipAuditSummary.weakestLeg && (
               <div className="p-4 rounded-xl border border-border bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="space-y-1">
@@ -3032,6 +2832,8 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 Combined @{slipAuditSummary.currentCombinedOdds.toFixed(2)}x → Optimized @{slipAuditSummary.optimizedCombinedOdds.toFixed(2)}x
               </span>
             </div>
+            </>
+            )}
           </div>
         )}
 
@@ -3084,6 +2886,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {gkPsxgProfiles.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No goalkeeper PSxG profiles available for {selectedLeague} until live fixtures sync.
+              </div>
+            ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
@@ -3227,6 +3034,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
 
@@ -3268,6 +3076,11 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
               </div>
             </div>
 
+            {managerClashProfiles.length === 0 ? (
+              <div className="py-10 px-4 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                No manager clash matchups available for {selectedLeague} until live fixtures sync.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {managerClashProfiles.map((item) => (
                 <div
@@ -3335,6 +3148,7 @@ export const LiveApiIntelligenceSuite: React.FC<LiveApiIntelligenceSuiteProps> =
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
       </div>

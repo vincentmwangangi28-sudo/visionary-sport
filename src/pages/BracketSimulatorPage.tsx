@@ -20,6 +20,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 interface KnockoutTie {
@@ -378,16 +379,52 @@ const TOURNAMENT_BRACKETS: TournamentBracketPackage[] = [
 
 export const BracketSimulatorPage: React.FC = () => {
   const { addSelection } = useBetSlip();
+  const { allPredictions } = usePredictions({ limit: 48 });
   const [selectedTournamentId, setSelectedTournamentId] =
     useState<TournamentBracketPackage['id']>('UCL');
   const [copiedBracket, setCopiedBracket] = useState(false);
 
-  const tournament = useMemo(() => {
-    return (
+  const { tournament, isLiveHydrated } = useMemo(() => {
+    const basePkg =
       TOURNAMENT_BRACKETS.find((t) => t.id === selectedTournamentId) ||
-      TOURNAMENT_BRACKETS[0]
-    );
-  }, [selectedTournamentId]);
+      TOURNAMENT_BRACKETS[0];
+
+    const matchingLive = allPredictions.filter((m) => {
+      const l = (m.league || '').toLowerCase();
+      if (selectedTournamentId === 'UCL') return l.includes('champions');
+      if (selectedTournamentId === 'AFCON') return l.includes('afcon') || l.includes('africa cup');
+      if (selectedTournamentId === 'CAF_CL') return l.includes('caf');
+      if (selectedTournamentId === 'WORLD_CUP') return l.includes('world cup');
+      return false;
+    });
+
+    if (matchingLive.length >= 4) {
+      const liveQfs = matchingLive.slice(0, 4).map((m, idx): KnockoutTie => {
+        const hProb = Math.min(78, Math.max(22, Number(m.home_win_probability || m.confidence_score || 55)));
+        const aProb = Math.max(22, 100 - hProb);
+        return {
+          id: `live-qf-${m.id}`,
+          stage: 'QF',
+          label: `Live Fixture ${idx + 1}`,
+          teamA: m.home_team,
+          teamB: m.away_team,
+          probAPct: Math.round(hProb),
+          probBPct: Math.round(aProb),
+          projectedScore: `${Number(m.expected_home_goals ?? 1.6).toFixed(0)} - ${Number(m.expected_away_goals ?? 1.1).toFixed(0)}`,
+        };
+      }) as [KnockoutTie, KnockoutTie, KnockoutTie, KnockoutTie];
+
+      return {
+        tournament: {
+          ...basePkg,
+          quarterFinals: liveQfs,
+        },
+        isLiveHydrated: true,
+      };
+    }
+
+    return { tournament: basePkg, isLiveHydrated: false };
+  }, [selectedTournamentId, allPredictions]);
 
   // Interactive user-picked winners for QF1..4, SF1..2, and Final
   const [qfWinners, setQfWinners] = useState<[string, string, string, string]>(() => [
@@ -404,19 +441,21 @@ export const BracketSimulatorPage: React.FC = () => {
     () => TOURNAMENT_BRACKETS[0].quarterFinals[0].teamA
   );
 
-  const handleSelectTournament = (id: TournamentBracketPackage['id']) => {
-    setSelectedTournamentId(id);
-    const pkg =
-      TOURNAMENT_BRACKETS.find((t) => t.id === id) || TOURNAMENT_BRACKETS[0];
+  // Sync interactive picks when switching tournament or live hydration updates
+  React.useEffect(() => {
     const qf: [string, string, string, string] = [
-      pkg.quarterFinals[0].teamA,
-      pkg.quarterFinals[1].teamA,
-      pkg.quarterFinals[2].teamA,
-      pkg.quarterFinals[3].teamA,
+      tournament.quarterFinals[0].teamA,
+      tournament.quarterFinals[1].teamA,
+      tournament.quarterFinals[2].teamA,
+      tournament.quarterFinals[3].teamA,
     ];
     setQfWinners(qf);
     setSfWinners([qf[0], qf[2]]);
     setChampion(qf[0]);
+  }, [tournament]);
+
+  const handleSelectTournament = (id: TournamentBracketPackage['id']) => {
+    setSelectedTournamentId(id);
   };
 
   const handlePickQfWinner = (qfIndex: 0 | 1 | 2 | 3, team: string) => {
@@ -534,7 +573,7 @@ export const BracketSimulatorPage: React.FC = () => {
             <div className="space-y-1.5 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 font-mono text-[11px]">
-                  INTERACTIVE ROAD-TO-THE-FINAL BRACKET TREE
+                  {isLiveHydrated ? 'LIVE TOURNAMENT FIXTURES' : 'INTERACTIVE SANDBOX SIMULATOR (OFF-SEASON)'}
                 </Badge>
                 <span className="text-xs text-slate-400 font-mono tabular-nums">
                   {tournament.hostFinalVenue}

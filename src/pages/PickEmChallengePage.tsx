@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
+import { fetchRealtimeUpcomingFixtures, fetchRealtimeFinishedMatches } from '@/services/realtimeFootball';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -32,92 +32,32 @@ interface ContestMatch {
   drawOdds: number;
   awayOdds: number;
   aiRecommended: PickChoice;
-  simulatedOutcome: PickChoice;
-  simulatedScore: string;
+  settledOutcome?: PickChoice;
+  settledScore?: string;
 }
 
-const DEFAULT_CONTEST_MATCHES: ContestMatch[] = [
-  {
-    id: 'pickem-1',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    kickoffLabel: 'Today • 19:30 UTC',
-    homeOdds: 1.75,
-    drawOdds: 3.75,
-    awayOdds: 4.50,
-    aiRecommended: '1',
-    simulatedOutcome: '1',
-    simulatedScore: '2 - 1',
-  },
-  {
-    id: 'pickem-2',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Villarreal',
-    league: 'LaLiga',
-    kickoffLabel: 'Today • 20:00 UTC',
-    homeOdds: 1.48,
-    drawOdds: 4.40,
-    awayOdds: 6.20,
-    aiRecommended: '1',
-    simulatedOutcome: '1',
-    simulatedScore: '3 - 1',
-  },
-  {
-    id: 'pickem-3',
-    homeTeam: 'Juventus',
-    awayTeam: 'Napoli',
-    league: 'Serie A',
-    kickoffLabel: 'Today • 18:45 UTC',
-    homeOdds: 2.35,
-    drawOdds: 3.10,
-    awayOdds: 3.25,
-    aiRecommended: 'X',
-    simulatedOutcome: 'X',
-    simulatedScore: '1 - 1',
-  },
-  {
-    id: 'pickem-4',
-    homeTeam: 'Bayer Leverkusen',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    kickoffLabel: 'Today • 17:30 UTC',
-    homeOdds: 1.88,
-    drawOdds: 3.80,
-    awayOdds: 3.90,
-    aiRecommended: '1',
-    simulatedOutcome: '1',
-    simulatedScore: '2 - 0',
-  },
-  {
-    id: 'pickem-5',
-    homeTeam: 'Lille',
-    awayTeam: 'Marseille',
-    league: 'Ligue 1',
-    kickoffLabel: 'Today • 20:00 UTC',
-    homeOdds: 2.40,
-    drawOdds: 3.25,
-    awayOdds: 2.95,
-    aiRecommended: '2',
-    simulatedOutcome: '2',
-    simulatedScore: '1 - 2',
-  },
-];
-
-const PICKEM_PICKS_KEY = 'predictpro_daily_pickem_picks_v1';
+const PICKEM_PICKS_KEY = 'predictpro_daily_pickem_picks_v2';
 const PICKEM_STREAK_KEY = 'predictpro_daily_pickem_streak_v1';
 const PICKEM_POINTS_KEY = 'predictpro_daily_pickem_points_v1';
+
+function outcomeFromPrediction(pred?: string): PickChoice {
+  const lower = String(pred || '').toLowerCase();
+  if (lower.includes('away') || lower === '2') return '2';
+  if (lower.includes('draw') || lower === 'x') return 'X';
+  return '1';
+}
 
 export const PickEmChallengePage: React.FC = () => {
   const { addSelections } = useBetSlip();
 
-  const [matches, setMatches] = useState<ContestMatch[]>(DEFAULT_CONTEST_MATCHES);
+  const [matches, setMatches] = useState<ContestMatch[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState<boolean>(true);
   const [picks, setPicks] = useState<Record<string, PickChoice>>(() => {
     try {
       const saved = localStorage.getItem(PICKEM_PICKS_KEY);
-      return saved ? JSON.parse(saved) : { 'pickem-1': '1', 'pickem-2': '1' };
+      return saved ? JSON.parse(saved) : {};
     } catch {
-      return { 'pickem-1': '1', 'pickem-2': '1' };
+      return {};
     }
   });
 
@@ -144,31 +84,38 @@ export const PickEmChallengePage: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
+    setLoadingMatches(true);
     fetchRealtimeUpcomingFixtures()
       .then((liveFixtures) => {
-        if (!mounted || !Array.isArray(liveFixtures) || liveFixtures.length < 5) return;
-        const mapped: ContestMatch[] = liveFixtures.slice(0, 5).map((f, idx) => {
-          const fallback = DEFAULT_CONTEST_MATCHES[idx];
+        if (!mounted) return;
+        const pool = Array.isArray(liveFixtures) ? liveFixtures : [];
+        const mapped: ContestMatch[] = pool.slice(0, 5).map((f, idx) => {
+          const id = String(f.id || `pickem-${idx + 1}`);
           return {
-            id: `pickem-${idx + 1}`,
-            homeTeam: f.homeTeam || fallback.homeTeam,
-            awayTeam: f.awayTeam || fallback.awayTeam,
-            league: f.league || fallback.league,
-            kickoffLabel: f.kickoff
-              ? new Date(f.kickoff).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : fallback.kickoffLabel,
-            homeOdds: fallback.homeOdds,
-            drawOdds: fallback.drawOdds,
-            awayOdds: fallback.awayOdds,
-            aiRecommended: fallback.aiRecommended,
-            simulatedOutcome: fallback.simulatedOutcome,
-            simulatedScore: fallback.simulatedScore,
+            id,
+            homeTeam: f.home_team,
+            awayTeam: f.away_team,
+            league: f.league || 'International',
+            kickoffLabel: f.match_date
+              ? new Date(f.match_date).toLocaleString('en-GB', {
+                  weekday: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : 'Scheduled Today',
+            homeOdds: Number(f.home_odds) || 2.1,
+            drawOdds: Number(f.draw_odds) || 3.3,
+            awayOdds: Number(f.away_odds) || 3.2,
+            aiRecommended: outcomeFromPrediction(f.predicted_outcome || f.prediction),
           };
         });
         setMatches(mapped);
       })
       .catch(() => {
-        // Keep deterministic 5-match card
+        if (mounted) setMatches([]);
+      })
+      .finally(() => {
+        if (mounted) setLoadingMatches(false);
       });
     return () => {
       mounted = false;
@@ -202,9 +149,13 @@ export const PickEmChallengePage: React.FC = () => {
   };
 
   const handleLockInCard = () => {
+    if (matches.length === 0) {
+      toast.error('Upcoming contest fixtures are still loading.');
+      return;
+    }
     const selectedCount = matches.filter((m) => Boolean(picks[m.id])).length;
-    if (selectedCount < 5) {
-      toast.error(`Select an outcome (1, X, or 2) for all 5 matches (${selectedCount}/5 selected).`);
+    if (selectedCount < matches.length) {
+      toast.error(`Select an outcome (1, X, or 2) for all ${matches.length} matches (${selectedCount}/${matches.length} selected).`);
       return;
     }
 
@@ -219,47 +170,78 @@ export const PickEmChallengePage: React.FC = () => {
     toast.success('Daily Pick’em Card Locked In! +50 Participation Coins credited to your wallet.');
   };
 
-  const handleGradeCard = () => {
+  const handleGradeCard = async () => {
+    if (matches.length === 0) return;
     const selectedCount = matches.filter((m) => Boolean(picks[m.id])).length;
-    if (selectedCount < 5) {
-      toast.error('Complete all 5 match picks before grading your card.');
+    if (selectedCount < matches.length) {
+      toast.error(`Complete all ${matches.length} match picks before checking live ESPN results.`);
       return;
     }
 
-    let correctCount = 0;
-    matches.forEach((m) => {
-      if (picks[m.id] === m.simulatedOutcome) {
-        correctCount += 1;
-      }
-    });
-
-    const basePoints = correctCount * 20;
-    const multiplier = streakDays >= 7 ? 1.5 : streakDays >= 3 ? 1.2 : 1.0;
-    const finalPoints = Math.round(basePoints * multiplier);
-
-    const nextStreak = correctCount >= 3 ? streakDays + 1 : 1;
-    const nextSeasonPoints = seasonPoints + finalPoints;
-
-    setLastEarnedPoints(finalPoints);
-    setStreakDays(nextStreak);
-    setSeasonPoints(nextSeasonPoints);
-    setIsGraded(true);
-
     try {
-      localStorage.setItem(PICKEM_STREAK_KEY, String(nextStreak));
-      localStorage.setItem(PICKEM_POINTS_KEY, String(nextSeasonPoints));
-      if (correctCount >= 4) {
-        const currentCoins = parseInt(localStorage.getItem('predictpro_coins') || '250', 10) || 250;
-        localStorage.setItem('predictpro_coins', String(currentCoins + 200));
-        window.dispatchEvent(new Event('storage'));
-      }
-    } catch {
-      // ignore
-    }
+      const resultsRes = await fetchRealtimeFinishedMatches();
+      const finishedList = Array.isArray(resultsRes) ? resultsRes : [];
+      let settledCount = 0;
+      let correctCount = 0;
 
-    toast.success(
-      `Graded vs Official Scores: ${correctCount}/5 Correct! Earned +${finalPoints} Leaderboard Points.`
-    );
+      const updatedMatches = matches.map((m) => {
+        const found = finishedList.find(
+          (r) =>
+            r.home_team.toLowerCase() === m.homeTeam.toLowerCase() &&
+            r.away_team.toLowerCase() === m.awayTeam.toLowerCase()
+        );
+        if (!found || found.home_score == null || found.away_score == null) {
+          return m;
+        }
+        settledCount += 1;
+        const outcome: PickChoice =
+          found.home_score > found.away_score ? '1' : found.away_score > found.home_score ? '2' : 'X';
+        if (picks[m.id] === outcome) {
+          correctCount += 1;
+        }
+        return {
+          ...m,
+          settledOutcome: outcome,
+          settledScore: `${found.home_score} - ${found.away_score}`,
+        };
+      });
+
+      setMatches(updatedMatches);
+
+      if (settledCount === 0) {
+        toast.info('None of these contest fixtures have reached Full-Time yet. Points award automatically once ESPN settles FT scores.');
+        return;
+      }
+
+      const basePoints = correctCount * 20;
+      const multiplier = streakDays >= 7 ? 1.5 : streakDays >= 3 ? 1.2 : 1.0;
+      const finalPoints = Math.round(basePoints * multiplier);
+      const nextStreak = correctCount >= 3 ? streakDays + 1 : 1;
+      const nextSeasonPoints = seasonPoints + finalPoints;
+
+      setLastEarnedPoints(finalPoints);
+      setStreakDays(nextStreak);
+      setSeasonPoints(nextSeasonPoints);
+      setIsGraded(true);
+
+      try {
+        localStorage.setItem(PICKEM_STREAK_KEY, String(nextStreak));
+        localStorage.setItem(PICKEM_POINTS_KEY, String(nextSeasonPoints));
+        if (correctCount >= 4) {
+          const currentCoins = parseInt(localStorage.getItem('predictpro_coins') || '250', 10) || 250;
+          localStorage.setItem('predictpro_coins', String(currentCoins + 200));
+          window.dispatchEvent(new Event('storage'));
+        }
+      } catch {
+        // ignore
+      }
+
+      toast.success(
+        `Graded ${settledCount} Official FT Scores: ${correctCount}/${settledCount} Correct (+${finalPoints} PTS)!`
+      );
+    } catch {
+      toast.error('Could not check official ESPN scores right now.');
+    }
   };
 
   const handleSendPicksToBetSlip = () => {
@@ -389,89 +371,100 @@ export const PickEmChallengePage: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              {matches.map((match, idx) => {
-                const userPick = picks[match.id];
-                const isCorrect = isGraded && userPick === match.simulatedOutcome;
+              {loadingMatches ? (
+                <div className="rounded-xl border border-border bg-card p-6 text-center text-xs text-muted-foreground">
+                  Syncing real upcoming fixtures for today&apos;s Pick&apos;em card...
+                </div>
+              ) : matches.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-6 text-center text-xs text-muted-foreground">
+                  No upcoming contest fixtures currently scheduled. Check back after the next schedule sync.
+                </div>
+              ) : (
+                matches.map((match, idx) => {
+                  const userPick = picks[match.id];
+                  const isSettled = Boolean(match.settledOutcome);
+                  const isCorrect = isGraded && isSettled && userPick === match.settledOutcome;
 
-                return (
-                  <div
-                    key={match.id}
-                    className="rounded-xl border border-border bg-card p-4 space-y-3"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-muted-foreground">
-                          #{idx + 1}
-                        </span>
-                        <Badge variant="secondary" className="text-[11px]">
-                          {match.league}
-                        </Badge>
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <Timer className="h-3 w-3" />
-                          {match.kickoffLabel}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono text-emerald-400">
-                          AI Model Lean: {match.aiRecommended}
-                        </span>
-                        {isGraded && (
-                          <Badge
-                            className={
-                              isCorrect
-                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-mono'
-                                : 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-mono'
-                            }
-                          >
-                            FT {match.simulatedScore} ({isCorrect ? '+20 PTS' : '0 PTS'})
+                  return (
+                    <div
+                      key={match.id}
+                      className="rounded-xl border border-border bg-card p-4 space-y-3"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-muted-foreground">
+                            #{idx + 1}
+                          </span>
+                          <Badge variant="secondary" className="text-[11px]">
+                            {match.league}
                           </Badge>
-                        )}
-                      </div>
-                    </div>
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <Timer className="h-3 w-3" />
+                            {match.kickoffLabel}
+                          </span>
+                        </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                      <div className="sm:col-span-5">
-                        <div className="text-sm sm:text-base font-bold text-foreground">
-                          {match.homeTeam} <span className="text-muted-foreground font-normal">vs</span>{' '}
-                          {match.awayTeam}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-mono text-emerald-400">
+                            AI Model Lean: {match.aiRecommended}
+                          </span>
+                          {isGraded && isSettled && (
+                            <Badge
+                              className={
+                                isCorrect
+                                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-mono'
+                                  : 'bg-rose-500/20 text-rose-400 border-rose-500/30 font-mono'
+                              }
+                            >
+                              FT {match.settledScore} ({isCorrect ? '+20 PTS' : '0 PTS'})
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
-                      <div className="sm:col-span-7 grid grid-cols-3 gap-2">
-                        {(
-                          [
-                            { code: '1' as PickChoice, label: '1 (Home)', odds: match.homeOdds },
-                            { code: 'X' as PickChoice, label: 'X (Draw)', odds: match.drawOdds },
-                            { code: '2' as PickChoice, label: '2 (Away)', odds: match.awayOdds },
-                          ] as const
-                        ).map((opt) => {
-                          const active = userPick === opt.code;
-                          return (
-                            <button
-                              key={opt.code}
-                              type="button"
-                              onClick={() => handleSelectPick(match.id, opt.code)}
-                              className={`rounded-lg border px-3 py-2 text-left transition-all ${
-                                active
-                                  ? 'border-emerald-500 bg-emerald-500/15 text-foreground shadow-2xs'
-                                  : 'border-border bg-background/60 hover:bg-muted/50 text-muted-foreground'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-bold text-foreground">{opt.label}</span>
-                                <span className="font-mono tabular-nums text-emerald-400 font-semibold">
-                                  {opt.odds.toFixed(2)}
-                                </span>
-                              </div>
-                            </button>
-                          );
-                        })}
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                        <div className="sm:col-span-5">
+                          <div className="text-sm sm:text-base font-bold text-foreground">
+                            {match.homeTeam} <span className="text-muted-foreground font-normal">vs</span>{' '}
+                            {match.awayTeam}
+                          </div>
+                        </div>
+
+                        <div className="sm:col-span-7 grid grid-cols-3 gap-2">
+                          {(
+                            [
+                              { code: '1' as PickChoice, label: '1 (Home)', odds: match.homeOdds },
+                              { code: 'X' as PickChoice, label: 'X (Draw)', odds: match.drawOdds },
+                              { code: '2' as PickChoice, label: '2 (Away)', odds: match.awayOdds },
+                            ] as const
+                          ).map((opt) => {
+                            const active = userPick === opt.code;
+                            return (
+                              <button
+                                key={opt.code}
+                                type="button"
+                                onClick={() => handleSelectPick(match.id, opt.code)}
+                                className={`rounded-lg border px-3 py-2 text-left transition-all ${
+                                  active
+                                    ? 'border-emerald-500 bg-emerald-500/15 text-foreground shadow-2xs'
+                                    : 'border-border bg-background/60 hover:bg-muted/50 text-muted-foreground'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-bold text-foreground">{opt.label}</span>
+                                  <span className="font-mono tabular-nums text-emerald-400 font-semibold">
+                                    {opt.odds.toFixed(2)}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Tie-Breaker & Submit Bar */}

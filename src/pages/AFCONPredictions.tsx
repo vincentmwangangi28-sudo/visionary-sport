@@ -10,20 +10,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CONTINENTAL_DISTRIBUTION_HUBS } from "@/services/geoRegionService";
 import { useGeoRegion } from "@/hooks/useGeoRegion";
+import { usePredictions } from "@/hooks/usePredictions";
+import { formatMatchSlug } from "@/services/sitemapGenerator";
 import { Globe, Trophy, Zap, ArrowUpRight, CheckCircle2, MapPin, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-
-const CONTINENTAL_DERBIES = [
-  { slug: "gor-mahia-vs-afc-leopards", title: "Gor Mahia vs AFC Leopards", league: "Kenya FKF Premier League (Mashemeji Derby)", zone: "East Africa 🇰🇪" },
-  { slug: "simba-sc-vs-young-africans", title: "Simba SC vs Young Africans", league: "Tanzania NBC Premier League (Kariakoo Derby)", zone: "East Africa 🇹🇿" },
-  { slug: "kaizer-chiefs-vs-orlando-pirates", title: "Kaizer Chiefs vs Orlando Pirates", league: "South Africa Betway Premiership (Soweto Derby)", zone: "Southern Africa 🇿🇦" },
-  { slug: "mamelodi-sundowns-vs-orlando-pirates", title: "Mamelodi Sundowns vs Orlando Pirates", league: "CAF Champions League & PSL Title Clash", zone: "Southern Africa 🏆" },
-  { slug: "enyimba-vs-rangers-international", title: "Enyimba vs Rangers International", league: "Nigeria NPFL Oriental Derby", zone: "West Africa 🇳🇬" },
-  { slug: "hearts-of-oak-vs-asante-kotoko", title: "Hearts of Oak vs Asante Kotoko", league: "Ghana Premier League Super Clash", zone: "West Africa 🇬🇭" },
-  { slug: "al-ahly-vs-zamalek", title: "Al Ahly vs Zamalek", league: "Egyptian Premier League & CAF Super Derby", zone: "North Africa 🇪🇬" },
-  { slug: "wydad-ac-vs-raja-casablanca", title: "Wydad AC vs Raja Casablanca", league: "Morocco Botola Pro Casablanca Derby", zone: "North Africa 🇲🇦" },
-  { slug: "tp-mazembe-vs-as-vita-club", title: "TP Mazembe vs AS Vita Club", league: "DR Congo Linafoot Classico", zone: "Central Africa 🇨🇩" },
-];
 
 const AFRICAN_HUBS = CONTINENTAL_DISTRIBUTION_HUBS.filter((h) =>
   ["pan_africa", "east_africa", "west_africa", "southern_africa", "central_africa", "north_africa_middle_east"].includes(h.id)
@@ -32,6 +22,14 @@ const AFRICAN_HUBS = CONTINENTAL_DISTRIBUTION_HUBS.filter((h) =>
 export default function AFCONPredictions() {
   const { regionId, setRegion } = useGeoRegion();
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
+  const { predictions: upcoming7d } = usePredictions(7);
+  const africanUpcoming = upcoming7d
+    .filter((p) =>
+      /kpl|kenya|caf|afcon|africa|nigeria|npfl|ghana|egypt|morocco|psl|south africa|tanzania|uganda/i.test(
+        `${p.league || ''} ${p.home_team} ${p.away_team}`
+      )
+    )
+    .slice(0, 9);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -174,31 +172,46 @@ export default function AFCONPredictions() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {CONTINENTAL_DERBIES.map((derby) => (
-              <Card key={derby.slug} className="border-border/70 hover:border-primary/40 transition-all">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="secondary" className="text-[10px] font-semibold">
-                      {derby.zone}
-                    </Badge>
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                  </div>
-                  <CardTitle className="text-sm font-bold mt-1">{derby.title}</CardTitle>
-                  <CardDescription className="text-xs">{derby.league}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <Link
-                    to={`/predict/${derby.slug}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-                  >
-                    View Poisson Matrix &amp; H2H Odds
-                    <ArrowUpRight className="h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {africanUpcoming.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="p-6 text-center text-xs text-muted-foreground">
+                No scheduled CAF / African league matches found in the live 7-day feed right now. Check the league filter pills above as ESPN publishes upcoming CAF kickoff windows.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {africanUpcoming.map((fixture) => {
+                const slug = fixture.slug || formatMatchSlug(fixture.home_team, fixture.away_team, fixture.match_date);
+                return (
+                  <Card key={fixture.id} className="border-border/70 hover:border-primary/40 transition-all">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-[10px] font-semibold">
+                          {fixture.league}
+                        </Badge>
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                      </div>
+                      <CardTitle className="text-sm font-bold mt-1">
+                        {fixture.home_team} vs {fixture.away_team}
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {new Date(fixture.match_date).toLocaleDateString()}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Link
+                        to={`/predict/${slug}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                      >
+                        View Poisson Matrix &amp; H2H Odds
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* Subregional Coverage Breakdown */}

@@ -10,33 +10,48 @@ import { SEOAuthorityHub } from '@/components/SEOAuthorityHub';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Flame, Clock, Zap, ArrowRight, TrendingUp, Activity } from 'lucide-react';
+import { Flame, Clock, Zap } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
+import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
 export default function SecondHalfGoalsPredictions() {
-  const { data: matches = [] } = usePredictions();
+  const { predictions: matches = [], isLoading } = usePredictions(7);
+  const { addSelections } = useBetSlip();
 
   const secondHalfPicks = useMemo(() => {
-    return matches.slice(0, 8).map((m, idx) => {
-      const shXg = Number((1.62 + (idx % 4) * 0.18).toFixed(2));
-      const over15ShProb = Math.min(81, Math.max(64, Math.round(52 + shXg * 14)));
-      const market = idx % 2 === 0 ? '2nd Half Over 1.5 Goals' : 'Highest Scoring Half: 2nd Half';
-      const odds = Number((1.88 + (idx % 4) * 0.11).toFixed(2));
-      return {
-        id: m.id || `sh-${idx}`,
-        homeTeam: m.homeTeam || ['Liverpool', 'Real Madrid', 'Bayern Munich', 'Arsenal', 'Bayer Leverkusen', 'Barcelona', 'Inter Milan', 'Borussia Dortmund'][idx],
-        awayTeam: m.awayTeam || ['Aston Villa', 'Villarreal', 'Stuttgart', 'Brighton', 'Eintracht Frankfurt', 'Sevilla', 'Atalanta', 'RB Leipzig'][idx],
-        league: m.league || ['Premier League', 'La Liga', 'Bundesliga', 'Premier League', 'Bundesliga', 'La Liga', 'Serie A', 'Bundesliga'][idx],
-        kickoff: m.time || `${15 + idx}:00 UTC`,
-        shXg,
-        over15ShProb,
-        market,
-        odds,
-        lateGoalRate: `${72 + (idx % 5) * 4}%`,
-      };
-    });
+    return [...matches]
+      .sort((a, b) => (b.ai_prediction?.over_25_prob ?? 50) - (a.ai_prediction?.over_25_prob ?? 50))
+      .slice(0, 8)
+      .map((m, idx) => {
+        const o25 = m.ai_prediction?.over_25_prob ?? 55;
+        const shXg = Number((1.15 + (o25 / 100) * 1.15).toFixed(2));
+        const over15ShProb = Math.min(82, Math.max(54, Math.round(o25 + 6)));
+        const market = idx % 2 === 0 ? '2nd Half Over 1.5 Goals' : 'Highest Scoring Half: 2nd Half';
+        const odds = Number(Math.max(1.62, 100 / Math.max(46, over15ShProb - 4)).toFixed(2));
+        const kickoff = m.match_date
+          ? new Date(m.match_date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : 'Upcoming';
+        return {
+          id: m.id,
+          homeTeam: m.home_team,
+          awayTeam: m.away_team,
+          league: m.league,
+          kickoff,
+          matchDate: m.match_date,
+          shXg,
+          over15ShProb,
+          market,
+          odds,
+          lateGoalRate: `${Math.min(88, Math.max(60, Math.round(o25 + 14)))}%`,
+        };
+      });
   }, [matches]);
+
+  const doubleOdds = useMemo(() => {
+    if (secondHalfPicks.length < 2) return null;
+    return (secondHalfPicks[0].odds * secondHalfPicks[1].odds).toFixed(2);
+  }, [secondHalfPicks]);
 
   const schemas = useMemo(
     () => [
@@ -90,10 +105,27 @@ export default function SecondHalfGoalsPredictions() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => toast.success('2nd Half Goals Double added to your slip!')}
+              disabled={secondHalfPicks.length < 2}
+              onClick={() => {
+                const topTwo = secondHalfPicks.slice(0, 2);
+                addSelections(
+                  topTwo.map((p) => ({
+                    matchId: p.id,
+                    match: `${p.homeTeam} vs ${p.awayTeam}`,
+                    homeTeam: p.homeTeam,
+                    awayTeam: p.awayTeam,
+                    league: p.league,
+                    kickoff: p.matchDate,
+                    market: p.market,
+                    odds: p.odds,
+                    confidence: p.over15ShProb,
+                  }))
+                );
+                toast.success('2nd Half Goals Double added to your slip!');
+              }}
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold"
             >
-              <Flame className="w-4 h-4 mr-2" /> Copy Top 2H Over 1.5 Double (3.65x)
+              <Flame className="w-4 h-4 mr-2" /> Copy Top 2H Over 1.5 Double {doubleOdds ? `(${doubleOdds}x)` : ''}
             </Button>
             <Button variant="outline" asChild>
               <Link to="/first-half-goals-predictions">
@@ -106,39 +138,49 @@ export default function SecondHalfGoalsPredictions() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Activity className="w-5 h-5 text-amber-400" /> Today&apos;s Highest 2nd-Half xG Fixtures
+              <Clock className="w-5 h-5 text-amber-400" /> Today&apos;s Highest 2nd-Half xG Fixtures
             </h2>
             <span className="text-xs text-muted-foreground">Sorted by 46&apos;–90&apos; Expected Goals</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {secondHalfPicks.map((pick) => (
-              <Card key={pick.id} className="p-5 border-border/60 bg-card/70 hover:border-amber-500/40 transition-all">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                  <span className="font-medium text-amber-400">{pick.league}</span>
-                  <span>{pick.kickoff}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-bold text-base">
-                      {pick.homeTeam} vs {pick.awayTeam}
+          {isLoading && secondHalfPicks.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              Loading real scheduled 2nd-half goal projections...
+            </Card>
+          ) : secondHalfPicks.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-muted-foreground">
+              No scheduled fixtures available in the 7-day feed right now.
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {secondHalfPicks.map((pick) => (
+                <Card key={pick.id} className="p-5 border-border/60 bg-card/70 hover:border-amber-500/40 transition-all">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span className="font-medium text-amber-400">{pick.league}</span>
+                    <span>{pick.kickoff}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-bold text-base">
+                        {pick.homeTeam} vs {pick.awayTeam}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        2nd Half xG: <strong className="text-foreground">{pick.shXg}</strong> • 75&apos;+ Goal Rate: <strong className="text-amber-400">{pick.lateGoalRate}</strong>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      2nd Half xG: <strong className="text-foreground">{pick.shXg}</strong> • 75&apos;+ Goal Rate: <strong className="text-amber-400">{pick.lateGoalRate}</strong>
+                    <div className="text-right">
+                      <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold">
+                        {pick.market} @ {pick.odds}
+                      </Badge>
+                      <div className="text-[11px] text-amber-400 font-medium mt-1">
+                        {pick.over15ShProb}% AI Probability
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold">
-                      {pick.market} @ {pick.odds}
-                    </Badge>
-                    <div className="text-[11px] text-amber-400 font-medium mt-1">
-                      {pick.over15ShProb}% AI Probability
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
         <SEOAuthorityHub />

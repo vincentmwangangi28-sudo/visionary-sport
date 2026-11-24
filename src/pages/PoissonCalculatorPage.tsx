@@ -39,15 +39,18 @@ function dixonColesTau(h: number, a: number, lambdaH: number, lambdaA: number, r
 
 export default function PoissonCalculatorPage() {
   const [searchParams] = useSearchParams();
-  const { predictions } = usePredictions(1);
+  const { predictions } = usePredictions(7);
   const { addSelection, setIsOpen } = useBetSlip();
 
-  const [homeTeam, setHomeTeam] = useState<string>(() => searchParams.get('home') || 'Arsenal');
-  const [awayTeam, setAwayTeam] = useState<string>(() => searchParams.get('away') || 'Chelsea');
-  const [league, setLeague] = useState<string>(() => searchParams.get('league') || 'Premier League');
+  const [homeTeam, setHomeTeam] = useState<string>(() => searchParams.get('home') || 'Home Team');
+  const [awayTeam, setAwayTeam] = useState<string>(() => searchParams.get('away') || 'Away Team');
+  const [league, setLeague] = useState<string>(() => searchParams.get('league') || 'Global Matchday');
+  const [hasAutoHydrated, setHasAutoHydrated] = useState<boolean>(
+    () => Boolean(searchParams.get('home') || searchParams.get('away'))
+  );
   const [homeXG, setHomeXG] = useState<number>(() => {
     const parsed = parseFloat(searchParams.get('hxg') || '');
-    return !Number.isNaN(parsed) && parsed >= 0.2 && parsed <= 4.5 ? parsed : 1.85;
+    return !Number.isNaN(parsed) && parsed >= 0.2 && parsed <= 4.5 ? parsed : 1.65;
   });
   const [awayXG, setAwayXG] = useState<number>(() => {
     const parsed = parseFloat(searchParams.get('axg') || '');
@@ -68,6 +71,20 @@ export default function PoissonCalculatorPage() {
     if (!Number.isNaN(qHxg) && qHxg >= 0.2 && qHxg <= 4.5) setHomeXG(qHxg);
     if (!Number.isNaN(qAxg) && qAxg >= 0.2 && qAxg <= 4.5) setAwayXG(qAxg);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!hasAutoHydrated && predictions.length > 0) {
+      const first = predictions.find((p) => p.status !== 'finished') || predictions[0];
+      const hOdds = first.home_odds || 1.9;
+      const aOdds = first.away_odds || 3.1;
+      setHomeTeam(first.home_team);
+      setAwayTeam(first.away_team);
+      setLeague(first.competition || first.league || 'Global Matchday');
+      setHomeXG(Number(Math.min(3.4, Math.max(0.65, first.home_xg || 2.55 / Math.pow(hOdds, 0.65))).toFixed(2)));
+      setAwayXG(Number(Math.min(3.1, Math.max(0.45, first.away_xg || 2.25 / Math.pow(aOdds, 0.65))).toFixed(2)));
+      setHasAutoHydrated(true);
+    }
+  }, [predictions, hasAutoHydrated]);
 
   // Compute 0-5 exact score probability matrix with Dixon-Coles tau adjustment
   const matrix = useMemo(() => {
@@ -252,22 +269,29 @@ Powered by PredictPro AI Poisson Calculator: https://predictpro.guru/poisson-cal
             )}
           </div>
 
-          {/* Presets Strip */}
-          <div className="flex flex-wrap items-center gap-2 text-xs pt-3 border-t border-slate-800">
-            <span className="text-slate-400 font-semibold">Match Presets:</span>
-            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Arsenal', 'Chelsea', 1.85, 1.15, 'Premier League')}>
-              Arsenal vs Chelsea (1.85 vs 1.15)
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Real Madrid', 'Barcelona', 2.30, 2.10, 'LaLiga')}>
-              El Clásico (2.30 vs 2.10)
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Bayern Munich', 'Dortmund', 2.80, 1.40, 'Bundesliga')}>
-              Der Klassiker (2.80 vs 1.40)
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white" onClick={() => setPreset('Gor Mahia', 'AFC Leopards', 1.25, 0.65, 'FKF Premier League')}>
-              Mashemeji Derby (1.25 vs 0.65)
-            </Button>
-          </div>
+          {/* Live Match Presets Strip */}
+          {predictions.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 text-xs pt-3 border-t border-slate-800">
+              <span className="text-slate-400 font-semibold">Live Match Presets:</span>
+              {predictions.slice(0, 4).map((p) => {
+                const hOdds = p.home_odds || 1.9;
+                const aOdds = p.away_odds || 3.1;
+                const calcHomeXg = Number(Math.min(3.4, Math.max(0.65, p.home_xg || 2.55 / Math.pow(hOdds, 0.65))).toFixed(2));
+                const calcAwayXg = Number(Math.min(3.1, Math.max(0.45, p.away_xg || 2.25 / Math.pow(aOdds, 0.65))).toFixed(2));
+                return (
+                  <Button
+                    key={p.id}
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white"
+                    onClick={() => setPreset(p.home_team, p.away_team, calcHomeXg, calcAwayXg, p.competition || p.league)}
+                  >
+                    {p.home_team} vs {p.away_team} ({calcHomeXg} vs {calcAwayXg})
+                  </Button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Input Parameters Grid */}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   ShieldCheck,
@@ -23,7 +24,7 @@ import {
 import {
   PHASE13_CURRENCIES,
   SupportedCurrency,
-  HEDGE_PRESET_SCENARIOS,
+  buildHedgeScenariosFromPredictions,
   HedgePresetScenario,
   HedgeStrategyMode,
   StakeRoundingStep,
@@ -32,27 +33,27 @@ import {
 
 export const CashOutHedgeCalculatorPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { predictions } = usePredictions();
+
+  const liveScenarios = useMemo(
+    () => buildHedgeScenariosFromPredictions(predictions),
+    [predictions]
+  );
 
   const [currency, setCurrency] = useState<SupportedCurrency>('USD');
-  const [selectedPresetId, setSelectedPresetId] = useState<string>(HEDGE_PRESET_SCENARIOS[0].id);
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('');
   const [marketType, setMarketType] = useState<'2way' | '3way'>('2way');
   const [strategy, setStrategy] = useState<HedgeStrategyMode>('equal_profit');
   const [biasPct, setBiasPct] = useState<number>(50);
   const [roundingStep, setRoundingStep] = useState<StakeRoundingStep>(0);
 
-  const [finalFixture, setFinalFixture] = useState<string>(HEDGE_PRESET_SCENARIOS[0].finalFixture);
-  const [homeTeam, setHomeTeam] = useState<string>(HEDGE_PRESET_SCENARIOS[0].homeTeam);
-  const [awayTeam, setAwayTeam] = useState<string>(HEDGE_PRESET_SCENARIOS[0].awayTeam);
-  const [league, setLeague] = useState<string>(HEDGE_PRESET_SCENARIOS[0].league);
-  const [originalSelection, setOriginalSelection] = useState<string>(
-    HEDGE_PRESET_SCENARIOS[0].originalSelection
-  );
-  const [hedgeSelectionLabel, setHedgeSelectionLabel] = useState<string>(
-    HEDGE_PRESET_SCENARIOS[0].hedgeSelectionLabel
-  );
-  const [secondaryHedgeLabel, setSecondaryHedgeLabel] = useState<string>(
-    'Away Win (2) Counter-Hedge'
-  );
+  const [finalFixture, setFinalFixture] = useState<string>('Custom Final-Leg Fixture');
+  const [homeTeam, setHomeTeam] = useState<string>('Home Team');
+  const [awayTeam, setAwayTeam] = useState<string>('Away Team');
+  const [league, setLeague] = useState<string>('League Fixture');
+  const [originalSelection, setOriginalSelection] = useState<string>('Home Win (1)');
+  const [hedgeSelectionLabel, setHedgeSelectionLabel] = useState<string>('Away or Draw (X2)');
+  const [secondaryHedgeLabel, setSecondaryHedgeLabel] = useState<string>('Away Win (2) Counter-Hedge');
 
   const [originalStake, setOriginalStake] = useState<string>('25');
   const [accaTotalOdds, setAccaTotalOdds] = useState<string>('14.40');
@@ -62,7 +63,7 @@ export const CashOutHedgeCalculatorPage: React.FC = () => {
 
   const currencyMeta = PHASE13_CURRENCIES[currency];
 
-  const applyPreset = (preset: HedgePresetScenario) => {
+  const applyPreset = (preset: HedgePresetScenario, silent = false) => {
     setSelectedPresetId(preset.id);
     setMarketType(preset.hedgeMarketType);
     setFinalFixture(preset.finalFixture);
@@ -82,8 +83,16 @@ export const CashOutHedgeCalculatorPage: React.FC = () => {
     if (preset.hedgeOddsSecondary) {
       setHedgeOddsSecondary(preset.hedgeOddsSecondary.toFixed(2));
     }
-    toast.success(`Loaded scenario: ${preset.title}`);
+    if (!silent) {
+      toast.success(`Loaded scenario: ${preset.title}`);
+    }
   };
+
+  useEffect(() => {
+    if (!selectedPresetId && liveScenarios.length > 0) {
+      applyPreset(liveScenarios[0], true);
+    }
+  }, [liveScenarios, selectedPresetId]);
 
   const handleCurrencyChange = (nextCur: SupportedCurrency) => {
     const prevRate = PHASE13_CURRENCIES[currency].rateFromUsd;
@@ -248,32 +257,38 @@ export const CashOutHedgeCalculatorPage: React.FC = () => {
               Load Live Final-Leg Ticket Preset:
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-              {HEDGE_PRESET_SCENARIOS.map((preset) => {
-                const isSelected = selectedPresetId === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => applyPreset(preset)}
-                    className={`text-left p-3 rounded-lg border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border bg-background/60 hover:border-border/90'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground mb-1">
-                      <span className="font-semibold text-foreground truncate">{preset.finalFixture}</span>
-                      <span className="font-mono tabular-nums text-emerald-500 font-bold shrink-0">
-                        {preset.accaTotalOdds.toFixed(1)}x
-                      </span>
-                    </div>
-                    <div className="text-xs font-bold text-foreground truncate">{preset.title}</div>
-                    <div className="text-[11px] text-muted-foreground truncate mt-0.5">
-                      {preset.originalSelection} vs {preset.hedgeSelectionLabel}
-                    </div>
-                  </button>
-                );
-              })}
+              {liveScenarios.length === 0 ? (
+                <div className="col-span-full text-xs text-muted-foreground py-2">
+                  Loading live upcoming final-leg presets from ESPN schedule...
+                </div>
+              ) : (
+                liveScenarios.map((preset) => {
+                  const isSelected = selectedPresetId === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => applyPreset(preset)}
+                      className={`text-left p-3 rounded-lg border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border bg-background/60 hover:border-border/90'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground mb-1">
+                        <span className="font-semibold text-foreground truncate">{preset.finalFixture}</span>
+                        <span className="font-mono tabular-nums text-emerald-500 font-bold shrink-0">
+                          {preset.accaTotalOdds.toFixed(1)}x
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-foreground truncate">{preset.title}</div>
+                      <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+                        {preset.originalSelection} vs {preset.hedgeSelectionLabel}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>

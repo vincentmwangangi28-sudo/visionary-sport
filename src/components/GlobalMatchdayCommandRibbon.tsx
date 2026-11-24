@@ -21,81 +21,6 @@ interface LiveRibbonItem {
   prediction: string;
 }
 
-const DEFAULT_LIVE_RIBBON_MATCHES: LiveRibbonItem[] = [
-  {
-    id: 'live-epl-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    homeScore: 2,
-    awayScore: 1,
-    minute: "68'",
-    isLive: true,
-    confidence: 86,
-    prediction: 'Home Win',
-  },
-  {
-    id: 'live-laliga-rma-bar',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    homeScore: 1,
-    awayScore: 1,
-    minute: "54'",
-    isLive: true,
-    confidence: 88,
-    prediction: 'Over 2.5 Goals',
-  },
-  {
-    id: 'live-seriea-int-juv',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Juventus',
-    league: 'Serie A',
-    homeScore: 1,
-    awayScore: 0,
-    minute: 'HT',
-    isLive: true,
-    confidence: 82,
-    prediction: 'Home Win',
-  },
-  {
-    id: 'live-bundesliga-bay-bvb',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    homeScore: 3,
-    awayScore: 1,
-    minute: "62'",
-    isLive: true,
-    confidence: 89,
-    prediction: 'Home Win',
-  },
-  {
-    id: 'live-caf-ahl-pir',
-    homeTeam: 'Al Ahly SC',
-    awayTeam: 'Orlando Pirates',
-    league: 'CAF Champions League',
-    homeScore: 1,
-    awayScore: 0,
-    minute: "48'",
-    isLive: true,
-    confidence: 84,
-    prediction: 'Home Win',
-  },
-  {
-    id: 'live-kpl-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    homeScore: 2,
-    awayScore: 0,
-    minute: "59'",
-    isLive: true,
-    confidence: 85,
-    prediction: 'Home Win',
-  },
-];
-
 function formatMatchSlug(homeTeam: string, awayTeam: string): string {
   const clean = (name: string) =>
     name
@@ -108,87 +33,60 @@ function formatMatchSlug(homeTeam: string, awayTeam: string): string {
 export const GlobalMatchdayCommandRibbon: React.FC = () => {
   const { predictions, data } = usePredictions(1);
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'tv'>('all');
-  const [liveItems, setLiveItems] = useState<LiveRibbonItem[]>(DEFAULT_LIVE_RIBBON_MATCHES);
+  const [liveItems, setLiveItems] = useState<LiveRibbonItem[]>([]);
   const [liveMap, setLiveMap] = useState<
     Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }>
-  >(() => {
-    const initial: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
-    for (const m of DEFAULT_LIVE_RIBBON_MATCHES) {
-      initial[`${m.homeTeam.toLowerCase()}|${m.awayTeam.toLowerCase()}`] = {
-        homeScore: m.homeScore,
-        awayScore: m.awayScore,
-        minute: m.minute,
-        isLive: m.isLive,
-      };
-    }
-    return initial;
-  });
+  >({});
 
   useEffect(() => {
     if (
       typeof window !== 'undefined' &&
-      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
+      /Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent)
     ) {
       return;
     }
 
     let cancelled = false;
-    let triggered = false;
-    const loadLiveRibbon = () => {
-      if (triggered || cancelled) return;
-      triggered = true;
-      fetch('/api/football?type=live')
-        .then((r) => (r.ok ? r.json() : null))
-        .then((json) => {
-          if (cancelled || !Array.isArray(json?.matches)) return;
-          const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
-          const fetchedLive: LiveRibbonItem[] = [];
-          for (const m of json.matches) {
-            const isLive = m.status === 'live' || m.status === 'halftime';
-            const minStr = m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE';
-            const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
-            map[key] = {
+    fetch('/api/football?type=live')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (cancelled || !Array.isArray(json?.matches)) return;
+        const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
+        const fetchedLive: LiveRibbonItem[] = [];
+        for (const m of json.matches) {
+          const isLive = m.status === 'live' || m.status === 'halftime';
+          const minStr = m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE';
+          const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
+          map[key] = {
+            homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
+            awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
+            minute: minStr,
+            isLive,
+          };
+          if (isLive) {
+            fetchedLive.push({
+              id: String(m.id),
+              homeTeam: String(m.home_team),
+              awayTeam: String(m.away_team),
+              league: String(m.league || 'Football'),
               homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
               awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
               minute: minStr,
-              isLive,
-            };
-            if (isLive) {
-              fetchedLive.push({
-                id: String(m.id),
-                homeTeam: String(m.home_team),
-                awayTeam: String(m.away_team),
-                league: String(m.league || 'Football'),
-                homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
-                awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
-                minute: minStr,
-                isLive: true,
-                confidence: typeof m.confidence === 'number' ? m.confidence : 82,
-                prediction: String(m.prediction || 'Home Win'),
-              });
-            }
+              isLive: true,
+              confidence: typeof m.confidence === 'number' ? m.confidence : 82,
+              prediction: String(m.prediction || 'Home Win'),
+            });
           }
-          setLiveMap((prev) => ({ ...prev, ...map }));
-          if (fetchedLive.length > 0) {
-            setLiveItems(fetchedLive.slice(0, 10));
-          }
-        })
-        .catch(() => {
-          // silent fallback
-        });
-    };
-
-    window.addEventListener('scroll', loadLiveRibbon, { passive: true, once: true });
-    window.addEventListener('pointerdown', loadLiveRibbon, { passive: true, once: true });
-    window.addEventListener('touchstart', loadLiveRibbon, { passive: true, once: true });
-    window.addEventListener('keydown', loadLiveRibbon, { passive: true, once: true });
+        }
+        setLiveMap(map);
+        setLiveItems(fetchedLive.slice(0, 10));
+      })
+      .catch(() => {
+        // silent fallback
+      });
 
     return () => {
       cancelled = true;
-      window.removeEventListener('scroll', loadLiveRibbon);
-      window.removeEventListener('pointerdown', loadLiveRibbon);
-      window.removeEventListener('touchstart', loadLiveRibbon);
-      window.removeEventListener('keydown', loadLiveRibbon);
     };
   }, []);
 
@@ -270,7 +168,14 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         {/* Center: Compact Match Ticker */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-1 min-w-0 py-1">
           {filterMode === 'live'
-            ? liveItems.map((m) => (
+            ? liveItems.length === 0 ? (
+                <Link
+                  to="/live"
+                  className="text-xs text-muted-foreground hover:text-foreground px-2 py-1"
+                >
+                  No live fixtures in play right now — view Upcoming or 2D Live Center
+                </Link>
+              ) : liveItems.map((m) => (
                 <Link
                   key={m.id}
                   to="/live"

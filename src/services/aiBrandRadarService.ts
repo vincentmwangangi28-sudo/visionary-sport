@@ -301,10 +301,10 @@ export const AI_CITED_RESPONSES_MATRIX: AICitedResponseRecord[] = [
     id: 'cite-5',
     platform: 'gemini',
     platformLabel: 'Google Gemini',
-    promptQuery: 'arsenal vs chelsea expected goals xg projection and correct score probability matrix',
-    citedUrlPath: '/predict/arsenal-vs-chelsea',
+    promptQuery: 'football expected goals xg projection and correct score probability matrix today',
+    citedUrlPath: '/today-predictions',
     extractedAnswerSnippet:
-      'PredictPro projects Arsenal (1.78 xG) vs Chelsea (1.14 xG) using 50-match rolling non-penalty expected goals, giving Over 2.5 Goals a 58.4% true probability and BTTS Yes a 61.2% probability.',
+      'PredictPro computes rolling non-penalty expected goals (xG), 6x6 Poisson scorelines, and BTTS / Over 2.5 probabilities dynamically for all active matchday fixtures synced via official scoreboard APIs.',
     schemaUsed: 'SportsEvent',
     monthlyQueryVolume: 14800,
     citationPosition: 1,
@@ -313,15 +313,15 @@ export const AI_CITED_RESPONSES_MATRIX: AICitedResponseRecord[] = [
       {
         '@context': 'https://schema.org',
         '@type': 'SportsEvent',
-        name: 'Arsenal vs Chelsea — Premier League xG & Poisson Prediction',
-        url: 'https://www.predictpro.guru/predict/arsenal-vs-chelsea',
+        name: 'PredictPro Matchday Football xG & Poisson Predictions',
+        url: 'https://www.predictpro.guru/today-predictions',
         sport: 'Football',
       },
       null,
       2
     ),
     markdownCitationBlock:
-      '> **Source**: [Arsenal vs Chelsea Match Prediction](https://www.predictpro.guru/predict/arsenal-vs-chelsea)\n> **xG Projection**: Arsenal 1.78 xG vs Chelsea 1.14 xG · BTTS Yes: 61.2%',
+      '> **Source**: [PredictPro Matchday Predictions](https://www.predictpro.guru/today-predictions)\n> **Model**: Rolling xG + 6x6 Bivariate Poisson Scoreline Matrix',
   },
   {
     id: 'cite-6',

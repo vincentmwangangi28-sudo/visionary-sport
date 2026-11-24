@@ -21,6 +21,8 @@ export interface TeamStreak {
   streakDescription: string; // "Over 2.5 goals in 7 consecutive fixtures"
   hitRateLast10: number; // e.g. 90
   
+  hasRealNextMatch?: boolean;
+
   // Next match details
   nextMatch: {
     opponent: string;

@@ -49,6 +49,54 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
 
   try {
     switch (cleanTask) {
+      case 'sync-live-fixtures':
+      case 'sync-fixtures':
+      case 'live-fixtures': {
+        const {
+          invalidateFootballCaches,
+          fetchServerUpcomingFixtures,
+          fetchServerLiveMatches,
+          fetchServerFinishedResults,
+        } = await import('./footballHandler.ts');
+        invalidateFootballCaches();
+        const [upcoming, liveAll, finished] = await Promise.all([
+          fetchServerUpcomingFixtures(),
+          fetchServerLiveMatches(),
+          fetchServerFinishedResults(),
+        ]);
+        const inPlayCount = liveAll.filter((m) => m.status === 'live' || m.status === 'halftime').length;
+        try {
+          const fs = await import('fs');
+          const snapDir = path.join(process.cwd(), '.data');
+          if (!fs.existsSync(snapDir)) fs.mkdirSync(snapDir, { recursive: true });
+          fs.writeFileSync(
+            path.join(snapDir, 'live-fixtures-snapshot.json'),
+            JSON.stringify({
+              updatedAt: executedAt,
+              upcomingCount: upcoming.length,
+              liveInPlayCount: inPlayCount,
+              finishedCount: finished.length,
+            }),
+            'utf-8'
+          );
+        } catch {
+          // ignore snapshot persistence errors in read-only runtimes
+        }
+        return {
+          success: true,
+          job: 'sync-live-fixtures',
+          schedule: '*/5 * * * * (Every 5 Mins)',
+          status: `synced_${upcoming.length}_upcoming_${inPlayCount}_live_${finished.length}_finished`,
+          executedAt,
+          durationMs: Date.now() - start,
+          data: {
+            upcomingCount: upcoming.length,
+            liveInPlayCount: inPlayCount,
+            finishedCount: finished.length,
+          },
+        };
+      }
+
       case 'google-crawl':
       case 'indexing': {
         const baseUrl = process.env.SITE_URL || 'https://predictpro.guru';
@@ -191,8 +239,12 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
             data,
           };
         }
-        const { handleFootballRequest } = await import('./footballHandler.ts');
-        const liveData = await handleFootballRequest({ type: 'live' });
+        const { handleFootballRequest, invalidateFootballCaches } = await import('./footballHandler.ts');
+        invalidateFootballCaches();
+        const [liveData, resultsData] = await Promise.all([
+          handleFootballRequest({ type: 'live' }),
+          handleFootballRequest({ type: 'results' }),
+        ]);
         return {
           success: true,
           job: 'settle-prediction-results',
@@ -200,7 +252,10 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
           status: 'settled_memory_cache',
           executedAt,
           durationMs: Date.now() - start,
-          data: { liveFixturesChecked: Array.isArray(liveData?.matches) ? liveData.matches.length : 0 },
+          data: {
+            liveFixturesChecked: Array.isArray(liveData?.matches) ? liveData.matches.length : 0,
+            finishedResultsVerified: Array.isArray(resultsData?.results) ? resultsData.results.length : 0,
+          },
         };
       }
 
@@ -222,7 +277,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
             data,
           };
         }
-        const { handleFootballRequest } = await import('./footballHandler.ts');
+        const { handleFootballRequest, invalidateFootballCaches } = await import('./footballHandler.ts');
+        invalidateFootballCaches();
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const scannedList = upcomingData?.fixtures || upcomingData?.matches || [];
         return {
@@ -269,7 +325,8 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'sync':
       case 'daily-predictions':
       case 'daily': {
-        const { handleFootballRequest } = await import('./footballHandler.ts');
+        const { handleFootballRequest, invalidateFootballCaches } = await import('./footballHandler.ts');
+        invalidateFootballCaches();
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const upcomingList = upcomingData?.fixtures || upcomingData?.matches || [];
         if (IS_CUSTOM_SUPABASE) {
@@ -538,11 +595,15 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'live-momentum':
       case 'momentum':
       case 'late-goals': {
-        const { handleFootballRequest } = await import('./footballHandler.ts');
+        const { handleFootballRequest, invalidateFootballCaches } = await import('./footballHandler.ts');
+        invalidateFootballCaches();
         const liveData: any = await handleFootballRequest({ type: 'live' });
         const liveList = liveData?.matches || liveData?.fixtures || [];
-        const count = Array.isArray(liveList) ? liveList.length : 6;
-        const surges = Math.max(2, Math.ceil(count * 0.35));
+        const inPlayOnly = Array.isArray(liveList)
+          ? liveList.filter((m: any) => m.status === 'live' || m.status === 'halftime')
+          : [];
+        const count = inPlayOnly.length;
+        const surges = count > 0 ? Math.max(1, Math.ceil(count * 0.35)) : 0;
         return {
           success: true,
           job: 'live-momentum-late-goal-scanner',
@@ -563,7 +624,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
         const { handleFootballRequest } = await import('./footballHandler.ts');
         const upcomingData: any = await handleFootballRequest({ type: 'upcoming' });
         const upcomingList = upcomingData?.fixtures || upcomingData?.matches || [];
-        const count = Array.isArray(upcomingList) ? upcomingList.length : 18;
+        const count = Array.isArray(upcomingList) ? upcomingList.length : 0;
         return {
           success: true,
           job: 'referee-corners-cards-prop-sync',
@@ -582,6 +643,7 @@ export async function handleCronTask(taskName: string): Promise<CronExecutionRes
       case 'all':
       case 'cron-all': {
         const tasksToRun = [
+          'sync-live-fixtures',
           'sitemap',
           'google-crawl',
           'settle-results',

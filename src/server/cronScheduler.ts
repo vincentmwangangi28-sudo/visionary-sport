@@ -73,6 +73,14 @@ const STATE_FILE_PATH = path.join(process.cwd(), '.data', 'cron-scheduler-state.
 
 const JOB_DEFINITIONS: ScheduledJobConfig[] = [
   {
+    id: 'sync-live-fixtures',
+    name: 'Real Live & 7-Day ESPN Fixtures Sync',
+    category: 'System',
+    intervalMs: 5 * 60 * 1000, // 5 mins
+    scheduleDisplay: '*/5 * * * * (Every 5 Mins)',
+    enabled: true,
+  },
+  {
     id: 'settle-results',
     name: 'Prediction Results Settlement',
     category: 'Settlement',
@@ -269,6 +277,10 @@ class AutonomousCronScheduler {
         next.setUTCDate(next.getUTCDate() + 1);
       }
       return next.toISOString();
+    }
+
+    if (config.intervalMs <= 30 * 60 * 1000) {
+      return new Date(now.getTime() + 1500).toISOString();
     }
 
     return new Date(now.getTime() + config.intervalMs).toISOString();
@@ -664,12 +676,13 @@ class AutonomousCronScheduler {
     this.startedAt = new Date().toISOString();
     console.log('[AutonomousCronScheduler] Starting 24/7 background cron orchestrator');
 
-    // Initial tick after 10s warmup
+    // Immediate non-blocking initial live fixture sync & tick warmup
     setTimeout(() => {
+      this.runJob('sync-live-fixtures').catch(() => {});
       this.tick();
       this.performKeepalivePing();
       this.checkAndReinitializeStalledTasks();
-    }, 10000);
+    }, 1500);
 
     // Heartbeat every 30 seconds
     this.timer = setInterval(() => {

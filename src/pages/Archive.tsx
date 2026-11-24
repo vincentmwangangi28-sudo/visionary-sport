@@ -55,198 +55,9 @@ export interface ArchivedPrediction {
   profit_units: number; // based on 1.0 unit stake
 }
 
-function recentIsoDate(daysAgo: number, hourUtc = 19): string {
-  const d = new Date(Date.now() - daysAgo * 86400000);
-  d.setUTCHours(hourUtc, 0, 0, 0);
-  return d.toISOString();
-}
-
-const HISTORICAL_VERIFIED_DATA: ArchivedPrediction[] = [
-  {
-    id: 'espn-fin-401879272',
-    match: 'Manchester City vs Sunderland',
-    home_team: 'Manchester City',
-    away_team: 'Sunderland',
-    league: 'Premier League',
-    match_date: '2026-09-20T13:00:00Z',
-    market: '1X2 (Home Win)',
-    pick: 'Manchester City Win',
-    odds: 1.35,
-    confidence: 88,
-    final_score: '5 - 3',
-    result: 'won',
-    profit_units: 0.35,
-  },
-  {
-    id: 'espn-fin-401879276',
-    match: 'AFC Bournemouth vs Liverpool',
-    home_team: 'AFC Bournemouth',
-    away_team: 'Liverpool',
-    league: 'Premier League',
-    match_date: '2026-09-20T13:00:00Z',
-    market: '1X2 (Away Win)',
-    pick: 'Liverpool Win',
-    odds: 1.72,
-    confidence: 82,
-    final_score: '0 - 1',
-    result: 'won',
-    profit_units: 0.72,
-  },
-  {
-    id: 'espn-fin-401882859',
-    match: 'Sevilla vs Barcelona',
-    home_team: 'Sevilla',
-    away_team: 'Barcelona',
-    league: 'La Liga',
-    match_date: '2026-09-19T19:00:00Z',
-    market: '1X2 (Away Win)',
-    pick: 'Barcelona Win',
-    odds: 1.78,
-    confidence: 84,
-    final_score: '1 - 3',
-    result: 'won',
-    profit_units: 0.78,
-  },
-  {
-    id: 'espn-fin-401882865',
-    match: 'Atlético Madrid vs Real Madrid',
-    home_team: 'Atlético Madrid',
-    away_team: 'Real Madrid',
-    league: 'La Liga',
-    match_date: '2026-09-20T14:15:00Z',
-    market: 'Both Teams to Score',
-    pick: 'BTTS - Yes',
-    odds: 1.68,
-    confidence: 81,
-    final_score: '2 - 1',
-    result: 'won',
-    profit_units: 0.68,
-  },
-  {
-    id: 'espn-fin-401874757',
-    match: 'Juventus vs Atalanta',
-    home_team: 'Juventus',
-    away_team: 'Atalanta',
-    league: 'Serie A',
-    match_date: '2026-09-20T16:00:00Z',
-    market: '1X2 (Home Win)',
-    pick: 'Juventus Win',
-    odds: 2.05,
-    confidence: 77,
-    final_score: '2 - 0',
-    result: 'won',
-    profit_units: 1.05,
-  },
-  {
-    id: 'espn-fin-401874944',
-    match: 'AC Milan vs Lecce',
-    home_team: 'AC Milan',
-    away_team: 'Lecce',
-    league: 'Serie A',
-    match_date: '2026-09-20T18:45:00Z',
-    market: '1X2 (Home Win)',
-    pick: 'AC Milan Win',
-    odds: 1.48,
-    confidence: 85,
-    final_score: '3 - 0',
-    result: 'won',
-    profit_units: 0.48,
-  },
-  {
-    id: 'espn-fin-401884788',
-    match: 'Bayer Leverkusen vs RB Leipzig',
-    home_team: 'Bayer Leverkusen',
-    away_team: 'RB Leipzig',
-    league: 'Bundesliga',
-    match_date: '2026-09-20T13:30:00Z',
-    market: '1X2 (Home Win)',
-    pick: 'Bayer Leverkusen Win',
-    odds: 1.92,
-    confidence: 79,
-    final_score: '2 - 0',
-    result: 'won',
-    profit_units: 0.92,
-  },
-  {
-    id: 'espn-fin-401884789',
-    match: 'VfB Stuttgart vs Borussia Dortmund',
-    home_team: 'VfB Stuttgart',
-    away_team: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    match_date: '2026-09-19T16:30:00Z',
-    market: '1X2 (Away Win)',
-    pick: 'Borussia Dortmund Win',
-    odds: 2.35,
-    confidence: 74,
-    final_score: '0 - 1',
-    result: 'won',
-    profit_units: 1.35,
-  },
-  {
-    id: 'espn-fin-401876449',
-    match: 'Marseille vs Paris Saint-Germain',
-    home_team: 'Marseille',
-    away_team: 'Paris Saint-Germain',
-    league: 'Ligue 1',
-    match_date: '2026-09-20T18:45:00Z',
-    market: '1X2 (Away Win)',
-    pick: 'Paris Saint-Germain Win',
-    odds: 1.88,
-    confidence: 81,
-    final_score: '1 - 2',
-    result: 'won',
-    profit_units: 0.88,
-  },
-  {
-    id: 'espn-fin-401879274',
-    match: 'Brighton & Hove Albion vs Arsenal',
-    home_team: 'Brighton & Hove Albion',
-    away_team: 'Arsenal',
-    league: 'Premier League',
-    match_date: '2026-09-19T14:00:00Z',
-    market: '1X2 (Away Win)',
-    pick: 'Arsenal Win',
-    odds: 1.85,
-    confidence: 76,
-    final_score: '3 - 0',
-    result: 'lost',
-    profit_units: -1.0,
-  },
-  {
-    id: 'espn-fin-401874753',
-    match: 'AS Roma vs Internazionale',
-    home_team: 'AS Roma',
-    away_team: 'Internazionale',
-    league: 'Serie A',
-    match_date: '2026-09-19T16:00:00Z',
-    market: 'Both Teams to Score',
-    pick: 'BTTS - Yes',
-    odds: 1.74,
-    confidence: 80,
-    final_score: '2 - 2',
-    result: 'won',
-    profit_units: 0.74,
-  },
-  {
-    id: 'espn-fin-401879269',
-    match: 'Tottenham Hotspur vs Aston Villa',
-    home_team: 'Tottenham Hotspur',
-    away_team: 'Aston Villa',
-    league: 'Premier League',
-    match_date: '2026-09-19T11:30:00Z',
-    market: 'Over/Under 2.5',
-    pick: 'Over 2.5 Goals',
-    odds: 1.62,
-    confidence: 83,
-    final_score: '2 - 3',
-    result: 'won',
-    profit_units: 0.62,
-  },
-];
-
 export default function Archive() {
-  const [items, setItems] = useState<ArchivedPrediction[]>(HISTORICAL_VERIFIED_DATA);
-  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<ArchivedPrediction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [leagueFilter, setLeagueFilter] = useState('all');
   const [marketFilter, setMarketFilter] = useState('all');
@@ -311,13 +122,15 @@ export default function Archive() {
 
         if (collected.length > 0) {
           const seen = new Set<string>();
-          const deduped = [...collected, ...HISTORICAL_VERIFIED_DATA].filter((item) => {
+          const deduped = collected.filter((item) => {
             const key = item.match.toLowerCase();
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
           });
           setItems(deduped);
+        } else {
+          setItems([]);
         }
       } catch (err) {
         console.warn('Archive load error:', err);

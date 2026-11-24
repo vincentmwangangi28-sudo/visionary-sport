@@ -18,12 +18,14 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import {
-  XPTS_JUSTICE_STANDINGS,
   XptsTeamStandingRow,
 } from '@/services/pitchTelemetryAndXptsService';
 import { LeagueTableStats } from '@/components/LeagueTableStats';
 import { computeEnrichedStandings } from '@/pages/Standings';
 import { FALLBACK_STANDINGS, LEAGUES } from '@/data/standingsData';
+import { useStandings } from '@/hooks/useFootballData';
+import { usePredictions } from '@/hooks/usePredictions';
+import { normalizeTeamName } from '@/services/predictionStorage';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { toast } from 'sonner';
 
@@ -33,6 +35,8 @@ export const XptsJusticeStandingsPage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const [viewMode, setViewMode] = useState<StandingsViewMode>('XPTS_JUSTICE');
   const [selectedLeagueId, setSelectedLeagueId] = useState<number>(39);
+  const { data: liveStandingsResult } = useStandings(selectedLeagueId);
+  const { predictions } = usePredictions(7);
 
   const selectedLeagueMeta = useMemo(
     () => LEAGUES.find((l) => l.id === selectedLeagueId) || LEAGUES[0],
@@ -40,12 +44,106 @@ export const XptsJusticeStandingsPage: React.FC = () => {
   );
 
   const enrichedLeagueStandings = useMemo(() => {
-    const raw = FALLBACK_STANDINGS[selectedLeagueId] || FALLBACK_STANDINGS[39] || [];
+    const raw =
+      (liveStandingsResult?.standings && liveStandingsResult.standings.length > 0
+        ? liveStandingsResult.standings
+        : FALLBACK_STANDINGS[selectedLeagueId] || FALLBACK_STANDINGS[39]) || [];
     return computeEnrichedStandings(raw, 'all', 'xg_justice', []);
-  }, [selectedLeagueId]);
+  }, [selectedLeagueId, liveStandingsResult]);
+
+  const dynamicJusticeRows = useMemo<XptsTeamStandingRow[]>(() => {
+    const byXpts = [...enrichedLeagueStandings].sort((a, b) => b.xPts - a.xPts);
+    const xptsRankMap = new Map<string, number>();
+    byXpts.forEach((r, i) => xptsRankMap.set(r.team, i + 1));
+
+    return enrichedLeagueStandings.map((row) => {
+      const normClub = normalizeTeamName(row.team);
+      const upcoming = predictions.find((p) => {
+        const nh = normalizeTeamName(p.home_team);
+        const na = normalizeTeamName(p.away_team);
+        return (
+          nh === normClub ||
+          na === normClub ||
+          nh.includes(normClub) ||
+          normClub.includes(nh) ||
+          na.includes(normClub) ||
+          normClub.includes(na)
+        );
+      });
+
+      const ptsDiff = Number((row.xPts - row.points).toFixed(1));
+      const signal: XptsTeamStandingRow['regressionSignal'] =
+        ptsDiff >= 2.0
+          ? 'STRONG BUY (UNLUCKY)'
+          : ptsDiff <= -2.5
+          ? 'FADE ALERT (OVERPERFORMING)'
+          : 'FAIR VALUE';
+
+      let nextFixtureMarket = 'No match in next 7d';
+      let nextFixtureOdds = 0;
+      let nextFixtureMatch: string | undefined;
+      let nextFixtureOpponent: string | undefined;
+      let nextFixtureKickoff: string | undefined;
+
+      if (upcoming) {
+        const isHome =
+          normalizeTeamName(upcoming.home_team) === normClub ||
+          normalizeTeamName(upcoming.home_team).includes(normClub) ||
+          normClub.includes(normalizeTeamName(upcoming.home_team));
+        nextFixtureMatch = `${upcoming.home_team} vs ${upcoming.away_team}`;
+        nextFixtureOpponent = isHome ? upcoming.away_team : upcoming.home_team;
+        nextFixtureKickoff = upcoming.match_date;
+        const favOdds = isHome
+          ? upcoming.ai_prediction?.odds_home || 1.9
+          : upcoming.ai_prediction?.odds_away || 2.25;
+        if (signal.includes('FADE')) {
+          nextFixtureMarket = `${nextFixtureOpponent} +0.5 AH / Double Chance`;
+          nextFixtureOdds = Number(Math.max(1.42, (upcoming.ai_prediction?.odds_draw || 3.4) * 0.56).toFixed(2));
+        } else {
+          nextFixtureMarket = `${row.team} DNB / ${isHome ? 'Home' : 'Away'} Edge`;
+          nextFixtureOdds = Number(Math.max(1.38, favOdds * 0.85).toFixed(2));
+        }
+      }
+
+      const justiceRank = xptsRankMap.get(row.team) || row.position;
+      const formArr = (row.form || 'WDWLW')
+        .replace(/[^WDL]/g, '')
+        .slice(0, 5)
+        .split('') as Array<'W' | 'D' | 'L'>;
+
+      return {
+        club: row.team,
+        league: selectedLeagueMeta.name,
+        played: row.played,
+        wins: row.won,
+        draws: row.drawn,
+        losses: row.lost,
+        goalsFor: row.gf ?? Math.round(row.xgf),
+        goalsAgainst: row.ga ?? Math.round(row.xga),
+        actualPoints: row.points,
+        actualRank: row.position,
+        xGF: row.xgf,
+        xGA: row.xga,
+        xGD: row.xgDiff,
+        xPTS: row.xPts,
+        justiceRank,
+        justiceDelta: row.position - justiceRank,
+        homePoints: Math.round(row.points * 0.56),
+        awayPoints: Math.round(row.points * 0.44),
+        firstHalfPoints: Math.round(row.points * 0.85),
+        last5Form: formArr.length > 0 ? formArr : ['W', 'D', 'W', 'L', 'W'],
+        regressionSignal: signal,
+        nextFixtureMatch,
+        nextFixtureOpponent,
+        nextFixtureKickoff,
+        nextFixtureMarket,
+        nextFixtureOdds,
+      };
+    });
+  }, [enrichedLeagueStandings, predictions, selectedLeagueMeta.name]);
 
   const sortedRows = useMemo(() => {
-    const copy = [...XPTS_JUSTICE_STANDINGS];
+    const copy = [...dynamicJusticeRows];
     if (viewMode === 'XPTS_JUSTICE') {
       return copy.sort((a, b) => b.xPTS - a.xPTS);
     }
@@ -59,23 +157,27 @@ export const XptsJusticeStandingsPage: React.FC = () => {
       return copy.sort((a, b) => b.firstHalfPoints - a.firstHalfPoints);
     }
     return copy.sort((a, b) => b.actualPoints - a.actualPoints);
-  }, [viewMode]);
+  }, [viewMode, dynamicJusticeRows]);
 
   const handleAddRegressionPlay = (row: XptsTeamStandingRow) => {
+    if (!row.nextFixtureMatch || !row.nextFixtureOpponent || row.nextFixtureOdds <= 0) {
+      toast.info(`${row.club} does not have a scheduled fixture in the next 7 days.`);
+      return;
+    }
     addSelection({
       id: `xpts-${row.club}-${Date.now()}`,
       matchId: `xpts-${row.club}`,
-      match: `${row.club} (Next League Fixture)`,
+      match: row.nextFixtureMatch,
       homeTeam: row.club,
-      awayTeam: 'Next Opponent',
+      awayTeam: row.nextFixtureOpponent,
       league: row.league,
-      kickoff: 'Upcoming Matchday',
+      kickoff: row.nextFixtureKickoff || 'Upcoming Matchday',
       market: row.nextFixtureMarket,
       selection: row.nextFixtureMarket,
       odds: row.nextFixtureOdds,
       confidence: row.regressionSignal === 'STRONG BUY (UNLUCKY)' ? 85 : 78,
     });
-    toast.success(`Added ${row.club} xPTS Regression Pick (${row.nextFixtureMarket}) to Slip!`);
+    toast.success(`Added ${row.club} xPTS Pick (${row.nextFixtureMarket}) to Slip!`);
   };
 
   return (
@@ -244,15 +346,19 @@ export const XptsJusticeStandingsPage: React.FC = () => {
                         </Badge>
                       </td>
                       <td className="py-3 px-3 text-right font-sans">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleAddRegressionPlay(row)}
-                          className="h-7 text-[11px] gap-1 font-semibold"
-                        >
-                          <Plus className="h-3 w-3 text-emerald-500" />
-                          {row.nextFixtureMarket} (@{row.nextFixtureOdds.toFixed(2)})
-                        </Button>
+                        {row.nextFixtureMatch && row.nextFixtureOdds > 0 ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAddRegressionPlay(row)}
+                            className="h-7 text-[11px] gap-1 font-semibold"
+                          >
+                            <Plus className="h-3 w-3 text-emerald-500" />
+                            {row.nextFixtureMarket} (@{row.nextFixtureOdds.toFixed(2)})
+                          </Button>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">No 7d fixture</span>
+                        )}
                       </td>
                     </tr>
                   );

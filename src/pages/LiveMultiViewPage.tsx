@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
 import { useFootballData, ApiFootballLiveFixture } from '@/hooks/useFootballData';
+import { usePredictions } from '@/hooks/usePredictions';
+import type { Prediction } from '@/types/prediction';
 import { syncSlipToBankroll } from '@/services/socialCardPngGenerator';
 import { playStadiumGoalHorn } from '@/services/goalHornAudioService';
 import { toast } from 'sonner';
@@ -42,6 +44,7 @@ interface MultiViewMatchSlot {
   region: 'Europe' | 'Africa / CAF';
   minute: number;
   statusText?: string;
+  isLiveInPlay?: boolean;
   homeScore: number;
   awayScore: number;
   liveXgHome: number;
@@ -61,152 +64,63 @@ interface MultiViewMatchSlot {
   isRealtimeFeed?: boolean;
 }
 
-const MULTIVIEW_MATCH_POOL: MultiViewMatchSlot[] = [
-  {
-    id: 'mv-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    region: 'Europe',
-    minute: 66,
-    homeScore: 1,
-    awayScore: 1,
-    liveXgHome: 2.38,
-    liveXgAway: 0.94,
-    appmIndex: 94,
-    dangerousAttacksHome: 16,
-    dangerousAttacksAway: 3,
-    shotsOnTargetHome: 7,
-    shotsOnTargetAway: 3,
-    cornersHome: 8,
-    cornersAway: 2,
-    sharpMarket: 'Over 2.5 Match Goals (Live)',
-    liveOdds: 1.68,
-    modelProbPct: 89,
-    evEdgePct: 14.2,
-    momentumNote: 'Arsenal +1.44 unconverted xG surge; 11 box touches in last 12m.',
-  },
-  {
-    id: 'mv-rma-bar',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    region: 'Europe',
-    minute: 74,
-    homeScore: 1,
-    awayScore: 2,
-    liveXgHome: 2.21,
-    liveXgAway: 1.96,
-    appmIndex: 92,
-    dangerousAttacksHome: 14,
-    dangerousAttacksAway: 6,
-    shotsOnTargetHome: 6,
-    shotsOnTargetAway: 6,
-    cornersHome: 7,
-    cornersAway: 5,
-    sharpMarket: 'Over 3.5 Total Goals (Live)',
-    liveOdds: 1.76,
-    modelProbPct: 86,
-    evEdgePct: 11.8,
-    momentumNote: 'High-line transition alert: Real Madrid pressing with 6 in final third.',
-  },
-  {
-    id: 'mv-bay-bvb',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    region: 'Europe',
-    minute: 41,
-    homeScore: 0,
-    awayScore: 1,
-    liveXgHome: 1.56,
-    liveXgAway: 0.62,
-    appmIndex: 91,
-    dangerousAttacksHome: 15,
-    dangerousAttacksAway: 2,
-    shotsOnTargetHome: 6,
-    shotsOnTargetAway: 2,
-    cornersHome: 6,
-    cornersAway: 1,
-    sharpMarket: 'Bayern Double Chance (1X)',
-    liveOdds: 1.64,
-    modelProbPct: 87,
-    evEdgePct: 13.5,
-    momentumNote: 'Bayern hit woodwork twice; +0.94 xG dominance despite trailing 0-1.',
-  },
-  {
-    id: 'mv-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    region: 'Africa / CAF',
-    minute: 61,
+function mapUpcomingPredictionToMultiViewSlot(p: Prediction, idx: number): MultiViewMatchSlot {
+  const lowerLeague = String(p.league || '').toLowerCase();
+  const isAfrica =
+    lowerLeague.includes('caf') ||
+    lowerLeague.includes('afcon') ||
+    lowerLeague.includes('psl') ||
+    lowerLeague.includes('kenya') ||
+    lowerLeague.includes('fkf') ||
+    lowerLeague.includes('npfl') ||
+    lowerLeague.includes('nigeria') ||
+    lowerLeague.includes('tanzania');
+
+  const homeXg = Number(p.home_xg ?? p.expected_home_goals ?? 1.55);
+  const awayXg = Number(p.away_xg ?? p.expected_away_goals ?? 1.15);
+  const pick = p.predicted_outcome || p.prediction || 'Home Win';
+  const liveOdds = Number(
+    (pick === 'Away Win' ? p.away_odds : pick === 'Draw' ? p.draw_odds : p.home_odds) || 1.85
+  );
+  const prob = Math.min(90, Math.max(60, Number(p.confidence_score ?? p.confidence ?? 78)));
+  const kickoff = p.match_date
+    ? new Date(p.match_date).toLocaleString('en-GB', {
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'PRE-MATCH';
+
+  return {
+    id: `up-${p.id || idx}`,
+    homeTeam: p.home_team,
+    awayTeam: p.away_team,
+    homeLogo: p.home_logo || null,
+    awayLogo: p.away_logo || null,
+    league: p.league || 'International',
+    region: isAfrica ? 'Africa / CAF' : 'Europe',
+    minute: 0,
+    statusText: `PRE-MATCH · ${kickoff}`,
+    isLiveInPlay: false,
     homeScore: 0,
     awayScore: 0,
-    liveXgHome: 1.61,
-    liveXgAway: 0.42,
-    appmIndex: 88,
-    dangerousAttacksHome: 13,
-    dangerousAttacksAway: 2,
-    shotsOnTargetHome: 5,
-    shotsOnTargetAway: 1,
-    cornersHome: 6,
-    cornersAway: 1,
-    sharpMarket: 'Over 0.5 Match Goals (Live)',
-    liveOdds: 1.55,
-    modelProbPct: 88,
-    evEdgePct: 12.6,
-    momentumNote: 'Mashemeji Derby siege: AFC Leopards deep block conceding repeated set-pieces.',
-  },
-  {
-    id: 'mv-ahl-sun',
-    homeTeam: 'Al Ahly',
-    awayTeam: 'Mamelodi Sundowns',
-    league: 'CAF Champions League',
-    region: 'Africa / CAF',
-    minute: 78,
-    homeScore: 1,
-    awayScore: 1,
-    liveXgHome: 1.92,
-    liveXgAway: 1.45,
-    appmIndex: 89,
-    dangerousAttacksHome: 13,
-    dangerousAttacksAway: 5,
-    shotsOnTargetHome: 6,
-    shotsOnTargetAway: 4,
-    cornersHome: 8,
-    cornersAway: 4,
-    sharpMarket: 'Over 2.5 Total Goals (Live)',
-    liveOdds: 1.90,
-    modelProbPct: 82,
-    evEdgePct: 11.9,
-    momentumNote: 'Cairo late-goal window (75-90+): Al Ahly averaging 1.12 late xG.',
-  },
-  {
-    id: 'mv-yanga-simba',
-    homeTeam: 'Young Africans',
-    awayTeam: 'Simba SC',
-    league: 'Tanzania NBC Premier League',
-    region: 'Africa / CAF',
-    minute: 71,
-    homeScore: 1,
-    awayScore: 0,
-    liveXgHome: 1.64,
-    liveXgAway: 1.41,
-    appmIndex: 87,
-    dangerousAttacksHome: 7,
-    dangerousAttacksAway: 12,
-    shotsOnTargetHome: 4,
-    shotsOnTargetAway: 5,
+    liveXgHome: Number(homeXg.toFixed(2)),
+    liveXgAway: Number(awayXg.toFixed(2)),
+    appmIndex: Math.min(92, Math.max(70, Math.round(prob * 0.95))),
+    dangerousAttacksHome: Math.round(homeXg * 7),
+    dangerousAttacksAway: Math.round(awayXg * 7),
+    shotsOnTargetHome: Math.max(2, Math.round(homeXg * 3)),
+    shotsOnTargetAway: Math.max(2, Math.round(awayXg * 3)),
     cornersHome: 5,
-    cornersAway: 7,
-    sharpMarket: 'Over 14.5 Total Corners',
-    liveOdds: 1.82,
-    modelProbPct: 84,
-    evEdgePct: 10.4,
-    momentumNote: '12 corners already logged; Simba SC forcing wide blocks every 70s.',
-  },
-];
+    cornersAway: 4,
+    sharpMarket: pick,
+    liveOdds: Number(liveOdds.toFixed(2)),
+    modelProbPct: prob,
+    evEdgePct: Number(Math.max(4.5, (prob - 60) * 0.45).toFixed(1)),
+    momentumNote: `Scheduled fixture (${kickoff}): Model projects ${homeXg.toFixed(2)} - ${awayXg.toFixed(2)} xG (${pick}).`,
+    isRealtimeFeed: true,
+  };
+}
 
 function mapLiveFixtureToMultiViewSlot(m: ApiFootballLiveFixture, idx: number): MultiViewMatchSlot {
   const hScore = m.home_score ?? 0;
@@ -266,6 +180,7 @@ function mapLiveFixtureToMultiViewSlot(m: ApiFootballLiveFixture, idx: number): 
     region: isAfrica ? 'Africa / CAF' : 'Europe',
     minute: rawMin,
     statusText: m.status === 'halftime' ? 'HT' : m.status === 'live' ? `LIVE ${rawMin}'` : 'LIVE',
+    isLiveInPlay: true,
     homeScore: hScore,
     awayScore: aScore,
     liveXgHome,
@@ -295,47 +210,39 @@ export const LiveMultiViewPage: React.FC = () => {
     isLiveFetching,
     refetchLive,
   } = useFootballData({ livePollInterval: 15_000 });
+  const { predictions: upcomingPredictions } = usePredictions();
   const [layoutMode, setLayoutMode] = useState<LayoutViewMode>('QUAD_4');
 
-  // Combine real-time live fixtures from useFootballData with fallback pool
+  // Combine real-time in-play fixtures with real upcoming fixtures if fewer than 4 matches are currently live
   const activePool = useMemo<MultiViewMatchSlot[]>(() => {
     const inPlayOnly = liveFixtures.filter((m) => m.status === 'live' || m.status === 'halftime');
-    const sourceFixtures = inPlayOnly.length >= 4 ? inPlayOnly : liveFixtures;
-    if (sourceFixtures.length === 0) return MULTIVIEW_MATCH_POOL;
+    const sourceFixtures = inPlayOnly.length > 0 ? inPlayOnly : liveFixtures;
+    const mappedLive = sourceFixtures.slice(0, 12).map((m, idx) => mapLiveFixtureToMultiViewSlot(m, idx));
 
-    const mapped = sourceFixtures.slice(0, 12).map((m, idx) => mapLiveFixtureToMultiViewSlot(m, idx));
     const seenPairs = new Set(
-      mapped.map((m) => `${m.homeTeam.toLowerCase()}_${m.awayTeam.toLowerCase()}`)
+      mappedLive.map((m) => `${m.homeTeam.toLowerCase()}_${m.awayTeam.toLowerCase()}`)
     );
-    const extras = MULTIVIEW_MATCH_POOL.filter(
-      (f) => !seenPairs.has(`${f.homeTeam.toLowerCase()}_${f.awayTeam.toLowerCase()}`)
-    );
-    return [...mapped, ...extras];
-  }, [liveFixtures]);
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([
-    'mv-ars-che',
-    'mv-rma-bar',
-    'mv-bay-bvb',
-    'mv-gor-afc',
-  ]);
-  const [lockedParlayIds, setLockedParlayIds] = useState<string[]>([
-    'mv-ars-che',
-    'mv-rma-bar',
-    'mv-bay-bvb',
-    'mv-gor-afc',
-  ]);
+    const mappedUpcoming = upcomingPredictions
+      .filter((p) => !seenPairs.has(`${p.home_team.toLowerCase()}_${p.away_team.toLowerCase()}`))
+      .slice(0, 12)
+      .map((p, idx) => mapUpcomingPredictionToMultiViewSlot(p, idx));
+
+    return [...mappedLive, ...mappedUpcoming];
+  }, [liveFixtures, upcomingPredictions]);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [lockedParlayIds, setLockedParlayIds] = useState<string[]>([]);
   const [hasInitializedLiveIds, setHasInitializedLiveIds] = useState(false);
   const [tickOffset, setTickOffset] = useState<number>(0);
   const [simulatorTarget, setSimulatorTarget] = useState<MultiViewMatchSlot | null>(null);
 
-  // Auto-load top 4 real-time live matches into the 4 TV screens when live feed arrives
+  // Auto-load top real matches into the 4 TV screens once available
   useEffect(() => {
-    const realtimeItems = activePool.filter((m) => m.isRealtimeFeed);
-    if (!hasInitializedLiveIds && realtimeItems.length >= 4) {
-      const top4Ids = realtimeItems.slice(0, 4).map((m) => m.id);
-      setSelectedIds(top4Ids);
-      setLockedParlayIds(top4Ids);
+    if (!hasInitializedLiveIds && activePool.length > 0) {
+      const topIds = activePool.slice(0, 4).map((m) => m.id);
+      setSelectedIds(topIds);
+      setLockedParlayIds(topIds);
       setHasInitializedLiveIds(true);
     }
   }, [activePool, hasInitializedLiveIds]);
@@ -349,10 +256,15 @@ export const LiveMultiViewPage: React.FC = () => {
   }, []);
 
   const visibleSlots = useMemo(() => {
-    const count = layoutMode === 'QUAD_4' ? 4 : layoutMode === 'SPLIT_2' ? 2 : 1;
-    return selectedIds
-      .slice(0, count)
-      .map((id, idx) => activePool.find((m) => m.id === id) || activePool[idx] || MULTIVIEW_MATCH_POOL[0]);
+    if (activePool.length === 0) return [];
+    const count = Math.min(
+      activePool.length,
+      layoutMode === 'QUAD_4' ? 4 : layoutMode === 'SPLIT_2' ? 2 : 1
+    );
+    return Array.from({ length: count }, (_, idx) => {
+      const id = selectedIds[idx];
+      return activePool.find((m) => m.id === id) || activePool[idx];
+    }).filter((m): m is MultiViewMatchSlot => Boolean(m));
   }, [selectedIds, layoutMode, activePool]);
 
   const parlayMatches = useMemo(() => {
@@ -612,9 +524,22 @@ export const LiveMultiViewPage: React.FC = () => {
               : 'grid-cols-1 max-w-4xl mx-auto'
           }`}
         >
-          {visibleSlots.map((match, slotIdx) => {
-            const liveXgHomeTick = Number((match.liveXgHome + tickOffset * 0.02).toFixed(2));
-            const liveXgAwayTick = Number((match.liveXgAway + (tickOffset % 2) * 0.01).toFixed(2));
+          {visibleSlots.length === 0 ? (
+            <Card className="col-span-full border-border bg-card">
+              <CardContent className="p-8 text-center space-y-2">
+                <Radio className="h-8 w-8 text-emerald-500 mx-auto" />
+                <p className="font-bold text-sm text-foreground">
+                  {isLiveFetching ? 'Syncing live scoreboard and upcoming schedule...' : 'No active live or upcoming matches found right now.'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Screens populate automatically as ESPN fixtures kick off or enter the 7-day slate.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            visibleSlots.map((match, slotIdx) => {
+            const liveXgHomeTick = Number((match.liveXgHome + (match.isLiveInPlay ? tickOffset * 0.02 : 0)).toFixed(2));
+            const liveXgAwayTick = Number((match.liveXgAway + (match.isLiveInPlay ? (tickOffset % 2) * 0.01 : 0)).toFixed(2));
             const totalDang = Math.max(
               match.dangerousAttacksHome + match.dangerousAttacksAway,
               1
@@ -635,7 +560,11 @@ export const LiveMultiViewPage: React.FC = () => {
                         SCREEN #{slotIdx + 1}
                       </span>
                       <span className="font-mono tabular-nums text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        {match.statusText === 'HT' ? 'HT' : `LIVE ${match.minute + (tickOffset % 2)}'`}
+                        {!match.isLiveInPlay
+                          ? match.statusText
+                          : match.statusText === 'HT'
+                          ? 'HT'
+                          : `LIVE ${match.minute + (tickOffset % 2)}'`}
                       </span>
                       <span className="text-xs text-muted-foreground">· {match.league}</span>
                     </div>
@@ -798,7 +727,8 @@ export const LiveMultiViewPage: React.FC = () => {
                 </CardContent>
               </Card>
             );
-          })}
+          })
+          )}
         </div>
 
         {/* Synchronized Multi-Screen Live Parlay Dock */}

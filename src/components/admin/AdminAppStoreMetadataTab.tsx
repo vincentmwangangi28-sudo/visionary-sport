@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   CheckCircle2,
+  Code2,
   Copy,
   Download,
   ExternalLink,
@@ -20,50 +21,30 @@ import { toast } from 'sonner';
 
 type StoreTargetId = 'universal' | 'google_play' | 'apple_connect' | 'samsung_huawei_xiaomi';
 type TonePreset = 'balanced' | 'jackpot_xg' | 'editorial_stats';
-type ScreenshotTheme = 'emerald_dark' | 'slate_pro';
+type NeutralSportsTheme = 'neutral_slate_pitch' | 'neutral_charcoal_pitch';
 
-interface ManifestSnapshot {
+interface FetchedAppMetadata {
   name: string;
-  short_name: string;
+  shortName: string;
   description: string;
-  categories: string[];
+  tags: string[];
+  source: string;
+  fetchedAt: string;
   icons: Array<{ src: string; sizes: string; type?: string; purpose?: string }>;
-  screenshots: Array<{ src: string; sizes: string; type?: string; form_factor?: string; label?: string }>;
-  shortcuts: Array<{ name: string; short_name?: string; description?: string; url: string }>;
 }
 
-const FALLBACK_MANIFEST: ManifestSnapshot = {
+const DEFAULT_FETCHED_METADATA: FetchedAppMetadata = {
   name: 'PredictPro — AI Football Predictions & Expected Goals (xG)',
-  short_name: 'PredictPro',
+  shortName: 'PredictPro',
   description:
     'Quantitative AI football predictions, Expected Goals (xG) analytics, 6x6 Bivariate Poisson score matrices, 17-game Mega Jackpot generator, and universal booking code converter across 40+ global leagues.',
-  categories: ['sports', 'news', 'utilities'],
+  tags: ['sports', 'football', 'predictions', 'xg', 'poisson', 'jackpot', 'livescore', 'analytics'],
+  source: '/manifest.json · /metadata.json',
+  fetchedAt: new Date().toISOString(),
   icons: [
     { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
     { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
-  ],
-  screenshots: [
-    {
-      src: '/og-image.jpg',
-      sizes: '1200x630',
-      type: 'image/jpeg',
-      form_factor: 'wide',
-      label: 'PredictPro Quantitative Football Match Intelligence & 6x6 Poisson Score Matrix',
-    },
-    {
-      src: '/icon-512.png',
-      sizes: '512x512',
-      type: 'image/png',
-      form_factor: 'narrow',
-      label: 'Live Expected Goals (xG), 17-Game Jackpot Generator & Universal Booking Code Converter',
-    },
-  ],
-  shortcuts: [
-    { name: 'Match Predictions Today', url: '/predict' },
-    { name: 'Live Scores & xG', url: '/live' },
-    { name: '17-Game Jackpot Generator', url: '/jackpot-generator' },
-    { name: 'Booking Code Converter', url: '/slip-generator' },
   ],
 };
 
@@ -133,6 +114,7 @@ interface GeneratedScreenshotAsset {
   title: string;
   caption: string;
   dimensions: string;
+  keyFeatures: string[];
   dataUrl: string | null;
 }
 
@@ -158,6 +140,80 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
+/**
+ * Draws a subtle, neutral sports-themed tactical pitch background (1080x1920)
+ * with low-opacity mowed turf stripes, halfway line, center circle, and penalty box geometry.
+ */
+function drawNeutralSportsBackground(
+  ctx: CanvasRenderingContext2D,
+  palette: {
+    bgTop: string;
+    bgBottom: string;
+    stripe: string;
+    pitchLine: string;
+  }
+) {
+  const grad = ctx.createLinearGradient(0, 0, 0, 1920);
+  grad.addColorStop(0, palette.bgTop);
+  grad.addColorStop(1, palette.bgBottom);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 1920);
+
+  // Subtle horizontal mowed pitch bands
+  ctx.fillStyle = palette.stripe;
+  for (let y = 0; y < 1920; y += 240) {
+    ctx.fillRect(0, y, 1080, 120);
+  }
+
+  // Neutral tactical pitch markings
+  ctx.save();
+  ctx.strokeStyle = palette.pitchLine;
+  ctx.lineWidth = 4;
+
+  // Outer touchline inset
+  ctx.strokeRect(44, 44, 992, 1832);
+
+  // Halfway line
+  ctx.beginPath();
+  ctx.moveTo(44, 960);
+  ctx.lineTo(1036, 960);
+  ctx.stroke();
+
+  // Center circle & center spot
+  ctx.beginPath();
+  ctx.arc(540, 960, 190, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(540, 960, 10, 0, Math.PI * 2);
+  ctx.fillStyle = palette.pitchLine;
+  ctx.fill();
+
+  // Top penalty area & 6-yard box
+  ctx.strokeRect(220, 44, 640, 260);
+  ctx.strokeRect(360, 44, 360, 96);
+
+  // Bottom penalty area & 6-yard box
+  ctx.strokeRect(220, 1616, 640, 260);
+  ctx.strokeRect(360, 1780, 360, 96);
+
+  // Corner arcs
+  ctx.beginPath();
+  ctx.arc(44, 44, 36, 0, Math.PI / 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(1036, 44, 36, Math.PI / 2, Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(44, 1876, 36, (3 * Math.PI) / 2, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(1036, 1876, 36, Math.PI, (3 * Math.PI) / 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 export const AdminAppStoreMetadataTab: React.FC = () => {
   const { data: predictionsData } = usePredictions();
   const livePredictions = useMemo(
@@ -165,13 +221,17 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
     [predictionsData]
   );
 
-  const [manifest, setManifest] = useState<ManifestSnapshot>(FALLBACK_MANIFEST);
+  const [fetchedMeta, setFetchedMeta] = useState<FetchedAppMetadata>(DEFAULT_FETCHED_METADATA);
+  const [fetchingMeta, setFetchingMeta] = useState<boolean>(false);
+
   const [baseDomain, setBaseDomain] = useState<string>('https://predictpro.guru');
+  const [privacyTemplate, setPrivacyTemplate] = useState<string>('https://{domain}/privacy');
   const [packageId, setPackageId] = useState<string>('guru.predictpro.twa');
   const [supportEmail, setSupportEmail] = useState<string>('vincentmwangangi28@gmail.com');
   const [storeTarget, setStoreTarget] = useState<StoreTargetId>('universal');
   const [tonePreset, setTonePreset] = useState<TonePreset>('balanced');
-  const [screenshotTheme, setScreenshotTheme] = useState<ScreenshotTheme>('emerald_dark');
+  const [backgroundTheme, setBackgroundTheme] = useState<NeutralSportsTheme>('neutral_slate_pitch');
+  const [showBrandingCrest, setShowBrandingCrest] = useState<boolean>(true);
 
   const [includeLiveFixtures, setIncludeLiveFixtures] = useState<boolean>(true);
   const [includeJackpotPools, setIncludeJackpotPools] = useState<boolean>(true);
@@ -180,32 +240,89 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
   const [routeStatuses, setRouteStatuses] = useState<Record<string, 'idle' | 'ok' | 'error'>>({});
   const [verifyingRoutes, setVerifyingRoutes] = useState<boolean>(false);
 
+  const [iconPlaceholderDataUrl, setIconPlaceholderDataUrl] = useState<string | null>(null);
   const [screenshots, setScreenshots] = useState<GeneratedScreenshotAsset[]>([]);
 
-  // Fetch live /manifest.json on mount
-  useEffect(() => {
-    let active = true;
-    fetch('/manifest.json')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (!active || !json) return;
-        setManifest({
-          name: json.name || FALLBACK_MANIFEST.name,
-          short_name: json.short_name || FALLBACK_MANIFEST.short_name,
-          description: json.description || FALLBACK_MANIFEST.description,
-          categories: Array.isArray(json.categories) ? json.categories : FALLBACK_MANIFEST.categories,
-          icons: Array.isArray(json.icons) ? json.icons : FALLBACK_MANIFEST.icons,
-          screenshots: Array.isArray(json.screenshots) ? json.screenshots : FALLBACK_MANIFEST.screenshots,
-          shortcuts: Array.isArray(json.shortcuts) ? json.shortcuts : FALLBACK_MANIFEST.shortcuts,
-        });
-      })
-      .catch(() => {
-        // Retain fallback manifest
+  // Fetch live app metadata (name, description, tags) from /manifest.json, /metadata.json & document <meta>
+  const fetchLiveAppMetadata = useCallback(async (showToast = false) => {
+    setFetchingMeta(true);
+    try {
+      const [manifestRes, metaRes] = await Promise.all([
+        fetch('/manifest.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch('/metadata.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]);
+
+      const domKeywords =
+        typeof document !== 'undefined'
+          ? document.head?.querySelector('meta[name="keywords"]')?.getAttribute('content') || ''
+          : '';
+      const domDesc =
+        typeof document !== 'undefined'
+          ? document.head?.querySelector('meta[name="description"]')?.getAttribute('content') || ''
+          : '';
+
+      const rawCategories: string[] = Array.isArray(manifestRes?.categories)
+        ? manifestRes.categories
+        : [];
+      const rawDomTags = domKeywords
+        .split(',')
+        .map((t) => t.trim().toLowerCase())
+        .filter(Boolean);
+
+      const mergedTags = Array.from(
+        new Set([
+          ...rawCategories,
+          ...rawDomTags,
+          'football',
+          'soccer analytics',
+          'expected goals (xg)',
+          'bivariate poisson',
+          'jackpot combinatorics',
+        ])
+      ).slice(0, 10);
+
+      const nextName =
+        manifestRes?.name ||
+        metaRes?.name ||
+        DEFAULT_FETCHED_METADATA.name;
+      const nextShortName =
+        manifestRes?.short_name ||
+        metaRes?.name ||
+        DEFAULT_FETCHED_METADATA.shortName;
+      const nextDescription =
+        manifestRes?.description ||
+        metaRes?.description ||
+        domDesc ||
+        DEFAULT_FETCHED_METADATA.description;
+
+      const sources: string[] = [];
+      if (manifestRes) sources.push('/manifest.json');
+      if (metaRes) sources.push('/metadata.json');
+      if (domKeywords || domDesc) sources.push('document <meta>');
+
+      setFetchedMeta({
+        name: nextName,
+        shortName: nextShortName,
+        description: nextDescription,
+        tags: mergedTags,
+        source: sources.length > 0 ? sources.join(' · ') : DEFAULT_FETCHED_METADATA.source,
+        fetchedAt: new Date().toISOString(),
+        icons: Array.isArray(manifestRes?.icons) && manifestRes.icons.length > 0
+          ? manifestRes.icons
+          : DEFAULT_FETCHED_METADATA.icons,
       });
-    return () => {
-      active = false;
-    };
+
+      if (showToast) {
+        toast.success('Fetched live app metadata (name, description, and tags).');
+      }
+    } finally {
+      setFetchingMeta(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchLiveAppMetadata(false);
+  }, [fetchLiveAppMetadata]);
 
   // Derive live content stats from current app state
   const liveContentStats = useMemo(() => {
@@ -216,9 +333,10 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
           .filter((l): l is string => typeof l === 'string' && l.trim().length > 0)
       )
     );
+
     const featuredMatches = livePredictions.slice(0, 4).map((p: any) => {
-      const home = p.homeTeam || p.home || 'Arsenal';
-      const away = p.awayTeam || p.away || 'Chelsea';
+      const home = p.homeTeam || p.home || p.home_team || 'Home';
+      const away = p.awayTeam || p.away || p.away_team || 'Away';
       const prob = Math.round(
         Number(p.confidence || Math.max(p.homeProb || 62, p.drawProb || 22, p.awayProb || 16))
       );
@@ -234,14 +352,7 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
       };
     });
 
-    const fallbackMatches = [
-      { label: 'Arsenal vs Chelsea', league: 'Premier League', prob: 68, xG: '2.14–0.98', market: '1 · Over 1.5' },
-      { label: 'Real Madrid vs Barcelona', league: 'LaLiga', prob: 71, xG: '2.26–1.41', market: 'BTTS Yes' },
-      { label: 'Bayern Munich vs Dortmund', league: 'Bundesliga', prob: 74, xG: '2.48–1.15', market: 'Home Win (1)' },
-      { label: 'Gor Mahia vs AFC Leopards', league: 'FKF Premier League', prob: 66, xG: '1.65–0.74', market: '1X & Under 3.5' },
-    ];
-
-    const topFixtures = featuredMatches.length > 0 ? featuredMatches : fallbackMatches;
+    const topFixtures = featuredMatches;
     const leaguesList =
       uniqueLeagues.length >= 4
         ? uniqueLeagues.slice(0, 8)
@@ -276,13 +387,22 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
     };
   }, [livePredictions]);
 
-  // Synthesize store metadata from live app content
+  // Resolved Privacy Policy URL from template + domain
+  const cleanDomain = baseDomain.replace(/\/+$/, '');
+  const domainHost = cleanDomain.replace(/^https?:\/\//, '');
+  const resolvedPrivacyUrl = useMemo(() => {
+    if (privacyTemplate.includes('{domain}')) {
+      return privacyTemplate.replace('{domain}', domainHost);
+    }
+    return privacyTemplate || `${cleanDomain}/privacy`;
+  }, [privacyTemplate, domainHost, cleanDomain]);
+
+  // Synthesize store metadata + 2–4 sentence optimized descriptions from fetched metadata & live app content
   const buildSynthesizedMetadata = useCallback(() => {
-    const cleanDomain = baseDomain.replace(/\/+$/, '');
     const appTitle =
       storeTarget === 'apple_connect'
-        ? 'PredictPro: Football xG & Stats'
-        : clampString(`${manifest.short_name}: Football xG & Stats`, 30);
+        ? clampString(`${fetchedMeta.shortName}: Football xG & Stats`, 30)
+        : clampString(`${fetchedMeta.shortName}: Football xG & Stats`, 30);
 
     const subtitleOrShort =
       storeTarget === 'apple_connect'
@@ -291,28 +411,22 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
         ? clampString('Football xG, 6x6 Poisson score models & 17-game Jackpot optimizer.', 80)
         : clampString('AI football predictions, Bivariate Poisson 6x6 score matrices & live xG.', 80);
 
+    // Explicitly crafted 2–4 sentence optimized store descriptions
+    const concise3SentenceOverview =
+      tonePreset === 'jackpot_xg'
+        ? `${fetchedMeta.shortName} combines 6×6 Bivariate Poisson and Dixon-Coles goal models with real-time Expected Goals (xG) telemetry across ${liveContentStats.leaguesCount}+ global football competitions. Optimize 13-game, 15-game, and 17-game Jackpot combinations using greedy log-gain Double Chance allocation and Poisson-Binomial bonus survival math. Built strictly as an informational sports statistics and mathematical probability reference tool with zero real-money wagering.`
+        : tonePreset === 'editorial_stats'
+        ? `${fetchedMeta.shortName} delivers independent quantitative football statistics, Expected Goals (xG) match previews, and verified head-to-head telemetry across ${liveContentStats.leaguesCount}+ leagues including ${liveContentStats.leaguesList.slice(0, 3).join(', ')}. Inspect calibrated 6×6 exact score matrices, referee card rates, and implied odds probabilities in an offline-ready mobile experience. Intended solely for informational sports research and probability analysis, with no real-money betting or deposits.`
+        : `${fetchedMeta.description} Inspect live xG momentum, 6×6 Bivariate Poisson exact scorelines, and ${liveContentStats.totalJackpotGames}-match Mega & Midweek Jackpot combinatorics in seconds. Strictly an informational sports analytics publication designed for fast mobile lookup without real-money wagering.`;
+
     const promoText = clampString(
       `Analyze ${liveContentStats.fixtureCount}+ live matches across ${liveContentStats.leaguesCount}+ leagues with 6x6 Bivariate Poisson score matrices, live xG, and Mega Jackpot hedges.`,
       170
     );
 
-    const keywords = clampString(
-      'football,soccer,predictions,xg,poisson,stats,livescore,jackpot,premier league,h2h,analytics',
-      100
-    );
+    const keywords = clampString(fetchedMeta.tags.join(','), 100);
 
-    const lines: string[] = [];
-    if (tonePreset === 'editorial_stats') {
-      lines.push(
-        `${manifest.short_name} is an independent football statistics, Expected Goals (xG), and mathematical probability reference covering ${liveContentStats.leaguesCount}+ global competitions including ${liveContentStats.leaguesList.slice(0, 5).join(', ')}.`
-      );
-    } else if (tonePreset === 'jackpot_xg') {
-      lines.push(
-        `${manifest.short_name} combines Bivariate Poisson & Dixon-Coles goal modeling with Poisson-Binomial Jackpot survival combinatorics across ${liveContentStats.leaguesCount}+ football competitions.`
-      );
-    } else {
-      lines.push(manifest.description);
-    }
+    const lines: string[] = [concise3SentenceOverview];
 
     lines.push('');
     lines.push('CORE ANALYTICAL CAPABILITIES:');
@@ -344,12 +458,12 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
       lines.push('');
       lines.push('EDITORIAL & STORE COMPLIANCE NOTICE:');
       lines.push(
-        `${manifest.short_name} is strictly an informational sports statistics and mathematical probability reference tool. It DOES NOT accept wagers, facilitate real-money gambling, process betting deposits, or pay out cash prizes. Recommended audience: 18+ for odds reference.`
+        `${fetchedMeta.shortName} is strictly an informational sports statistics and mathematical probability reference tool. It DOES NOT accept wagers, facilitate real-money gambling, process betting deposits, or pay out cash prizes. Recommended audience: 18+ for odds reference.`
       );
     }
 
     lines.push('');
-    lines.push(`Privacy Policy: ${cleanDomain}/privacy`);
+    lines.push(`Privacy Policy: ${resolvedPrivacyUrl}`);
     lines.push(`Support: ${cleanDomain}/contact (${supportEmail})`);
 
     const fullDescription = clampString(lines.join('\n'), 4000);
@@ -363,25 +477,30 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
     return {
       appTitle,
       subtitleOrShort,
+      concise3SentenceOverview,
       promoText,
       keywords,
       fullDescription,
       releaseNotes,
     };
   }, [
-    baseDomain,
+    fetchedMeta,
     storeTarget,
     tonePreset,
-    manifest,
     liveContentStats,
     includeJackpotPools,
     includeLiveFixtures,
     includeComplianceNote,
+    resolvedPrivacyUrl,
+    cleanDomain,
     supportEmail,
   ]);
 
   const [draftTitle, setDraftTitle] = useState<string>(() => buildSynthesizedMetadata().appTitle);
   const [draftShort, setDraftShort] = useState<string>(() => buildSynthesizedMetadata().subtitleOrShort);
+  const [draftOverview, setDraftOverview] = useState<string>(
+    () => buildSynthesizedMetadata().concise3SentenceOverview
+  );
   const [draftPromo, setDraftPromo] = useState<string>(() => buildSynthesizedMetadata().promoText);
   const [draftKeywords, setDraftKeywords] = useState<string>(() => buildSynthesizedMetadata().keywords);
   const [draftFullDesc, setDraftFullDesc] = useState<string>(() => buildSynthesizedMetadata().fullDescription);
@@ -389,73 +508,158 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
     () => buildSynthesizedMetadata().releaseNotes
   );
 
-  const handleRegenerateDescriptions = useCallback(() => {
-    const next = buildSynthesizedMetadata();
-    setDraftTitle(next.appTitle);
-    setDraftShort(next.subtitleOrShort);
-    setDraftPromo(next.promoText);
-    setDraftKeywords(next.keywords);
-    setDraftFullDesc(next.fullDescription);
-    setDraftReleaseNotes(next.releaseNotes);
-    toast.success('Regenerated all store listing descriptions from live app content.');
-  }, [buildSynthesizedMetadata]);
-
-  // Regenerate automatically when target preset or content toggles change
   useEffect(() => {
     const next = buildSynthesizedMetadata();
     setDraftTitle(next.appTitle);
     setDraftShort(next.subtitleOrShort);
+    setDraftOverview(next.concise3SentenceOverview);
     setDraftPromo(next.promoText);
     setDraftKeywords(next.keywords);
     setDraftFullDesc(next.fullDescription);
     setDraftReleaseNotes(next.releaseNotes);
   }, [buildSynthesizedMetadata]);
 
-  // Generate 4 mobile portrait store screenshots (1080x1920 PNG) directly from live app content
-  const renderStoreScreenshots = useCallback(() => {
+  const handleRegenerateDescriptions = useCallback(() => {
+    const next = buildSynthesizedMetadata();
+    setDraftTitle(next.appTitle);
+    setDraftShort(next.subtitleOrShort);
+    setDraftOverview(next.concise3SentenceOverview);
+    setDraftPromo(next.promoText);
+    setDraftKeywords(next.keywords);
+    setDraftFullDesc(next.fullDescription);
+    setDraftReleaseNotes(next.releaseNotes);
+    toast.success('Regenerated structured descriptions and store metadata.');
+  }, [buildSynthesizedMetadata]);
+
+  // Canvas-generated 512x512 icon placeholder + 4x 1080x1920 mobile screenshots on neutral sports-themed background
+  const renderCanvasAssets = useCallback(() => {
+    const isJsdom = typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent || '');
+
     const palette =
-      screenshotTheme === 'emerald_dark'
+      backgroundTheme === 'neutral_slate_pitch'
         ? {
-            bgTop: '#060A12',
-            bgBottom: '#0B1623',
-            card: '#111B2B',
-            border: '#1F2F46',
+            bgTop: '#161C24',
+            bgBottom: '#0E1319',
+            stripe: 'rgba(255, 255, 255, 0.022)',
+            pitchLine: 'rgba(255, 255, 255, 0.09)',
+            card: 'rgba(22, 29, 39, 0.90)',
+            border: 'rgba(148, 163, 184, 0.24)',
             accent: '#10B981',
             amber: '#F59E0B',
             text: '#F8FAFC',
             muted: '#94A3B8',
           }
         : {
-            bgTop: '#0F172A',
-            bgBottom: '#1E293B',
-            card: '#182336',
-            border: '#334155',
-            accent: '#38BDF8',
+            bgTop: '#1A1B1F',
+            bgBottom: '#111216',
+            stripe: 'rgba(255, 255, 255, 0.02)',
+            pitchLine: 'rgba(255, 255, 255, 0.085)',
+            card: 'rgba(28, 30, 36, 0.90)',
+            border: 'rgba(161, 161, 170, 0.22)',
+            accent: '#34D399',
             amber: '#FBBF24',
-            text: '#F8FAFC',
-            muted: '#94A3B8',
+            text: '#FAFAFA',
+            muted: '#A1A1AA',
           };
 
+    // 1. Render 512x512 icon placeholder canvas
+    if (typeof document !== 'undefined' && !isJsdom) {
+      try {
+        const iconCanvas = document.createElement('canvas');
+        iconCanvas.width = 512;
+        iconCanvas.height = 512;
+        const ictx = iconCanvas.getContext('2d');
+        if (ictx) {
+          const igrad = ictx.createLinearGradient(0, 0, 512, 512);
+          igrad.addColorStop(0, palette.bgTop);
+          igrad.addColorStop(1, palette.bgBottom);
+          ictx.fillStyle = igrad;
+          ictx.fillRect(0, 0, 512, 512);
+
+          // Pitch center circle ring
+          ictx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
+          ictx.lineWidth = 8;
+          ictx.beginPath();
+          ictx.arc(256, 256, 176, 0, Math.PI * 2);
+          ictx.stroke();
+
+          // Shield frame
+          drawRoundedRect(ictx, 72, 72, 368, 368, 64);
+          ictx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+          ictx.lineWidth = 4;
+          ictx.stroke();
+
+          // Brand Monogram + dimensions label
+          ictx.fillStyle = palette.accent;
+          ictx.font = '800 132px system-ui, -apple-system, sans-serif';
+          ictx.textAlign = 'center';
+          const monogram = fetchedMeta.shortName.slice(0, 2).toUpperCase() || 'PP';
+          ictx.fillText(monogram, 256, 276);
+
+          ictx.fillStyle = palette.text;
+          ictx.font = '700 32px system-ui, -apple-system, sans-serif';
+          ictx.fillText(fetchedMeta.shortName.toUpperCase(), 256, 344);
+
+          ictx.fillStyle = palette.muted;
+          ictx.font = '600 20px monospace';
+          ictx.fillText('512×512 ICON', 256, 386);
+          ictx.textAlign = 'left';
+
+          setIconPlaceholderDataUrl(iconCanvas.toDataURL('image/png'));
+        }
+      } catch {
+        setIconPlaceholderDataUrl(null);
+      }
+    }
+
+    // 2. Render 4x 1080x1920 Portrait Screenshots on Neutral Sports-Themed Pitch Background
     const specs = [
       {
         id: 'screen-1',
         filename: 'predictpro-screenshot-1-best-bets.png',
-        title: 'AI Match Predictions & Daily Confidence',
-        kicker: 'BIVARIATE POISSON ENGINE',
-        headline: 'High-Conviction Football Picks',
-        subhead: `${liveContentStats.fixtureCount}+ live fixtures across ${liveContentStats.leaguesCount}+ leagues calibrated daily.`,
+        title: 'Daily AI Match Predictions',
+        kicker: 'QUANTITATIVE FOOTBALL ANALYTICS',
+        headline: 'Daily AI Match Predictions',
+        subhead: `${liveContentStats.fixtureCount}+ upcoming fixtures ranked by Bivariate Poisson confidence.`,
+        keyFeatures: [
+          'Bivariate Poisson 1X2 & Over/Under Models',
+          'Confidence-Ranked Daily Value Slate',
+          'Real-Time Team Form & Implied Odds Edge',
+        ],
         drawBody: (ctx: CanvasRenderingContext2D) => {
-          liveContentStats.topFixtures.forEach((fx, i) => {
-            const y = 480 + i * 310;
-            drawRoundedRect(ctx, 72, y, 936, 270, 28);
+          const cards = liveContentStats.topFixtures.slice(0, 3);
+          if (cards.length === 0) {
+            drawRoundedRect(ctx, 72, 610, 936, 320, 26);
             ctx.fillStyle = palette.card;
             ctx.fill();
             ctx.strokeStyle = palette.border;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.fillStyle = palette.accent;
+            ctx.font = '700 28px monospace';
+            ctx.fillText('LIVE MATCHDAY SYNC ACTIVE', 112, 684);
+
+            ctx.fillStyle = palette.text;
+            ctx.font = '700 40px system-ui, -apple-system, sans-serif';
+            ctx.fillText('Bivariate Poisson & xG Models Ready', 112, 760);
+
+            ctx.fillStyle = palette.muted;
+            ctx.font = '500 26px system-ui, -apple-system, sans-serif';
+            ctx.fillText('Upcoming official fixtures stream automatically from league feeds.', 112, 826);
+            return;
+          }
+          cards.forEach((fx, i) => {
+            const y = 610 + i * 315;
+            drawRoundedRect(ctx, 72, y, 936, 275, 26);
+            ctx.fillStyle = palette.card;
+            ctx.fill();
+            ctx.strokeStyle = palette.border;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
 
             ctx.fillStyle = palette.muted;
-            ctx.font = '600 28px system-ui, -apple-system, sans-serif';
+            ctx.font = '600 26px system-ui, -apple-system, sans-serif';
             ctx.fillText(fx.league.toUpperCase(), 112, y + 58);
 
             ctx.fillStyle = palette.text;
@@ -463,36 +667,41 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
             ctx.fillText(fx.label, 112, y + 124);
 
             ctx.fillStyle = palette.accent;
-            ctx.font = '700 34px monospace';
-            ctx.fillText(`${fx.market}  ·  ${fx.prob}% Model Confidence`, 112, y + 190);
+            ctx.font = '700 32px monospace';
+            ctx.fillText(`${fx.market}  ·  ${fx.prob}% Confidence`, 112, y + 188);
 
             ctx.fillStyle = palette.muted;
-            ctx.font = '600 28px monospace';
-            ctx.fillText(`Projected Expected Goals (xG): ${fx.xG}`, 112, y + 236);
+            ctx.font = '600 26px monospace';
+            ctx.fillText(`Projected xG: ${fx.xG}`, 112, y + 236);
           });
         },
       },
       {
         id: 'screen-2',
-        filename: 'predictpro-screenshot-2-poisson-xg.png',
-        title: '6×6 Bivariate Poisson Score Matrix',
-        kicker: 'EXACT SCORE SIMULATOR',
-        headline: '6×6 Correct Score Probabilities',
-        subhead: `${liveContentStats.topFixtures[0]?.label || 'Featured Match'} · Dixon-Coles Low-Score Calibration`,
+        filename: 'predictpro-screenshot-2-poisson-matrix.png',
+        title: '6×6 Bivariate Poisson Matrix',
+        kicker: 'EXACT SCORE PROBABILITY',
+        headline: '6×6 Scoreline Matrix',
+        subhead: `${liveContentStats.topFixtures[0]?.label || 'Featured Match'} · Low-Score Dixon-Coles Calibration`,
+        keyFeatures: [
+          'Interactive 6×6 Home vs Away Goal Grid',
+          'Instant Over/Under & BTTS Derivation',
+          'Expected Goals (xG) Split Telemetry',
+        ],
         drawBody: (ctx: CanvasRenderingContext2D) => {
-          drawRoundedRect(ctx, 72, 480, 936, 980, 28);
+          drawRoundedRect(ctx, 72, 610, 936, 940, 26);
           ctx.fillStyle = palette.card;
           ctx.fill();
           ctx.strokeStyle = palette.border;
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 2.5;
           ctx.stroke();
 
           ctx.fillStyle = palette.text;
           ctx.font = '700 38px system-ui, -apple-system, sans-serif';
-          ctx.fillText(liveContentStats.topFixtures[0]?.label || 'Arsenal vs Chelsea', 112, 555);
+          ctx.fillText(liveContentStats.topFixtures[0]?.label || 'Live Matchday Forecast', 112, 686);
           ctx.fillStyle = palette.accent;
-          ctx.font = '700 30px monospace';
-          ctx.fillText(`xG Split: ${liveContentStats.topFixtures[0]?.xG || '2.14–0.98'}`, 112, 608);
+          ctx.font = '700 28px monospace';
+          ctx.fillText(`xG Split: ${liveContentStats.topFixtures[0]?.xG || 'Poisson Matrix Active'}`, 112, 738);
 
           const gridProbs = [
             ['3.8%', '5.9%', '4.2%', '1.9%', '0.7%'],
@@ -502,128 +711,153 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
             ['2.1%', '3.2%', '2.2%', '1.0%', '0.4%'],
           ];
           const cellW = 166;
-          const cellH = 126;
+          const cellH = 118;
           for (let r = 0; r < 5; r++) {
             for (let c = 0; c < 5; c++) {
               const cx = 116 + c * (cellW + 10);
-              const cy = 670 + r * (cellH + 14);
+              const cy = 795 + r * (cellH + 14);
               const isPeak = r === 2 && c === 1;
-              drawRoundedRect(ctx, cx, cy, cellW, cellH, 16);
-              ctx.fillStyle = isPeak ? palette.accent : '#0D1524';
+              drawRoundedRect(ctx, cx, cy, cellW, cellH, 14);
+              ctx.fillStyle = isPeak ? palette.accent : 'rgba(13, 21, 34, 0.85)';
               ctx.fill();
               ctx.fillStyle = isPeak ? '#04120C' : palette.text;
-              ctx.font = '700 28px monospace';
-              ctx.fillText(`${r}-${c}`, cx + 48, cy + 52);
-              ctx.font = '600 26px monospace';
-              ctx.fillText(gridProbs[r][c], cx + 40, cy + 96);
+              ctx.font = '700 26px monospace';
+              ctx.fillText(`${r}-${c}`, cx + 52, cy + 48);
+              ctx.font = '600 24px monospace';
+              ctx.fillText(gridProbs[r][c], cx + 44, cy + 90);
             }
           }
 
           ctx.fillStyle = palette.muted;
-          ctx.font = '600 28px system-ui, -apple-system, sans-serif';
-          ctx.fillText('Most Likely Scoreline: 2-1 (13.6%) · Over 1.5 Goals: 79.4%', 112, 1412);
+          ctx.font = '600 26px system-ui, -apple-system, sans-serif';
+          ctx.fillText('Highest Probability Outcome: 2-1 (13.6%)', 112, 1502);
         },
       },
       {
         id: 'screen-3',
-        filename: 'predictpro-screenshot-3-jackpot-engine.png',
-        title: '17-Game Mega Jackpot Combinatorics',
-        kicker: 'POISSON-BINOMIAL SURVIVAL',
-        headline: 'Mega & Midweek Jackpot Optimizer',
-        subhead: `Covers ${liveContentStats.totalJackpotGames} live jackpot matches across SportPesa, Betika & Mozzart.`,
+        filename: 'predictpro-screenshot-3-jackpot-optimizer.png',
+        title: 'Mega & Midweek Jackpot Engine',
+        kicker: 'COMBINATORIAL SURVIVAL MATH',
+        headline: 'Mega Jackpot Optimizer',
+        subhead: `${liveContentStats.totalJackpotGames} live matches across SportPesa, Betika & Mozzart.`,
+        keyFeatures: [
+          'Poisson-Binomial Tier Bonus Survival',
+          'Greedy Log-Gain Double Chance Hedges',
+          'One-Tap Playable Single-Line Generator',
+        ],
         drawBody: (ctx: CanvasRenderingContext2D) => {
           const pools = getInitialOfficialJackpotPools();
-          const rows = pools.sportpesa.slice(0, 6);
-          drawRoundedRect(ctx, 72, 470, 936, 170, 24);
+          const rows = pools.sportpesa.slice(0, 5);
+          drawRoundedRect(ctx, 72, 600, 936, 150, 22);
           ctx.fillStyle = palette.card;
           ctx.fill();
+          ctx.strokeStyle = palette.border;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
           ctx.fillStyle = palette.accent;
           ctx.font = '700 32px monospace';
-          ctx.fillText(`POOL: ${liveContentStats.megaPoolPrize}  ·  17 MATCHES`, 112, 540);
+          ctx.fillText(`POOL: ${liveContentStats.megaPoolPrize}  ·  17 MATCHES`, 112, 666);
           ctx.fillStyle = palette.text;
-          ctx.font = '600 28px system-ui, -apple-system, sans-serif';
-          ctx.fillText('Log-Gain Double Chance Allocation · Bonus Survival 12+/17', 112, 598);
+          ctx.font = '500 26px system-ui, -apple-system, sans-serif';
+          ctx.fillText('Budget-Constrained Double & Triple Chance Allocation', 112, 718);
 
-          rows.forEach((g, idx) => {
-            const y = 676 + idx * 172;
-            drawRoundedRect(ctx, 72, y, 936, 148, 22);
+          if (rows.length === 0) {
+            drawRoundedRect(ctx, 72, 782, 936, 240, 20);
             ctx.fillStyle = palette.card;
             ctx.fill();
             ctx.strokeStyle = palette.border;
             ctx.lineWidth = 2;
             ctx.stroke();
-
-            ctx.fillStyle = palette.muted;
-            ctx.font = '700 28px monospace';
-            ctx.fillText(`#${String(g.id).padStart(2, '0')}`, 108, y + 62);
-
             ctx.fillStyle = palette.text;
-            ctx.font = '700 32px system-ui, -apple-system, sans-serif';
-            ctx.fillText(clampString(g.match, 32), 186, y + 62);
+            ctx.font = '600 28px system-ui, -apple-system, sans-serif';
+            ctx.fillText('Syncing official Mega Jackpot fixtures from pool API...', 112, 895);
+          } else {
+            rows.forEach((g, idx) => {
+              const y = 782 + idx * 158;
+              drawRoundedRect(ctx, 72, y, 936, 134, 20);
+              ctx.fillStyle = palette.card;
+              ctx.fill();
+              ctx.strokeStyle = palette.border;
+              ctx.lineWidth = 2;
+              ctx.stroke();
 
-            ctx.fillStyle = palette.muted;
-            ctx.font = '600 25px monospace';
+              ctx.fillStyle = palette.muted;
+              ctx.font = '700 26px monospace';
+              ctx.fillText(`#${String(g.id).padStart(2, '0')}`, 108, y + 58);
+
+              ctx.fillStyle = palette.text;
+              ctx.font = '700 30px system-ui, -apple-system, sans-serif';
+              ctx.fillText(clampString(g.match, 30), 186, y + 58);
+
+              ctx.fillStyle = palette.muted;
+            ctx.font = '600 24px monospace';
             ctx.fillText(
               `1:${g.homeOdds.toFixed(2)}  X:${g.drawOdds.toFixed(2)}  2:${g.awayOdds.toFixed(2)}`,
               186,
-              y + 112
+              y + 102
             );
 
             ctx.fillStyle = g.isBanker ? palette.accent : palette.amber;
-            ctx.font = '700 30px monospace';
-            ctx.fillText(g.isBanker ? `LOCK ${g.recommendedPick}` : `HEDGE ${g.doubleChance}`, 770, y + 88);
-          });
+            ctx.font = '700 28px monospace';
+            ctx.fillText(g.isBanker ? `LOCK ${g.recommendedPick}` : `HEDGE ${g.doubleChance}`, 770, y + 80);
+            });
+          }
         },
       },
       {
         id: 'screen-4',
-        filename: 'predictpro-screenshot-4-leagues-compliance.png',
-        title: 'Global Coverage & Offline PWA Speed',
-        kicker: '40+ COMPETITIONS WORLDWIDE',
-        headline: 'Built for Mobile Match Research',
-        subhead: 'Zero-latency stand-alone mobile shell with public privacy & non-gambling compliance.',
+        filename: 'predictpro-screenshot-4-global-coverage.png',
+        title: '40+ Global Leagues & Live xG',
+        kicker: 'MOBILE ANALYTICS COMPANION',
+        headline: 'Global Coverage & Offline Speed',
+        subhead: 'Instant league hubs, odds conversion & privacy-first editorial access.',
+        keyFeatures: [
+          'Premier League, UCL, LaLiga & FKF Premier League',
+          'Universal Odds & Slip Probability Calculator',
+          'Zero Real-Money Wagering · Public /privacy Policy',
+        ],
         drawBody: (ctx: CanvasRenderingContext2D) => {
           const cards = [
             {
-              heading: 'Global League Coverage',
+              heading: 'Global Competition Coverage',
               detail: liveContentStats.leaguesList.slice(0, 4).join(' · '),
             },
             {
-              heading: 'Regional African Coverage',
-              detail: 'FKF Premier League (Kenya) · CAF Champions League · NPFL · PSL',
+              heading: 'East & Pan-African Football',
+              detail: 'FKF Premier League · CAF Champions League · NPFL · PSL',
             },
             {
-              heading: 'Slip & Odds Converter',
-              detail: 'Instant Decimal, Fractional & Implied Probability calculations',
+              heading: 'Odds & Probability Tools',
+              detail: 'Decimal, Fractional, American & Implied Probability',
             },
             {
-              heading: 'Verified Editorial Reference',
-              detail: '100% Informational Football Analytics · Public /privacy Policy',
+              heading: 'Verified Store Compliance',
+              detail: `Sports Stats Reference · ${resolvedPrivacyUrl}`,
             },
           ];
 
           cards.forEach((c, idx) => {
-            const y = 490 + idx * 290;
-            drawRoundedRect(ctx, 72, y, 936, 245, 26);
+            const y = 610 + idx * 238;
+            drawRoundedRect(ctx, 72, y, 936, 204, 24);
             ctx.fillStyle = palette.card;
             ctx.fill();
             ctx.strokeStyle = palette.border;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
 
             ctx.fillStyle = palette.accent;
-            ctx.font = '700 36px system-ui, -apple-system, sans-serif';
-            ctx.fillText(`0${idx + 1}. ${c.heading}`, 114, y + 92);
+            ctx.font = '700 34px system-ui, -apple-system, sans-serif';
+            ctx.fillText(`0${idx + 1}. ${c.heading}`, 114, y + 78);
 
             ctx.fillStyle = palette.text;
-            ctx.font = '500 30px system-ui, -apple-system, sans-serif';
-            ctx.fillText(clampString(c.detail, 54), 114, y + 168);
+            ctx.font = '500 28px system-ui, -apple-system, sans-serif';
+            ctx.fillText(clampString(c.detail, 54), 114, y + 144);
           });
         },
       },
     ];
 
-    const isJsdom = typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent || '');
     const built: GeneratedScreenshotAsset[] = specs.map((spec) => {
       let dataUrl: string | null = null;
       if (typeof document !== 'undefined' && !isJsdom) {
@@ -633,43 +867,67 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
           canvas.height = 1920;
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            const grad = ctx.createLinearGradient(0, 0, 0, 1920);
-            grad.addColorStop(0, palette.bgTop);
-            grad.addColorStop(1, palette.bgBottom);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 1080, 1920);
+            // Neutral sports-themed pitch background
+            drawNeutralSportsBackground(ctx, palette);
 
-            // Header brand bar
-            ctx.fillStyle = palette.accent;
-            ctx.font = '700 28px monospace';
-            ctx.fillText(`PREDICTPRO · ${spec.kicker}`, 72, 130);
+            // Overlay App Branding Header Bar
+            let headerOffsetY = 92;
+            if (showBrandingCrest) {
+              drawRoundedRect(ctx, 72, headerOffsetY, 84, 84, 20);
+              ctx.fillStyle = palette.accent;
+              ctx.fill();
 
+              ctx.fillStyle = '#04120C';
+              ctx.font = '800 36px system-ui, -apple-system, sans-serif';
+              ctx.fillText(fetchedMeta.shortName.slice(0, 2).toUpperCase() || 'PP', 90, headerOffsetY + 55);
+
+              ctx.fillStyle = palette.text;
+              ctx.font = '800 38px system-ui, -apple-system, sans-serif';
+              ctx.fillText(fetchedMeta.shortName, 178, headerOffsetY + 38);
+
+              ctx.fillStyle = palette.accent;
+              ctx.font = '700 24px monospace';
+              ctx.fillText(spec.kicker, 178, headerOffsetY + 74);
+              headerOffsetY += 126;
+            } else {
+              ctx.fillStyle = palette.accent;
+              ctx.font = '700 26px monospace';
+              ctx.fillText(`${fetchedMeta.shortName.toUpperCase()} · ${spec.kicker}`, 72, 128);
+              headerOffsetY = 160;
+            }
+
+            // Main screen headline + subtitle
             ctx.fillStyle = palette.text;
             ctx.font = '800 58px system-ui, -apple-system, sans-serif';
-            ctx.fillText(spec.headline, 72, 232);
+            ctx.fillText(spec.headline, 72, headerOffsetY + 72);
 
             ctx.fillStyle = palette.muted;
-            ctx.font = '500 31px system-ui, -apple-system, sans-serif';
-            ctx.fillText(clampString(spec.subhead, 62), 72, 304);
+            ctx.font = '500 30px system-ui, -apple-system, sans-serif';
+            ctx.fillText(clampString(spec.subhead, 62), 72, headerOffsetY + 132);
 
-            // Hairline divider
+            // Key Feature Bullet Strip overlaid cleanly above body
+            ctx.fillStyle = palette.accent;
+            ctx.font = '600 25px system-ui, -apple-system, sans-serif';
+            ctx.fillText(`• ${spec.keyFeatures[0]}   • ${spec.keyFeatures[1]}`, 72, headerOffsetY + 206);
+
+            // Screen Body Overlay
+            spec.drawBody(ctx);
+
+            // Footer branding & privacy URL
             ctx.strokeStyle = palette.border;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(72, 380);
-            ctx.lineTo(1008, 380);
+            ctx.moveTo(72, 1740);
+            ctx.lineTo(1008, 1740);
             ctx.stroke();
 
-            spec.drawBody(ctx);
+            ctx.fillStyle = palette.text;
+            ctx.font = '600 26px system-ui, -apple-system, sans-serif';
+            ctx.fillText(spec.keyFeatures[2], 72, 1796);
 
-            // Clean footer compliance line
             ctx.fillStyle = palette.muted;
-            ctx.font = '500 25px monospace';
-            ctx.fillText(
-              `${baseDomain.replace(/\/+$/, '')}/privacy  ·  Sports Statistics & xG Analytics`,
-              72,
-              1830
-            );
+            ctx.font = '500 24px monospace';
+            ctx.fillText(`${resolvedPrivacyUrl}  ·  Sports Statistics Reference`, 72, 1844);
 
             dataUrl = canvas.toDataURL('image/png');
           }
@@ -684,16 +942,95 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
         title: spec.title,
         caption: spec.subhead,
         dimensions: '1080 × 1920 px (9:16 Portrait PNG)',
+        keyFeatures: spec.keyFeatures,
         dataUrl,
       };
     });
 
     setScreenshots(built);
-  }, [screenshotTheme, liveContentStats, baseDomain]);
+  }, [
+    backgroundTheme,
+    showBrandingCrest,
+    fetchedMeta.shortName,
+    liveContentStats,
+    resolvedPrivacyUrl,
+  ]);
 
   useEffect(() => {
-    renderStoreScreenshots();
-  }, [renderStoreScreenshots]);
+    renderCanvasAssets();
+  }, [renderCanvasAssets]);
+
+  // Structured 'App Store Metadata' JSON Manifest combining fetched metadata, 512x512 icon placeholder, 2-4 sentence descriptions & privacy policy template
+  const structuredAppStoreManifest = useMemo(
+    () => ({
+      schemaVersion: '1.0',
+      generatedAt: new Date().toISOString(),
+      sourceMetadata: {
+        appName: fetchedMeta.name,
+        shortName: fetchedMeta.shortName,
+        packageId,
+        fetchedFrom: fetchedMeta.source,
+        tags: fetchedMeta.tags,
+      },
+      iconPlaceholder: {
+        dimensions: '512x512',
+        format: 'image/png',
+        hostedUrl: `${cleanDomain}/icon-512.png`,
+        canvasPlaceholderFile: 'predictpro-icon-placeholder-512x512.png',
+        purpose: 'any maskable',
+      },
+      storeCopy: {
+        targetStore: storeTarget,
+        appTitle: draftTitle,
+        shortDescription: draftShort,
+        optimizedOverview: draftOverview,
+        promotionalSummary: draftPromo,
+        keywords: draftKeywords,
+        fullDescription: draftFullDesc,
+        releaseNotes: draftReleaseNotes,
+      },
+      screenshots: screenshots.map((s) => ({
+        id: s.id,
+        filename: s.filename,
+        dimensions: '1080x1920',
+        aspectRatio: '9:16',
+        background: backgroundTheme,
+        keyFeatures: s.keyFeatures,
+      })),
+      legalAndPrivacy: {
+        privacyPolicyUrlTemplate: privacyTemplate,
+        resolvedPrivacyPolicyUrl: resolvedPrivacyUrl,
+        termsOfServiceUrl: `${cleanDomain}/terms`,
+        cookiePolicyUrl: `${cleanDomain}/cookies`,
+        supportUrl: `${cleanDomain}/contact`,
+        supportEmail,
+        nonGamblingComplianceUrl: `${cleanDomain}/responsible-gaming`,
+      },
+    }),
+    [
+      fetchedMeta,
+      packageId,
+      cleanDomain,
+      storeTarget,
+      draftTitle,
+      draftShort,
+      draftOverview,
+      draftPromo,
+      draftKeywords,
+      draftFullDesc,
+      draftReleaseNotes,
+      screenshots,
+      backgroundTheme,
+      privacyTemplate,
+      resolvedPrivacyUrl,
+      supportEmail,
+    ]
+  );
+
+  const structuredManifestJson = useMemo(
+    () => JSON.stringify(structuredAppStoreManifest, null, 2),
+    [structuredAppStoreManifest]
+  );
 
   const handleCopy = (value: string, label: string) => {
     if (navigator.clipboard?.writeText) {
@@ -704,18 +1041,18 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
     }
   };
 
-  const handleDownloadScreenshot = (item: GeneratedScreenshotAsset) => {
-    if (!item.dataUrl) {
+  const handleDownloadDataUrl = (dataUrl: string | null, filename: string) => {
+    if (!dataUrl) {
       toast.error('Canvas rendering unavailable in headless environment.');
       return;
     }
     const a = document.createElement('a');
-    a.href = item.dataUrl;
-    a.download = item.filename;
+    a.href = dataUrl;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    toast.success(`Downloaded ${item.filename}`);
+    toast.success(`Downloaded ${filename}`);
   };
 
   const handleDownloadAllScreenshots = () => {
@@ -725,7 +1062,7 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
       return;
     }
     ready.forEach((item, idx) => {
-      setTimeout(() => handleDownloadScreenshot(item), idx * 150);
+      setTimeout(() => handleDownloadDataUrl(item.dataUrl, item.filename), idx * 150);
     });
   };
 
@@ -747,69 +1084,43 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
     toast.success('Verified live HTTP reachability for all privacy and compliance routes.');
   };
 
-  const handleExportMetadataBundle = () => {
-    const cleanDomain = baseDomain.replace(/\/+$/, '');
-    const bundle = {
-      generatedAt: new Date().toISOString(),
-      storeTarget,
-      packageId,
-      baseDomain: cleanDomain,
-      supportEmail,
-      listing: {
-        title: draftTitle,
-        shortDescription: draftShort,
-        promotionalText: draftPromo,
-        keywords: draftKeywords,
-        fullDescription: draftFullDesc,
-        releaseNotes: draftReleaseNotes,
-      },
-      icons: manifest.icons.map((i) => ({
-        ...i,
-        absoluteUrl: `${cleanDomain}${i.src}`,
-      })),
-      legalLinks: LEGAL_ROUTES.map((r) => ({
-        label: r.label,
-        url: `${cleanDomain}${r.path}`,
-        requiredBy: r.requiredBy,
-      })),
-    };
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+  const handleDownloadStructuredManifest = () => {
+    const blob = new Blob([structuredManifestJson], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'predictpro-app-store-metadata-bundle.json';
+    a.download = 'app-store-metadata-manifest.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Exported complete App Store Metadata JSON bundle.');
+    toast.success('Downloaded structured app-store-metadata-manifest.json');
   };
 
-  const cleanDomain = baseDomain.replace(/\/+$/, '');
   const shortLimit = storeTarget === 'apple_connect' ? 30 : 80;
 
   return (
     <div className="space-y-8">
-      {/* Header & Live Content Snapshot */}
+      {/* Header & Fetched Source Metadata */}
       <section className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div className="space-y-2 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono tabular-nums">
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                App Store Asset Synthesizer
+                Fetched Source: {fetchedMeta.source}
               </span>
               <span aria-hidden="true">·</span>
-              <span>{liveContentStats.fixtureCount} Live Fixtures Indexed</span>
+              <span>{liveContentStats.fixtureCount} Live Fixtures</span>
               <span aria-hidden="true">·</span>
-              <span>{liveContentStats.leaguesCount}+ Competitions</span>
+              <span>{fetchedMeta.tags.length} Extracted Tags</span>
               <span aria-hidden="true">·</span>
-              <span>{manifest.icons.length} Manifest Icons</span>
+              <span>{fetchedMeta.icons.length} Manifest Icons</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              App Store Metadata &amp; Listing Asset Generator
+              App Store Metadata &amp; Asset Manifest Generator
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Automatically builds store-ready descriptions, 1080×1920 mobile screenshots, 512×512 icon links, and verified Privacy Policy URLs directly from your live PredictPro fixtures, Jackpot pools, and web manifest.
+              Fetches live app metadata (name, description, tags) to generate a structured App Store Metadata manifest with a 512×512 icon placeholder, optimized 2–4 sentence descriptions, a Privacy Policy URL template, and 4 canvas-rendered 1080×1920 sports-themed mobile screenshots.
             </p>
           </div>
 
@@ -818,32 +1129,75 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
               type="button"
               size="sm"
               variant="outline"
-              onClick={handleRegenerateDescriptions}
+              disabled={fetchingMeta}
+              onClick={() => fetchLiveAppMetadata(true)}
               className="gap-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Regenerate from Live Content
+              <RefreshCw className={`w-3.5 h-3.5 ${fetchingMeta ? 'animate-spin' : ''}`} />
+              Fetch App Metadata
             </Button>
             <Button
               type="button"
               size="sm"
-              onClick={handleExportMetadataBundle}
+              onClick={handleDownloadStructuredManifest}
               className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
-              Export Metadata Bundle (.json)
+              Download Manifest (.json)
             </Button>
           </div>
         </div>
 
-        {/* Configuration Controls */}
+        {/* Editable Fetched Metadata Inputs (Name, Tags, Domain, Privacy Template) */}
         <div className="pt-4 border-t border-border/70 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label
+              htmlFor="fetched-app-name"
+              className="block text-[11px] font-semibold text-muted-foreground mb-1.5"
+            >
+              Fetched App Name
+            </label>
+            <input
+              id="fetched-app-name"
+              type="text"
+              value={fetchedMeta.shortName}
+              onChange={(e) =>
+                setFetchedMeta((prev) => ({ ...prev, shortName: e.target.value }))
+              }
+              className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-medium"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="fetched-app-tags"
+              className="block text-[11px] font-semibold text-muted-foreground mb-1.5"
+            >
+              Fetched Metadata Tags (comma-separated)
+            </label>
+            <input
+              id="fetched-app-tags"
+              type="text"
+              value={fetchedMeta.tags.join(', ')}
+              onChange={(e) =>
+                setFetchedMeta((prev) => ({
+                  ...prev,
+                  tags: e.target.value
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter(Boolean),
+                }))
+              }
+              className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono"
+            />
+          </div>
+
           <div>
             <label
               htmlFor="meta-domain-input"
               className="block text-[11px] font-semibold text-muted-foreground mb-1.5"
             >
-              Production Domain (Links &amp; Privacy URLs)
+              Production Domain
             </label>
             <div className="flex gap-1.5">
               <input
@@ -872,66 +1226,22 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
 
           <div>
             <label
-              htmlFor="meta-package-input"
+              htmlFor="privacy-url-template-input"
               className="block text-[11px] font-semibold text-muted-foreground mb-1.5"
             >
-              Android Package / Application ID
+              Privacy Policy URL Template
             </label>
             <input
-              id="meta-package-input"
+              id="privacy-url-template-input"
               type="text"
-              value={packageId}
-              onChange={(e) => setPackageId(e.target.value)}
+              value={privacyTemplate}
+              onChange={(e) => setPrivacyTemplate(e.target.value)}
               className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono"
             />
-          </div>
-
-          <div>
-            <label
-              htmlFor="meta-email-input"
-              className="block text-[11px] font-semibold text-muted-foreground mb-1.5"
-            >
-              Developer Support Email
-            </label>
-            <input
-              id="meta-email-input"
-              type="email"
-              value={supportEmail}
-              onChange={(e) => setSupportEmail(e.target.value)}
-              className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono"
-            />
-          </div>
-
-          <div>
-            <span className="block text-[11px] font-semibold text-muted-foreground mb-1.5">
-              Copy Emphasis &amp; Tone Preset
-            </span>
-            <div className="inline-flex w-full rounded-lg border border-border bg-muted/40 p-0.5">
-              {(
-                [
-                  { id: 'balanced', label: 'Balanced' },
-                  { id: 'jackpot_xg', label: 'Jackpot + xG' },
-                  { id: 'editorial_stats', label: 'Compliance' },
-                ] as const
-              ).map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => setTonePreset(preset.id)}
-                  className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
-                    tonePreset === preset.id
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
-        {/* Store Target Filter + Live Content Inclusion Toggles */}
+        {/* Store Target Filter & Tone Preset */}
         <div className="pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1.5">
             {(
@@ -957,7 +1267,30 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+              {(
+                [
+                  { id: 'balanced', label: 'Balanced' },
+                  { id: 'jackpot_xg', label: 'Jackpot + xG' },
+                  { id: 'editorial_stats', label: 'Compliance' },
+                ] as const
+              ).map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => setTonePreset(preset.id)}
+                  className={`py-1 px-2.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                    tonePreset === preset.id
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
             <label className="inline-flex items-center gap-1.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -965,7 +1298,7 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                 onChange={(e) => setIncludeLiveFixtures(e.target.checked)}
                 className="rounded border-border"
               />
-              <span>Include Live Matches</span>
+              <span>Live Matches</span>
             </label>
             <label className="inline-flex items-center gap-1.5 cursor-pointer">
               <input
@@ -974,7 +1307,7 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                 onChange={(e) => setIncludeJackpotPools(e.target.checked)}
                 className="rounded border-border"
               />
-              <span>Include Jackpot Pools</span>
+              <span>Jackpot Pools</span>
             </label>
             <label className="inline-flex items-center gap-1.5 cursor-pointer">
               <input
@@ -983,39 +1316,75 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                 onChange={(e) => setIncludeComplianceNote(e.target.checked)}
                 className="rounded border-border"
               />
-              <span>Include Non-Gambling Notice</span>
+              <span>Non-Gambling Notice</span>
             </label>
           </div>
         </div>
       </section>
 
-      {/* 01. Generated Store Descriptions */}
+      {/* 01. Structured 'App Store Metadata' Manifest & 2-4 Sentence Descriptions */}
       <section className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border/70">
           <div>
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <FileText className="w-4 h-4 text-emerald-500" />
-              01. App Store Descriptions &amp; Keywords (Editable &amp; Limit-Checked)
+              01. Structured &lsquo;App Store Metadata&rsquo; Manifest &amp; Optimized Descriptions
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Synthesized directly from current competitions, match probabilities, and store compliance guidelines.
+              Synthesizes concise 2–4 sentence overviews, character-checked store copy, 512×512 icon placeholder config, and Privacy Policy URL template.
             </p>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              handleCopy(
-                `Title: ${draftTitle}\n\nShort: ${draftShort}\n\nFull Description:\n${draftFullDesc}`,
-                'All Store Descriptions'
-              )
-            }
-            className="gap-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            Copy Full Copy Set
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleRegenerateDescriptions}
+              className="gap-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Regenerate Copy
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => handleCopy(structuredManifestJson, 'Structured App Store Metadata Manifest')}
+              className="gap-1.5 text-xs font-bold whitespace-nowrap shrink-0"
+            >
+              <Code2 className="w-3.5 h-3.5" />
+              Copy Manifest JSON
+            </Button>
+          </div>
+        </div>
+
+        {/* Optimized 2-4 Sentence Overview Box */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <label htmlFor="draft-2-4-sentence" className="font-semibold text-foreground">
+              Optimized Store Overview (2–4 Sentences · High-Conversion Summary)
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="font-mono tabular-nums text-[11px] text-muted-foreground">
+                {draftOverview.split(/[.!?]+/).filter((s) => s.trim().length > 0).length} sentences · {draftOverview.length} chars
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => handleCopy(draftOverview, 'Optimized 2-4 Sentence Description')}
+                className="h-6 px-2 text-[11px] gap-1"
+              >
+                <Copy className="w-3 h-3" /> Copy
+              </Button>
+            </div>
+          </div>
+          <textarea
+            id="draft-2-4-sentence"
+            rows={3}
+            value={draftOverview}
+            onChange={(e) => setDraftOverview(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background p-3 text-xs leading-relaxed font-sans"
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -1156,12 +1525,12 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
           </div>
         </div>
 
-        {/* Full Description & Changelog */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-2">
-          <div className="lg:col-span-2 space-y-1.5">
+        {/* Full Description & Structured JSON Manifest Side-by-Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <label htmlFor="draft-full-desc" className="font-semibold text-foreground">
-                Full Store Description (Live Fixtures, Leagues &amp; Jackpot Summary)
+                Full Store Description
               </label>
               <div className="flex items-center gap-2">
                 <span
@@ -1178,13 +1547,13 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                   onClick={() => handleCopy(draftFullDesc, 'Full Store Description')}
                   className="h-6 px-2.5 text-[11px] gap-1"
                 >
-                  <Copy className="w-3 h-3" /> Copy Full Description
+                  <Copy className="w-3 h-3" /> Copy
                 </Button>
               </div>
             </div>
             <textarea
               id="draft-full-desc"
-              rows={11}
+              rows={12}
               value={draftFullDesc}
               onChange={(e) => setDraftFullDesc(e.target.value)}
               className="w-full rounded-lg border border-border bg-background p-3 text-xs leading-relaxed font-sans"
@@ -1193,40 +1562,45 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <label htmlFor="draft-release-notes" className="font-semibold text-foreground">
-                Release Notes / Changelog
-              </label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => handleCopy(draftReleaseNotes, 'Release Notes')}
-                className="h-6 px-2.5 text-[11px] gap-1"
-              >
-                <Copy className="w-3 h-3" /> Copy Notes
-              </Button>
+              <span className="font-semibold text-foreground">
+                Structured &lsquo;App Store Metadata&rsquo; JSON Manifest
+              </span>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  aria-label="Android Package ID"
+                  value={packageId}
+                  onChange={(e) => setPackageId(e.target.value)}
+                  className="h-6 w-36 rounded border border-border bg-background px-2 text-[11px] font-mono"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadStructuredManifest}
+                  className="h-6 px-2 text-[11px] gap-1"
+                >
+                  <Download className="w-3 h-3" /> JSON
+                </Button>
+              </div>
             </div>
-            <textarea
-              id="draft-release-notes"
-              rows={11}
-              value={draftReleaseNotes}
-              onChange={(e) => setDraftReleaseNotes(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background p-3 text-xs leading-relaxed font-mono"
-            />
+            <pre className="h-[246px] overflow-auto rounded-lg border border-slate-800 bg-slate-950 p-3 text-[11px] font-mono text-emerald-300 leading-relaxed">
+              {structuredManifestJson}
+            </pre>
           </div>
         </div>
       </section>
 
-      {/* 02. Screenshots & Verified Icon Assets */}
+      {/* 02. Canvas-Based Screenshot Generator (1080x1920 on Neutral Sports Background) & 512x512 Icon Placeholder */}
       <section className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
           <div>
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-emerald-500" />
-              02. Store Listing Screenshots (1080×1920 Portrait) &amp; App Icons
+              02. Canvas Screenshot Tool (4 × 1080×1920 Portrait) &amp; 512×512 Icon Placeholder
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Generated directly from live match predictions, 6×6 Poisson probabilities, and Jackpot pools — ready for Google Play, Apple, Samsung, Huawei, Xiaomi, Uptodown, and APKPure.
+              Overlays app branding and live key features directly onto a neutral sports-themed pitch background, plus generates a downloadable 512×512 store icon placeholder.
             </p>
           </div>
 
@@ -1234,16 +1608,16 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
             <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
               {(
                 [
-                  { id: 'emerald_dark', label: 'Emerald Dark' },
-                  { id: 'slate_pro', label: 'Slate Pro' },
+                  { id: 'neutral_slate_pitch', label: 'Neutral Pitch Slate' },
+                  { id: 'neutral_charcoal_pitch', label: 'Neutral Pitch Charcoal' },
                 ] as const
               ).map((themeOpt) => (
                 <button
                   key={themeOpt.id}
                   type="button"
-                  onClick={() => setScreenshotTheme(themeOpt.id)}
+                  onClick={() => setBackgroundTheme(themeOpt.id)}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    screenshotTheme === themeOpt.id
+                    backgroundTheme === themeOpt.id
                       ? 'bg-background text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
@@ -1252,15 +1626,26 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                 </button>
               ))}
             </div>
+
+            <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer px-2">
+              <input
+                type="checkbox"
+                checked={showBrandingCrest}
+                onChange={(e) => setShowBrandingCrest(e.target.checked)}
+                className="rounded border-border"
+              />
+              <span>Branding Crest</span>
+            </label>
+
             <Button
               type="button"
               size="sm"
               variant="outline"
-              onClick={renderStoreScreenshots}
+              onClick={renderCanvasAssets}
               className="gap-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Refresh Previews
+              Render Canvas
             </Button>
             <Button
               type="button"
@@ -1274,17 +1659,59 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
           </div>
         </div>
 
-        {/* Verified App Icons & Feature Banner Strip */}
+        {/* 512x512 Canvas Placeholder + Hosted Manifest Icons */}
         <div className="space-y-2.5">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Existing Hosted App Icons &amp; Feature Graphic (from public manifest)
+            512×512 Icon Placeholder &amp; Hosted Manifest Assets
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Canvas-Rendered 512x512 Placeholder */}
+            <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-3 flex flex-col justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {iconPlaceholderDataUrl ? (
+                  <img
+                    src={iconPlaceholderDataUrl}
+                    alt="512x512 Canvas Icon Placeholder"
+                    className="w-12 h-12 rounded-lg object-cover border border-border shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg border border-border bg-slate-900 text-emerald-400 flex items-center justify-center font-mono text-xs font-bold shrink-0">
+                    512
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-foreground truncate">512×512 Icon Placeholder</p>
+                  <p className="text-[11px] font-mono text-muted-foreground">Canvas PNG · 512 × 512 px</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleCopy(`${cleanDomain}/icon-512.png`, '512x512 Icon URL')}
+                  className="h-7 px-2 text-[11px] gap-1"
+                >
+                  <Copy className="w-3 h-3" /> Copy URL
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  onClick={() =>
+                    handleDownloadDataUrl(iconPlaceholderDataUrl, 'predictpro-icon-placeholder-512x512.png')
+                  }
+                  className="h-7 px-2.5 text-[11px] gap-1"
+                >
+                  <Download className="w-3 h-3" /> Save PNG
+                </Button>
+              </div>
+            </div>
+
             {[
-              { label: '512×512 App Icon (Mandatory)', path: '/icon-512.png', dims: '512 × 512 px · PNG' },
+              { label: 'Hosted 512×512 Icon', path: '/icon-512.png', dims: '512 × 512 px · PNG' },
               { label: '192×192 Launcher Icon', path: '/icon-192.png', dims: '192 × 192 px · PNG' },
-              { label: '180×180 Apple Touch Icon', path: '/apple-touch-icon.png', dims: '180 × 180 px · PNG' },
-              { label: 'Feature Graphic / Banner', path: '/og-image.jpg', dims: '1200 × 630 px · JPG' },
+              { label: 'Feature Graphic Banner', path: '/og-image.jpg', dims: '1200 × 630 px · JPG' },
             ].map((asset) => {
               const absUrl = `${cleanDomain}${asset.path}`;
               return (
@@ -1327,10 +1754,10 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
           </div>
         </div>
 
-        {/* 4 Generated 9:16 Store Screenshots */}
+        {/* 4 Generated 1080x1920 Portrait Mobile Screenshots */}
         <div className="space-y-3 pt-2 border-t border-border/60">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Generated Store Screenshots (4 Portrait PNGs · 1080×1920)
+            4 Canvas Placeholder Mobile Screenshots (1080×1920 · Neutral Sports Pitch Overlay)
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {screenshots.map((shot, idx) => (
@@ -1350,6 +1777,11 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                       <Smartphone className="w-6 h-6 mx-auto text-emerald-400" />
                       <p className="text-xs font-semibold">{shot.title}</p>
                       <p className="text-[11px] font-mono text-slate-400">{shot.dimensions}</p>
+                      <ul className="text-[10px] text-slate-400 space-y-0.5 text-left pt-1">
+                        {shot.keyFeatures.map((f) => (
+                          <li key={f}>· {f}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </div>
@@ -1367,7 +1799,7 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => handleDownloadScreenshot(shot)}
+                    onClick={() => handleDownloadDataUrl(shot.dataUrl, shot.filename)}
                     className="w-full h-8 text-xs font-semibold gap-1.5"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -1380,16 +1812,17 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
         </div>
       </section>
 
-      {/* 03. Public Privacy Policy & Compliance Links */}
+      {/* 03. Privacy Policy URL Template & Compliance Links */}
       <section className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
           <div>
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              03. Public Privacy Policy &amp; Store Compliance Links
+              03. Privacy Policy URL Template &amp; Store Compliance Links
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Verified public legal endpoints hosted directly on {cleanDomain}. Required by every major Android &amp; iOS developer portal prior to review approval.
+              Resolved Template: <code className="font-mono text-foreground">{privacyTemplate}</code> &rarr;{' '}
+              <code className="font-mono text-emerald-600 dark:text-emerald-400">{resolvedPrivacyUrl}</code>
             </p>
           </div>
 
@@ -1424,7 +1857,7 @@ export const AdminAppStoreMetadataTab: React.FC = () => {
 
         <div className="divide-y divide-border/70">
           {LEGAL_ROUTES.map((item) => {
-            const fullUrl = `${cleanDomain}${item.path}`;
+            const fullUrl = item.id === 'privacy' ? resolvedPrivacyUrl : `${cleanDomain}${item.path}`;
             const status = routeStatuses[item.id] || 'idle';
             return (
               <div

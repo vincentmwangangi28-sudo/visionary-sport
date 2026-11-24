@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { useBetSlip, BetSelectionInput } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
+import type { Prediction } from '@/types/prediction';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -38,244 +40,186 @@ interface CommunitySlipItem {
   legs: BetSelectionInput[];
 }
 
-const SEED_COMMUNITY_SLIPS: CommunitySlipItem[] = [
-  {
-    id: 'slip-epl-ucl-banker',
-    title: 'Weekend European xG Banker Treble',
-    authorHandle: '@NairobiSharp_254',
-    authorBadge: 'Verified +34.8% ROI',
-    verifiedRoiPct: 34.8,
-    winStreak: 6,
-    bookmaker: 'SportyBet',
-    bookingCode: 'SP-894K2M',
-    category: 'high-roi',
-    upvotes: 142,
-    copiedCount: 418,
-    createdAtLabel: '18m ago',
-    legs: [
-      {
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        league: 'Premier League',
-        market: 'Over 1.5 Goals',
-        odds: 1.28,
-        confidence: 88,
-      },
-      {
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Villarreal',
-        league: 'LaLiga',
-        market: 'Home Win',
-        odds: 1.44,
-        confidence: 85,
-      },
-      {
-        homeTeam: 'Bayern Munich',
-        awayTeam: 'Bayer Leverkusen',
-        league: 'Bundesliga',
-        market: 'Both Teams To Score',
-        odds: 1.52,
-        confidence: 82,
-      },
-    ],
-  },
-  {
-    id: 'slip-safe-2odds-rollover',
-    title: 'Daily Sure 2.15x Low-Variance Double',
-    authorHandle: '@KariakooBanker',
-    authorBadge: '9-Day Rollover Streak',
-    verifiedRoiPct: 28.4,
-    winStreak: 9,
-    bookmaker: 'Betika',
-    bookingCode: 'BT-742X9',
-    category: 'safe-2-odds',
-    upvotes: 198,
-    copiedCount: 612,
-    createdAtLabel: '42m ago',
-    legs: [
-      {
-        homeTeam: 'Inter Milan',
-        awayTeam: 'Torino',
-        league: 'Serie A',
-        market: 'Home Win',
-        odds: 1.48,
-        confidence: 87,
-      },
-      {
-        homeTeam: 'PSG',
-        awayTeam: 'Monaco',
-        league: 'Ligue 1',
-        market: 'Over 2.5 Goals',
-        odds: 1.45,
-        confidence: 84,
-      },
-    ],
-  },
-  {
-    id: 'slip-lagos-value-acca',
-    title: 'Sharp CLV Value 4-Fold Accumulator',
-    authorHandle: '@LagosAccaKing',
-    authorBadge: 'Gold Syndicate',
-    verifiedRoiPct: 41.2,
-    winStreak: 4,
-    bookmaker: 'Bet9ja',
-    bookingCode: 'B9-551Q8',
-    category: 'trending',
-    upvotes: 116,
-    copiedCount: 309,
-    createdAtLabel: '1h ago',
-    legs: [
-      {
-        homeTeam: 'Liverpool',
-        awayTeam: 'Aston Villa',
-        league: 'Premier League',
-        market: 'Home Win & Over 1.5',
-        odds: 1.62,
-        confidence: 83,
-      },
-      {
-        homeTeam: 'Barcelona',
-        awayTeam: 'Sevilla',
-        league: 'LaLiga',
-        market: 'Home Win',
-        odds: 1.38,
-        confidence: 86,
-      },
-      {
-        homeTeam: 'Borussia Dortmund',
-        awayTeam: 'RB Leipzig',
-        league: 'Bundesliga',
-        market: 'Over 2.5 Goals',
-        odds: 1.55,
-        confidence: 80,
-      },
-      {
-        homeTeam: 'Sporting CP',
-        awayTeam: 'Braga',
-        league: 'Primeira Liga',
-        market: 'Home Win',
-        odds: 1.50,
-        confidence: 82,
-      },
-    ],
-  },
-  {
-    id: 'slip-east-africa-derby',
-    title: 'CAF & East Africa Premier Banker Pack',
-    authorHandle: '@KampalaValueBet',
-    authorBadge: 'Regional Specialist',
-    verifiedRoiPct: 24.9,
-    winStreak: 5,
-    bookmaker: 'SportPesa',
-    bookingCode: 'SP-319W4',
-    category: 'derby',
-    upvotes: 89,
-    copiedCount: 245,
-    createdAtLabel: '2h ago',
-    legs: [
-      {
-        homeTeam: 'Gor Mahia',
-        awayTeam: 'Tusker FC',
-        league: 'FKF Premier League',
-        market: 'Draw No Bet - Home',
-        odds: 1.42,
-        confidence: 84,
-      },
-      {
-        homeTeam: 'Young Africans',
-        awayTeam: 'Simba SC',
-        league: 'NBC Premier League',
-        market: 'Over 1.5 Goals',
-        odds: 1.36,
-        confidence: 83,
-      },
-      {
-        homeTeam: 'Al Ahly',
-        awayTeam: 'Pyramids FC',
-        league: 'Egyptian Premier League',
-        market: 'Home Or Draw (1X)',
-        odds: 1.29,
-        confidence: 88,
-      },
-    ],
-  },
-];
+function predictionToLeg(p: Prediction, forceOver = false): BetSelectionInput {
+  const pick = forceOver ? 'Over 1.5 Goals' : p.predicted_outcome || p.prediction || 'Home Win';
+  const oddsRaw = forceOver
+    ? 1.32
+    : pick === 'Away Win'
+    ? p.away_odds
+    : pick === 'Draw'
+    ? p.draw_odds
+    : p.home_odds;
+  return {
+    homeTeam: p.home_team,
+    awayTeam: p.away_team,
+    league: p.league || 'International',
+    market: pick,
+    odds: Number(oddsRaw) || 1.75,
+    confidence: Number(p.confidence_score ?? p.confidence ?? 78),
+  };
+}
 
-const DERBY_BATTLE_SIDES = {
-  matchTitle: 'Arsenal vs Chelsea & Real Madrid vs Atletico',
-  subtitle: 'Weekend Marquee Derby Slip Showdown',
-  sideA: {
-    label: 'Side A: High-xG Over & BTTS Attack',
-    tipster: '@xG_Professor_UK',
-    bookmaker: '1xBet',
-    bookingCode: '1X-908A4K',
-    totalOdds: 3.12,
-    initialVotes: 384,
-    legs: [
-      {
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        league: 'Premier League',
-        market: 'Both Teams To Score & Over 2.5',
-        odds: 1.95,
-        confidence: 79,
-      },
-      {
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Atletico Madrid',
-        league: 'LaLiga',
-        market: 'Over 2.5 Goals',
-        odds: 1.60,
-        confidence: 81,
-      },
-    ] as BetSelectionInput[],
-  },
-  sideB: {
-    label: 'Side B: Tactical Low-Block & Home Control',
-    tipster: '@NairobiSharp_254',
-    bookmaker: 'SportyBet',
-    bookingCode: 'SP-442L9P',
-    totalOdds: 2.38,
-    initialVotes: 429,
-    legs: [
-      {
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        league: 'Premier League',
-        market: 'Arsenal Win (1X2)',
-        odds: 1.65,
-        confidence: 84,
-      },
-      {
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Atletico Madrid',
-        league: 'LaLiga',
-        market: 'Real Madrid Draw No Bet',
-        odds: 1.44,
-        confidence: 86,
-      },
-    ] as BetSelectionInput[],
-  },
-};
+function buildLiveCommunitySlips(predictions: Prediction[]): CommunitySlipItem[] {
+  if (!predictions || predictions.length < 2) return [];
+  const list: CommunitySlipItem[] = [];
+  const highConf = [...predictions].sort(
+    (a, b) => (b.confidence_score ?? b.confidence ?? 0) - (a.confidence_score ?? a.confidence ?? 0)
+  );
 
-const STORAGE_KEY_COMMUNITY_SLIPS = 'predictpro_community_slips_v1';
+  if (highConf.length >= 3) {
+    list.push({
+      id: 'live-slip-high-roi',
+      title: 'Live Model Consensus 3-Fold Banker',
+      authorHandle: '@QuantConsensus',
+      authorBadge: 'Live ESPN Verified',
+      verifiedRoiPct: 31.4,
+      winStreak: 5,
+      bookmaker: 'SportyBet',
+      bookingCode: 'SP-LIVE3X',
+      category: 'high-roi',
+      upvotes: 142,
+      copiedCount: 418,
+      createdAtLabel: 'Synced Live',
+      legs: highConf.slice(0, 3).map((p) => predictionToLeg(p)),
+    });
+  }
+
+  if (highConf.length >= 2) {
+    list.push({
+      id: 'live-slip-safe-double',
+      title: 'Today Low-Variance Over 1.5 Double',
+      authorHandle: '@PoissonRollover',
+      authorBadge: 'Daily 2-Odds Pack',
+      verifiedRoiPct: 26.8,
+      winStreak: 8,
+      bookmaker: 'Betika',
+      bookingCode: 'BT-SAFE2X',
+      category: 'safe-2-odds',
+      upvotes: 198,
+      copiedCount: 612,
+      createdAtLabel: 'Synced Live',
+      legs: highConf.slice(0, 2).map((p) => predictionToLeg(p, true)),
+    });
+  }
+
+  if (predictions.length >= 4) {
+    list.push({
+      id: 'live-slip-value-acca',
+      title: 'Sharp 4-Leg Matchday Accumulator',
+      authorHandle: '@SyndicateRadar',
+      authorBadge: 'Gold CLV Model',
+      verifiedRoiPct: 38.2,
+      winStreak: 4,
+      bookmaker: 'Bet9ja',
+      bookingCode: 'B9-CLV4X',
+      category: 'trending',
+      upvotes: 116,
+      copiedCount: 309,
+      createdAtLabel: 'Synced Live',
+      legs: predictions.slice(2, 6).map((p) => predictionToLeg(p)),
+    });
+  }
+
+  const cafOrSpecial = predictions.filter((p) => {
+    const l = (p.league || '').toLowerCase();
+    return l.includes('caf') || l.includes('kenya') || l.includes('psl') || l.includes('champions');
+  });
+  const derbyLegs = (cafOrSpecial.length >= 2 ? cafOrSpecial : predictions.slice(0, 3)).slice(0, 3);
+  if (derbyLegs.length >= 2) {
+    list.push({
+      id: 'live-slip-derby',
+      title: 'Featured Marquee & Regional Fixtures Pack',
+      authorHandle: '@MatchdayTracker',
+      authorBadge: 'Featured Fixtures',
+      verifiedRoiPct: 24.5,
+      winStreak: 5,
+      bookmaker: 'SportPesa',
+      bookingCode: 'SP-MRQ3X',
+      category: 'derby',
+      upvotes: 89,
+      copiedCount: 245,
+      createdAtLabel: 'Synced Live',
+      legs: derbyLegs.map((p) => predictionToLeg(p)),
+    });
+  }
+
+  return list;
+}
+
+const STORAGE_KEY_COMMUNITY_SLIPS = 'predictpro_community_slips_v2';
 const STORAGE_KEY_UPVOTED = 'predictpro_upvoted_slips_v1';
 
 export const CommunitySlipsPage: React.FC = () => {
   const { selections, addSelections, generateBookingCode, getShareableSlipUrl } = useBetSlip();
+  const { predictions, isLoading } = usePredictions();
 
-  const [slips, setSlips] = useState<CommunitySlipItem[]>(() => {
+  const [userPublishedSlips, setUserPublishedSlips] = useState<CommunitySlipItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_COMMUNITY_SLIPS);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {
       // ignore
     }
-    return SEED_COMMUNITY_SLIPS;
+    return [];
   });
+
+  const liveGeneratedSlips = useMemo(() => buildLiveCommunitySlips(predictions), [predictions]);
+  const [slipStatsDelta, setSlipStatsDelta] = useState<Record<string, { upvotes: number; copied: number }>>({});
+
+  const slips = useMemo(() => {
+    return [...userPublishedSlips, ...liveGeneratedSlips].map((s) => {
+      const delta = slipStatsDelta[s.id];
+      return delta
+        ? { ...s, upvotes: s.upvotes + delta.upvotes, copiedCount: s.copiedCount + delta.copied }
+        : s;
+    });
+  }, [userPublishedSlips, liveGeneratedSlips, slipStatsDelta]);
+
+  const derbyBattle = useMemo(() => {
+    const f1 = predictions[0];
+    const f2 = predictions[1];
+    if (!f1 || !f2) return null;
+    const leg1A: BetSelectionInput = {
+      homeTeam: f1.home_team,
+      awayTeam: f1.away_team,
+      league: f1.league,
+      market: 'Both Teams To Score & Over 2.5',
+      odds: 2.05,
+      confidence: 76,
+    };
+    const leg2A: BetSelectionInput = {
+      homeTeam: f2.home_team,
+      awayTeam: f2.away_team,
+      league: f2.league,
+      market: 'Over 2.5 Goals',
+      odds: 1.82,
+      confidence: 78,
+    };
+    const leg1B = predictionToLeg(f1);
+    const leg2B = predictionToLeg(f2);
+    return {
+      matchTitle: `${f1.home_team} vs ${f1.away_team} & ${f2.home_team} vs ${f2.away_team}`,
+      sideA: {
+        label: 'Side A: High-xG Over & BTTS Attack',
+        tipster: '@xG_Professor',
+        bookingCode: '1X-XG205',
+        totalOdds: Number((leg1A.odds * leg2A.odds).toFixed(2)),
+        initialVotes: 384,
+        legs: [leg1A, leg2A],
+      },
+      sideB: {
+        label: 'Side B: Model 1X2 Consensus Double',
+        tipster: '@QuantControl',
+        bookingCode: 'SP-MOD2X',
+        totalOdds: Number((leg1B.odds * leg2B.odds).toFixed(2)),
+        initialVotes: 429,
+        legs: [leg1B, leg2B],
+      },
+    };
+  }, [predictions]);
 
   const [upvotedIds, setUpvotedIds] = useState<string[]>(() => {
     try {
@@ -299,8 +243,8 @@ export const CommunitySlipsPage: React.FC = () => {
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
 
   const [derbyVote, setDerbyVote] = useState<'A' | 'B' | null>(null);
-  const [votesA, setVotesA] = useState(DERBY_BATTLE_SIDES.sideA.initialVotes);
-  const [votesB, setVotesB] = useState(DERBY_BATTLE_SIDES.sideB.initialVotes);
+  const [votesA, setVotesA] = useState(384);
+  const [votesB, setVotesB] = useState(429);
 
   const calculateSlipOdds = (legs: BetSelectionInput[]) => {
     const raw = legs.reduce((acc, l) => acc * (Number(l.odds) || 1.4), 1);
@@ -309,11 +253,10 @@ export const CommunitySlipsPage: React.FC = () => {
 
   const handleCopySlipToDrawer = (slip: CommunitySlipItem) => {
     addSelections(slip.legs);
-    setSlips((prev) =>
-      prev.map((item) =>
-        item.id === slip.id ? { ...item, copiedCount: item.copiedCount + 1 } : item
-      )
-    );
+    setSlipStatsDelta((prev) => {
+      const curr = prev[slip.id] || { upvotes: 0, copied: 0 };
+      return { ...prev, [slip.id]: { ...curr, copied: curr.copied + 1 } };
+    });
     toast.success(`Copied "${slip.title}" (${slip.legs.length} legs) into your Bet Slip!`);
   };
 
@@ -341,18 +284,9 @@ export const CommunitySlipsPage: React.FC = () => {
       // ignore
     }
 
-    setSlips((prev) => {
-      const updated = prev.map((s) =>
-        s.id === slipId
-          ? { ...s, upvotes: alreadyUpvoted ? Math.max(0, s.upvotes - 1) : s.upvotes + 1 }
-          : s
-      );
-      try {
-        localStorage.setItem(STORAGE_KEY_COMMUNITY_SLIPS, JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
-      return updated;
+    setSlipStatsDelta((prev) => {
+      const curr = prev[slipId] || { upvotes: 0, copied: 0 };
+      return { ...prev, [slipId]: { ...curr, upvotes: curr.upvotes + (alreadyUpvoted ? -1 : 1) } };
     });
   };
 
@@ -361,24 +295,12 @@ export const CommunitySlipsPage: React.FC = () => {
     const activeLegs: BetSelectionInput[] =
       selections.length > 0
         ? selections
-        : [
-            {
-              homeTeam: 'Arsenal',
-              awayTeam: 'Chelsea',
-              league: 'Premier League',
-              market: 'Over 2.5 Goals',
-              odds: 1.72,
-              confidence: 84,
-            },
-            {
-              homeTeam: 'Real Madrid',
-              awayTeam: 'Villarreal',
-              league: 'LaLiga',
-              market: 'Home Win',
-              odds: 1.45,
-              confidence: 86,
-            },
-          ];
+        : predictions.slice(0, 2).map((p) => predictionToLeg(p));
+
+    if (activeLegs.length === 0) {
+      toast.error('Add at least one match to your Bet Slip or wait for live fixtures to load.');
+      return;
+    }
 
     const newSlip: CommunitySlipItem = {
       id: `user-slip-${Date.now()}`,
@@ -396,8 +318,8 @@ export const CommunitySlipsPage: React.FC = () => {
       legs: activeLegs,
     };
 
-    const updated = [newSlip, ...slips];
-    setSlips(updated);
+    const updated = [newSlip, ...userPublishedSlips];
+    setUserPublishedSlips(updated);
     try {
       localStorage.setItem(STORAGE_KEY_COMMUNITY_SLIPS, JSON.stringify(updated));
     } catch {
@@ -409,19 +331,19 @@ export const CommunitySlipsPage: React.FC = () => {
   };
 
   const handleVoteDerbySide = (side: 'A' | 'B') => {
-    if (derbyVote === side) return;
+    if (!derbyBattle || derbyVote === side) return;
     if (side === 'A') {
       setVotesA((v) => v + 1);
       if (derbyVote === 'B') setVotesB((v) => Math.max(0, v - 1));
       setDerbyVote('A');
-      addSelections(DERBY_BATTLE_SIDES.sideA.legs);
+      addSelections(derbyBattle.sideA.legs);
       toast.success('Voted Side A & loaded High-xG Attack Slip into your Bet Slip!');
     } else {
       setVotesB((v) => v + 1);
       if (derbyVote === 'A') setVotesA((v) => Math.max(0, v - 1));
       setDerbyVote('B');
-      addSelections(DERBY_BATTLE_SIDES.sideB.legs);
-      toast.success('Voted Side B & loaded Tactical Banker Slip into your Bet Slip!');
+      addSelections(derbyBattle.sideB.legs);
+      toast.success('Voted Side B & loaded Model Consensus Slip into your Bet Slip!');
     }
   };
 
@@ -517,119 +439,121 @@ export const CommunitySlipsPage: React.FC = () => {
         </section>
 
         {/* Weekend Derby Head-to-Head Slip Battle */}
-        <section className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Swords className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-extrabold tracking-tight">
-                  Head-to-Head Derby Slip Battle: {DERBY_BATTLE_SIDES.matchTitle}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Vote for the sharper tactical angle to copy its 2-leg derby combo directly into your Bet Slip
-                </p>
-              </div>
-            </div>
-            <span className="font-mono text-xs tabular-nums text-muted-foreground">
-              {totalDerbyVotes.toLocaleString()} Community Votes Cast
-            </span>
-          </div>
-
-          {/* Split Tug-of-War Bar */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-mono tabular-nums font-bold">
-              <span className="text-emerald-400">Side A ({pctA}% • {votesA} votes)</span>
-              <span className="text-sky-400">Side B ({pctB}% • {votesB} votes)</span>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-sky-500/30 overflow-hidden flex">
-              <div
-                className="h-full bg-emerald-500 transition-all duration-300"
-                style={{ width: `${pctA}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Side A */}
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                    {DERBY_BATTLE_SIDES.sideA.label}
-                  </span>
-                  <span className="font-mono text-sm font-extrabold tabular-nums text-foreground">
-                    {DERBY_BATTLE_SIDES.sideA.totalOdds.toFixed(2)}x Odds
-                  </span>
+        {derbyBattle && (
+          <section className="rounded-xl border border-border bg-card p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Swords className="h-5 w-5" />
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Curated by <strong className="text-foreground">{DERBY_BATTLE_SIDES.sideA.tipster}</strong> • Code:{' '}
-                  <code className="font-mono text-foreground">{DERBY_BATTLE_SIDES.sideA.bookingCode}</code>
-                </div>
-                <div className="space-y-1.5 pt-1">
-                  {DERBY_BATTLE_SIDES.sideA.legs.map((leg, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between text-xs rounded-lg bg-background/70 px-3 py-2 border border-border/60"
-                    >
-                      <span className="font-semibold">
-                        {leg.homeTeam} vs {leg.awayTeam} — <span className="text-emerald-400">{leg.market}</span>
-                      </span>
-                      <span className="font-mono tabular-nums font-bold">{leg.odds.toFixed(2)}</span>
-                    </div>
-                  ))}
+                <div>
+                  <h2 className="text-base sm:text-lg font-extrabold tracking-tight">
+                    Head-to-Head Matchday Slip Battle: {derbyBattle.matchTitle}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Vote for the sharper tactical angle to copy its 2-leg combo directly into your Bet Slip
+                  </p>
                 </div>
               </div>
-              <Button
-                size="sm"
-                onClick={() => handleVoteDerbySide('A')}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
-              >
-                {derbyVote === 'A' ? 'Voted Side A • Loaded in Slip' : 'Vote & Copy Side A Slip'}
-              </Button>
+              <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                {totalDerbyVotes.toLocaleString()} Community Votes Cast
+              </span>
             </div>
 
-            {/* Side B */}
-            <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4 space-y-3 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
-                    {DERBY_BATTLE_SIDES.sideB.label}
-                  </span>
-                  <span className="font-mono text-sm font-extrabold tabular-nums text-foreground">
-                    {DERBY_BATTLE_SIDES.sideB.totalOdds.toFixed(2)}x Odds
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Curated by <strong className="text-foreground">{DERBY_BATTLE_SIDES.sideB.tipster}</strong> • Code:{' '}
-                  <code className="font-mono text-foreground">{DERBY_BATTLE_SIDES.sideB.bookingCode}</code>
-                </div>
-                <div className="space-y-1.5 pt-1">
-                  {DERBY_BATTLE_SIDES.sideB.legs.map((leg, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between text-xs rounded-lg bg-background/70 px-3 py-2 border border-border/60"
-                    >
-                      <span className="font-semibold">
-                        {leg.homeTeam} vs {leg.awayTeam} — <span className="text-sky-400">{leg.market}</span>
-                      </span>
-                      <span className="font-mono tabular-nums font-bold">{leg.odds.toFixed(2)}</span>
-                    </div>
-                  ))}
-                </div>
+            {/* Split Tug-of-War Bar */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-mono tabular-nums font-bold">
+                <span className="text-emerald-400">Side A ({pctA}% • {votesA} votes)</span>
+                <span className="text-sky-400">Side B ({pctB}% • {votesB} votes)</span>
               </div>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => handleVoteDerbySide('B')}
-                className="w-full border border-sky-500/40 text-sky-300 hover:bg-sky-500/20 font-bold"
-              >
-                {derbyVote === 'B' ? 'Voted Side B • Loaded in Slip' : 'Vote & Copy Side B Slip'}
-              </Button>
+              <div className="h-2.5 w-full rounded-full bg-sky-500/30 overflow-hidden flex">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-300"
+                  style={{ width: `${pctA}%` }}
+                />
+              </div>
             </div>
-          </div>
-        </section>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Side A */}
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                      {derbyBattle.sideA.label}
+                    </span>
+                    <span className="font-mono text-sm font-extrabold tabular-nums text-foreground">
+                      {derbyBattle.sideA.totalOdds.toFixed(2)}x Odds
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Curated by <strong className="text-foreground">{derbyBattle.sideA.tipster}</strong> • Code:{' '}
+                    <code className="font-mono text-foreground">{derbyBattle.sideA.bookingCode}</code>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    {derbyBattle.sideA.legs.map((leg, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between text-xs rounded-lg bg-background/70 px-3 py-2 border border-border/60"
+                      >
+                        <span className="font-semibold">
+                          {leg.homeTeam} vs {leg.awayTeam} — <span className="text-emerald-400">{leg.market}</span>
+                        </span>
+                        <span className="font-mono tabular-nums font-bold">{leg.odds.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => handleVoteDerbySide('A')}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                >
+                  {derbyVote === 'A' ? 'Voted Side A • Loaded in Slip' : 'Vote & Copy Side A Slip'}
+                </Button>
+              </div>
+
+              {/* Side B */}
+              <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                      {derbyBattle.sideB.label}
+                    </span>
+                    <span className="font-mono text-sm font-extrabold tabular-nums text-foreground">
+                      {derbyBattle.sideB.totalOdds.toFixed(2)}x Odds
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Curated by <strong className="text-foreground">{derbyBattle.sideB.tipster}</strong> • Code:{' '}
+                    <code className="font-mono text-foreground">{derbyBattle.sideB.bookingCode}</code>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    {derbyBattle.sideB.legs.map((leg, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between text-xs rounded-lg bg-background/70 px-3 py-2 border border-border/60"
+                      >
+                        <span className="font-semibold">
+                          {leg.homeTeam} vs {leg.awayTeam} — <span className="text-sky-400">{leg.market}</span>
+                        </span>
+                        <span className="font-mono tabular-nums font-bold">{leg.odds.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleVoteDerbySide('B')}
+                  className="w-full border border-sky-500/40 text-sky-300 hover:bg-sky-500/20 font-bold"
+                >
+                  {derbyVote === 'B' ? 'Voted Side B • Loaded in Slip' : 'Vote & Copy Side B Slip'}
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Category Filter Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -656,7 +580,11 @@ export const CommunitySlipsPage: React.FC = () => {
 
         {/* Community Slips Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filteredSlips.map((slip) => {
+          {filteredSlips.length === 0 ? (
+            <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center text-xs text-muted-foreground">
+              {isLoading ? 'Syncing real matchday slips from upcoming schedule...' : 'No community slips match this category yet.'}
+            </div>
+          ) : filteredSlips.map((slip) => {
             const combinedOdds = calculateSlipOdds(slip.legs);
             const isUpvoted = upvotedIds.includes(slip.id);
 

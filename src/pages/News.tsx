@@ -13,6 +13,8 @@ import {
   sportsNewsService,
   SportsArticle,
 } from '@/services/sportsNewsService';
+import { usePredictions } from '@/hooks/usePredictions';
+import { formatMatchSlug } from '@/services/sitemapGenerator';
 import {
   ExternalLink,
   Clock,
@@ -42,60 +44,19 @@ export interface LineupTransferWireItem {
   updatedAgo: string;
 }
 
-export const LIVE_LINEUP_TRANSFER_WIRE: LineupTransferWireItem[] = [
-  {
-    id: 'wire-1',
-    desk: 'UK (Sky / BBC)',
-    tag: 'Confirmed Starting XI',
-    fixture: 'Arsenal vs Chelsea',
-    starPlayer: 'Bukayo Saka',
-    club: 'Arsenal',
-    headline: 'Saka, Ødegaard & Rice all start in aggressive 4-3-3 high press; right half-space overload active.',
-    xgDelta: '+0.36 Home xG',
-    probShift: 'Home Win 68% → 74%',
-    matchSlug: '/predict/arsenal-vs-chelsea',
-    updatedAgo: '9m ago',
-  },
-  {
-    id: 'wire-2',
-    desk: 'Spain (Marca / MD)',
-    tag: 'Tactical System Shift',
-    fixture: 'Real Madrid vs Barcelona',
-    starPlayer: 'Kylian Mbappé',
-    club: 'Real Madrid',
-    headline: 'Mbappé & Vinícius paired in split-striker transition shape against high defensive line.',
-    xgDelta: '+0.42 Total xG',
-    probShift: 'Over 2.5 Goals 71% → 79%',
-    matchSlug: '/predict/real-madrid-vs-barcelona',
-    updatedAgo: '18m ago',
-  },
-  {
-    id: 'wire-3',
-    desk: 'Europe (Kicker / Gazzetta / L\'Équipe)',
-    tag: 'Bundesliga & Serie A Intel',
-    fixture: 'Bayern Munich vs Borussia Dortmund',
-    starPlayer: 'Harry Kane',
-    club: 'Bayern Munich',
-    headline: 'Kane & Musiala central combination averaging 4.8 box entries per 15 minutes in Der Klassiker.',
-    xgDelta: '+0.39 Home xG',
-    probShift: 'BTTS Yes 76%',
-    matchSlug: '/predict/bayern-munich-vs-borussia-dortmund',
-    updatedAgo: '27m ago',
-  },
-  {
-    id: 'wire-4',
-    desk: 'Africa (CAF / KPL)',
-    tag: 'Mashemeji Derby Lineup',
-    fixture: 'Gor Mahia vs AFC Leopards',
-    starPlayer: 'Austin Odhiambo',
-    club: 'Gor Mahia',
-    headline: 'Austin Odhiambo starts in #10 playmaker role; full-back width driving 64% final-third tilt.',
-    xgDelta: '+0.33 Home xG',
-    probShift: 'Home Win 72% → 78%',
-    matchSlug: '/predict/gor-mahia-vs-afc-leopards',
-    updatedAgo: '34m ago',
-  },
-];
+export function classifyPressDesk(league?: string): LineupTransferWireItem['desk'] {
+  const lower = String(league || '').toLowerCase();
+  if (lower.includes('caf') || lower.includes('afcon') || lower.includes('kenya') || lower.includes('fkf') || lower.includes('psl') || lower.includes('nigeria') || lower.includes('egypt') || lower.includes('tanzania')) {
+    return 'Africa (CAF / KPL)';
+  }
+  if (lower.includes('premier league') || lower.includes('championship') || lower.includes('fa cup') || lower.includes('efl')) {
+    return 'UK (Sky / BBC)';
+  }
+  if (lower.includes('laliga') || lower.includes('la liga') || lower.includes('copa del rey')) {
+    return 'Spain (Marca / MD)';
+  }
+  return "Europe (Kicker / Gazzetta / L'Équipe)";
+}
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -106,6 +67,7 @@ function timeAgo(date: string) {
 }
 
 export default function News() {
+  const { predictions } = usePredictions();
   const [articles, setArticles] = useState<SportsArticle[]>(() =>
     sportsNewsService.getCachedArticles()
   );
@@ -188,10 +150,39 @@ export default function News() {
 
   const categories = ['all', 'Gemini AI Wire', 'Tactical Wire', 'Matchday', 'Transfers', 'Injury Alert'];
 
+  const dynamicWireItems = useMemo<LineupTransferWireItem[]>(() => {
+    return predictions.slice(0, 8).map((p, idx) => {
+      const homeXg = Number(p.home_xg ?? p.expected_home_goals ?? 1.45);
+      const awayXg = Number(p.away_xg ?? p.expected_away_goals ?? 1.1);
+      const pick = p.predicted_outcome || p.prediction || 'Home Win';
+      const conf = Number(p.confidence_score ?? p.confidence ?? 75);
+      return {
+        id: `wire-${p.id || idx}`,
+        desk: classifyPressDesk(p.league),
+        tag: p.league || 'Upcoming Tactical Projection',
+        fixture: `${p.home_team} vs ${p.away_team}`,
+        starPlayer: p.home_team,
+        club: p.home_team,
+        headline:
+          p.reasoning ||
+          `${p.home_team} (${homeXg.toFixed(2)} xG) vs ${p.away_team} (${awayXg.toFixed(2)} xG) model wire for ${p.league}.`,
+        xgDelta: `${homeXg.toFixed(2)} - ${awayXg.toFixed(2)} xG`,
+        probShift: `${pick} (${conf}%)`,
+        matchSlug: `/predict/${formatMatchSlug(p.home_team, p.away_team, p.match_date)}`,
+        updatedAgo: p.match_date
+          ? new Date(p.match_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+          : 'Live Sync',
+      };
+    });
+  }, [predictions]);
+
   const filteredWire = useMemo(() => {
-    if (selectedDesk === 'all') return LIVE_LINEUP_TRANSFER_WIRE;
-    return LIVE_LINEUP_TRANSFER_WIRE.filter((item) => item.desk === selectedDesk);
-  }, [selectedDesk]);
+    const base =
+      selectedDesk === 'all'
+        ? dynamicWireItems
+        : dynamicWireItems.filter((item) => item.desk === selectedDesk);
+    return base.slice(0, 4);
+  }, [dynamicWireItems, selectedDesk]);
 
   const filteredArticles = useMemo(() => {
     return articles.filter((a) => {
@@ -306,43 +297,49 @@ export default function News() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {filteredWire.map((item) => (
-              <div
-                key={item.id}
-                className="p-3 rounded-lg border border-border/70 bg-background/80 flex flex-col justify-between gap-2.5"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span className="font-semibold text-primary">{item.tag}</span>
-                    <span className="font-mono">{item.updatedAgo}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <PlayerAvatar
-                      name={item.starPlayer}
-                      team={item.club}
-                      size="xs"
-                      showClubBadge={false}
-                    />
-                    <p className="text-xs font-extrabold text-foreground">{item.fixture}</p>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug">{item.headline}</p>
-                </div>
-
-                <div className="pt-2 border-t border-border/50 space-y-1.5">
-                  <div className="flex items-center justify-between text-[10px] font-mono tabular-nums">
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{item.xgDelta}</span>
-                    <span className="text-foreground font-semibold">{item.probShift}</span>
-                  </div>
-                  <Link
-                    to={item.matchSlug}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
-                  >
-                    <span>Open Match xG Model</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
+            {filteredWire.length === 0 ? (
+              <div className="col-span-full p-4 rounded-lg border border-border/60 bg-background/60 text-xs text-muted-foreground text-center">
+                No upcoming fixtures match this press desk right now. Switch to &quot;All Press Desks&quot; to see live matchday projections.
               </div>
-            ))}
+            ) : (
+              filteredWire.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 rounded-lg border border-border/70 bg-background/80 flex flex-col justify-between gap-2.5"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                      <span className="font-semibold text-primary truncate">{item.tag}</span>
+                      <span className="font-mono shrink-0">{item.updatedAgo}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <PlayerAvatar
+                        name={item.starPlayer}
+                        team={item.club}
+                        size="xs"
+                        showClubBadge={false}
+                      />
+                      <p className="text-xs font-extrabold text-foreground">{item.fixture}</p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug line-clamp-3">{item.headline}</p>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-mono tabular-nums">
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{item.xgDelta}</span>
+                      <span className="text-foreground font-semibold">{item.probShift}</span>
+                    </div>
+                    <Link
+                      to={item.matchSlug}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+                    >
+                      <span>Open Match xG Model</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </section>
 

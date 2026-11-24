@@ -1,7 +1,7 @@
 import { CURRENT_SEASON_STANDINGS, LEAGUES, StandingRow } from '@/data/standingsData';
 import { CANONICAL_TEAM_LOGOS } from '@/services/teamLogos';
 import { Prediction } from '@/types/prediction';
-import { DEFAULT_PREDICTIONS } from '@/data/mockPredictions';
+import { getSavedPredictionsList } from '@/services/predictionStorage';
 
 export interface PinnedTeamStats {
   name: string;
@@ -146,7 +146,7 @@ export function getTeamLogo(teamName: string): string {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(teamName)}&background=0284c7&color=fff&size=128&bold=true`;
 }
 
-export function calculateTeamStats(teamName: string, predictionsList: Prediction[] = DEFAULT_PREDICTIONS): PinnedTeamStats {
+export function calculateTeamStats(teamName: string, predictionsList: Prediction[] = getSavedPredictionsList()): PinnedTeamStats {
   const norm = teamName.toLowerCase().trim();
   let row: StandingRow | undefined;
   let leagueName = 'Football';
@@ -254,7 +254,7 @@ export function calculateTeamStats(teamName: string, predictionsList: Prediction
   };
 }
 
-export function calculateLeagueOverview(leagueName: string, predictionsList: Prediction[] = DEFAULT_PREDICTIONS): PinnedLeagueOverview {
+export function calculateLeagueOverview(leagueName: string, predictionsList: Prediction[] = getSavedPredictionsList()): PinnedLeagueOverview {
   const norm = leagueName.toLowerCase().trim();
   const lgConfig = LEAGUES.find(l =>
     l.name.toLowerCase().includes(norm) || norm.includes(l.name.toLowerCase())

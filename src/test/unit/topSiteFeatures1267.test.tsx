@@ -91,6 +91,16 @@ function renderSuite(initialTab: Parameters<typeof LiveApiIntelligenceSuite>[0][
     },
   });
 
+  queryClient.setQueryData(
+    ['predictions', 'list', 'all'],
+    {
+      allPredictions: SAMPLE_MATCHES,
+      total: SAMPLE_MATCHES.length,
+      isRealTime: true,
+    },
+    { updatedAt: Date.now() + 60_000 }
+  );
+
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>

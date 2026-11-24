@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TeamLogo } from '@/components/TeamLogo';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { usePredictions } from '@/hooks/usePredictions';
 import { Link } from 'react-router-dom';
 import {
   ChevronRight,
@@ -32,29 +33,22 @@ interface TournamentData {
   routePath?: string;
   keyDates: string;
   totalTeams: number;
-  featuredMatches: {
-    home: string;
-    away: string;
-    date: string;
-    stage: string;
-    tip: string;
-    odds: number;
-  }[];
+  matchKeywords: string[];
 }
 
 const DOMESTIC_LEAGUES = [
-  { name: 'Premier League', country: 'England', code: 'ENG', to: '/premier-league-predictions', leader: 'Liverpool', matches: 380 },
-  { name: 'LaLiga', country: 'Spain', code: 'ESP', to: '/la-liga-predictions', leader: 'Real Madrid', matches: 380 },
-  { name: 'Serie A', country: 'Italy', code: 'ITA', to: '/serie-a-predictions', leader: 'Inter Milan', matches: 380 },
-  { name: 'Bundesliga', country: 'Germany', code: 'GER', to: '/bundesliga-predictions', leader: 'Bayern Munich', matches: 306 },
-  { name: 'Ligue 1', country: 'France', code: 'FRA', to: '/ligue-1-predictions', leader: 'Paris Saint-Germain', matches: 306 },
-  { name: 'FKF Premier League', country: 'Kenya', code: 'KEN', to: '/kpl-predictions', leader: 'Gor Mahia', matches: 306 },
-  { name: 'Eredivisie', country: 'Netherlands', code: 'NED', to: '/eredivisie-predictions', leader: 'PSV Eindhoven', matches: 306 },
-  { name: 'Major League Soccer', country: 'USA & Canada', code: 'MLS', to: '/mls-predictions', leader: 'Inter Miami', matches: 510 },
-  { name: 'Brasileirão Série A', country: 'Brazil', code: 'BRA', to: '/brazilian-serie-a-predictions', leader: 'Palmeiras', matches: 380 },
-  { name: 'Saudi Pro League', country: 'Saudi Arabia', code: 'KSA', to: '/saudi-pro-league-predictions', leader: 'Al Hilal', matches: 306 },
-  { name: 'South Africa PSL', country: 'South Africa', code: 'RSA', to: '/south-africa-psl-predictions', leader: 'Mamelodi Sundowns', matches: 240 },
-  { name: 'EFL Championship', country: 'England', code: 'EFL', to: '/championship-predictions', leader: 'Leeds United', matches: 552 },
+  { name: 'Premier League', country: 'England', code: 'ENG', to: '/premier-league-predictions', matches: 380 },
+  { name: 'LaLiga', country: 'Spain', code: 'ESP', to: '/la-liga-predictions', matches: 380 },
+  { name: 'Serie A', country: 'Italy', code: 'ITA', to: '/serie-a-predictions', matches: 380 },
+  { name: 'Bundesliga', country: 'Germany', code: 'GER', to: '/bundesliga-predictions', matches: 306 },
+  { name: 'Ligue 1', country: 'France', code: 'FRA', to: '/ligue-1-predictions', matches: 306 },
+  { name: 'FKF Premier League', country: 'Kenya', code: 'KEN', to: '/kpl-predictions', matches: 306 },
+  { name: 'Eredivisie', country: 'Netherlands', code: 'NED', to: '/eredivisie-predictions', matches: 306 },
+  { name: 'Major League Soccer', country: 'USA & Canada', code: 'MLS', to: '/mls-predictions', matches: 510 },
+  { name: 'Brasileirão Série A', country: 'Brazil', code: 'BRA', to: '/brazilian-serie-a-predictions', matches: 380 },
+  { name: 'Saudi Pro League', country: 'Saudi Arabia', code: 'KSA', to: '/saudi-pro-league-predictions', matches: 306 },
+  { name: 'South Africa PSL', country: 'South Africa', code: 'RSA', to: '/south-africa-psl-predictions', matches: 240 },
+  { name: 'EFL Championship', country: 'England', code: 'EFL', to: '/championship-predictions', matches: 552 },
 ];
 
 const GLOBAL_TOURNAMENTS: TournamentData[] = [
@@ -64,8 +58,8 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
     shortName: 'UCL',
     confederation: 'UEFA',
     region: 'Europe',
-    season: '2025/2026',
-    status: 'Knockout Stage',
+    season: '2026/2027',
+    status: 'In Progress',
     defendingChampion: 'Real Madrid',
     topFavorite: { team: 'Real Madrid', probability: 27, odds: 3.5 },
     contenders: [
@@ -75,12 +69,9 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Arsenal', prob: 14, code: 'ENG' },
     ],
     routePath: '/champions-league-predictions',
-    keyDates: 'Final: May 30, 2026 (Munich)',
+    keyDates: 'League & Knockout Hub',
     totalTeams: 36,
-    featuredMatches: [
-      { home: 'Arsenal', away: 'Paris Saint-Germain', date: '19:00 UTC', stage: 'League Phase', tip: 'Arsenal Win', odds: 1.75 },
-      { home: 'Bayer Leverkusen', away: 'AC Milan', date: '19:00 UTC', stage: 'League Phase', tip: 'BTTS - Yes', odds: 1.68 },
-    ],
+    matchKeywords: ['champions league', 'uefa', 'europa'],
   },
   {
     id: 'afcon',
@@ -99,11 +90,9 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Egypt', prob: 15, code: 'EGY' },
     ],
     routePath: '/afcon-predictions',
-    keyDates: 'Hosts: Morocco',
+    keyDates: 'CAF International Qualifiers',
     totalTeams: 24,
-    featuredMatches: [
-      { home: 'Guinea', away: 'Kenya', date: '16:00 UTC', stage: 'Group Qualifier', tip: 'Guinea Win', odds: 1.62 },
-    ],
+    matchKeywords: ['afcon', 'africa cup', 'caf'],
   },
   {
     id: 'libertadores',
@@ -122,19 +111,17 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Fluminense', prob: 12, code: 'BRA' },
     ],
     routePath: '/copa-libertadores-predictions',
-    keyDates: 'Final: Nov 28, 2026 (Buenos Aires)',
+    keyDates: 'South America Continental',
     totalTeams: 32,
-    featuredMatches: [
-      { home: 'Flamengo', away: 'River Plate', date: '23:30 UTC', stage: 'Round of 16', tip: 'Home Win', odds: 1.95 },
-    ],
+    matchKeywords: ['libertadores', 'sudamericana', 'conmebol', 'brasileir'],
   },
   {
     id: 'worldcup',
-    name: 'FIFA World Cup 2026 Qualifiers',
-    shortName: 'World Cup 2026',
+    name: 'FIFA World Cup Qualifiers',
+    shortName: 'World Cup',
     confederation: 'FIFA',
     region: 'Global',
-    season: '2026',
+    season: '2026/2027',
     status: 'Qualifiers',
     defendingChampion: 'Argentina',
     topFavorite: { team: 'France', probability: 22, odds: 4.5 },
@@ -145,11 +132,9 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Brazil', prob: 16, code: 'BRA' },
     ],
     routePath: '/world-cup-predictions',
-    keyDates: 'Hosts: USA / Canada / Mexico',
+    keyDates: 'International Windows',
     totalTeams: 48,
-    featuredMatches: [
-      { home: 'Brazil', away: 'Argentina', date: '22:00 UTC', stage: 'CONMEBOL Qualifier', tip: 'BTTS - Yes', odds: 1.88 },
-    ],
+    matchKeywords: ['world cup', 'nations league', 'friendly', 'international', 'fifa'],
   },
   {
     id: 'caf_cl',
@@ -157,8 +142,8 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
     shortName: 'CAF CL',
     confederation: 'CAF',
     region: 'Africa',
-    season: '2025/2026',
-    status: 'Knockout Stage',
+    season: '2026/2027',
+    status: 'In Progress',
     defendingChampion: 'Al Ahly SC',
     topFavorite: { team: 'Al Ahly SC', probability: 34, odds: 2.75 },
     contenders: [
@@ -168,11 +153,9 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'TP Mazembe', prob: 10, code: 'COD' },
     ],
     routePath: '/afcon-predictions',
-    keyDates: 'Two-legged Final: May 2026',
+    keyDates: 'African Club Competition',
     totalTeams: 16,
-    featuredMatches: [
-      { home: 'Mamelodi Sundowns', away: 'Al Ahly SC', date: '15:00 UTC', stage: 'Semi-Final', tip: 'Under 2.5 Goals', odds: 1.62 },
-    ],
+    matchKeywords: ['caf champions', 'confederation cup', 'kenya', 'psl'],
   },
   {
     id: 'afc_cl',
@@ -180,7 +163,7 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
     shortName: 'AFC Elite',
     confederation: 'AFC',
     region: 'Asia & Middle East',
-    season: '2025/2026',
+    season: '2026/2027',
     status: 'In Progress',
     defendingChampion: 'Al Ain',
     topFavorite: { team: 'Al Hilal', probability: 36, odds: 2.6 },
@@ -191,11 +174,9 @@ const GLOBAL_TOURNAMENTS: TournamentData[] = [
       { team: 'Ulsan HD', prob: 12, code: 'KOR' },
     ],
     routePath: '/saudi-pro-league-predictions',
-    keyDates: 'Finals Hub: Saudi Arabia',
+    keyDates: 'Asia Continental Elite',
     totalTeams: 24,
-    featuredMatches: [
-      { home: 'Al Hilal', away: 'Al Nassr', date: '18:30 UTC', stage: 'Quarter-Final', tip: 'Al Hilal Win & Over 2.5', odds: 2.25 },
-    ],
+    matchKeywords: ['afc', 'saudi', 'j-league', 'k-league'],
   },
 ];
 
@@ -203,8 +184,33 @@ export default function GlobalTournaments() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConfed, setSelectedConfed] = useState<string>('all');
   const { formatOdds } = useUserPreferences();
+  const { data: predictions = [] } = usePredictions(7);
 
-  const filteredTournaments = GLOBAL_TOURNAMENTS.filter((t) => {
+  const tournamentsWithRealFixtures = useMemo(() => {
+    const activeUpcoming = predictions.filter((p) => p.status !== 'finished');
+    return GLOBAL_TOURNAMENTS.map((t) => {
+      const matched = activeUpcoming
+        .filter((p) => {
+          const comp = (p.competition || p.league || '').toLowerCase();
+          return t.matchKeywords.some((kw) => comp.includes(kw));
+        })
+        .slice(0, 2)
+        .map((p) => ({
+          home: p.home_team,
+          away: p.away_team,
+          date: p.match_time || p.match_date?.slice(0, 10) || 'Scheduled',
+          stage: p.competition || t.shortName,
+          tip: p.predicted_outcome || p.prediction || 'Home Win',
+          odds: Number((p.home_odds || p.odds?.home || 1.85).toFixed(2)),
+        }));
+      return {
+        ...t,
+        featuredMatches: matched,
+      };
+    });
+  }, [predictions]);
+
+  const filteredTournaments = tournamentsWithRealFixtures.filter((t) => {
     const matchesSearch =
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -287,7 +293,7 @@ export default function GlobalTournaments() {
                       {lg.name}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {lg.country} · Leader: {lg.leader}
+                      {lg.country} · Live xG &amp; Predictions Hub
                     </p>
                   </div>
                 </div>

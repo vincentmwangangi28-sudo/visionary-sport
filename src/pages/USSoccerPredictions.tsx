@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
@@ -7,8 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { Flag, Sparkles, Share2, Copy, CheckCheck, TrendingUp, DollarSign } from 'lucide-react';
+import { Flag, Sparkles, Share2, Copy, CheckCheck, DollarSign } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 interface USFixture {
@@ -31,108 +32,83 @@ interface USFixture {
   expectedValue: string;
 }
 
-const US_MATCHES: USFixture[] = [
-  {
-    id: 'mls-1',
-    homeTeam: 'Inter Miami',
-    awayTeam: 'LA Galaxy',
-    competition: 'Major League Soccer (MLS)',
-    kickoffEST: 'Sat 7:30 PM EST',
-    broadcastUS: 'Apple TV MLS Season Pass',
-    moneylineHome: '-135',
-    moneylineDraw: '+290',
-    moneylineAway: '+340',
-    decimalHome: 1.74,
-    decimalDraw: 3.90,
-    decimalAway: 4.40,
-    spread: 'Miami -0.5 (-135)',
-    overUnder: 'Over 3.5 (-110)',
-    aiPick: 'Inter Miami Moneyline & Over 2.5 Goals',
-    confidence: 76,
-    expectedValue: '+8.4%',
-  },
-  {
-    id: 'mls-2',
-    homeTeam: 'Columbus Crew',
-    awayTeam: 'LAFC',
-    competition: 'Major League Soccer (MLS)',
-    kickoffEST: 'Sat 8:30 PM EST',
-    broadcastUS: 'Apple TV MLS Season Pass',
-    moneylineHome: '+125',
-    moneylineDraw: '+250',
-    moneylineAway: '+200',
-    decimalHome: 2.25,
-    decimalDraw: 3.50,
-    decimalAway: 3.00,
-    spread: 'Columbus PK (-130)',
-    overUnder: 'Over 2.5 (-125)',
-    aiPick: 'Both Teams To Score (BTTS: Yes)',
-    confidence: 78,
-    expectedValue: '+11.2%',
-  },
-  {
-    id: 'epl-1',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    competition: 'English Premier League (EPL)',
-    kickoffEST: 'Sun 11:30 AM EST',
-    broadcastUS: 'NBC Sports / USA Network',
-    moneylineHome: '-120',
-    moneylineDraw: '+270',
-    moneylineAway: '+310',
-    decimalHome: 1.83,
-    decimalDraw: 3.70,
-    decimalAway: 4.10,
-    spread: 'Arsenal -0.5 (-120)',
-    overUnder: 'Over 2.5 (-135)',
-    aiPick: 'Arsenal Moneyline (-120)',
-    confidence: 73,
-    expectedValue: '+6.9%',
-  },
-  {
-    id: 'epl-2',
-    homeTeam: 'Manchester City',
-    awayTeam: 'Tottenham',
-    competition: 'English Premier League (EPL)',
-    kickoffEST: 'Sun 9:00 AM EST',
-    broadcastUS: 'Peacock TV Exclusive',
-    moneylineHome: '-250',
-    moneylineDraw: '+425',
-    moneylineAway: '+600',
-    decimalHome: 1.40,
-    decimalDraw: 5.25,
-    decimalAway: 7.00,
-    spread: 'Man City -1.5 (+105)',
-    overUnder: 'Over 3.5 (-105)',
-    aiPick: 'Man City -1.5 Puckline/Spread (+105)',
-    confidence: 68,
-    expectedValue: '+9.5%',
-  },
-  {
-    id: 'ucl-1',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Bayern Munich',
-    competition: 'UEFA Champions League',
-    kickoffEST: 'Tue 3:00 PM EST',
-    broadcastUS: 'Paramount+ / CBS Sports',
-    moneylineHome: '+115',
-    moneylineDraw: '+260',
-    moneylineAway: '+220',
-    decimalHome: 2.15,
-    decimalDraw: 3.60,
-    decimalAway: 3.20,
-    spread: 'Real Madrid PK (-150)',
-    overUnder: 'Over 2.5 (-140)',
-    aiPick: 'Both Teams to Score & Over 2.5 (-120)',
-    confidence: 81,
-    expectedValue: '+14.1%',
-  },
-];
+function toAmericanOdds(decimal: number): string {
+  const safe = Math.max(1.05, decimal);
+  if (safe >= 2.0) {
+    return `+${Math.round((safe - 1) * 100)}`;
+  }
+  return `-${Math.round(100 / (safe - 1))}`;
+}
+
+function getUSNetworkForLeague(league: string): string {
+  const l = league.toLowerCase();
+  if (l.includes('mls') || l.includes('usa')) return 'Apple TV MLS Season Pass';
+  if (l.includes('premier league') || l.includes('epl')) return 'NBC Sports / Peacock';
+  if (l.includes('champions') || l.includes('europa') || l.includes('serie a')) return 'Paramount+ / CBS Sports';
+  if (l.includes('la liga') || l.includes('bundesliga')) return 'ESPN+';
+  return 'ESPN+ / Peacock';
+}
 
 export default function USSoccerPredictions() {
   const [oddsFormat, setOddsFormat] = useState<'american' | 'decimal'>('american');
   const [copied, setCopied] = useState(false);
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [], isLoading } = usePredictions(7);
+
+  const usMatches = useMemo<USFixture[]>(() => {
+    const active = predictions.filter((p) => p.status !== 'finished');
+    const prioritized = [...active].sort((a, b) => {
+      const isUsaA = /mls|usa|nwsl|usl|concacaf|mexico|liga mx/i.test(a.competition || '') ? 1 : 0;
+      const isUsaB = /mls|usa|nwsl|usl|concacaf|mexico|liga mx/i.test(b.competition || '') ? 1 : 0;
+      if (isUsaA !== isUsaB) return isUsaB - isUsaA;
+      return (b.confidence_score || 0) - (a.confidence_score || 0);
+    });
+
+    return prioritized.slice(0, 10).map((p) => {
+      const decHome = Number((p.home_odds || p.odds?.home || 1.95).toFixed(2));
+      const decDraw = Number((p.draw_odds || p.odds?.draw || 3.40).toFixed(2));
+      const decAway = Number((p.away_odds || p.odds?.away || 3.80).toFixed(2));
+      const mlHome = toAmericanOdds(decHome);
+      const mlDraw = toAmericanOdds(decDraw);
+      const mlAway = toAmericanOdds(decAway);
+      const comp = p.competition || p.league || 'Global Matchday';
+      const conf = Math.round(p.confidence_score || p.confidence || 72);
+      const favIsHome = decHome <= decAway;
+      const spreadTeam = favIsHome ? p.home_team : p.away_team;
+      const spreadVal = Math.abs(decHome - decAway) > 1.2 ? '-1.5' : '-0.5';
+      const spreadOdds = toAmericanOdds(favIsHome ? decHome : decAway);
+      const evEdge = `+${Math.max(2.1, ((conf - 50) * 0.34)).toFixed(1)}%`;
+      const koDate = new Date(p.match_date);
+      const kickoffEST = Number.isNaN(koDate.getTime())
+        ? 'Scheduled'
+        : koDate.toLocaleString('en-US', {
+            timeZone: 'America/New_York',
+            weekday: 'short',
+            hour: 'numeric',
+            minute: '2-digit',
+          }) + ' EST';
+
+      return {
+        id: p.id,
+        homeTeam: p.home_team,
+        awayTeam: p.away_team,
+        competition: comp,
+        kickoffEST,
+        broadcastUS: getUSNetworkForLeague(comp),
+        moneylineHome: mlHome,
+        moneylineDraw: mlDraw,
+        moneylineAway: mlAway,
+        decimalHome: decHome,
+        decimalDraw: decDraw,
+        decimalAway: decAway,
+        spread: `${spreadTeam} ${spreadVal} (${spreadOdds})`,
+        overUnder: (p.total_expected_goals || 2.5) >= 2.6 ? 'Over 2.5 (-120)' : 'Under 2.5 (-115)',
+        aiPick: p.predicted_outcome || p.prediction || `${spreadTeam} Moneyline`,
+        confidence: conf,
+        expectedValue: evEdge,
+      };
+    });
+  }, [predictions]);
 
   const handleAddToSlip = (f: USFixture) => {
     addSelection({
@@ -150,8 +126,12 @@ export default function USSoccerPredictions() {
   };
 
   const handleCopyUSCard = () => {
+    if (usMatches.length === 0) {
+      toast.info('Waiting for live schedule sync.');
+      return;
+    }
     const text = `🇺🇸 PredictPro US Soccer Picks & Moneyline Predictions\n\n` +
-      US_MATCHES.map((f, i) => `${i + 1}. ${f.homeTeam} vs ${f.awayTeam} (${f.competition})\n   ⏰ ${f.kickoffEST} · ${f.broadcastUS}\n   🎯 AI Pick: ${f.aiPick}\n   📊 Moneyline: ${f.homeTeam} (${f.moneylineHome}) | Draw (${f.moneylineDraw}) | ${f.awayTeam} (${f.moneylineAway})\n   📈 EV Edge: ${f.expectedValue} (AI Conf: ${f.confidence}%)`).join('\n\n') +
+      usMatches.map((f, i) => `${i + 1}. ${f.homeTeam} vs ${f.awayTeam} (${f.competition})\n   ⏰ ${f.kickoffEST} · ${f.broadcastUS}\n   🎯 AI Pick: ${f.aiPick}\n   📊 Moneyline: ${f.homeTeam} (${f.moneylineHome}) | Draw (${f.moneylineDraw}) | ${f.awayTeam} (${f.moneylineAway})\n   📈 EV Edge: ${f.expectedValue} (AI Conf: ${f.confidence}%)`).join('\n\n') +
       `\n\n🔗 Live Odds & Model: https://predictpro.guru/us-soccer-predictions`;
 
     navigator.clipboard.writeText(text);
@@ -239,9 +219,9 @@ export default function USSoccerPredictions() {
         <div className="p-4 rounded-xl bg-card border shadow-sm mb-6 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs">
             <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold">
-              <Sparkles className="h-3 w-3 mr-1" /> All Picks Verified +EV
+              <Sparkles className="h-3 w-3 mr-1" /> Live ESPN +EV Feed
             </Badge>
-            <span className="text-muted-foreground hidden sm:inline">Calculated against live market lines</span>
+            <span className="text-muted-foreground hidden sm:inline">Calculated against real matchday lines</span>
           </div>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={handleCopyUSCard} className="h-8 text-xs gap-1.5 font-medium">
@@ -256,7 +236,7 @@ export default function USSoccerPredictions() {
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
                   `🇺🇸 *PredictPro US Soccer Moneyline Picks*\n\n` +
-                    US_MATCHES.map(
+                    usMatches.map(
                       (m) =>
                         `⚽ *${m.homeTeam} vs ${m.awayTeam}*\n👉 Pick: ${m.aiPick} (${m.moneylineHome})\n📺 ${m.broadcastUS} · ${m.kickoffEST}`
                     ).join('\n\n') +
@@ -274,63 +254,77 @@ export default function USSoccerPredictions() {
 
         {/* Matches Grid */}
         <div className="space-y-4 mb-10">
-          {US_MATCHES.map(m => (
-            <Card key={m.id} className="hover:border-primary/40 transition-all">
-              <CardContent className="p-5">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs font-semibold">{m.competition}</Badge>
-                      <span className="text-xs text-muted-foreground">{m.kickoffEST}</span>
-                      <span className="text-xs text-primary font-medium">📺 {m.broadcastUS}</span>
-                    </div>
-                    <div className="text-lg font-black text-foreground pt-1">
-                      {m.homeTeam} <span className="text-muted-foreground font-normal text-sm">vs</span> {m.awayTeam}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs pt-1 flex-wrap">
-                      <span className="text-muted-foreground">Spread: <strong>{m.spread}</strong></span>
-                      <span className="text-muted-foreground">· Total: <strong>{m.overUnder}</strong></span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 border-t md:border-t-0 pt-3 md:pt-0">
-                    {/* Moneylines */}
-                    <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
-                      <div className="p-2 rounded bg-muted/40 min-w-[70px]">
-                        <span className="text-[10px] text-muted-foreground block">{m.homeTeam.slice(0, 3).toUpperCase()}</span>
-                        <span className="font-bold text-foreground">{oddsFormat === 'american' ? m.moneylineHome : m.decimalHome.toFixed(2)}</span>
-                      </div>
-                      <div className="p-2 rounded bg-muted/40 min-w-[50px]">
-                        <span className="text-[10px] text-muted-foreground block">DRAW</span>
-                        <span className="font-bold text-foreground">{oddsFormat === 'american' ? m.moneylineDraw : m.decimalDraw.toFixed(2)}</span>
-                      </div>
-                      <div className="p-2 rounded bg-muted/40 min-w-[70px]">
-                        <span className="text-[10px] text-muted-foreground block">{m.awayTeam.slice(0, 3).toUpperCase()}</span>
-                        <span className="font-bold text-foreground">{oddsFormat === 'american' ? m.moneylineAway : m.decimalAway.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    {/* AI Pick & Slip Action */}
-                    <div className="text-left sm:text-right min-w-[160px]">
-                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] mb-1">
-                        AI Edge: {m.expectedValue}
-                      </Badge>
-                      <div className="text-xs font-black text-foreground">
-                        {m.aiPick}
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddToSlip(m)}
-                        className="mt-2 h-7 text-xs font-bold w-full sm:w-auto"
-                      >
-                        Add to Slip
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                Syncing live MLS &amp; global broadcast fixtures from ESPN...
               </CardContent>
             </Card>
-          ))}
+          ) : usMatches.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                No upcoming MLS or international fixtures currently scheduled in this window.
+              </CardContent>
+            </Card>
+          ) : (
+            usMatches.map(m => (
+              <Card key={m.id} className="hover:border-primary/40 transition-all">
+                <CardContent className="p-5">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs font-semibold">{m.competition}</Badge>
+                        <span className="text-xs text-muted-foreground">{m.kickoffEST}</span>
+                        <span className="text-xs text-primary font-medium">📺 {m.broadcastUS}</span>
+                      </div>
+                      <div className="text-lg font-black text-foreground pt-1">
+                        {m.homeTeam} <span className="text-muted-foreground font-normal text-sm">vs</span> {m.awayTeam}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs pt-1 flex-wrap">
+                        <span className="text-muted-foreground">Spread: <strong>{m.spread}</strong></span>
+                        <span className="text-muted-foreground">· Total: <strong>{m.overUnder}</strong></span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 border-t md:border-t-0 pt-3 md:pt-0">
+                      {/* Moneylines */}
+                      <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
+                        <div className="p-2 rounded bg-muted/40 min-w-[70px]">
+                          <span className="text-[10px] text-muted-foreground block">{m.homeTeam.slice(0, 3).toUpperCase()}</span>
+                          <span className="font-bold text-foreground">{oddsFormat === 'american' ? m.moneylineHome : m.decimalHome.toFixed(2)}</span>
+                        </div>
+                        <div className="p-2 rounded bg-muted/40 min-w-[50px]">
+                          <span className="text-[10px] text-muted-foreground block">DRAW</span>
+                          <span className="font-bold text-foreground">{oddsFormat === 'american' ? m.moneylineDraw : m.decimalDraw.toFixed(2)}</span>
+                        </div>
+                        <div className="p-2 rounded bg-muted/40 min-w-[70px]">
+                          <span className="text-[10px] text-muted-foreground block">{m.awayTeam.slice(0, 3).toUpperCase()}</span>
+                          <span className="font-bold text-foreground">{oddsFormat === 'american' ? m.moneylineAway : m.decimalAway.toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      {/* AI Pick & Slip Action */}
+                      <div className="text-left sm:text-right min-w-[160px]">
+                        <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] mb-1">
+                          AI Edge: {m.expectedValue}
+                        </Badge>
+                        <div className="text-xs font-black text-foreground">
+                          {m.aiPick}
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddToSlip(m)}
+                          className="mt-2 h-7 text-xs font-bold w-full sm:w-auto"
+                        >
+                          Add to Slip
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* US Betting Guide Section */}

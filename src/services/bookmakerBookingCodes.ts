@@ -267,17 +267,7 @@ export function convertBookingCodeBetweenBookmakers(
     seed = (seed * 29 + cleanCode.charCodeAt(i)) >>> 0;
   }
 
-  const pool =
-    availableFixtures.length > 0
-      ? availableFixtures
-      : [
-          { homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League', market: 'Home Win', odds: 1.78, confidence: 84 },
-          { homeTeam: 'Real Madrid', awayTeam: 'Barcelona', league: 'LaLiga', market: 'Over 2.5 Goals', odds: 1.68, confidence: 82 },
-          { homeTeam: 'Bayern Munich', awayTeam: 'Dortmund', league: 'Bundesliga', market: 'BTTS Yes', odds: 1.62, confidence: 85 },
-          { homeTeam: 'Inter Milan', awayTeam: 'AC Milan', league: 'Serie A', market: '1X Double Chance', odds: 1.38, confidence: 88 },
-          { homeTeam: 'PSG', awayTeam: 'Marseille', league: 'Ligue 1', market: 'Home Win & Over 1.5', odds: 1.74, confidence: 81 },
-          { homeTeam: 'Liverpool', awayTeam: 'Man City', league: 'Premier League', market: 'BTTS Yes', odds: 1.65, confidence: 83 },
-        ];
+  const pool = availableFixtures.length > 0 ? availableFixtures : [];
 
   const selectedFixtures = [];
   for (let i = 0; i < Math.min(desiredCount, pool.length); i++) {

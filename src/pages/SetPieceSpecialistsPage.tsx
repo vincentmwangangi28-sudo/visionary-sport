@@ -18,8 +18,7 @@ import {
   Target,
 } from 'lucide-react';
 import { useBetSlip } from '@/hooks/useBetSlip';
-import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
-import { Prediction } from '@/types/prediction';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 
 function normSetPieceClub(name: string): string {
@@ -67,7 +66,9 @@ interface ClubSetPieceIntel {
   upcomingFixture: {
     opponent: string;
     matchLabel: string;
-  };
+    matchDate: string;
+    isHome: boolean;
+  } | null;
 }
 
 const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
@@ -106,10 +107,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 6,
       headerShotOdds: 2.40,
     },
-    upcomingFixture: {
-      opponent: 'Chelsea',
-      matchLabel: 'Arsenal vs Chelsea',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'real-madrid',
@@ -146,10 +144,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 4,
       headerShotOdds: 2.95,
     },
-    upcomingFixture: {
-      opponent: 'Barcelona',
-      matchLabel: 'Real Madrid vs Barcelona',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'manchester-city',
@@ -186,10 +181,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 7,
       headerShotOdds: 1.85,
     },
-    upcomingFixture: {
-      opponent: 'Liverpool',
-      matchLabel: 'Manchester City vs Liverpool',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'chelsea',
@@ -226,10 +218,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 3,
       headerShotOdds: 3.20,
     },
-    upcomingFixture: {
-      opponent: 'Arsenal',
-      matchLabel: 'Arsenal vs Chelsea',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'liverpool',
@@ -266,10 +255,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 5,
       headerShotOdds: 2.55,
     },
-    upcomingFixture: {
-      opponent: 'Manchester City',
-      matchLabel: 'Manchester City vs Liverpool',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'bayern-munich',
@@ -306,10 +292,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 8,
       headerShotOdds: 1.90,
     },
-    upcomingFixture: {
-      opponent: 'Borussia Dortmund',
-      matchLabel: 'Bayern Munich vs Borussia Dortmund',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'gor-mahia',
@@ -346,10 +329,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 4,
       headerShotOdds: 3.10,
     },
-    upcomingFixture: {
-      opponent: 'AFC Leopards',
-      matchLabel: 'Gor Mahia vs AFC Leopards',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'al-ahly',
@@ -386,10 +366,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 5,
       headerShotOdds: 2.85,
     },
-    upcomingFixture: {
-      opponent: 'Zamalek',
-      matchLabel: 'Al Ahly vs Zamalek',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'young-africans',
@@ -426,10 +403,7 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 4,
       headerShotOdds: 3.00,
     },
-    upcomingFixture: {
-      opponent: 'Simba SC',
-      matchLabel: 'Young Africans vs Simba SC',
-    },
+    upcomingFixture: null,
   },
   {
     clubId: 'mamelodi-sundowns',
@@ -466,39 +440,19 @@ const SET_PIECE_DATABASE: ClubSetPieceIntel[] = [
       headedGoalsSeason: 4,
       headerShotOdds: 3.15,
     },
-    upcomingFixture: {
-      opponent: 'Orlando Pirates',
-      matchLabel: 'Mamelodi Sundowns vs Orlando Pirates',
-    },
+    upcomingFixture: null,
   },
 ];
 
 export const SetPieceSpecialistsPage: React.FC = () => {
   const { addSelection } = useBetSlip();
+  const { predictions: upcomingEspn } = usePredictions(7);
   const [regionFilter, setRegionFilter] = useState<'ALL' | 'European Elite' | 'African & CAF Giants'>('ALL');
   const [selectedClubId, setSelectedClubId] = useState<string>('arsenal');
   const [opponentFoulRate, setOpponentFoulRate] = useState<number>(14); // fouls per match
-  const [upcomingEspn, setUpcomingEspn] = useState<Prediction[]>([]);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const list = await fetchRealtimeUpcomingFixtures();
-        if (mounted && list.length > 0) {
-          setUpcomingEspn(list);
-        }
-      } catch {
-        // fallback to baseline upcomingFixture
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const enrichedClubs = useMemo(() => {
-    return SET_PIECE_DATABASE.map((club) => {
+    const mapped = SET_PIECE_DATABASE.map((club) => {
       const normClub = normSetPieceClub(club.clubName);
       const matched = upcomingEspn.find(
         (m) =>
@@ -517,9 +471,12 @@ export const SetPieceSpecialistsPage: React.FC = () => {
         upcomingFixture: {
           opponent,
           matchLabel: `${matched.home_team} vs ${matched.away_team}`,
+          matchDate: matched.match_date,
+          isHome,
         },
       };
     });
+    return mapped.sort((a, b) => Number(Boolean(b.upcomingFixture)) - Number(Boolean(a.upcomingFixture)));
   }, [upcomingEspn]);
 
   const filteredClubs = useMemo(() => {
@@ -702,29 +659,36 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                   <p className="text-[11px] text-muted-foreground">
                     True Anytime Goal Prob: <strong className="text-emerald-600 dark:text-emerald-400">{simulatedStats.totalAnytimeGoalProb}%</strong>
                   </p>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      addSelection({
-                        matchId: `sp-sim-${simulatorClub.clubId}`,
-                        match: simulatorClub.upcomingFixture.matchLabel,
-                        homeTeam: simulatorClub.clubName,
-                        awayTeam: simulatorClub.upcomingFixture.opponent,
-                        league: simulatorClub.league,
-                        matchDate: new Date().toISOString(),
-                        market: `${simulatorClub.primaryPenaltyTaker.name} Anytime Goalscorer`,
-                        odds: simulatorClub.primaryPenaltyTaker.anytimeGoalOdds,
-                        confidence: simulatedStats.totalAnytimeGoalProb,
-                      });
-                      toast.success(
-                        `Added ${simulatorClub.primaryPenaltyTaker.name} Anytime Goalscorer @ ${simulatorClub.primaryPenaltyTaker.anytimeGoalOdds.toFixed(2)}!`
-                      );
-                    }}
-                    className="h-7 px-2.5 text-xs font-bold mt-1.5 gap-1"
-                  >
-                    <Plus className="h-3 w-3" />
-                    Add Goalscorer @ {simulatorClub.primaryPenaltyTaker.anytimeGoalOdds.toFixed(2)}
-                  </Button>
+                  {simulatorClub.upcomingFixture ? (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (!simulatorClub.upcomingFixture) return;
+                        addSelection({
+                          matchId: `sp-sim-${simulatorClub.clubId}`,
+                          match: simulatorClub.upcomingFixture.matchLabel,
+                          homeTeam: simulatorClub.upcomingFixture.isHome ? simulatorClub.clubName : simulatorClub.upcomingFixture.opponent,
+                          awayTeam: simulatorClub.upcomingFixture.isHome ? simulatorClub.upcomingFixture.opponent : simulatorClub.clubName,
+                          league: simulatorClub.league,
+                          matchDate: simulatorClub.upcomingFixture.matchDate,
+                          market: `${simulatorClub.primaryPenaltyTaker.name} Anytime Goalscorer`,
+                          odds: simulatorClub.primaryPenaltyTaker.anytimeGoalOdds,
+                          confidence: simulatedStats.totalAnytimeGoalProb,
+                        });
+                        toast.success(
+                          `Added ${simulatorClub.primaryPenaltyTaker.name} Anytime Goalscorer @ ${simulatorClub.primaryPenaltyTaker.anytimeGoalOdds.toFixed(2)}!`
+                        );
+                      }}
+                      className="h-7 px-2.5 text-xs font-bold mt-1.5 gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Add Goalscorer @ {simulatorClub.primaryPenaltyTaker.anytimeGoalOdds.toFixed(2)}
+                    </Button>
+                  ) : (
+                    <span className="inline-block text-[11px] text-muted-foreground mt-1.5">
+                      No scheduled fixture in next 7 days
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -755,7 +719,7 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                     </div>
                   </div>
                   <span className="text-xs font-mono text-primary font-bold">
-                    Next: vs {club.upcomingFixture.opponent}
+                    {club.upcomingFixture ? `Next: vs ${club.upcomingFixture.opponent}` : 'No 7d Fixture'}
                   </span>
                 </div>
               </CardHeader>
@@ -778,7 +742,7 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                         <span>1st Designated Penalty Taker</span>
                       </div>
                       <Link
-                        to={`/players/${club.primaryPenaltyTaker.slug}`}
+                        to={`/players/${club.primaryPenaltyTaker.slug}?team=${encodeURIComponent(club.clubName)}&league=${encodeURIComponent(club.league)}`}
                         className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
                       >
                         {club.primaryPenaltyTaker.name}
@@ -789,27 +753,30 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      addSelection({
-                        matchId: `pen-${club.clubId}`,
-                        match: club.upcomingFixture.matchLabel,
-                        homeTeam: club.clubName,
-                        awayTeam: club.upcomingFixture.opponent,
-                        league: club.league,
-                        matchDate: new Date().toISOString(),
-                        market: `${club.primaryPenaltyTaker.name} Anytime Goalscorer`,
-                        odds: club.primaryPenaltyTaker.anytimeGoalOdds,
-                        confidence: club.primaryPenaltyTaker.conversionPct - 10,
-                      });
-                      toast.success(`Added ${club.primaryPenaltyTaker.name} Anytime Goalscorer to Bet Slip!`);
-                    }}
-                    className="h-8 px-2.5 text-xs font-bold shrink-0 gap-1"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Goal @ {club.primaryPenaltyTaker.anytimeGoalOdds.toFixed(2)}
-                  </Button>
+                  {club.upcomingFixture && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (!club.upcomingFixture) return;
+                        addSelection({
+                          matchId: `pen-${club.clubId}`,
+                          match: club.upcomingFixture.matchLabel,
+                          homeTeam: club.upcomingFixture.isHome ? club.clubName : club.upcomingFixture.opponent,
+                          awayTeam: club.upcomingFixture.isHome ? club.upcomingFixture.opponent : club.clubName,
+                          league: club.league,
+                          matchDate: club.upcomingFixture.matchDate,
+                          market: `${club.primaryPenaltyTaker.name} Anytime Goalscorer`,
+                          odds: club.primaryPenaltyTaker.anytimeGoalOdds,
+                          confidence: club.primaryPenaltyTaker.conversionPct - 10,
+                        });
+                        toast.success(`Added ${club.primaryPenaltyTaker.name} Anytime Goalscorer to Bet Slip!`);
+                      }}
+                      className="h-8 px-2.5 text-xs font-bold shrink-0 gap-1"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Goal @ {club.primaryPenaltyTaker.anytimeGoalOdds.toFixed(2)}
+                    </Button>
+                  )}
                 </div>
 
                 {/* Free Kick & Corner Specialists Grid */}
@@ -833,28 +800,31 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                     <p className="text-[11px] text-muted-foreground leading-snug">
                       {club.directFreeKickSpecialist.notes}
                     </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        addSelection({
-                          matchId: `fk-${club.clubId}`,
-                          match: club.upcomingFixture.matchLabel,
-                          homeTeam: club.clubName,
-                          awayTeam: club.upcomingFixture.opponent,
-                          league: club.league,
-                          matchDate: new Date().toISOString(),
-                          market: `${club.directFreeKickSpecialist.name} 1+ Shot on Target`,
-                          odds: club.directFreeKickSpecialist.shotOnTargetOdds,
-                          confidence: 80,
-                        });
-                        toast.success(`Added ${club.directFreeKickSpecialist.name} 1+ Shot on Target!`);
-                      }}
-                      className="w-full h-7 text-[11px] font-semibold gap-1"
-                    >
-                      <Plus className="h-3 w-3" />
-                      Add 1+ SOT Prop
-                    </Button>
+                    {club.upcomingFixture && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (!club.upcomingFixture) return;
+                          addSelection({
+                            matchId: `fk-${club.clubId}`,
+                            match: club.upcomingFixture.matchLabel,
+                            homeTeam: club.upcomingFixture.isHome ? club.clubName : club.upcomingFixture.opponent,
+                            awayTeam: club.upcomingFixture.isHome ? club.upcomingFixture.opponent : club.clubName,
+                            league: club.league,
+                            matchDate: club.upcomingFixture.matchDate,
+                            market: `${club.directFreeKickSpecialist.name} 1+ Shot on Target`,
+                            odds: club.directFreeKickSpecialist.shotOnTargetOdds,
+                            confidence: 80,
+                          });
+                          toast.success(`Added ${club.directFreeKickSpecialist.name} 1+ Shot on Target!`);
+                        }}
+                        className="w-full h-7 text-[11px] font-semibold gap-1"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add 1+ SOT Prop
+                      </Button>
+                    )}
                   </div>
 
                   <div className="p-2.5 rounded-lg border border-border bg-background space-y-1.5">
@@ -888,28 +858,31 @@ export const SetPieceSpecialistsPage: React.FC = () => {
                     <p className="text-[11px] text-muted-foreground leading-snug">
                       {club.primaryCornerTaker.deliveryStyle}
                     </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        addSelection({
-                          matchId: `cor-ast-${club.clubId}`,
-                          match: club.upcomingFixture.matchLabel,
-                          homeTeam: club.clubName,
-                          awayTeam: club.upcomingFixture.opponent,
-                          league: club.league,
-                          matchDate: new Date().toISOString(),
-                          market: `${club.primaryCornerTaker.name} To Assist / Create Goal`,
-                          odds: club.primaryCornerTaker.assistOdds,
-                          confidence: 76,
-                        });
-                        toast.success(`Added ${club.primaryCornerTaker.name} To Assist @ ${club.primaryCornerTaker.assistOdds.toFixed(2)}!`);
-                      }}
-                      className="w-full h-7 text-[11px] font-semibold gap-1"
-                    >
-                      <Plus className="h-3 w-3" />
-                      Add Assist Prop
-                    </Button>
+                    {club.upcomingFixture && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (!club.upcomingFixture) return;
+                          addSelection({
+                            matchId: `cor-ast-${club.clubId}`,
+                            match: club.upcomingFixture.matchLabel,
+                            homeTeam: club.upcomingFixture.isHome ? club.clubName : club.upcomingFixture.opponent,
+                            awayTeam: club.upcomingFixture.isHome ? club.upcomingFixture.opponent : club.clubName,
+                            league: club.league,
+                            matchDate: club.upcomingFixture.matchDate,
+                            market: `${club.primaryCornerTaker.name} To Assist / Create Goal`,
+                            odds: club.primaryCornerTaker.assistOdds,
+                            confidence: 76,
+                          });
+                          toast.success(`Added ${club.primaryCornerTaker.name} To Assist @ ${club.primaryCornerTaker.assistOdds.toFixed(2)}!`);
+                        }}
+                        className="w-full h-7 text-[11px] font-semibold gap-1"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add Assist Prop
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>

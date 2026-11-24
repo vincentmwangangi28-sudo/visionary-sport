@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
 import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { mergeAndPreservePredictions } from '@/services/predictionStorage';
 import { Prediction, getConfidence } from '@/types/prediction';
@@ -77,17 +76,6 @@ export default function Recommendations() {
         }
       } catch (err) {
         console.warn('Database predictions fetch error:', err);
-      }
-
-      // 3. Fallback to updated upcoming fixtures if still sparse
-      if (items.length < 8) {
-        const existingIds = new Set(items.map(p => `${p.home_team}-${p.away_team}`.toLowerCase()));
-        for (const f of getUpdatedDefaultPredictions()) {
-          const key = `${f.home_team}-${f.away_team}`.toLowerCase();
-          if (!existingIds.has(key)) {
-            items.push(f);
-          }
-        }
       }
     }
 

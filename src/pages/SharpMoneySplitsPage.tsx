@@ -48,123 +48,6 @@ interface SharpSplitFixture {
   sharpAnalysis: string;
 }
 
-const SHARP_SPLITS_DATA: SharpSplitFixture[] = [
-  {
-    id: 'sharp-che-ars',
-    homeTeam: 'Chelsea',
-    awayTeam: 'Arsenal',
-    league: 'Premier League',
-    region: 'Europe',
-    kickoff: 'Sun 16:30',
-    marketAnalyzed: 'Match Winner / Asian Handicap',
-    publicSideLabel: 'Chelsea +0.5 (74% Public Tickets)',
-    sharpSideLabel: 'Arsenal To Win (2)',
-    publicTicketsPct: 74,
-    sharpMoneyHandlePct: 81,
-    openingSharpOdds: 2.28,
-    currentSharpOdds: 1.96,
-    signalType: 'RLM TRAP ALERT',
-    aiConfidence: 87,
-    sharpAnalysis:
-      '74% of retail bet slips are backing Chelsea at home, yet Arsenal’s odds have tumbled from 2.28 to 1.96 due to 81% of institutional syndicate volume hitting Arsenal.',
-  },
-  {
-    id: 'sharp-bvb-bay',
-    homeTeam: 'Borussia Dortmund',
-    awayTeam: 'Bayern Munich',
-    league: 'Bundesliga',
-    region: 'Europe',
-    kickoff: 'Sat 17:30',
-    marketAnalyzed: 'Total Goals (Over/Under 3.5)',
-    publicSideLabel: 'Over 3.5 Goals (79% Public Tickets)',
-    sharpSideLabel: 'Under 3.5 Goals',
-    publicTicketsPct: 79,
-    sharpMoneyHandlePct: 73,
-    openingSharpOdds: 1.92,
-    currentSharpOdds: 1.74,
-    signalType: 'RLM TRAP ALERT',
-    aiConfidence: 84,
-    sharpAnalysis:
-      'Public bettors automatically bet Over 3.5 in Der Klassiker, but sharp syndicates have hammered Under 3.5 Goals based on both managers deploying double-pivot midfield blocks.',
-  },
-  {
-    id: 'sharp-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    region: 'Africa / CAF',
-    kickoff: 'Sun 15:00',
-    marketAnalyzed: '1X2 & Under 2.5 Correlated',
-    publicSideLabel: 'BTTS — Yes (68% Public Tickets)',
-    sharpSideLabel: 'Gor Mahia Win & Under 3.5 Goals',
-    publicTicketsPct: 68,
-    sharpMoneyHandlePct: 78,
-    openingSharpOdds: 2.15,
-    currentSharpOdds: 1.88,
-    signalType: 'SYNDICATE STEAM',
-    aiConfidence: 86,
-    sharpAnalysis:
-      'Heavy Nairobi high-roller handle is backing Gor Mahia’s defensive structure (0.58 xGA/90) to shut down AFC Leopards in a controlled 1-0 or 2-0 victory.',
-  },
-  {
-    id: 'sharp-simba-yanga',
-    homeTeam: 'Simba SC',
-    awayTeam: 'Young Africans',
-    league: 'Tanzania NBC Premier League',
-    region: 'Africa / CAF',
-    kickoff: 'Sat 16:00',
-    marketAnalyzed: 'Draw No Bet (DNB)',
-    publicSideLabel: 'Simba SC Home Win (71% Public Tickets)',
-    sharpSideLabel: 'Young Africans Draw No Bet (2 DNB)',
-    publicTicketsPct: 71,
-    sharpMoneyHandlePct: 76,
-    openingSharpOdds: 1.95,
-    currentSharpOdds: 1.72,
-    signalType: 'RLM TRAP ALERT',
-    aiConfidence: 85,
-    sharpAnalysis:
-      'Despite 71% of public accumulator tickets taking Simba SC, Young Africans (Yanga) have received 76% of the cash handle on the Draw No Bet line.',
-  },
-  {
-    id: 'sharp-kc-op',
-    homeTeam: 'Kaizer Chiefs',
-    awayTeam: 'Orlando Pirates',
-    league: 'South Africa PSL',
-    region: 'Africa / CAF',
-    kickoff: 'Sat 15:30',
-    marketAnalyzed: 'Double Chance / Match Result',
-    publicSideLabel: 'Kaizer Chiefs 1X (69% Public Tickets)',
-    sharpSideLabel: 'Orlando Pirates Draw No Bet (2 DNB)',
-    publicTicketsPct: 69,
-    sharpMoneyHandlePct: 79,
-    openingSharpOdds: 1.84,
-    currentSharpOdds: 1.66,
-    signalType: 'SYNDICATE STEAM',
-    aiConfidence: 84,
-    sharpAnalysis:
-      'Soweto Derby sentiment inflates Kaizer Chiefs ticket counts, while quantitative models and sharp money back Pirates’ +0.62 net xG/90 superiority.',
-  },
-  {
-    id: 'sharp-int-juv',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Juventus',
-    league: 'Serie A',
-    region: 'Europe',
-    kickoff: 'Sun 19:45',
-    marketAnalyzed: 'First Half Total Goals',
-    publicSideLabel: '1H Over 1.5 Goals (76% Public Tickets)',
-    sharpSideLabel: 'First Half Under 1.0 / Draw HT',
-    publicTicketsPct: 76,
-    sharpMoneyHandlePct: 74,
-    openingSharpOdds: 2.05,
-    currentSharpOdds: 1.82,
-    signalType: 'CONTRA VALUE',
-    aiConfidence: 82,
-    sharpAnalysis:
-      'Derby d’Italia first halves average just 0.68 xG over the last 6 meetings; sharp syndicates are fading the public’s early-goal expectation.',
-  },
-];
-
 export const SharpMoneySplitsPage: React.FC = () => {
   const { addSelection } = useBetSlip();
   const [filterSignal, setFilterSignal] = useState<string>('ALL');
@@ -178,28 +61,37 @@ export const SharpMoneySplitsPage: React.FC = () => {
   const syncRealtimeSharpSplits = async (notify = false) => {
     setSyncingLive(true);
     try {
-      const [liveList, upcomingList] = await Promise.all([
+      const [liveRes, upcomingList] = await Promise.all([
         fetchRealtimeLiveMatches(),
         fetchRealtimeUpcomingFixtures(),
       ]);
 
+      const liveList = Array.isArray(liveRes?.matches) ? liveRes.matches : [];
       const derived: SharpSplitFixture[] = [];
 
-      for (const m of liveList.slice(0, 4)) {
+      for (const m of liveList.slice(0, 6)) {
         const currOdds = m.prediction === 'Away Win' ? (m.away_odds || 2.05) : (m.home_odds || 1.82);
         const openOdds = Number((currOdds * 1.14).toFixed(2));
         const clvEdge = Number((((openOdds - currOdds) / currOdds) * 100).toFixed(1));
+        const compLower = (m.competition || '').toLowerCase();
         const isAfrican =
-          (m.competition || '').toLowerCase().includes('caf') ||
-          (m.competition || '').toLowerCase().includes('kenya') ||
-          (m.competition || '').toLowerCase().includes('psl');
+          compLower.includes('caf') ||
+          compLower.includes('kenya') ||
+          compLower.includes('psl') ||
+          compLower.includes('africa');
+        const isAmericas =
+          compLower.includes('mls') ||
+          compLower.includes('copa') ||
+          compLower.includes('brazil') ||
+          compLower.includes('argentina') ||
+          compLower.includes('liga mx');
 
         derived.push({
           id: `espn-live-sharp-${m.id}`,
           homeTeam: m.home_team,
           awayTeam: m.away_team,
           league: m.competition || 'Live Fixture',
-          region: isAfrican ? 'Africa / CAF' : 'Europe',
+          region: isAfrican ? 'Africa / CAF' : isAmericas ? 'Americas' : 'Europe',
           kickoff: `LIVE ${m.home_score ?? 0}-${m.away_score ?? 0} (${m.minute ?? 'HT'}')`,
           marketAnalyzed: 'ESPN DraftKings In-Play Line',
           publicSideLabel: `${m.prediction === 'Away Win' ? m.home_team : m.away_team} +0.5 (72% Public Slips)`,
@@ -216,18 +108,27 @@ export const SharpMoneySplitsPage: React.FC = () => {
         });
       }
 
-      for (const f of upcomingList.slice(0, 6)) {
+      for (const f of upcomingList.slice(0, 12)) {
         const pick = f.predicted_outcome || f.prediction || 'Home Win';
         const isAway = pick === 'Away Win';
         const currOdds = isAway ? (f.away_odds || 2.1) : (f.home_odds || 1.85);
         const openRaw = isAway ? f.away_odds_open : f.home_odds_open;
         const openOdds = openRaw && openRaw > currOdds ? openRaw : Number((currOdds * 1.13).toFixed(2));
         const clvEdge = f.clv_edge_pct ?? Number((((openOdds - currOdds) / currOdds) * 100).toFixed(1));
+        const leagueLower = (f.league || '').toLowerCase();
         const isAfrican =
-          f.league.toLowerCase().includes('caf') ||
-          f.league.toLowerCase().includes('kenya') ||
-          f.league.toLowerCase().includes('psl') ||
-          f.league.toLowerCase().includes('africa');
+          leagueLower.includes('caf') ||
+          leagueLower.includes('kenya') ||
+          leagueLower.includes('psl') ||
+          leagueLower.includes('africa') ||
+          leagueLower.includes('nigeria') ||
+          leagueLower.includes('tanzania');
+        const isAmericas =
+          leagueLower.includes('mls') ||
+          leagueLower.includes('copa') ||
+          leagueLower.includes('brazil') ||
+          leagueLower.includes('argentina') ||
+          leagueLower.includes('liga mx');
 
         const seed = (f.home_team.charCodeAt(0) || 65) + (f.away_team.charCodeAt(0) || 66);
         const pubPct = 67 + (seed % 14);
@@ -238,7 +139,7 @@ export const SharpMoneySplitsPage: React.FC = () => {
           homeTeam: f.home_team,
           awayTeam: f.away_team,
           league: f.league,
-          region: isAfrican ? 'Africa / CAF' : 'Europe',
+          region: isAfrican ? 'Africa / CAF' : isAmericas ? 'Americas' : 'Europe',
           kickoff: new Date(f.match_date).toLocaleString('en-GB', {
             weekday: 'short',
             hour: '2-digit',
@@ -253,20 +154,22 @@ export const SharpMoneySplitsPage: React.FC = () => {
           currentSharpOdds: Number(currOdds.toFixed(2)),
           clvEdgePct: clvEdge,
           isLiveEspn: true,
-          signalType: clvEdge >= 7 ? 'RLM TRAP ALERT' : 'SYNDICATE STEAM',
+          signalType: clvEdge >= 7 ? 'RLM TRAP ALERT' : clvEdge >= 4 ? 'SYNDICATE STEAM' : 'CONTRA VALUE',
           aiConfidence: f.confidence_score ?? f.confidence ?? 82,
           sharpAnalysis: `Official ESPN DraftKings opening line (${openOdds.toFixed(2)}) has compressed to ${currOdds.toFixed(2)} (+${clvEdge}% CLV) despite ${pubPct}% of retail tickets backing the opposite side.`,
         });
       }
 
-      if (derived.length > 0) {
-        setLiveSplits(derived);
-        if (notify) {
+      setLiveSplits(derived);
+      if (notify) {
+        if (derived.length > 0) {
           toast.success(`Synced ${derived.length} live ESPN DraftKings CLV & RLM splits!`);
+        } else {
+          toast.info('No active sharp movement feeds returned right now. Retry shortly.');
         }
       }
     } catch {
-      if (notify) toast.info('Displaying verified sharp money & RLM splits');
+      if (notify) toast.error('Unable to sync live ESPN sharp splits right now.');
     } finally {
       setSyncingLive(false);
     }
@@ -279,7 +182,7 @@ export const SharpMoneySplitsPage: React.FC = () => {
   const combinedSplits = useMemo(() => {
     const seen = new Set<string>();
     const list: SharpSplitFixture[] = [];
-    for (const item of [...liveSplits, ...SHARP_SPLITS_DATA]) {
+    for (const item of liveSplits) {
       const key = `${item.homeTeam.toLowerCase()}-${item.awayTeam.toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -529,120 +432,147 @@ export const SharpMoneySplitsPage: React.FC = () => {
 
         {/* Sharp Money Splits Cards */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredSplits.map((item) => {
-            const oddsDropPct = Math.round(
-              ((item.openingSharpOdds - item.currentSharpOdds) / item.openingSharpOdds) * 100
-            );
-            return (
-              <Card key={item.id} className="border-border hover:border-primary/40 transition-colors">
-                <CardHeader className="pb-3 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span>{item.league}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{item.kickoff}</span>
-                      {item.isLiveEspn && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
-                          ESPN DraftKings CLV
-                        </span>
-                      )}
-                    </div>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">
-                      {item.signalType}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 font-bold text-base text-foreground">
-                      <TeamLogo team={item.homeTeam} size="sm" />
-                      <span>{item.homeTeam}</span>
-                      <span className="text-muted-foreground font-normal text-xs">vs</span>
-                      <TeamLogo team={item.awayTeam} size="sm" />
-                      <span>{item.awayTeam}</span>
-                    </div>
-                    <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      -{oddsDropPct}% Steam Drop
-                    </span>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-3.5 text-xs">
-                  {/* Dual Bar Comparison: Public Tickets vs Sharp Cash Handle */}
-                  <div className="space-y-2 p-3 rounded-lg bg-muted/40 border border-border/60">
-                    <div>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-muted-foreground">
-                          Public Retail Tickets: <strong className="text-foreground">{item.publicSideLabel}</strong>
-                        </span>
-                        <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-                          {item.publicTicketsPct}% of Slips
-                        </span>
+          {filteredSplits.length === 0 ? (
+            <Card className="col-span-full border-border bg-card">
+              <CardContent className="p-8 text-center space-y-3">
+                <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
+                <p className="font-bold text-sm text-foreground">
+                  {syncingLive
+                    ? 'Syncing live ESPN DraftKings CLV & Reverse Line Movement feeds...'
+                    : 'No matches currently match this sharp money filter.'}
+                </p>
+                {!syncingLive && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setFilterSignal('ALL');
+                      syncRealtimeSharpSplits(true);
+                    }}
+                    className="gap-1.5 text-xs"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Reset Filter &amp; Sync Live Splits
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            filteredSplits.map((item) => {
+              const oddsDropPct = Math.round(
+                ((item.openingSharpOdds - item.currentSharpOdds) / item.openingSharpOdds) * 100
+              );
+              return (
+                <Card key={item.id} className="border-border hover:border-primary/40 transition-colors">
+                  <CardHeader className="pb-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{item.league}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{item.kickoff}</span>
+                        {item.isLiveEspn && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
+                            ESPN DraftKings CLV
+                          </span>
+                        )}
                       </div>
-                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full bg-amber-500"
-                          style={{ width: `${item.publicTicketsPct}%` }}
-                        />
+                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                        {item.signalType}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 font-bold text-base text-foreground">
+                        <TeamLogo team={item.homeTeam} size="sm" />
+                        <span>{item.homeTeam}</span>
+                        <span className="text-muted-foreground font-normal text-xs">vs</span>
+                        <TeamLogo team={item.awayTeam} size="sm" />
+                        <span>{item.awayTeam}</span>
+                      </div>
+                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        -{oddsDropPct}% Steam Drop
+                      </span>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3.5 text-xs">
+                    {/* Dual Bar Comparison: Public Tickets vs Sharp Cash Handle */}
+                    <div className="space-y-2 p-3 rounded-lg bg-muted/40 border border-border/60">
+                      <div>
+                        <div className="flex justify-between text-[11px] mb-1">
+                          <span className="text-muted-foreground">
+                            Public Retail Tickets: <strong className="text-foreground">{item.publicSideLabel}</strong>
+                          </span>
+                          <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                            {item.publicTicketsPct}% of Slips
+                          </span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full bg-amber-500"
+                            style={{ width: `${item.publicTicketsPct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-[11px] mb-1">
+                          <span className="text-muted-foreground">
+                            Institutional Cash Handle: <strong className="text-primary">{item.sharpSideLabel}</strong>
+                          </span>
+                          <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            {item.sharpMoneyHandlePct}% of Money
+                          </span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500"
+                            style={{ width: `${item.sharpMoneyHandlePct}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-muted-foreground">
-                          Institutional Cash Handle: <strong className="text-primary">{item.sharpSideLabel}</strong>
-                        </span>
-                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                          {item.sharpMoneyHandlePct}% of Money
-                        </span>
+                    <p className="text-muted-foreground leading-relaxed">{item.sharpAnalysis}</p>
+
+                    <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-foreground">
+                          Sharp Syndicate Pick: <span className="text-primary">{item.sharpSideLabel}</span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground font-mono">
+                          Opened: <span className="line-through">{item.openingSharpOdds.toFixed(2)}</span> → Now:{' '}
+                          <strong className="text-foreground">{item.currentSharpOdds.toFixed(2)}</strong> · AI {item.aiConfidence}%
+                        </p>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full bg-emerald-500"
-                          style={{ width: `${item.sharpMoneyHandlePct}%` }}
-                        />
-                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          addSelection({
+                            matchId: item.id,
+                            match: `${item.homeTeam} vs ${item.awayTeam}`,
+                            homeTeam: item.homeTeam,
+                            awayTeam: item.awayTeam,
+                            league: item.league,
+                            matchDate: new Date().toISOString(),
+                            market: item.sharpSideLabel,
+                            odds: item.currentSharpOdds,
+                            confidence: item.aiConfidence,
+                          });
+                          toast.success(`Added Sharp Pick: ${item.sharpSideLabel} @ ${item.currentSharpOdds.toFixed(2)}!`);
+                        }}
+                        className="gap-1.5 text-xs font-bold shrink-0"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Ride Sharp @ {item.currentSharpOdds.toFixed(2)}
+                      </Button>
                     </div>
-                  </div>
-
-                  <p className="text-muted-foreground leading-relaxed">{item.sharpAnalysis}</p>
-
-                  <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-                    <div>
-                      <p className="font-bold text-foreground">
-                        Sharp Syndicate Pick: <span className="text-primary">{item.sharpSideLabel}</span>
-                      </p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
-                        Opened: <span className="line-through">{item.openingSharpOdds.toFixed(2)}</span> → Now:{' '}
-                        <strong className="text-foreground">{item.currentSharpOdds.toFixed(2)}</strong> · AI {item.aiConfidence}%
-                      </p>
-                    </div>
-
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        addSelection({
-                          matchId: item.id,
-                          match: `${item.homeTeam} vs ${item.awayTeam}`,
-                          homeTeam: item.homeTeam,
-                          awayTeam: item.awayTeam,
-                          league: item.league,
-                          matchDate: new Date().toISOString(),
-                          market: item.sharpSideLabel,
-                          odds: item.currentSharpOdds,
-                          confidence: item.aiConfidence,
-                        });
-                        toast.success(`Added Sharp Pick: ${item.sharpSideLabel} @ ${item.currentSharpOdds.toFixed(2)}!`);
-                      }}
-                      className="gap-1.5 text-xs font-bold shrink-0"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Ride Sharp @ {item.currentSharpOdds.toFixed(2)}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
         </section>
 
         <SEOAuthorityHub />

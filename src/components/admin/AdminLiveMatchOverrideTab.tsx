@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Flame, Star, Search, RefreshCw, CheckCircle2, Edit3, Sparkles } from 'lucide-react';
-import { getUpdatedDefaultPredictions } from '@/data/mockPredictions';
+import { Flame, Star, Search, RefreshCw, CheckCircle2, Edit3 } from 'lucide-react';
+import { fetchRealtimeUpcomingFixtures } from '@/services/realtimeFootball';
 import { broadcastAdminSync } from '@/services/adminOverrideSyncService';
+import type { Prediction } from '@/types/prediction';
 import { toast } from 'sonner';
 
 interface EditorialOverride {
@@ -16,7 +17,8 @@ interface EditorialOverride {
 }
 
 export const AdminLiveMatchOverrideTab: React.FC = () => {
-  const defaultMatches = useMemo(() => getUpdatedDefaultPredictions().slice(0, 20), []);
+  const [liveMatches, setLiveMatches] = useState<Prediction[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [syncingEspn, setSyncingEspn] = useState(false);
   const [overrides, setOverrides] = useState<Record<string, EditorialOverride>>(() => {
@@ -27,6 +29,22 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
       return {};
     }
   });
+
+  const loadMatches = useCallback(async () => {
+    setLoadingMatches(true);
+    try {
+      const fixtures = await fetchRealtimeUpcomingFixtures();
+      setLiveMatches(fixtures.slice(0, 30));
+    } catch {
+      setLiveMatches([]);
+    } finally {
+      setLoadingMatches(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMatches();
+  }, [loadMatches]);
 
   const saveOverride = (matchId: string, patch: Partial<EditorialOverride>) => {
     const next = {
@@ -61,27 +79,28 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
   const handleSyncEspnNow = async () => {
     setSyncingEspn(true);
     try {
-      const res = await fetch('/api/cron/sync-live-scores');
+      const res = await fetch('/api/cron-runner?task=sync-live-fixtures');
       if (res.ok) {
         const data = await res.json();
-        toast.success(`Synced live ESPN scoreboard & harvested ${data.harvestedSeoSlugs ?? 0} match slugs into SEO Sitemap`);
+        toast.success(`Synced live ESPN scoreboard (${data.upcomingCount ?? 0} upcoming, ${data.liveCount ?? 0} live)`);
       } else {
         toast.info('ESPN live scoreboard sync signal dispatched');
       }
+      await loadMatches();
     } catch {
-      toast.info('ESPN live scoreboard sync completed via fallback cache');
+      toast.error('Failed to trigger ESPN live scoreboard sync');
     } finally {
       setSyncingEspn(false);
     }
   };
 
-  const filtered = defaultMatches.filter((m) => {
+  const filtered = liveMatches.filter((m) => {
     const q = searchQuery.toLowerCase();
     return (
       !q ||
       m.home_team.toLowerCase().includes(q) ||
       m.away_team.toLowerCase().includes(q) ||
-      m.competition.toLowerCase().includes(q)
+      (m.league || '').toLowerCase().includes(q)
     );
   });
 
@@ -113,10 +132,10 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
             <div>
               <CardTitle className="text-base flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-primary" />
-                Active Slate Editorial Overrides ({filtered.length} Fixtures)
+                Active Slate Editorial Overrides ({filtered.length} Real Fixtures)
               </CardTitle>
               <CardDescription className="text-xs">
-                Customize primary tip, confidence %, and editorial analyst notes for any match.
+                Customize primary tip, confidence %, and editorial analyst notes for any verified match.
               </CardDescription>
             </div>
             <div className="relative w-full sm:w-64">
@@ -132,11 +151,17 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
+          {loadingMatches ? (
+            <p className="text-xs text-muted-foreground py-4">Loading live verified fixtures...</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-4">No upcoming real fixtures matched your filter. Click "Sync ESPN Live Slate Now" to refresh.</p>
+          ) : (
           <div className="space-y-3">
             {filtered.map((m) => {
               const ov = overrides[m.id] || { matchId: m.id };
-              const activePick = ov.customPick || m.predicted_result;
-              const activeConf = ov.customConfidence ?? m.confidence;
+              const defaultPick = m.predicted_outcome || m.prediction || 'Home Win';
+              const activePick = ov.customPick || defaultPick;
+              const activeConf = ov.customConfidence ?? m.confidence ?? m.confidence_score ?? 75;
               return (
                 <div
                   key={m.id}
@@ -148,7 +173,7 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className="text-[10px]">
-                          {m.competition}
+                          {m.league}
                         </Badge>
                         {ov.isMotd && (
                           <Badge className="bg-amber-500 text-slate-950 text-[10px] font-black gap-1">
@@ -169,7 +194,7 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
                           onChange={(e) => saveOverride(m.id, { customPick: e.target.value })}
                           className="rounded-md border bg-background px-2.5 py-1 text-xs font-semibold"
                         >
-                          <option value={m.predicted_result}>{m.predicted_result} (AI Default)</option>
+                          <option value={defaultPick}>{defaultPick} (AI Default)</option>
                           <option value="Home Win">Home Win (1)</option>
                           <option value="Away Win">Away Win (2)</option>
                           <option value="Draw">Draw (X)</option>
@@ -226,6 +251,7 @@ export const AdminLiveMatchOverrideTab: React.FC = () => {
               );
             })}
           </div>
+          )}
         </CardContent>
       </Card>
     </div>

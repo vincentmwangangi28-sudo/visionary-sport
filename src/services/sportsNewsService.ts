@@ -258,7 +258,7 @@ class SportsNewsService {
     } catch {
       // ignore
     }
-    return FALLBACK_NEWS_ARTICLES;
+    return [];
   }
 
   /**

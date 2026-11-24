@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { useBetSlip } from '@/hooks/useBetSlip';
+import { usePredictions } from '@/hooks/usePredictions';
 import { toast } from 'sonner';
 import {
   Crosshair,
@@ -18,54 +19,58 @@ import {
   Flame,
 } from 'lucide-react';
 import {
-  ELITE_PLAYER_PROP_DATABASE,
+  buildPlayerPropLabRowsFromPredictions,
   ElitePlayerPropRow,
   computePlayerPropPoissonMatrix,
 } from '@/services/phase15PropSystemService';
 
 export const PlayerPropsLabPage: React.FC = () => {
   const { addSelection, setIsOpen } = useBetSlip();
+  const { data: predictions = [] } = usePredictions(7);
+
+  const playerDatabase = useMemo(
+    () => buildPlayerPropLabRowsFromPredictions(predictions),
+    [predictions]
+  );
 
   const [leagueFilter, setLeagueFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].id
-  );
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
 
   // Interactive Player Prop Poisson Calculator state
-  const [playerName, setPlayerName] = useState<string>(ELITE_PLAYER_PROP_DATABASE[0].playerName);
-  const [sotPer90, setSotPer90] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].sotPer90.toFixed(2)
-  );
-  const [npxgPer90, setNpxgPer90] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].nonPenaltyXgPer90.toFixed(2)
-  );
-  const [expectedMinutes, setExpectedMinutes] = useState<string>(
-    String(ELITE_PLAYER_PROP_DATABASE[0].expectedMinutes)
-  );
-  const [opponentMult, setOpponentMult] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].opponentDefenseMultiplier.toFixed(2)
-  );
-  const [isPenaltyTaker, setIsPenaltyTaker] = useState<boolean>(
-    ELITE_PLAYER_PROP_DATABASE[0].isPenaltyTaker
-  );
-  const [bookie1Sot, setBookie1Sot] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].bookieOdds1PlusSot.toFixed(2)
-  );
-  const [bookie2Sot, setBookie2Sot] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].bookieOdds2PlusSot.toFixed(2)
-  );
-  const [bookieGoal, setBookieGoal] = useState<string>(
-    ELITE_PLAYER_PROP_DATABASE[0].bookieOddsAnytimeGoal.toFixed(2)
-  );
+  const [playerName, setPlayerName] = useState<string>('Primary Striker');
+  const [sotPer90, setSotPer90] = useState<string>('1.65');
+  const [npxgPer90, setNpxgPer90] = useState<string>('0.55');
+  const [expectedMinutes, setExpectedMinutes] = useState<string>('88');
+  const [opponentMult, setOpponentMult] = useState<string>('1.05');
+  const [isPenaltyTaker, setIsPenaltyTaker] = useState<boolean>(true);
+  const [bookie1Sot, setBookie1Sot] = useState<string>('1.24');
+  const [bookie2Sot, setBookie2Sot] = useState<string>('1.92');
+  const [bookieGoal, setBookieGoal] = useState<string>('2.05');
+
+  useEffect(() => {
+    if (playerDatabase.length > 0 && !selectedPlayerId) {
+      const first = playerDatabase[0];
+      setSelectedPlayerId(first.id);
+      setPlayerName(first.playerName);
+      setSotPer90(first.sotPer90.toFixed(2));
+      setNpxgPer90(first.nonPenaltyXgPer90.toFixed(2));
+      setExpectedMinutes(String(first.expectedMinutes));
+      setOpponentMult(first.opponentDefenseMultiplier.toFixed(2));
+      setIsPenaltyTaker(first.isPenaltyTaker);
+      setBookie1Sot(first.bookieOdds1PlusSot.toFixed(2));
+      setBookie2Sot(first.bookieOdds2PlusSot.toFixed(2));
+      setBookieGoal(first.bookieOddsAnytimeGoal.toFixed(2));
+    }
+  }, [playerDatabase, selectedPlayerId]);
 
   const leagues = useMemo(() => {
-    const set = new Set(ELITE_PLAYER_PROP_DATABASE.map((p) => p.league));
+    const set = new Set(playerDatabase.map((p) => p.league));
     return ['all', ...Array.from(set)];
-  }, []);
+  }, [playerDatabase]);
 
   const filteredPlayers = useMemo(() => {
-    return ELITE_PLAYER_PROP_DATABASE.filter((p) => {
+    return playerDatabase.filter((p) => {
       if (leagueFilter !== 'all' && p.league !== leagueFilter) return false;
       if (
         searchQuery.trim() &&
@@ -77,13 +82,14 @@ export const PlayerPropsLabPage: React.FC = () => {
       }
       return true;
     });
-  }, [leagueFilter, searchQuery]);
+  }, [playerDatabase, leagueFilter, searchQuery]);
 
-  const activePlayer = useMemo(
+  const activePlayer: ElitePlayerPropRow | null = useMemo(
     () =>
-      ELITE_PLAYER_PROP_DATABASE.find((p) => p.id === selectedPlayerId) ||
-      ELITE_PLAYER_PROP_DATABASE[0],
-    [selectedPlayerId]
+      playerDatabase.find((p) => p.id === selectedPlayerId) ||
+      playerDatabase[0] ||
+      null,
+    [playerDatabase, selectedPlayerId]
   );
 
   const handleSelectPlayer = (row: ElitePlayerPropRow) => {
@@ -125,24 +131,28 @@ export const PlayerPropsLabPage: React.FC = () => {
   );
 
   const handleAddPropToSlip = (
-    p: ElitePlayerPropRow,
+    p: ElitePlayerPropRow | null,
     marketLabel: string,
     odds: number,
     probPct: number
   ) => {
+    const teamName = p?.team || playerName || 'Matchday Club';
+    const oppName = p?.opponent || 'Opponent';
+    const leagueName = p?.league || 'Player Props';
+    const rowId = p?.id || 'custom-prop';
     addSelection({
-      id: `prop-${p.id}-${marketLabel}`,
-      homeTeam: p.team,
-      awayTeam: p.opponent,
-      league: p.league,
+      id: `prop-${rowId}-${marketLabel}`,
+      homeTeam: teamName,
+      awayTeam: oppName,
+      league: leagueName,
       kickoff: 'Upcoming',
-      market: `${p.playerName} — ${marketLabel}`,
-      selection: `${p.playerName} — ${marketLabel}`,
+      market: `${p?.playerName || playerName} — ${marketLabel}`,
+      selection: `${p?.playerName || playerName} — ${marketLabel}`,
       odds,
       confidence: Math.round(probPct),
     });
     setIsOpen(true);
-    toast.success(`Added ${p.playerName} (${marketLabel} @ ${odds.toFixed(2)}) to Bet Slip`);
+    toast.success(`Added ${p?.playerName || playerName} (${marketLabel} @ ${odds.toFixed(2)}) to Bet Slip`);
   };
 
   return (
@@ -384,7 +394,7 @@ export const PlayerPropsLabPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <PlayerAvatar
                   name={playerName}
-                  team={activePlayer.team}
+                  team={activePlayer?.team || ''}
                   size="xs"
                   showClubBadge={false}
                 />
@@ -588,7 +598,7 @@ export const PlayerPropsLabPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <PlayerAvatar
                             name={playerName}
-                            team={activePlayer.team}
+                            team={activePlayer?.team || ''}
                             size="xs"
                             showClubBadge={false}
                           />
@@ -637,7 +647,7 @@ export const PlayerPropsLabPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <PlayerAvatar
                             name={playerName}
-                            team={activePlayer.team}
+                            team={activePlayer?.team || ''}
                             size="xs"
                             showClubBadge={false}
                           />
@@ -685,7 +695,7 @@ export const PlayerPropsLabPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <PlayerAvatar
                             name={playerName}
-                            team={activePlayer.team}
+                            team={activePlayer?.team || ''}
                             size="xs"
                             showClubBadge={false}
                           />

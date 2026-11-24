@@ -37,7 +37,7 @@ const ROLLOVER_BOOKIE_CODES = [
 ];
 
 export default function RolloverBetsPredictions() {
-  const { data: matches = [] } = usePredictions();
+  const { predictions: matches = [], isLoading } = usePredictions(7);
   const { addSelection } = useBetSlip();
   const [currency, setCurrency] = useState<string>('KES');
   const [startingBankroll, setStartingBankroll] = useState<string>('1000');
@@ -67,32 +67,34 @@ export default function RolloverBetsPredictions() {
   };
 
   const rolloverLegs = useMemo(() => {
-    const firstTwo = matches.slice(0, 2);
-    return [
-      {
-        id: 'rollover-leg-1',
-        homeTeam: firstTwo[0]?.homeTeam || 'Arsenal',
-        awayTeam: firstTwo[0]?.awayTeam || 'Southampton',
-        match: firstTwo[0] ? `${firstTwo[0].homeTeam} vs ${firstTwo[0].awayTeam}` : 'Arsenal vs Southampton',
-        league: firstTwo[0]?.league || 'Premier League',
-        market: 'Home Win or Over 1.5 Goals',
-        odds: 1.26,
-        prob: 91,
-      },
-      {
-        id: 'rollover-leg-2',
-        homeTeam: firstTwo[1]?.homeTeam || 'Real Madrid',
-        awayTeam: firstTwo[1]?.awayTeam || 'Villarreal',
-        match: firstTwo[1] ? `${firstTwo[1].homeTeam} vs ${firstTwo[1].awayTeam}` : 'Real Madrid vs Villarreal',
-        league: firstTwo[1]?.league || 'La Liga',
-        market: '1X Double Chance & Over 0.5',
-        odds: 1.24,
-        prob: 90,
-      },
-    ];
+    const ranked = [...matches]
+      .sort((a, b) => (b.ai_prediction?.confidence ?? 70) - (a.ai_prediction?.confidence ?? 70))
+      .slice(0, 2);
+
+    return ranked.map((m, idx) => {
+      const hProb = m.ai_prediction?.home_win_prob ?? 48;
+      const aProb = m.ai_prediction?.away_win_prob ?? 26;
+      const favTeam = aProb > hProb ? m.away_team : m.home_team;
+      const market = idx === 0 ? `${favTeam} Win or Over 1.5 Goals` : `${favTeam} Double Chance & Over 0.5`;
+      const odds = idx === 0 ? 1.26 : 1.24;
+      const prob = Math.min(93, Math.max(82, Math.round(m.ai_prediction?.confidence ?? 86)));
+      return {
+        id: m.id,
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        match: `${m.home_team} vs ${m.away_team}`,
+        league: m.league,
+        matchDate: m.match_date,
+        market,
+        odds,
+        prob,
+      };
+    });
   }, [matches]);
 
-  const combinedRolloverOdds = Number((rolloverLegs[0].odds * rolloverLegs[1].odds).toFixed(2));
+  const combinedRolloverOdds = rolloverLegs.length > 0
+    ? Number(rolloverLegs.reduce((acc, l) => acc * l.odds, 1).toFixed(2))
+    : 0;
 
   const schedule = useMemo(() => {
     const start = Math.max(1, parseFloat(startingBankroll) || 20);
@@ -131,6 +133,7 @@ export default function RolloverBetsPredictions() {
   };
 
   const handleLoadRolloverToSlip = () => {
+    if (rolloverLegs.length === 0) return;
     rolloverLegs.forEach((leg) => {
       addSelection({
         matchId: leg.id,
@@ -138,7 +141,7 @@ export default function RolloverBetsPredictions() {
         homeTeam: leg.homeTeam,
         awayTeam: leg.awayTeam,
         league: leg.league,
-        matchDate: new Date().toISOString(),
+        matchDate: leg.matchDate,
         market: leg.market,
         odds: leg.odds,
         confidence: leg.prob,
@@ -203,14 +206,16 @@ export default function RolloverBetsPredictions() {
           <div className="flex flex-wrap gap-2.5 pt-1">
             <Button
               size="sm"
+              disabled={rolloverLegs.length === 0}
               onClick={handleLoadRolloverToSlip}
               className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs gap-1.5"
             >
-              <Plus className="w-3.5 h-3.5" /> Load {combinedRolloverOdds}x Rollover to Bet Slip
+              <Plus className="w-3.5 h-3.5" /> Load {combinedRolloverOdds > 0 ? `${combinedRolloverOdds}x ` : ''}Rollover to Bet Slip
             </Button>
             <Button
               size="sm"
               variant="outline"
+              disabled={rolloverLegs.length === 0}
               onClick={() => {
                 navigator.clipboard?.writeText(shareText);
                 toast.success('Rollover Ticket & Booking Codes copied to clipboard!');
@@ -237,12 +242,20 @@ export default function RolloverBetsPredictions() {
                   <Flame className="w-5 h-5 text-emerald-400" /> Today&apos;s Official Rollover Slip
                 </h2>
                 <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-mono font-bold">
-                  {combinedRolloverOdds}x Total
+                  {combinedRolloverOdds > 0 ? `${combinedRolloverOdds}x Total` : 'Pending'}
                 </Badge>
               </div>
 
               <div className="space-y-3">
-                {rolloverLegs.map((leg, i) => (
+                {isLoading && rolloverLegs.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-muted-foreground">
+                    Loading live 90%+ probability rollover selections...
+                  </div>
+                ) : rolloverLegs.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-muted-foreground">
+                    No active scheduled fixtures are available in the 7-day feed right now.
+                  </div>
+                ) : rolloverLegs.map((leg, i) => (
                   <div key={leg.id} className="p-4 rounded-xl border border-border/60 bg-background/60">
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
                       <span className="text-emerald-500 font-semibold">Leg #{i + 1} • {leg.league}</span>

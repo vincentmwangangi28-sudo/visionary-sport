@@ -59,289 +59,6 @@ const BOOKMAKERS: BookmakerOption[] = [
   { id: 'bet9ja', name: 'Bet9ja', prefix: 'B9J', fiveGameBonusPct: 15, longBetBonusPct: 50 },
 ];
 
-const FALLBACK_WEEKLY_POOL: CuratedGameLeg[] = [
-  {
-    id: 'wk-1',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Everton',
-    league: 'Premier League',
-    kickoffLabel: 'Sat · 15:00',
-    matchDate: new Date(Date.now() + 86400000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.44,
-    safeMarket: 'Arsenal 1X & Over 1.5',
-    safeOdds: 1.28,
-    confidence: 88,
-    xgSummary: '2.34 vs 0.68 xG',
-  },
-  {
-    id: 'wk-2',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Villarreal',
-    league: 'La Liga',
-    kickoffLabel: 'Sat · 20:00',
-    matchDate: new Date(Date.now() + 90000000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.48,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.22,
-    confidence: 86,
-    xgSummary: '2.41 vs 0.92 xG',
-  },
-  {
-    id: 'wk-3',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Mainz 05',
-    league: 'Bundesliga',
-    kickoffLabel: 'Sat · 14:30',
-    matchDate: new Date(Date.now() + 82800000).toISOString(),
-    primaryMarket: 'Home Win & Over 2.5',
-    primaryOdds: 1.52,
-    safeMarket: 'Over 2.5 Goals',
-    safeOdds: 1.32,
-    confidence: 89,
-    xgSummary: '2.85 vs 0.74 xG',
-  },
-  {
-    id: 'wk-4',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Cagliari',
-    league: 'Serie A',
-    kickoffLabel: 'Sun · 17:00',
-    matchDate: new Date(Date.now() + 172800000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.38,
-    safeMarket: 'Inter 1X & Over 1.5',
-    safeOdds: 1.25,
-    confidence: 87,
-    xgSummary: '2.28 vs 0.61 xG',
-  },
-  {
-    id: 'wk-5',
-    homeTeam: 'PSG',
-    awayTeam: 'Nantes',
-    league: 'Ligue 1',
-    kickoffLabel: 'Sat · 19:00',
-    matchDate: new Date(Date.now() + 93600000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.41,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.20,
-    confidence: 86,
-    xgSummary: '2.52 vs 0.79 xG',
-  },
-  {
-    id: 'wk-6',
-    homeTeam: 'Liverpool',
-    awayTeam: 'Tottenham',
-    league: 'Premier League',
-    kickoffLabel: 'Sun · 16:30',
-    matchDate: new Date(Date.now() + 169200000).toISOString(),
-    primaryMarket: 'Over 2.5 Goals',
-    primaryOdds: 1.54,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.21,
-    confidence: 85,
-    xgSummary: '2.29 vs 1.48 xG',
-  },
-  {
-    id: 'wk-7',
-    homeTeam: 'Barcelona',
-    awayTeam: 'Real Sociedad',
-    league: 'La Liga',
-    kickoffLabel: 'Sun · 20:00',
-    matchDate: new Date(Date.now() + 180000000).toISOString(),
-    primaryMarket: 'Over 2.5 Goals',
-    primaryOdds: 1.62,
-    safeMarket: 'Barcelona 1X',
-    safeOdds: 1.24,
-    confidence: 84,
-    xgSummary: '2.18 vs 0.95 xG',
-  },
-  {
-    id: 'wk-8',
-    homeTeam: 'Bayer Leverkusen',
-    awayTeam: 'Eintracht Frankfurt',
-    league: 'Bundesliga',
-    kickoffLabel: 'Sat · 17:30',
-    matchDate: new Date(Date.now() + 100800000).toISOString(),
-    primaryMarket: 'Both Teams To Score (GG)',
-    primaryOdds: 1.65,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.24,
-    confidence: 83,
-    xgSummary: '2.04 vs 1.36 xG',
-  },
-  {
-    id: 'wk-9',
-    homeTeam: 'Atalanta',
-    awayTeam: 'Fiorentina',
-    league: 'Serie A',
-    kickoffLabel: 'Sun · 14:00',
-    matchDate: new Date(Date.now() + 162000000).toISOString(),
-    primaryMarket: 'Over 2.5 Goals',
-    primaryOdds: 1.68,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.26,
-    confidence: 82,
-    xgSummary: '2.11 vs 1.29 xG',
-  },
-  {
-    id: 'wk-10',
-    homeTeam: 'PSV Eindhoven',
-    awayTeam: 'AZ Alkmaar',
-    league: 'Eredivisie',
-    kickoffLabel: 'Sat · 18:45',
-    matchDate: new Date(Date.now() + 104400000).toISOString(),
-    primaryMarket: 'Home Win & Over 1.5',
-    primaryOdds: 1.58,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.22,
-    confidence: 84,
-    xgSummary: '2.46 vs 1.05 xG',
-  },
-  {
-    id: 'wk-11',
-    homeTeam: 'Manchester City',
-    awayTeam: 'Newcastle',
-    league: 'Premier League',
-    kickoffLabel: 'Sat · 17:30',
-    matchDate: new Date(Date.now() + 97200000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.55,
-    safeMarket: 'Man City 1X',
-    safeOdds: 1.19,
-    confidence: 84,
-    xgSummary: '2.22 vs 0.98 xG',
-  },
-  {
-    id: 'wk-12',
-    homeTeam: 'Sporting CP',
-    awayTeam: 'Braga',
-    league: 'Primeira Liga',
-    kickoffLabel: 'Sun · 20:30',
-    matchDate: new Date(Date.now() + 183600000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.56,
-    safeMarket: 'Sporting CP 1X',
-    safeOdds: 1.20,
-    confidence: 83,
-    xgSummary: '2.19 vs 0.88 xG',
-  },
-  {
-    id: 'wk-13',
-    homeTeam: 'Napoli',
-    awayTeam: 'Torino',
-    league: 'Serie A',
-    kickoffLabel: 'Fri · 19:45',
-    matchDate: new Date(Date.now() + 43200000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.60,
-    safeMarket: 'Napoli 1X',
-    safeOdds: 1.18,
-    confidence: 82,
-    xgSummary: '1.96 vs 0.72 xG',
-  },
-  {
-    id: 'wk-14',
-    homeTeam: 'Atletico Madrid',
-    awayTeam: 'Getafe',
-    league: 'La Liga',
-    kickoffLabel: 'Sat · 15:15',
-    matchDate: new Date(Date.now() + 84600000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.53,
-    safeMarket: 'Atletico 1X',
-    safeOdds: 1.16,
-    confidence: 83,
-    xgSummary: '1.89 vs 0.58 xG',
-  },
-  {
-    id: 'wk-15',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'Tusker FC',
-    league: 'FKF Premier League',
-    kickoffLabel: 'Sun · 15:00',
-    matchDate: new Date(Date.now() + 165600000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.72,
-    safeMarket: 'Gor Mahia 1X',
-    safeOdds: 1.23,
-    confidence: 81,
-    xgSummary: '1.82 vs 0.76 xG',
-  },
-  {
-    id: 'wk-16',
-    homeTeam: 'Chelsea',
-    awayTeam: 'Aston Villa',
-    league: 'Premier League',
-    kickoffLabel: 'Sun · 14:00',
-    matchDate: new Date(Date.now() + 160000000).toISOString(),
-    primaryMarket: 'Both Teams To Score (GG)',
-    primaryOdds: 1.66,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.25,
-    confidence: 80,
-    xgSummary: '1.91 vs 1.42 xG',
-  },
-  {
-    id: 'wk-17',
-    homeTeam: 'Borussia Dortmund',
-    awayTeam: 'RB Leipzig',
-    league: 'Bundesliga',
-    kickoffLabel: 'Sat · 17:30',
-    matchDate: new Date(Date.now() + 102000000).toISOString(),
-    primaryMarket: 'Over 2.5 Goals',
-    primaryOdds: 1.64,
-    safeMarket: 'Over 1.5 Goals',
-    safeOdds: 1.24,
-    confidence: 81,
-    xgSummary: '2.08 vs 1.54 xG',
-  },
-  {
-    id: 'wk-18',
-    homeTeam: 'AC Milan',
-    awayTeam: 'Lazio',
-    league: 'Serie A',
-    kickoffLabel: 'Sun · 19:45',
-    matchDate: new Date(Date.now() + 178000000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.82,
-    safeMarket: 'AC Milan 1X',
-    safeOdds: 1.27,
-    confidence: 79,
-    xgSummary: '1.88 vs 1.04 xG',
-  },
-  {
-    id: 'wk-19',
-    homeTeam: 'Al Ahly',
-    awayTeam: 'Pyramids FC',
-    league: 'Egyptian Premier League',
-    kickoffLabel: 'Fri · 19:00',
-    matchDate: new Date(Date.now() + 54000000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.76,
-    safeMarket: 'Al Ahly 1X',
-    safeOdds: 1.24,
-    confidence: 81,
-    xgSummary: '1.94 vs 0.85 xG',
-  },
-  {
-    id: 'wk-20',
-    homeTeam: 'Mamelodi Sundowns',
-    awayTeam: 'Kaizer Chiefs',
-    league: 'South Africa PSL',
-    kickoffLabel: 'Sat · 15:30',
-    matchDate: new Date(Date.now() + 88200000).toISOString(),
-    primaryMarket: 'Home Win (1)',
-    primaryOdds: 1.62,
-    safeMarket: 'Sundowns 1X',
-    safeOdds: 1.20,
-    confidence: 83,
-    xgSummary: '2.05 vs 0.77 xG',
-  },
-];
-
 function formatKickoffShort(dateStr: string): string {
   try {
     const d = new Date(dateStr);
@@ -447,33 +164,19 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
     [bookmakerId]
   );
 
-  // Merge live upcoming predictions with fallback pool so we always have >= 20 high-confidence weekly games
+  // Build curated pool strictly from real live predictions
   const curatedPool = useMemo(() => {
     const sortedLive = [...predictions]
       .sort((a, b) => getConfidence(b) - getConfidence(a))
       .slice(0, 24)
       .map((p, idx) => mapPredictionToCuratedLeg(p, idx));
 
-    const seenPairs = new Set(
-      sortedLive.map((g) => `${g.homeTeam.toLowerCase()}|${g.awayTeam.toLowerCase()}`)
-    );
-
-    const combined = [...sortedLive];
-    for (const item of FALLBACK_WEEKLY_POOL) {
-      const key = `${item.homeTeam.toLowerCase()}|${item.awayTeam.toLowerCase()}`;
-      if (!seenPairs.has(key)) {
-        combined.push(item);
-        seenPairs.add(key);
-      }
-      if (combined.length >= 24) break;
-    }
-
-    if (rotationOffset === 0) return combined;
-    const shift = rotationOffset % combined.length;
-    return [...combined.slice(shift), ...combined.slice(0, shift)];
+    if (sortedLive.length === 0 || rotationOffset === 0) return sortedLive;
+    const shift = rotationOffset % sortedLive.length;
+    return [...sortedLive.slice(shift), ...sortedLive.slice(0, shift)];
   }, [predictions, rotationOffset]);
 
-  // Build 4 distinct 5-Game Smart Packs (5 games each = higher win rate + diversified strategies)
+  // Build 4 distinct 5-Game Smart Packs from verified live upcoming games
   const fiveGamePacks: FiveGamePack[] = useMemo(() => {
     const packDefinitions = [
       {
@@ -515,7 +218,26 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
     ];
 
     return packDefinitions.map((def) => {
-      const games = curatedPool.slice(def.sliceStart, def.sliceStart + 5);
+      if (curatedPool.length === 0) {
+        return {
+          id: def.id,
+          codePrefix: def.codePrefix,
+          title: def.title,
+          subtitle: def.subtitle,
+          strategyLabel: def.strategyLabel,
+          estimatedWinChancePct: def.estimatedWinChancePct,
+          games: [],
+        };
+      }
+      const games: CuratedGameLeg[] = [];
+      const seen = new Set<string>();
+      for (let offset = 0; offset < Math.min(5, curatedPool.length); offset++) {
+        const candidate = curatedPool[(def.sliceStart + offset) % curatedPool.length];
+        if (candidate && !seen.has(candidate.id)) {
+          seen.add(candidate.id);
+          games.push(candidate);
+        }
+      }
       return {
         id: def.id,
         codePrefix: def.codePrefix,
@@ -523,7 +245,7 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
         subtitle: def.subtitle,
         strategyLabel: def.strategyLabel,
         estimatedWinChancePct: def.estimatedWinChancePct,
-        games: games.length === 5 ? games : FALLBACK_WEEKLY_POOL.slice(def.sliceStart, def.sliceStart + 5),
+        games,
       };
     });
   }, [curatedPool, useSafetyCushion]);
@@ -907,53 +629,61 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
-                  {activePack.games.map((leg, idx) => {
-                    const market = getLegMarket(leg);
-                    const odds = getLegOdds(leg);
-                    return (
-                      <tr key={leg.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-3 px-3 font-mono tabular-nums text-muted-foreground">
-                          0{idx + 1}
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="flex items-center gap-2 font-bold text-foreground">
-                            <TeamLogo team={leg.homeTeam} size="xs" badgeOnly />
-                            <span>{leg.homeTeam}</span>
-                            <span className="text-muted-foreground font-normal">vs</span>
-                            <TeamLogo team={leg.awayTeam} size="xs" badgeOnly />
-                            <span>{leg.awayTeam}</span>
-                          </div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5">
-                            <span>{leg.league}</span>
-                            <span aria-hidden="true"> · </span>
-                            <span>{leg.kickoffLabel}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 font-mono tabular-nums text-muted-foreground">
-                          {leg.xgSummary}
-                        </td>
-                        <td className="py-3 px-3 font-semibold text-emerald-800 dark:text-emerald-400">
-                          {market}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono tabular-nums font-semibold text-foreground">
-                          {leg.confidence}%
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono tabular-nums font-extrabold text-primary">
-                          @{odds.toFixed(2)}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleLoadSingleGame(leg)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground cursor-pointer transition-colors"
-                          >
-                            <Plus className="h-3 w-3" />
-                            <span>Slip</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {activePack.games.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 px-4 text-center text-muted-foreground">
+                        Syncing live upcoming fixtures from ESPN &amp; official league feeds — 5-game packs will populate automatically once matches are loaded.
+                      </td>
+                    </tr>
+                  ) : (
+                    activePack.games.map((leg, idx) => {
+                      const market = getLegMarket(leg);
+                      const odds = getLegOdds(leg);
+                      return (
+                        <tr key={leg.id} className="hover:bg-muted/20 transition-colors">
+                          <td className="py-3 px-3 font-mono tabular-nums text-muted-foreground">
+                            0{idx + 1}
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                              <TeamLogo team={leg.homeTeam} size="xs" badgeOnly />
+                              <span>{leg.homeTeam}</span>
+                              <span className="text-muted-foreground font-normal">vs</span>
+                              <TeamLogo team={leg.awayTeam} size="xs" badgeOnly />
+                              <span>{leg.awayTeam}</span>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              <span>{leg.league}</span>
+                              <span aria-hidden="true"> · </span>
+                              <span>{leg.kickoffLabel}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 font-mono tabular-nums text-muted-foreground">
+                            {leg.xgSummary}
+                          </td>
+                          <td className="py-3 px-3 font-semibold text-emerald-800 dark:text-emerald-400">
+                            {market}
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono tabular-nums font-semibold text-foreground">
+                            {leg.confidence}%
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono tabular-nums font-extrabold text-primary">
+                            @{odds.toFixed(2)}
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleLoadSingleGame(leg)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground cursor-pointer transition-colors"
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>Slip</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1142,68 +872,76 @@ export const FiveGamePacksAndWeeklyLongBet: React.FC<FiveGamePacksAndWeeklyLongB
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
-                  {weeklyLongBetLegs.map((leg, idx) => {
-                    const market = getLegMarket(leg);
-                    const odds = getLegOdds(leg);
-                    return (
-                      <tr key={leg.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="py-2.5 px-3 font-mono tabular-nums text-muted-foreground">
-                          {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2 font-bold text-foreground">
-                            <TeamLogo team={leg.homeTeam} size="xs" badgeOnly />
-                            <span>{leg.homeTeam}</span>
-                            <span className="text-muted-foreground font-normal">vs</span>
-                            <TeamLogo team={leg.awayTeam} size="xs" badgeOnly />
-                            <span>{leg.awayTeam}</span>
-                          </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            <span>{leg.league}</span>
-                            <span aria-hidden="true"> · </span>
-                            <span className="font-mono">{leg.xgSummary}</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">
-                          {leg.kickoffLabel}
-                        </td>
-                        <td className="py-2.5 px-3 font-semibold text-emerald-800 dark:text-emerald-400">
-                          {market}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-foreground">
-                          {leg.confidence}%
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono tabular-nums font-extrabold text-primary">
-                          @{odds.toFixed(2)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
-                          <div className="inline-flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleLoadSingleGame(leg)}
-                              className="px-2 py-1 rounded border border-border bg-background hover:bg-muted text-[11px] font-semibold text-foreground cursor-pointer"
-                            >
-                              + Slip
-                            </button>
-                            {weeklyLongBetLegs.length > 5 && (
+                  {weeklyLongBetLegs.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 px-4 text-center text-muted-foreground">
+                        Syncing live upcoming fixtures from ESPN &amp; official league feeds — the Weekly Long-Bet accumulator will populate automatically once matches are loaded.
+                      </td>
+                    </tr>
+                  ) : (
+                    weeklyLongBetLegs.map((leg, idx) => {
+                      const market = getLegMarket(leg);
+                      const odds = getLegOdds(leg);
+                      return (
+                        <tr key={leg.id} className="hover:bg-muted/20 transition-colors">
+                          <td className="py-2.5 px-3 font-mono tabular-nums text-muted-foreground">
+                            {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center gap-2 font-bold text-foreground">
+                              <TeamLogo team={leg.homeTeam} size="xs" badgeOnly />
+                              <span>{leg.homeTeam}</span>
+                              <span className="text-muted-foreground font-normal">vs</span>
+                              <TeamLogo team={leg.awayTeam} size="xs" badgeOnly />
+                              <span>{leg.awayTeam}</span>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              <span>{leg.league}</span>
+                              <span aria-hidden="true"> · </span>
+                              <span className="font-mono">{leg.xgSummary}</span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">
+                            {leg.kickoffLabel}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-emerald-800 dark:text-emerald-400">
+                            {market}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-foreground">
+                            {leg.confidence}%
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono tabular-nums font-extrabold text-primary">
+                            @{odds.toFixed(2)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <div className="inline-flex items-center gap-1.5">
                               <button
                                 type="button"
-                                onClick={() => {
-                                  hapticService.selection();
-                                  setExcludedLongBetIds((prev) => [...prev, leg.id]);
-                                  toast.info(`Swapped out ${leg.homeTeam} vs ${leg.awayTeam} for next top weekly pick`);
-                                }}
-                                className="px-2 py-1 rounded border border-border/70 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
-                                title="Swap this match with the next highest-confidence weekly fixture"
+                                onClick={() => handleLoadSingleGame(leg)}
+                                className="px-2 py-1 rounded border border-border bg-background hover:bg-muted text-[11px] font-semibold text-foreground cursor-pointer"
                               >
-                                Swap
+                                + Slip
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              {weeklyLongBetLegs.length > 5 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    hapticService.selection();
+                                    setExcludedLongBetIds((prev) => [...prev, leg.id]);
+                                    toast.info(`Swapped out ${leg.homeTeam} vs ${leg.awayTeam} for next top weekly pick`);
+                                  }}
+                                  className="px-2 py-1 rounded border border-border/70 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
+                                  title="Swap this match with the next highest-confidence weekly fixture"
+                                >
+                                  Swap
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

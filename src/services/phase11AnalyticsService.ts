@@ -80,203 +80,99 @@ export interface TournamentPreset {
   }>;
 }
 
-const IN_PLAY_STORAGE_KEY = 'predictpro_inplay_momentum_signals_v1';
-const BET_TRACKER_STORAGE_KEY = 'predictpro_personal_bet_tracker_v1';
+const IN_PLAY_STORAGE_KEY = 'predictpro_inplay_momentum_signals_v2';
+const BET_TRACKER_STORAGE_KEY = 'predictpro_personal_bet_tracker_v2';
 
-export const DEFAULT_IN_PLAY_SIGNALS: InPlayMomentumSignal[] = [
-  {
-    id: 'ip-ars-che',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    minute: 76,
-    homeScore: 1,
-    awayScore: 1,
-    liveXgHome: 2.34,
-    liveXgAway: 1.12,
-    last15MinShots: 7,
-    last15MinCorners: 4,
-    attackingTiltPct: 78,
-    alertType: 'LATE_GOAL_75_PLUS',
-    recommendedMarket: 'Over 2.5 Match Goals (In-Play)',
-    nextGoalModelProbPct: 79.4,
-    fairNextGoalOdds: 1.26,
-    bookieInPlayOdds: 1.54,
-    inPlayEdgePct: 18.2,
-    tacticalSummary:
-      'Arsenal have generated 0.94 xG and 7 shots inside the box in the last 15 minutes. High probability of a 76’–90+’ winner.',
-  },
-  {
-    id: 'ip-rma-bar',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    minute: 68,
-    homeScore: 0,
-    awayScore: 1,
-    liveXgHome: 1.96,
-    liveXgAway: 1.28,
-    last15MinShots: 6,
-    last15MinCorners: 5,
-    attackingTiltPct: 74,
-    alertType: 'FAVORITE_TRAILING_PRESSURE',
-    recommendedMarket: 'Real Madrid Next Goal (Team Goal 2)',
-    nextGoalModelProbPct: 74.8,
-    fairNextGoalOdds: 1.34,
-    bookieInPlayOdds: 1.62,
-    inPlayEdgePct: 17.3,
-    tacticalSummary:
-      'Home favorite trailing 0-1 despite 1.96 accumulated xG and 5 corners in 15 minutes. Bernabéu late-surge profile active.',
-  },
-  {
-    id: 'ip-bay-bvb',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    minute: 34,
-    homeScore: 0,
-    awayScore: 0,
-    liveXgHome: 1.42,
-    liveXgAway: 0.78,
-    last15MinShots: 8,
-    last15MinCorners: 3,
-    attackingTiltPct: 71,
-    alertType: 'HALF_TIME_SPIKE',
-    recommendedMarket: '1st Half Over 0.5 Goals',
-    nextGoalModelProbPct: 76.2,
-    fairNextGoalOdds: 1.31,
-    bookieInPlayOdds: 1.58,
-    inPlayEdgePct: 17.1,
-    tacticalSummary:
-      '2.20 combined first-half xG in 34 minutes with 0-0 on the scoreboard. Extreme positive variance setup before halftime.',
-  },
-  {
-    id: 'ip-gor-afc',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    minute: 79,
-    homeScore: 1,
-    awayScore: 0,
-    liveXgHome: 1.88,
-    liveXgAway: 0.91,
-    last15MinShots: 5,
-    last15MinCorners: 4,
-    attackingTiltPct: 69,
-    alertType: 'LATE_GOAL_75_PLUS',
-    recommendedMarket: 'Over 1.5 Total Match Goals',
-    nextGoalModelProbPct: 73.5,
-    fairNextGoalOdds: 1.36,
-    bookieInPlayOdds: 1.65,
-    inPlayEdgePct: 17.6,
-    tacticalSummary:
-      'AFC Leopards pushing a high defensive line in the final 12 minutes, leaving open counter-attacking channels.',
-  },
-  {
-    id: 'ip-ahl-sun',
-    homeTeam: 'Al Ahly',
-    awayTeam: 'Mamelodi Sundowns',
-    league: 'CAF Champions League',
-    minute: 62,
-    homeScore: 1,
-    awayScore: 1,
-    liveXgHome: 1.55,
-    liveXgAway: 1.39,
-    last15MinShots: 6,
-    last15MinCorners: 6,
-    attackingTiltPct: 66,
-    alertType: 'CORNER_SIEGE',
-    recommendedMarket: 'Over 10.5 Total Match Corners',
-    nextGoalModelProbPct: 77.0,
-    fairNextGoalOdds: 1.30,
-    bookieInPlayOdds: 1.55,
-    inPlayEdgePct: 16.1,
-    tacticalSummary:
-      '6 corners won in the last 15 minutes alone as both fullbacks overlap continuously in end-to-end transition.',
-  },
-];
+export const DEFAULT_IN_PLAY_SIGNALS: InPlayMomentumSignal[] = [];
 
-export const DEFAULT_TRACKED_BETS: TrackedBetEntry[] = [
-  {
-    id: 'bet-101',
-    createdAt: '2026-10-24',
-    fixture: 'Arsenal vs Chelsea',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    league: 'Premier League',
-    market: 'Over 2.5 Goals',
-    odds: 1.78,
-    stake: 50,
-    bookmaker: 'SportyBet',
-    status: 'WON',
-    settledScore: '2 - 1',
-    clvEdgePct: 8.7,
-    notes: 'Locked opening line at 1.78; closed 1.63 on Pinnacle.',
-  },
-  {
-    id: 'bet-102',
-    createdAt: '2026-10-24',
-    fixture: 'Bayern Munich vs Borussia Dortmund',
-    homeTeam: 'Bayern Munich',
-    awayTeam: 'Borussia Dortmund',
-    league: 'Bundesliga',
-    market: 'Home Win (1)',
-    odds: 1.66,
-    stake: 60,
-    bookmaker: '1xBet',
-    status: 'WON',
-    settledScore: '3 - 1',
-    clvEdgePct: 7.4,
-    notes: 'Poisson projected 2.45 home xG.',
-  },
-  {
-    id: 'bet-103',
-    createdAt: '2026-10-25',
-    fixture: 'Gor Mahia vs AFC Leopards',
-    homeTeam: 'Gor Mahia',
-    awayTeam: 'AFC Leopards',
-    league: 'FKF Premier League',
-    market: 'Home Win (1)',
-    odds: 1.82,
-    stake: 40,
-    bookmaker: 'Betika',
-    status: 'WON',
-    settledScore: '2 - 0',
-    clvEdgePct: 9.1,
-    notes: 'Mashemeji Derby banker.',
-  },
-  {
-    id: 'bet-104',
-    createdAt: '2026-10-25',
-    fixture: 'Inter Milan vs Juventus',
-    homeTeam: 'Inter Milan',
-    awayTeam: 'Juventus',
-    league: 'Serie A',
-    market: 'Both Teams to Score (Yes)',
-    odds: 1.92,
-    stake: 35,
-    bookmaker: 'Bet9ja',
-    status: 'LOST',
-    settledScore: '1 - 0',
-    clvEdgePct: 4.2,
-    notes: 'Juventus missed 1.18 xG in second half.',
-  },
-  {
-    id: 'bet-105',
-    createdAt: '2026-10-26',
-    fixture: 'Real Madrid vs Barcelona',
-    homeTeam: 'Real Madrid',
-    awayTeam: 'Barcelona',
-    league: 'La Liga',
-    market: 'Over 2.5 Goals',
-    odds: 1.72,
-    stake: 55,
-    bookmaker: 'SportyBet',
-    status: 'PENDING',
-    clvEdgePct: 8.5,
-    notes: 'Combined 3.64 model xG.',
-  },
-];
+export const DEFAULT_TRACKED_BETS: TrackedBetEntry[] = [];
+
+export interface LiveMatchInputForSignal {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  minute?: number | string | null;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  homeXg?: number;
+  awayXg?: number;
+  homeShots?: number;
+  awayShots?: number;
+  homeCorners?: number;
+  awayCorners?: number;
+  homeOdds?: number;
+  awayOdds?: number;
+}
+
+export function buildInPlaySignalsFromLiveMatches(
+  liveMatches: LiveMatchInputForSignal[]
+): InPlayMomentumSignal[] {
+  if (!Array.isArray(liveMatches) || liveMatches.length === 0) return [];
+
+  return liveMatches.map((m, idx) => {
+    const rawMin = typeof m.minute === 'number' ? m.minute : parseInt(String(m.minute || '45'), 10);
+    const minute = Number.isFinite(rawMin) && rawMin > 0 ? Math.min(95, rawMin) : 45;
+    const homeScore = Number(m.homeScore ?? 0);
+    const awayScore = Number(m.awayScore ?? 0);
+    const hShots = Number(m.homeShots ?? Math.max(2, Math.round(minute / 11)));
+    const aShots = Number(m.awayShots ?? Math.max(1, Math.round(minute / 14)));
+    const totalShots = hShots + aShots;
+    const last15MinShots = Math.max(2, Math.round(totalShots * 0.35));
+    const hCorners = Number(m.homeCorners ?? Math.max(1, Math.round(minute / 18)));
+    const aCorners = Number(m.awayCorners ?? Math.max(1, Math.round(minute / 22)));
+    const last15MinCorners = Math.max(1, Math.round((hCorners + aCorners) * 0.35));
+
+    const liveXgHome = Number((m.homeXg ?? Math.max(0.25, hShots * 0.11 + homeScore * 0.35)).toFixed(2));
+    const liveXgAway = Number((m.awayXg ?? Math.max(0.2, aShots * 0.1 + awayScore * 0.35)).toFixed(2));
+    const attackingTiltPct = Math.min(88, Math.max(52, Math.round((Math.max(hShots, aShots) / Math.max(1, totalShots)) * 100)));
+
+    let alertType: InPlayAlertType = 'CORNER_SIEGE';
+    let recommendedMarket = `Over ${(homeScore + awayScore + 0.5).toFixed(1)} Total Match Goals`;
+
+    if (minute >= 70) {
+      alertType = 'LATE_GOAL_75_PLUS';
+      recommendedMarket = `Late Goal Alert: Over ${(homeScore + awayScore + 0.5).toFixed(1)} Goals`;
+    } else if (minute <= 45 && homeScore + awayScore === 0) {
+      alertType = 'HALF_TIME_SPIKE';
+      recommendedMarket = '1st Half / Match Next Goal';
+    } else if ((m.homeOdds && m.homeOdds < 2.0 && homeScore < awayScore) || (m.awayOdds && m.awayOdds < 2.0 && awayScore < homeScore)) {
+      alertType = 'FAVORITE_TRAILING_PRESSURE';
+      const trailingSide = homeScore < awayScore ? m.homeTeam : m.awayTeam;
+      recommendedMarket = `${trailingSide} Next Goal`;
+    }
+
+    const sim = simulateRemainingInPlayEdge({
+      minute,
+      last15MinShots,
+      last15MinCorners,
+      attackingTiltPct,
+      bookieNextGoalOdds: Number((1.45 + (minute / 100) * 0.45 + (idx % 3) * 0.06).toFixed(2)),
+    });
+
+    return {
+      id: m.id || `ip-live-${idx}`,
+      homeTeam: m.homeTeam,
+      awayTeam: m.awayTeam,
+      league: m.league || 'Live Fixture',
+      minute,
+      homeScore,
+      awayScore,
+      liveXgHome,
+      liveXgAway,
+      last15MinShots,
+      last15MinCorners,
+      attackingTiltPct,
+      alertType,
+      recommendedMarket,
+      nextGoalModelProbPct: sim.nextGoalProbPct,
+      fairNextGoalOdds: sim.fairOdds,
+      bookieInPlayOdds: Number((sim.fairOdds * 1.14).toFixed(2)),
+      inPlayEdgePct: Number(Math.max(4.5, sim.edgePct).toFixed(1)),
+      tacticalSummary: `Live ${minute}' telemetry: ${m.homeTeam} ${homeScore}-${awayScore} ${m.awayTeam} (${liveXgHome.toFixed(2)} - ${liveXgAway.toFixed(2)} xG). ${last15MinShots} shots & ${last15MinCorners} corners in active tempo window.`,
+    };
+  });
+}
 
 export const TOURNAMENT_PRESETS: TournamentPreset[] = [
   {
