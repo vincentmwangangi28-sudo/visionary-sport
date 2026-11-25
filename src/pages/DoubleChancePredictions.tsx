@@ -37,7 +37,7 @@ export default function DoubleChancePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Double Chance Predictions Today (1X / X2): 89% AI Strike Rate"
+        title="Double Chance Predictions Today (1X/X2): 89% Strike Rate"
         description="Daily 1X, X2, and 12 Double Chance football predictions with 89% AI confidence. Low-risk accumulator builders and underdog hedging across 40+ leagues."
         canonical="/double-chance-predictions"
         keywords="double chance predictions today, 1x predictions today, x2 tips, double chance sure wins, low risk football tips, accumulator hedges"

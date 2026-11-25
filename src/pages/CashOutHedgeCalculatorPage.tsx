@@ -191,7 +191,7 @@ export const CashOutHedgeCalculatorPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Acca Cash-Out & Live Counter-Hedge Calculator | PredictPro"
+        title="Acca Cash-Out & Live Hedge Calculator | Equity Auditor"
         description="Audit bookmaker Cash-Out haircuts and calculate exact 2-way or 3-way counter-hedge stakes on the final leg of your accumulator to equalize net return."
         keywords="acca cash out calculator, live hedge bet calculator, double chance hedge calculator, cash out vs hedge equity, parlay counter stake"
         canonical="/cashout-calculator"

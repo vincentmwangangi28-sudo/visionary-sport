@@ -70,7 +70,7 @@ export default function SecondHalfGoalsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Second Half Goals Predictions Today: 2H Over 1.5 & Late xG Tips"
+        title="Second Half Goals Predictions: 2H xG | PredictPro"
         description="Free Second Half Goals (2H Over 1.5) and Highest Scoring Half football predictions today. Powered by 60–90 minute fatigue xG spikes and bench impact data."
         keywords="second half goals predictions, 2nd half over 1.5 goals tips, highest scoring half predictions, late goals football tips, second half betting strategy"
         canonicalPath="/second-half-goals-predictions"

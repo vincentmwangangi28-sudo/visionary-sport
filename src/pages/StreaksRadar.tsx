@@ -252,7 +252,7 @@ export default function StreaksRadar() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="AI Football Streaks & Betting Trends Radar | PredictPro"
+        title="Football Team Winning Streaks & Goal Trends Radar"
         description="Scan active winning streaks, Over 2.5 goals runs, BTTS streaks, and clean sheets across top football leagues with AI Sustainability ratings."
       />
       <Navbar />

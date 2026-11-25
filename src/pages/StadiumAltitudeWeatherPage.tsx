@@ -129,7 +129,7 @@ export const StadiumAltitudeWeatherPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Stadium Altitude, Weather, Pitch Surface & Travel Fatigue xG Modifier Hub | PredictPro"
+        title="Stadium Altitude, Weather & Fatigue xG Modifiers"
         description="Quantify how stadium altitude (Nairobi 1,795m, Johannesburg 1,753m, Mexico City 2,240m), continental CAF/UCL travel distance, and pitch weather shift Expected Goals (xG)."
         canonicalUrl="https://predictpro.guru/stadium-altitude-weather"
       />

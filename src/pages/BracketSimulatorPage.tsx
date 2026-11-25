@@ -550,7 +550,7 @@ export const BracketSimulatorPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Interactive Knockout Tournament Bracket & 10,000-Run Title Simulator | PredictPro"
+        title="Tournament Knockout Bracket & Title Odds Simulator"
         description="Simulate the UEFA Champions League, AFCON, and CAF Champions League knockout brackets across 10,000 Monte Carlo runs with First-to-Score (1-0) conversion metrics."
       />
       <Navbar />

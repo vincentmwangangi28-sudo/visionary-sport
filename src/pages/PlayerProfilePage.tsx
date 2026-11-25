@@ -365,7 +365,8 @@ export default function PlayerProfilePage() {
   };
 
   const slug = formatPlayerSlug(player.name);
-  const pageTitle = `${player.name} Player Ratings, xG Heatmap & Prop Simulator | PredictPro`;
+  const rawPlayerTitle = `${player.name} Ratings, xG & Props | PredictPro`;
+  const pageTitle = rawPlayerTitle.length <= 60 ? rawPlayerTitle : `${player.name} xG & Prop Odds`;
   const pageDesc = `${player.name} (${player.team}) AI form rating (${player.rating.toFixed(1)}/10), ${player.xgPer90} xG/90, 2D touch heatmap, and interactive Poisson Goalscorer & Shots on Target prop simulator.`;
 
   return (

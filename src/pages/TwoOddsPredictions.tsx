@@ -95,7 +95,7 @@ export default function TwoOddsPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Sure 2 Odds Predictions Today: Daily 2.00+ Rollover Banker Tips"
+        title="Daily 2.00+ Combined Odds Predictions & Rollover"
         description="Free Sure 2 Odds and 3 Odds football predictions today. High-strike-rate 2-leg banker doubles and interactive 5-day rollover compounding calculator."
         canonical="/2-odds-predictions"
         keywords="sure 2 odds predictions today, daily 2 odds banker, 2 odds rollover tips, sure 3 odds daily, safe 2 odds football tips"

@@ -91,7 +91,7 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Tipster Leaderboard | Top Predictors | PredictPro" description="See the top football tipsters on PredictPro. Rankings by accuracy, win streak and community votes." canonical="/leaderboard" />
+      <SEO title="Global Prediction Accuracy Leaderboard | PredictPro" description="See the top football tipsters on PredictPro. Rankings by accuracy, win streak and community votes." canonical="/leaderboard" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="text-center mb-8">

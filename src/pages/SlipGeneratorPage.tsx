@@ -365,8 +365,8 @@ export default function SlipGeneratorPage() {
       <SEO
         title={
           isBookingCodesRoute
-            ? 'Daily Football Booking Codes: SportyBet, 1xBet, Bet9ja & Betway'
-            : 'Smart Bet Slip Generator & Booking Code Converter | PredictPro'
+            ? 'Daily Football Booking Codes & Slips | PredictPro'
+            : 'Smart Bet Slip Generator & Booking Code Converter'
         }
         description={
           isBookingCodesRoute

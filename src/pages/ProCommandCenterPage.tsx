@@ -105,8 +105,8 @@ export default function ProCommandCenterPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Pro Matchday Command Center — 2D Shot Maps, Referee Cards & SGP Builder | PredictPro"
-        description="Unified football intelligence command center combining Understat 2D pitch shot maps & 12-zone xT, SofaScore referee card matrices, Action Network SGP Copula builders, Oddspedia line-movement sparklines, and 75'+ audio alerts."
+        title="Pro Matchday Command Center & SGP Builder | PredictPro"
+        description="Unified football intelligence command center combining 2D pitch shot maps, 12-zone xT, referee card matrices, SGP Copula builders, and line-movement tracking."
         keywords="pro matchday command center, 2d pitch shot map, expected threat xt matrix, referee card stats, same game parlay copula builder, football steam moves"
         canonical="/pro-command-center"
       />

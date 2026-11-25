@@ -68,7 +68,7 @@ export default function FirstHalfGoalsPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Over 0.5 First Half Goals Predictions Today: 1H Goal AI Tips"
+        title="Over 0.5 First Half Goals Predictions Today: 1H AI"
         description="Free Over 0.5 & Over 1.5 First Half Goals predictions today. Settle bets in 45 minutes with 84%+ strike-rate 1st half xG and early-goal probability picks."
         canonical="/first-half-goals-predictions"
         keywords="over 0.5 first half goals predictions, 1st half goals tips today, ht over 0.5 predictions, first half over 1.5 goals tips, early goal football predictions"

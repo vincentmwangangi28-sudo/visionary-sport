@@ -185,7 +185,7 @@ export default function MidweekJackpotPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Midweek Jackpot Predictions Today: 13 & 15 Games AI Models"
+        title="Midweek Jackpot Predictions: 13 & 15 Game AI Tips"
         description="Live 13-game SportPesa Midweek and 15-game Betika Midweek Jackpot predictions with Poisson probabilities and Double Chance permutations."
         keywords="midweek jackpot predictions, sportpesa midweek jackpot predictions, betika midweek jackpot 15 games, 13 games jackpot tips today, midweek jackpot bonuses"
         canonical="/midweek-jackpot-predictions"

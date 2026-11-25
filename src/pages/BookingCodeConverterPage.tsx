@@ -413,7 +413,7 @@ export default function BookingCodeConverterPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Bet Booking Code Converter: SportyBet, Betika, SportPesa & 1xBet"
+        title="Universal Bet Booking Code Converter: 7 Bookmakers"
         description="Free football bet slip booking code converter. Convert codes instantly between SportyBet, Betika, SportPesa, 1xBet, Betway, MozzartBet & Odibets with AI odds comparison."
         canonical="/booking-code-converter"
         keywords="bet booking code converter, sportybet to betika code converter, sportpesa booking code converter, 1xbet to sportybet converter, free bet codes today"

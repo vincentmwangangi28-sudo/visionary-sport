@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Privacy Policy & Data Protection Standards | PredictPro"
+        title="Privacy Policy | PredictPro Quantitative Analytics"
         description="Read how PredictPro protects user privacy, encrypts account information, and complies with GDPR and international data standards."
         canonical="/privacy"
       />

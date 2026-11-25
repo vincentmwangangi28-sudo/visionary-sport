@@ -270,7 +270,7 @@ export const ViralReferralHubPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Invite Friends & Earn Free VIP Coins — Viral Referral Hub | PredictPro"
+        title="Viral Referral Hub & VIP Coin Rewards | PredictPro"
         description="Share your personal PredictPro referral link on WhatsApp or Telegram. Unlock free VIP Coins, Syndicate tipster badges, and custom slip watermarks."
       />
       <Navbar />

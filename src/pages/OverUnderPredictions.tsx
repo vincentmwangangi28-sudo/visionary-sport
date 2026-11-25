@@ -93,7 +93,7 @@ export default function OverUnderPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Over/Under 2.5 Goals Predictions & Booking Codes Today"
+        title="Over/Under 2.5 Goals Predictions & Poisson Goal Odds"
         description="Daily Over 2.5, Under 2.5, and Over 1.5 goals football predictions with SportyBet, Betika & 1xBet booking codes. Filter matches by Bivariate Poisson goal expectancy."
         canonical="/over-under-predictions"
         keywords="over 2.5 goals predictions today, under 2.5 tips, over 1.5 predictions, sportybet over 2.5 booking code today, goal line predictions, poisson over under tips"

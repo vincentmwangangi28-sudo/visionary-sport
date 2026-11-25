@@ -276,7 +276,7 @@ export const SocialCardStudioPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Social Graphic & WhatsApp Story Card Studio (9:16 & 1:1) | PredictPro"
+        title="Social Slip & Match Card Studio | High-DPI PNG Exporter"
         description="Generate 1080p 9:16 WhatsApp Status / TikTok Story cards and 1:1 Telegram square graphics for daily football bankers, booking codes, and CLV alerts."
         canonical="/social-card-studio"
       />

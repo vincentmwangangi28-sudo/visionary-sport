@@ -53,7 +53,7 @@ export default function Over35GoalsPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Over 3.5 Goals Predictions Today: High-Scoring 4+ Goal AI Tips"
+        title="Over 3.5 Goals Predictions Today: 4+ Goal AI Tips"
         description="Free Over 3.5 goals football predictions today. Target high-odds (2.40+) goal-fest fixtures backed by 3.35+ combined Expected Goals (xG) and Poisson data."
         canonical="/over-3-5-goals-predictions"
         keywords="over 3.5 goals predictions today, over 3.5 goals tips, 4+ goals football predictions, high scoring football matches today, over 3.5 accumulator tips"

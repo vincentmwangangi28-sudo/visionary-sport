@@ -12,7 +12,7 @@ export default function GreekSuperLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Greek Super League Predictions: Olympiacos, PAOK, AEK & Panathinaikos"
+        title="Greek Super League Predictions: Olympiacos & PAOK"
         description="Free Greek Super League (Stoiximan Super League) AI football predictions today. Home banker 1X2, Under 2.5, and Championship Playoff tips for Olympiacos & PAOK."
         keywords="greek super league predictions, super league greece tips today, olympiacos prediction today, paok vs aek athens betting tips, greek football predictions"
         canonicalPath="/greek-super-league-predictions"

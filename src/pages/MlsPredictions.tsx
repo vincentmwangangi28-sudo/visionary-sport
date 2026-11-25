@@ -11,7 +11,7 @@ export default function MlsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="MLS Predictions Today: Inter Miami, LAFC & Major League Soccer Tips"
+        title="MLS Predictions Today: Inter Miami & LAFC AI Tips"
         description="Free Major League Soccer (MLS) predictions today. Get Over 2.5 goals, BTTS, and 1X2 picks for Inter Miami, LA Galaxy, LAFC, and Columbus Crew."
         keywords="mls predictions today, major league soccer betting tips, inter miami prediction today, mls over 2.5 goals tips, mls parlay picks"
         canonicalPath="/mls-predictions"

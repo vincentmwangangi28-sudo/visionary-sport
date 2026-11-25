@@ -205,7 +205,7 @@ export const AlertCenterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Telegram, WhatsApp & Web-Push Auto-Alert Hub | PredictPro"
+        title="Telegram, Browser Push & Custom Match Alert Center"
         description="Configure instant Browser Web-Push, Telegram Bot (@predictproAi), and WhatsApp alerts for 80%+ AI Bankers, 75'+ Late Goal spikes, and CLV steam moves."
       />
       <Navbar />

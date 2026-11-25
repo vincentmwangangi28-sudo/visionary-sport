@@ -25,16 +25,21 @@ export const SEOInternalLinkMesh: React.FC = () => {
   const contextual = useMemo(() => getContextualPageIntegration(pathname), [pathname]);
   const ahrefsBundle = useMemo(() => getRouteAhrefsOptimizationBundle(pathname), [pathname]);
 
+  const isCrawlerAgent =
+    typeof navigator !== 'undefined' &&
+    /googlebot|ahrefsbot|bingbot|yandex|duckduckbot|slurp|applebot/i.test(navigator.userAgent || '');
+
   const [selectedClusterId, setSelectedClusterId] = useState<
     PageIntegrationCluster['id'] | 'all'
-  >(contextual.activeCluster.id);
+  >(isCrawlerAgent ? 'all' : contextual.activeCluster.id);
   const [showCompetitorMatrix, setShowCompetitorMatrix] = useState(false);
   const [filterText, setFilterText] = useState('');
 
-  // Keep active cluster synced when route changes unless user selected 'all'
+  // Keep active cluster synced when route changes unless crawler or user selected 'all'
   React.useEffect(() => {
+    if (isCrawlerAgent) return;
     setSelectedClusterId(contextual.activeCluster.id);
-  }, [contextual.activeCluster.id]);
+  }, [contextual.activeCluster.id, isCrawlerAgent]);
 
   const displayedClusters = useMemo(() => {
     if (selectedClusterId === 'all') {

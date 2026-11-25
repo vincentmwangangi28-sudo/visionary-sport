@@ -144,7 +144,7 @@ export const RefereeDisciplineMatrixPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Referee Discipline, Booking Points & Card Markets Scanner | PredictPro"
+        title="Referee Discipline, Yellow/Red Card & Booking Matrix"
         description="Per-90 referee yellow/red card profiler, fouls-per-tackle ratio, penalty frequency, and Poisson Over 3.5 / 4.5 / 5.5 Cards value calculator."
         keywords="referee stats scanner, football card predictions, over 4.5 cards tips, booking points calculator, referee yellow cards per 90"
         canonical="/referee-stats-scanner"

@@ -347,7 +347,7 @@ export const PersonalBetTrackerPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Auto-Settled Personal Bet Tracker & ROI Audit Ledger | PredictPro"
+        title="Bet Tracker & ROI Ledger | ESPN Auto-Grade | PredictPro"
         description="Track your football bets, auto-settle slips against live ESPN scores, audit your Closing Line Value (CLV) and ROI yield, and export tax/audit CSV reports."
         canonical="/bet-tracker"
       />

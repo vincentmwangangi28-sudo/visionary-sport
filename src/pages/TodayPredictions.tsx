@@ -23,7 +23,7 @@ export default function TodayPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Today's Football Predictions: Daily AI Match Tips & Odds"
+        title="Today's Football Predictions: Daily AI Tips & Odds"
         description="Free football predictions for today's fixtures. Verified Expected Goals (xG) models, 1X2 win probabilities, BTTS tips, and banker picks updated hourly."
         canonical="/today-predictions"
         keywords="todays football predictions, football predictions today, soccer tips today, sure wins today, match predictions today, banker bets today"

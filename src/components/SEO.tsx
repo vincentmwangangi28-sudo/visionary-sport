@@ -10,6 +10,26 @@ const SEORuntime = lazyWithRetry(() => import('@/components/SEORuntime'));
 export type BreadcrumbItem = SEOBreadcrumbItem;
 export type SEOProps = SEOManagerOptions;
 
+function clampTitleWordBoundary(raw: string): string {
+  const text = (raw || '').trim();
+  const candidate = text.includes('PredictPro')
+    ? text
+    : text.length + 13 <= 60
+      ? `${text} | PredictPro`
+      : text;
+  if (candidate.length <= 60) return candidate;
+  const withoutBrand = candidate.replace(/\s*[|—-]\s*PredictPro.*$/i, '').trim();
+  if (withoutBrand.length <= 60 && withoutBrand.length >= 10) {
+    return withoutBrand.length + 13 <= 60 ? `${withoutBrand} | PredictPro` : withoutBrand;
+  }
+  let truncated = candidate.slice(0, 60);
+  const lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace > 30) {
+    truncated = truncated.slice(0, lastSpace).replace(/[,:&|—-]+$/, '');
+  }
+  return truncated.trim();
+}
+
 export const SEO = (props: SEOProps) => {
   const [runtimeReady, setRuntimeReady] = useState(
     () =>
@@ -25,22 +45,20 @@ export const SEO = (props: SEOProps) => {
   useEffect(() => {
     if (typeof document === 'undefined') return;
     if (props.title) {
-      const candidate = props.title.includes('PredictPro')
-        ? props.title
-        : props.title.length + 13 <= 60
-          ? `${props.title} | PredictPro`
-          : props.title;
-      const clampedTitle =
-        candidate.length <= 60 ? candidate : `${candidate.slice(0, 57).trim()}...`;
+      const clampedTitle = clampTitleWordBoundary(props.title);
       if (document.title !== clampedTitle) {
         document.title = clampedTitle;
       }
     }
     if (props.description) {
-      const clampedDesc =
-        props.description.length <= 155
-          ? props.description
-          : `${props.description.slice(0, 152).trim()}...`;
+      const rawDesc = props.description.trim();
+      let clampedDesc = rawDesc;
+      if (rawDesc.length > 155) {
+        let sub = rawDesc.slice(0, 152);
+        const space = sub.lastIndexOf(' ');
+        if (space > 115) sub = sub.slice(0, space).replace(/[,:;]+$/, '');
+        clampedDesc = `${sub.trim()}...`;
+      }
       const metaDesc = document.head.querySelector('meta[name="description"]');
       if (metaDesc && metaDesc.getAttribute('content') !== clampedDesc) {
         metaDesc.setAttribute('content', clampedDesc);

@@ -80,7 +80,7 @@ export const CornerPressureScannerPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Corner Kick Pressure Scanner & Per-90 Poisson Corner Calculator | PredictPro"
+        title="Corner Tempo & 1st-Half Corners Scanner | PredictPro"
         description="Per-90 team corner won/conceded matrix, First-Half Over 4.5 Corners tempo, and Poisson Over 8.5 / 9.5 / 10.5 Corners & Corner Handicap scanner."
         canonicalUrl="https://predictpro.guru/corner-stats-scanner"
       />

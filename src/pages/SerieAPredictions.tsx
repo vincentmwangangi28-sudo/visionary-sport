@@ -10,7 +10,7 @@ export default function SerieAPredictions() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Italian Serie A Predictions: Tactical Low-Block & xGA Tips"
+        title="Italian Serie A AI Predictions, xGA & 1X2 Betting Tips"
         description="Italian Serie A analytical previews targeting defensive xGA regression, Draw No Bet value lines, and derby odds for Inter, Milan, Juventus, and Napoli."
         canonical="/serie-a-predictions"
         keywords="serie a predictions today, italian football tips, inter milan vs ac milan odds, juventus prediction, serie a betting tips"

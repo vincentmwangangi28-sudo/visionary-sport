@@ -12,7 +12,7 @@ export default function KoreanKLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="South Korea K League 1 Predictions Today: Ulsan HD, Jeonbuk & FC Seoul"
+        title="South Korea K League 1 Predictions: Ulsan & FC Seoul"
         description="Free South Korea K League 1 AI football predictions today. Early morning kickoff xG forecasts, Over 2.5 Goals, BTTS, and Corner tips for Ulsan HD, Jeonbuk Motors, Pohang Steelers, and FC Seoul."
         keywords="k league 1 predictions today, south korea football predictions, ulsan hd prediction, fc seoul betting tips, asian football predictions"
         canonical="/k-league-predictions"

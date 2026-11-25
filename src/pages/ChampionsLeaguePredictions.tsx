@@ -10,7 +10,7 @@ export default function ChampionsLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="UEFA Champions League Predictions: 36-Team Swiss Phase Odds"
+        title="UEFA Champions League AI Predictions & Knockout Odds"
         description="Statistical forecasting for the UEFA Champions League. Matchweek win probabilities, knockout qualification matrices, and European banker picks."
         canonical="/champions-league-predictions"
         keywords="champions league predictions today, ucl betting tips, uefa champions league picks, ucl winner odds, champions league accumulator"

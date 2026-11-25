@@ -275,7 +275,7 @@ export const PickEmChallengePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Daily 5-Match Free Pick'em Predictor Contest | PredictPro"
+        title="Daily 5-Match Pick'em Challenge & Coin Leaderboard"
         description="Play PredictPro's free Daily 5-Match Pick'em Challenge. Lock in your 1X2 predictions, build your daily streak multiplier, and win free VIP Coins."
       />
       <Navbar />

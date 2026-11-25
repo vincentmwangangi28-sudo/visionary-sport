@@ -60,7 +60,7 @@ export default function FiveOddsPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Sure 5 Odds & 10 Odds Predictions Today: Daily Acca Slips"
+        title="Daily 5.00x & 10.00x Combined Odds Multi-Match Slips"
         description="Free Sure 5 Odds and 10 Odds football accumulator predictions today. Curated 4-fold and 5-fold multi-bet tickets with high AI confidence."
         canonical="/5-odds-predictions"
         keywords="sure 5 odds predictions today, daily 5 odds tips, sure 10 odds predictions, 5 odds accumulator tips, 10 odds banker slip today"

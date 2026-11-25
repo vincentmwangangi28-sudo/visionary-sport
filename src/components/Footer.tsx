@@ -101,6 +101,9 @@ export const Footer = () => {
                 <li><Link to="/community-slips" className="hover:text-foreground transition-colors">Community Copy-Bet Feed</Link></li>
                 <li><Link to="/pick-em-challenge" className="hover:text-foreground transition-colors">Daily 5-Match Pick&apos;em</Link></li>
                 <li><Link to="/alert-center" className="hover:text-foreground transition-colors">Telegram &amp; Push Alerts</Link></li>
+                <li><Link to="/parlay-calculator" className="hover:text-foreground transition-colors">Parlay &amp; Acca Odds Calculator</Link></li>
+                <li><Link to="/hedge-bet-calculator" className="hover:text-foreground transition-colors">Hedge Stake Equity Calculator</Link></li>
+                <li><Link to="/daily-2-odds-predictions" className="hover:text-foreground transition-colors">Daily 2.00x–5.00x Odds Combos</Link></li>
                 <li><Link to="/referrals" className="hover:text-foreground transition-colors">Invite &amp; Earn VIP Coins</Link></li>
               </ul>
             </div>
@@ -116,6 +119,9 @@ export const Footer = () => {
                 <li><Link to="/serie-a-predictions" className="hover:text-foreground transition-colors">Italian Serie A</Link></li>
                 <li><Link to="/bundesliga-predictions" className="hover:text-foreground transition-colors">German Bundesliga</Link></li>
                 <li><Link to="/kpl-predictions" className="hover:text-foreground transition-colors">FKF Premier League</Link></li>
+                <li><Link to="/south-africa-psl-predictions" className="hover:text-foreground transition-colors">South Africa Betway PSL</Link></li>
+                <li><Link to="/nigerian-npfl-predictions" className="hover:text-foreground transition-colors">Nigeria NPFL Predictions</Link></li>
+                <li><Link to="/egyptian-premier-league-predictions" className="hover:text-foreground transition-colors">Egyptian Premier League</Link></li>
                 <li><Link to="/btts" className="hover:text-foreground transition-colors">BTTS &amp; Over 2.5 Goals</Link></li>
                 <li><Link to="/correct-score" className="hover:text-foreground transition-colors">Exact Correct Score 6×6</Link></li>
                 <li><Link to="/jackpot-predictions" className="hover:text-foreground transition-colors">17-Game Mega Jackpot</Link></li>
@@ -156,6 +162,7 @@ export const Footer = () => {
                 <li><Link to="/about" className="hover:text-foreground transition-colors">About PredictPro</Link></li>
                 <li><Link to="/methodology" className="hover:text-foreground transition-colors">Statistical Methodology</Link></li>
                 <li><Link to="/track-record" className="hover:text-foreground transition-colors">Audited Track Record</Link></li>
+                <li><Link to="/archive" className="hover:text-foreground transition-colors">Verified Results Archive</Link></li>
                 <li><Link to="/blog" className="hover:text-foreground transition-colors">20 Strategy Guides</Link></li>
                 <li><Link to="/teams" className="hover:text-foreground transition-colors">24-Club xG &amp; FDR Hub</Link></li>
                 <li><Link to="/players" className="hover:text-foreground transition-colors">Player 10.0 Ratings</Link></li>

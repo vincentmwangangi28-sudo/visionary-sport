@@ -228,7 +228,7 @@ export default function GlobalTournaments() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Football Leagues, Cups & Championships Directory | PredictPro"
+        title="Global Football Tournaments & Cup Predictions | PredictPro"
         description="Browse Premier League, UEFA Champions League, LaLiga, Serie A, Bundesliga, AFCON, Copa Libertadores, and FIFA World Cup match previews and standings."
       />
       <Navbar />

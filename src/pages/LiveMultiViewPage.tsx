@@ -383,7 +383,7 @@ export const LiveMultiViewPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Live 4-Match Split-Screen TV Command Center & Monte Carlo Sandbox | PredictPro"
+        title="Multi-Match Live Command Grid | 2x2 Pitch Tracker"
         description="Monitor 4 simultaneous football matches with live Expected Goals (xG), APPM pressure radar, 10,000-run Monte Carlo What-If simulations, and synchronized live parlay building."
       />
       <Navbar />

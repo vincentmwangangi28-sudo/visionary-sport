@@ -41,7 +41,7 @@ export default function RoiYieldCalculator() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Betting ROI & Yield Calculator: Break-Even Win Rate Tool"
+        title="Betting ROI & Yield Calculator: Break-Even Rate Tool"
         description="Free Sports Betting ROI, Yield, and Break-Even Win Rate Calculator. Measure long-term profitability, turnover efficiency, and true mathematical edge."
         keywords="betting yield calculator, sports betting roi calculator, break even win rate calculator, football betting profit calculator"
         canonicalPath="/roi-yield-calculator"

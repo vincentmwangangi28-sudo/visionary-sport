@@ -169,7 +169,7 @@ export default function RolloverBetsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Rollover Bets Predictions Today: 10-Day 1.50 & 2.00 Odds Challenge"
+        title="Rollover Bets Predictions: 7-Day 1.50 & 2.00 Odds"
         description="Free daily Rollover football predictions today. Join the 10-Day 1.50x & 2.00x Odds Rollover Challenge backed by 90%+ AI probability locks and compounding stakes."
         keywords="rollover bets predictions today, daily 2 odds rollover, 1.50 odds rollover challenge, 10 days rollover betting tips, safe rollover football tips"
         canonicalPath="/rollover-bets-predictions"

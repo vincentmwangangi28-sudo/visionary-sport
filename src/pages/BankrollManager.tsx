@@ -51,7 +51,7 @@ export default function BankrollManager() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Bankroll Manager & Kelly Criterion Calculator | PredictPro"
+        title="Kelly Criterion Football Bankroll & Stake Calculator"
         description="Global betting bankroll manager supporting 16 currencies with Kelly Criterion, flat stake sizing, and variance calculators. Bet responsibly."
       />
       <Navbar />

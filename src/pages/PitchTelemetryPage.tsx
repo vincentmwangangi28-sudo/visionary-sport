@@ -142,7 +142,7 @@ export const PitchTelemetryPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="90-Minute Attack Momentum Wave, 2D Pitch Shot Map & Formation XI Visualizer | PredictPro"
+        title="2D Pitch Shot Map, xT Grid & Pass Network Telemetry"
         description="Sofascore-style 90-minute Attack Momentum Wave, FotMob 2D xG Shot Map, 22-Player Tactical Formation Ratings, and Forebet 15-Minute Goal Interval Matrix."
       />
       <Navbar />

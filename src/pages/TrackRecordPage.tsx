@@ -11,7 +11,7 @@ export default function TrackRecordPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Audited Prediction Track Record & Calibration | PredictPro"
+        title="Verified AI Prediction Track Record & Historical ROI"
         description="Transparent, independently audited football prediction track record. Check our verified Brier calibration score, CLV beat rate, hit rates, and league accuracy."
         keywords="verified football analytics, audited prediction track record, brier score calibration, closing line value beat rate, transparent statistical ledger"
       />

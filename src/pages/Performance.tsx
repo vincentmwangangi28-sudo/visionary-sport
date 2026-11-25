@@ -223,7 +223,7 @@ export default function Performance() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="My Betting Performance | Track Results | PredictPro" description="Track your football betting performance. Record bets, monitor P&L, win rate and ROI with PredictPro's personal betting tracker." canonical="/performance" />
+      <SEO title="Football Betting Performance & ROI Tracker | PredictPro" description="Track your football betting performance. Record bets, monitor P&L, win rate and ROI with PredictPro's personal betting tracker." canonical="/performance" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">

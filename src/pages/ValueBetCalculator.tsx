@@ -88,7 +88,7 @@ export default function ValueBetCalculator() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Value Bet Calculator (+EV): Sports Betting Expected Value Tool"
+        title="Value Bet Calculator (+EV): Fair Odds | PredictPro"
         description="Free +EV Value Bet Calculator. Calculate positive expected value, bookmaker edge vs true probability, fair decimal odds, and recommended Kelly staking size."
         canonical="/value-bet-calculator"
         keywords="value bet calculator, expected value sports betting calculator, +ev calculator, positive expected value betting, betting edge calculator, fair odds calculator"

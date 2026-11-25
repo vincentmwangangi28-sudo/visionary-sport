@@ -77,7 +77,7 @@ export default function OddsConverter() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Betting Odds Converter & Implied Probability Calculator (UK/US/EU)"
+        title="Betting Odds Converter & Implied Probability Tool"
         description="Free sports betting odds converter and implied probability calculator. Instantly convert Decimal, Fractional (UK), and American Moneyline odds."
         canonical="/odds-converter"
         keywords="betting odds converter, implied probability calculator, fractional to decimal odds, american moneyline converter, sports betting payout calculator"

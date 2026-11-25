@@ -183,7 +183,7 @@ export const XptsJusticeStandingsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Expected Points (xPTS) Justice Table & Home/Away/1st-Half Form Standings | PredictPro"
+        title="Expected Points (xPTS) Justice & Regression Radar"
         description="Compare actual league points against Poisson-simulated Expected Points (xPTS), Expected Goal Difference (xGD), Home/Away splits, and First-Half tables to spot unlucky value teams."
       />
       <Navbar />

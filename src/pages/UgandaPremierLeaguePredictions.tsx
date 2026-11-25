@@ -12,7 +12,7 @@ export default function UgandaPremierLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Uganda Premier League Predictions Today: Vipers SC, KCCA & SC Villa"
+        title="Uganda Premier League Predictions: Vipers & KCCA FC"
         description="Free StarTimes Uganda Premier League (UPL) AI football predictions today. Home win 1X2, Under 2.5, and Correct Score tips for Vipers SC, KCCA FC, SC Villa, and Kitara FC."
         keywords="uganda premier league predictions today, vipers sc prediction, kcca fc prediction today, sc villa betting tips, upl football predictions"
         canonical="/uganda-premier-league-predictions"

@@ -12,7 +12,7 @@ export default function TanzaniaLigaPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Tanzania NBC Premier League Predictions: Simba SC, Yanga & Azam Tips"
+        title="Tanzania NBC Premier League Predictions: Simba & Yanga"
         description="Free Tanzania NBC Premier League AI football predictions today. Expected Goals (xG), 1X2 banker picks, and SportPesa/Betway tips for Young Africans (Yanga), Simba SC, and Azam FC."
         keywords="tanzania premier league predictions, ligi kuu bara predictions today, simba sc prediction today, young africans yanga prediction, azam fc betting tips"
         canonical="/tanzania-premier-league-predictions"

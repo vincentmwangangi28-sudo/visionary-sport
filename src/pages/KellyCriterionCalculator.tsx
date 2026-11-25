@@ -87,7 +87,7 @@ export default function KellyCriterionCalculator() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool"
+        title="Kelly Criterion Calculator: Bankroll Staking Tool"
         description="Free Kelly Criterion Calculator. Calculate optimal bet sizing, fractional Kelly (Half/Quarter), expected bankroll growth rate, and bankroll protection."
         canonical="/kelly-criterion-calculator"
         keywords="kelly criterion calculator, fractional kelly sports betting, bankroll management calculator, optimal bet sizing, half kelly calculator, kelly formula betting"

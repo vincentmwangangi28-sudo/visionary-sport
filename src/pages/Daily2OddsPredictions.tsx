@@ -138,7 +138,7 @@ export default function Daily2OddsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Sure 2 Odds, 3 Odds & 5 Odds Predictions Today: Daily AI Slips"
+        title="Daily 2.00x, 3.00x & 5.00x Odds Combos | PredictPro"
         description="Free Sure 2 Odds, 3 Odds, and 5 Odds football predictions today. High-strike-rate daily doubles and trebles backed by Bivariate Poisson and xG models."
         keywords="sure 2 odds predictions today, daily 2 odds tips, sure 3 odds predictions, 5 odds banker predictions today, free 2 odds daily football tips"
         canonicalPath="/daily-2-odds-predictions"

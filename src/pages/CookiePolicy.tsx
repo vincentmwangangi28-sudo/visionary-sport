@@ -13,7 +13,7 @@ export default function CookiePolicy() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Cookie Policy & Advertising Transparency | PredictPro"
+        title="Cookie Policy | PredictPro Football Analytics"
         description="Detailed overview of cookies utilized on PredictPro for session security, language preferences, Google AdSense ads, and performance telemetry."
         canonical="/cookies"
       />

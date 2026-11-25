@@ -212,7 +212,7 @@ export default function News() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Football News, Lineup xG Wire & Tactical Intelligence | PredictPro"
+        title="Breaking Football Injury News & Lineup Impact | PredictPro"
         description="Breaking football news, confirmed starting XI lineup xG shifts, transfer updates, and injury impact breakdowns across global leagues."
         canonical="/news"
       />
@@ -357,9 +357,12 @@ export default function News() {
                   <img
                     src={spotlightArticle.imageUrl}
                     alt={spotlightArticle.title}
+                    width={288}
+                    height={176}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
-                    loading="lazy"
+                    loading="eager"
+                    fetchPriority="high"
                     onError={(e) => {
                       (e.target as HTMLImageElement).parentElement!.style.display = 'none';
                     }}

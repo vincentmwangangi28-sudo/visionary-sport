@@ -682,7 +682,7 @@ export default function LiveScores() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Live Football Scores & Watch Live Streams: 2D xG | PredictPro"
+        title="Live Football Scores Today: In-Play AI Odds | PredictPro"
         description="Watch live football matches via official streams & free-to-air TV channels, plus real-time scores, 2D shot maps, Sofascore player ratings, and 1-click live betting."
         canonical="/live"
         keywords="watch live football today, live football streams, supersport showmax live guide, free to air football today, live football scores today, 2d shot map live, expected goals live"

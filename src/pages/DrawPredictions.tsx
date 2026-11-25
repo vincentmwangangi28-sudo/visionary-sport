@@ -34,7 +34,7 @@ export default function DrawPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Draw Predictions Today (X Tips): High-Odds Stalemate Picks"
+        title="Draw Predictions Today (X Tips): Stalemate Picks"
         description="Daily high-odds draw predictions (3.20 to 3.80 odds). Mathematical stalemate models detecting low-scoring defensive setups and equal Poisson expectations."
         canonical="/draw-predictions"
         keywords="draw predictions today, sure draw tips today, x tips today, football draw prediction, high odds draw tips, 0-0 1-1 score predictions"

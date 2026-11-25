@@ -102,7 +102,7 @@ export default function Over15GoalsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips"
+        title="Over 1.5 Goals Predictions Today: High-Prob Multi Tips"
         description="Daily Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy, 1st half goal frequency, and low-risk accumulator anchors."
         canonical="/over-1-5-goals-predictions"
         keywords="over 1.5 goals predictions today, over 1.5 tips today, over 1.5 goals sure wins, over 1.5 accumulator tips, over 1.5 match predictions"

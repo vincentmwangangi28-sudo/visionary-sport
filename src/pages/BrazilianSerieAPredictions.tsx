@@ -24,7 +24,7 @@ export default function BrazilianSerieAPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground justify-between">
       <SEO
-        title="Brazilian Serie A Predictions Today: Brasileirão Tips & Odds"
+        title="Brazilian Serie A Predictions Today: Brasileirão AI"
         description="Free Brazilian Serie A (Brasileirão) football predictions today. Get home-advantage 1X2 picks, BTTS, and xG forecasts for Palmeiras, Flamengo & Botafogo."
         canonical="/brazilian-serie-a-predictions"
         keywords="brazilian serie a predictions, brasileirao predictions today, brazil serie a betting tips, flamengo prediction, palmeiras betting tips"

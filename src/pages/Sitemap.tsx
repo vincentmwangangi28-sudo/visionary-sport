@@ -168,7 +168,7 @@ export default function Sitemap() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="PredictPro HTML Sitemap, Google Discover Feeds & XML Route Directory"
+        title="PredictPro HTML Sitemap & Indexed Football Directory"
         description="Comprehensive index of all football prediction hubs, club xG analytics, booking code converters, Poisson calculators, and Google Discover feeds on PredictPro."
         keywords="predictpro sitemap, football predictions sitemap, google discover football feeds, premier league prediction routes, ai football tools directory"
         canonical="/sitemap"

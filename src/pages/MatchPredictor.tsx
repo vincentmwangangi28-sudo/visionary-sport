@@ -211,7 +211,7 @@ export default function MatchPredictor() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Interactive AI Match Simulator & Head-to-Head Predictor"
+        title="AI Pro Tips Today: Match Predictor & xG | PredictPro"
         description="Simulate any football fixture with custom team form, player injury adjustments, and Poisson score matrices. Generate instant fair match odds."
         canonical="/predict"
         keywords="ai football match simulator, soccer fixture predictor, expected goals simulator, h2h match calculator, fair odds simulator"

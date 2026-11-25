@@ -135,7 +135,7 @@ export const ClosingLineValuePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Closing Line Value (CLV) & Sharp Syndicate Steam Scanner | PredictPro"
+        title="Closing Line Value (CLV) & Steam Move Radar | PredictPro"
         description="Track Opening vs. Current vs. Pinnacle No-Vig Sharp Odds, Reverse Line Movement (RLM), and Positive Closing Line Value (CLV) edges across global football."
       />
       <Navbar />

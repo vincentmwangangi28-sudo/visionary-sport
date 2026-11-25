@@ -276,7 +276,7 @@ export default function AccumulatorBuilder() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Football Accumulator Tips Today & Acca Builder | PredictPro"
+        title="Smart Football Accumulator & Multibet Builder | PredictPro"
         description="Build winning football accumulators today with statistical odds modeling. Generate booking codes for SportyBet, Bet9ja, Betway, and calculate parlay payouts."
         canonical="/accumulator"
         keywords="football accumulator tips today, acca builder, weekend accumulator tips, sportybet booking code today, bet9ja booking code, football parlay calculator"

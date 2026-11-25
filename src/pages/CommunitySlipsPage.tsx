@@ -357,7 +357,7 @@ export const CommunitySlipsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Community Tipster Slips & 1-Click Copy-Bet Feed | PredictPro"
+        title="Community Copy-Bet Feed & Verified Slip Leaderboard"
         description="Browse verified community accumulator slips, SportyBet/Betika/1xBet booking codes, and copy winning multi-leg slips into your Bet Slip in 1 click."
       />
       <Navbar />

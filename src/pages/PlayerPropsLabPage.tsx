@@ -158,7 +158,7 @@ export const PlayerPropsLabPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Player Shots on Target (SoT) & Goalscorer Prop Lab | PredictPro"
+        title="Player Shots on Target & Goal Lab | PredictPro"
         description="Per-90 Expected Goals (npxG) and Shots on Target (1+ SoT, 2+ SoT, Anytime Goalscorer) Poisson calculator with penalty duty adjustments and +EV prop scanner."
         keywords="player shots on target predictions, 1+ shot on target tips, 2+ shots on target calculator, anytime goalscorer poisson model, football player props"
         canonical="/player-props-lab"

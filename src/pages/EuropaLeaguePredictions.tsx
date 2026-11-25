@@ -10,7 +10,7 @@ export default function EuropaLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="UEFA Europa League Predictions & Conference League Odds"
+        title="UEFA Europa & Conference League AI Predictions & Odds"
         description="Statistical predictions for UEFA Europa League and Conference League fixtures. Matchweek win probabilities, knockout progression odds, and Thursday tips."
         canonical="/europa-league-predictions"
         keywords="europa league predictions today, uefa europa league tips, conference league predictions, thursday football tips, europa league winner odds"

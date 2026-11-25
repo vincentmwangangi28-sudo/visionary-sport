@@ -279,7 +279,7 @@ export const InjuryLineupImpactPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Confirmed Lineups, Key Injury & Suspension xG Impact Analyzer | PredictPro"
+        title="Confirmed Lineups, Key Injuries & xG Impact Analyzer"
         description="Interactive Football Lineup & Injury xG Impact Simulator. Toggle star players IN or OUT to see how missing starters shift club Expected Goals (xG), xGA, and Fair 1X2 Odds."
         canonicalUrl="https://predictpro.guru/injury-lineup-impact"
       />

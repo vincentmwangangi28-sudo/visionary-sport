@@ -70,7 +70,7 @@ export default function BetOfTheDay() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Forecast of the Day: Daily #1 High-Consensus Football Pick"
+        title="Bet of the Day: Daily AI Banker & High-Confidence Lock"
         description="Today's single highest-conviction AI football forecast. Verified Expected Goals (xG) advantage, Poisson win probability, and fair decimal odds."
         canonical="/bet-of-the-day"
         keywords="bet of the day, match forecast of the day, sure win prediction today, best football tip today, high consensus pick"

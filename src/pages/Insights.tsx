@@ -104,7 +104,7 @@ export default function Insights() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="AI Prediction Insights | Stats & Analytics | PredictPro"
+      <SEO title="Tactical Football Matchday Intelligence & xG Briefings"
            description="Deep analytics on PredictPro AI football predictions. League coverage, outcome distribution, confidence breakdowns and accuracy metrics."
            canonical="/insights" />
       <Navbar />

@@ -97,7 +97,7 @@ export default function Rewards() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Daily Rewards & Spin Wheel | PredictPro" description="Spin the wheel daily to earn coins. Redeem for premium AI football predictions on PredictPro." canonical="/rewards" />
+      <SEO title="Daily Rewards, Coin Wheel & Prediction Unlocks | PredictPro" description="Spin the wheel daily to earn coins. Redeem for premium AI football predictions on PredictPro." canonical="/rewards" />
       <Navbar />
       <main className="container mx-auto px-4 py-24 pb-20 md:pb-8 max-w-4xl">
         <div className="text-center mb-8">

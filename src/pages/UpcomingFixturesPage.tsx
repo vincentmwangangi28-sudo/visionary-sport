@@ -125,7 +125,7 @@ export default function UpcomingFixturesPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Upcoming Football Fixtures & AI Matchday Predictions | PredictPro"
+        title="Upcoming Football Fixtures & 7-Day AI Odds | PredictPro"
         description="Browse all upcoming verified football fixtures across European and international leagues with win probabilities, AI predictions, and value edge odds."
         keywords="upcoming football matches, soccer fixtures schedule, AI predictions upcoming, football matchday tips"
       />

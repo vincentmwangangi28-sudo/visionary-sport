@@ -271,12 +271,17 @@ export function resolveMatchPredictionForSEO(
   const rawHeadline = `${homeTeam} vs ${awayTeam} Prediction, Lineups, xG Stats & Betting Odds (${league})`;
   const headline = rawHeadline.length <= 110 ? rawHeadline : `${homeTeam} vs ${awayTeam} Prediction, Lineups & xG Stats`;
 
-  // Page <title> (<= 68 chars)
-  const rawMatchTitle = `${homeTeam} vs ${awayTeam} Prediction`;
-  const seoTitle =
-    rawMatchTitle.length + 13 <= 68
-      ? `${rawMatchTitle} | PredictPro`
-      : `${rawMatchTitle.slice(0, 52)}... | PredictPro`;
+  // Page <title> (<= 60 chars, synchronized with prerendered static HTML)
+  const matchupTitle = `${homeTeam} vs ${awayTeam} AI Prediction, xG & Odds`;
+  const rawMatchTitle =
+    matchupTitle.length <= 60 ? matchupTitle : `${homeTeam} vs ${awayTeam} Prediction & xG`;
+  let seoTitle = rawMatchTitle;
+  if (seoTitle.length > 60) {
+    let sub = seoTitle.slice(0, 60);
+    const space = sub.lastIndexOf(' ');
+    if (space > 30) sub = sub.slice(0, space).replace(/[,:&|—-]+$/, '');
+    seoTitle = sub.trim();
+  }
 
   // Page meta description (120-160 chars)
   const baseMatchDesc = `${homeTeam} vs ${awayTeam} prediction: ${outcome} (${confidence}% conf). Lineups, ${expectedHomeGoals}-${expectedAwayGoals} xG data, H2H stats & betting tips.`;

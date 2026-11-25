@@ -86,7 +86,7 @@ export const Hero = () => {
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
-              AI Football Predictions Today, Expected Goals &amp; Live Match Analytics
+              PredictPro — Football Match Statistics, Live Scores &amp; xG
             </h1>
 
             <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">

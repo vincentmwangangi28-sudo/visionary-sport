@@ -175,7 +175,7 @@ export const ArbitrageSurebetMatrixPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Cross-Bookmaker Implied Probability & Margin Matrix | PredictPro"
+        title="Multi-Bookmaker Pricing & Margin Matrix | PredictPro"
         description="Compare live 2-way and 3-way implied probability margins across SportyBet, Betika, SportPesa, Bet9ja, 1xBet, and Pinnacle with proportional stake rounding."
         keywords="implied probability finder, cross market margin matrix, sportybet 1xbet odds comparison, proportional stake splitter"
         canonical="/arbitrage-finder"

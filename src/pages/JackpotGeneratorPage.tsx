@@ -361,7 +361,7 @@ export const JackpotGeneratorPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="17-Game Mega & Midweek Jackpot Combination Generator | SportPesa, Betika & Mozzart AI"
+        title="17-Game Mega & Midweek Jackpot Generator | PredictPro"
         description="Interactive 17-Game Mega Jackpot and 13-Game Midweek Jackpot combination generator. Lock AI Poisson Bankers and optimize Double Chance hedges under your budget."
         canonical="/jackpot-generator"
       />

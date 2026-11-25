@@ -321,7 +321,7 @@ export default function Widgets() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Free Embeddable Football Predictions Widgets, SVG Badges & Feeds"
+        title="Embeddable AI Football Predictions Widget & Odds Feed"
         description="Embed live football predictions, SVG authority badges, 10.0 player radars, and xPTS Justice Table widgets on your sports blog with contextual SEO attribution."
         canonical="/widgets"
         keywords="embed football predictions widget, sports blog widget, soccer odds iframe, free football prediction widget, live score widget, player radar embed"

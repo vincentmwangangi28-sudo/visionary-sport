@@ -177,7 +177,7 @@ export const SgpCopulaBuilderPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Correlated Same-Game Parlay (SGP) Gaussian Copula Builder | PredictPro"
+        title="Same-Game Parlay (SGP) Copula Lab | PredictPro"
         description="Build mathematically correlated Same-Game Parlays (Bet Builders) using pairwise Gaussian Copula correlation matrices (ρ) across Goals, BTTS, Corners, Cards, and Player Props."
       />
       <Navbar />

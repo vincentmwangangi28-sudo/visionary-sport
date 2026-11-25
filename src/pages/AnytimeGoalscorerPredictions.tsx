@@ -117,7 +117,7 @@ export default function AnytimeGoalscorerPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Anytime Goalscorer Predictions Today: Player xG & Shots on Target"
+        title="Anytime Goalscorer Predictions: Player xG & Shots"
         description="Free Anytime Goalscorer, First Goalscorer, and Player Shots on Target predictions today. Backed by xG per 90, penalty-taker status, and defensive xGA matchups."
         canonical="/anytime-goalscorer-predictions"
         keywords="anytime goalscorer predictions today, first goalscorer tips, player shots on target predictions, football player props today, striker xg per 90 stats"

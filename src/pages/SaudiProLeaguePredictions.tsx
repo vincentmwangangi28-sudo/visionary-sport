@@ -24,7 +24,7 @@ export default function SaudiProLeaguePredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground justify-between">
       <SEO
-        title="Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips"
+        title="Saudi Pro League Predictions Today: Al-Hilal & SPL"
         description="Free Saudi Pro League (Roshn SPL) football predictions today. Over 2.5 goals, BTTS, and Asian Handicap picks for Al-Hilal, Al-Nassr & Al-Ittihad."
         canonical="/saudi-pro-league-predictions"
         keywords="saudi pro league predictions, spl predictions today, al nassr prediction today, al hilal betting tips, saudi league over 2.5 goals"

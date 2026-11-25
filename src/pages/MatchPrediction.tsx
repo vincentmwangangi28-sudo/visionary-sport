@@ -294,11 +294,17 @@ export default function MatchPrediction() {
 
   const outcome = prediction.predicted_outcome ?? prediction.prediction ?? 'Draw';
   const confidence = prediction.confidence_score ?? prediction.confidence ?? 65;
-  // Keep title under 70 chars: "[Home] vs [Away] Prediction & H2H | PredictPro" or truncated if very long club names
-  const rawMatchTitle = `${prediction.home_team} vs ${prediction.away_team} Prediction`;
-  const title = rawMatchTitle.length + 13 <= 68
-    ? `${rawMatchTitle} | PredictPro`
-    : `${rawMatchTitle.slice(0, 52)}... | PredictPro`;
+  // Keep title strictly <= 60 chars and aligned with prerendered static HTML
+  const matchupTitle = `${prediction.home_team} vs ${prediction.away_team} AI Prediction, xG & Odds`;
+  const rawMatchTitle =
+    matchupTitle.length <= 60 ? matchupTitle : `${prediction.home_team} vs ${prediction.away_team} Prediction & xG`;
+  let title = rawMatchTitle;
+  if (title.length > 60) {
+    let sub = title.slice(0, 60);
+    const space = sub.lastIndexOf(' ');
+    if (space > 30) sub = sub.slice(0, space).replace(/[,:&|—-]+$/, '');
+    title = sub.trim();
+  }
 
   const baseMatchDesc = `${prediction.home_team} vs ${prediction.away_team} prediction: ${outcome} (${confidence}% conf). Lineups, xG data, H2H stats & betting tips.`;
   const description = baseMatchDesc.length > 160

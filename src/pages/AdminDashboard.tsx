@@ -314,7 +314,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Admin Operations & SEO Monitoring Suite | PredictPro"
+        title="PredictPro Admin & Model Telemetry Console"
         description="PredictPro administrative management console, SEO automation triggers, and system analytics."
         noIndex={true}
       />

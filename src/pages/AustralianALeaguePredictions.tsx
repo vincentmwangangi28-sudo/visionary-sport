@@ -12,7 +12,7 @@ export default function AustralianALeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Australian A-League Predictions Today: Over 2.5 Goals & Corners Tips"
+        title="Australian A-League Predictions: Over 2.5 & Corners"
         description="Free Australian A-League Men AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Over 10.5 Corners picks for Melbourne Victory & Sydney FC."
         keywords="a league predictions today, australian a league betting tips, sydney fc prediction, melbourne victory tips, a league over 2.5 goals"
         canonicalPath="/australian-a-league-predictions"

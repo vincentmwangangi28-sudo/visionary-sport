@@ -115,7 +115,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Football Tactical Analysis, Expected Goals (xG) Guides & Previews | PredictPro"
+        title="Football Betting Strategy Blog: +EV, xG & Handicap Guides"
         description="Read football tactical analysis, Expected Goals (xG) methodology guides, Bivariate Poisson modeling primers, and league match previews."
         canonical="/blog"
         keywords="football tactical analysis, expected goals xG guide, poisson football modeling, football match previews, Premier League tactical analysis, KPL football analysis"

@@ -75,7 +75,7 @@ export default function Shop() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="100% Free AI Football Analytics & Open-Access Predictions | PredictPro"
+        title="PredictPro Open-Access Analytics & Community Pass"
         description="All PredictPro AI football predictions, Expected Goals (xG) models, Correct Score Poisson matrices, and 40+ league analytics are 100% free with zero paywalls."
         canonical="/shop"
         keywords="free football predictions, free expected goals xg analytics, open access soccer predictions, free correct score model"

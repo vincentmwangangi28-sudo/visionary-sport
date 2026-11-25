@@ -8,7 +8,7 @@ export default function MatchScreenerPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Statistical Match Screener & Value Filter | PredictPro"
+        title="Quantitative Football Match Screener & xG Scanner"
         description="Filter upcoming football matches by win probability, value edge percentage (+EV), expected goals (xG), BTTS likelihood, and odds brackets."
         keywords="football match screener, value bet filter, soccer statistical screening, positive expected value soccer, xG match filter"
       />

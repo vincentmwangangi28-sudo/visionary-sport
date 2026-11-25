@@ -58,7 +58,7 @@ export default function DrawNoBetPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Draw No Bet Predictions Today (DNB): Safe Football Refund Tips"
+        title="Draw No Bet Predictions Today (DNB): Safe Refund Tips"
         description="Free Draw No Bet (DNB) football predictions today. Protect your bankroll with 89% non-losing AI picks where your full stake is refunded on a draw."
         canonical="/draw-no-bet-predictions"
         keywords="draw no bet predictions today, dnb football tips, draw no bet meaning, safe dnb accumulator tips, asian handicap 0.0 predictions"

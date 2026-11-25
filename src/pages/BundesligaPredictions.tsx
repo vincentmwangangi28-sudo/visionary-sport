@@ -10,7 +10,7 @@ export default function BundesligaPredictions() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="German Bundesliga Predictions: Bayern, Dortmund & xG Odds"
+        title="German Bundesliga AI Predictions, Over 2.5 & BTTS Tips"
         description="Tactical German Bundesliga match previews, Over 2.5 goals trends, and Poisson win probabilities for Bayern Munich, Dortmund, Leverkusen, and RB Leipzig."
         canonical="/bundesliga-predictions"
         keywords="bundesliga predictions today, german football betting tips, bayern dortmund odds, bayer leverkusen tips, bundesliga over 2.5"

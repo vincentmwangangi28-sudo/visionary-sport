@@ -211,7 +211,7 @@ export const SyndicatePoolsHubPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="17-Game Jackpot Syndicate Pools & Private Mini-Leagues | PredictPro"
+        title="17-Game Jackpot Syndicate & Mini-Leagues | PredictPro"
         description="Join collaborative 17-Game Mega Jackpot permutation syndicates (SportPesa, Betika, SportyBet) or create private CLV Mini-Leagues with shareable invite codes."
         canonicalUrl="https://predictpro.guru/syndicate-pools"
       />

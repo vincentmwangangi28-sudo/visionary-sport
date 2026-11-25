@@ -239,7 +239,7 @@ export const SharpMoneySplitsPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Sharp Money, Public Betting Splits & Reverse Line Movement (RLM) Scanner | PredictPro"
+        title="Sharp Money, Public Splits & Reverse Line Movement"
         description="Track Public Ticket % vs Sharp Money Handle % across European and African football. Spot Reverse Line Movement (RLM) traps and ride institutional syndicate steam."
         canonicalUrl="https://predictpro.guru/sharp-money-splits"
       />

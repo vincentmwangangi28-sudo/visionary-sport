@@ -12,7 +12,7 @@ export default function LigaMxPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Liga MX Predictions Today: Club América, Monterrey & Mexican Tips"
+        title="Liga MX Predictions Today: América & Monterrey Tips"
         description="Free Mexican Liga MX (Apertura & Clausura) AI football predictions today. High-altitude home xG, BTTS & Liguilla tips for Club América & Monterrey."
         keywords="liga mx predictions today, mexican football predictions, club america prediction today, monterrey vs tigres betting tips, liga mx btts predictions"
         canonical="/liga-mx-predictions"

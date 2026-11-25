@@ -787,7 +787,7 @@ export default function PlayerSearch() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Football Player Ratings (10.0), xG Radar & H2H Search | PredictPro"
+        title="Football Player xG, Shots & Assists Analytics | PredictPro"
         description="Search 500,000+ football players with 0.0–10.0 algorithmic ratings, 5-axis Expected Goals (xG) percentile radars, and head-to-head player comparisons."
         keywords="football player search, fotmob player ratings, sofascore player comparison, player xG per 90 stats, footballer database"
       />

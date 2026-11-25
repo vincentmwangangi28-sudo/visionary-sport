@@ -12,7 +12,7 @@ export default function SouthAfricaPslPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="South Africa PSL Predictions Today: Betway Premiership AI Tips"
+        title="South Africa PSL Predictions: Betway Premiership AI"
         description="Free South Africa PSL (Betway Premiership) AI football predictions today. Mamelodi Sundowns, Orlando Pirates & Kaizer Chiefs 1X2 & Under 2.5 tips."
         keywords="psl predictions today, betway premiership predictions, dstv premiership tips today, mamelodi sundowns prediction, orlando pirates vs kaizer chiefs tips"
         canonical="/south-africa-psl-predictions"

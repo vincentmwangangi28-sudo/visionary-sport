@@ -26,7 +26,7 @@ export default function BelgianProLeaguePredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Belgian Pro League Predictions Today: Jupiler League AI Tips"
+        title="Belgian Pro League AI Predictions | PredictPro"
         description="Free Belgian Jupiler Pro League AI football predictions today. High-strike-rate BTTS, Over 2.5 goals, and 1X2 tips for Club Brugge, Anderlecht, Genk & Union SG."
         canonical="/belgian-pro-league-predictions"
         keywords="belgian pro league predictions, jupiler pro league tips today, club brugge prediction, anderlecht betting tips, belgium football predictions"

@@ -12,7 +12,7 @@ export default function JLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Japan J1 League Predictions Today: Early Kickoff xG & Corners Tips"
+        title="Japan J1 League Predictions: Early xG & Corners Tips"
         description="Free Japanese J1 League AI football predictions today. Early-morning Over 2.5 goals, Corners Over 9.5 & BTTS picks for Vissel Kobe & Yokohama F. Marinos."
         keywords="j league predictions today, j1 league betting tips, japanese football predictions, vissel kobe prediction, yokohama f marinos tips"
         canonical="/j-league-predictions"

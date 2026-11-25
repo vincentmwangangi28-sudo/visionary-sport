@@ -26,7 +26,7 @@ export default function ScottishPremiershipPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips"
+        title="Scottish Premiership Predictions: Celtic & Rangers Tips"
         description="Free Scottish Premiership (SPFL) AI football predictions today. High-confidence Celtic & Rangers Asian Handicap picks, Over 2.5 goals, and corners tips."
         canonical="/scottish-premiership-predictions"
         keywords="scottish premiership predictions, spfl predictions today, celtic prediction today, rangers betting tips, scottish football accumulator tips"

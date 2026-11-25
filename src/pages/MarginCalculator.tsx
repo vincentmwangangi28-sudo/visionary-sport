@@ -66,7 +66,7 @@ export default function MarginCalculator() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Bookmaker Margin & No-Vig Fair Odds Calculator (Overround Tool)"
+        title="Bookmaker Margin & Fair Odds Calculator | PredictPro"
         description="Free bookmaker margin, overround, and no-vig fair odds calculator. Remove sportsbook vig from 1X2 and Over/Under lines to find true market probabilities."
         canonical="/margin-calculator"
         keywords="bookmaker margin calculator, no vig fair odds calculator, overround calculator football, sportsbook juice calculator, remove vig calculator"

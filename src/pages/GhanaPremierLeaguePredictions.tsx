@@ -12,7 +12,7 @@ export default function GhanaPremierLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Ghana Premier League Predictions Today: Asante Kotoko & Hearts of Oak"
+        title="Ghana Premier League Predictions: Kotoko & Hearts"
         description="Free Ghana Premier League (GPL) AI football predictions today. Home win 1X2, Under 2.5 Goals, and SportyBet Ghana booking tips for Asante Kotoko, Hearts of Oak, and Medeama."
         keywords="ghana premier league predictions today, asante kotoko prediction, hearts of oak betting tips, sportybet ghana predictions, gpl football tips"
         canonical="/ghana-premier-league-predictions"

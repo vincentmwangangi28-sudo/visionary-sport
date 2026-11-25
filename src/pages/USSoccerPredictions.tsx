@@ -165,7 +165,7 @@ export default function USSoccerPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Major League Soccer (MLS) AI Picks: Moneyline & Spread Tips"
+        title="MLS & US Soccer AI Predictions: Moneyline & Spreads"
         description="MLS and US Open Cup predictions with American moneyline (+/-), goal spreads, travel fatigue variables, and Inter Miami matchday analytics."
         canonical="/us-soccer-predictions"
         keywords="mls predictions today, us soccer betting picks, american moneyline soccer odds, inter miami predictions, mls spread picks"

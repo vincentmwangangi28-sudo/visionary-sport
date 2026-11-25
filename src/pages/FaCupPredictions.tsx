@@ -26,7 +26,7 @@ export default function FaCupPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="FA Cup & Carabao Cup Predictions Today: English Knockout AI Tips"
+        title="FA Cup & Carabao Cup Predictions: English Cup AI Tips"
         description="Free English FA Cup and Carabao EFL Cup AI football predictions today. Squad rotation xG models, cup upset alerts, BTTS, and Asian Handicap picks."
         canonical="/fa-cup-predictions"
         keywords="fa cup predictions today, carabao cup predictions, efl cup betting tips, english fa cup accumulator tips, fa cup upset predictions"

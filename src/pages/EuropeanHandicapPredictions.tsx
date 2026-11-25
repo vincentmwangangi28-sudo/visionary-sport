@@ -81,7 +81,7 @@ export default function EuropeanHandicapPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips"
+        title="European Handicap (-1) Predictions: 3-Way Goal Tips"
         description="Free European Handicap (-1 and +1) 3-Way football predictions today. Boost short 1.25 favorite odds to 2.10+ with AI 2+ goal margin xG forecasts."
         keywords="european handicap predictions, handicap -1 predictions today, 3 way handicap tips, team to win by 2 or more goals predictions, handicap 1x2 football tips"
         canonicalPath="/handicap-1x2-predictions"

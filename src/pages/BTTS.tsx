@@ -137,7 +137,7 @@ export default function BTTS() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="BTTS AI Prediction Today: Both Teams to Score & Booking Codes"
+        title="BTTS AI Prediction Today: Both Teams Score | PredictPro"
         description="Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with SportyBet, Betika & 1xBet booking codes."
         canonical="/btts"
         keywords="btts ai prediction today, btts ai prediction, both teams to score tips, over 2.5 goals predictions, free btts booking codes today, sure btts picks"

@@ -26,7 +26,7 @@ export default function TurkishSuperLigPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Turkish Süper Lig Predictions Today: Galatasaray & Fenerbahçe Tips"
+        title="Turkish Süper Lig Predictions: Galatasaray & Fener"
         description="Free Turkish Süper Lig AI football predictions today. High-confidence 1X2, Over 2.5 goals, and card booking picks for Galatasaray, Fenerbahçe & Beşiktaş."
         canonical="/turkish-super-lig-predictions"
         keywords="turkish super lig predictions, super lig tips today, galatasaray prediction today, fenerbahce betting tips, turkey football predictions"

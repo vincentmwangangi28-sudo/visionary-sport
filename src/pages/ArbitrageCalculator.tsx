@@ -95,7 +95,7 @@ export default function ArbitrageCalculator() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Implied Probability & 2-Way / 3-Way Margin Staking Calculator"
+        title="Arbitrage & Implied Margin Calculator: 2/3-Way Tool"
         description="Free 2-way and 3-way implied probability and proportional staking calculator. Enter decimal odds to calculate proportional stakes and equalized net returns."
         canonical="/arbitrage-calculator"
         keywords="implied probability calculator, 3 way margin calculator, dutching calculator football, hedge stake calculator, proportional staking calculator"

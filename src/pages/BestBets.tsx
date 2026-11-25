@@ -125,7 +125,7 @@ export default function BestBets() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Free Guru Tips Today & High-Consensus Football Forecasts | PredictPro"
+        title="High-Consensus Football Match Forecasts | PredictPro"
         description="Verified daily football high-consensus predictions and 1X2 statistical forecasts today with 75%+ AI confidence, Double Chance (1X), and Draw No Bet models."
         canonical="/best-bets"
         keywords="free guru tips today football prediction, guru predictions for today, best football forecasts today, high confidence football predictions, 1x2 consensus tips"

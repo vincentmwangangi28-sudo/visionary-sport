@@ -103,7 +103,7 @@ export default function WeekendPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Weekend Football Predictions: Saturday & Sunday Tips | PredictPro"
+        title="Weekend Football Predictions: Sat & Sun Banker Tips"
         description="Free AI weekend football predictions for Saturday and Sunday. Get 85%+ confidence consensus picks, weekend 5-fold statistical digests, BTTS, and Over 2.5 tips."
         canonical="/weekend-predictions"
         keywords="weekend football predictions, saturday football predictions, sunday soccer predictions, weekend football forecasts, premier league weekend predictions"

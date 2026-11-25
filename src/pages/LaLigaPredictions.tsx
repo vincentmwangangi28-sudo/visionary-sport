@@ -10,7 +10,7 @@ export default function LaLigaPredictions() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Spanish La Liga Predictions: Real Madrid, Barca & El Clasico"
+        title="Spanish La Liga AI Football Predictions & Value Odds"
         description="Deep statistical La Liga football predictions. Attacking xG metrics, Asian Handicap lines, and 1X2 picks for Real Madrid, Barcelona, and Atletico Madrid."
         canonical="/la-liga-predictions"
         keywords="la liga predictions today, spanish football tips, real madrid vs barcelona prediction, el clasico odds, la liga betting tips"

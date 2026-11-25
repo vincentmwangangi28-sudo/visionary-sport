@@ -58,7 +58,7 @@ export default function HedgeBetCalculator() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Hedge Stake Calculator: Counter-Stake Equity vs Cash-Out Tool"
+        title="Hedge Bet Calculator: Counter-Stake | PredictPro"
         description="Free Hedge Stake & Cash-Out Comparison Calculator. Calculate the exact opposite counter-stake on the final leg of your accumulator to balance outcome returns."
         keywords="hedge bet calculator, cash out vs hedge calculator, counter stake calculator, how to hedge a parlay calculator, live hedge staking tool"
         canonicalPath="/hedge-bet-calculator"

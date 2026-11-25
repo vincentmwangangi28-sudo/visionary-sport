@@ -248,7 +248,7 @@ export default function Archive() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Prediction Archive & Verified Results History | PredictPro"
+        title="Settled Football Prediction Archive & Verified Results"
         description="Browse our immutable prediction archive with opening odds, timestamped selections, and audited win/loss outcomes across 40+ global leagues."
         canonical="/archive"
       />

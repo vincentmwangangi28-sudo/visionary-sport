@@ -57,7 +57,7 @@ export default function OtherSports() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Basketball & Tennis AI Predictions: +EV Spreads & Moneylines"
+        title="Basketball & Tennis AI Predictions: Spreads & Odds"
         description="Daily multi-sport AI predictions for NBA basketball, Grand Slam tennis, and international rugby. Poisson totals and moneyline value odds."
         canonical="/sports"
         keywords="multi-sport predictions, nba ai picks, tennis predictions today, basketball odds, sports betting predictions"

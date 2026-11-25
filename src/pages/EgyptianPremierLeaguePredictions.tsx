@@ -12,7 +12,7 @@ export default function EgyptianPremierLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Egyptian Premier League Predictions Today: Al Ahly & Zamalek Tips"
+        title="Egyptian Premier League Predictions: Al Ahly & Zamalek"
         description="Free Egyptian Premier League (Nile League) AI football predictions today. Win-to-Nil, 1X2, and Under 2.5 tips for Al Ahly, Zamalek, Pyramids FC & Al Masry."
         keywords="egyptian premier league predictions, al ahly prediction today, zamalek betting tips, egypt football predictions today, pyramids fc tips"
         canonicalPath="/egyptian-premier-league-predictions"

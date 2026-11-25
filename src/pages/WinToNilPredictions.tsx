@@ -54,7 +54,7 @@ export default function WinToNilPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Win to Nil & Clean Sheet Predictions Today: Defensive xGA Tips"
+        title="Win to Nil & Clean Sheet Predictions Today: xGA Tips"
         description="Free Win to Nil and Clean Sheet football predictions today. High-odds 2.25+ picks backed by Poisson zero-goal probability and defensive xGA metrics."
         canonical="/win-to-nil-predictions"
         keywords="win to nil predictions today, clean sheet predictions football, team to keep a clean sheet tips, win to nil betting tips, defensive xGA football model"

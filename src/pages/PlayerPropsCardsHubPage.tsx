@@ -134,7 +134,7 @@ export const PlayerPropsCardsHubPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Player Props, Shots on Target (SOT) & Referee Cards Model | PredictPro"
+        title="Player Shots on Target & Referee Cards | PredictPro"
         description="Per-90 Poisson projections for player Shots on Target (1+ SOT, 2+ SOT), player fouls, and Referee Card Strictness indices across major European and African leagues."
         keywords="player shots on target predictions, 2+ shots on target tips, referee card stats predictions, player fouls betting model, poisson player props calculator"
         canonical="/player-props"

@@ -900,11 +900,39 @@ export default function BlogPost() {
     </div>
   );
 
-  const seoTitle = post.title.length + 13 <= 68
-    ? `${post.title} | PredictPro`
-    : post.title.length <= 68
-      ? post.title
-      : `${post.title.slice(0, 52)}... | PredictPro`;
+  const BLOG_SEO_TITLES: Record<string, string> = {
+    'universal-bet-code-converter-sportybet-1xbet-bet9ja': 'Universal Football Booking Code Converter Guide',
+    'bivariate-poisson-dixon-coles-score-matrix-guide': 'Bivariate Poisson & Dixon-Coles Score Matrix Guide',
+    '2-score-correct-score-dutching-strategy': '2-Score Correct Score Dutching Strategy | PredictPro',
+    'referee-cards-corners-prop-modeling': 'Referee Cards & Wing Corners Prop Modeling | PredictPro',
+    'how-to-read-football-predictions': 'How to Read AI Football Predictions | PredictPro',
+    'expected-goals-xg-betting-model-explained': 'Expected Goals (xG) & xGA Betting Model Explained',
+    'halftime-fulltime-ht-ft-predictions-strategy': 'Half-Time / Full-Time (HT/FT) Strategy | PredictPro',
+    'value-betting-explained': 'Value Betting in Football: +EV Guide | PredictPro',
+    'asian-handicap-betting-explained': 'Asian Handicap Betting: -0.5 & -0.75 Lines Guide',
+    'draw-no-bet-vs-double-chance-strategy': 'Draw No Bet vs Double Chance: Mathematical ROI Guide',
+    'closing-line-value-clv-dropping-odds': 'Closing Line Value (CLV) & Dropping Odds Strategy',
+    'bankroll-management-football': 'Bankroll Management & Kelly Criterion | PredictPro',
+    'premier-league-prediction-guide-2026': 'Premier League 2026/27 AI Prediction & xG Guide',
+    'champions-league-group-stage-tips': 'Champions League 36-Team Swiss Phase Betting Guide',
+    'btts-over-under-strategy': 'BTTS & Over/Under 2.5 Poisson Stats | PredictPro',
+    'kpl-betting-guide-kenya': 'Kenya Premier League (FKF) Guide 2026/27 | PredictPro',
+    'accumulator-building-strategy': 'How to Build a 5-Fold Football Acca | PredictPro',
+    'correct-score-prediction-tips': 'Correct Score Betting: Poisson Matrix Strategy Guide',
+    'sportpesa-mega-jackpot-prediction-17-games': 'SportPesa Mega Jackpot 17-Game AI Strategy Guide',
+    'us-soccer-betting-guide-mls-odds': 'US Soccer & MLS Betting Guide: Moneyline & Spreads',
+  };
+  let seoTitle = (slug && BLOG_SEO_TITLES[slug]) || (
+    post.title.length + 13 <= 60
+      ? `${post.title} | PredictPro`
+      : post.title
+  );
+  if (seoTitle.length > 60) {
+    let sub = seoTitle.slice(0, 60);
+    const space = sub.lastIndexOf(' ');
+    if (space > 30) sub = sub.slice(0, space).replace(/[,:&|—-]+$/, '');
+    seoTitle = sub.trim();
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -175,7 +175,7 @@ export default function Highlights() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Official Football Match Video Highlights, Live TV & Stream Hub"
+        title="Football Match Video Highlights & Tactical Recap"
         description="Watch verified football match video highlights, goal clips, and official TV/streaming broadcasts from Premier League, Champions League, La Liga, and KPL."
         canonical="/highlights"
       />
@@ -450,7 +450,7 @@ export default function Highlights() {
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredHighlights.map((h) => {
+            {filteredHighlights.map((h, idx) => {
               const isActive = activeHighlight?.id === h.id;
               const bInfo = getMatchBroadcastInfo({
                 matchId: h.id,
@@ -475,7 +475,11 @@ export default function Highlights() {
                       <img
                         src={h.thumbnail || FALLBACK_PITCH_SVG_DATA_URI}
                         alt={h.title}
-                        loading="lazy"
+                        width={640}
+                        height={360}
+                        loading={idx < 3 ? 'eager' : 'lazy'}
+                        fetchPriority={idx === 0 ? 'high' : 'auto'}
+                        decoding={idx === 0 ? 'sync' : 'async'}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         onError={(e) => {

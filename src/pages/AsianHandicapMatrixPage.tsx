@@ -145,7 +145,7 @@ export const AsianHandicapMatrixPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Quarter-Ball Asian Handicap & Goal Line Split Calculator (-0.25, -0.75, O/U 2.25) | PredictPro"
+        title="Quarter-Ball Asian Handicap Split Matrix | PredictPro"
         description="Calculate exact Half-Win, Half-Loss, and Push payouts for Quarter-Ball Asian Handicap (-0.25, -0.75, +0.25, +0.75) and Asian Goal Lines (2.25, 2.75)."
         canonicalUrl="https://predictpro.guru/asian-handicap-calculator"
       />

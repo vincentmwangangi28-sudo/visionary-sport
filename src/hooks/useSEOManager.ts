@@ -102,7 +102,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/',
   },
   '/best-bets': {
-    title: 'High-Confidence Football Predictions Today (75%+ AI Consensus)',
+    title: 'High-Consensus Football Match Forecasts | PredictPro',
     description:
       'Verified daily football match predictions and 1X2 statistical forecasts today with 75% to 92% AI confidence. Filter high-probability match winners and Double Chance models.',
     keywords:
@@ -110,7 +110,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/best-bets',
   },
   '/value-bets': {
-    title: 'Daily Value Forecasts Today (+EV): Implied Probability vs Fair Odds',
+    title: 'Daily Value Bets Today (+EV): Fair Odds | PredictPro',
     description:
       'Daily positive expected value (+EV) football probability models today. Compare AI Poisson probability vs market implied odds to detect statistical discrepancies.',
     keywords:
@@ -118,7 +118,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/value-bets',
   },
   '/btts': {
-    title: 'BTTS AI Prediction Today: Both Teams to Score Tips (79% Win Rate)',
+    title: 'BTTS AI Prediction Today: Both Teams Score | PredictPro',
     description:
       'Verified BTTS AI predictions today with 79% win rate. Daily Both Teams to Score and Over 2.5 goals tips with Poisson goal expectancy across 40+ leagues.',
     keywords:
@@ -126,7 +126,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/btts',
   },
   '/correct-score': {
-    title: 'Guru Tips Correct Score Today: AI Exact Poisson Football Scorelines',
+    title: 'Guru Tips Correct Score Today: AI Scores | PredictPro',
     description:
       'Daily correct score guru tips today and exact scoreline predictions powered by bivariate Poisson probability matrices. High-odds 1-0, 2-1, and 1-1 picks.',
     keywords:
@@ -134,7 +134,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/correct-score',
   },
   '/accumulator': {
-    title: 'Smart Football Accumulator Builder & 5-Fold Multibet Tips',
+    title: 'Smart Football Accumulator & Multibet Builder | PredictPro',
     description:
       'Build low-correlation 3-fold and 5-fold football accumulators using AI confidence filters, Double Chance hedges, and Kelly Criterion stake sizing.',
     keywords:
@@ -142,7 +142,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/accumulator',
   },
   '/predict': {
-    title: 'AI Pro Tips Today: Match Winner & Football Predictions (xG Simulator)',
+    title: 'AI Pro Tips Today: Match Predictor & xG | PredictPro',
     description:
       'Verified AI pro tips today and football match predictions with 87% accuracy. Expected goals (xG), Poisson BTTS, fair odds, and score projections.',
     keywords:
@@ -150,7 +150,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/predict',
   },
   '/upcoming': {
-    title: 'Upcoming Football Fixtures & 7-Day AI Match Predictions',
+    title: 'Upcoming Football Fixtures & 7-Day AI Odds | PredictPro',
     description:
       'Browse upcoming football fixtures across 40+ global leagues with early AI win probabilities, Expected Goals (xG) projections, and fair decimal odds.',
     keywords:
@@ -158,7 +158,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/upcoming',
   },
   '/live': {
-    title: 'Live Football Scores Today: In-Play AI Odds & Real-Time xG Momentum',
+    title: 'Live Football Scores Today: In-Play AI Odds | PredictPro',
     description:
       'Track real-time live football scores with sub-15s auto-refresh, minute-by-minute match momentum, in-play AI win probabilities, and instant live goal notifications.',
     keywords:
@@ -166,7 +166,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/live',
   },
   '/standings': {
-    title: 'Football League Standings, Form Tables & xG Points Differential',
+    title: 'Football League Standings, Form & xG Tables | PredictPro',
     description:
       'Live 2026/27 football league standings, home/away form tables, goal differentials, and championship qualification zones for Premier League, La Liga, KPL & more.',
     keywords:
@@ -174,7 +174,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/standings',
   },
   '/streaks': {
-    title: 'Football Team Winning Streaks & Over 2.5 / BTTS Trend Radar',
+    title: 'Football Team Winning Streaks & Goal Trends Radar',
     description:
       'Identify clubs on active winning streaks, unbeaten runs, and consecutive Over 2.5 Goals or Both Teams to Score trends before bookmakers adjust their lines.',
     keywords:
@@ -182,7 +182,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/streaks',
   },
   '/dropping-odds': {
-    title: 'Dropping Odds Radar & Sharp Syndicate Steam Move Tracker',
+    title: 'Dropping Odds Radar & Sharp Steam Tracker | PredictPro',
     description:
       'Monitor real-time dropping football odds and sharp market steam moves. Spot bookmaker line compression and capture positive Closing Line Value (CLV).',
     keywords:
@@ -190,7 +190,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/dropping-odds',
   },
   '/screener': {
-    title: 'Quantitative Football Match Screener & Multi-Factor Scanner',
+    title: 'Quantitative Football Match Screener & xG Scanner',
     description:
       'Filter daily football fixtures by AI confidence, Expected Goals (xG), BTTS probability, Over 2.5 expectancy, and positive Expected Value (+EV) edge.',
     keywords:
@@ -198,7 +198,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/screener',
   },
   '/track-record': {
-    title: 'Verified AI Prediction Track Record, ROI & Closing Line Value',
+    title: 'Verified AI Prediction Track Record & Historical ROI',
     description:
       'Inspect PredictPro’s audited historical prediction accuracy, unit Return on Investment (ROI), strike rate by league, and Closing Line Value (CLV) performance.',
     keywords:
@@ -206,7 +206,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/track-record',
   },
   '/h2h': {
-    title: 'Interactive Head-to-Head (H2H) Football Team Comparison & Poisson Tool',
+    title: 'Head-to-Head (H2H) Football Comparison & Poisson Tool',
     description:
       'Compare any two football clubs head-to-head. Analyze historical H2H results, attacking vs defensive xG radar charts, and custom Poisson score simulations.',
     keywords:
@@ -214,7 +214,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/h2h',
   },
   '/premier-league-predictions': {
-    title: 'English Premier League (EPL) AI Predictions, Odds & xG Tips',
+    title: 'English Premier League (EPL) AI Predictions & xG Tips',
     description:
       'Expert AI Premier League predictions for every matchweek. Get EPL 1X2 banker picks, Expected Goals (xG) projections, BTTS tips, and correct score probabilities.',
     keywords:
@@ -222,7 +222,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/premier-league-predictions',
   },
   '/champions-league-predictions': {
-    title: 'UEFA Champions League AI Predictions, Swiss Phase & Knockout Tips',
+    title: 'UEFA Champions League AI Predictions & Knockout Odds',
     description:
       'UEFA Champions League match predictions powered by AI. Analyze 36-team league phase dynamics, knockout tie probabilities, Over 2.5 goals, and value odds.',
     keywords:
@@ -230,7 +230,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/champions-league-predictions',
   },
   '/la-liga-predictions': {
-    title: 'Spanish La Liga AI Predictions, Match Previews & Value Odds',
+    title: 'Spanish La Liga AI Football Predictions & Value Odds',
     description:
       'Daily Spanish La Liga football predictions and tactical xG analysis. Find Real Madrid, Barcelona, and Atletico Madrid 1X2, BTTS, and Asian Handicap picks.',
     keywords:
@@ -238,7 +238,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/la-liga-predictions',
   },
   '/bundesliga-predictions': {
-    title: 'German Bundesliga AI Predictions, Over 2.5 Goals & BTTS Tips',
+    title: 'German Bundesliga AI Predictions, Over 2.5 & BTTS Tips',
     description:
       'High-scoring German Bundesliga AI predictions. Access Poisson goal expectancy, Over 2.5 and BTTS probabilities, and 1X2 value picks for every fixture.',
     keywords:
@@ -246,7 +246,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/bundesliga-predictions',
   },
   '/serie-a-predictions': {
-    title: 'Italian Serie A AI Predictions, Tactical xGA & 1X2 Betting Tips',
+    title: 'Italian Serie A AI Predictions, xGA & 1X2 Betting Tips',
     description:
       'Italian Serie A football predictions combining defensive Expected Goals Against (xGA), tactical low-block metrics, and mispriced Draw No Bet value lines.',
     keywords:
@@ -254,7 +254,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/serie-a-predictions',
   },
   '/kpl-predictions': {
-    title: 'FKF Kenya Premier League (KPL) Predictions & xG Match Previews',
+    title: 'FKF Kenya Premier League (KPL) AI Predictions & Tips',
     description:
       'Official FKF Kenya Premier League AI predictions covering Gor Mahia, AFC Leopards, Tusker FC, and Kenya Police FC with Expected Goals (xG) and form telemetry.',
     keywords:
@@ -262,7 +262,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/kpl-predictions',
   },
   '/jackpot-predictions': {
-    title: 'SportPesa Mega Jackpot (17 Games) & Betika Midweek AI Predictions',
+    title: '17-Game SportPesa Mega Jackpot & Betika AI Predictions',
     description:
       'Mathematical 17-game SportPesa Mega Jackpot and Betika Grand Jackpot predictions. Get AI banker selections and optimal Double Chance hedging combinations.',
     keywords:
@@ -270,7 +270,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/jackpot-predictions',
   },
   '/us-soccer-predictions': {
-    title: 'MLS & US Soccer Predictions: Moneyline (+/-), Spreads & AI Picks',
+    title: 'MLS & US Soccer AI Predictions: Moneyline & Spreads',
     description:
       'Major League Soccer (MLS), Concacaf Champions Cup, and US Open Cup AI predictions with American moneyline odds, goal spreads, and travel fatigue modeling.',
     keywords:
@@ -278,7 +278,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/us-soccer-predictions',
   },
   '/world-cup-predictions': {
-    title: '2026 FIFA World Cup Predictions, Qualifiers & Tournament Odds',
+    title: '2026 FIFA World Cup AI Predictions & Tournament Odds',
     description:
       '2026 FIFA World Cup qualifying and tournament AI predictions. Explore international Elo ratings, group stage advancement probabilities, and match tips.',
     keywords:
@@ -294,7 +294,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/afcon-predictions',
   },
   '/blog': {
-    title: 'Football Betting Strategy Blog: +EV, Poisson xG & Asian Handicap Guides',
+    title: 'Football Betting Strategy Blog: +EV, xG & Handicap Guides',
     description:
       'Master quantitative football betting with our in-depth strategy guides on Expected Value (+EV), Asian Handicap lines, Closing Line Value (CLV), and Kelly staking.',
     keywords:
@@ -302,7 +302,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/blog',
   },
   '/methodology': {
-    title: 'AI Football Prediction Methodology: Bivariate Poisson & xG Science',
+    title: 'AI Football Prediction Methodology: Poisson & xG Science',
     description:
       'Learn how PredictPro’s ensemble AI calculates match probabilities using Dixon-Coles bivariate Poisson models, rolling Expected Goals (xG), and market CLV.',
     keywords:
@@ -310,7 +310,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/methodology',
   },
   '/archive': {
-    title: 'Past Match Prediction Archive & Verified Result Settlement',
+    title: 'Settled Football Prediction Archive & Verified Results',
     description:
       'Browse PredictPro’s complete archive of past football predictions, final 90-minute scorelines, and transparent win/loss settlement records.',
     keywords:
@@ -318,7 +318,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/archive',
   },
   '/seo-indexing': {
-    title: 'PredictPro SEO Command Center, 12-Pillar Site Audit & Indexing Cron',
+    title: 'PredictPro SEO Command Center & Indexing Monitor',
     description:
       'Monitor automated Google Indexing cron jobs, IndexNow pings, Low-Hanging Fruit keywords (Pos 4–15), AI Overview snippets, and backlink reclamation.',
     keywords:
@@ -326,7 +326,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/seo-indexing',
   },
   '/sitemap': {
-    title: 'PredictPro HTML Sitemap & Complete Indexed Predictions Directory',
+    title: 'PredictPro HTML Sitemap & Indexed Football Directory',
     description:
       'Navigate all indexed PredictPro football prediction hubs, league tables, quantitative betting tools, strategy articles, and live match previews.',
     keywords:
@@ -334,7 +334,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/sitemap',
   },
   '/responsible-gaming': {
-    title: 'Responsible Gaming, 18+ Minor Protection & Analytics Disclaimer',
+    title: 'Responsible Gaming, 18+ Policy & Disclaimer | PredictPro',
     description:
       'PredictPro Responsible Gambling Policy, 18+ minor protection standards, international support helplines, and informational sports statistics disclaimer.',
     keywords:
@@ -342,7 +342,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/responsible-gaming',
   },
   '/widgets': {
-    title: 'Embeddable AI Football Predictions Widget & Free Odds Feed',
+    title: 'Embeddable AI Football Predictions Widget & Odds Feed',
     description:
       'Embed live AI football match predictions, Poisson win probability bars, and banker of the day widgets on your sports blog, forum, or website for free.',
     keywords:
@@ -350,49 +350,49 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/widgets',
   },
   '/shop': {
-    title: 'PredictPro Pro Analytics Club: Quantitative xG & Poisson Models',
+    title: 'PredictPro Open-Access Analytics & Community Pass',
     description:
       'Access advanced quantitative football analytics, Expected Goals (xG) telemetry, and 17-game statistical combination models.',
     keywords: 'predictpro pro analytics, quantitative football models, expected goals telemetry, football statistics',
     canonicalPath: '/shop',
   },
   '/about': {
-    title: 'About PredictPro: Quantitative Sports Modeling & AI Science',
+    title: 'About PredictPro Quantitative Sports Analytics',
     description:
       'Discover the Dixon-Coles Poisson distributions, machine learning pipelines, and sports analytics engineers powering PredictPro’s verified predictions.',
     keywords: 'about predictpro, ai sports prediction team, football analytics platform',
     canonicalPath: '/about',
   },
   '/contact': {
-    title: 'Contact Editorial & Technical Support Team | PredictPro',
+    title: 'Contact Us | PredictPro Football Analytics',
     description:
       'Get in touch with PredictPro sports analysts, editorial desk, or technical support for inquiries, data partnerships, and feedback.',
     keywords: 'contact predictpro, sports data support, football prediction inquiries',
     canonicalPath: '/contact',
   },
   '/privacy': {
-    title: 'Privacy Policy & Data Protection Standards | PredictPro',
+    title: 'Privacy Policy | PredictPro Quantitative Analytics',
     description:
       'Read how PredictPro protects user privacy, encrypts account information, and complies with GDPR and international data standards.',
     keywords: 'privacy policy, gdpr compliance, predictpro data protection',
     canonicalPath: '/privacy',
   },
   '/terms': {
-    title: 'Terms of Service & User Conduct Guidelines | PredictPro',
+    title: 'Terms of Service | PredictPro Football Analytics',
     description:
       'Review PredictPro terms of service, platform usage rules, informational sports analytics disclaimers, and 18+ user qualifications.',
     keywords: 'terms of service, user agreement, sports analytics terms',
     canonicalPath: '/terms',
   },
   '/cookies': {
-    title: 'Cookie Policy & Advertising Transparency | PredictPro',
+    title: 'Cookie Policy | PredictPro Football Analytics',
     description:
       'Detailed overview of cookies utilized on PredictPro for session security, language preferences, Google AdSense ads, and performance telemetry.',
     keywords: 'cookie policy, adsense cookies, privacy settings',
     canonicalPath: '/cookies',
   },
   '/sports': {
-    title: 'Basketball & Tennis AI Predictions: +EV Spreads & Moneylines',
+    title: 'Basketball & Tennis AI Predictions: Spreads & Odds',
     description:
       'Daily multi-sport AI predictions for NBA basketball, Grand Slam tennis, and international rugby. Poisson totals and moneyline value odds.',
     keywords: 'multi-sport predictions, nba ai picks, tennis predictions today, basketball odds',
@@ -406,105 +406,105 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/rewards',
   },
   '/highlights': {
-    title: 'Football Match Highlights & Post-Match xG Tactical Reviews',
+    title: 'Football Match Video Highlights & Tactical Recap',
     description:
       'Watch verified football match video highlights and goal previews synced with post-match Expected Goals (xG) stats and tactical breakdowns.',
     keywords: 'football match highlights, soccer goal videos, post-match xg review',
     canonicalPath: '/highlights',
   },
   '/statistics': {
-    title: 'Football League Statistics, Attacking xG & Defensive xGA',
+    title: 'Football Team & League Expected Goals (xG) Statistics',
     description:
       'Compare team offensive Expected Goals (xG), defensive Expected Goals Against (xGA), corner frequency, and clean sheet percentages across 40+ leagues.',
     keywords: 'football xg statistics, team stats league, expected goals against ranking',
     canonicalPath: '/statistics',
   },
   '/players': {
-    title: 'Football Player Database: Goals, Assists & Per-90 xG Stats',
+    title: 'Football Player xG, Shots & Assists Analytics | PredictPro',
     description:
       'Explore 500,000+ footballers worldwide. Analyze goalscorer probabilities, shot volume, assists, form trajectory, and transfer status.',
     keywords: 'football player database, player xg stats, goalscorer probability',
     canonicalPath: '/players',
   },
   '/tournaments': {
-    title: 'Global Football Tournaments & Continental Cup Predictions',
+    title: 'Global Football Tournaments & Cup Predictions | PredictPro',
     description:
       'Comprehensive tournament simulations, bracket progressions, and match previews for Champions League, Copa America, Club World Cup, and AFCON.',
     keywords: 'football tournaments predictions, continental cup tips, international soccer',
     canonicalPath: '/tournaments',
   },
   '/recommendations': {
-    title: 'Personalized AI Match Recommendations & Banker Selections',
+    title: 'Personalized AI Football Betting Recommendations',
     description:
       'Tailored algorithmic football predictions matching your favorite leagues, risk tolerance, and optimal stake size based on Poisson modeling.',
     keywords: 'personalized football predictions, recommended banker bets, smart picks',
     canonicalPath: '/recommendations',
   },
   '/bankroll': {
-    title: 'Kelly Criterion Football Bankroll & Fractional Staking Tool',
+    title: 'Kelly Criterion Football Bankroll & Stake Calculator',
     description:
       'Optimize your betting capital with fractional Kelly Criterion sizing, drawdown protection models, and multi-currency portfolio management.',
     keywords: 'kelly criterion calculator, bankroll manager football, optimal stake sizing',
     canonicalPath: '/bankroll',
   },
   '/insights': {
-    title: 'Tactical Matchday Intelligence & Algorithmic xG Briefings',
+    title: 'Tactical Football Matchday Intelligence & xG Briefings',
     description:
       'In-depth matchday intelligence dissecting pressing schemes, defensive shape, referee card biases, and rest-disparity win probability shifts.',
     keywords: 'tactical match insights, matchday intelligence, football analytical preview',
     canonicalPath: '/insights',
   },
   '/news': {
-    title: 'Football News Wire: Injury Bulletins & Lineup Impact Scores',
+    title: 'Breaking Football Injury News & Lineup Impact | PredictPro',
     description:
       'Breaking team news, confirmed starting lineups, key player injuries, and automated win probability adjustments for upcoming domestic fixtures.',
     keywords: 'football news today, confirmed lineups, injury updates betting impact',
     canonicalPath: '/news',
   },
   '/leaderboard': {
-    title: 'Tipster Leaderboard: Verified Strike Rates & Community Ranks',
+    title: 'Global Prediction Accuracy Leaderboard | PredictPro',
     description:
       'See top-performing football forecasters on PredictPro. Audited by monthly ROI, active winning streaks, and Closing Line Value (CLV) yield.',
     keywords: 'tipster leaderboard, top football predictors, tipster rankings',
     canonicalPath: '/leaderboard',
   },
   '/bet-of-the-day': {
-    title: 'Match of the Day: Daily AI High-Confidence Statistical Forecast',
+    title: 'Bet of the Day: Daily AI Banker & High-Confidence Lock',
     description:
       'Today’s single highest-conviction AI football match forecast. Verified Expected Goals (xG) advantage, Poisson win probability, fair decimal odds, and Kelly sizing.',
     keywords: 'match of the day prediction, daily football forecast, high confidence football prediction today',
     canonicalPath: '/bet-of-the-day',
   },
   '/over-under-predictions': {
-    title: 'Over/Under 2.5 Goals Predictions & Poisson Goal Probabilities',
+    title: 'Over/Under 2.5 Goals Predictions & Poisson Goal Odds',
     description:
       'Daily Over 2.5, Under 2.5, and Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy and high-scoring team trends.',
     keywords: 'over 2.5 goals predictions today, under 2.5 tips, over 1.5 predictions, goal line predictions',
     canonicalPath: '/over-under-predictions',
   },
   '/double-chance-predictions': {
-    title: 'Double Chance Predictions Today (1X / X2): 89% AI Strike Rate',
+    title: 'Double Chance Predictions Today (1X/X2): 89% Strike Rate',
     description:
       'Daily 1X, X2, and 12 Double Chance football predictions with 89% AI confidence. Low-variance multi-match builders and underdog coverage across 40+ leagues.',
     keywords: 'double chance predictions today, 1x predictions today, x2 tips, double chance football forecasts',
     canonicalPath: '/double-chance-predictions',
   },
   '/draw-predictions': {
-    title: 'Draw Predictions Today (X Tips): High-Odds Stalemate Picks',
+    title: 'Draw Predictions Today (X Tips): Stalemate Picks',
     description:
       'Daily high-odds draw predictions (3.20 to 3.80 odds). Mathematical stalemate models detecting low-scoring defensive setups and equal Poisson expectations.',
     keywords: 'draw predictions today, stalemate draw tips today, x tips today, football draw prediction',
     canonicalPath: '/draw-predictions',
   },
   '/halftime-fulltime-predictions': {
-    title: 'HT/FT Predictions Today: Half-Time/Full-Time (4.50+ Odds)',
+    title: 'HT/FT Predictions Today: Half-Time / Full-Time Picks',
     description:
       'Daily Half-Time / Full-Time (HT/FT) football predictions. High-odds 1/1, X/1, X/2, and 2/2 score turnaround strategies backed by first-half Poisson pace.',
     keywords: 'ht/ft predictions today, half time full time predictions, ht ft tips today, draw half time win full time',
     canonicalPath: '/halftime-fulltime-predictions',
   },
   '/europa-league-predictions': {
-    title: 'UEFA Europa League Predictions & Conference League AI Odds',
+    title: 'UEFA Europa & Conference League AI Predictions & Odds',
     description:
       'Expert AI predictions for UEFA Europa League and Conference League fixtures. Matchweek win probabilities, knockout progression odds, and Thursday banker tips.',
     keywords: 'europa league predictions today, uefa europa league tips, conference league predictions',
@@ -518,14 +518,14 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/ligue-1-predictions',
   },
   '/poisson-calculator': {
-    title: 'Poisson Football Calculator & Expected Goals Score Simulator',
+    title: 'Poisson Football Calculator & xG Score Simulator',
     description:
       'Free Dixon-Coles Poisson football calculator. Enter home and away team expected goals (xG) to simulate 10,000 matches, exact scores, 1X2 odds, and BTTS.',
     keywords: 'poisson football calculator, expected goals calculator, football score simulator, fair odds calculator',
     canonicalPath: '/poisson-calculator',
   },
   '/sure-win-predictions': {
-    title: 'High-Confidence Football Predictions Today: 88%+ AI Consensus',
+    title: 'High-Probability Football Consensus Picks (88%+ Conf)',
     description:
       'Daily mathematical high-probability football predictions and statistical match analysis. Filter highest-confidence picks (88%+ model consensus) and xG trends.',
     keywords:
@@ -533,7 +533,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/sure-win-predictions',
   },
   '/corners-predictions': {
-    title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Match Corners Stats',
+    title: 'Corner Predictions Today: Over 8.5, 9.5 & 10.5 Corners',
     description:
       'Daily football corner predictions and corner kick stats. Explore Over/Under 9.5 corners probability, team corner averages, and wing play analysis.',
     keywords:
@@ -541,7 +541,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/corners-predictions',
   },
   '/cards-predictions': {
-    title: 'Cards & Bookings Predictions Today: Yellow & Red Card Stats',
+    title: 'Cards & Bookings Predictions Today: Yellow Card Stats',
     description:
       'Daily football cards and booking points predictions. Filter matches by referee strictness, derby tension, and Over/Under 3.5 & 4.5 yellow card trends.',
     keywords:
@@ -549,7 +549,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/cards-predictions',
   },
   '/championship-predictions': {
-    title: 'English Championship Predictions & AI Betting Tips 2026/27',
+    title: 'English Championship Predictions & AI Tips 2026/27',
     description:
       'EFL Championship predictions today. Free AI betting tips, promotion xG stats, and Asian Handicap analysis for Leeds, Sunderland, and Sheffield United.',
     keywords:
@@ -557,7 +557,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/championship-predictions',
   },
   '/eredivisie-predictions': {
-    title: 'Dutch Eredivisie AI Predictions: Ajax, PSV, Feyenoord & xG Tips',
+    title: 'Dutch Eredivisie AI Predictions: Ajax, PSV & xG Tips',
     description:
       'Free Dutch Eredivisie predictions today. High-scoring Over 2.5 goals models, BTTS probabilities, and Asian Handicap picks for Ajax, PSV, and Feyenoord.',
     keywords:
@@ -565,7 +565,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/eredivisie-predictions',
   },
   '/primeira-liga-predictions': {
-    title: 'Portuguese Primeira Liga Predictions: Benfica, Sporting CP & Porto',
+    title: 'Portuguese Primeira Liga Predictions: Benfica & Porto',
     description:
       'Portuguese Primeira Liga AI predictions today. Verified win probabilities, handicap picks, and clean sheet stats for Sporting CP, Benfica, and Porto.',
     keywords:
@@ -581,7 +581,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/conference-league-predictions',
   },
   '/copa-libertadores-predictions': {
-    title: 'Copa Libertadores AI Predictions: South American Odds & Tips',
+    title: 'Copa Libertadores AI Predictions & Odds | PredictPro',
     description:
       'CONMEBOL Copa Libertadores predictions today. Accurate AI tips, altitude adjustments, and match previews for Flamengo, Palmeiras, and River Plate.',
     keywords:
@@ -589,7 +589,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/copa-libertadores-predictions',
   },
   '/value-bet-calculator': {
-    title: 'Value Bet Calculator (+EV): Sports Betting Expected Value Tool',
+    title: 'Value Bet Calculator (+EV): Fair Odds | PredictPro',
     description:
       'Free +EV Value Bet Calculator. Calculate positive expected value, bookmaker edge vs true probability, fair decimal odds, and recommended Kelly staking size.',
     keywords:
@@ -597,7 +597,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/value-bet-calculator',
   },
   '/kelly-criterion-calculator': {
-    title: 'Kelly Criterion Calculator: Sports Betting Bankroll Staking Tool',
+    title: 'Kelly Criterion Calculator: Bankroll Staking Tool',
     description:
       'Free Kelly Criterion Calculator. Calculate optimal bet sizing, fractional Kelly (Half/Quarter), expected bankroll growth rate, and bankroll protection.',
     keywords:
@@ -605,7 +605,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/kelly-criterion-calculator',
   },
   '/over-1-5-goals-predictions': {
-    title: 'Over 1.5 Goals Predictions Today: 85%+ High-Probability Multi-Bet Tips',
+    title: 'Over 1.5 Goals Predictions Today: High-Prob Multi Tips',
     description:
       'Daily Over 1.5 goals football predictions. Filter matches by Bivariate Poisson goal expectancy, 1st half goal frequency, and low-variance accumulator anchors.',
     keywords:
@@ -613,7 +613,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/over-1-5-goals-predictions',
   },
   '/tomorrow-predictions': {
-    title: "Tomorrow's Football Predictions: Early AI Betting Tips & xG Odds",
+    title: "Tomorrow's Football Predictions: Early AI xG Odds",
     description:
       "Free AI football predictions for tomorrow's fixtures. Track early 1X2 match forecasts, Over 2.5 goals, BTTS tips, and Expected Goals (xG) projections.",
     keywords:
@@ -621,7 +621,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/tomorrow-predictions',
   },
   '/weekend-predictions': {
-    title: 'Weekend Football Predictions: Saturday & Sunday Banker Acca Tips',
+    title: 'Weekend Football Predictions: Sat & Sun Banker Tips',
     description:
       'Free AI weekend football predictions for Saturday and Sunday. Get 85%+ confidence banker picks, weekend 5-fold accumulator slips, BTTS, and Over 2.5 goals tips.',
     keywords:
@@ -629,7 +629,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/weekend-predictions',
   },
   '/asian-handicap-predictions': {
-    title: 'Asian Handicap Predictions Today: -0.5, -0.75 & -1.5 Football Tips',
+    title: 'Asian Handicap Predictions Today: -0.5 & -1.5 Picks',
     description:
       'Free Asian Handicap football predictions today. Analyze expected goal (xG) differential models for -0.5, -0.75, -1.0, and +0.5 handicap lines.',
     keywords:
@@ -637,7 +637,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/asian-handicap-predictions',
   },
   '/draw-no-bet-predictions': {
-    title: 'Draw No Bet Predictions Today (DNB): Safe Football Refund Tips',
+    title: 'Draw No Bet Predictions Today (DNB): Safe Refund Tips',
     description:
       'Free Draw No Bet (DNB) football predictions today. Protect your bankroll with 89% non-losing AI picks where your full stake is refunded on a draw.',
     keywords:
@@ -645,7 +645,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/draw-no-bet-predictions',
   },
   '/win-to-nil-predictions': {
-    title: 'Win to Nil & Clean Sheet Predictions Today: Defensive xGA Tips',
+    title: 'Win to Nil & Clean Sheet Predictions Today: xGA Tips',
     description:
       'Free Win to Nil and Clean Sheet football predictions today. High-odds 2.25+ picks backed by Poisson zero-goal probability and defensive xGA metrics.',
     keywords:
@@ -653,7 +653,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/win-to-nil-predictions',
   },
   '/arbitrage-calculator': {
-    title: 'Implied Probability & 2-Way / 3-Way Margin Staking Calculator',
+    title: 'Arbitrage & Implied Margin Calculator: 2/3-Way Tool',
     description:
       'Free 2-way and 3-way implied probability and proportional staking calculator. Compare decimal odds across markets and compute balanced stake allocations.',
     keywords:
@@ -661,7 +661,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/arbitrage-calculator',
   },
   '/odds-converter': {
-    title: 'Betting Odds Converter & Implied Probability Calculator (UK/US/EU)',
+    title: 'Betting Odds Converter & Implied Probability Tool',
     description:
       'Free sports betting odds converter and implied probability calculator. Instantly convert Decimal, Fractional (UK), American Moneyline, and implied win percentages.',
     keywords:
@@ -669,7 +669,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/odds-converter',
   },
   '/saudi-pro-league-predictions': {
-    title: 'Saudi Pro League Predictions Today: Al-Hilal, Al-Nassr & SPL Tips',
+    title: 'Saudi Pro League Predictions Today: Al-Hilal & SPL',
     description:
       'Free Saudi Pro League (Roshn SPL) AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Asian Handicap picks for Al-Hilal, Al-Nassr & Al-Ittihad.',
     keywords:
@@ -677,7 +677,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/saudi-pro-league-predictions',
   },
   '/brazilian-serie-a-predictions': {
-    title: 'Brazilian Serie A Predictions Today: Brasileirão AI Tips & Odds',
+    title: 'Brazilian Serie A Predictions Today: Brasileirão AI',
     description:
       'Free Brazilian Serie A (Brasileirão) AI football predictions today. Get home-advantage 1X2 picks, BTTS, and xG forecasts for Palmeiras, Flamengo & Botafogo.',
     keywords:
@@ -685,7 +685,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/brazilian-serie-a-predictions',
   },
   '/scottish-premiership-predictions': {
-    title: 'Scottish Premiership Predictions Today: Celtic, Rangers & SPFL Tips',
+    title: 'Scottish Premiership Predictions: Celtic & Rangers Tips',
     description:
       'Free Scottish Premiership (SPFL) AI football predictions today. High-confidence Celtic & Rangers Asian Handicap picks, Over 2.5 goals, and corners tips.',
     keywords:
@@ -693,7 +693,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/scottish-premiership-predictions',
   },
   '/first-half-goals-predictions': {
-    title: 'Over 0.5 First Half Goals Predictions Today: 1H Goal AI Tips',
+    title: 'Over 0.5 First Half Goals Predictions Today: 1H AI',
     description:
       'Free Over 0.5 & Over 1.5 First Half Goals predictions today. Settle bets in 45 minutes with 84%+ strike-rate 1st half xG and early-goal probability picks.',
     keywords:
@@ -701,7 +701,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/first-half-goals-predictions',
   },
   '/over-3-5-goals-predictions': {
-    title: 'Over 3.5 Goals Predictions Today: High-Scoring 4+ Goal AI Tips',
+    title: 'Over 3.5 Goals Predictions Today: 4+ Goal AI Tips',
     description:
       'Free Over 3.5 goals football predictions today. Target high-odds (2.40+) goal-fest fixtures backed by 3.35+ combined Expected Goals (xG) and Poisson simulations.',
     keywords:
@@ -709,7 +709,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/over-3-5-goals-predictions',
   },
   '/both-teams-to-score-and-win-predictions': {
-    title: 'BTTS & Win Predictions Today: Both Teams to Score + Over 2.5 Tips',
+    title: 'BTTS & Win Predictions Today: Goal Combo AI Tips',
     description:
       'Free Both Teams to Score and Win (BTTS & Win) and BTTS & Over 2.5 Goals football predictions today. High-value 3.00+ odds combo picks backed by 2-1 & 3-1 Poisson models.',
     keywords:
@@ -717,7 +717,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/both-teams-to-score-and-win-predictions',
   },
   '/anytime-goalscorer-predictions': {
-    title: 'Anytime Goalscorer Predictions Today: Player xG & Shots on Target',
+    title: 'Anytime Goalscorer Predictions: Player xG & Shots',
     description:
       'Free Anytime Goalscorer, First Goalscorer, and Player Shots on Target predictions today. Backed by xG per 90, penalty-taker status, and defensive xGA matchups.',
     keywords:
@@ -725,7 +725,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/anytime-goalscorer-predictions',
   },
   '/parlay-calculator': {
-    title: 'Parlay & Accumulator Odds Calculator: Multi-Bet Payout Tool',
+    title: 'Parlay & Accumulator Odds Calculator: Multi Payouts',
     description:
       'Free Parlay and Football Accumulator (Acca) odds calculator. Add up to 15 legs to calculate combined decimal odds, true hit probability, and net profit.',
     keywords:
@@ -733,7 +733,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/parlay-calculator',
   },
   '/margin-calculator': {
-    title: 'Bookmaker Margin & No-Vig Fair Odds Calculator (Overround Tool)',
+    title: 'Bookmaker Margin & Fair Odds Calculator | PredictPro',
     description:
       'Free bookmaker margin, overround, and no-vig fair odds calculator. Remove sportsbook vig from 1X2 and Over/Under lines to find true market probabilities.',
     keywords:
@@ -741,7 +741,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/margin-calculator',
   },
   '/fa-cup-predictions': {
-    title: 'FA Cup & Carabao Cup Predictions Today: English Knockout AI Tips',
+    title: 'FA Cup & Carabao Cup Predictions: English Cup AI Tips',
     description:
       'Free English FA Cup and Carabao EFL Cup AI football predictions today. Squad rotation xG models, cup upset alerts, BTTS, and Asian Handicap picks.',
     keywords:
@@ -749,7 +749,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/fa-cup-predictions',
   },
   '/turkish-super-lig-predictions': {
-    title: 'Turkish Süper Lig Predictions Today: Galatasaray & Fenerbahçe Tips',
+    title: 'Turkish Süper Lig Predictions: Galatasaray & Fener',
     description:
       'Free Turkish Süper Lig AI football predictions today. High-confidence 1X2, Over 2.5 goals, and card booking picks for Galatasaray, Fenerbahçe & Beşiktaş.',
     keywords:
@@ -757,7 +757,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/turkish-super-lig-predictions',
   },
   '/belgian-pro-league-predictions': {
-    title: 'Belgian Pro League Predictions Today: Jupiler League AI Tips',
+    title: 'Belgian Pro League AI Predictions | PredictPro',
     description:
       'Free Belgian Jupiler Pro League AI football predictions today. High-strike-rate BTTS, Over 2.5 goals, and 1X2 tips for Club Brugge, Anderlecht, Genk & Union SG.',
     keywords:
@@ -765,7 +765,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/belgian-pro-league-predictions',
   },
   '/argentina-primera-predictions': {
-    title: 'Argentina Primera División Predictions: Liga Profesional AI Tips',
+    title: 'Argentina Primera División Predictions: Liga Pro AI',
     description:
       'Free Argentina Liga Profesional (Primera División) AI football predictions today. Get home-banker 1X2, Under 2.5, and Draw No Bet tips for River Plate & Boca Juniors.',
     keywords:
@@ -773,7 +773,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/argentina-primera-predictions',
   },
   '/under-2-5-goals-predictions': {
-    title: 'Under 2.5 Goals Predictions Today: Low-Scoring AI Tips',
+    title: 'Under 2.5 Goals Predictions Today: Low-Scoring AI',
     description:
       'Free Under 2.5 goals football predictions today. Backed by Zero-Inflated Poisson models, combined xG under 2.10 filters, and elite defensive xGA stats.',
     keywords:
@@ -781,7 +781,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/under-2-5-goals-predictions',
   },
   '/second-half-goals-predictions': {
-    title: 'Second Half Goals Predictions Today: 2H Over 1.5 & Late xG Tips',
+    title: 'Second Half Goals Predictions: 2H xG | PredictPro',
     description:
       'Free Second Half Goals (2H Over 1.5) and Highest Scoring Half football predictions today. Powered by 60–90 minute fatigue xG spikes and bench impact data.',
     keywords:
@@ -789,7 +789,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/second-half-goals-predictions',
   },
   '/handicap-1x2-predictions': {
-    title: 'European Handicap (-1) Predictions Today: 3-Way Goal Margin Tips',
+    title: 'European Handicap (-1) Predictions: 3-Way Goal Tips',
     description:
       'Free European Handicap (-1 and +1) 3-Way football predictions today. Boost short 1.25 favorite odds to 2.10+ with AI 2+ goal margin xG forecasts.',
     keywords:
@@ -797,7 +797,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/handicap-1x2-predictions',
   },
   '/midweek-jackpot-predictions': {
-    title: 'Midweek Jackpot Predictions Today: 13 & 15 Games AI Banker Tips',
+    title: 'Midweek Jackpot Predictions: 13 & 15 Game AI Tips',
     description:
       'Free 13-game and 15-game Midweek Jackpot predictions for SportPesa, Betika & Mozzart. Get 6 AI Banker locks and Double Combination slips for bonus payouts.',
     keywords:
@@ -805,7 +805,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/midweek-jackpot-predictions',
   },
   '/system-bet-calculator': {
-    title: 'System Bet Calculator: Trixie, Yankee, Patent & Lucky 15 Tool',
+    title: 'System Bet Calculator: Trixie, Yankee & Lucky 15',
     description:
       'Free System Bet Calculator for football and sports betting. Calculate exact payouts for Trixie (4 bets), Patent (7), Yankee (11), and Lucky 15 (15) combinations.',
     keywords:
@@ -813,7 +813,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/system-bet-calculator',
   },
   '/hedge-bet-calculator': {
-    title: 'Hedge Stake Calculator: Counter-Stake Equity vs Cash-Out Tool',
+    title: 'Hedge Bet Calculator: Counter-Stake | PredictPro',
     description:
       'Free Hedge Stake & Cash-Out Comparison Calculator. Calculate the exact opposite counter-stake on the final leg of a multi-match slip to balance outcome returns.',
     keywords:
@@ -821,7 +821,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/hedge-bet-calculator',
   },
   '/liga-mx-predictions': {
-    title: 'Liga MX Predictions Today: Club América, Monterrey & Mexican Tips',
+    title: 'Liga MX Predictions Today: América & Monterrey Tips',
     description:
       'Free Mexican Liga MX (Apertura & Clausura) AI football predictions today. High-altitude home xG picks, BTTS, and Liguilla tips for Club América, Tigres & Monterrey.',
     keywords:
@@ -829,7 +829,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/liga-mx-predictions',
   },
   '/mls-predictions': {
-    title: 'MLS Predictions Today: Inter Miami, LAFC & Major League Soccer Tips',
+    title: 'MLS Predictions Today: Inter Miami & LAFC AI Tips',
     description:
       'Free Major League Soccer (MLS) AI predictions today. Get Over 2.5 goals, BTTS, and Moneyline picks for Inter Miami, LA Galaxy, LAFC, and Columbus Crew.',
     keywords:
@@ -837,7 +837,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/mls-predictions',
   },
   '/greek-super-league-predictions': {
-    title: 'Greek Super League Predictions: Olympiacos, PAOK, AEK & Panathinaikos',
+    title: 'Greek Super League Predictions: Olympiacos & PAOK',
     description:
       'Free Greek Super League (Stoiximan Super League) AI football predictions today. Home banker 1X2, Under 2.5, and Championship Playoff tips for Olympiacos & PAOK.',
     keywords:
@@ -845,7 +845,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/greek-super-league-predictions',
   },
   '/south-africa-psl-predictions': {
-    title: 'South Africa PSL Predictions Today: Betway Premiership AI Tips',
+    title: 'South Africa PSL Predictions: Betway Premiership AI',
     description:
       'Free South Africa PSL (Betway Premiership) AI football predictions today. Mamelodi Sundowns, Orlando Pirates & Kaizer Chiefs 1X2, Under 2.5, and Nedbank Cup tips.',
     keywords:
@@ -853,7 +853,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/south-africa-psl-predictions',
   },
   '/rollover-bets-predictions': {
-    title: 'Rollover Bets Predictions Today: 7-Day 1.50 & 2.00 Odds Challenge',
+    title: 'Rollover Bets Predictions: 7-Day 1.50 & 2.00 Odds',
     description:
       'Free daily Rollover football predictions today. Join the 7-Day 1.50x & 2.00x Odds Rollover Challenge backed by 90%+ AI probability locks and compounding stakes.',
     keywords:
@@ -861,7 +861,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/rollover-bets-predictions',
   },
   '/daily-2-odds-predictions': {
-    title: '2.00, 3.00 & 5.00 Combined Odds Predictions Today: Daily AI Slips',
+    title: 'Daily 2.00x, 3.00x & 5.00x Odds Combos | PredictPro',
     description:
       'Free 2.00, 3.00, and 5.00 combined odds football predictions today. High-consensus daily doubles and trebles backed by Bivariate Poisson and xG models.',
     keywords:
@@ -869,7 +869,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/daily-2-odds-predictions',
   },
   '/bet-builder-predictions': {
-    title: 'Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips',
+    title: 'Bet Builder Predictions: Same-Game Parlay AI Tips',
     description:
       'Free Football Bet Builder and Same-Game Parlay (SGP) predictions today. Positive-correlation 4-leg match combos combining Goals, Corners, Cards & Shots on Target.',
     keywords:
@@ -877,7 +877,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/bet-builder-predictions',
   },
   '/both-halves-predictions': {
-    title: 'Score in Both Halves & Win Both Halves Predictions Today',
+    title: 'Score in Both Halves & Win Both Halves Predictions',
     description:
       'Free Team to Score in Both Halves (SBH) and Win Both Halves (WBH) football predictions today. Unlock 2.00+ value on heavy home favorites.',
     keywords:
@@ -885,7 +885,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/both-halves-predictions',
   },
   '/dutching-calculator': {
-    title: 'Dutching Calculator: Equal-Return Multi-Outcome & Correct Score Tool',
+    title: 'Dutching Calculator: Equal-Return Scoreline Tool',
     description:
       'Free football Dutching Calculator. Split your total stake across multiple Correct Score or match outcomes to equalize net returns across selected outcomes.',
     keywords:
@@ -893,7 +893,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/dutching-calculator',
   },
   '/roi-yield-calculator': {
-    title: 'Betting ROI & Yield Calculator: Break-Even Win Rate Tool',
+    title: 'Betting ROI & Yield Calculator: Break-Even Rate Tool',
     description:
       'Free Sports Betting ROI, Yield, and Break-Even Win Rate Calculator. Measure long-term profitability, turnover efficiency, and true mathematical edge.',
     keywords:
@@ -901,7 +901,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/roi-yield-calculator',
   },
   '/nigerian-npfl-predictions': {
-    title: 'Nigeria NPFL Predictions Today: Enyimba, Remo Stars & Rangers Tips',
+    title: 'Nigeria NPFL Predictions: Enyimba & Remo Stars Tips',
     description:
       'Free Nigeria Premier Football League (NPFL) AI predictions today. Home-banker 1X2, Under 2.5, and Correct Score tips for Enyimba, Remo Stars, Rangers & Kano Pillars.',
     keywords:
@@ -909,7 +909,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/nigerian-npfl-predictions',
   },
   '/egyptian-premier-league-predictions': {
-    title: 'Egyptian Premier League Predictions Today: Al Ahly & Zamalek Tips',
+    title: 'Egyptian Premier League Predictions: Al Ahly & Zamalek',
     description:
       'Free Egyptian Premier League (Nile League) AI football predictions today. Win-to-Nil, 1X2, and Under 2.5 tips for Al Ahly, Zamalek, Pyramids FC & Al Masry.',
     keywords:
@@ -917,7 +917,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/egyptian-premier-league-predictions',
   },
   '/j-league-predictions': {
-    title: 'Japan J1 League Predictions Today: Early Kickoff xG & Corners Tips',
+    title: 'Japan J1 League Predictions: Early xG & Corners Tips',
     description:
       'Free Japanese J1 League AI football predictions today. Early-morning Over 2.5 goals, Corners Over 9.5, and BTTS picks for Vissel Kobe, Yokohama F. Marinos & Sanfrecce.',
     keywords:
@@ -925,7 +925,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/j-league-predictions',
   },
   '/australian-a-league-predictions': {
-    title: 'Australian A-League Predictions Today: Over 2.5 Goals & Corners Tips',
+    title: 'Australian A-League Predictions: Over 2.5 & Corners',
     description:
       'Free Australian A-League Men AI football predictions today. High-scoring Over 2.5 goals, BTTS, and Over 10.5 Corners picks for Melbourne Victory & Sydney FC.',
     keywords:
@@ -933,7 +933,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/australian-a-league-predictions',
   },
   '/today-predictions': {
-    title: "Today's Football Predictions: Daily AI Match Tips & Odds",
+    title: "Today's Football Predictions: Daily AI Tips & Odds",
     description:
       "Free football predictions for today's fixtures. Verified Expected Goals (xG) models, 1X2 win probabilities, BTTS tips, and banker picks updated hourly.",
     keywords:
@@ -941,7 +941,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/today-predictions',
   },
   '/2-odds-predictions': {
-    title: '2.00 Combined Odds Predictions Today: Daily 2-Leg Statistical Tips',
+    title: 'Daily 2.00+ Combined Odds Predictions & Rollover',
     description:
       'Free 2.00 and 3.00 combined odds football predictions today. High-consensus 2-leg doubles and interactive 5-day rollover compounding calculator.',
     keywords:
@@ -949,7 +949,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/2-odds-predictions',
   },
   '/5-odds-predictions': {
-    title: '5.00 & 10.00 Combined Odds Predictions Today: Daily Acca Slips',
+    title: 'Daily 5.00x & 10.00x Combined Odds Multi-Match Slips',
     description:
       'Free 5.00 and 10.00 combined odds football accumulator predictions today. Curated 4-fold and 5-fold multi-match tickets with high AI consensus.',
     keywords:
@@ -957,7 +957,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/5-odds-predictions',
   },
   '/dashboard': {
-    title: 'Personalized AI Football Predictions & Custom Match Feed',
+    title: 'Personalized AI Football Predictions & Custom Feed',
     description:
       'Customize your PredictPro football dashboard. Track favorite clubs, leagues, live xG alerts, and personalized AI match predictions in real time.',
     keywords:
@@ -965,7 +965,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/dashboard',
   },
   '/preferences': {
-    title: 'Prediction Preferences, Odds Format & Notification Settings',
+    title: 'Prediction Preferences, Odds Format & Alert Settings',
     description:
       'Configure your PredictPro odds format (Decimal, Fractional, American), regional league priorities, bankroll defaults, and live match alert preferences.',
     keywords:
@@ -973,23 +973,15 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/preferences',
   },
   '/performance': {
-    title: 'AI Model Performance, ROI Analytics & League Accuracy',
+    title: 'Football Betting Performance & ROI Tracker | PredictPro',
     description:
       'Verified PredictPro AI model performance analytics. Inspect historical strike rates, Brier calibration scores, league-by-league accuracy, and +EV yield.',
     keywords:
       'ai football model accuracy, prediction strike rate, football betting roi performance, brier score calibration',
     canonicalPath: '/performance',
   },
-  '/rewards': {
-    title: 'PredictPro Rewards, Prediction Challenges & VIP Points',
-    description:
-      'Earn PredictPro loyalty points, complete daily football prediction challenges, climb seasonal tipster tiers, and unlock VIP analytical passes.',
-    keywords:
-      'football prediction rewards, free football prediction challenge, tipster loyalty points, predictpro vip rewards',
-    canonicalPath: '/rewards',
-  },
   '/teams': {
-    title: 'Club Expected Goals (xG) Analytics & FDR Hub | PredictPro',
+    title: 'Club Expected Goals (xG) & FDR Hub | PredictPro',
     description:
       'Explore club-by-club Expected Goals (xG), Bivariate Poisson attack and defense coefficients, ELO ratings, and 5-match Fixture Difficulty Ratings (FDR).',
     keywords:
@@ -997,7 +989,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/teams',
   },
   '/slip-generator': {
-    title: 'Smart Bet Slip Generator & Booking Code Converter | PredictPro',
+    title: 'Smart Bet Slip Generator & Booking Code Converter',
     description:
       'Generate custom 2.00 to 50.00+ odds AI football accumulator slips and convert booking codes across SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
     keywords:
@@ -1005,7 +997,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/slip-generator',
   },
   '/booking-codes': {
-    title: 'Daily Football Booking Codes: SportyBet, 1xBet, Bet9ja & Betway',
+    title: 'Daily Football Booking Codes & Slips | PredictPro',
     description:
       'Copy verified daily AI football booking codes for SportyBet, 1xBet, Bet9ja, Betway, and Betika with 1-click slip loading and Poisson probability breakdowns.',
     keywords:
@@ -1013,7 +1005,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/booking-codes',
   },
   '/code-converter': {
-    title: 'Universal Bet Code Converter: SportyBet, 1xBet, Bet9ja & Betway',
+    title: 'Universal Bet Code Converter: SportyBet & Bet9ja',
     description:
       'Free universal football bet code converter. Instantly translate accumulator booking codes between SportyBet, 1xBet, Bet9ja, Betway, and Betika.',
     keywords:
@@ -1029,7 +1021,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/booking-code-converter',
   },
   '/referee-stats-predictions': {
-    title: 'Referee Card Stats, VAR Penalty Rates & Bookings Today',
+    title: 'Referee Card Stats, VAR & Bookings Predictions Today',
     description:
       'Daily football referee card statistics, yellow/red card averages per 90, fouls-per-tackle ratios, and VAR penalty probabilities across 40+ leagues.',
     keywords:
@@ -1037,7 +1029,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/referee-stats-predictions',
   },
   '/jackpot-generator': {
-    title: '17-Game Mega & Midweek Jackpot Combination Generator',
+    title: '17-Game Mega & Midweek Jackpot Generator | PredictPro',
     description:
       'Generate mathematical 3^D × 2^T double and triple wheeling combinations for 17-game Mega and 13/15-game Midweek Jackpots on SportPesa, Betika & Mozzart.',
     keywords:
@@ -1045,7 +1037,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/jackpot-generator',
   },
   '/in-play-predictions': {
-    title: 'Live In-Play Football Predictions & Next-Goal AI Radar',
+    title: 'Live In-Play Football Predictions & Next-Goal Radar',
     description:
       'Real-time in-play football predictions, Attacking Pressure Per Minute (APPM) momentum spikes, and live next-goal Poisson probabilities.',
     keywords:
@@ -1053,7 +1045,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/in-play-predictions',
   },
   '/live-multiview': {
-    title: 'Live 4-Match Multi-View Scoreboard & xG Command Center',
+    title: 'Multi-Match Live Command Grid | 2x2 Pitch Tracker',
     description:
       'Monitor up to 4 live football matches simultaneously in a 2×2 tactical grid with real-time xG, momentum swings, and instant odds alerts.',
     keywords:
@@ -1061,7 +1053,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/live-multiview',
   },
   '/closing-line-value': {
-    title: 'Closing Line Value (CLV) & Sharp Steam Move Scanner',
+    title: 'Closing Line Value (CLV) & Steam Move Radar | PredictPro',
     description:
       'Track opening vs current bookmaker odds, sharp syndicate steam moves, and positive Closing Line Value (CLV%) across global football markets.',
     keywords:
@@ -1069,7 +1061,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/closing-line-value',
   },
   '/sgp-builder': {
-    title: 'Correlated Same-Game Parlay (SGP) Gaussian Copula Builder',
+    title: 'Same-Game Parlay (SGP) Copula Lab | PredictPro',
     description:
       'Build mathematically correlated Same-Game Parlays (SGP) using Gaussian Copula joint probability pricing to expose bookmaker Bet Builder mispricings.',
     keywords:
@@ -1077,7 +1069,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/sgp-builder',
   },
   '/pitch-telemetry': {
-    title: '2D Pitch Shot Map, Expected Threat (xT) & Passing Network',
+    title: '2D Pitch Shot Map, xT Grid & Pass Network Telemetry',
     description:
       'Interactive 2D football pitch telemetry featuring shot-quality xG maps, 12×8 Expected Threat (xT) zone grids, and PPDA pressing lines.',
     keywords:
@@ -1085,7 +1077,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/pitch-telemetry',
   },
   '/xpts-standings': {
-    title: 'Expected Points (xPTS) Justice Table & xG Standings',
+    title: 'Expected Points (xPTS) Justice & Regression Radar',
     description:
       'Compare actual league points against simulated Expected Points (xPTS) and Expected Goal Difference (xGD) to spot mean-reversion value.',
     keywords:
@@ -1093,7 +1085,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/xpts-standings',
   },
   '/bracket-simulator': {
-    title: 'Knockout Bracket Simulator: UCL, World Cup & AFCON Tree',
+    title: 'Tournament Knockout Bracket & Title Odds Simulator',
     description:
       'Simulate full Round of 16, Quarter-Final, Semi-Final, and Final knockout brackets using Bivariate Poisson and ELO tie progression probabilities.',
     keywords:
@@ -1101,7 +1093,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/bracket-simulator',
   },
   '/in-play-edge': {
-    title: "In-Play Momentum & 75'+ Late-Goal Pressure Radar",
+    title: 'In-Play Momentum & Late-Goal Radar | Live xG Pressure',
     description:
       "Scan live football matches in the 70'–90'+ window with surging Attacking Pressure Index, corners, and shots on target for late-goal edges.",
     keywords:
@@ -1109,7 +1101,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/in-play-edge',
   },
   '/social-card-studio': {
-    title: 'Social Bet Slip & Win Card 2× High-DPI PNG Studio',
+    title: 'Social Slip & Match Card Studio | High-DPI PNG Exporter',
     description:
       'Create high-resolution 1080×1350 and 1080×1920 social media prediction and winning slip cards for WhatsApp, Telegram, and X.',
     keywords:
@@ -1117,7 +1109,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/social-card-studio',
   },
   '/tournament-simulator': {
-    title: '10,000-Run Monte Carlo Tournament Group Stage Simulator',
+    title: 'Monte Carlo Tournament Group Simulator | 10,000 Runs',
     description:
       'Run 10,000 Monte Carlo group stage simulations to calculate exact Top-2 qualification, group winner, and wildcard advancement probabilities.',
     keywords:
@@ -1125,7 +1117,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/tournament-simulator',
   },
   '/bet-tracker': {
-    title: 'Personal Bet Tracker, ROI Ledger & ESPN Auto-Settlement',
+    title: 'Bet Tracker & ROI Ledger | ESPN Auto-Grade | PredictPro',
     description:
       'Track your football bets, bankroll equity curve, ROI%, Yield%, and Closing Line Value with 1-click live ESPN scoreboard auto-settlement.',
     keywords:
@@ -1133,7 +1125,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/bet-tracker',
   },
   '/set-piece-specialists': {
-    title: 'Penalty Takers, Free-Kick Specialists & Aerial Threat Hub',
+    title: 'Penalty Takers, Free-Kick & Corner Threat Hub | PredictPro',
     description:
       'Club-by-club directory of primary penalty takers, direct free-kick specialists, corner delivery accuracy, and center-back aerial xG threat.',
     keywords:
@@ -1141,7 +1133,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/set-piece-specialists',
   },
   '/sharp-money-splits': {
-    title: 'Sharp Money, Public Betting Splits & RLM Scanner',
+    title: 'Sharp Money, Public Splits & Reverse Line Movement',
     description:
       'Compare public ticket % vs actual money handle % to detect Reverse Line Movement (RLM) and professional syndicate positions.',
     keywords:
@@ -1149,7 +1141,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/sharp-money-splits',
   },
   '/injury-lineup-impact': {
-    title: 'Confirmed Lineups, Key Injuries & Suspension xG Impact',
+    title: 'Confirmed Lineups, Key Injuries & xG Impact Analyzer',
     description:
       'Quantify how confirmed starting XI rotations, key player injuries, and red-card suspensions shift team Expected Goals (xG) and fair odds.',
     keywords:
@@ -1157,7 +1149,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/injury-lineup-impact',
   },
   '/stadium-altitude-weather': {
-    title: 'Stadium Altitude, Weather & Travel Fatigue xG Modifiers',
+    title: 'Stadium Altitude, Weather & Fatigue xG Modifiers',
     description:
       'Analyze how high stadium elevation, heavy precipitation, wind speed, turf surface, and air travel distance impact match goal totals.',
     keywords:
@@ -1165,7 +1157,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/stadium-altitude-weather',
   },
   '/tactical-mismatch-matrix': {
-    title: 'Tactical Style Mismatch, PPDA Press & Coaching DNA Matrix',
+    title: 'Tactical Style Mismatch, PPDA & Coaching DNA Matrix',
     description:
       'Evaluate tactical matchups between High-Press (PPDA), Low-Block Counter, Possession Build-Up, and Direct Transition football systems.',
     keywords:
@@ -1173,7 +1165,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/tactical-mismatch-matrix',
   },
   '/referrals': {
-    title: 'Invite Friends & Earn Free PredictPro VIP Analytics Coins',
+    title: 'Viral Referral Hub & VIP Coin Rewards | PredictPro',
     description:
       'Share your referral code or prediction slips on WhatsApp and Telegram to unlock milestone badges and Pro analytical features for free.',
     keywords:
@@ -1181,7 +1173,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/referrals',
   },
   '/community-slips': {
-    title: 'Community Copy-Bet Feed & Upvoted Accumulator Slips',
+    title: 'Community Copy-Bet Feed & Verified Slip Leaderboard',
     description:
       'Browse and 1-click copy the highest-rated community accumulator slips and verified multi-bookmaker booking codes.',
     keywords:
@@ -1189,7 +1181,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/community-slips',
   },
   '/pick-em-challenge': {
-    title: "Daily Free-to-Play 5-Match Football Pick'em Challenge",
+    title: "Daily 5-Match Pick'em Challenge & Coin Leaderboard",
     description:
       "Lock in your daily 5-match football predictions for free, build winning streaks, and climb the seasonal Pick'em leaderboard.",
     keywords:
@@ -1197,7 +1189,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/pick-em-challenge',
   },
   '/alert-center': {
-    title: 'Telegram, WhatsApp & Browser Push Live Alert Center',
+    title: 'Telegram, Browser Push & Custom Match Alert Center',
     description:
       'Configure real-time Telegram, WhatsApp, and browser push alerts for +EV value drops, confirmed lineups, and 75\'+ late-goal surges.',
     keywords:
@@ -1205,7 +1197,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/alert-center',
   },
   '/cashout-calculator': {
-    title: 'Acca Cash-Out & Final-Leg Counter-Hedge Stake Calculator',
+    title: 'Acca Cash-Out & Live Hedge Calculator | Equity Auditor',
     description:
       'Calculate the exact live counter-hedge stake on the final leg of your accumulator to equalize net return across outcomes.',
     keywords:
@@ -1213,7 +1205,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/cashout-calculator',
   },
   '/arbitrage-finder': {
-    title: 'Cross-Market Implied Probability & Margin Matrix',
+    title: 'Multi-Bookmaker Pricing & Margin Matrix | PredictPro',
     description:
       'Compare 2-way and 3-way cross-market implied probability margins with proportional stake rounding (Nearest 1, 5, 10, 50, 100).',
     keywords:
@@ -1221,7 +1213,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/arbitrage-finder',
   },
   '/player-props': {
-    title: 'Player Shots on Target (SOT), Fouls/90 & Referee Cards',
+    title: 'Player Shots on Target & Referee Cards | PredictPro',
     description:
       'Quantitative football player prop models covering 1+ and 2+ Shots on Target (SOT), Fouls Committed per 90, To Be Booked, and Referee strictness.',
     keywords:
@@ -1229,7 +1221,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/player-props',
   },
   '/rollover-challenge': {
-    title: 'Compound Rollover & Profit-Skim Staking Ladder Simulator',
+    title: 'Compound Rollover & Profit-Skim Simulator | PredictPro',
     description:
       'Plan a 3-to-14 day compound rollover challenge with automated daily profit skimming to protect your starting bankroll while scaling returns.',
     keywords:
@@ -1237,7 +1229,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/rollover-challenge',
   },
   '/asian-handicap-calculator': {
-    title: 'Quarter-Ball Asian Handicap (±0.25, ±0.75) Split Matrix',
+    title: 'Quarter-Ball Asian Handicap Split Matrix | PredictPro',
     description:
       'Calculate exact half-win, half-push, half-loss, and full-payout scenarios across ±0.25, ±0.50, ±0.75, and ±1.25 Asian Handicap lines.',
     keywords:
@@ -1245,7 +1237,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/asian-handicap-calculator',
   },
   '/syndicate-pools': {
-    title: '17-Game Jackpot Syndicate Pools & Mini-Leagues Hub',
+    title: '17-Game Jackpot Syndicate & Mini-Leagues | PredictPro',
     description:
       'Join or create collaborative 17-game Mega Jackpot wheeling syndicates to fund multi-double and triple permutations with proportional payouts.',
     keywords:
@@ -1253,7 +1245,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/syndicate-pools',
   },
   '/corner-stats-scanner': {
-    title: 'Corner Kick Tempo, Wing Width & Poisson Corner Scanner',
+    title: 'Corner Tempo & 1st-Half Corners Scanner | PredictPro',
     description:
       'Model match corner totals (Over 8.5, 9.5, 10.5, 11.5), 1st-half vs 2nd-half corner splits, and Asian Team Corner handicaps.',
     keywords:
@@ -1261,7 +1253,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/corner-stats-scanner',
   },
   '/cash-out-calculator': {
-    title: 'Cash-Out Fair Equity vs Bookmaker Haircut Auditor',
+    title: 'Cash-Out Equity & Live Hedge Optimizer | PredictPro',
     description:
       'Audit any bookmaker cash-out offer against true mathematical ticket equity and optimal partial/full lay hedge sizing.',
     keywords:
@@ -1269,7 +1261,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/cash-out-calculator',
   },
   '/referee-stats-scanner': {
-    title: 'Referee Discipline, Fouls-per-Tackle & Booking Matrix',
+    title: 'Referee Discipline, Yellow/Red Card & Booking Matrix',
     description:
       'Analyze referee yellow/red card averages, fouls-per-card thresholds, derby hostility multipliers, and Over 3.5 / 4.5 booking points EV.',
     keywords:
@@ -1277,7 +1269,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/referee-stats-scanner',
   },
   '/player-props-lab': {
-    title: 'Player Shots on Target (1+ / 2+ SoT) & Goal Prop Lab',
+    title: 'Player Shots on Target & Goal Lab | PredictPro',
     description:
       'Calculate true Poisson probabilities and fair odds for Player 1+, 2+, and 3+ Shots on Target, Anytime Goalscorer, and 1+ Assist props.',
     keywords:
@@ -1285,7 +1277,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/player-props-lab',
   },
   '/trixie-yankee-calculator': {
-    title: 'Trixie, Yankee, Lucky 15, Heinz & System Bet Simulator',
+    title: 'System Bet & Permutation Simulator: Trixie & Yankee',
     description:
       'Simulate every winning/losing leg scenario across Trixie (4 bets), Patent (7), Yankee (11), Lucky 15 (15), Canadian (26), and Heinz (57).',
     keywords:
@@ -1301,7 +1293,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/tanzania-premier-league-predictions',
   },
   '/ghana-premier-league-predictions': {
-    title: 'Ghana Premier League Predictions: Kotoko & Hearts of Oak',
+    title: 'Ghana Premier League Predictions: Kotoko & Hearts',
     description:
       'Daily Ghana Premier League (GPL) AI football predictions, home fortress xG models, and Under 2.5 tips for Asante Kotoko, Hearts of Oak & Medeama.',
     keywords:
@@ -1309,7 +1301,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/ghana-premier-league-predictions',
   },
   '/morocco-botola-pro-predictions': {
-    title: 'Morocco Botola Pro Predictions: Raja, Wydad & AS FAR',
+    title: 'Morocco Botola Pro Predictions: Raja, Wydad & FAR',
     description:
       'Daily Morocco Botola Pro Inwi AI football predictions, defensive xGA models, and Casablanca derby tips for Raja CA, Wydad AC & AS FAR.',
     keywords:
@@ -1325,7 +1317,7 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/caf-champions-league-predictions',
   },
   '/uganda-premier-league-predictions': {
-    title: 'Uganda Premier League Predictions: Vipers SC, KCCA & Villa',
+    title: 'Uganda Premier League Predictions: Vipers & KCCA FC',
     description:
       'Daily StarTimes Uganda Premier League (UPL) AI football predictions, 1X2 banker picks, and Under 2.5 stats for Vipers SC, KCCA FC & SC Villa.',
     keywords:
@@ -1333,12 +1325,27 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     canonicalPath: '/uganda-premier-league-predictions',
   },
   '/k-league-predictions': {
-    title: 'South Korea K League 1 Predictions: Ulsan HD & FC Seoul',
+    title: 'South Korea K League 1 Predictions: Ulsan & FC Seoul',
     description:
       'Daily South Korea Hana 1Q K League 1 AI football predictions, early-kickoff Over 2.5 goals, BTTS, and corner projections for Ulsan HD & Jeonbuk.',
     keywords:
       'k league 1 predictions, korean football betting tips, ulsan hd fc seoul prediction today',
     canonicalPath: '/k-league-predictions',
+  },
+  '/tipsters': {
+    title: 'Verified Football Tipsters & ROI Leaderboard | PredictPro',
+    description:
+      'Follow verified quantitative football analysts and community tipsters ranked by transparent strike rate, yield, and Closing Line Value (CLV).',
+    keywords: 'verified football tipsters, roi leaderboard, clv sports analysts',
+    canonicalPath: '/tipsters',
+  },
+  '/ahrefs-opportunities': {
+    title: 'Ahrefs 12-Pillar Organic Search & Technical SEO Hub',
+    description:
+      'Complete 12-pillar organic search intelligence, competitor keyword gap benchmarks, and live IndexNow verification.',
+    keywords: 'ahrefs seo audit, organic search intelligence, indexnow verification',
+    canonicalPath: '/ahrefs-opportunities',
+    noIndex: true,
   },
   '/auth': {
     title: 'Sign In or Create Account — PredictPro AI Football Hub',
@@ -1355,6 +1362,21 @@ const ROUTE_SEO_REGISTRY: Record<string, RouteSEOConfig> = {
     keywords: 'predictpro admin',
     canonicalPath: '/admin',
     noIndex: true,
+  },
+  '/adsense-policy-checker': {
+    title: 'AdSense Policy & Build Compliance Checker | PredictPro',
+    description:
+      'Post-build and real-time Google AdSense Program Policy compliance checker auditing prohibited content, ad placements, and pop-up governance across PredictPro.',
+    keywords: 'adsense policy checker, predictpro compliance audit',
+    canonicalPath: '/adsense-policy-checker',
+    noIndex: true,
+  },
+  '/pro-command-center': {
+    title: 'Pro Matchday Command Center & SGP Builder | PredictPro',
+    description:
+      'Unified football intelligence command center combining 2D pitch shot maps, 12-zone xT, referee card matrices, SGP Copula builders, and line-movement tracking.',
+    keywords: 'pro matchday command center, 2d pitch shot map, same game parlay builder',
+    canonicalPath: '/pro-command-center',
   },
 };
 
@@ -1457,6 +1479,29 @@ export function deriveRouteBreadcrumbs(
   return list;
 }
 
+const BLOG_SEO_TITLE_MAP: Record<string, string> = {
+  'universal-bet-code-converter-sportybet-1xbet-bet9ja': 'Universal Football Booking Code Converter Guide',
+  'bivariate-poisson-dixon-coles-score-matrix-guide': 'Bivariate Poisson & Dixon-Coles Score Matrix Guide',
+  '2-score-correct-score-dutching-strategy': '2-Score Correct Score Dutching Strategy | PredictPro',
+  'referee-cards-corners-prop-modeling': 'Referee Cards & Wing Corners Prop Modeling | PredictPro',
+  'how-to-read-football-predictions': 'How to Read AI Football Predictions | PredictPro',
+  'expected-goals-xg-betting-model-explained': 'Expected Goals (xG) & xGA Betting Model Explained',
+  'halftime-fulltime-ht-ft-predictions-strategy': 'Half-Time / Full-Time (HT/FT) Strategy | PredictPro',
+  'value-betting-explained': 'Value Betting in Football: +EV Guide | PredictPro',
+  'asian-handicap-betting-explained': 'Asian Handicap Betting: -0.5 & -0.75 Lines Guide',
+  'draw-no-bet-vs-double-chance-strategy': 'Draw No Bet vs Double Chance: Mathematical ROI Guide',
+  'closing-line-value-clv-dropping-odds': 'Closing Line Value (CLV) & Dropping Odds Strategy',
+  'bankroll-management-football': 'Bankroll Management & Kelly Criterion | PredictPro',
+  'premier-league-prediction-guide-2026': 'Premier League 2026/27 AI Prediction & xG Guide',
+  'champions-league-group-stage-tips': 'Champions League 36-Team Swiss Phase Betting Guide',
+  'btts-over-under-strategy': 'BTTS & Over/Under 2.5 Poisson Stats | PredictPro',
+  'kpl-betting-guide-kenya': 'Kenya Premier League (FKF) Guide 2026/27 | PredictPro',
+  'accumulator-building-strategy': 'How to Build a 5-Fold Football Acca | PredictPro',
+  'correct-score-prediction-tips': 'Correct Score Betting: Poisson Matrix Strategy Guide',
+  'sportpesa-mega-jackpot-prediction-17-games': 'SportPesa Mega Jackpot 17-Game AI Strategy Guide',
+  'us-soccer-betting-guide-mls-odds': 'US Soccer & MLS Betting Guide: Moneyline & Spreads',
+};
+
 /**
  * Resolves dynamic routes such as /predict/:matchSlug, /match/:matchSlug, and /blog/:slug
  */
@@ -1476,18 +1521,20 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
     const formatTeam = (raw: string) =>
       raw
         .split('-')
-        .map((w) => (w.length <= 3 && /^(fc|sc|ac|as|cf|fk|us)$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+        .map((w) => (w.length <= 3 && /^(fc|sc|ac|as|cf|fk|us|psg|ny|afc|tp|apr|kcb|kpl|rs|es|cr|mc|js|cs|far)$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
         .join(' ');
 
     if (teams.length === 2) {
       const home = formatTeam(teams[0]);
       const away = formatTeam(teams[1]);
+      const primary = `${home} vs ${away} AI Prediction, xG & Odds`;
+      const titleCandidate = primary.length <= 60 ? primary : `${home} vs ${away} Prediction & xG`;
       return {
-        title: `${home} vs ${away} AI Prediction, xG Stats, H2H & Betting Odds`,
+        title: normalizeSEOTitle(titleCandidate),
         description: `${home} vs ${away} AI football prediction, bivariate Poisson correct score matrix, Expected Goals (xG), head-to-head form, and +EV betting tips.`,
         keywords: `${home} vs ${away} prediction, ${home} vs ${away} betting tips, ${home} ${away} correct score, ${home} ${away} h2h odds`,
         // Always canonicalize /match/:slug to /predict/:slug to eliminate duplicate content
-        canonicalPath: `/predict/${slug}`,
+        canonicalPath: `/predict/${withoutDate}`,
         type: 'sports.event',
       };
     }
@@ -1501,7 +1548,7 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
       .replace(/-/g, ' ')
       .replace(/\b\w/g, (c) => c.toUpperCase());
     return {
-      title: `${humanized} — Football Betting Strategy Guide`,
+      title: normalizeSEOTitle(BLOG_SEO_TITLE_MAP[slug] || `${humanized} | Strategy Guide`),
       description: `In-depth quantitative football betting guide on ${humanized}. Learn Poisson goal modeling, Expected Value (+EV), and bankroll strategy.`,
       keywords: `${slug.replace(/-/g, ' ')}, football betting strategy, ai football predictions`,
       canonicalPath: `/blog/${slug}`,
@@ -1514,13 +1561,36 @@ function resolveDynamicRouteConfig(pathname: string): RouteSEOConfig {
   if (teamRoute) {
     const slug = teamRoute[1].toLowerCase();
     const humanized = slug
-      .replace(/-/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+      .split('-')
+      .filter(Boolean)
+      .map((w) => (/^(fc|sc|ac|as|cf|psg)$/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+      .join(' ');
+    const withPredictPro = `${humanized} xG Stats & FDR | PredictPro`;
+    const teamTitle = withPredictPro.length <= 60 ? withPredictPro : `${humanized} xG Stats & Poisson FDR`;
     return {
-      title: `${humanized} xG Stats, Poisson Ratings & FDR | PredictPro`,
+      title: normalizeSEOTitle(teamTitle),
       description: `${humanized} quantitative football profile: Expected Goals (xG/90), Bivariate Poisson attack & defense ratings, ELO strength, and 5-match FDR schedule.`,
       keywords: `${humanized.toLowerCase()} xg stats, ${humanized.toLowerCase()} fixture difficulty, ${humanized.toLowerCase()} poisson rating`,
       canonicalPath: `/teams/${slug}`,
+    };
+  }
+
+  // Dynamic Player Profile Route: /players/:playerSlug
+  const playerRoute = cleanPath.match(/^\/players\/([^/]+)$/i);
+  if (playerRoute) {
+    const slug = playerRoute[1].toLowerCase();
+    const playerName = slug
+      .split('-')
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+    const rawTitle = `${playerName} Ratings, xG & Props | PredictPro`;
+    const playerTitle = rawTitle.length <= 60 ? rawTitle : `${playerName} xG & Prop Odds`;
+    return {
+      title: normalizeSEOTitle(playerTitle),
+      description: `${playerName} AI form rating, xG/90 stats, 2D touch heatmap, and interactive Poisson Goalscorer & Shots on Target prop simulator.`,
+      keywords: `${playerName.toLowerCase()} player rating, ${playerName.toLowerCase()} xg stats, ${playerName.toLowerCase()} prop odds`,
+      canonicalPath: `/players/${slug}`,
     };
   }
 
@@ -2972,11 +3042,12 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
       matchSeo?.seoTitle ||
       routeDefaults.title;
 
-    const candidateTitle = rawTitle.includes('PredictPro')
-      ? rawTitle
-      : rawTitle.length + 13 <= 60
-        ? `${rawTitle} | PredictPro`
-        : rawTitle;
+    const candidateTitle =
+      rawTitle === routeDefaults.title || rawTitle.includes('PredictPro')
+        ? rawTitle
+        : rawTitle.length + 13 <= 60
+          ? `${rawTitle} | PredictPro`
+          : rawTitle;
     const fullTitle = normalizeSEOTitle(candidateTitle);
 
     const rawDescription =
@@ -3472,7 +3543,10 @@ export function useSEOManager(options: SEOManagerOptions = {}): ResolvedSEOMetad
         scriptEl.type = 'application/ld+json';
         document.head.appendChild(scriptEl);
       }
-      const jsonString = JSON.stringify(resolved.structuredData);
+      const rawJsonString = JSON.stringify(resolved.structuredData);
+      const jsonString = isWwwHost
+        ? rawJsonString.replace(/https:\/\/predictpro\.guru/g, 'https://www.predictpro.guru')
+        : rawJsonString;
       if (scriptEl.textContent !== jsonString) {
         scriptEl.textContent = jsonString;
       }

@@ -328,7 +328,7 @@ export default function SEOIndexingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col text-foreground">
       <SEO
-        title="PredictPro SEO Command Center & Google Indexing Cron Dashboard"
+        title="PredictPro SEO Command Center & Indexing Monitor"
         description="Monitor automated cron jobs pushing live match predictions and league hubs to Google Indexing API and IndexNow for Top-5 search rankings."
         keywords="google indexing api, football predictions seo, automated sitemap cron, indexnow protocol, google search console top 5 ranking"
         canonical="/seo-indexing"

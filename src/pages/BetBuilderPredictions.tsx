@@ -46,7 +46,7 @@ export default function BetBuilderPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Bet Builder Predictions Today: Same-Game Parlay (SGP) AI Tips"
+        title="Bet Builder Predictions: Same-Game Parlay AI Tips"
         description="Free Football Bet Builder and Same-Game Parlay (SGP) predictions today. Positive-correlation 4-leg combos for Goals, Corners, Cards & Shots on Target."
         keywords="bet builder predictions today, same game parlay soccer tips, football bet builder tips, sgp predictions today, bet365 bet builder tips"
         canonical="/bet-builder-predictions"

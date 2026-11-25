@@ -515,7 +515,7 @@ export const SetPieceSpecialistsPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Set-Piece, Penalty Taker & Tactical Dead-Ball Intelligence Hub | PredictPro"
+        title="Penalty Takers, Free-Kick & Corner Threat Hub | PredictPro"
         description="Designated 1st & 2nd Penalty Takers, career conversion rates, Direct Free-Kick specialists, and Primary Corner Takers + Aerial Targets across European & African clubs."
         canonicalUrl="https://predictpro.guru/set-piece-specialists"
       />

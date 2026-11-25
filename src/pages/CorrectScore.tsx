@@ -134,7 +134,7 @@ export default function CorrectScore() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Guru Tips Correct Score Today: AI Score Predictions & Booking Codes"
+        title="Guru Tips Correct Score Today: AI Scores | PredictPro"
         description="Daily correct score guru tips today and exact scoreline predictions powered by Poisson probability matrices. High-odds 1-0, 2-1, and 1-1 football picks with 2-score Dutching insurance and booking codes."
         canonical="/correct-score"
         keywords="guru tips correct score today, correct score predictions today, exact score football tips, sportybet correct score booking code, scoreline predictions, correct score probabilities"

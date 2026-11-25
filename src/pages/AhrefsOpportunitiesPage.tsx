@@ -97,7 +97,7 @@ export default function AhrefsOpportunitiesPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       <SEO
-        title="Ahrefs 12-Pillar Organic Growth & AI Overviews Hub | PredictPro"
+        title="Ahrefs 12-Pillar Organic Search & Technical SEO Hub"
         description="Comprehensive search engine optimization command center covering all 12 Ahrefs Opportunity pillars across Content, Links, and Technical audit domains."
         canonical="/ahrefs-opportunities"
       />

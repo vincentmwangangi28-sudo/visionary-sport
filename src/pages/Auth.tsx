@@ -337,7 +337,7 @@ export default function Auth() {
 
   return (
     <main id="main-content" className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <SEO title="Sign In or Create Free Account | PredictPro" description="Sign in or create a free PredictPro account to access daily AI football predictions, banker picks, xG stats, and 50 welcome coins." canonical="/auth" />
+      <SEO title="Sign In or Create Account — PredictPro AI Football Hub" description="Sign in or create a free PredictPro account to access daily AI football predictions, banker picks, xG stats, and 50 welcome coins." canonical="/auth" />
       <div className="w-full max-w-md">
         {params.get('ref') && (
           <div className="mb-4 flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-2.5 text-sm">

@@ -154,7 +154,7 @@ export const CashOutEquityAuditorPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Cash-Out Equity Auditor & Live Hedge Optimizer | PredictPro"
+        title="Cash-Out Equity & Live Hedge Optimizer | PredictPro"
         description="Audit bookmaker Cash-Out offers on SportyBet, Betika, SportPesa, and 1xBet. Calculate true mathematical ticket equity, hidden margin haircuts, and DIY hedge stakes."
         keywords="cash out calculator, bookmaker cash out margin audit, live hedge optimizer, accumulator cash out vs hedge, sportybet cashout calculator"
         canonical="/cash-out-calculator"

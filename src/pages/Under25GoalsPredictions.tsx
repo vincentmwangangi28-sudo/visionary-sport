@@ -92,7 +92,7 @@ export default function Under25GoalsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Under 2.5 Goals Predictions Today: Low-Scoring AI Tips"
+        title="Under 2.5 Goals Predictions Today: Low-Scoring AI"
         description="Free Under 2.5 goals football predictions today. Backed by Zero-Inflated Poisson models, combined xG under 2.10 filters, and elite defensive xGA stats."
         keywords="under 2.5 goals predictions today, under 2.5 tips, low scoring football predictions, under 2.5 goals stats, defensive football betting tips"
         canonicalPath="/under-2-5-goals-predictions"

@@ -166,7 +166,7 @@ export const UniversalCodeConverterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Universal Booking Code Converter & Validator | SportyBet, Betika, Bet9ja, 1xBet | PredictPro"
+        title="Universal Bet Code Converter: SportyBet & Bet9ja"
         description="Convert football bet booking codes between SportyBet, Betika, SportPesa, Bet9ja, 1xBet, Betway, and MozzartBet with leg-by-leg market translation and EV drift validation."
         keywords="booking code converter, sportybet to betika converter, bet9ja to sportybet code converter, 1xbet booking code converter, free bet code translator"
         canonical="/code-converter"

@@ -492,9 +492,14 @@ export default function TeamAnalyticsHub() {
   }, [activeClub]);
 
   const canonicalPath = teamSlug ? `/teams/${activeClub.slug}` : '/teams';
+  const clubTitleWithBrand = `${activeClub.name} xG Stats & FDR | PredictPro`;
+  const clubTitle =
+    clubTitleWithBrand.length <= 60
+      ? clubTitleWithBrand
+      : `${activeClub.name} xG Stats & Poisson FDR`;
   const pageTitle = teamSlug
-    ? `${activeClub.name} xG Stats, Poisson Ratings & FDR Schedule | PredictPro`
-    : 'Club Expected Goals (xG) Analytics & Fixture Difficulty Hub | PredictPro';
+    ? clubTitle
+    : 'Club Expected Goals (xG) & FDR Hub | PredictPro';
   const pageDesc = teamSlug
     ? `${activeClub.name} (${activeClub.league}) quantitative profile: ${activeClub.xgFor90} xG/90, ${activeClub.xgAgainst90} xGA/90, ELO ${activeClub.elo}, Poisson ratings & 5-match FDR schedule.`
     : 'Explore club-by-club Expected Goals (xG), Bivariate Poisson attack and defense coefficients, ELO ratings, and 5-match Fixture Difficulty Ratings (FDR).';
@@ -502,8 +507,8 @@ export default function TeamAnalyticsHub() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title={pageTitle.length > 70 ? `${activeClub.name} xG Stats & FDR | PredictPro` : pageTitle}
-        description={pageDesc.slice(0, 158)}
+        title={pageTitle}
+        description={pageDesc.slice(0, 155)}
         canonical={canonicalPath}
         keywords={`${activeClub.name} xG stats, ${activeClub.name} fixture difficulty rating, ${activeClub.name} poisson rating, club football analytics`}
       />

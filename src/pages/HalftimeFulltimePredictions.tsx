@@ -47,7 +47,7 @@ export default function HalftimeFulltimePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="HT/FT Predictions Today: Half-Time/Full-Time (4.50+ Odds)"
+        title="HT/FT Predictions Today: Half-Time / Full-Time Picks"
         description="Daily Half-Time / Full-Time (HT/FT) football predictions. High-odds 1/1, X/1, X/2, and 2/2 score turnaround strategies backed by first-half Poisson pace."
         canonical="/halftime-fulltime-predictions"
         keywords="ht/ft predictions today, half time full time predictions, ht ft tips today, draw half time win full time, x/1 ht ft predictions, high odds ht ft"

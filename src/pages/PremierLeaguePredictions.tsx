@@ -30,7 +30,7 @@ export default function PremierLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="Premier League Score Predictor & EPL Predictions Today | PredictPro"
+        title="English Premier League (EPL) AI Predictions & xG Tips"
         description="Free Premier League predictions for today's matches. Expected goals (xG), H2H stats, and value bets for Arsenal, Man City, Liverpool, and Chelsea."
         canonical="/premier-league-predictions"
         keywords="barclays premier league score predictor, Premier League predictions today, EPL score predictor, Premier League tips today, Arsenal predictions, Man City tips, Liverpool predictions, Chelsea prediction"

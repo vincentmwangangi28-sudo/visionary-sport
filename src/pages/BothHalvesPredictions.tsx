@@ -46,7 +46,7 @@ export default function BothHalvesPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Score in Both Halves & Win Both Halves Predictions Today"
+        title="Score in Both Halves & Win Both Halves Predictions"
         description="Free Team to Score in Both Halves (SBH) and Win Both Halves (WBH) football predictions today. Unlock 2.00+ value on heavy home favorites."
         keywords="score in both halves predictions, win both halves tips today, team to score in both halves tips, both halves over 0.5 goals predictions"
         canonicalPath="/both-halves-predictions"

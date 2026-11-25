@@ -222,7 +222,7 @@ Powered by PredictPro AI Poisson Calculator: https://predictpro.guru/poisson-cal
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <SEO
-        title="Interactive Poisson & Exact Score Matrix Simulator (Forebet & Understat Style)"
+        title="Poisson Football Calculator & xG Score Simulator"
         description="Interactive Dixon-Coles bivariate Poisson football calculator. Simulate 6x6 exact score matrices, adjust Home/Away xG sliders, and add fair-odds picks directly to your Bet Slip."
         canonical="/poisson-calculator"
         keywords="poisson football calculator, exact score matrix simulator, expected goals calculator, dixon coles football model, fair odds calculator football"

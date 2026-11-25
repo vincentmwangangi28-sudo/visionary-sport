@@ -232,7 +232,7 @@ export const TacticalMismatchMatrixPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Tactical Style Mismatch, PPDA Press & Coaching DNA Matrix | PredictPro"
+        title="Tactical Style Mismatch, PPDA & Coaching DNA Matrix"
         description="Analyze football tactical mismatches: High-Line Possession vs Low-Block Counter, PPDA Gegenpressing intensity, and Wing-Cross Overloads for correlated Bet Builder picks."
         canonicalUrl="https://predictpro.guru/tactical-mismatch-matrix"
       />

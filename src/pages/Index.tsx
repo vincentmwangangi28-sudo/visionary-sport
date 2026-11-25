@@ -1,4 +1,4 @@
-import { Suspense, startTransition, useState } from 'react';
+import { Suspense, startTransition, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { GlobalMatchdayCommandRibbon } from '@/components/GlobalMatchdayCommandRibbon';
@@ -48,6 +48,63 @@ const PastResultsArchive = lazyWithRetry(() =>
 const LiveApiIntelligenceSuite = lazyWithRetry(() =>
   import('@/components/LiveApiIntelligenceSuite').then((m) => ({ default: m.LiveApiIntelligenceSuite }))
 );
+
+function DeferredSection({
+  children,
+  minHeightClass = 'min-h-[280px]',
+}: {
+  children: React.ReactNode;
+  minHeightClass?: string;
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(
+    () =>
+      import.meta.env.MODE === 'test' ||
+      (typeof navigator !== 'undefined' &&
+        /googlebot|ahrefsbot|bingbot|yandex|duckduckbot|slurp|applebot/i.test(
+          navigator.userAgent || ''
+        ))
+  );
+
+  useEffect(() => {
+    if (visible) return;
+    let settled = false;
+    const reveal = () => {
+      if (settled) return;
+      settled = true;
+      setVisible(true);
+    };
+
+    const observer =
+      typeof IntersectionObserver !== 'undefined' && hostRef.current
+        ? new IntersectionObserver(
+            (entries) => {
+              if (entries.some((e) => e.isIntersecting)) {
+                reveal();
+                observer?.disconnect();
+              }
+            },
+            { rootMargin: '240px 0px' }
+          )
+        : null;
+
+    if (observer && hostRef.current) {
+      observer.observe(hostRef.current);
+    }
+
+    const timer = window.setTimeout(reveal, 220);
+    return () => {
+      observer?.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [visible]);
+
+  return (
+    <div ref={hostRef} className={visible ? undefined : minHeightClass}>
+      {visible ? children : null}
+    </div>
+  );
+}
 
 const PRO_SPORTS_TOOLS = [
   {
@@ -412,9 +469,11 @@ const Index = () => {
             aria-label="Live API Football Intelligence, Player Props and Extended Markets"
             className="container mx-auto max-w-7xl px-4 sm:px-6 py-4"
           >
-            <Suspense fallback={<div className="min-h-[320px]" aria-hidden="true" />}>
-              <LiveApiIntelligenceSuite />
-            </Suspense>
+            <DeferredSection minHeightClass="min-h-[320px]">
+              <Suspense fallback={<div className="min-h-[320px]" aria-hidden="true" />}>
+                <LiveApiIntelligenceSuite />
+              </Suspense>
+            </DeferredSection>
           </section>
         )}
 
@@ -527,9 +586,11 @@ const Index = () => {
 
         {/* Contained FAQ Section */}
         <div className="cv-auto container mx-auto max-w-7xl px-4 sm:px-6">
-          <Suspense fallback={<div className="min-h-[240px]" aria-hidden="true" />}>
-            <FooterFAQ />
-          </Suspense>
+          <DeferredSection minHeightClass="min-h-[240px]">
+            <Suspense fallback={<div className="min-h-[240px]" aria-hidden="true" />}>
+              <FooterFAQ />
+            </Suspense>
+          </DeferredSection>
         </div>
       </main>
 

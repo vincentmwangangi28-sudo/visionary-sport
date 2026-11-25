@@ -380,7 +380,7 @@ export default function H2HComparisonPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="AI Football Head-to-Head (H2H) Comparison & Simulator | PredictPro"
+        title="Head-to-Head (H2H) Football Comparison & Poisson Tool"
         description="Compare any two football clubs head-to-head with Poisson scoreline simulations, comparative attack ratings, and value betting recommendations."
       />
       <Navbar />

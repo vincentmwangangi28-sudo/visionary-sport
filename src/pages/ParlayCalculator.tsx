@@ -78,7 +78,7 @@ export default function ParlayCalculator() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Parlay & Accumulator Odds Calculator: Multi-Bet Payout Tool"
+        title="Parlay & Accumulator Odds Calculator: Multi Payouts"
         description="Free Parlay and Football Accumulator (Acca) odds calculator. Add up to 15 legs to calculate combined decimal odds, true hit probability, and net profit."
         canonical="/parlay-calculator"
         keywords="parlay calculator, accumulator odds calculator, football acca calculator, multi bet payout calculator, parlay implied probability"

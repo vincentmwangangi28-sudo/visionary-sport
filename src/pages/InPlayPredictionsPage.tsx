@@ -347,7 +347,7 @@ export const InPlayPredictionsPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Live In-Play Football Predictions, Momentum & Next-Goal Alert Radar | PredictPro"
+        title="Live In-Play Football Predictions & Next-Goal Radar"
         description="Real-time Attacking Pressure Per Minute (APPM), live Expected Goals (xG) deficits, last-10-minute dangerous attacks, and Next-Goal Imminent alerts across European & African football."
         canonicalUrl="https://www.predictpro.guru/in-play-predictions"
       />

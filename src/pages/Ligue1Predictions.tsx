@@ -11,7 +11,7 @@ export default function Ligue1Predictions() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="French Ligue 1 Predictions: PSG, Marseille & xG Odds"
+        title="French Ligue 1 AI Predictions: PSG, Marseille & xG Odds"
         description="French Ligue 1 football predictions. Comprehensive Expected Goals (xG) projections, BTTS probabilities, and value betting tips for PSG, Marseille, and Monaco."
         canonical="/ligue-1-predictions"
         keywords="ligue 1 predictions today, french football tips, psg prediction, marseille odds, ligue 1 betting picks, monaco xg predictions"

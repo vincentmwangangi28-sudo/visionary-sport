@@ -310,7 +310,7 @@ export default function Standings() {
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <SEO
-        title="League Standings, Live In-Play & xPTS Tables | PredictPro"
+        title="Football League Standings, Form & xG Tables | PredictPro"
         description="Live football standings, Expected Points (xPTS) Justice Tables, xG differentials, and Home/Away splits for Premier League, La Liga, Bundesliga, UCL, and KPL."
         keywords="Premier League table 2026, xPTS expected points table, La Liga standings, Bundesliga table, Serie A standings, Champions League table, KPL standings"
       />

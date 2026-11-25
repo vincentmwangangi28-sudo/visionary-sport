@@ -117,7 +117,7 @@ export default function TomorrowPredictions() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Tomorrow's Football Predictions: Early AI Forecasts & xG Models"
+        title="Tomorrow's Football Predictions: Early AI xG Odds"
         description="Free AI football predictions for tomorrow's fixtures. Analyze early 1X2 consensus picks, Over 2.5 goals, BTTS probabilities, and xG projections."
         canonical="/tomorrow-predictions"
         keywords="football predictions for tomorrow, tomorrow soccer predictions, tomorrow betting tips, early football odds tomorrow, sure wins tomorrow, btts tomorrow, over 2.5 goals tomorrow"

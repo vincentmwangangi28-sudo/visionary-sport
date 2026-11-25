@@ -456,7 +456,7 @@ export default function RefereeStatsPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Referee Card Stats & Bookings Predictions Today: VAR Penalty Radar"
+        title="Referee Card Stats, VAR & Bookings Predictions Today"
         description="Free football referee card statistics, yellow/red cards per match, VAR penalty award rates, and Over 3.5 / 4.5 bookings predictions today."
         canonical="/referee-stats-predictions"
         keywords="referee card stats, football bookings predictions today, over 3.5 cards tips, referee var penalty stats, yellow cards predictions"

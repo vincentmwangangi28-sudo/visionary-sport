@@ -12,7 +12,7 @@ export default function CafChampionsLeaguePredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="CAF Champions League Predictions Today: Al Ahly, Sundowns & Esperance"
+        title="CAF Champions League Predictions: Al Ahly & Sundowns"
         description="Free CAF Champions League & Confederation Cup AI football predictions today. Group stage & knockout xG models for Al Ahly, Mamelodi Sundowns, Esperance, Simba SC, and Orlando Pirates."
         keywords="caf champions league predictions today, al ahly prediction, mamelodi sundowns prediction, caf confederation cup tips, african champions league odds"
         canonical="/caf-champions-league-predictions"

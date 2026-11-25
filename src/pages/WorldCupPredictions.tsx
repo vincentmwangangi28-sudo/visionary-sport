@@ -18,7 +18,7 @@ export default function WorldCupPredictions() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="FIFA World Cup 2026 Predictions: Qualifiers & Group Odds"
+        title="2026 FIFA World Cup AI Predictions & Tournament Odds"
         description="Mathematical simulations for the 48-team FIFA World Cup 2026 in North America. International Elo power ratings, qualifying tips, and trophy futures."
         canonical="/world-cup-predictions"
         keywords="fifa world cup 2026 predictions, world cup qualifiers tips, 48 team world cup simulator, international football predictions, world cup winner odds"

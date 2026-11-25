@@ -299,7 +299,7 @@ export default function Tipsters() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Verified Football Tipsters, 30-Day ROI Leaderboard & Community Tips | PredictPro"
+        title="Verified Football Tipsters & ROI Leaderboard | PredictPro"
         description="Follow verified high-ROI football tipsters, inspect 30-day yield curves and Closing Line Value (CLV) grades, unlock VIP slips with PredictPro Coins, and copy winning booking codes."
         keywords="verified football tipsters, tipster roi leaderboard, best football tipsters kenya nigeria, copy tipster booking codes, community football tips"
         canonical="/tipsters"

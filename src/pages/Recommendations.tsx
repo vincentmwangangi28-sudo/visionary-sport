@@ -175,7 +175,7 @@ export default function Recommendations() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="AI Recommended Football Predictions & Banker Tips | PredictPro"
+        title="Personalized AI Football Betting Recommendations"
         description="Daily algorithm-selected football betting recommendations: Banker of the day, Expected Value (+EV) picks, Goal machine picks, and smart accumulators."
         canonical="/recommendations"
         keywords="recommended football bets, banker of the day, safe football tips, value bets today, ai recommended predictions"

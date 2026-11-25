@@ -244,7 +244,7 @@ export const InPlayEdgeRadarPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="In-Play Live Edge & 75'+ Late-Goal Momentum Radar | PredictPro"
+        title="In-Play Momentum & Late-Goal Radar | Live xG Pressure"
         description="Real-time football in-play Expected Goals (xG) momentum scanner, 75'+ late-goal probability spikes, corner siege alerts, and fair next-goal odds calculator."
         canonical="/in-play-edge"
       />

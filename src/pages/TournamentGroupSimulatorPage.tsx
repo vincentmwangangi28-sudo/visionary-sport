@@ -172,7 +172,7 @@ export const TournamentGroupSimulatorPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Interactive Group-Stage & Knockout Tournament Predictor | PredictPro"
+        title="Monte Carlo Tournament Group Simulator | 10,000 Runs"
         description="Simulate AFCON, FIFA World Cup, and UEFA Champions League group stage standings, goal difference tie-breakers, and knockout bracket progression."
         canonical="/tournament-simulator"
       />

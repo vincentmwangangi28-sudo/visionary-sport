@@ -38,7 +38,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Contact Editorial & Technical Support Team | PredictPro"
+        title="Contact Us | PredictPro Football Analytics"
         description="Get in touch with PredictPro sports analysts, editorial desk, or technical support for inquiries, data partnerships, and feedback."
         canonical="/contact"
       />

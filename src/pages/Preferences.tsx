@@ -114,7 +114,7 @@ export default function Preferences() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Global Customization & Betting Profile Settings | PredictPro"
+        title="Prediction Preferences, Odds Format & Alert Settings"
         description="Configure your language, kickoff timezone, odds format, regional bookmaker, risk profile, and favorite leagues on PredictPro AI."
         canonical="/preferences"
       />

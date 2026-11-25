@@ -109,7 +109,7 @@ export const RolloverLadderSimulatorPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SEO
-        title="Compound Rollover & Profit-Skimming Ladder Simulator | PredictPro"
+        title="Compound Rollover & Profit-Skim Simulator | PredictPro"
         description="Interactive 3-Day, 7-Day & 10-Day compound football rollover planner with Partial Profit Skimming so you set aside realized surplus at every step to reduce drawdown variance."
         canonicalUrl="https://predictpro.guru/rollover-challenge"
       />

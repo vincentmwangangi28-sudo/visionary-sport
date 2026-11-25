@@ -27,7 +27,7 @@ export default function About() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="About PredictPro: Quantitative Sports Modeling & AI Science"
+        title="About PredictPro Quantitative Sports Analytics"
         description="Discover the Dixon-Coles Poisson distributions, machine learning pipelines, and sports analytics engineers powering PredictPro’s verified predictions."
         canonical="/about"
         keywords="about predictpro, ai sports prediction team, football analytics platform, expected goals modeling, quantitative sports science"

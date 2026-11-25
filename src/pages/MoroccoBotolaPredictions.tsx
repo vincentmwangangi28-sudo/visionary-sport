@@ -12,7 +12,7 @@ export default function MoroccoBotolaPredictions() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Morocco Botola Pro Predictions Today: Raja, Wydad & AS FAR Tips"
+        title="Morocco Botola Pro Predictions: Raja, Wydad & FAR"
         description="Free Morocco Botola Pro Inwi AI football predictions today. Expected Goals (xG), 1X2, BTTS, and Under 2.5 tips for Raja Casablanca, Wydad AC, AS FAR Rabat, and RS Berkane."
         keywords="morocco botola pro predictions, raja casablanca prediction today, wydad ac prediction, as far rabat tips, north africa football predictions"
         canonical="/morocco-botola-pro-predictions"

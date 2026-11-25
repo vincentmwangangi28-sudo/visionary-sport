@@ -9,7 +9,7 @@ export default function AdSensePolicyCheckerPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEO
-        title="Automated AdSense Policy Checker & Build Compliance Auditor | PredictPro"
+        title="AdSense Policy & Build Compliance Checker | PredictPro"
         description="Post-build and real-time Google AdSense Program Policy compliance checker auditing prohibited content, ad placements, and pop-up governance across PredictPro."
         canonical="/adsense-policy-checker"
         noIndex={true}
