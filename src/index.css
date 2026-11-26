@@ -171,12 +171,46 @@
   }
 }
 
+@keyframes goalScorePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1.045);
+    opacity: 0.96;
+  }
+}
+
+@keyframes goalScoreRing {
+  0% {
+    transform: scale(0.98);
+    opacity: 0.72;
+  }
+  70%,
+  100% {
+    transform: scale(1.16);
+    opacity: 0;
+  }
+}
+
 .animate-fade-in {
   opacity: 1;
 }
 
 .animate-card-reveal {
   opacity: 1;
+}
+
+.animate-goal-score-pulse {
+  animation: goalScorePulse 1.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.animate-goal-ring {
+  animation: goalScoreRing 1.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
 }
 
 .skeleton-shimmer {
@@ -203,6 +237,8 @@
   .hover-lift,
   .animate-fade-in,
   .animate-card-reveal,
+  .animate-goal-score-pulse,
+  .animate-goal-ring,
   .skeleton-shimmer {
     animation: none !important;
     transition: none !important;

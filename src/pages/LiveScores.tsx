@@ -44,6 +44,7 @@ import { InPlayXgMomentumEngine } from '@/components/InPlayXgMomentumEngine';
 import { LiveMatchCenterInspector, ComputedLiveStats } from '@/components/LiveMatchCenterInspector';
 import { playLiveEventChime } from '@/services/autoSettlementService';
 import { getMatchBroadcastInfo } from '@/services/liveBroadcastService';
+import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -112,6 +113,10 @@ export default function LiveScores() {
     }
   });
   const [recentGoalIds, setRecentGoalIds] = useState<Record<string, number>>({});
+  const [recentGoalSides, setRecentGoalSides] = useState<Record<string, 'home' | 'away' | 'both'>>({});
+  const [goalScoreOverrides, setGoalScoreOverrides] = useState<
+    Record<string, { home_score?: number; away_score?: number; minute?: string }>
+  >({});
   const [audioChimeEnabled, setAudioChimeEnabled] = useState<boolean>(true);
   const [voiceCommentaryEnabled, setVoiceCommentaryEnabled] = useState<boolean>(false);
   const [pushAlertsEnabled, setPushAlertsEnabled] = useState<boolean>(() => {
@@ -124,7 +129,7 @@ export default function LiveScores() {
   const { addSelection, isInSlip, setIsOpen: setSlipOpen } = useBetSlip();
 
   const {
-    liveFixtures: matches,
+    liveFixtures: rawMatches,
     isLiveLoading: loading,
     isLiveFetching,
     refetchLive: refresh,
@@ -135,6 +140,20 @@ export default function LiveScores() {
     leagueId: selectedLeague === 'all' ? undefined : selectedLeague,
     livePollInterval: 15_000,
   });
+
+  const matches = useMemo(() => {
+    if (Object.keys(goalScoreOverrides).length === 0) return rawMatches;
+    return rawMatches.map((m) => {
+      const ov = goalScoreOverrides[m.id];
+      if (!ov) return m;
+      return {
+        ...m,
+        home_score: ov.home_score ?? m.home_score,
+        away_score: ov.away_score ?? m.away_score,
+        minute: ov.minute ?? m.minute,
+      };
+    });
+  }, [rawMatches, goalScoreOverrides]);
 
   // Real-time 1-second match clock ticker (Sofascore / Flashscore standard)
   useEffect(() => {
@@ -421,28 +440,215 @@ export default function LiveScores() {
     [goalThreatOnly]
   );
 
-  // Real-Time Goal & Red Card Audio/Toast Alert Engine
+  // Real-Time Goal & Red Card Audio/Toast Alert Engine (Polling + WebSocket Realtime)
+  const GOAL_PULSE_TTL_MS = 12_000;
   const prevScoresMapRef = React.useRef<Record<string, number>>({});
+  const prevTeamScoresRef = React.useRef<Record<string, { home: number; away: number }>>({});
   const prevRedCardsMapRef = React.useRef<Record<string, number>>({});
+  const recentGoalDispatchGuardRef = React.useRef<Record<string, number>>({});
+  const matchesRef = React.useRef(matches);
+  matchesRef.current = matches;
+  const refreshRef = React.useRef(refresh);
+  refreshRef.current = refresh;
+  const alertPrefsRef = React.useRef({
+    audioChimeEnabled,
+    voiceCommentaryEnabled,
+    pushAlertsEnabled,
+  });
+  alertPrefsRef.current = { audioChimeEnabled, voiceCommentaryEnabled, pushAlertsEnabled };
+
+  const dispatchGoalVisualAndFeedback = React.useCallback(
+    (matchId: string, side: 'home' | 'away' | 'both', scoredMatchLabel: string) => {
+      const now = Date.now();
+      setRecentGoalIds((prev) => ({ ...prev, [matchId]: now }));
+      setRecentGoalSides((prev) => ({ ...prev, [matchId]: side }));
+
+      const guardKey = `${matchId}:${scoredMatchLabel}`;
+      const lastSent = recentGoalDispatchGuardRef.current[guardKey] || 0;
+      if (now - lastSent < 4000) return;
+      recentGoalDispatchGuardRef.current[guardKey] = now;
+
+      const prefs = alertPrefsRef.current;
+      if (prefs.audioChimeEnabled) {
+        playLiveEventChime('goal');
+      }
+      if (prefs.voiceCommentaryEnabled) {
+        speakMatchCommentary({
+          matchLabel: scoredMatchLabel,
+          minute: 'LIVE',
+          category: 'goal',
+          text: `Goal Alert! ${scoredMatchLabel}`,
+        });
+      }
+      if (prefs.pushAlertsEnabled) {
+        dispatchGoalOrSettlementPush({
+          title: 'PredictPro Live Goal Alert',
+          body: scoredMatchLabel,
+        });
+      }
+      toast.success(`GOAL ALERT: ${scoredMatchLabel}`);
+    },
+    []
+  );
+
+  // Auto-expire active goal pulse highlights after 12 seconds so scores settle cleanly
+  useEffect(() => {
+    const activeIds = Object.keys(recentGoalIds);
+    if (activeIds.length === 0) return;
+    const timer = setInterval(() => {
+      const cutoff = Date.now() - GOAL_PULSE_TTL_MS;
+      setRecentGoalIds((prev) => {
+        let changed = false;
+        const next: Record<string, number> = {};
+        for (const [id, ts] of Object.entries(prev)) {
+          if (ts > cutoff) {
+            next[id] = ts;
+          } else {
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [recentGoalIds]);
+
+  // WebSocket Realtime channel for instant goal alerts
+  useEffect(() => {
+    const channel = supabase.channel('live-scores-goal-alerts');
+    channel
+      .on('broadcast', { event: 'goal_alert' }, (msg: any) => {
+        const payload = msg?.payload ?? msg ?? {};
+        const currentMatches = matchesRef.current || [];
+        const matched = currentMatches.find((m) => {
+          if (payload.matchId && String(m.id) === String(payload.matchId)) return true;
+          if (payload.homeTeam && payload.awayTeam) {
+            return (
+              m.home_team.toLowerCase() === String(payload.homeTeam).toLowerCase() &&
+              m.away_team.toLowerCase() === String(payload.awayTeam).toLowerCase()
+            );
+          }
+          return false;
+        });
+
+        const targetId = matched ? String(matched.id) : payload.matchId ? String(payload.matchId) : '';
+        if (!targetId) return;
+
+        const nextHome =
+          typeof payload.homeScore === 'number' ? payload.homeScore : matched?.home_score ?? 0;
+        const nextAway =
+          typeof payload.awayScore === 'number' ? payload.awayScore : matched?.away_score ?? 0;
+
+        let side: 'home' | 'away' | 'both' =
+          payload.scoringSide === 'home' || payload.scoringSide === 'away'
+            ? payload.scoringSide
+            : 'both';
+        if (side === 'both' && matched) {
+          const prevHome = matched.home_score ?? 0;
+          const prevAway = matched.away_score ?? 0;
+          if (nextHome > prevHome && nextAway === prevAway) side = 'home';
+          else if (nextAway > prevAway && nextHome === prevHome) side = 'away';
+        }
+
+        if (typeof payload.homeScore === 'number' || typeof payload.awayScore === 'number') {
+          setGoalScoreOverrides((prev) => ({
+            ...prev,
+            [targetId]: {
+              home_score: nextHome,
+              away_score: nextAway,
+              minute: payload.minute ? String(payload.minute) : prev[targetId]?.minute,
+            },
+          }));
+          prevScoresMapRef.current[targetId] = nextHome + nextAway;
+          prevTeamScoresRef.current[targetId] = { home: nextHome, away: nextAway };
+        }
+
+        const homeName = matched?.home_team || payload.homeTeam || 'Home';
+        const awayName = matched?.away_team || payload.awayTeam || 'Away';
+        const scorerMeta =
+          payload.minute || payload.scorer
+            ? ` (${[payload.minute, payload.scorer].filter(Boolean).join(' ')})`
+            : '';
+        const label = `${homeName} ${nextHome} - ${nextAway} ${awayName}${scorerMeta}`;
+
+        dispatchGoalVisualAndFeedback(targetId, side, label);
+      })
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'predictions' },
+        (payload: any) => {
+          const row = payload?.new;
+          if (!row) return;
+          const currentMatches = matchesRef.current || [];
+          const matched = currentMatches.find(
+            (m) =>
+              String(m.id) === String(row.id) ||
+              (row.home_team &&
+                row.away_team &&
+                m.home_team.toLowerCase() === String(row.home_team).toLowerCase() &&
+                m.away_team.toLowerCase() === String(row.away_team).toLowerCase())
+          );
+          if (matched && (typeof row.home_score === 'number' || typeof row.away_score === 'number')) {
+            const nextH = row.home_score ?? matched.home_score ?? 0;
+            const nextA = row.away_score ?? matched.away_score ?? 0;
+            const prevSum = (matched.home_score ?? 0) + (matched.away_score ?? 0);
+            if (nextH + nextA > prevSum) {
+              const side =
+                nextH > (matched.home_score ?? 0) && nextA === (matched.away_score ?? 0)
+                  ? 'home'
+                  : nextA > (matched.away_score ?? 0) && nextH === (matched.home_score ?? 0)
+                  ? 'away'
+                  : 'both';
+              setGoalScoreOverrides((prev) => ({
+                ...prev,
+                [matched.id]: { home_score: nextH, away_score: nextA },
+              }));
+              prevScoresMapRef.current[matched.id] = nextH + nextA;
+              prevTeamScoresRef.current[matched.id] = { home: nextH, away: nextA };
+              dispatchGoalVisualAndFeedback(
+                String(matched.id),
+                side,
+                `${matched.home_team} ${nextH} - ${nextA} ${matched.away_team}`
+              );
+              refreshRef.current?.();
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [dispatchGoalVisualAndFeedback]);
+
   useEffect(() => {
     if (matches && matches.length > 0) {
-      const newlyScored: Record<string, number> = {};
-      let scoredMatchLabel = '';
       let redCardLabel = '';
 
       for (const m of matches) {
-        const sum = (m.home_score || 0) + (m.away_score || 0);
+        const h = m.home_score || 0;
+        const a = m.away_score || 0;
+        const sum = h + a;
         const prev = prevScoresMapRef.current[m.id];
+        const prevTeam = prevTeamScoresRef.current[m.id];
         if (prev !== undefined && sum > prev) {
-          newlyScored[m.id] = Date.now();
+          const side: 'home' | 'away' | 'both' =
+            prevTeam && h > prevTeam.home && a === prevTeam.away
+              ? 'home'
+              : prevTeam && a > prevTeam.away && h === prevTeam.home
+              ? 'away'
+              : 'both';
           const latestGoalEv = (m.match_events || [])
             .filter((e) => e.type === 'goal' || e.type === 'penalty' || e.type === 'own_goal')
             .slice(-1)[0];
-          scoredMatchLabel = latestGoalEv
+          const scoredMatchLabel = latestGoalEv
             ? `${m.home_team} ${m.home_score ?? 0} - ${m.away_score ?? 0} ${m.away_team} (${latestGoalEv.minute} ${latestGoalEv.player || ''})`
             : `${m.home_team} ${m.home_score ?? 0} - ${m.away_score ?? 0} ${m.away_team}`;
+          dispatchGoalVisualAndFeedback(String(m.id), side, scoredMatchLabel);
         }
         prevScoresMapRef.current[m.id] = sum;
+        prevTeamScoresRef.current[m.id] = { home: h, away: a };
 
         const redCount = (m.match_events || []).filter((e) => e.type === 'red_card').length;
         const prevRed = prevRedCardsMapRef.current[m.id];
@@ -451,28 +657,6 @@ export default function LiveScores() {
           redCardLabel = `${m.home_team} vs ${m.away_team} (${latestRedEv?.minute || ''} ${latestRedEv?.player || 'Red Card'})`;
         }
         prevRedCardsMapRef.current[m.id] = redCount;
-      }
-
-      if (Object.keys(newlyScored).length > 0) {
-        setRecentGoalIds((prev) => ({ ...prev, ...newlyScored }));
-        if (audioChimeEnabled) {
-          playLiveEventChime('goal');
-        }
-        if (voiceCommentaryEnabled) {
-          speakMatchCommentary({
-            matchLabel: scoredMatchLabel,
-            minute: 'LIVE',
-            category: 'goal',
-            text: `Goal Alert! ${scoredMatchLabel}`,
-          });
-        }
-        if (pushAlertsEnabled) {
-          dispatchGoalOrSettlementPush({
-            title: 'PredictPro Live Goal Alert',
-            body: scoredMatchLabel,
-          });
-        }
-        toast.success(`GOAL ALERT: ${scoredMatchLabel}`);
       }
 
       if (redCardLabel) {
@@ -496,7 +680,7 @@ export default function LiveScores() {
         toast.error(`RED CARD ALERT: ${redCardLabel}`);
       }
     }
-  }, [matches, audioChimeEnabled, voiceCommentaryEnabled, pushAlertsEnabled]);
+  }, [matches, audioChimeEnabled, voiceCommentaryEnabled, pushAlertsEnabled, dispatchGoalVisualAndFeedback]);
 
   // Filter matches based on league, status tab, date offset, goal threat radar, free stream filter, and search query
   const filteredMatches = useMemo(() => {
@@ -967,6 +1151,7 @@ export default function LiveScores() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {pinnedMatchesList.map((pm) => {
                 const pStats = getMatchStats(pm);
+                const pmHasGoal = Boolean(recentGoalIds[pm.id]);
                 return (
                   <div
                     key={pm.id}
@@ -974,16 +1159,36 @@ export default function LiveScores() {
                       setSelectedMatchId(String(pm.id));
                       setExpandedId(expandedId === pm.id ? null : pm.id);
                     }}
-                    className="p-2.5 rounded-lg border border-border/80 bg-card hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between gap-2"
+                    className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                      pmHasGoal
+                        ? 'border-emerald-500/60 bg-emerald-500/10'
+                        : 'border-border/80 bg-card hover:border-primary/40'
+                    }`}
                   >
                     <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="truncate">{pm.home_team}</span>
-                        <span className="font-mono font-black">{pm.home_score ?? 0}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="truncate">{pm.away_team}</span>
-                        <span className="font-mono font-black">{pm.away_score ?? 0}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="text-xs font-bold truncate">{pm.home_team}</div>
+                          <div className="text-xs font-bold truncate">{pm.away_team}</div>
+                        </div>
+                        <div
+                          data-testid={`pinned-live-score-container-${pm.id}`}
+                          data-goal-alert={pmHasGoal ? 'true' : 'false'}
+                          className={`relative flex flex-col items-center justify-between px-2 py-0.5 rounded-md border font-mono text-xs font-black tabular-nums shrink-0 ${
+                            pmHasGoal
+                              ? 'border-emerald-500/70 bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 animate-goal-score-pulse'
+                              : 'border-border/60 bg-muted/30 text-foreground'
+                          }`}
+                        >
+                          {pmHasGoal && (
+                            <span
+                              aria-hidden="true"
+                              className="pointer-events-none absolute inset-0 rounded-md border border-emerald-400/70 animate-goal-ring"
+                            />
+                          )}
+                          <span>{pm.home_score ?? 0}</span>
+                          <span>{pm.away_score ?? 0}</span>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
                         <span className="font-mono text-emerald-600 dark:text-emerald-400">
@@ -1156,6 +1361,8 @@ export default function LiveScores() {
                     stats={st}
                     liveTickSeconds={liveTickSeconds}
                     isPinned={pinnedIds.includes(m.id)}
+                    hasRecentGoal={Boolean(recentGoalIds[m.id])}
+                    recentGoalSide={recentGoalSides[m.id]}
                     onTogglePin={() => togglePinMatch(m.id, `${m.home_team} vs ${m.away_team}`)}
                     onOpenWatchModal={() => handleOpenWatchModal(m)}
                     onOpenAiPulse={() => handleOpenInPlayPulse(m)}
@@ -1264,6 +1471,7 @@ export default function LiveScores() {
                               const isInspected = activeInspectedMatch?.id === m.id;
                               const isPinned = pinnedIds.includes(m.id);
                               const hasRecentGoal = Boolean(recentGoalIds[m.id]);
+                              const recentGoalSide = recentGoalSides[m.id];
                               const stats = getMatchStats(m);
                               const broadcastInfo = getMatchBroadcastInfo({
                                 matchId: String(m.id),
@@ -1343,67 +1551,101 @@ export default function LiveScores() {
                                         )}
                                       </div>
 
-                                      {/* Teams + Red Card Badges + Live xG + Score */}
+                                      {/* Teams + Red Card Badges + Live xG + Live Score Container */}
                                       <div className="flex-1 min-w-0 space-y-1">
-                                        {/* Home Row */}
-                                        <div className="flex items-center justify-between gap-2">
-                                          <div className="flex items-center gap-1.5 min-w-0">
-                                            <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="xs" />
-                                            <span
-                                              className={`text-xs sm:text-sm font-bold truncate ${
-                                                (m.home_score ?? 0) > (m.away_score ?? 0)
-                                                  ? 'text-foreground font-black'
-                                                  : 'text-foreground/90'
-                                              }`}
-                                            >
-                                              {m.home_team}
-                                            </span>
-                                            {homeRedCards > 0 && (
-                                              <span
-                                                className="px-1 py-0.2 rounded bg-rose-600 text-white text-[9px] font-mono font-black"
-                                                title={`${homeRedCards} Red Card`}
-                                              >
-                                                {homeRedCards}
+                                        <div className="flex items-stretch justify-between gap-2">
+                                          <div className="flex-1 min-w-0 space-y-1">
+                                            {/* Home Row */}
+                                            <div className="flex items-center justify-between gap-2">
+                                              <div className="flex items-center gap-1.5 min-w-0">
+                                                <TeamLogo team={m.home_team} logoUrl={m.home_logo} size="xs" />
+                                                <span
+                                                  className={`text-xs sm:text-sm font-bold truncate ${
+                                                    (m.home_score ?? 0) > (m.away_score ?? 0)
+                                                      ? 'text-foreground font-black'
+                                                      : 'text-foreground/90'
+                                                  }`}
+                                                >
+                                                  {m.home_team}
+                                                </span>
+                                                {homeRedCards > 0 && (
+                                                  <span
+                                                    className="px-1 py-0.2 rounded bg-rose-600 text-white text-[9px] font-mono font-black"
+                                                    title={`${homeRedCards} Red Card`}
+                                                  >
+                                                    {homeRedCards}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 hidden sm:inline shrink-0">
+                                                {stats.homeXG.toFixed(2)} xG
                                               </span>
-                                            )}
+                                            </div>
+
+                                            {/* Away Row */}
+                                            <div className="flex items-center justify-between gap-2">
+                                              <div className="flex items-center gap-1.5 min-w-0">
+                                                <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="xs" />
+                                                <span
+                                                  className={`text-xs sm:text-sm font-bold truncate ${
+                                                    (m.away_score ?? 0) > (m.home_score ?? 0)
+                                                      ? 'text-foreground font-black'
+                                                      : 'text-foreground/90'
+                                                  }`}
+                                                >
+                                                  {m.away_team}
+                                                </span>
+                                                {awayRedCards > 0 && (
+                                                  <span
+                                                    className="px-1 py-0.2 rounded bg-rose-600 text-white text-[9px] font-mono font-black"
+                                                    title={`${awayRedCards} Red Card`}
+                                                  >
+                                                    {awayRedCards}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 hidden sm:inline shrink-0">
+                                                {stats.awayXG.toFixed(2)} xG
+                                              </span>
+                                            </div>
                                           </div>
-                                          <div className="flex items-center gap-1.5 shrink-0">
-                                            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 hidden sm:inline">
-                                              {stats.homeXG.toFixed(2)} xG
-                                            </span>
-                                            <span className="font-mono text-sm font-black px-1 tabular-nums text-foreground">
+
+                                          {/* Live Score Container (Pulses subtly when WebSocket goal alert arrives) */}
+                                          <div
+                                            data-testid={`live-score-container-${m.id}`}
+                                            data-goal-alert={hasRecentGoal ? 'true' : 'false'}
+                                            className={`relative flex flex-col justify-between items-center min-w-[2.25rem] px-2 py-0.5 rounded-lg border font-mono text-sm font-black tabular-nums transition-colors shrink-0 ${
+                                              hasRecentGoal
+                                                ? 'border-emerald-500/70 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 animate-goal-score-pulse'
+                                                : isLive
+                                                ? 'border-rose-500/25 bg-rose-500/5 text-foreground'
+                                                : 'border-border/60 bg-muted/30 text-foreground'
+                                            }`}
+                                          >
+                                            {hasRecentGoal && (
+                                              <span
+                                                aria-hidden="true"
+                                                className="pointer-events-none absolute inset-0 rounded-lg border border-emerald-400/70 animate-goal-ring"
+                                              />
+                                            )}
+                                            <span
+                                              className={
+                                                hasRecentGoal &&
+                                                (recentGoalSide === 'home' || recentGoalSide === 'both')
+                                                  ? 'text-emerald-600 dark:text-emerald-300'
+                                                  : ''
+                                              }
+                                            >
                                               {m.home_score ?? (isFinished || isLive ? 0 : '-')}
                                             </span>
-                                          </div>
-                                        </div>
-
-                                        {/* Away Row */}
-                                        <div className="flex items-center justify-between gap-2">
-                                          <div className="flex items-center gap-1.5 min-w-0">
-                                            <TeamLogo team={m.away_team} logoUrl={m.away_logo} size="xs" />
                                             <span
-                                              className={`text-xs sm:text-sm font-bold truncate ${
-                                                (m.away_score ?? 0) > (m.home_score ?? 0)
-                                                  ? 'text-foreground font-black'
-                                                  : 'text-foreground/90'
-                                              }`}
+                                              className={
+                                                hasRecentGoal &&
+                                                (recentGoalSide === 'away' || recentGoalSide === 'both')
+                                                  ? 'text-emerald-600 dark:text-emerald-300'
+                                                  : ''
+                                              }
                                             >
-                                              {m.away_team}
-                                            </span>
-                                            {awayRedCards > 0 && (
-                                              <span
-                                                className="px-1 py-0.2 rounded bg-rose-600 text-white text-[9px] font-mono font-black"
-                                                title={`${awayRedCards} Red Card`}
-                                              >
-                                                {awayRedCards}
-                                              </span>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-1.5 shrink-0">
-                                            <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 hidden sm:inline">
-                                              {stats.awayXG.toFixed(2)} xG
-                                            </span>
-                                            <span className="font-mono text-sm font-black px-1 tabular-nums text-foreground">
                                               {m.away_score ?? (isFinished || isLive ? 0 : '-')}
                                             </span>
                                           </div>
@@ -1511,6 +1753,8 @@ export default function LiveScores() {
                                         stats={stats}
                                         liveTickSeconds={liveTickSeconds}
                                         isPinned={isPinned}
+                                        hasRecentGoal={hasRecentGoal}
+                                        recentGoalSide={recentGoalSide}
                                         onTogglePin={() => togglePinMatch(m.id, `${m.home_team} vs ${m.away_team}`)}
                                         onOpenWatchModal={() => handleOpenWatchModal(m)}
                                         onOpenAiPulse={() => handleOpenInPlayPulse(m)}
@@ -1556,6 +1800,8 @@ export default function LiveScores() {
                   stats={getMatchStats(activeInspectedMatch)}
                   liveTickSeconds={liveTickSeconds}
                   isPinned={pinnedIds.includes(activeInspectedMatch.id)}
+                  hasRecentGoal={Boolean(recentGoalIds[activeInspectedMatch.id])}
+                  recentGoalSide={recentGoalSides[activeInspectedMatch.id]}
                   onTogglePin={() =>
                     togglePinMatch(
                       activeInspectedMatch.id,

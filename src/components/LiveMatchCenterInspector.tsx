@@ -377,6 +377,8 @@ interface LiveMatchCenterInspectorProps {
   stats: ComputedLiveStats;
   liveTickSeconds: number;
   isPinned: boolean;
+  hasRecentGoal?: boolean;
+  recentGoalSide?: 'home' | 'away' | 'both';
   onTogglePin: () => void;
   onOpenWatchModal: () => void;
   onOpenAiPulse: () => void;
@@ -388,6 +390,8 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
   stats,
   liveTickSeconds,
   isPinned,
+  hasRecentGoal = false,
+  recentGoalSide,
   onTogglePin,
   onOpenWatchModal,
   onOpenAiPulse,
@@ -682,16 +686,40 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
             </div>
           </div>
 
-          {/* Score Pill & HT Score */}
+          {/* Score Container & HT Score */}
           <div className="col-span-3 flex flex-col items-center justify-center">
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/80 font-mono text-2xl sm:text-3xl font-black tracking-tight tabular-nums text-white shadow-inner">
-              {match.home_score ?? 0} <span className="text-slate-500">:</span> {match.away_score ?? 0}
+            <div
+              data-testid="inspector-live-score-container"
+              data-goal-alert={hasRecentGoal ? 'true' : 'false'}
+              className={`relative px-3 py-1.5 rounded-xl border font-mono text-2xl sm:text-3xl font-black tracking-tight tabular-nums shadow-inner transition-colors ${
+                hasRecentGoal
+                  ? 'bg-emerald-950/90 border-emerald-400/80 text-emerald-200 animate-goal-score-pulse'
+                  : 'bg-slate-900/95 border-slate-700/80 text-white'
+              }`}
+            >
+              {hasRecentGoal && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 rounded-xl border border-emerald-400/75 animate-goal-ring"
+                />
+              )}
+              <span className={recentGoalSide === 'home' || recentGoalSide === 'both' ? 'text-emerald-300' : ''}>
+                {match.home_score ?? 0}
+              </span>{' '}
+              <span className="text-slate-500">:</span>{' '}
+              <span className={recentGoalSide === 'away' || recentGoalSide === 'both' ? 'text-emerald-300' : ''}>
+                {match.away_score ?? 0}
+              </span>
             </div>
-            {(isLive || isFinished) && (
+            {hasRecentGoal ? (
+              <span className="mt-1 text-[10px] font-mono font-bold tracking-wider uppercase text-emerald-400">
+                Goal Alert
+              </span>
+            ) : (isLive || isFinished) ? (
               <span className="mt-1 text-[10px] font-mono text-slate-400">
                 (HT {htScore})
               </span>
-            )}
+            ) : null}
           </div>
 
           {/* Away Club */}
