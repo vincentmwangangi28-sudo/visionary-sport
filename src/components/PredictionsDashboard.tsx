@@ -110,21 +110,25 @@ export const PredictionsDashboard = ({
   >({});
 
   useEffect(() => {
-    if (
-      typeof window !== 'undefined' &&
-      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
-    ) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       return;
     }
     let cancelled = false;
-    let triggered = false;
     const loadLiveOverlay = async () => {
-      if (triggered || cancelled) return;
-      triggered = true;
       try {
-        const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
-        if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) return;
-        const json = await r.json();
+        let json: any = null;
+        try {
+          const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
+          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
+            json = await r.json();
+          }
+        } catch {
+          // Fall back to direct handler on static hosts
+        }
+        if (json?.offline || !Array.isArray(json?.matches) || json.matches.length === 0) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          json = await handleFootballRequest({ type: 'live' });
+        }
         if (cancelled || !Array.isArray(json?.matches)) return;
         const map: typeof liveScoreMap = {};
         for (const m of json.matches) {
@@ -145,32 +149,34 @@ export const PredictionsDashboard = ({
         // silent fallback
       }
     };
-    window.addEventListener('scroll', loadLiveOverlay, { passive: true, once: true });
-    window.addEventListener('pointerdown', loadLiveOverlay, { passive: true, once: true });
-    window.addEventListener('touchstart', loadLiveOverlay, { passive: true, once: true });
-    window.addEventListener('keydown', loadLiveOverlay, { passive: true, once: true });
+    loadLiveOverlay();
     return () => {
       cancelled = true;
-      window.removeEventListener('scroll', loadLiveOverlay);
-      window.removeEventListener('pointerdown', loadLiveOverlay);
-      window.removeEventListener('touchstart', loadLiveOverlay);
-      window.removeEventListener('keydown', loadLiveOverlay);
     };
   }, []);
 
   useEffect(() => {
-    if (
-      typeof window !== 'undefined' &&
-      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
-    ) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       return;
     }
     let cancelled = false;
     const loadStandings = async () => {
       try {
-        const r = await fetch(`/api/football?type=standings&league=${standingsTab}`);
-        if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) return;
-        const json = await r.json();
+        let json: any = null;
+        try {
+          const r = await fetch(`/api/football?type=standings&league=${standingsTab}`, {
+            headers: { Accept: 'application/json' },
+          });
+          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
+            json = await r.json();
+          }
+        } catch {
+          // Fall back to direct handler on static hosts
+        }
+        if (json?.offline || !Array.isArray(json?.standings) || json.standings.length === 0) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          json = await handleFootballRequest({ type: 'standings', league: standingsTab });
+        }
         if (cancelled || !Array.isArray(json?.standings) || json.standings.length === 0) return;
         setLiveStandingsMap((prev) => ({
           ...prev,
@@ -900,25 +906,46 @@ export const PredictionsDashboard = ({
         {filteredPredictions.length === 0 ? (
           <div className="text-center py-14 space-y-3 bg-card rounded-xl border border-border p-8">
             <p className="font-semibold text-sm text-foreground">
-              No fixtures match your current filter
+              {allUpcomingPool.length === 0
+                ? 'Syncing live fixtures...'
+                : dateFilter === 'today' && !searchQuery && !league && dateCounts.today === 0
+                ? 'Today’s match slate has kicked off — upcoming fixtures are ready'
+                : 'No fixtures match your current filter'}
             </p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              Switch to All Dates or select All Competitions to view upcoming fixtures.
+              {allUpcomingPool.length === 0
+                ? 'Refresh to pull the latest global matchday slate.'
+                : `View all ${allUpcomingPool.length} upcoming fixtures across Tomorrow & Weekend slates.`}
             </p>
-            <Button
-              onClick={() => {
-                setLeague(undefined);
-                setDateFilter('all');
-                setQuickFilter('all');
-                setSearchQuery('');
-                setPage(1);
-              }}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              Reset Filters
-            </Button>
+            <div className="flex items-center justify-center gap-2">
+              {allUpcomingPool.length === 0 ? (
+                <Button
+                  onClick={() => refetch()}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                  Refresh Fixtures
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setLeague(undefined);
+                    setDateFilter('all');
+                    setQuickFilter('all');
+                    setRiskProfile('balanced');
+                    setSearchQuery('');
+                    setPage(1);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  {dateFilter !== 'all' ? `Show All Upcoming (${allUpcomingPool.length})` : 'Reset Filters'}
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="space-y-4">

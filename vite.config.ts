@@ -64,30 +64,28 @@ function geminiTasksPlugin(): Plugin {
 }
 
 function cronTasksPlugin(): Plugin {
-  return {
-    name: "cron-tasks-api",
-    configureServer(server) {
-      // Pre-warm critical Lighthouse / Agentic Browsing files into RAM for sub-millisecond response
-      getCachedPublicFile("robots.txt", "text/plain; charset=utf-8");
-      getCachedPublicFile("llms.txt", "text/plain; charset=utf-8");
-      getCachedPublicFile("llms-full.txt", "text/plain; charset=utf-8");
-      getCachedPublicFile(".well-known/ard.json", "application/json; charset=utf-8");
-      getCachedPublicFile(".well-known/ai-catalog.json", "application/json; charset=utf-8");
-      getCachedPublicFile(".well-known/api-catalog", "application/linkset+json; charset=utf-8");
-      getCachedPublicFile(".well-known/mcp/server-card.json", "application/json; charset=utf-8");
-      getCachedPublicFile(".well-known/agent-card.json", "application/json; charset=utf-8");
-      getCachedPublicFile(".well-known/agent-skills/index.json", "application/json; charset=utf-8");
+  const registerMiddlewares = (middlewares: any) => {
+    // Pre-warm critical Lighthouse / Agentic Browsing files into RAM for sub-millisecond response
+    getCachedPublicFile("robots.txt", "text/plain; charset=utf-8");
+    getCachedPublicFile("llms.txt", "text/plain; charset=utf-8");
+    getCachedPublicFile("llms-full.txt", "text/plain; charset=utf-8");
+    getCachedPublicFile(".well-known/ard.json", "application/json; charset=utf-8");
+    getCachedPublicFile(".well-known/ai-catalog.json", "application/json; charset=utf-8");
+    getCachedPublicFile(".well-known/api-catalog", "application/linkset+json; charset=utf-8");
+    getCachedPublicFile(".well-known/mcp/server-card.json", "application/json; charset=utf-8");
+    getCachedPublicFile(".well-known/agent-card.json", "application/json; charset=utf-8");
+    getCachedPublicFile(".well-known/agent-skills/index.json", "application/json; charset=utf-8");
 
-      // Auto-start autonomous server-side cron scheduler on boot
-      import("./src/server/cronScheduler.ts")
-        .then(({ startAutonomousScheduler }) => {
-          startAutonomousScheduler();
-        })
-        .catch(() => {});
+    // Auto-start autonomous server-side cron scheduler on boot
+    import("./src/server/cronScheduler.ts")
+      .then(({ startAutonomousScheduler }) => {
+        startAutonomousScheduler();
+      })
+      .catch(() => {});
 
-      server.middlewares.use(async (req, res, next) => {
-        res.setHeader("X-Content-Type-Options", "nosniff");
-        res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    middlewares.use(async (req: any, res: any, next: any) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
         res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
         res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
         res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
@@ -686,6 +684,15 @@ function cronTasksPlugin(): Plugin {
         }
         next();
       });
+  };
+
+  return {
+    name: "cron-tasks-api",
+    configureServer(server) {
+      registerMiddlewares(server.middlewares);
+    },
+    configurePreviewServer(server) {
+      registerMiddlewares(server.middlewares);
     },
     transformIndexHtml: {
       order: "pre",

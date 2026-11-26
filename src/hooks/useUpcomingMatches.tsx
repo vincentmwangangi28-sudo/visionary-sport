@@ -139,7 +139,10 @@ export const useUpcomingMatches = () => {
           // Static host — use direct handleFootballRequest below
         }
 
-        if (!json) {
+        const serverFixtures = Array.isArray(json?.fixtures) ? (json.fixtures as Prediction[]) : [];
+        const hasUpcoming = !json?.offline && serverFixtures.some((f) => f && !isPlayedOrPastMatch(f));
+
+        if (!hasUpcoming) {
           const { handleFootballRequest } = await import('@/server/footballHandler');
           json = await handleFootballRequest({ type: 'upcoming' });
         }
@@ -163,7 +166,17 @@ export const useUpcomingMatches = () => {
         }
       }
 
-      const sanitized = deduplicateUpcomingMatches(combined);
+      let sanitized = deduplicateUpcomingMatches(combined);
+      if (sanitized.length === 0) {
+        const saved = getSavedPredictionsList().filter(
+          (p) => (p.is_realtime || String(p.id).startsWith('espn-real-') || String(p.id).startsWith('real-match-')) && !isPlayedOrPastMatch(p)
+        );
+        const savedList = saved
+          .map((p) => toUpcomingMatch(p, true))
+          .filter((m): m is UpcomingMatch => m !== null);
+        sanitized = deduplicateUpcomingMatches(savedList);
+      }
+
       setMatches(sanitized);
       setIsRealTime(true);
     } catch (e) {

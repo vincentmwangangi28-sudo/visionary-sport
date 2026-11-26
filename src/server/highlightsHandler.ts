@@ -51,11 +51,12 @@ export async function handleHighlightsRequest(forceRefresh: boolean = false): Pr
   const items: ServerHighlightItem[] = [];
 
   // Check if RapidAPI / API-Football key is available in process.env
+  const envObj = typeof process !== 'undefined' && process.env ? process.env : {};
   const apiKey =
-    process.env.API_FOOTBALL_KEY ||
-    process.env.VITE_API_FOOTBALL_KEY ||
-    process.env.RAPIDAPI_KEY ||
-    process.env.VITE_RAPIDAPI_KEY ||
+    envObj.API_FOOTBALL_KEY ||
+    envObj.VITE_API_FOOTBALL_KEY ||
+    envObj.RAPIDAPI_KEY ||
+    envObj.VITE_RAPIDAPI_KEY ||
     '';
 
   if (apiKey) {

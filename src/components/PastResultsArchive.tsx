@@ -59,7 +59,7 @@ export const PastResultsArchive = () => {
       } catch {
         // Static host fallback below
       }
-      if (!json) {
+      if (!json || json.offline || !Array.isArray(json.matches) || json.matches.length === 0) {
         const { handleFootballRequest } = await import('@/server/footballHandler');
         json = await handleFootballRequest({ type: 'live' });
       }

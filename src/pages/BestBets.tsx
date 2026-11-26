@@ -69,12 +69,14 @@ export default function BestBets() {
   const fetch_ = useCallback(async () => {
     setLoading(true);
     const items: Prediction[] = [];
+    let realUpcomingPool: Prediction[] = [];
     
     // 1. Fetch real-time live upcoming fixtures
     try {
       const realFixtures = await fetchRealtimeUpcomingFixtures();
       if (realFixtures && realFixtures.length > 0) {
-        items.push(...realFixtures.filter(p => !isPlayedOrPastMatch(p) && (getConfidence(p) || 0) >= minConf));
+        realUpcomingPool = realFixtures.filter(p => !isPlayedOrPastMatch(p));
+        items.push(...realUpcomingPool.filter(p => (getConfidence(p) || 0) >= minConf));
       }
     } catch (err) {
       console.warn('Realtime fixtures error in BestBets:', err);
@@ -105,6 +107,17 @@ export default function BestBets() {
         }
       } catch (err) {
         console.warn('BestBets fetch error:', err);
+      }
+    }
+
+    // 3. Auto-relax default 70%+ threshold if real upcoming matches exist but none met 70%
+    if (items.length === 0 && realUpcomingPool.length > 0 && minConf === 70) {
+      const floor60 = realUpcomingPool.filter(p => (getConfidence(p) || 0) >= 60);
+      if (floor60.length > 0) {
+        items.push(...floor60);
+        setMinConf(60);
+      } else {
+        items.push(...[...realUpcomingPool].sort((a, b) => (getConfidence(b) || 0) - (getConfidence(a) || 0)).slice(0, 12));
       }
     }
 

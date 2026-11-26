@@ -39,17 +39,26 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
   >({});
 
   useEffect(() => {
-    if (
-      typeof window !== 'undefined' &&
-      /Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent)
-    ) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       return;
     }
 
     let cancelled = false;
-    fetch('/api/football?type=live')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
+    const loadLiveRibbon = async () => {
+      try {
+        let json: any = null;
+        try {
+          const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
+          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
+            json = await r.json();
+          }
+        } catch {
+          // Fall back to direct handler on static hosts
+        }
+        if (json?.offline || !Array.isArray(json?.matches) || json.matches.length === 0) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          json = await handleFootballRequest({ type: 'live' });
+        }
         if (cancelled || !Array.isArray(json?.matches)) return;
         const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
         const fetchedLive: LiveRibbonItem[] = [];
@@ -80,10 +89,12 @@ export const GlobalMatchdayCommandRibbon: React.FC = () => {
         }
         setLiveMap(map);
         setLiveItems(fetchedLive.slice(0, 10));
-      })
-      .catch(() => {
+      } catch {
         // silent fallback
-      });
+      }
+    };
+
+    loadLiveRibbon();
 
     return () => {
       cancelled = true;

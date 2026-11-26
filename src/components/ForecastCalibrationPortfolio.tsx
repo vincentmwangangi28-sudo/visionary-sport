@@ -23,10 +23,21 @@ export const ForecastCalibrationPortfolio: React.FC = () => {
   const syncFromResultsFeed = async (manual = false) => {
     setSyncing(true);
     try {
-      const res = await fetch('/api/football?type=results');
-      if (!res.ok) throw new Error('Results feed unavailable');
-      const data = await res.json();
-      const finished = Array.isArray(data?.matches) ? data.matches : [];
+      let data: any = null;
+      try {
+        const res = await fetch('/api/football?type=results', { headers: { Accept: 'application/json' } });
+        const ct = res.headers.get('content-type') || '';
+        if (res.ok && ct.includes('application/json')) {
+          data = await res.json();
+        }
+      } catch {
+        // Fallback below
+      }
+      if (!data || data.offline || (!Array.isArray(data.results) && !Array.isArray(data.matches)) || ((data.results?.length || 0) === 0 && (data.matches?.length || 0) === 0)) {
+        const { handleFootballRequest } = await import('@/server/footballHandler');
+        data = await handleFootballRequest({ type: 'results' });
+      }
+      const finished = Array.isArray(data?.results) ? data.results : Array.isArray(data?.matches) ? data.matches : [];
       const mapped: CalibrationRecord[] = finished
         .filter((m: any) => typeof m.home_score === 'number' && typeof m.away_score === 'number')
         .slice(0, 8)

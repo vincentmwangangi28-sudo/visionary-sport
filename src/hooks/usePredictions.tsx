@@ -12,7 +12,6 @@ import {
   isPlayedOrPastMatch,
   filterOutPlayedMatches,
   sortMatchesByDatePriority,
-  matchesDateFilter,
 } from '@/lib/dateFilterUtils';
 import {
   applyAdminEditorialOverridesToPredictions,
@@ -88,19 +87,30 @@ function sanitizeAndDeduplicatePredictions(list: Prediction[]): Prediction[] {
 const REAL_UPCOMING_STORAGE_KEY = 'predictpro_real_upcoming_v6_full_slate';
 
 const INITIAL_PAYLOAD_CACHE = new Map<string, {
-  allPredictions: Prediction[];
-  total: number;
-  isRealTime: boolean;
+  payload: {
+    allPredictions: Prediction[];
+    total: number;
+    isRealTime: boolean;
+  };
+  updatedAt: number;
 }>();
 
-function getCachedInitialPredictionsPayload(league?: string) {
+function getCachedInitialPredictionsPayload(league?: string): {
+  payload: {
+    allPredictions: Prediction[];
+    total: number;
+    isRealTime: boolean;
+  };
+  updatedAt: number | undefined;
+} {
   const key = league?.toLowerCase() ?? 'all';
   const cached = INITIAL_PAYLOAD_CACHE.get(key);
-  if (cached && cached.allPredictions.length > 0) {
+  if (cached && cached.payload.allPredictions.length > 0) {
     return cached;
   }
 
   let seed: Prediction[] = [];
+  let storedTimestamp: number | undefined;
   if (typeof window !== 'undefined') {
     try {
       localStorage.removeItem('predictpro_real_upcoming_v1');
@@ -112,13 +122,13 @@ function getCachedInitialPredictionsPayload(league?: string) {
         if (
           parsed &&
           Array.isArray(parsed.fixtures) &&
-          parsed.fixtures.length >= 24 &&
+          parsed.fixtures.length >= 12 &&
           Date.now() - parsed.timestamp < 30 * 60_000
         ) {
           const validStored = filterOutPlayedMatches(parsed.fixtures);
-          const todayStoredCount = validStored.filter((p) => matchesDateFilter(p.match_date, 'today')).length;
-          if (validStored.length >= 24 && todayStoredCount >= 8) {
+          if (validStored.length >= 12) {
             seed = validStored;
+            storedTimestamp = parsed.timestamp;
           }
         }
       }
@@ -144,9 +154,12 @@ function getCachedInitialPredictionsPayload(league?: string) {
     isRealTime: true,
   };
   if (cleanList.length > 0) {
-    INITIAL_PAYLOAD_CACHE.set(key, payload);
+    const resolvedUpdatedAt = storedTimestamp ?? (Date.now() - 240_000);
+    const entry = { payload, updatedAt: resolvedUpdatedAt };
+    INITIAL_PAYLOAD_CACHE.set(key, entry);
+    return entry;
   }
-  return payload;
+  return { payload, updatedAt: undefined };
 }
 
 export interface UsePredictionsOptions {
@@ -205,12 +218,17 @@ export const usePredictions = (
   const queryClient = useQueryClient();
   const leagueKey = league?.toLowerCase() ?? 'all';
 
-  const initialDataPayload = getCachedInitialPredictionsPayload(league);
+  const cachedInitial = getCachedInitialPredictionsPayload(league);
+  const hasInitialData = cachedInitial.payload.allPredictions.length > 0;
 
   const query = useQuery({
     queryKey: queryKeys.predictions.list(leagueKey),
-    initialData: initialDataPayload,
-    initialDataUpdatedAt: Date.now(),
+    ...(hasInitialData
+      ? {
+          initialData: cachedInitial.payload,
+          initialDataUpdatedAt: cachedInitial.updatedAt,
+        }
+      : {}),
     queryFn: async () => {
 
       const combinedPredictions: Prediction[] = [];
@@ -254,7 +272,11 @@ export const usePredictions = (
             // Static host — invoke handleFootballRequest directly
           }
 
-          if (!json) {
+          const serverFixtures = Array.isArray(json?.fixtures) ? (json.fixtures as Prediction[]) : [];
+          const hasUpcomingFromServer =
+            !json?.offline && serverFixtures.some((item) => item && !isPlayedOrPastMatch(item));
+
+          if (!hasUpcomingFromServer) {
             const { handleFootballRequest } = await import('@/server/footballHandler');
             json = await handleFootballRequest({
               type: 'upcoming',
@@ -290,9 +312,20 @@ export const usePredictions = (
       // Merge with persistent prediction registry to lock values across refreshes (excluding any played matches)
       const preserved = mergeAndPreservePredictions(combinedPredictions);
 
+      let sourceList = preserved.length > 0 ? preserved : combinedPredictions;
+      if (sourceList.length === 0) {
+        const savedFallback = getSavedPredictionsList().filter(
+          (p) =>
+            (p.is_realtime || String(p.id).startsWith('espn-real-') || String(p.id).startsWith('real-match-')) &&
+            !isPlayedOrPastMatch(p) &&
+            (!league || league === 'All' || matchesLeagueFilter(p.league, league))
+        );
+        sourceList = savedFallback;
+      }
+
       // Final deduplication, strict played-match exclusion & Date Priority sorting (earliest upcoming first)
       const cleanList = sortMatchesByDatePriority(
-        sanitizeAndDeduplicatePredictions(preserved.length > 0 ? preserved : combinedPredictions)
+        sanitizeAndDeduplicatePredictions(sourceList)
       );
 
       const resultPayload = {
@@ -301,7 +334,12 @@ export const usePredictions = (
         isRealTime: true,
       };
 
-      INITIAL_PAYLOAD_CACHE.set(leagueKey, resultPayload);
+      if (cleanList.length > 0) {
+        INITIAL_PAYLOAD_CACHE.set(leagueKey, {
+          payload: resultPayload,
+          updatedAt: Date.now(),
+        });
+      }
       if ((!league || league === 'All') && cleanList.length > 0 && typeof window !== 'undefined') {
         try {
           localStorage.setItem(
@@ -319,32 +357,6 @@ export const usePredictions = (
     refetchOnWindowFocus: false,
     retry: 1,
   });
-
-  useEffect(() => {
-    if (
-      typeof window !== 'undefined' &&
-      (navigator.webdriver || /HeadlessChrome|Lighthouse|PTST|Speed Insights/i.test(navigator.userAgent))
-    ) {
-      return;
-    }
-    let triggered = false;
-    const triggerRefetch = () => {
-      if (triggered) return;
-      triggered = true;
-      query.refetch();
-    };
-    window.addEventListener('scroll', triggerRefetch, { passive: true, once: true });
-    window.addEventListener('pointerdown', triggerRefetch, { passive: true, once: true });
-    window.addEventListener('touchstart', triggerRefetch, { passive: true, once: true });
-    window.addEventListener('keydown', triggerRefetch, { passive: true, once: true });
-    return () => {
-      window.removeEventListener('scroll', triggerRefetch);
-      window.removeEventListener('pointerdown', triggerRefetch);
-      window.removeEventListener('touchstart', triggerRefetch);
-      window.removeEventListener('keydown', triggerRefetch);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [league]);
 
   const generatePrediction = async (input: {
     homeTeam: string;
@@ -383,11 +395,18 @@ export const usePredictions = (
     const onAdminSync = () => {
       queryClient.invalidateQueries({ queryKey: ['predictions'] });
     };
+    const onRecoverOnline = () => {
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+    };
     window.addEventListener(ADMIN_SYNC_EVENT, onAdminSync);
     window.addEventListener('storage', onAdminSync);
+    window.addEventListener('online', onRecoverOnline);
+    window.addEventListener('predictpro:match-data-revalidated', onRecoverOnline);
     return () => {
       window.removeEventListener(ADMIN_SYNC_EVENT, onAdminSync);
       window.removeEventListener('storage', onAdminSync);
+      window.removeEventListener('online', onRecoverOnline);
+      window.removeEventListener('predictpro:match-data-revalidated', onRecoverOnline);
     };
   }, [queryClient]);
 

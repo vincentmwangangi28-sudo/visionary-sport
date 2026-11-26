@@ -30,10 +30,10 @@ export interface CacheStorageBreakdown {
   lastSyncedAt: string | null;
 }
 
-const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v8';
-const CACHE_STATIC_NAME = 'predictpro-v8-static';
-const CACHE_IMAGES_NAME = 'predictpro-v8-images';
-const CACHE_DATA_NAME = 'predictpro-v8-data';
+const LAST_SYNC_KEY = 'predictpro_last_offline_sync_v9';
+const CACHE_STATIC_NAME = 'predictpro-v9-static';
+const CACHE_IMAGES_NAME = 'predictpro-v9-images';
+const CACHE_DATA_NAME = 'predictpro-v9-data';
 const CURRENT_ACTIVE_CACHES = [CACHE_STATIC_NAME, CACHE_IMAGES_NAME, CACHE_DATA_NAME];
 
 /**

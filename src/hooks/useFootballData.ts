@@ -383,7 +383,7 @@ async function fetchLiveFixturesQuery(leagueId?: number | string): Promise<ApiFo
       // Static host or proxy unavailable — use direct handleFootballRequest below
     }
 
-    if (!json) {
+    if (json?.offline || !Array.isArray(json?.matches) || json.matches.length === 0) {
       const { handleFootballRequest } = await import('@/server/footballHandler');
       json = await handleFootballRequest({ type: 'live' });
     }
@@ -589,16 +589,25 @@ async function fetchUpcomingFixturesQuery(league?: string, _daysAhead: number = 
 
 // 4. Fetch standings for a specific league from Live Feeds / Sportmonks / API-Football / Cache
 async function fetchStandingsQuery(leagueId: number, season?: number): Promise<{ standings: StandingRow[]; isLive: boolean }> {
-  // 0. Check server-side /api/football?type=standings endpoint first (avoids browser CORS)
+  // 0. Check server-side /api/football?type=standings endpoint first (with client handleFootballRequest fallback)
   try {
-    const serverRes = await fetch(`/api/football?type=standings&league=${encodeURIComponent(String(leagueId))}`, {
-      headers: { Accept: 'application/json' },
-    });
-    if (serverRes.ok) {
-      const serverJson = await serverRes.json();
-      if (Array.isArray(serverJson?.standings) && serverJson.standings.length > 0) {
-        return { standings: serverJson.standings as StandingRow[], isLive: true };
+    let serverJson: any = null;
+    try {
+      const serverRes = await fetch(`/api/football?type=standings&league=${encodeURIComponent(String(leagueId))}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (serverRes.ok && (serverRes.headers.get('content-type') || '').includes('application/json')) {
+        serverJson = await serverRes.json();
       }
+    } catch {
+      // Static host or proxy unavailable
+    }
+    if (serverJson?.offline || !Array.isArray(serverJson?.standings) || serverJson.standings.length === 0) {
+      const { handleFootballRequest } = await import('@/server/footballHandler');
+      serverJson = await handleFootballRequest({ type: 'standings', league: String(leagueId) });
+    }
+    if (Array.isArray(serverJson?.standings) && serverJson.standings.length > 0) {
+      return { standings: serverJson.standings as StandingRow[], isLive: true };
     }
   } catch {
     // Fallback to client-side fetchRealtimeStandingsTable

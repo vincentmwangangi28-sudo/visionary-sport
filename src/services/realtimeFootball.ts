@@ -71,7 +71,6 @@ async function fetchEspnLeagueScoreboard(
       }
       return uniqueEvents;
     } catch {
-      setHostCooldown('site.api.espn.com', 120_000);
       return [];
     }
   });
@@ -355,24 +354,53 @@ export async function fetchRealtimeLiveMatches(): Promise<RealtimeMatchResult> {
       };
     }
 
-    // 0. Query internal proxy /api/football?type=live first (if hosted with serverless backend)
+    // 0. Query internal proxy /api/football?type=live first (or direct handleFootballRequest on static hosts)
     try {
-      const apiRes = await fetch('/api/football?type=live');
-      const ct = apiRes.headers.get('content-type') || '';
-      if (apiRes.ok && ct.includes('application/json')) {
-        const json = await apiRes.json();
-        if (json.success && Array.isArray(json.matches) && json.matches.length > 0) {
-          const liveCount = json.matches.filter((m: NormalizedMatch) => m.status === 'live' || m.status === 'halftime').length;
-          return {
-            matches: json.matches,
-            source: 'live_feed',
-            liveCount,
-            lastUpdated: json.updatedAt || new Date().toISOString(),
-          };
+      let json: any = null;
+      try {
+        const apiRes = await fetch('/api/football?type=live', {
+          headers: { Accept: 'application/json' },
+        });
+        const ct = apiRes.headers.get('content-type') || '';
+        if (apiRes.ok && ct.includes('application/json')) {
+          json = await apiRes.json();
         }
+      } catch {
+        // Static host or proxy unavailable — continue to direct client ESPN handler
+      }
+      if (json?.offline || !Array.isArray(json?.matches) || json.matches.length === 0) {
+        const { handleFootballRequest } = await import('@/server/footballHandler');
+        json = await handleFootballRequest({ type: 'live' });
+      }
+      if (json?.success && Array.isArray(json.matches) && json.matches.length > 0) {
+        const mapped: NormalizedMatch[] = json.matches.map((m: Record<string, any>) => ({
+          id: String(m.id),
+          home_team: String(m.home_team),
+          away_team: String(m.away_team),
+          competition: String(m.league || m.competition || 'Football League'),
+          match_date: String(m.match_date || new Date().toISOString()),
+          status: (m.status as NormalizedMatch['status']) || 'upcoming',
+          minute: m.minute ?? null,
+          home_score: m.home_score ?? null,
+          away_score: m.away_score ?? null,
+          home_logo: m.home_logo ?? null,
+          away_logo: m.away_logo ?? null,
+          prediction: m.prediction,
+          confidence: m.confidence,
+          home_odds: m.home_odds,
+          draw_odds: m.draw_odds,
+          away_odds: m.away_odds,
+        }));
+        const liveCount = mapped.filter((m) => m.status === 'live' || m.status === 'halftime').length;
+        return {
+          matches: mapped,
+          source: 'live_feed',
+          liveCount,
+          lastUpdated: json.updatedAt || new Date().toISOString(),
+        };
       }
     } catch {
-      // Static host or proxy unavailable — continue to direct ESPN pipeline below
+      // Continue to direct ESPN pipeline below
     }
 
     const matches: NormalizedMatch[] = [];
@@ -753,23 +781,48 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
       return [];
     }
 
-    // 0. Query internal proxy /api/football endpoint first (powered by 7-day autonomous ESPN cron cache)
+    // 0. Query internal proxy /api/football endpoint first (or direct handleFootballRequest on static hosts)
     try {
-      const q = leagueFilter && leagueFilter !== 'All' ? `?type=upcoming&league=${encodeURIComponent(leagueFilter)}` : '?type=upcoming';
-      const apiRes = await fetch(`/api/football${q}`);
-      const ct = apiRes.headers.get('content-type') || '';
-      if (apiRes.ok && ct.includes('application/json')) {
-        const json = await apiRes.json();
-        if (json.success && Array.isArray(json.fixtures) && json.fixtures.length > 0) {
-          const nowMs = Date.now();
-          const validFixtures: Prediction[] = json.fixtures.filter((p: Prediction) => {
-            const t = new Date(p.match_date).getTime();
-            return !isNaN(t) && t > nowMs - 30 * 60_000;
-          });
+      let json: any = null;
+      try {
+        const q = leagueFilter && leagueFilter !== 'All' ? `?type=upcoming&league=${encodeURIComponent(leagueFilter)}` : '?type=upcoming';
+        const apiRes = await fetch(`/api/football${q}`, {
+          headers: { Accept: 'application/json' },
+        });
+        const ct = apiRes.headers.get('content-type') || '';
+        if (apiRes.ok && ct.includes('application/json')) {
+          json = await apiRes.json();
+        }
+      } catch {
+        // Static host or proxy unavailable — continue to direct client ESPN handler
+      }
 
-          if (validFixtures.length > 0) {
-            return mergeAndPreservePredictions(validFixtures);
-          }
+      const nowMsCheck = Date.now();
+      const rawServerFixtures = Array.isArray(json?.fixtures) ? (json.fixtures as Prediction[]) : [];
+      const hasValidServerFixtures =
+        !json?.offline &&
+        rawServerFixtures.some((p) => {
+          const t = new Date(p.match_date).getTime();
+          return !isNaN(t) && t > nowMsCheck - 30 * 60_000;
+        });
+
+      if (!hasValidServerFixtures) {
+        const { handleFootballRequest } = await import('@/server/footballHandler');
+        json = await handleFootballRequest({
+          type: 'upcoming',
+          league: leagueFilter && leagueFilter !== 'All' ? leagueFilter : undefined,
+        });
+      }
+
+      if (json?.success && Array.isArray(json.fixtures) && json.fixtures.length > 0) {
+        const nowMs = Date.now();
+        const validFixtures: Prediction[] = json.fixtures.filter((p: Prediction) => {
+          const t = new Date(p.match_date).getTime();
+          return !isNaN(t) && t > nowMs - 30 * 60_000;
+        });
+
+        if (validFixtures.length > 0) {
+          return mergeAndPreservePredictions(validFixtures);
         }
       }
     } catch {
@@ -805,7 +858,7 @@ export async function fetchRealtimeUpcomingFixtures(leagueFilter?: string): Prom
         globalUpcomingEvents = (dJson?.events as Array<Record<string, unknown>>) || [];
       }
     } catch {
-      setHostCooldown('site.api.espn.com', 120_000);
+      // fallback handled below
     }
   }
 

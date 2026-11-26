@@ -12,7 +12,7 @@
  * 6. Push Notifications ('push', 'notificationclick', 'pushsubscriptionchange' listeners)
  */
 
-const CACHE_VERSION = 'predictpro-v8';
+const CACHE_VERSION = 'predictpro-v9';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const IMAGES_CACHE = `${CACHE_VERSION}-images`;
 const DATA_CACHE = `${CACHE_VERSION}-data`;
@@ -290,63 +290,143 @@ async function staleWhileRevalidateStaticAsset(event, request, url) {
   return new Response('', { status: 504, statusText: 'Offline' });
 }
 
+function isNonEmptyMatchPayload(data) {
+  if (!data || typeof data !== 'object' || data.offline === true || data.success === false) {
+    return false;
+  }
+  if (Array.isArray(data.fixtures)) return data.fixtures.length > 0;
+  if (Array.isArray(data.matches)) return data.matches.length > 0;
+  if (Array.isArray(data.results)) return data.results.length > 0;
+  if (Array.isArray(data.standings)) return data.standings.length > 0;
+  if (Array.isArray(data.articles)) return data.articles.length > 0;
+  if (Array.isArray(data.leaders)) return data.leaders.length > 0;
+  if (Array.isArray(data.injuries)) return data.injuries.length > 0;
+  if (Array.isArray(data.referees)) return data.referees.length > 0;
+  if (Array.isArray(data.highlights)) return data.highlights.length > 0;
+  if (Array.isArray(data.data)) return data.data.length > 0;
+  if (Array.isArray(data)) return data.length > 0;
+  return Boolean(data.summary);
+}
+
+async function parseResponseJsonSafe(response) {
+  try {
+    const text = await response.clone().text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Stale-While-Revalidate (SWR) handler for Match Data & Predictions.
- * Immediately returns cached match data/predictions for instant offline & low-latency UX,
- * while revalidating from the network in the background and broadcasting updates.
+ * Serves fresh (<90s / <20s for live) non-empty cached match payloads immediately with
+ * background revalidation; otherwise awaits network first (with 4.5s timeout fallback
+ * to valid cached data) and never caches empty/offline error payloads.
  */
 async function staleWhileRevalidateMatchData(event, request) {
   const cache = await caches.open(DATA_CACHE);
   const cachedResponse = await cache.match(request);
 
-  const revalidatePromise = fetch(request)
+  let parsedCached = null;
+  let hasValidNonEmptyCache = false;
+  let isCacheFresh = false;
+
+  if (cachedResponse) {
+    const isOfflineFallback = cachedResponse.headers.get('x-sw-offline-fallback') === 'true';
+    parsedCached = await parseResponseJsonSafe(cachedResponse);
+    hasValidNonEmptyCache = !isOfflineFallback && isNonEmptyMatchPayload(parsedCached);
+
+    if (hasValidNonEmptyCache) {
+      const cachedAtHeader = cachedResponse.headers.get('x-sw-cached-at');
+      const cachedAtMs = cachedAtHeader ? new Date(cachedAtHeader).getTime() : NaN;
+      let maxFreshAgeMs = 90_000;
+      try {
+        const reqUrl = new URL(request.url);
+        if (reqUrl.searchParams.get('type') === 'live') {
+          maxFreshAgeMs = 20_000;
+        }
+      } catch {
+        // default 90s
+      }
+      isCacheFresh = !isNaN(cachedAtMs) && Date.now() - cachedAtMs < maxFreshAgeMs;
+    } else {
+      await cache.delete(request).catch(() => {});
+    }
+  }
+
+  const revalidatePromise = fetch(request, { cache: 'no-store' })
     .then(async (networkResponse) => {
       if (networkResponse && networkResponse.ok) {
-        const clone = networkResponse.clone();
-        try {
-          const bodyBuffer = await clone.arrayBuffer();
-          const headers = new Headers(clone.headers);
-          headers.set('x-sw-cache-strategy', 'stale-while-revalidate');
-          headers.set('x-sw-cached-at', new Date().toISOString());
+        const parsedNet = await parseResponseJsonSafe(networkResponse);
+        const isJsonNonEmpty = parsedNet ? isNonEmptyMatchPayload(parsedNet) : true;
 
-          const stampedResponse = new Response(bodyBuffer, {
-            status: clone.status,
-            statusText: clone.statusText,
-            headers,
-          });
+        if (isJsonNonEmpty) {
+          const clone = networkResponse.clone();
+          try {
+            const bodyBuffer = await clone.arrayBuffer();
+            const headers = new Headers(clone.headers);
+            headers.set('x-sw-cache-strategy', 'stale-while-revalidate');
+            headers.set('x-sw-cached-at', new Date().toISOString());
 
-          await cache.put(request, stampedResponse);
-          await trimCache(DATA_CACHE, MAX_DATA_CACHE_ENTRIES);
-          await notifyClientsMatchDataRevalidated(request.url, 'stale-while-revalidate');
-        } catch {
-          await cache.put(request, networkResponse.clone()).catch(() => {});
+            const stampedResponse = new Response(bodyBuffer, {
+              status: clone.status,
+              statusText: clone.statusText,
+              headers,
+            });
+
+            await cache.put(request, stampedResponse);
+            await trimCache(DATA_CACHE, MAX_DATA_CACHE_ENTRIES);
+            await notifyClientsMatchDataRevalidated(request.url, 'stale-while-revalidate');
+          } catch {
+            // Non-blocking cache write
+          }
         }
+        return { response: networkResponse, nonEmpty: isJsonNonEmpty };
       }
-      return networkResponse;
+      return null;
     })
     .catch(() => null);
 
-  // Stale-While-Revalidate: serve cached match payload immediately, revalidate in background
-  if (cachedResponse) {
-    event.waitUntil(revalidatePromise);
+  // Always schedule background revalidation cleanly
+  event.waitUntil(revalidatePromise);
+
+  // Fast SWR path only when cached response is genuinely fresh and non-empty
+  if (hasValidNonEmptyCache && isCacheFresh) {
     return cachedResponse;
   }
 
-  // No cached entry yet — wait for network response
-  const networkResponse = await revalidatePromise;
-  if (networkResponse) {
-    return networkResponse;
+  // Otherwise race network revalidation against a 4.5s timeout so stale or missing
+  // caches get fresh live data immediately when online.
+  const networkResult = await Promise.race([
+    revalidatePromise,
+    new Promise((resolve) => setTimeout(() => resolve(null), 4500)),
+  ]);
+
+  if (networkResult && networkResult.response) {
+    if (networkResult.nonEmpty || !hasValidNonEmptyCache) {
+      return networkResult.response;
+    }
   }
 
-  // Offline fallback snapshot check
+  if (hasValidNonEmptyCache && cachedResponse) {
+    return cachedResponse;
+  }
+
+  // Offline fallback snapshot check (only if non-empty)
   const snapshotFallback = await cache.match('/api/offline-matches-snapshot');
   if (snapshotFallback) {
-    return snapshotFallback;
+    const parsedSnapshot = await parseResponseJsonSafe(snapshotFallback);
+    if (isNonEmptyMatchPayload(parsedSnapshot)) {
+      return snapshotFallback;
+    }
   }
 
+  // Return 503 when offline and no non-empty cache exists so client code runs its direct CORS fallback
   return new Response(
     JSON.stringify({
       matches: [],
+      fixtures: [],
       data: [],
       offline: true,
       cached: false,
@@ -354,7 +434,7 @@ async function staleWhileRevalidateMatchData(event, request) {
       timestamp: new Date().toISOString(),
     }),
     {
-      status: 200,
+      status: 503,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         'x-sw-offline-fallback': 'true',
@@ -384,15 +464,24 @@ self.addEventListener('install', (event) => {
       ),
       caches.open(DATA_CACHE).then((dataCache) =>
         Promise.allSettled(
-          PRECACHE_MATCH_ENDPOINTS.map((endpoint) =>
-            fetch(endpoint)
-              .then((res) => {
-                if (res && res.ok) {
-                  return dataCache.put(endpoint, res);
-                }
-              })
-              .catch(() => {})
-          )
+          PRECACHE_MATCH_ENDPOINTS.map(async (endpoint) => {
+            try {
+              const res = await fetch(endpoint, { cache: 'no-store' });
+              if (!res || !res.ok) return;
+              const parsed = await parseResponseJsonSafe(res);
+              if (!isNonEmptyMatchPayload(parsed)) return;
+              const bodyBuffer = await res.clone().arrayBuffer();
+              const headers = new Headers(res.headers);
+              headers.set('x-sw-cache-strategy', 'stale-while-revalidate');
+              headers.set('x-sw-cached-at', new Date().toISOString());
+              await dataCache.put(
+                endpoint,
+                new Response(bodyBuffer, { status: res.status, statusText: res.statusText, headers })
+              );
+            } catch {
+              // ignore install precache errors
+            }
+          })
         )
       ),
     ]).then(() => self.skipWaiting())
@@ -519,7 +608,16 @@ async function syncPredictionsAndFixtures(tag) {
       PRECACHE_MATCH_ENDPOINTS.map(async (endpoint) => {
         const response = await fetch(endpoint, { cache: 'no-store' });
         if (response && response.ok) {
-          await cache.put(endpoint, response.clone());
+          const parsed = await parseResponseJsonSafe(response);
+          if (!isNonEmptyMatchPayload(parsed)) return;
+          const bodyBuffer = await response.clone().arrayBuffer();
+          const headers = new Headers(response.headers);
+          headers.set('x-sw-cache-strategy', 'stale-while-revalidate');
+          headers.set('x-sw-cached-at', new Date().toISOString());
+          await cache.put(
+            endpoint,
+            new Response(bodyBuffer, { status: response.status, statusText: response.statusText, headers })
+          );
         }
       })
     );

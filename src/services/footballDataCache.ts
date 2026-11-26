@@ -39,7 +39,7 @@ try {
       const parsed = JSON.parse(raw);
       const now = Date.now();
       for (const [host, exp] of Object.entries(parsed)) {
-        if (typeof exp === 'number' && exp > now) {
+        if (host !== 'site.api.espn.com' && typeof exp === 'number' && exp > now) {
           hostCooldowns.set(host, exp);
         }
       }
@@ -88,7 +88,7 @@ export function isHostInCooldown(host: string): boolean {
  * Place a host into cooldown to prevent redundant network spam when rate limits or quotas are hit.
  * If one RapidAPI Free Football host hits 429/403, cool down its sibling mirror host as well since they share quota.
  */
-export function setHostCooldown(host: string, durationMs = 1_800_000) {
+export function setHostCooldown(host: string, durationMs = 1_800_000, persist = true) {
   if (!host) return;
   const cleanHost = host.toLowerCase().trim();
   const expiresAt = Date.now() + durationMs;
@@ -97,7 +97,9 @@ export function setHostCooldown(host: string, durationMs = 1_800_000) {
     hostCooldowns.set('free-api-live-football-data-cheaper-version.p.rapidapi.com', expiresAt);
     hostCooldowns.set('free-api-live-football-data.p.rapidapi.com', expiresAt);
   }
-  persistHostCooldowns();
+  if (persist) {
+    persistHostCooldowns();
+  }
 }
 
 /**
@@ -149,6 +151,21 @@ export function getFootballCacheStats(): { activeEntries: number; keys: string[]
   };
 }
 
+function isCacheablePayload(data: unknown): boolean {
+  if (data === undefined || data === null) return false;
+  if (Array.isArray(data)) return data.length > 0;
+  if (typeof data === 'object') {
+    const obj = data as Record<string, unknown>;
+    if (obj.offline === true || obj.success === false) return false;
+    if (Array.isArray(obj.matches)) return obj.matches.length > 0;
+    if (Array.isArray(obj.fixtures)) return obj.fixtures.length > 0;
+    if (Array.isArray(obj.standings)) return obj.standings.length > 0;
+    if (Array.isArray(obj.results)) return obj.results.length > 0;
+    if (Array.isArray(obj.data)) return obj.data.length > 0;
+  }
+  return true;
+}
+
 /**
  * Retrieve cached data from in-memory or sessionStorage.
  */
@@ -158,7 +175,7 @@ export function getFootballCache<T>(key: string): T | null {
   // 1. Check in-memory Map
   const mem = memoryCache.get(key) as CacheRecord<T> | undefined;
   if (mem) {
-    if (now < mem.expiresAt) {
+    if (now < mem.expiresAt && isCacheablePayload(mem.data)) {
       return mem.data;
     }
     memoryCache.delete(key);
@@ -170,7 +187,12 @@ export function getFootballCache<T>(key: string): T | null {
       const raw = sessionStorage.getItem(`${SESSION_PREFIX}${key}`);
       if (raw) {
         const parsed = JSON.parse(raw) as CacheRecord<T>;
-        if (parsed && typeof parsed.expiresAt === 'number' && now < parsed.expiresAt) {
+        if (
+          parsed &&
+          typeof parsed.expiresAt === 'number' &&
+          now < parsed.expiresAt &&
+          isCacheablePayload(parsed.data)
+        ) {
           // Restore back to memory cache
           memoryCache.set(key, parsed as CacheRecord<unknown>);
           return parsed.data;
@@ -190,7 +212,7 @@ export function getFootballCache<T>(key: string): T | null {
  * Store data into in-memory and sessionStorage cache with TTL.
  */
 export function setFootballCache<T>(key: string, data: T, ttlMs = CACHE_TTLS.UPCOMING_FIXTURES): void {
-  if (data === undefined || data === null) return;
+  if (!isCacheablePayload(data)) return;
   const now = Date.now();
   const record: CacheRecord<T> = {
     data,
@@ -269,11 +291,8 @@ export async function fetchWithCacheAndDeduplication<T>(
     }
 
     const fresh = await fetcher();
-    if (fresh !== undefined && fresh !== null) {
-      // Only cache if array has elements or valid object
-      if (!Array.isArray(fresh) || fresh.length > 0) {
-        setFootballCache<T>(key, fresh, ttlMs);
-      }
+    if (isCacheablePayload(fresh)) {
+      setFootballCache<T>(key, fresh, ttlMs);
     }
     return fresh;
   });
@@ -405,11 +424,11 @@ export async function safeFootballFetch(
             });
           }
           return { status: res.status, bodyText };
-        } catch {
+        } catch (err: any) {
           clearTimeout(timeoutId);
-          // Immediately place host into 2-minute circuit-breaker cooldown on HTTP/2 protocol reset or extension block
-          if (hostname) {
-            setHostCooldown(hostname, 120_000);
+          // Only apply a brief in-memory cooldown for non-abort network errors
+          if (hostname && err?.name !== 'AbortError') {
+            setHostCooldown(hostname, 15_000, false);
           }
           return null;
         }

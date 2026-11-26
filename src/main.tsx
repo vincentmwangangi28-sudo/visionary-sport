@@ -68,7 +68,7 @@ if ('serviceWorker' in navigator) {
         .then((keys) =>
           Promise.all(
             keys
-              .filter((k) => !k.startsWith('predictpro-v8'))
+              .filter((k) => !k.startsWith('predictpro-v9'))
               .map((k) => caches.delete(k).catch(() => false))
           )
         )

@@ -607,13 +607,7 @@ function formatEspnDateYmd(ms: number): string {
   return `${y}${m}${day}`;
 }
 
-function isBrowserPerfAuditRuntime(): boolean {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
-  return Boolean(
-    navigator.webdriver ||
-      /HeadlessChrome|Lighthouse|PTST|Speed Insights|PageSpeed/i.test(navigator.userAgent || '')
-  );
-}
+
 
 let espnCooldownUntil = 0;
 let espnActiveCount = 0;
@@ -642,7 +636,7 @@ function isEspnInCooldown(): boolean {
   if (Date.now() < espnCooldownUntil) return true;
   if (typeof window !== 'undefined') {
     try {
-      const raw = sessionStorage.getItem('predictpro_host_cooldowns') || localStorage.getItem('predictpro_host_cooldowns');
+      const raw = sessionStorage.getItem('predictpro_host_cooldowns');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (typeof parsed['site.api.espn.com'] === 'number' && parsed['site.api.espn.com'] > Date.now()) {
@@ -657,16 +651,14 @@ function isEspnInCooldown(): boolean {
   return false;
 }
 
-function markEspnCooldown(durationMs = 120_000): void {
+function markEspnCooldown(durationMs = 30_000, persistSession = false): void {
   espnCooldownUntil = Date.now() + durationMs;
-  if (typeof window !== 'undefined') {
+  if (persistSession && typeof window !== 'undefined') {
     try {
       const raw = sessionStorage.getItem('predictpro_host_cooldowns') || '{}';
       const parsed = JSON.parse(raw);
       parsed['site.api.espn.com'] = espnCooldownUntil;
-      const str = JSON.stringify(parsed);
-      sessionStorage.setItem('predictpro_host_cooldowns', str);
-      localStorage.setItem('predictpro_host_cooldowns', str);
+      sessionStorage.setItem('predictpro_host_cooldowns', JSON.stringify(parsed));
     } catch {
       // ignore
     }
@@ -705,7 +697,7 @@ async function fetchWithBrowserSafeTimeout(url: string, timeoutMs = 4000): Promi
           if (timer) clearTimeout(timer);
           if (!res.ok) {
             if (res.status === 429 || res.status === 403) {
-              markEspnCooldown(180_000);
+              markEspnCooldown(180_000, true);
             }
             return { ok: false, status: res.status, text: '{}' };
           }
@@ -716,9 +708,11 @@ async function fetchWithBrowserSafeTimeout(url: string, timeoutMs = 4000): Promi
             text,
           });
           return { ok: true, status: res.status, text };
-        } catch {
+        } catch (err: any) {
           if (timer) clearTimeout(timer);
-          markEspnCooldown(120_000);
+          if (err?.name !== 'AbortError') {
+            markEspnCooldown(15_000, false);
+          }
           return { ok: false, status: 503, text: '{}' };
         }
       } finally {
@@ -738,9 +732,6 @@ async function fetchWithBrowserSafeTimeout(url: string, timeoutMs = 4000): Promi
 }
 
 export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promise<RawFootballFixture[]> {
-  if (isBrowserPerfAuditRuntime()) {
-    return [];
-  }
 
   const now = Date.now();
   if (cachedUpcoming && now - cachedUpcoming.timestamp < 2 * 60 * 1000 && !leagueFilter) {
@@ -934,9 +925,6 @@ export async function fetchServerUpcomingFixtures(leagueFilter?: string): Promis
 }
 
 export async function fetchServerLiveMatches(): Promise<RawFootballLiveMatch[]> {
-  if (isBrowserPerfAuditRuntime()) {
-    return [];
-  }
 
   const now = Date.now();
   if (cachedLive && now - cachedLive.timestamp < 20 * 1000) {

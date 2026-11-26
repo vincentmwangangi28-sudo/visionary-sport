@@ -118,16 +118,27 @@ export const InPlayPredictionsPage: React.FC = () => {
     let cancelled = false;
     const syncRealInPlay = async () => {
       try {
-        const [liveRes, upRes] = await Promise.all([
+        let [liveRes, upRes] = await Promise.all([
           fetch('/api/football?type=live', { headers: { Accept: 'application/json' } })
-            .then((r) => (r.ok ? r.json() : null))
+            .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('application/json') ? r.json() : null))
             .catch(() => null),
           fetch('/api/football?type=upcoming', { headers: { Accept: 'application/json' } })
-            .then((r) => (r.ok ? r.json() : null))
+            .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('application/json') ? r.json() : null))
             .catch(() => null),
         ]);
+        const liveArrInit = (liveRes?.predictions || liveRes?.matches || []) as Array<Record<string, any>>;
+        const upArrInit = (upRes?.fixtures || upRes?.predictions || upRes?.matches || []) as Array<Record<string, any>>;
+        if (!liveRes || liveRes.offline || liveArrInit.length === 0 || !upRes || upRes.offline || upArrInit.length === 0) {
+          const { handleFootballRequest } = await import('@/server/footballHandler');
+          if (!liveRes || liveRes.offline || liveArrInit.length === 0) {
+            liveRes = await handleFootballRequest({ type: 'live' }).catch(() => liveRes);
+          }
+          if (!upRes || upRes.offline || upArrInit.length === 0) {
+            upRes = await handleFootballRequest({ type: 'upcoming' }).catch(() => upRes);
+          }
+        }
         const liveArr = (liveRes?.predictions || liveRes?.matches || []) as Array<Record<string, any>>;
-        const upArr = (upRes?.predictions || upRes?.matches || []) as Array<Record<string, any>>;
+        const upArr = (upRes?.fixtures || upRes?.predictions || upRes?.matches || []) as Array<Record<string, any>>;
         const hookArr = (realtimeHookFixtures || []) as Array<Record<string, any>>;
 
         const seenIds = new Set<string>();

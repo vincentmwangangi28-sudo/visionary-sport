@@ -158,22 +158,32 @@ export const InPlayEdgeRadarPage: React.FC = () => {
     setSyncingLive(true);
     try {
       await refetchLive();
-      const res = await fetch('/api/football?type=live');
-      if (res.ok) {
-        const data = await res.json();
-        const liveMatches = Array.isArray(data?.matches) ? data.matches : [];
-        if (liveMatches.length > 0) {
-          const mapped = mapLiveFixturesToMomentumSignals(liveMatches);
-          const seen = new Set(mapped.map((s) => `${s.homeTeam.toLowerCase()}_${s.awayTeam.toLowerCase()}`));
-          const defaults = getInPlayMomentumSignals().filter(
-            (d) => !seen.has(`${d.homeTeam.toLowerCase()}_${d.awayTeam.toLowerCase()}`)
-          );
-          setSignals([...mapped, ...defaults.slice(0, 2)]);
-          toast.success(`Synced ${mapped.length} real-time in-play matches from ESPN`);
-        } else {
-          setSignals(getInPlayMomentumSignals());
-          toast.info('Showing active high-pressure in-play radar models');
+      let data: any = null;
+      try {
+        const res = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
+        const ct = res.headers.get('content-type') || '';
+        if (res.ok && ct.includes('application/json')) {
+          data = await res.json();
         }
+      } catch {
+        // Fallback below
+      }
+      if (!data || data.offline || !Array.isArray(data.matches) || data.matches.length === 0) {
+        const { handleFootballRequest } = await import('@/server/footballHandler');
+        data = await handleFootballRequest({ type: 'live' });
+      }
+      const liveMatches = Array.isArray(data?.matches) ? data.matches : [];
+      if (liveMatches.length > 0) {
+        const mapped = mapLiveFixturesToMomentumSignals(liveMatches);
+        const seen = new Set(mapped.map((s) => `${s.homeTeam.toLowerCase()}_${s.awayTeam.toLowerCase()}`));
+        const defaults = getInPlayMomentumSignals().filter(
+          (d) => !seen.has(`${d.homeTeam.toLowerCase()}_${d.awayTeam.toLowerCase()}`)
+        );
+        setSignals([...mapped, ...defaults.slice(0, 2)]);
+        toast.success(`Synced ${mapped.length} real-time in-play matches from ESPN`);
+      } else {
+        setSignals(getInPlayMomentumSignals());
+        toast.info('Showing active high-pressure in-play radar models');
       }
     } catch {
       toast.info('Using local quantitative in-play momentum feed');
