@@ -438,10 +438,31 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
     return `${h} - ${a}`;
   }, [stats.events, match.home_score, match.away_score, parsedMinuteNum]);
 
-  // Dynamic In-Play Odds
+  // Dynamic In-Play Odds + Odds-Shift Micro-Flash
   const homeOdds = Number((match.home_odds || 1.85).toFixed(2));
   const drawOdds = Number((match.draw_odds || 3.45).toFixed(2));
   const awayOdds = Number((match.away_odds || 4.10).toFixed(2));
+
+  const prevOddsRef = React.useRef<{ id: string; '1': number; X: number; '2': number } | null>(null);
+  const [oddsFlash, setOddsFlash] = useState<Record<string, 'up' | 'down'>>({});
+
+  useEffect(() => {
+    const prev = prevOddsRef.current;
+    const matchIdStr = String(match.id);
+    if (prev && prev.id === matchIdStr) {
+      const nextFlash: Record<string, 'up' | 'down'> = {};
+      if (homeOdds !== prev['1']) nextFlash['1'] = homeOdds < prev['1'] ? 'down' : 'up';
+      if (drawOdds !== prev.X) nextFlash.X = drawOdds < prev.X ? 'down' : 'up';
+      if (awayOdds !== prev['2']) nextFlash['2'] = awayOdds < prev['2'] ? 'down' : 'up';
+      if (Object.keys(nextFlash).length > 0) {
+        setOddsFlash(nextFlash);
+        const timer = setTimeout(() => setOddsFlash({}), 700);
+        prevOddsRef.current = { id: matchIdStr, '1': homeOdds, X: drawOdds, '2': awayOdds };
+        return () => clearTimeout(timer);
+      }
+    }
+    prevOddsRef.current = { id: matchIdStr, '1': homeOdds, X: drawOdds, '2': awayOdds };
+  }, [match.id, homeOdds, drawOdds, awayOdds]);
 
   const currentTotalGoals = (match.home_score ?? 0) + (match.away_score ?? 0);
   const dynamicOuLine = currentTotalGoals >= 2 ? currentTotalGoals + 1.5 : 2.5;
@@ -703,11 +724,17 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
                   className="pointer-events-none absolute inset-0 rounded-xl border border-emerald-400/75 animate-goal-ring"
                 />
               )}
-              <span className={recentGoalSide === 'home' || recentGoalSide === 'both' ? 'text-emerald-300' : ''}>
+              <span
+                key={`${match.id}-h-${match.home_score ?? 0}`}
+                className={`${recentGoalSide === 'home' || recentGoalSide === 'both' ? 'text-emerald-300 ' : ''}${hasRecentGoal ? 'animate-goal-digit-flip' : ''}`}
+              >
                 {match.home_score ?? 0}
               </span>{' '}
               <span className="text-slate-500">:</span>{' '}
-              <span className={recentGoalSide === 'away' || recentGoalSide === 'both' ? 'text-emerald-300' : ''}>
+              <span
+                key={`${match.id}-a-${match.away_score ?? 0}`}
+                className={`${recentGoalSide === 'away' || recentGoalSide === 'both' ? 'text-emerald-300 ' : ''}${hasRecentGoal ? 'animate-goal-digit-flip' : ''}`}
+              >
                 {match.away_score ?? 0}
               </span>
             </div>
@@ -779,17 +806,28 @@ export const LiveMatchCenterInspector: React.FC<LiveMatchCenterInspectorProps> =
             { label: 'Away Win (2)', short: '2', odds: awayOdds, conf: stats.awayProb, drift: 'up' },
           ].map((mkt) => {
             const selected = isInSlip(matchLabel, mkt.label);
+            const flashDir = oddsFlash[mkt.short];
             return (
               <button
                 key={mkt.short}
                 type="button"
                 onClick={() => handleAddLiveBet(mkt.label, mkt.odds, mkt.conf)}
-                className={`px-2.5 py-1.5 rounded-lg border text-xs font-mono flex items-center justify-between transition-all cursor-pointer ${
+                className={`relative overflow-hidden px-2.5 py-1.5 rounded-lg border text-xs font-mono flex items-center justify-between transition-all cursor-pointer ${
                   selected
                     ? 'border-primary bg-primary/15 text-primary font-black ring-1 ring-primary/40'
                     : 'border-border/80 bg-card hover:border-primary/50 text-foreground'
                 }`}
               >
+                {flashDir && (
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute inset-0 rounded-lg border animate-odds-flash ${
+                      flashDir === 'down'
+                        ? 'border-emerald-500 bg-emerald-500/15'
+                        : 'border-rose-500 bg-rose-500/15'
+                    }`}
+                  />
+                )}
                 <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
                   {selected && <Check className="h-3 w-3 text-primary" />}
                   {mkt.short}

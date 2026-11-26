@@ -11,7 +11,6 @@ import {
   Activity,
   RefreshCw,
   ChevronDown,
-  ChevronUp,
   Trophy,
   ShieldAlert,
   Sparkles,
@@ -1159,7 +1158,7 @@ export default function LiveScores() {
                       setSelectedMatchId(String(pm.id));
                       setExpandedId(expandedId === pm.id ? null : pm.id);
                     }}
-                    className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                    className={`animate-watchlist-enter p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                       pmHasGoal
                         ? 'border-emerald-500/60 bg-emerald-500/10'
                         : 'border-border/80 bg-card hover:border-primary/40'
@@ -1186,8 +1185,18 @@ export default function LiveScores() {
                               className="pointer-events-none absolute inset-0 rounded-md border border-emerald-400/70 animate-goal-ring"
                             />
                           )}
-                          <span>{pm.home_score ?? 0}</span>
-                          <span>{pm.away_score ?? 0}</span>
+                          <span
+                            key={`pin-h-${pm.id}-${pm.home_score ?? 0}`}
+                            className={pmHasGoal ? 'animate-goal-digit-flip' : ''}
+                          >
+                            {pm.home_score ?? 0}
+                          </span>
+                          <span
+                            key={`pin-a-${pm.id}-${pm.away_score ?? 0}`}
+                            className={pmHasGoal ? 'animate-goal-digit-flip' : ''}
+                          >
+                            {pm.away_score ?? 0}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
@@ -1453,11 +1462,11 @@ export default function LiveScores() {
                             <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
                               {leagueFixtures.length} {leagueFixtures.length === 1 ? 'match' : 'matches'}
                             </Badge>
-                            {isCollapsed ? (
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                            )}
+                            <ChevronDown
+                              className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ease-out ${
+                                isCollapsed ? '' : 'rotate-180'
+                              }`}
+                            />
                           </div>
                         </div>
 
@@ -1629,22 +1638,24 @@ export default function LiveScores() {
                                               />
                                             )}
                                             <span
-                                              className={
+                                              key={`row-h-${m.id}-${m.home_score ?? 'nil'}`}
+                                              className={`${
                                                 hasRecentGoal &&
                                                 (recentGoalSide === 'home' || recentGoalSide === 'both')
-                                                  ? 'text-emerald-600 dark:text-emerald-300'
+                                                  ? 'text-emerald-600 dark:text-emerald-300 animate-goal-digit-flip'
                                                   : ''
-                                              }
+                                              }`}
                                             >
                                               {m.home_score ?? (isFinished || isLive ? 0 : '-')}
                                             </span>
                                             <span
-                                              className={
+                                              key={`row-a-${m.id}-${m.away_score ?? 'nil'}`}
+                                              className={`${
                                                 hasRecentGoal &&
                                                 (recentGoalSide === 'away' || recentGoalSide === 'both')
-                                                  ? 'text-emerald-600 dark:text-emerald-300'
+                                                  ? 'text-emerald-600 dark:text-emerald-300 animate-goal-digit-flip'
                                                   : ''
-                                              }
+                                              }`}
                                             >
                                               {m.away_score ?? (isFinished || isLive ? 0 : '-')}
                                             </span>
@@ -1653,14 +1664,18 @@ export default function LiveScores() {
 
                                         {/* Inline Sofascore Momentum Micro-Bar + Latest Event */}
                                         <div className="flex items-center gap-2 pt-0.5">
-                                          <div className="h-1 w-20 rounded-full bg-muted overflow-hidden flex shrink-0">
+                                          <div
+                                            className={`h-1 w-20 rounded-full bg-muted overflow-hidden flex shrink-0 transition-shadow duration-300 ${
+                                              stats.isHighGoalThreat ? 'ring-1 ring-orange-500/40' : ''
+                                            }`}
+                                          >
                                             <div
                                               style={{ width: `${stats.homeMomentum}%` }}
-                                              className="bg-emerald-500"
+                                              className="bg-emerald-500 transition-all duration-500 ease-out"
                                             />
                                             <div
                                               style={{ width: `${stats.awayMomentum}%` }}
-                                              className="bg-sky-500"
+                                              className="bg-sky-500 transition-all duration-500 ease-out"
                                             />
                                           </div>
                                           {stats.events.length > 0 ? (

@@ -13,7 +13,7 @@ import {
   selectDailyTop5BestBets,
   type BestBetMarketScope,
   type DailyBestBetItem,
-} from '@/services/topSiteIntelEngine';
+} from '@/services/dailyTopFiveSelector';
 import type { Prediction } from '@/types/prediction';
 import { toast } from 'sonner';
 import { Check, Plus, Eye, Layers, RotateCcw } from 'lucide-react';
@@ -186,7 +186,7 @@ export const DailyTopFiveBestBets: React.FC = () => {
             {[0, 1, 2, 3, 4].map((slot) => (
               <div
                 key={slot}
-                className="h-[196px] rounded-lg border border-border bg-muted/30 animate-pulse p-3"
+                className="h-[222px] rounded-lg border border-border bg-muted/30 animate-pulse p-3"
               />
             ))}
           </div>
@@ -219,7 +219,7 @@ export const DailyTopFiveBestBets: React.FC = () => {
               return (
                 <article
                   key={item.prediction.id || `${item.rank}-${item.homeTeam}`}
-                  className="rounded-lg border border-border bg-background p-3.5 flex flex-col justify-between gap-3"
+                  className="min-h-[222px] rounded-lg border border-border bg-background p-3.5 flex flex-col justify-between gap-3"
                 >
                   <div className="space-y-2.5">
                     {/* Rank · Competition · Kickoff (Unboxed Metadata) */}
@@ -282,7 +282,7 @@ export const DailyTopFiveBestBets: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleAddSinglePick(item)}
-                      className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-md border text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                      className={`flex-1 min-h-[32px] inline-flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-md border text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
                         alreadyAdded
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-card hover:bg-muted border-border text-foreground'
@@ -304,7 +304,7 @@ export const DailyTopFiveBestBets: React.FC = () => {
                       type="button"
                       onClick={() => setInspectedMatch(item.prediction)}
                       aria-label={`Inspect Bivariate Poisson analytics for ${item.homeTeam} vs ${item.awayTeam}`}
-                      className="inline-flex items-center justify-center p-1.5 rounded-md border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+                      className="min-h-[32px] min-w-[32px] inline-flex items-center justify-center p-1.5 rounded-md border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
                     >
                       <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>

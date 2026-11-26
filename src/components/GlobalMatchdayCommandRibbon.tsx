@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Tv, Trophy, Users, Radio } from 'lucide-react';
 import { usePredictions } from '@/hooks/usePredictions';
+import { useLiveFixturesOverlay } from '@/hooks/useLiveFixturesOverlay';
 import { TeamLogo } from '@/components/TeamLogo';
 import { getPrediction, getConfidence } from '@/types/prediction';
 import { isPlayedOrPastMatch, sortMatchesByDatePriority } from '@/lib/dateFilterUtils';
@@ -32,74 +33,39 @@ function formatMatchSlug(homeTeam: string, awayTeam: string): string {
 
 export const GlobalMatchdayCommandRibbon: React.FC = () => {
   const { predictions, data } = usePredictions(1);
+  const { data: liveOverlayMatches } = useLiveFixturesOverlay();
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'tv'>('all');
-  const [liveItems, setLiveItems] = useState<LiveRibbonItem[]>([]);
-  const [liveMap, setLiveMap] = useState<
-    Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }>
-  >({});
 
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      return;
-    }
-
-    let cancelled = false;
-    const loadLiveRibbon = async () => {
-      try {
-        let json: any = null;
-        try {
-          const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
-          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
-            json = await r.json();
-          }
-        } catch {
-          // Fall back to direct handler on static hosts
-        }
-        if (json?.offline || !Array.isArray(json?.matches) || json.matches.length === 0) {
-          const { handleFootballRequest } = await import('@/server/footballHandler');
-          json = await handleFootballRequest({ type: 'live' });
-        }
-        if (cancelled || !Array.isArray(json?.matches)) return;
-        const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
-        const fetchedLive: LiveRibbonItem[] = [];
-        for (const m of json.matches) {
-          const isLive = m.status === 'live' || m.status === 'halftime';
-          const minStr = m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE';
-          const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
-          map[key] = {
-            homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
-            awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
-            minute: minStr,
-            isLive,
-          };
-          if (isLive) {
-            fetchedLive.push({
-              id: String(m.id),
-              homeTeam: String(m.home_team),
-              awayTeam: String(m.away_team),
-              league: String(m.league || 'Football'),
-              homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
-              awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
-              minute: minStr,
-              isLive: true,
-              confidence: typeof m.confidence === 'number' ? m.confidence : 82,
-              prediction: String(m.prediction || 'Home Win'),
-            });
-          }
-        }
-        setLiveMap(map);
-        setLiveItems(fetchedLive.slice(0, 10));
-      } catch {
-        // silent fallback
+  const { liveMap, liveItems } = useMemo(() => {
+    const map: Record<string, { homeScore: number; awayScore: number; minute: string; isLive: boolean }> = {};
+    const fetchedLive: LiveRibbonItem[] = [];
+    for (const m of liveOverlayMatches ?? []) {
+      const isLive = m.status === 'live' || m.status === 'halftime';
+      const minStr = m.status === 'halftime' ? 'HT' : m.minute ? `${m.minute}'` : 'LIVE';
+      const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
+      map[key] = {
+        homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
+        awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
+        minute: minStr,
+        isLive,
+      };
+      if (isLive) {
+        fetchedLive.push({
+          id: String(m.id),
+          homeTeam: String(m.home_team),
+          awayTeam: String(m.away_team),
+          league: String(m.league || 'Football'),
+          homeScore: typeof m.home_score === 'number' ? m.home_score : 0,
+          awayScore: typeof m.away_score === 'number' ? m.away_score : 0,
+          minute: minStr,
+          isLive: true,
+          confidence: typeof m.confidence === 'number' ? m.confidence : 82,
+          prediction: String(m.prediction || 'Home Win'),
+        });
       }
-    };
-
-    loadLiveRibbon();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    }
+    return { liveMap: map, liveItems: fetchedLive.slice(0, 10) };
+  }, [liveOverlayMatches]);
 
   const upcomingStrip = useMemo(() => {
     const rawPool = data?.allPredictions ?? predictions;

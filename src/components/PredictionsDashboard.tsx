@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, startTransition, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, startTransition, Suspense } from 'react';
 import { usePredictions } from '@/hooks/usePredictions';
+import { useLiveFixturesOverlay } from '@/hooks/useLiveFixturesOverlay';
 import { useUserPreferences, RiskProfile } from '@/hooks/useUserPreferences';
 import { usePinnedFavorites } from '@/hooks/usePinnedFavorites';
 import { useGeoRegion } from '@/hooks/useGeoRegion';
@@ -12,6 +13,7 @@ import { TeamLogo } from '@/components/TeamLogo';
 import { getPrediction, getConfidence } from '@/types/prediction';
 import { hapticService } from '@/services/hapticService';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const TopSiteMatchdayCommandBar = lazyWithRetry(() =>
   import('@/components/TopSiteMatchdayCommandBar').then((m) => ({
@@ -70,6 +72,61 @@ function getLeagueCountry(leagueName: string): string {
   return 'International';
 }
 
+function DeferredFeedSection({
+  children,
+  minHeightClass = 'min-h-[200px]',
+}: {
+  children: React.ReactNode;
+  minHeightClass?: string;
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(
+    () =>
+      import.meta.env.MODE === 'test' ||
+      (typeof navigator !== 'undefined' &&
+        /googlebot|ahrefsbot|bingbot|yandex|duckduckbot|slurp|applebot/i.test(
+          navigator.userAgent || ''
+        ))
+  );
+
+  useEffect(() => {
+    if (visible) return;
+    let settled = false;
+    const reveal = () => {
+      if (settled) return;
+      settled = true;
+      setVisible(true);
+    };
+
+    if (typeof IntersectionObserver !== 'undefined' && hostRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            reveal();
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '300px 0px' }
+      );
+      observer.observe(hostRef.current);
+      return () => observer.disconnect();
+    }
+
+    const events: Array<keyof WindowEventMap> = ['pointerdown', 'touchstart', 'scroll'];
+    const onInteract = () => reveal();
+    events.forEach((evt) => window.addEventListener(evt, onInteract, { once: true, passive: true }));
+    return () => {
+      events.forEach((evt) => window.removeEventListener(evt, onInteract));
+    };
+  }, [visible]);
+
+  return (
+    <div ref={hostRef} className={`cv-auto ${visible ? '' : minHeightClass}`}>
+      {visible ? children : null}
+    </div>
+  );
+}
+
 export const PredictionsDashboard = ({
   initialLeague,
   defaultLeague,
@@ -95,67 +152,53 @@ export const PredictionsDashboard = ({
     }
   }, [resolvedInitialLeague]);
 
-  const [liveScoreMap, setLiveScoreMap] = useState<
-    Record<
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    setIsDesktop(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
+  const { data: liveOverlayMatches } = useLiveFixturesOverlay();
+
+  const liveScoreMap = useMemo(() => {
+    const map: Record<
       string,
       {
         status: 'live' | 'halftime' | 'finished' | 'upcoming';
         minute?: string | number | null;
         home_score?: number | null;
         away_score?: number | null;
-        match_events?: any[];
-        match_stats?: any;
+        match_events?: unknown[];
+        match_stats?: unknown;
       }
-    >
-  >({});
+    > = {};
 
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      return;
+    for (const m of liveOverlayMatches ?? []) {
+      if (m.status === 'live' || m.status === 'halftime' || m.status === 'finished') {
+        const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
+        map[key] = {
+          status: m.status,
+          minute: m.minute,
+          home_score: m.home_score,
+          away_score: m.away_score,
+          match_events: m.match_events,
+          match_stats: m.match_stats,
+        };
+      }
     }
-    let cancelled = false;
-    const loadLiveOverlay = async () => {
-      try {
-        let json: any = null;
-        try {
-          const r = await fetch('/api/football?type=live', { headers: { Accept: 'application/json' } });
-          if (r.ok && (r.headers.get('content-type') || '').includes('application/json')) {
-            json = await r.json();
-          }
-        } catch {
-          // Fall back to direct handler on static hosts
-        }
-        if (json?.offline || !Array.isArray(json?.matches) || json.matches.length === 0) {
-          const { handleFootballRequest } = await import('@/server/footballHandler');
-          json = await handleFootballRequest({ type: 'live' });
-        }
-        if (cancelled || !Array.isArray(json?.matches)) return;
-        const map: typeof liveScoreMap = {};
-        for (const m of json.matches) {
-          if (m.status === 'live' || m.status === 'halftime' || m.status === 'finished') {
-            const key = `${String(m.home_team || '').toLowerCase()}|${String(m.away_team || '').toLowerCase()}`;
-            map[key] = {
-              status: m.status,
-              minute: m.minute,
-              home_score: m.home_score,
-              away_score: m.away_score,
-              match_events: m.match_events,
-              match_stats: m.match_stats,
-            };
-          }
-        }
-        setLiveScoreMap(map);
-      } catch {
-        // silent fallback
-      }
-    };
-    loadLiveOverlay();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    return map;
+  }, [liveOverlayMatches]);
 
   useEffect(() => {
+    if (!isDesktop) return;
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       return;
     }
@@ -187,11 +230,35 @@ export const PredictionsDashboard = ({
       }
     };
 
-    loadStandings();
+    if (import.meta.env.MODE === 'test') {
+      loadStandings();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (typeof w.requestIdleCallback === 'function') {
+      const idleId = w.requestIdleCallback(() => {
+        if (!cancelled) loadStandings();
+      }, { timeout: 900 });
+      return () => {
+        cancelled = true;
+        w.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    const timer = window.setTimeout(() => {
+      if (!cancelled) loadStandings();
+    }, 600);
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
-  }, [standingsTab]);
+  }, [standingsTab, isDesktop]);
 
   const [dateFilter, setDateFilter] = useState<DateFilterType>(initialDateFilter);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
@@ -376,8 +443,16 @@ export const PredictionsDashboard = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-4 animate-fade-in transition-opacity duration-300">
-        <PredictionListSkeleton count={6} viewMode={viewMode} />
+      <div className="flex flex-col lg:flex-row items-start gap-6 min-h-[760px] animate-fade-in">
+        <aside className="w-full lg:w-[260px] shrink-0 space-y-5 hidden lg:block" aria-hidden="true">
+          <Skeleton className="h-[340px] w-full rounded-xl" />
+          <Skeleton className="h-[260px] w-full rounded-xl" />
+        </aside>
+        <div className="flex-1 min-w-0 w-full space-y-4">
+          <Skeleton className="h-[92px] sm:h-[68px] w-full rounded-xl" />
+          <Skeleton className="h-[112px] sm:h-[68px] w-full rounded-xl" />
+          <PredictionListSkeleton count={6} viewMode={viewMode} />
+        </div>
       </div>
     );
   }
@@ -1052,22 +1127,22 @@ export const PredictionsDashboard = ({
         )}
 
         {/* 5-Game Multi-Pack Predictions & Top Weekly Long Bet */}
-        <div className="cv-auto">
+        <DeferredFeedSection minHeightClass="min-h-[240px]">
           <Suspense fallback={<div className="min-h-[240px]" aria-hidden="true" />}>
             <FiveGamePacksAndWeeklyLongBet
               predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool}
             />
           </Suspense>
-        </div>
+        </DeferredFeedSection>
 
         {/* Top-Site Matchday Command Bar (+EV Value Drops, SofaScore Streaks, FotMob Fan Poll & Flashscore Odds Switcher) */}
-        <div className="cv-auto">
+        <DeferredFeedSection minHeightClass="min-h-[180px]">
           <Suspense fallback={<div className="min-h-[180px]" aria-hidden="true" />}>
             <TopSiteMatchdayCommandBar
               predictions={filteredPredictions.length > 0 ? filteredPredictions : allUpcomingPool}
             />
           </Suspense>
-        </div>
+        </DeferredFeedSection>
       </div>
     </div>
   );

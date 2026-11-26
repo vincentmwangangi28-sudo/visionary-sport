@@ -63,27 +63,37 @@ const sampleLiveMatch = {
   match_events: [],
 };
 
+const stableLiveFixtures = [sampleLiveMatch];
+const mockRefetchLive = vi.fn();
+const mockSetAutoAlertsEnabled = vi.fn();
+const mockSendLiveScoreAlert = vi.fn();
+const mockAutoDispatchLiveScoreChanges = vi.fn();
+
+const stableFootballDataReturn = {
+  liveFixtures: stableLiveFixtures,
+  isLiveLoading: false,
+  isLiveFetching: false,
+  refetchLive: mockRefetchLive,
+  isServiceUnavailable: false,
+  serviceUnavailableMessage: '',
+  authErrorStatus: null,
+};
+
+const stableTelegramAlertsReturn = {
+  autoAlertsEnabled: false,
+  setAutoAlertsEnabled: mockSetAutoAlertsEnabled,
+  isSending: false,
+  sendLiveScoreAlert: mockSendLiveScoreAlert,
+  autoDispatchLiveScoreChanges: mockAutoDispatchLiveScoreChanges,
+  chatId: '@predictproAi',
+};
+
 vi.mock('@/hooks/useFootballData', () => ({
-  useFootballData: vi.fn(() => ({
-    liveFixtures: [sampleLiveMatch],
-    isLiveLoading: false,
-    isLiveFetching: false,
-    refetchLive: vi.fn(),
-    isServiceUnavailable: false,
-    serviceUnavailableMessage: '',
-    authErrorStatus: null,
-  })),
+  useFootballData: vi.fn(() => stableFootballDataReturn),
 }));
 
 vi.mock('@/hooks/useTelegramAlerts', () => ({
-  useTelegramAlerts: vi.fn(() => ({
-    autoAlertsEnabled: false,
-    setAutoAlertsEnabled: vi.fn(),
-    isSending: false,
-    sendLiveScoreAlert: vi.fn(),
-    autoDispatchLiveScoreChanges: vi.fn(),
-    chatId: '@predictproAi',
-  })),
+  useTelegramAlerts: vi.fn(() => stableTelegramAlertsReturn),
 }));
 
 vi.mock('@/services/autoSettlementService', () => ({
@@ -91,19 +101,24 @@ vi.mock('@/services/autoSettlementService', () => ({
   fetchDeepMatchSummary: vi.fn(async () => null),
 }));
 
-vi.mock('@/services/liveCommentaryPushService', async () => {
-  const actual = await vi.importActual<typeof import('@/services/liveCommentaryPushService')>(
-    '@/services/liveCommentaryPushService'
-  );
-  return {
-    ...actual,
-    speakMatchCommentary: vi.fn(),
-    stopSpeechCommentary: vi.fn(),
-    requestGoalPushPermission: vi.fn(async () => 'default'),
-    getGoalPushPermissionState: vi.fn(() => 'default'),
-    dispatchGoalOrSettlementPush: vi.fn(),
-  };
-});
+vi.mock('@/services/liveCommentaryPushService', () => ({
+  speakMatchCommentary: vi.fn(),
+  stopSpeechCommentary: vi.fn(),
+  requestGoalPushPermission: vi.fn(async () => 'default'),
+  getGoalPushPermissionState: vi.fn(() => 'default'),
+  dispatchGoalOrSettlementPush: vi.fn(),
+  getMatchRefereeAndPlayerProps: vi.fn(() => ({
+    referee: {
+      refereeName: 'Michael Oliver',
+      avgYellowCards: 3.8,
+      strictnessTier: 'Balanced',
+      primaryCardLine: 'Over 3.5 Cards',
+      primaryCardOdds: 1.85,
+      primaryCardConfidence: 74,
+    },
+    playerProps: [],
+  })),
+}));
 
 import LiveScores from '@/pages/LiveScores';
 
@@ -137,7 +152,6 @@ function renderLiveScores() {
 
 describe('LiveScores WebSocket Goal Alert Pulse Animation', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     broadcastCallback = null;
     mockChannel.on.mockClear();
     mockChannel.subscribe.mockClear();
@@ -173,10 +187,27 @@ describe('LiveScores WebSocket Goal Alert Pulse Animation', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
-  it('applies subtle pulse animation to the live score container when a WebSocket goal alert is received and clears after TTL', () => {
+  it('applies subtle pulse animation to the live score container when a WebSocket goal alert is received and clears after TTL', async () => {
+    const intervalCallbacks: Array<() => void> = [];
+    const origSetInterval = globalThis.setInterval;
+    const origClearInterval = globalThis.clearInterval;
+    let fakeNow = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => fakeNow);
+    vi.spyOn(globalThis, 'setInterval').mockImplementation(((fn: any, ms?: number) => {
+      if (ms === 2000 && typeof fn === 'function') {
+        intervalCallbacks.push(fn);
+        return 9999 as any;
+      }
+      return origSetInterval(fn, ms);
+    }) as any);
+    vi.spyOn(globalThis, 'clearInterval').mockImplementation(((id: any) => {
+      if (id === 9999) return;
+      return origClearInterval(id);
+    }) as any);
+
     const { unmount } = renderLiveScores();
 
     const rowScoreContainer = screen.getByTestId(`live-score-container-${sampleLiveMatch.id}`);
@@ -212,9 +243,10 @@ describe('LiveScores WebSocket Goal Alert Pulse Animation', () => {
     expect(inspectorScoreContainer.className).toContain('animate-goal-score-pulse');
     expect(screen.getByText('Goal Alert')).toBeInTheDocument();
 
-    // Advance timers past the 12s pulse window to verify smooth settle/cleanup
+    // Advance virtual clock past the 12s pulse window and trigger cleanup interval callback
     act(() => {
-      vi.advanceTimersByTime(14500);
+      fakeNow += 14_500;
+      intervalCallbacks.forEach((cb) => cb());
     });
 
     expect(rowScoreContainer).toHaveAttribute('data-goal-alert', 'false');

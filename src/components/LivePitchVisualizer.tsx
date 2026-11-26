@@ -555,7 +555,7 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
             </text>
 
             {/* Plotted Shot Markers */}
-            {data.shots.map((shot) => {
+            {data.shots.map((shot, idx) => {
               const radius = Math.max(1.4, Math.min(3.2, shot.xg * 6.5));
               const fill =
                 shot.outcome === 'goal'
@@ -564,6 +564,8 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
                   ? '#fbbf24'
                   : 'rgba(148, 163, 184, 0.75)';
               const stroke = shot.team === 'home' ? '#ffffff' : '#38bdf8';
+              const isLatestShot = idx === data.shots.length - 1;
+              const cy = (shot.y / 100) * 52 + 2;
 
               return (
                 <g
@@ -571,9 +573,20 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
                   className="cursor-pointer transition-transform hover:scale-125"
                   onClick={() => setSelectedShot(shot)}
                 >
+                  {(shot.outcome === 'goal' || (props.status === 'live' && isLatestShot)) && (
+                    <circle
+                      cx={shot.x}
+                      cy={cy}
+                      r={radius + 0.9}
+                      fill="none"
+                      stroke={shot.outcome === 'goal' ? '#10b981' : '#fbbf24'}
+                      strokeWidth="0.35"
+                      className="animate-shot-ripple pointer-events-none"
+                    />
+                  )}
                   <circle
                     cx={shot.x}
-                    cy={(shot.y / 100) * 52 + 2}
+                    cy={cy}
                     r={radius}
                     fill={fill}
                     stroke={stroke}
@@ -582,7 +595,7 @@ export const LivePitchVisualizer: React.FC<LivePitchVisualizerProps> = (props) =
                   {shot.outcome === 'goal' && (
                     <circle
                       cx={shot.x}
-                      cy={(shot.y / 100) * 52 + 2}
+                      cy={cy}
                       r={radius + 1.1}
                       fill="none"
                       stroke="#10b981"

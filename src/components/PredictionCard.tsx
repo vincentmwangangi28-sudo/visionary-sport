@@ -258,7 +258,7 @@ export const PredictionCard = memo(({ prediction: p, viewMode = 'compact', isLoa
                   hapticService.selection();
                   togglePinTeam(p.home_team);
                 }}
-                className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                className="p-1.5 -m-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                 title={isTeamPinned(p.home_team) ? 'Unpin match' : 'Pin match to Pinned ★ filter'}
               >
                 <Pin
